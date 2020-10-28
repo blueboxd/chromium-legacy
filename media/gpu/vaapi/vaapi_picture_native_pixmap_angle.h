@@ -13,6 +13,7 @@
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
@@ -46,7 +47,7 @@ class VaapiPictureNativePixmapAngle : public VaapiPictureNativePixmap {
   VASurfaceID va_surface_id() const override;
 
  private:
-  ::Pixmap x_pixmap_ = 0;
+  x11::Pixmap x_pixmap_ = x11::Pixmap::None;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureNativePixmapAngle);
 };

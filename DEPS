@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '22ef2257c8624e2383876c6fbb641162fe520228',
+  'skia_revision': '2acd43d7c9ba72e4a950ba76425ddba5610a2009',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '20aa521f10950ef2db0f60fc487e68d9fa14d703',
+  'v8_revision': '25d53b8594c3b402f501710c6482ccfdcefc3191',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a01dd2af42929a7014f144e079d9617b3ef21771',
+  'catapult_revision': 'daba50861af8722a3e1608e4e46ebeb19b1958dc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '6b087819dd1ea56a50e15bcc34c97ad2fa01d463',
+  'dawn_revision': '47ee61679da09d9ec11f3da5b9b124a0c707c434',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -912,7 +912,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ebb6a5523374a8a8fe74d860af62c5168819e4cb',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'dfa44daef92dbf2a22a7c89216bd898b20f358c9',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'kP2kYw8piIM5YhshCV1BOw9P_vlkkUllESDcBFChFVUC'
+              'version': 'Cde6_Nup5XVxJODi7chcAAfy5-gsuGDvdepMA2nkfKMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1535,7 +1535,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'bJJomm8xz7B8CPL02VQB2xXe79h9E1A208LWC1M6fpsC',
+          'version': 'TzGLaAGOIbgS9g3WS2NIL32_zXI1HeLIIIuDk25O4kwC',
         },
       ],
       'dep_type': 'cipd',
@@ -1555,7 +1555,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'DGgaXMUuxUBs2FxHMiWv_qft0eLrJZ_guhypXHNkyyQC',
+          'version': 'Yf-uk3I5Yz6gjKV3mct2yoXT580dpRG4hwbIx8CpW5MC',
         },
       ],
       'dep_type': 'cipd',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@06d17a5d6ff293525b641becae29fe7b3815c367',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a1c7a0a66e54710c936a637ffa775c6b79c5f1d9',
     'condition': 'checkout_src_internal',
   },
 

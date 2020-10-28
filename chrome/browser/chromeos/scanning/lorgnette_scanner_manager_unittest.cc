@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -20,8 +21,8 @@
 #include "chrome/browser/chromeos/scanning/zeroconf_scanner_detector_utils.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
+#include "chromeos/dbus/lorgnette_manager/fake_lorgnette_manager_client.h"
 #include "chromeos/scanning/scanner.h"
 #include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -171,7 +172,7 @@ class LorgnetteScannerManagerTest : public testing::Test {
   void Scan(const std::string& scanner_name,
             const lorgnette::ScanSettings& settings) {
     lorgnette_scanner_manager_->Scan(
-        scanner_name, settings,
+        scanner_name, settings, base::NullCallback(),
         base::BindRepeating(&LorgnetteScannerManagerTest::PageCallback,
                             base::Unretained(this)),
         base::Bind(&LorgnetteScannerManagerTest::ScanCallback,

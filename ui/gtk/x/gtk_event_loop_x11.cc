@@ -13,10 +13,9 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/event.h"
-#include "ui/gfx/x/x11.h"
 
 extern "C" {
-Window gdk_x11_window_get_xid(GdkWindow* window);
+unsigned long gdk_x11_window_get_xid(GdkWindow* window);
 }
 
 namespace ui {

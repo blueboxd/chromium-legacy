@@ -8744,6 +8744,7 @@ class RenderFrameHostManagerDefaultProcessTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     RenderFrameHostManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    command_line->RemoveSwitch(switches::kSitePerProcess);
 
     if (AreAllSitesIsolatedForTesting()) {
       LOG(WARNING) << "This test should be run without strict site isolation. "
@@ -8757,14 +8758,6 @@ class RenderFrameHostManagerDefaultProcessTest
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerDefaultProcessTest);
 };
 
-// TODO(crbug.com/1110497): flaky on Android builders since 2020-07-28.
-#if defined(OS_ANDROID)
-#define MAYBE_NavigationRacesWithSitelessCommitInDefaultProcess \
-  DISABLED_NavigationRacesWithSitelessCommitInDefaultProcess
-#else
-#define MAYBE_NavigationRacesWithSitelessCommitInDefaultProcess \
-  NavigationRacesWithSitelessCommitInDefaultProcess
-#endif
 // Ensure that the default process can be used for URLs that don't assign a site
 // to the SiteInstance, when Site Isolation is not enabled.
 // 1. Visit foo.com.
@@ -8774,13 +8767,8 @@ class RenderFrameHostManagerDefaultProcessTest
 // https://crbug.com/838348.)
 // All navigations should use the default process, and we should not crash.
 // See https://crbug.com/977956.
-IN_PROC_BROWSER_TEST_P(
-    RenderFrameHostManagerDefaultProcessTest,
-    MAYBE_NavigationRacesWithSitelessCommitInDefaultProcess) {
-  // This test is designed to run without strict site isolation.
-  if (AreAllSitesIsolatedForTesting())
-    return;
-
+IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerDefaultProcessTest,
+                       NavigationRacesWithSitelessCommitInDefaultProcess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -8876,9 +8864,6 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // anything without SiteIsolation.
   if (!AreAllSitesIsolatedForTesting())
     return;
-  // TODO(https://crbug.com/1064944): Fix this test and remove this.
-  if (ShouldCreateNewHostForSameSiteSubframe())
-    return;
 
   // 1. Navigate to A1(B2, B3(B4), C5).
   StartEmbeddedServer();
@@ -8961,8 +8946,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   ASSERT_EQ(0u, b3->child_count());
 
   EXPECT_FALSE(a1->must_be_replaced());
-  EXPECT_EQ(b2->must_be_replaced(), ShouldCreateNewHostForCrashedFrame());
-  EXPECT_EQ(b3->must_be_replaced(), ShouldCreateNewHostForCrashedFrame());
+  EXPECT_TRUE(b2->must_be_replaced());
+  EXPECT_TRUE(b3->must_be_replaced());
   EXPECT_FALSE(c5->must_be_replaced());
 
   EXPECT_EQ(2u, proxy_count(a1));
@@ -8983,19 +8968,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // 3. Reload B2, B6 is created.
   NavigateFrameToURL(b2->frame_tree_node(), b2_url);
 
-  if (ShouldCreateNewHostForCrashedFrame()) {
-    // B2 has been replaced
-    EXPECT_NE(b2_routing_id,
-              a1->child_at(0)->current_frame_host()->routing_id());
-  } else {
-    // B2 has not been replaced
-    EXPECT_EQ(b2_routing_id,
-              a1->child_at(0)->current_frame_host()->routing_id());
-  }
+  // B2 has been replaced
+  EXPECT_NE(b2_routing_id, a1->child_at(0)->current_frame_host()->routing_id());
   // B3 hasn't been replaced.
   EXPECT_EQ(b3, a1->child_at(1)->current_frame_host());
   RenderFrameHostImpl* b6 = a1->child_at(0)->current_frame_host();
-  EXPECT_EQ(b3->must_be_replaced(), ShouldCreateNewHostForCrashedFrame());
+  EXPECT_TRUE(b3->must_be_replaced());
   EXPECT_FALSE(b6->must_be_replaced());
 
   EXPECT_EQ(a_site_instance, a1->GetSiteInstance());

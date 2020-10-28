@@ -23575,6 +23575,7 @@ Called by update_extension_histograms.py.-->
   <int value="462" label="WALLPAPER_PRIVATE_ON_CLOSE_PREVIEW_WALLPAPER"/>
   <int value="463" label="PASSWORDS_PRIVATE_ON_WEAK_CREDENTIALS_CHANGED"/>
   <int value="464" label="ACCESSIBILITY_PRIVATE_ON_MAGNIFIER_BOUNDS_CHANGED"/>
+  <int value="465" label="FILE_MANAGER_PRIVATE_ON_PIN_TRANSFERS_UPDATED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -42030,6 +42031,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentElideToRegistrableDomain:enabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
   <int value="-1750008152" label="UsernameFirstFlow:enabled"/>
+  <int value="-1749689559" label="SelectToSpeakNavigationControl:disabled"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
   <int value="-1748485814" label="SuggestedContentToggle:disabled"/>
   <int value="-1747383699" label="QueryTilesInNTP:disabled"/>
@@ -43129,6 +43131,7 @@ from previous Chrome versions.
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
+  <int value="-706159808" label="QuickAnswersOnEditableText:disabled"/>
   <int value="-705746939" label="ChromeDuet:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
@@ -43188,6 +43191,7 @@ from previous Chrome versions.
   <int value="-639070391" label="FreezeUserAgent:disabled"/>
   <int value="-639026783" label="disable-gpu-appcontainer"/>
   <int value="-638952203" label="RendererSideResourceScheduler:disabled"/>
+  <int value="-637215276" label="QuickAnswersOnEditableText:enabled"/>
   <int value="-634122679" label="GoogleBrandedContextMenu:enabled"/>
   <int value="-634116286"
       label="OmniboxUIExperimentUnboldSuggestionText:enabled"/>
@@ -45053,6 +45057,7 @@ from previous Chrome versions.
   <int value="1243890754" label="ForbidSyncXHRInPageDismissal:disabled"/>
   <int value="1245889469" label="enable-surface-worker"/>
   <int value="1247293682" label="topchrome-md"/>
+  <int value="1249215617" label="SelectToSpeakNavigationControl:enabled"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1254472299" label="PrivacySettingsRedesign:disabled"/>
@@ -65452,6 +65457,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="SearchEntryPoint">
   <int value="0" label="From search widget"/>
   <int value="1" label="From omnibox"/>
+</enum>
+
+<enum name="SearchTemplateURLEvent">
+  <summary>
+    Events within the TemplateURL system we log, i.e. edge cases.
+  </summary>
+  <int value="0" label="SYNC_DELETE_SUCCESS"/>
+  <int value="1" label="SYNC_DELETE_FAIL_NONEXISTENT_ENGINE"/>
+  <int value="2" label="SYNC_DELETE_FAIL_DEFAULT_SEARCH_PROVIDER"/>
 </enum>
 
 <enum name="SearchWidgetUseInfo">

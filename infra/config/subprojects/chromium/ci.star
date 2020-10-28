@@ -3031,9 +3031,9 @@ ci.fyi_ios_builder(
         category = "iOS|iOS14",
         short_name = "sdk14",
     ),
-    caches = [xcode_cache.x12b5025f],
+    caches = [xcode_cache.x12b5035g],
     properties = {
-        "xcode_build_version": "12b5025f",
+        "xcode_build_version": "12b5035g",
     },
 )
 
@@ -3138,6 +3138,15 @@ ci.fyi_windows_builder(
     ),
     execution_timeout = 16 * time.hour,
     notifies = ["annotator-rel"],
+)
+
+ci.fyi_windows_builder(
+    name = "win10-inverse-fieldtrials-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "win10",
+        short_name = "IFT",
+    ),
+    os = os.WINDOWS_10,
 )
 
 ci.gpu_linux_builder(
@@ -3674,6 +3683,15 @@ ci.gpu_fyi_thin_tester(
     console_view_entry = ci.console_view_entry(
         category = "Mac|Intel",
         short_name = "rel",
+    ),
+    triggered_by = ["GPU FYI Mac Builder"],
+)
+
+ci.gpu_fyi_thin_tester(
+    name = "Mac FYI Release (Intel UHD 630)",
+    console_view_entry = ci.console_view_entry(
+        category = "Mac|Intel",
+        short_name = "uhd",
     ),
     triggered_by = ["GPU FYI Mac Builder"],
 )

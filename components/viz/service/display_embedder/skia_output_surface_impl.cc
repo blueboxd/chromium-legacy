@@ -93,13 +93,15 @@ SkiaOutputSurfaceImpl::ScopedPaint::~ScopedPaint() = default;
 
 // static
 std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
-    std::unique_ptr<SkiaOutputSurfaceDependency> deps,
     DisplayCompositorMemoryAndTaskController* display_controller,
     const RendererSettings& renderer_settings,
     const DebugRendererSettings* debug_settings) {
+  DCHECK(display_controller);
+  DCHECK(display_controller->skia_dependency());
+  DCHECK(display_controller->gpu_task_scheduler());
   auto output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-      util::PassKey<SkiaOutputSurfaceImpl>(), std::move(deps),
-      display_controller, renderer_settings, debug_settings);
+      util::PassKey<SkiaOutputSurfaceImpl>(), display_controller,
+      renderer_settings, debug_settings);
   if (!output_surface->Initialize())
     output_surface = nullptr;
   return output_surface;
@@ -107,29 +109,17 @@ std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
 
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     util::PassKey<SkiaOutputSurfaceImpl> /* pass_key */,
-    std::unique_ptr<SkiaOutputSurfaceDependency> deps,
     DisplayCompositorMemoryAndTaskController* display_controller,
     const RendererSettings& renderer_settings,
     const DebugRendererSettings* debug_settings)
-    : SkiaOutputSurface(GetOutputSurfaceType(deps.get())),
-      dependency_(std::move(deps)),
+    : SkiaOutputSurface(
+          GetOutputSurfaceType(display_controller->skia_dependency())),
+      dependency_(display_controller->skia_dependency()),
       renderer_settings_(renderer_settings),
-      debug_settings_(debug_settings) {
-  if (!display_controller) {
-    // For testing and Android WebView, we do not have Overlay, and do not go
-    // through OutputSurfaceProviderImpl to create SkiaOutputSurface. In these
-    // cases, there is no need for sharing the gpu_task_scheduler, and thus
-    // SkiaOutputSurface class could take ownership of the gpu_task_scheduler_.
-    display_compositor_controller_holder_ =
-        dependency_->CreateDisplayCompositorMemoryAndTaskController();
-    display_compositor_controller_ =
-        display_compositor_controller_holder_.get();
-  } else {
-    display_compositor_controller_ = display_controller;
-  }
-  gpu_task_scheduler_ =
-      display_compositor_controller_->get_gpu_task_scheduler();
-
+      debug_settings_(debug_settings),
+      display_compositor_controller_(display_controller),
+      gpu_task_scheduler_(
+          display_compositor_controller_->gpu_task_scheduler()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -796,9 +786,8 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
       base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
 
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
-      dependency_.get(), renderer_settings_,
-      gpu_task_scheduler_->GetSequenceId(),
-      display_compositor_controller_->get_controller_on_gpu(),
+      dependency_, renderer_settings_, gpu_task_scheduler_->GetSequenceId(),
+      display_compositor_controller_->controller_on_gpu(),
       std::move(did_swap_buffer_complete_callback),
       std::move(buffer_presented_callback), std::move(context_lost_callback),
       std::move(vsync_callback_runner));

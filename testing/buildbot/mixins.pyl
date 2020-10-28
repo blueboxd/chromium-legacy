@@ -578,6 +578,14 @@
       ],
     },
   },
+  'mac_mini_intel_uhd_630_gpu_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:3e9b',
+        'os': 'Mac-10.15.5',
+      },
+    },
+  },
   'mac_pro_amd_gpu': {
     'swarming': {
       'dimensions': {
@@ -1042,17 +1050,17 @@
     },
   },
   # latest Xcode 12 beta version.
-  'xcode_12b5025f': {
+  'xcode_12b5035g': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '12b5025f'
+        '12b5035g'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_12b5025f',
+          'name': 'xcode_ios_12b5035g',
           'path': 'Xcode.app',
         },
       ],

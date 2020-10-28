@@ -8,7 +8,6 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/x/dri3.h"
-#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xproto_types.h"
 #include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
@@ -48,12 +47,13 @@ int Bpp(gfx::BufferFormat format) {
   }
 }
 
-XID XPixmapFromNativePixmap(const gfx::NativePixmapDmaBuf& native_pixmap,
-                            int depth,
-                            int bpp) {
+x11::Pixmap XPixmapFromNativePixmap(
+    const gfx::NativePixmapDmaBuf& native_pixmap,
+    int depth,
+    int bpp) {
   auto fd = HANDLE_EINTR(dup(native_pixmap.GetDmaBufFd(0)));
   if (fd < 0)
-    return 0;
+    return x11::Pixmap::None;
   base::ScopedFD scoped_fd(fd);
 
   auto* connection = x11::Connection::Get();
@@ -64,7 +64,7 @@ XID XPixmapFromNativePixmap(const gfx::NativePixmapDmaBuf& native_pixmap,
                                        native_pixmap.GetBufferSize().height(),
                                        native_pixmap.GetDmaBufPitch(0), depth,
                                        bpp, std::move(scoped_fd)});
-  return static_cast<uint32_t>(pixmap_id);
+  return pixmap_id;
 }
 
 }  // namespace

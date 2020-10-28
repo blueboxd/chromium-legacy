@@ -2013,6 +2013,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-quick-answers-on-editable-text",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-quick-answers-text-annotator",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 90
@@ -4177,6 +4182,11 @@
     "name": "sct-auditing",
     "owners": [ "cthomp", "estark", "jdeblasio" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "select-to-speak-navigation-control",
+    "owners": [ "joelriley" ],
+    "expiry_milestone": 89
   },
   {
     "name": "send-uma-cellular",

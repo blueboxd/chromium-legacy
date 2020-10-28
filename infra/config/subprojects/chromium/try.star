@@ -1388,9 +1388,9 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
-    caches = [xcode_cache.x12b5025f],
+    caches = [xcode_cache.x12b5035g],
     properties = {
-        "xcode_build_version": "12b5025f",
+        "xcode_build_version": "12b5035g",
     },
 )
 
@@ -1496,6 +1496,11 @@ try_.chromium_win_builder(
     name = "win10_chromium_x64_rel_ng_exp",
     builderless = False,
     os = os.WINDOWS_ANY,
+)
+
+try_.chromium_win_builder(
+    name = "win10-inverse-fieldtrials-fyi-rel",
+    os = os.WINDOWS_10,
 )
 
 try_.chromium_win_builder(
@@ -1686,10 +1691,6 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "linux-chromeos-chrome",
-)
-
-chrome_internal_verifier(
-    builder = "linux-chromeos-chrome-easwa",
 )
 
 chrome_internal_verifier(

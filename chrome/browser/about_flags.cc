@@ -44,8 +44,8 @@
 #include "chrome/browser/permissions/abusive_origin_notifications_permission_revocation_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
+#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_features.h"
+#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_params.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
@@ -5001,6 +5001,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswers)},
 
+    {"enable-quick-answers-on-editable-text",
+     flag_descriptions::kEnableQuickAnswersOnEditableTextName,
+     flag_descriptions::kEnableQuickAnswersOnEditableTextDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersOnEditableText)},
+
     {"enable-quick-answers-text-annotator",
      flag_descriptions::kEnableQuickAnswersTextAnnotatorName,
      flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
@@ -5382,6 +5387,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"webui-dark-mode", flag_descriptions::kWebuiDarkModeName,
      flag_descriptions::kWebuiDarkModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebUIDarkMode)},
+
+    {"select-to-speak-navigation-control",
+     flag_descriptions::kSelectToSpeakNavigationControlName,
+     flag_descriptions::kSelectToSpeakNavigationControlDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kSelectToSpeakNavigationControl)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

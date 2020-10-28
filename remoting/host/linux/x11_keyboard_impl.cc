@@ -7,7 +7,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
-#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gfx/x/xkb.h"
 #include "ui/gfx/x/xproto.h"
@@ -49,7 +48,7 @@ bool FindKeycodeForKeySym(x11::Connection* connection,
 namespace remoting {
 
 X11KeyboardImpl::X11KeyboardImpl(x11::Connection* connection)
-    : connection_(connection), display_(connection->display()) {}
+    : connection_(connection) {}
 
 X11KeyboardImpl::~X11KeyboardImpl() = default;
 
@@ -122,7 +121,7 @@ bool X11KeyboardImpl::ChangeKeyMapping(uint32_t keycode, uint32_t code_point) {
 }
 
 void X11KeyboardImpl::Flush() {
-  XFlush(display_);
+  connection_->Flush();
 }
 
 void X11KeyboardImpl::Sync() {

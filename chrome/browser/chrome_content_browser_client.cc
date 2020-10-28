@@ -91,15 +91,15 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_features.h"
+#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_service.h"
+#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_service_factory.h"
+#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
 #include "chrome/browser/prerender/chrome_prerender_contents_delegate.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -365,6 +365,7 @@
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -1840,6 +1841,7 @@ bool ChromeContentBrowserClient::CanCommitURL(
 }
 
 void ChromeContentBrowserClient::OverrideNavigationParams(
+    content::WebContents* web_contents,
     SiteInstance* site_instance,
     ui::PageTransition* transition,
     bool* is_renderer_initiated,
@@ -1863,6 +1865,15 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
     *referrer = content::Referrer();
     *initiator_origin = base::nullopt;
   }
+#if defined(OS_ANDROID)
+  if (web_contents) {
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    if (tab && tab->should_add_api2_transition_to_future_navigations()) {
+      *transition = ui::PageTransitionFromInt(*transition |
+                                              ui::PAGE_TRANSITION_FROM_API_2);
+    }
+  }
+#endif
 }
 
 bool ChromeContentBrowserClient::ShouldStayInParentProcessForNTP(

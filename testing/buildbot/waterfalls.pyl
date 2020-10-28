@@ -356,28 +356,6 @@
           'isolated_scripts': 'chrome_sizes',
         },
       },
-      'linux-chromeos-chrome-easwa': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'linux-xenial',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'ssd': '0',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'easwa_browser_tests',
-        },
-      },
       'mac-chrome': {
         'additional_compile_targets': [
           'chrome',
@@ -2410,7 +2388,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12b5025f',
+          'xcode_12b5035g',
           'xctest',
         ],
         'test_suites': {
@@ -2427,7 +2405,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12b5025f',
+          'xcode_12b5035g',
           'xctest',
         ],
         'test_suites': {
@@ -2874,6 +2852,14 @@
       'win10-code-coverage': {
         'mixins': [
           'isolate_profile_data',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+        },
+      },
+      'win10-inverse-fieldtrials-fyi-rel': {
+        'mixins': [
+          'win10',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -3986,6 +3972,16 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+        },
+      },
+      'Mac FYI Release (Intel UHD 630)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          'mac_mini_intel_uhd_630_gpu_stable',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Mac FYI Release (Intel)': {

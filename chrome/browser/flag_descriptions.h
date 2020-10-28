@@ -2337,6 +2337,9 @@ extern const char kEnablePlayStoreSearchDescription[];
 extern const char kEnableQuickAnswersName[];
 extern const char kEnableQuickAnswersDescription[];
 
+extern const char kEnableQuickAnswersOnEditableTextName[];
+extern const char kEnableQuickAnswersOnEditableTextDescription[];
+
 extern const char kEnableQuickAnswersRichUiName[];
 extern const char kEnableQuickAnswersRichUiDescription[];
 
@@ -2550,6 +2553,9 @@ extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
+
+extern const char kSelectToSpeakNavigationControlName[];
+extern const char kSelectToSpeakNavigationControlDescription[];
 
 extern const char kSeparatePointingStickSettingsName[];
 extern const char kSeparatePointingStickSettingsDescription[];

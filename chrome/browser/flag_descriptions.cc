@@ -708,7 +708,13 @@ const char kPostQuantumCECPQ2Description[] =
 const char kMacCoreLocationImplementationName[] =
     "Core Location Implementation";
 const char kMacCoreLocationImplementationDescription[] =
-    "Enables usage of the Core Location APIs on macOS for geolocation";
+    "Enables usage of the Core Location APIs to get location permission on "
+    "macOS";
+
+const char kMacCoreLocationBackendName[] = "Core Location Backend";
+const char kMacCoreLocationBackendDescription[] =
+    "Enables usage of the Core Location APIs as the backend for Geolocation "
+    "API";
 
 const char kNewMacNotificationAPIName[] =
     "Determines which notification API to use on macOS devices";
@@ -3616,10 +3622,6 @@ const char kAppServiceAdaptiveIconName[] = "App Service Adaptive Icons";
 const char kAppServiceAdaptiveIconDescription[] =
     "Provide adaptive icons through the App Service";
 
-const char kArcApplicationZoomName[] = "Allow zooming of Android apps";
-const char kArcApplicationZoomDescription[] =
-    "Allow Android apps to be zoomed in/out using ctrl+/-.";
-
 const char kArcCustomTabsExperimentName[] =
     "Enable Custom Tabs experiment for ARC";
 const char kArcCustomTabsExperimentDescription[] =
@@ -4121,11 +4123,11 @@ const char kExperimentalAccessibilityCursorColorsDescription[] =
     "Enable experimental feature which allows setting cursor color in "
     "Accessibility settings.";
 
-const char kExperimentalAccessibilityMagnifierNewFocusFollowingName[] =
+const char kMagnifierNewFocusFollowingName[] =
     "Enable new focus following in Magnifier";
-const char kExperimentalAccessibilityMagnifierNewFocusFollowingDescription[] =
-    "Enable experimental feature which allows more comprehensive focus "
-    "following in Magnifier.";
+const char kMagnifierNewFocusFollowingDescription[] =
+    "Enable feature which allows more comprehensive focus following in"
+    "in Magnifier.";
 
 const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
 const char kFilesAppCopyImageDescription[] =

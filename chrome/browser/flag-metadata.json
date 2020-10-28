@@ -153,11 +153,6 @@
     "expiry_milestone": 87
   },
   {
-    "name": "arc-application-zoom",
-    "owners": [ "sarakato" ],
-    "expiry_milestone": 81
-  },
-  {
     "name": "arc-custom-tabs-experiment",
     "owners": [ "hashimoto" ],
     "expiry_milestone": 76
@@ -1310,6 +1305,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-core-location-backend",
+    "owners": [ "jameshollyer@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-core-location-implementation",
     "owners": [ "jameshollyer@google.com" ],
     "expiry_milestone": 88
@@ -1501,11 +1501,6 @@
     "name": "enable-experimental-accessibility-language-detection-dynamic",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 87
-  },
-  {
-    "name": "enable-experimental-accessibility-magnifier-new-focus-following",
-    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 88
   },
   {
     "name": "enable-experimental-accessibility-switch-access-text",
@@ -1759,6 +1754,11 @@
     // console messages in system logs for debugging purposes. It's disabled by
     // default because logs may contain PII.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-magnifier-new-focus-following",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-mark-http-as",

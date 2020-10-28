@@ -3643,15 +3643,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityChromeVoxTutorial)},
-    {"enable-experimental-accessibility-magnifier-new-focus-following",
-     flag_descriptions::
-         kExperimentalAccessibilityMagnifierNewFocusFollowingName,
-     flag_descriptions::
-         kExperimentalAccessibilityMagnifierNewFocusFollowingDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::
-             kEnableExperimentalAccessibilityMagnifierNewFocusFollowing)},
+    {"enable-magnifier-new-focus-following",
+     flag_descriptions::kMagnifierNewFocusFollowingName,
+     flag_descriptions::kMagnifierNewFocusFollowingDescription,
+     kOsCrOS, FEATURE_VALUE_TYPE(features::kMagnifierNewFocusFollowing)},
 #endif  // OS_CHROMEOS
 #if defined(OS_MAC)
     {"enable-immersive-fullscreen-toolbar",
@@ -5937,6 +5932,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_MAC)
+    {"enable-core-location-backend",
+     flag_descriptions::kMacCoreLocationBackendName,
+     flag_descriptions::kMacCoreLocationBackendDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacCoreLocationBackend)},
+#endif
+
+#if defined(OS_MAC)
     {"enable-core-location-implementation",
      flag_descriptions::kMacCoreLocationImplementationName,
      flag_descriptions::kMacCoreLocationImplementationDescription, kOsMac,
@@ -6006,9 +6008,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniUseBusterImageName,
      flag_descriptions::kCrostiniUseBusterImageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseBusterImage)},
-    {"arc-application-zoom", flag_descriptions::kArcApplicationZoomName,
-     flag_descriptions::kArcApplicationZoomDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kEnableApplicationZoomFeature)},
     {"crostini-disk-resizing", flag_descriptions::kCrostiniDiskResizingName,
      flag_descriptions::kCrostiniDiskResizingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniDiskResizing)},

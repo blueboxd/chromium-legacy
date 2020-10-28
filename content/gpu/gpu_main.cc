@@ -82,7 +82,6 @@
 #include "ui/base/x/x11_util.h"                          // nogncheck
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
 #include "ui/gfx/x/x11_switches.h"                       // nogncheck
-#include "ui/gfx/x/x11_types.h"                          // nogncheck
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -130,7 +129,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 
  private:
   // SandboxHelper:
-  void PreSandboxStartup() override {
+  void PreSandboxStartup(const gpu::GpuPreferences& gpu_prefs) override {
     // Warm up resources that don't need access to GPUInfo.
     {
       TRACE_EVENT0("gpu", "Warm up rand");
@@ -144,8 +143,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 #if BUILDFLAG(IS_ASH)
     media::VaapiWrapper::PreSandboxInitialization();
 #else  // For any non-ash chrome (ie: linux or lacros) that can support vaapi.
-    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    if (cmd_line->HasSwitch(switches::kEnableAcceleratedVideoDecode))
+    if (!gpu_prefs.disable_accelerated_video_decode)
       media::VaapiWrapper::PreSandboxInitialization();
 #endif
 #endif  // BUILDFLAG(USE_VAAPI)
@@ -286,7 +284,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     if (!features::IsUsingOzonePlatform()) {
       // We need a UI loop so that we can grab the Expose events. See
       // GLSurfaceGLX and https://crbug.com/326995.
-      if (!gfx::GetXDisplay())
+      if (!x11::Connection::Get()->Ready())
         return RESULT_CODE_GPU_DEAD_ON_ARRIVAL;
       main_thread_task_executor =
           std::make_unique<base::SingleThreadTaskExecutor>(

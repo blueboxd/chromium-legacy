@@ -425,6 +425,9 @@ extern const char kPostQuantumCECPQ2Description[];
 extern const char kMacCoreLocationImplementationName[];
 extern const char kMacCoreLocationImplementationDescription[];
 
+extern const char kMacCoreLocationBackendName[];
+extern const char kMacCoreLocationBackendDescription[];
+
 extern const char kNewMacNotificationAPIName[];
 extern const char kNewMacNotificationAPIDescription[];
 
@@ -2092,9 +2095,6 @@ extern const char kAppServiceExternalProtocolDescription[];
 extern const char kAppServiceIntentHandlingName[];
 extern const char kAppServiceIntentHandlingDescription[];
 
-extern const char kArcApplicationZoomName[];
-extern const char kArcApplicationZoomDescription[];
-
 extern const char kArcCustomTabsExperimentName[];
 extern const char kArcCustomTabsExperimentDescription[];
 
@@ -2406,9 +2406,8 @@ extern const char kSwitchAccessPointScanningDescription[];
 extern const char kExperimentalAccessibilityCursorColorsName[];
 extern const char kExperimentalAccessibilityCursorColorsDescription[];
 
-extern const char kExperimentalAccessibilityMagnifierNewFocusFollowingName[];
-extern const char
-    kExperimentalAccessibilityMagnifierNewFocusFollowingDescription[];
+extern const char kMagnifierNewFocusFollowingName[];
+extern const char kMagnifierNewFocusFollowingDescription[];
 
 extern const char kFilesAppCopyImageName[];
 extern const char kFilesAppCopyImageDescription[];

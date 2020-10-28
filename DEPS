@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2acd43d7c9ba72e4a950ba76425ddba5610a2009',
+  'skia_revision': '7b14f2f6e9715f28148976fc75f374b415c3bee3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '25d53b8594c3b402f501710c6482ccfdcefc3191',
+  'v8_revision': '11223a394966eb9fcfe52a77e2e5003c4242c055',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'daba50861af8722a3e1608e4e46ebeb19b1958dc',
+  'catapult_revision': '15be7eb5cbfb37590d3271379ce6ae2fd54d19ea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'fcbc6efa8fd37bb6dd727a8ee897511cca9b2977',
+  'tint_revision': 'adb10d60de324986020310dfbb730b3f3b50f3c0',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1151,7 +1151,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/libprotobuf-mutator.git' + '@' +  Var('libprotobuf-mutator'),
 
   'src/third_party/libsrtp':
-    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '650611720ecc23e0e6b32b0e3100f8b4df91696c',
+    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '6907d995c7975c2865f6f94f79638c25c342e95c',
 
   # Android Explicit Synchronization.
   'src/third_party/libsync/src': {
@@ -1248,7 +1248,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '2837c9f0c416803cbab994f1fe10296d2a132971',
+    Var('chromium_git') + '/openscreen' + '@' + '4d14555787ce0a89613dd8eca0e4a3a8593f8d62',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1545,7 +1545,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'aieWIkdGOsgGtm_vv0Dnzqq1OVdoTGYJur8CntVK_UAC',
+          'version': '6OGcfUna6B3W4PwFB6GuIVRffBaiDQ1HHaOxlOn9FvgC',
         },
       ],
       'dep_type': 'cipd',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a1c7a0a66e54710c936a637ffa775c6b79c5f1d9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e6112e17b371d3910af31763bdb40a64ca16aaab',
     'condition': 'checkout_src_internal',
   },
 

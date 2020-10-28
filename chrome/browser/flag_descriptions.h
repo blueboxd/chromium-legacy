@@ -1096,6 +1096,9 @@ extern const char kPrintJobManagementAppDescription[];
 extern const char kPrintSaveToDriveName[];
 extern const char kPrintSaveToDriveDescription[];
 
+extern const char kPrintServerScalingName[];
+extern const char kPrintServerScalingDescription[];
+
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
 
@@ -1553,6 +1556,9 @@ extern const char kShareButtonInTopToolbarDescription[];
 
 extern const char kChromeShareHighlightsAndroidName[];
 extern const char kChromeShareHighlightsAndroidDescription[];
+
+extern const char kChromeShareLongScreenshotName[];
+extern const char kChromeShareLongScreenshotDescription[];
 
 extern const char kChromeShareQRCodeName[];
 extern const char kChromeShareQRCodeDescription[];
@@ -2052,6 +2058,9 @@ extern const char kWinUseBrowserSpellCheckerDescription[];
 extern const char kCupsIppPrintingBackendName[];
 extern const char kCupsIppPrintingBackendDescription[];
 #endif  // BUILDFLAG(ENABLE_PRINTING)
+
+extern const char kEnterpriseReportingApiKeychainRecreationName[];
+extern const char kEnterpriseReportingApiKeychainRecreationDescription[];
 
 extern const char kImmersiveFullscreenName[];
 extern const char kImmersiveFullscreenDescription[];
@@ -2588,9 +2597,6 @@ extern const char kSpectreVariant2MitigationDescription[];
 
 extern const char kSplitSettingsSyncName[];
 extern const char kSplitSettingsSyncDescription[];
-
-extern const char kSyncWifiConfigurationsName[];
-extern const char kSyncWifiConfigurationsDescription[];
 
 extern const char kSystemLatinPhysicalTypingName[];
 extern const char kSystemLatinPhysicalTypingDescription[];

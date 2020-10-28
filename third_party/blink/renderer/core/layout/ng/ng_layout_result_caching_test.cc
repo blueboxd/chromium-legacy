@@ -1699,5 +1699,142 @@ TEST_F(NGLayoutResultCachingTest, HitOrthogonalRoot) {
   EXPECT_NE(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, SimpleTable) {
+  ScopedLayoutNGTableForTest table_ng(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <td id="target1">abc</td>
+      <td id="target2">abc</td>
+    </table>
+  )HTML");
+
+  auto* target1 = To<LayoutBlock>(GetLayoutObjectByElementId("target1"));
+  auto* target2 = To<LayoutBlock>(GetLayoutObjectByElementId("target2"));
+
+  // Both "target1", and "target1" should have  only had one "measure" pass
+  // performed.
+  scoped_refptr<const NGLayoutResult> result1 =
+      target1->GetCachedLayoutResult();
+  scoped_refptr<const NGLayoutResult> measure1 =
+      target1->GetCachedMeasureResult();
+  EXPECT_EQ(result1->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kMeasure);
+  EXPECT_NE(result1.get(), nullptr);
+  EXPECT_EQ(result1.get(), measure1.get());
+
+  scoped_refptr<const NGLayoutResult> result2 =
+      target2->GetCachedLayoutResult();
+  scoped_refptr<const NGLayoutResult> measure2 =
+      target2->GetCachedMeasureResult();
+  EXPECT_EQ(result2->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kMeasure);
+  EXPECT_NE(result2.get(), nullptr);
+  EXPECT_EQ(result2.get(), measure2.get());
+}
+
+TEST_F(NGLayoutResultCachingTest, MissTableCellMiddleAlignment) {
+  ScopedLayoutNGTableForTest table_ng(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <td id="target" style="vertical-align: middle;">abc</td>
+      <td>abc<br>abc</td>
+    </table>
+  )HTML");
+
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
+
+  // "target" should be stretched, and miss the measure cache.
+  scoped_refptr<const NGLayoutResult> result = target->GetCachedLayoutResult();
+  scoped_refptr<const NGLayoutResult> measure =
+      target->GetCachedMeasureResult();
+  EXPECT_NE(measure.get(), nullptr);
+  EXPECT_NE(result.get(), nullptr);
+  EXPECT_EQ(measure->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kMeasure);
+  EXPECT_EQ(result->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kLayout);
+  EXPECT_NE(result.get(), measure.get());
+}
+
+TEST_F(NGLayoutResultCachingTest, MissTableCellBottomAlignment) {
+  ScopedLayoutNGTableForTest table_ng(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <td id="target" style="vertical-align: bottom;">abc</td>
+      <td>abc<br>abc</td>
+    </table>
+  )HTML");
+
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
+
+  // "target" should be stretched, and miss the measure cache.
+  scoped_refptr<const NGLayoutResult> result = target->GetCachedLayoutResult();
+  scoped_refptr<const NGLayoutResult> measure =
+      target->GetCachedMeasureResult();
+  EXPECT_NE(measure.get(), nullptr);
+  EXPECT_NE(result.get(), nullptr);
+  EXPECT_EQ(measure->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kMeasure);
+  EXPECT_EQ(result->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kLayout);
+  EXPECT_NE(result.get(), measure.get());
+}
+
+TEST_F(NGLayoutResultCachingTest, HitTableCellBaselineAlignment) {
+  ScopedLayoutNGTableForTest table_ng(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      td { vertical-align: baseline; }
+    </style>
+    <table>
+      <td id="target">abc</td>
+      <td>def</td>
+    </table>
+  )HTML");
+
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
+
+  // "target" should align to the baseline, but hit the cache.
+  scoped_refptr<const NGLayoutResult> result = target->GetCachedLayoutResult();
+  scoped_refptr<const NGLayoutResult> measure =
+      target->GetCachedMeasureResult();
+  EXPECT_EQ(result->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kMeasure);
+  EXPECT_NE(result.get(), nullptr);
+  EXPECT_EQ(result.get(), measure.get());
+}
+
+TEST_F(NGLayoutResultCachingTest, MissTableCellBaselineAlignment) {
+  ScopedLayoutNGTableForTest table_ng(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      td { vertical-align: baseline; }
+    </style>
+    <table>
+      <td id="target">abc</td>
+      <td><span style="font-size: 32px">def</span></td>
+    </table>
+  )HTML");
+
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
+
+  // "target" should align to the baseline, but miss the cache.
+  scoped_refptr<const NGLayoutResult> result = target->GetCachedLayoutResult();
+  scoped_refptr<const NGLayoutResult> measure =
+      target->GetCachedMeasureResult();
+  EXPECT_NE(measure.get(), nullptr);
+  EXPECT_NE(result.get(), nullptr);
+  EXPECT_EQ(measure->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kMeasure);
+  EXPECT_EQ(result->GetConstraintSpaceForCaching().CacheSlot(),
+            NGCacheSlot::kLayout);
+  EXPECT_NE(result.get(), measure.get());
+}
+
 }  // namespace
 }  // namespace blink

@@ -1353,12 +1353,17 @@ void RenderFrameHostImpl::OnPortalActivated(
     mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> client_receiver,
     blink::TransferableMessage data,
+    uint64_t trace_id,
     base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
   auto it = portals_.insert(std::move(predecessor)).first;
 
+  TRACE_EVENT_WITH_FLOW0("navigation", "RenderFrameHostImpl::OnPortalActivated",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   GetAssociatedLocalMainFrame()->OnPortalActivated(
       (*it)->portal_token(), std::move(pending_portal),
-      std::move(client_receiver), std::move(data),
+      std::move(client_receiver), std::move(data), trace_id,
       base::BindOnce(
           [](base::OnceCallback<void(blink::mojom::PortalActivateResult)>
                  callback,
@@ -9716,6 +9721,17 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
     return;
 
   DCHECK(false);
+
+  base::debug::ScopedCrashKeyString scoped_url(
+      base::debug::AllocateCrashKeyString("url",
+                                          base::debug::CrashKeySize::Size256),
+      GetLastCommittedURL().possibly_invalid_spec());
+  base::debug::ScopedCrashKeyString scoped_sandbox(
+      base::debug::AllocateCrashKeyString("sandbox",
+                                          base::debug::CrashKeySize::Size256),
+      base::StringPrintf("%u, %u", uint32_t(active_sandbox_flags_),
+                         uint32_t(*active_sandbox_flags_control_)));
+  base::debug::DumpWithoutCrashing();
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(

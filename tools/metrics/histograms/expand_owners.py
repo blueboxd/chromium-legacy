@@ -79,7 +79,7 @@ def _IsEmailOrPlaceholder(is_first_owner, owner_tag_text, histogram_name,
   if should_check_owner_email and not _IsValidPrimaryOwnerEmail(owner_tag_text):
     raise Error(
         'The histogram {} must have a valid primary owner, i.e. a '
-        'person with an @google.com or @chromium.org email address.'.format(
+        'Googler with an @google.com or @chromium.org email address.'.format(
             histogram_name))
 
   return is_email or is_placeholder
@@ -142,10 +142,10 @@ def _GetOwnersFilePath(path):
 
     return os.path.abspath(
         os.path.join(*(_DIR_ABOVE_TOOLS + path_without_src.split(os.sep))))
-  else:
-    raise Error('The given path {} is not well-formatted.'
-                'Well-formatted paths begin with "src/" and end with "OWNERS"'
-                .format(path))
+
+  raise Error(
+      'The given path {} is not well-formatted. Well-formatted paths begin '
+      'with "src/" and end with "OWNERS"'.format(path))
 
 
 def _ExtractEmailAddressesFromOWNERS(path, depth=0):
@@ -212,6 +212,20 @@ def _ComponentFromDirmd(json_data, subpath):
                                                {}).get('component', '')
 
 
+# Memoize decorator from: https://stackoverflow.com/a/1988826
+# TODO(asvitkine): Replace with @functools.cache once we're on Python 3.9+.
+class Memoize:
+  def __init__(self, f):
+    self.f = f
+    self.memo = {}
+
+  def __call__(self, *args):
+    if not args in self.memo:
+      self.memo[args] = self.f(*args)
+    return self.memo[args]
+
+
+@Memoize
 def _ExtractComponentViaDirmd(path):
   """Returns the component for monorail issues at the given path.
 
@@ -223,7 +237,7 @@ def _ExtractComponentViaDirmd(path):
   Returns an empty string if no component can be extracted.
 
   Args:
-    path: The path to an directory to query, e.g. 'src/storage'.
+    path: The path to a directory to query, e.g. 'src/storage'.
   """
   # Verify that the paths are absolute and the root is a parent of the
   # passed in path.

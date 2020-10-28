@@ -61,7 +61,6 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -738,8 +737,6 @@ void RenderThreadImpl::Init() {
 #endif
 
   process_foregrounded_count_ = 0;
-  needs_to_record_first_active_paint_ = false;
-  was_backgrounded_time_ = base::TimeTicks::Min();
 
   if (!is_gpu_compositing_disabled_) {
     BindHostReceiver(compositing_mode_reporter_.BindNewPipeAndPassReceiver());
@@ -1585,8 +1582,6 @@ void RenderThreadImpl::OnRecordMetricsForBackgroundedRendererPurgeTimerExpired(
 }
 
 void RenderThreadImpl::RecordMetricsForBackgroundedRendererPurge() {
-  needs_to_record_first_active_paint_ = true;
-
   RendererMemoryMetrics memory_metrics;
   if (!GetRendererMemoryMetrics(&memory_metrics))
     return;
@@ -1908,7 +1903,6 @@ bool RenderThreadImpl::RendererIsBackgrounded() const {
 
 void RenderThreadImpl::OnRendererBackgrounded() {
   main_thread_scheduler_->SetRendererBackgrounded(true);
-  needs_to_record_first_active_paint_ = false;
   discardable_memory_allocator_->OnBackgrounded();
   GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
@@ -1928,7 +1922,6 @@ void RenderThreadImpl::OnRendererBackgrounded() {
                      base::Unretained(this), "15min",
                      process_foregrounded_count_),
       base::TimeDelta::FromMinutes(15));
-  was_backgrounded_time_ = base::TimeTicks::Now();
 }
 
 void RenderThreadImpl::OnRendererForegrounded() {
@@ -1978,17 +1971,6 @@ void RenderThreadImpl::OnRendererInterfaceReceiver(
   renderer_receiver_.Bind(
       std::move(receiver),
       GetWebMainThreadScheduler()->DeprecatedDefaultTaskRunner());
-}
-
-bool RenderThreadImpl::NeedsToRecordFirstActivePaint(
-    int ttfap_metric_type) const {
-  if (ttfap_metric_type == RenderWidget::TTFAP_AFTER_PURGED)
-    return needs_to_record_first_active_paint_;
-
-  if (was_backgrounded_time_.is_min())
-    return false;
-  base::TimeDelta passed = base::TimeTicks::Now() - was_backgrounded_time_;
-  return passed.InMinutes() >= 5;
 }
 
 void RenderThreadImpl::SetRenderingColorSpace(

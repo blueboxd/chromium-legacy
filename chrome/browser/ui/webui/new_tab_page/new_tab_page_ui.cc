@@ -35,6 +35,7 @@
 #include "chrome/grit/new_tab_page_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/google/core/common/google_util.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
@@ -260,7 +261,11 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                           IDR_NEW_TAB_PAGE_FOO_MOJO_LITE_JS);
 #endif
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("new_tab_page.js", IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_JS);
+  source->AddResourcePath("new_tab_page.js",
+                          IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_ROLLUP_JS);
+  source->AddResourcePath("shared.rollup.js",
+                          IDR_NEW_TAB_PAGE_SHARED_ROLLUP_JS);
+  source->AddResourcePath("lazy_load.js", IDR_NEW_TAB_PAGE_LAZY_LOAD_ROLLUP_JS);
 #endif  // BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),

@@ -467,6 +467,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "chrome-share-long-screenshot",
+    "owners": [ "tgupta", "kmilka" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "chrome-share-qr-code",
     "owners": [ "kmilka", "tgupta" ],
     "expiry_milestone": 88
@@ -2449,6 +2454,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "enterprise-reporting-api-keychain-recreation",
+    "owners": ["zmin", "sacomoto"],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enterprise-reporting-in-chromeos",
     "owners": [ "anqing" ],
     "expiry_milestone": 87
@@ -3826,6 +3836,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "print-server-scaling",
+    "owners": [ "mattme" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "print-with-reduced-rasterization",
     "owners": [ "thestig" ],
     "expiry_milestone": 89
@@ -4431,11 +4446,6 @@
     "name": "sync-setup-friendly-settings",
     "owners": [ "msalama" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "sync-wifi-configurations",
-    "owners": [ "jonmann", "cros-system-services@google.com" ],
-    "expiry_milestone": 85
   },
   {
     "name": "system-keyboard-lock",

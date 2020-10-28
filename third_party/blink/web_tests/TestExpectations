@@ -850,8 +850,9 @@ crbug.com/1067242 [ Mac10.13 ] external/wpt/css/css-text-decor/text-decoration-t
 crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
 crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
 crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
-# Windows 10 bot upgrade now causes this failure on Windows-10-18363
+# Windows 10 bot upgrade now causes these failures on Windows-10-18363
 crbug.com/1140324 [ Win10 ] external/wpt/css/css-text-decor/text-underline-offset-variable.html [ Failure ]
+crbug.com/1143005 [ Win10 ] media/track/track-cue-rendering-vertical.html [ Failure ]
 
 # Tentative mansonry tests
 crbug.com/1076027 external/wpt/css/css-grid/masonry/* [ Skip ]
@@ -1146,7 +1147,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/widows.html [ Failur
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/abspos-after-forced-break.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/auto-scrollbar-shrink-to-fit.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/float-after-forced-break.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html [ Failure ]
 
 ### With LayoutNGFragmentTraversal (and LayoutNGFragmentItem) enabled:
@@ -2473,6 +2473,7 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 crbug.com/1137438 http/tests/devtools/elements/styles-1/color-swatch.js [ Failure Pass ]
 crbug.com/1137438 http/tests/devtools/elements/styles/url-color-swatch.js [ Failure Pass ]
 crbug.com/1137438 http/tests/devtools/sources/color-swatch-position.js [ Failure Pass ]
+crbug.com/1137438 http/tests/devtools/elements/css-variables/color-swatch.js [ Failure Pass ]
 
 # WebRTC: Perfect Negotiation times out in Plan B. This is expected.
 crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]

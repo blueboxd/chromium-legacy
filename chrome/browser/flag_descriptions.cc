@@ -1885,6 +1885,10 @@ const char kPrintSaveToDriveName[] = "Print Save to Drive locally";
 const char kPrintSaveToDriveDescription[] =
     "Modifies Print Preview Save to Drive to use locally mounted Drive";
 
+const char kPrintServerScalingName[] = "Print Server Scaling";
+const char kPrintServerScalingDescription[] =
+    "Allows print servers to be selected when beyond a specified limit.";
+
 const char kPrivacyAdvisorName[] = "Privacy Advisor";
 const char kPrivacyAdvisorDescription[] =
     "Provides contextual entry points for adjusting privacy settings";
@@ -2666,6 +2670,10 @@ const char kChromeShareHighlightsAndroidName[] =
     "Chrome Share text highlights on Android";
 const char kChromeShareHighlightsAndroidDescription[] =
     "Enables UI to generate and share link to text highlights on Android";
+
+const char kChromeShareLongScreenshotName[] = "Chrome Share Long Screenshots";
+const char kChromeShareLongScreenshotDescription[] =
+    "Enables UI to edit and share long screenshots on Android";
 
 const char kChromeShareQRCodeName[] = "Chrome Share QRCodes";
 const char kChromeShareQRCodeDescription[] =
@@ -3558,6 +3566,12 @@ const char kCupsIppPrintingBackendDescription[] =
     "that calls the PPD API.";
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
+const char kEnterpriseReportingApiKeychainRecreationName[] =
+    "Enterprise reporting API keychain item recreation.";
+const char kEnterpriseReportingApiKeychainRecreationDescription[] =
+    "Allow enterprise reporting private API to recreate keychain item on Mac. "
+    "The recreated item can be accessed by other binaries.";
+
 const char kImmersiveFullscreenName[] = "Immersive Fullscreen Toolbar";
 const char kImmersiveFullscreenDescription[] =
     "Automatically hide and show the toolbar in fullscreen.";
@@ -4431,10 +4445,6 @@ const char kSplitSettingsSyncDescription[] =
     "Allows OS sync to be configured separately from browser sync. Changes the "
     "OS settings UI to provide controls for OS data types. Requires "
     "#split-settings to be enabled.";
-
-const char kSyncWifiConfigurationsName[] = "Sync Wi-Fi network configurations";
-const char kSyncWifiConfigurationsDescription[] =
-    "Enables the option to sync Wi-Fi network configurations with Chrome Sync.";
 
 const char kSystemLatinPhysicalTypingName[] =
     "Use system IME for latin-script typing";

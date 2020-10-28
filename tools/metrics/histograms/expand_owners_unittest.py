@@ -13,6 +13,19 @@ import xml.dom.minidom
 _DEFAULT_COMPONENT = '# COMPONENT: Default>Component'
 
 
+def _DirnameN(path, n):
+  """Calls os.path.dirname() on the argument n times."""
+  path = os.path.abspath(path)
+  for _ in range(n):
+    path = os.path.dirname(path)
+  return path
+
+
+assert __file__.endswith('tools/metrics/histograms/expand_owners_unittest.py')
+
+_PATH_TO_CHROMIUM_DIR = _DirnameN(__file__, 5)
+
+
 def _GetFileDirective(path):
   """Returns a file directive line.
 
@@ -31,9 +44,12 @@ def _GetSrcRelativePath(path):
 
   Args:
     path: An absolute path, e.g. '/some/directory/chromium/src/tools/OWNERS'.
+
+  Returns:
+    A src-relative path, e.g.'src/tools/OWNERS'.
   """
-  # TODO(crbug/1126653): This fails if chromium is not in the path.
-  return path.split('chromium/')[1]
+  assert path.startswith(_PATH_TO_CHROMIUM_DIR)
+  return path[len(_PATH_TO_CHROMIUM_DIR) + 1:]
 
 
 def _MakeOwnersFile(filename, directory):
@@ -383,7 +399,7 @@ class ExpandOwnersTest(unittest.TestCase):
     with self.assertRaisesRegexp(
         expand_owners.Error,
         'The histogram Caffeination must have a valid primary owner, i.e. a '
-        'person with an @google.com or @chromium.org email address.'):
+        'Googler with an @google.com or @chromium.org email address.'):
       expand_owners.ExpandHistogramsOWNERS(histograms_without_valid_first_owner)
 
   def testExpandOwnersWithoutValidPrimaryOwner_TeamEmail(self):
@@ -406,7 +422,7 @@ class ExpandOwnersTest(unittest.TestCase):
     with self.assertRaisesRegexp(
         expand_owners.Error,
         'The histogram Caffeination must have a valid primary owner, i.e. a '
-        'person with an @google.com or @chromium.org email address.'):
+        'Googler with an @google.com or @chromium.org email address.'):
       expand_owners.ExpandHistogramsOWNERS(histograms_without_valid_first_owner)
 
   def testExpandOwnersWithoutValidPrimaryOwner_InvalidEmail(self):
@@ -429,7 +445,7 @@ class ExpandOwnersTest(unittest.TestCase):
     with self.assertRaisesRegexp(
         expand_owners.Error,
         'The histogram Caffeination must have a valid primary owner, i.e. a '
-        'person with an @google.com or @chromium.org email address.'):
+        'Googler with an @google.com or @chromium.org email address.'):
       expand_owners.ExpandHistogramsOWNERS(histograms_without_valid_first_owner)
 
   def testExpandOwnersWithFakeFilePath(self):

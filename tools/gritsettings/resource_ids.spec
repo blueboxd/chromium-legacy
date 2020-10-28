@@ -168,12 +168,9 @@
   "chrome/browser/resources/read_later/read_later_resources.grd": {
     "includes": [1760],
   },
-  "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
+    "META": {"sizes": {"includes": [1000],}},
     "includes": [1770],
-  },
-  "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "includes": [1780],
-    "structures": [1800],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/settings_resources.grd": {
     "META": {"sizes": {"includes": [500],}},
@@ -313,6 +310,10 @@
   },
   "chromeos/components/camera_app_ui/resources/strings/camera_strings.grd": {
     "messages": [2515],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/connectivity_diagnostics/resources/connectivity_diagnostics_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [2516],
   },
   "chromeos/components/diagnostics_ui/resources/diagnostics_app_resources.grd": {
     "includes": [2517],
@@ -465,6 +466,9 @@
   "ios/chrome/credential_provider_extension/strings/ios_credential_provider_extension_strings.grd": {
     "META": {"join": 2},
     "messages": [800],
+  },
+  "ios/chrome/widget_kit_extension/strings/ios_widget_kit_extension_strings.grd": {
+    "messages": [820],
   },
 
   # END ios/ section.

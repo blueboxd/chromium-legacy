@@ -3020,6 +3020,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeShareHighlightsAndroidName,
      flag_descriptions::kChromeShareHighlightsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeShareHighlightsAndroid)},
+    {"chrome-share-long-screenshot",
+     flag_descriptions::kChromeShareLongScreenshotName,
+     flag_descriptions::kChromeShareLongScreenshotDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeShareLongScreenshot)},
     {"chrome-share-qr-code", flag_descriptions::kChromeShareQRCodeName,
      flag_descriptions::kChromeShareQRCodeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeShareQRCode)},
@@ -5387,6 +5391,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSelectToSpeakNavigationControlName,
      flag_descriptions::kSelectToSpeakNavigationControlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSelectToSpeakNavigationControl)},
+
+    {"print-server-scaling", flag_descriptions::kPrintServerScalingName,
+     flag_descriptions::kPrintServerScalingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPrintServerScaling)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",
@@ -5434,6 +5442,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureName,
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
+
+#if defined(OS_MAC)
+    {"enterprise-reporting-api-keychain-recreation",
+     flag_descriptions::kEnterpriseReportingApiKeychainRecreationName,
+     flag_descriptions::kEnterpriseReportingApiKeychainRecreationDescription,
+     kOsMac,
+     FEATURE_VALUE_TYPE(features::kEnterpriseReportingApiKeychainRecreation)},
+#endif  // defined(OS_MAC)
 
 #if defined(OS_CHROMEOS)
     {"enterprise-reporting-in-chromeos",
@@ -5506,9 +5522,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"auto-screen-brightness", flag_descriptions::kAutoScreenBrightnessName,
      flag_descriptions::kAutoScreenBrightnessDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAutoScreenBrightness)},
-    {"sync-wifi-configurations", flag_descriptions::kSyncWifiConfigurationsName,
-     flag_descriptions::kSyncWifiConfigurationsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(switches::kSyncWifiConfigurations)},
 #endif  // defined(OS_CHROMEOS)
 
     {"audio-worklet-realtime-thread",

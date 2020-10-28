@@ -848,6 +848,7 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "fuchsia-deterministic-dbg",
+    executable = "recipe:swarming/deterministic_build",
 )
 
 try_.chromium_linux_builder(
@@ -1083,6 +1084,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "linux_chromium_compile_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
     caches = [
         swarming.cache(
             name = "builder",

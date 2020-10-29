@@ -110,7 +110,6 @@
 #include "chrome/browser/payments/payment_credential_factory.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/promo_browser_command/promo_browser_command.mojom.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/task_module/task_module.mojom.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface_factory.h"
@@ -118,6 +117,7 @@
 #include "chrome/browser/speech/speech_recognition_service_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
+#include "components/search/ntp_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
@@ -174,6 +174,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/user_action_recorder.mojom.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
 #include "chromeos/components/camera_app_ui/camera_app_ui.h"
+#include "chromeos/components/diagnostics_ui/diagnostics_ui.h"
+#include "chromeos/components/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
 #include "chromeos/components/local_search_service/mojom/local_search_service_proxy.mojom.h"
@@ -741,6 +743,10 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines,
       chromeos::NetworkUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::diagnostics::mojom::SystemDataProvider,
+      chromeos::DiagnosticsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<chromeos::scanning::mojom::ScanService,
                                          chromeos::ScanningUI>(map);

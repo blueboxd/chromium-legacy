@@ -108,11 +108,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "android-files-in-files-app",
-    "owners": [ "fukino" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "android-managed-by-menu-item",
     "owners": [ "gangwu@google.com", "twellington" ],
     "expiry_milestone": 90
@@ -985,7 +980,7 @@
   {
     "name": "dns-httpssvc",
     "owners": [ "dmcardle", "ericorth" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "dns-over-https",
@@ -1533,7 +1528,7 @@
   {
     "name": "enable-experimental-kernel-vm-support",
     "owners": [ "zwisler" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 95
   },
   {
     "name": "enable-experimental-productivity-features",
@@ -2370,7 +2365,7 @@
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
     "owners": [ "qingsi" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90 
   },
   {
     "name": "enable-webrtc-hybrid-agc",
@@ -2598,7 +2593,7 @@
   {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "filling-passwords-from-any-origin",
@@ -3723,7 +3718,7 @@
   {
     "name": "password-check",
     "owners": [ "jdoerrie", "vasilii" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "password-scripts-fetching",

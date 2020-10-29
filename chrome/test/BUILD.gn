@@ -541,6 +541,7 @@ if (is_android) {
       "//components/crash/android:crashpad_main",
       "//components/games/core/test:test_support",
       "//components/metrics/demographics:test_support",
+      "//components/page_load_metrics/browser:test_support",
       "//components/ukm:ukm_test_helper",
 
       # TODO(crbug.com/961849): This is needed for ShellManager which is what
@@ -560,9 +561,14 @@ if (is_android) {
       "../browser/metrics/metrics_service_user_demographics_browsertest.cc",
       "../browser/metrics/ukm_browsertest.cc",
       "../browser/net/cert_verify_proc_browsertest.cc",
+      "../browser/page_load_metrics/observers/ad_metrics/ad_density_intervention_android_browsertest.cc",
       "../browser/profiles/profile_browsertest_android.cc",
+      "../browser/safe_browsing/test_safe_browsing_database_helper.cc",
+      "../browser/safe_browsing/test_safe_browsing_database_helper.h",
       "../browser/ssl/chrome_security_state_client_browsertest.cc",
       "../browser/ssl/crlset_browsertest.cc",
+      "../browser/subresource_filter/subresource_filter_browser_test_harness.cc",
+      "../browser/subresource_filter/subresource_filter_browser_test_harness.h",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
     ]
@@ -598,6 +604,8 @@ if (is_android) {
       "//chrome/test/data/banners/",
       "//chrome/test/data/android/customtabs/",
       "//chrome/test/data/ssl/",
+      "//chrome/test/data/ads_observer/",
+      "//content/test/data/",
     ]
   }
 
@@ -1162,6 +1170,7 @@ if (!is_android) {
       "../browser/optimization_guide/optimization_guide_keyed_service_browsertest.cc",
       "../browser/optimization_guide/prediction/machine_learning_service_browsertest.cc",
       "../browser/optimization_guide/prediction/prediction_manager_browsertest.cc",
+      "../browser/page_load_metrics/observers/ad_metrics/ad_density_intervention_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/back_forward_cache_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/core/amp_page_load_metrics_observer_browsertest.cc",
@@ -2117,6 +2126,8 @@ if (!is_android) {
           "../browser/extensions/api/terminal/terminal_private_browsertest.cc",
           "../browser/extensions/clipboard_extension_apitest_chromeos.cc",
         ]
+
+        deps += [ "//chrome/browser/error_reporting:test_support" ]
       }
 
       deps += [
@@ -2607,7 +2618,6 @@ if (!is_android) {
         "../browser/chromeos/net/device_event_log_error_browsertest.cc",
         "../browser/chromeos/net/network_portal_detector_impl_browsertest.cc",
         "../browser/chromeos/network_change_manager_client_browsertest.cc",
-        "../browser/chromeos/platform_keys/key_permissions/key_permissions_manager_browsertest.cc",
         "../browser/chromeos/platform_keys/platform_keys_service_browsertest.cc",
         "../browser/chromeos/platform_keys/platform_keys_service_test_util.cc",
         "../browser/chromeos/platform_keys/platform_keys_service_test_util.h",
@@ -3030,6 +3040,14 @@ if (!is_android) {
       data_deps += [
         "//media/cdm/library_cdm/clear_key_cdm",
         "//third_party/widevine/cdm",
+      ]
+    }
+    if (enable_basic_printing &&
+        (is_win || is_mac || is_linux || is_chromeos)) {
+      sources += [ "../browser/printing/print_backend_browsertest.cc" ]
+      deps += [
+        "//chrome/services/printing:lib",
+        "//printing:test_support",
       ]
     }
     if (enable_print_preview) {
@@ -5007,6 +5025,10 @@ test("unit_tests") {
       "//chromeos/services/nearby/public/cpp:test_support",
       "//components/arc:arc_test_support",
     ]
+  }
+
+  if (is_linux || is_chromeos) {
+    deps += [ "//chrome/browser/error_reporting:unit_test" ]
   }
 
   if (use_x11 || use_ozone) {

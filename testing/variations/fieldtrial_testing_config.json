@@ -1788,6 +1788,23 @@
             ]
         }
     ],
+    "ContentCaptureConstantStreaming": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "ContentCaptureConstantStreaming",
+                    "enable_features": [
+                        "ContentCaptureConstantStreaming"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContentCaptureExperiment": [
         {
             "platforms": [
@@ -2757,6 +2774,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableSuggestedFiles"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnhancedProtectionPromoCard": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "EnhancedProtectionPromoMaxImpressionsAndroid": "13",
+                        "SigninPromoMaxImpressionsAndroid": "13"
+                    },
+                    "enable_features": [
+                        "EnhancedProtectionPromoCard"
                     ]
                 }
             ]
@@ -4101,25 +4137,6 @@
             ]
         }
     ],
-    "LookalikeInterstitialForPunycode": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LookalikeInterstitialForPunycode"
-                    ]
-                }
-            ]
-        }
-    ],
     "LowPriorityAdProcesses": [
         {
             "platforms": [
@@ -4318,6 +4335,26 @@
                     "enable_features": [
                         "MediaLearningFramework",
                         "MediaLearningSmoothnessExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MetricsDownsampleConsistently": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MetricsDownsampleConsistently"
                     ]
                 }
             ]

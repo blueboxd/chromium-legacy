@@ -47,7 +47,6 @@
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -113,6 +112,7 @@
 #include "components/query_tiles/switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/search/ntp_features.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/features.h"
 #include "components/security_state/core/features.h"
@@ -3761,12 +3761,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
-    {"android-files-in-files-app",
-     flag_descriptions::kShowAndroidFilesInFilesAppName,
-     flag_descriptions::kShowAndroidFilesInFilesAppDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kShowAndroidFilesInFilesApp,
-         chromeos::switches::kHideAndroidFilesInFilesApp)},
     {"camera-system-web-app", flag_descriptions::kCameraSystemWebAppName,
      flag_descriptions::kCameraSystemWebAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCameraSystemWebApp)},
@@ -4417,7 +4411,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"screen-capture-android", flag_descriptions::kUserMediaScreenCapturingName,
      flag_descriptions::kUserMediaScreenCapturingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kUserMediaScreenCapturing)},
+     FEATURE_VALUE_TYPE(features::kUserMediaScreenCapturing)},
 #endif
 
 #if defined(OS_ANDROID)
@@ -6811,15 +6805,7 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
 #if defined(OS_ANDROID)
-  if (!strcmp("password-change-in-settings", entry.internal_name)) {
-    return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
-  }
-
   if (!strcmp("password-change-support", entry.internal_name)) {
-    return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
-  }
-
-  if (!strcmp("password-scripts-fetching", entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 #endif  // OS_ANDROID

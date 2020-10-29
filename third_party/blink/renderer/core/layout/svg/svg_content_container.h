@@ -7,26 +7,31 @@
 
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
 namespace blink {
 
-class FloatRect;
 class HitTestLocation;
 class HitTestResult;
+
+struct SVGContainerLayoutInfo {
+  bool force_layout = false;
+  bool scale_factor_changed = false;
+  bool viewport_changed = false;
+};
 
 // Content representation for an SVG container. Wraps a LayoutObjectChildList
 // with additional state related to the children of the container. Used by
 // <svg>, <g> etc.
 class SVGContentContainer {
  public:
-  void Layout(bool force_layout,
-              bool screen_scaling_factor_changed,
-              bool layout_size_changed);
+  void Layout(const SVGContainerLayoutInfo&);
   bool HitTest(HitTestResult&, const HitTestLocation&, HitTestAction) const;
 
-  void ComputeBoundingBoxes(FloatRect& object_bounding_box,
-                            bool& object_bounding_box_valid,
-                            FloatRect& stroke_bounding_box) const;
+  bool UpdateBoundingBoxes(bool& object_bounding_box_valid);
+  const FloatRect& ObjectBoundingBox() const { return object_bounding_box_; }
+  const FloatRect& StrokeBoundingBox() const { return stroke_bounding_box_; }
+
   bool ComputeHasNonIsolatedBlendingDescendants() const;
 
   LayoutObjectChildList& Children() { return children_; }
@@ -34,6 +39,9 @@ class SVGContentContainer {
 
  private:
   LayoutObjectChildList children_;
+
+  FloatRect object_bounding_box_;
+  FloatRect stroke_bounding_box_;
 };
 
 }  // namespace blink

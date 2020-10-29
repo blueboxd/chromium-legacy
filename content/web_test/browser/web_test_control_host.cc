@@ -36,6 +36,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/child_process_termination_info.h"
@@ -619,7 +620,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   main_window_->ActivateContents(main_window_->web_contents());
 
   RenderViewHost* main_render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
+      main_window_->web_contents()->GetMainFrame()->GetRenderViewHost();
   {
     TRACE_EVENT0("shell", "WebTestControlHost::PrepareForWebTest::Flush");
     // Round-trip through the InputHandler mojom interface to the compositor
@@ -836,8 +837,10 @@ void WebTestControlHost::InitiateCaptureDump(
 }
 
 void WebTestControlHost::TestFinishedInSecondaryRenderer() {
-  GetWebTestRenderThreadRemote(
-      main_window_->web_contents()->GetRenderViewHost()->GetProcess())
+  GetWebTestRenderThreadRemote(main_window_->web_contents()
+                                   ->GetMainFrame()
+                                   ->GetRenderViewHost()
+                                   ->GetProcess())
       ->TestFinishedFromSecondaryRenderer();
 }
 
@@ -1076,8 +1079,23 @@ void WebTestControlHost::DidUpdateFaviconURL(
   }
 }
 
+void WebTestControlHost::RenderViewHostChanged(RenderViewHost* old_host,
+                                               RenderViewHost* new_host) {
+  // Notifies the main frame of |old_host| that it is deactivated while it's
+  // kept alive in back-forward cache.
+  GetWebTestRenderFrameRemote(old_host->GetMainFrame())->OnDeactivated();
+}
+
 void WebTestControlHost::RenderViewDeleted(RenderViewHost* render_view_host) {
   main_window_render_view_hosts_.erase(render_view_host);
+}
+
+void WebTestControlHost::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  RenderFrameHostImpl* rfh = request->rfh_restored_from_back_forward_cache();
+  if (rfh)
+    GetWebTestRenderFrameRemote(rfh)->OnReactivated();
 }
 
 void WebTestControlHost::RenderProcessHostDestroyed(
@@ -1768,8 +1786,10 @@ void WebTestControlHost::ResetRendererAfterWebTest() {
   if (main_window_) {
     main_window_->web_contents()->Stop();
 
-    RenderProcessHost* main_frame_process =
-        main_window_->web_contents()->GetRenderViewHost()->GetProcess();
+    RenderProcessHost* main_frame_process = main_window_->web_contents()
+                                                ->GetMainFrame()
+                                                ->GetRenderViewHost()
+                                                ->GetProcess();
     GetWebTestRenderThreadRemote(main_frame_process)
         ->ResetRendererAfterWebTest(
             base::BindOnce(&WebTestControlHost::ResetRendererAfterWebTestDone,
@@ -1789,7 +1809,8 @@ void WebTestControlHost::ResetRendererAfterWebTestDone() {
     if (!check_for_leaked_windows_)
       CloseTestOpenedWindows();
 
-    RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+    RenderViewHost* rvh =
+        main_window_->web_contents()->GetMainFrame()->GetRenderViewHost();
     RenderProcessHost* rph = rvh->GetProcess();
     CHECK(rph->GetProcess().IsValid());
     leak_detector_->TryLeakDetection(

@@ -59,13 +59,15 @@ void LayoutSVGContainer::UpdateLayout() {
       transform_change == SVGTransformChange::kFull ||
       SVGLayoutSupport::ScreenScaleFactorChanged(Parent());
 
-  // When hasRelativeLengths() is false, no descendants have relative lengths
+  SVGContainerLayoutInfo layout_info;
+  layout_info.scale_factor_changed = did_screen_scale_factor_change_;
+  // When HasRelativeLengths() is false, no descendants have relative lengths
   // (hence no one is interested in viewport size changes).
-  bool layout_size_changed =
+  layout_info.viewport_changed =
       GetElement()->HasRelativeLengths() &&
       SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(this);
 
-  content_.Layout(false, did_screen_scale_factor_change_, layout_size_changed);
+  content_.Layout(layout_info);
 
   bool bbox_changed = false;
   if (needs_boundaries_update_) {
@@ -187,10 +189,7 @@ void LayoutSVGContainer::Paint(const PaintInfo& paint_info) const {
 
 bool LayoutSVGContainer::UpdateCachedBoundaries() {
   NOT_DESTROYED();
-  auto old_object_bounding_box = object_bounding_box_;
-  content_.ComputeBoundingBoxes(
-      object_bounding_box_, object_bounding_box_valid_, stroke_bounding_box_);
-  return old_object_bounding_box != object_bounding_box_;
+  return content_.UpdateBoundingBoxes(object_bounding_box_valid_);
 }
 
 bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,
@@ -203,7 +202,7 @@ bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, object_bounding_box_,
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, content_.ObjectBoundingBox(),
                                             *local_location))
     return false;
 

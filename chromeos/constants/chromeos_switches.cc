@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "third_party/icu/source/common/unicode/locid.h"
 
 namespace chromeos {
 namespace switches {
@@ -533,12 +532,6 @@ const char kShelfHotseat[] = "shelf-hotseat";
 
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
-
-// If true, files in Android internal storage will be shown in Files app.
-const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
-
-// If true, files in Android internal storage will be hidden in Files app.
-const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
 
 // The name of the per-model directory which contains per-region
 // subdirectories with regulatory label files for this model.

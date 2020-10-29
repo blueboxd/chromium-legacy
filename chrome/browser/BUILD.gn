@@ -1490,8 +1490,6 @@ static_library("browser") {
     "resource_coordinator/utils.h",
     "resources_util.cc",
     "resources_util.h",
-    "search/ntp_features.cc",
-    "search/ntp_features.h",
     "search/search.cc",
     "search/search.h",
     "search/suggestions/suggestions_service_factory.cc",
@@ -2313,6 +2311,8 @@ static_library("browser") {
       "//chromeos/components/camera_app_ui:mojo_bindings",
       "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/connectivity_diagnostics",
+      "//chromeos/components/diagnostics_ui",
+      "//chromeos/components/diagnostics_ui/mojom",
       "//chromeos/components/help_app_ui",
       "//chromeos/components/help_app_ui:mojo_bindings",
       "//chromeos/components/local_search_service",
@@ -2348,6 +2348,9 @@ static_library("browser") {
         "//chromeos/components/telemetry_extension_ui/mojom",
       ]
     }
+  }
+  if (is_linux || is_chromeos) {
+    deps += [ "//chrome/browser/error_reporting" ]
   }
   if (use_ozone) {
     deps += [
@@ -3209,6 +3212,7 @@ static_library("browser") {
       "//components/translate/core/language_detection",
       "//components/ukm/content",
       "//components/viz/common",
+      "//device/fido:cablev2_registration",
       "//ipc:param_traits",
       "//media/mojo/clients",
       "//rlz:rlz_utils",
@@ -5245,6 +5249,13 @@ static_library("browser") {
     if (is_linux || is_chromeos) {
       sources += [ "printing/printer_manager_dialog_linux.cc" ]
     }
+    if (is_win || is_mac || is_linux || is_chromeos) {
+      sources += [
+        "printing/print_backend_service.cc",
+        "printing/print_backend_service.h",
+      ]
+      deps += [ "//chrome/services/printing/public/mojom" ]
+    }
     if (is_win || enable_print_preview) {
       deps += [ "//chrome/services/printing/public/mojom" ]
     }
@@ -6733,8 +6744,6 @@ static_library("test_support") {
     sources += [
       "safe_browsing/certificate_reporting_service_test_utils.cc",
       "safe_browsing/certificate_reporting_service_test_utils.h",
-      "safe_browsing/mock_report_sender.cc",
-      "safe_browsing/mock_report_sender.h",
     ]
     deps += [
       "//chrome/browser/safe_browsing",

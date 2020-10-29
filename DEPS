@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '83c38a8fd6b106fe2627f912adc82dbcf3e75d6e',
+  'skia_revision': '56957d9ccfde015a603f55a589c74d55eae181b6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '74cd21ef855b0602e4b70e049794699fe06b4f82',
+  'v8_revision': '09998672b45d22afc43bade11fa41df55b449375',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '3591997b58bfb1aab16a2d3d071529275bb84b05',
+  'angle_revision': '68b95b6330b48e05db7b4bcd1d1713951219c173',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e40e5df22e17fd2f9f50e408a349a1291c953370',
+  'catapult_revision': '22b0de95cd01b9ea77252ac0dc3c793cb07fe8d3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'a584311a6a73a2b8b21703874742128c6d92f549',
+  'dawn_revision': 'af64c73c174ce666d7fe7f11427c14b439b62515',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'd2fa57d26dff88826fd6274ed4b77734186f89e3',
+  'tint_revision': 'c8b2d23e9de73c2ff47635dd35de30a5a3049ab1',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -784,7 +784,7 @@ deps = {
           },
           {
               'package': 'chromium/third_party/android_sdk/public/cmdline-tools',
-              'version': 'ijpIFSitwBfaEdO9VXBGPqDHUVzPimXy_whw3aHTN9oC',
+              'version': 'V__2Ycej-H2-6AcXX5A3gi7sIk74SuN44PBm2uC_N1sC',
           },
       ],
       'condition': 'checkout_android_native_support',
@@ -892,7 +892,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'aba52f78e1bafd1b0e2a55707bedaa56d12e9c24',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '5ae623f592fc43b10ca5a4855223e396c13706fc',
       'condition': 'checkout_chromeos',
   },
 
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d7b7cafac212eac78efb1901148ba4f7cf7d5718',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@06d17cd5d92e513349c829f48fd1ad4832fd6036',
     'condition': 'checkout_src_internal',
   },
 
@@ -1588,7 +1588,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'bvq8h_3qcpwsdxTwUG4X0xotu2aez7gKp0cfE2xFsewC',
+        'version': '8Q4xmmaYrnhc7cohh6-6mYy09ZY7fiz1y0LEgZ-Y0boC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

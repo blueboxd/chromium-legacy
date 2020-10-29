@@ -55,6 +55,9 @@ class V8DetailedMemoryDecorator::MeasurementRequestQueue {
   void Validate();
 
  private:
+  void ApplyToAllRequests(
+      base::RepeatingCallback<void(V8DetailedMemoryRequest*)> callback) const;
+
   // Lists of requests sorted by min_time_between_requests (lowest first).
   std::vector<V8DetailedMemoryRequest*> bounded_measurement_requests_;
   std::vector<V8DetailedMemoryRequest*> lazy_measurement_requests_;
@@ -551,6 +554,12 @@ void SetEagerMemoryMeasurementEnabledForTesting(bool enabled) {
 #endif
 }
 
+void DestroyV8DetailedMemoryDecoratorForTesting(Graph* graph) {
+  auto* decorator = V8DetailedMemoryDecorator::GetFromGraph(graph);
+  if (decorator)
+    graph->TakeFromGraph(decorator);
+}
+
 }  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -606,8 +615,11 @@ V8DetailedMemoryRequest::V8DetailedMemoryRequest(
 
 V8DetailedMemoryRequest::V8DetailedMemoryRequest(
     util::PassKey<V8DetailedMemoryRequestOneShot>,
-    MeasurementMode mode)
-    : min_time_between_requests_(base::TimeDelta()), mode_(mode) {
+    MeasurementMode mode,
+    base::OnceClosure on_owner_unregistered_closure)
+    : min_time_between_requests_(base::TimeDelta()),
+      mode_(mode),
+      on_owner_unregistered_closure_(std::move(on_owner_unregistered_closure)) {
   // Do not forward to the standard constructor because it disallows the empty
   // TimeDelta.
 }
@@ -651,6 +663,8 @@ void V8DetailedMemoryRequest::OnOwnerUnregistered(
     util::PassKey<V8DetailedMemoryDecorator::MeasurementRequestQueue>) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   decorator_ = nullptr;
+  if (on_owner_unregistered_closure_)
+    std::move(on_owner_unregistered_closure_).Run();
 }
 
 void V8DetailedMemoryRequest::NotifyObserversOnMeasurementAvailable(
@@ -735,16 +749,38 @@ void V8DetailedMemoryRequest::StartMeasurementImpl(
 // V8DetailedMemoryRequestOneShot
 
 V8DetailedMemoryRequestOneShot::V8DetailedMemoryRequestOneShot(
+    MeasurementMode mode)
+    : mode_(mode) {
+  InitializeRequest();
+}
+
+V8DetailedMemoryRequestOneShot::V8DetailedMemoryRequestOneShot(
     const ProcessNode* process,
     MeasurementCallback callback,
     MeasurementMode mode)
-    : callback_(std::move(callback)), mode_(mode) {
-  InitializeRequest(process, mode);
+    : mode_(mode) {
+  InitializeRequest();
+  StartMeasurement(process, std::move(callback));
 }
 
 V8DetailedMemoryRequestOneShot::~V8DetailedMemoryRequestOneShot() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DeleteRequest();
+}
+
+void V8DetailedMemoryRequestOneShot::StartMeasurement(
+    const ProcessNode* process,
+    MeasurementCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(request_);
+  DCHECK(process);
+  DCHECK_EQ(process->GetProcessType(), content::PROCESS_TYPE_RENDERER);
+#if DCHECK_IS_ON()
+  process_ = process;
+#endif
+
+  callback_ = std::move(callback);
+  request_->StartMeasurementForProcess(process);
 }
 
 void V8DetailedMemoryRequestOneShot::OnV8MemoryMeasurementAvailable(
@@ -769,39 +805,38 @@ V8DetailedMemoryRequestOneShot::V8DetailedMemoryRequestOneShot(
     base::WeakPtr<ProcessNode> process,
     MeasurementCallback callback,
     MeasurementMode mode)
-    : callback_(std::move(callback)), mode_(mode) {
+    : mode_(mode) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   // Unretained is safe since |this| will be destroyed on the graph sequence
   // from an async task posted after this.
   PerformanceManager::CallOnGraph(
       FROM_HERE,
+      base::BindOnce(&V8DetailedMemoryRequestOneShot::InitializeRequest,
+                     base::Unretained(this)));
+  PerformanceManager::CallOnGraph(
+      FROM_HERE,
       base::BindOnce(
-          &V8DetailedMemoryRequestOneShot::InitializeRequestFromOffSequence,
-          base::Unretained(this), std::move(process), mode));
+          &V8DetailedMemoryRequestOneShot::StartMeasurementFromOffSequence,
+          base::Unretained(this), std::move(process), std::move(callback)));
 }
 
-void V8DetailedMemoryRequestOneShot::InitializeRequest(
-    const ProcessNode* process,
-    MeasurementMode mode) {
+void V8DetailedMemoryRequestOneShot::InitializeRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(process);
-  DCHECK_EQ(process->GetProcessType(), content::PROCESS_TYPE_RENDERER);
   request_ = std::make_unique<V8DetailedMemoryRequest>(
-      util::PassKey<V8DetailedMemoryRequestOneShot>(), mode);
+      util::PassKey<V8DetailedMemoryRequestOneShot>(), mode_,
+      base::BindOnce(&V8DetailedMemoryRequestOneShot::OnOwnerUnregistered,
+                     // Unretained is safe because |this| owns the request
+                     // object that will invoke the closure.
+                     base::Unretained(this)));
   request_->AddObserver(this);
-  request_->StartMeasurementForProcess(process);
-
-#if DCHECK_IS_ON()
-  process_ = process;
-#endif
 }
 
-void V8DetailedMemoryRequestOneShot::InitializeRequestFromOffSequence(
+void V8DetailedMemoryRequestOneShot::StartMeasurementFromOffSequence(
     base::WeakPtr<ProcessNode> process,
-    MeasurementMode mode) {
+    MeasurementCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (process)
-    InitializeRequest(process.get(), mode);
+    StartMeasurement(process.get(), std::move(callback));
 }
 
 void V8DetailedMemoryRequestOneShot::DeleteRequest() {
@@ -809,6 +844,14 @@ void V8DetailedMemoryRequestOneShot::DeleteRequest() {
   if (request_)
     request_->RemoveObserver(this);
   request_.reset();
+}
+
+void V8DetailedMemoryRequestOneShot::OnOwnerUnregistered() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // No results will arrive so clean up the request and callback. This frees
+  // any resources that were owned by the callback.
+  DeleteRequest();
+  std::move(callback_).Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -963,13 +1006,13 @@ void V8DetailedMemoryDecorator::RemoveMeasurementRequest(
   // Attempt to remove this request from all process-specific queues and the
   // global queue. It will only be in one of them.
   size_t removal_count = 0;
-  // Unretained is safe because this callback is synchronous.
   ApplyToAllRequestQueues(base::BindRepeating(
+      // Raw pointers are safe because this callback is synchronous.
       [](V8DetailedMemoryRequest* request, size_t* removal_count,
          MeasurementRequestQueue* queue) {
         (*removal_count) += queue->RemoveMeasurementRequest(request);
       },
-      base::Unretained(request), base::Unretained(&removal_count)));
+      request, &removal_count));
   DCHECK_EQ(removal_count, 1ULL);
   UpdateProcessMeasurementSchedules();
 }
@@ -1065,33 +1108,21 @@ void V8DetailedMemoryDecorator::MeasurementRequestQueue::
         const ProcessNode* process_node) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // First collect all requests with observers to notify. The observer
-  // implementations may add or remove requests from the queue, invalidating
-  // iterators.
-  std::vector<V8DetailedMemoryRequest*> requests_to_notify;
-  requests_to_notify.insert(requests_to_notify.end(),
-                            bounded_measurement_requests_.begin(),
-                            bounded_measurement_requests_.end());
-  requests_to_notify.insert(requests_to_notify.end(),
-                            lazy_measurement_requests_.begin(),
-                            lazy_measurement_requests_.end());
-  for (const V8DetailedMemoryRequest* request : requests_to_notify) {
-    request->NotifyObserversOnMeasurementAvailable(
-        util::PassKey<MeasurementRequestQueue>(), process_node);
-    // The observer may have deleted |request| so it is no longer safe to
-    // reference.
-  }
+  // Raw pointers are safe because the callback is synchronous.
+  ApplyToAllRequests(base::BindRepeating(
+      [](const ProcessNode* process_node, V8DetailedMemoryRequest* request) {
+        request->NotifyObserversOnMeasurementAvailable(
+            util::PassKey<MeasurementRequestQueue>(), process_node);
+      },
+      process_node));
 }
 
 void V8DetailedMemoryDecorator::MeasurementRequestQueue::OnOwnerUnregistered() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (V8DetailedMemoryRequest* request : bounded_measurement_requests_) {
+  ApplyToAllRequests(base::BindRepeating([](V8DetailedMemoryRequest* request) {
     request->OnOwnerUnregistered(util::PassKey<MeasurementRequestQueue>());
-  }
+  }));
   bounded_measurement_requests_.clear();
-  for (V8DetailedMemoryRequest* request : lazy_measurement_requests_) {
-    request->OnOwnerUnregistered(util::PassKey<MeasurementRequestQueue>());
-  }
   lazy_measurement_requests_.clear();
 }
 
@@ -1115,6 +1146,24 @@ void V8DetailedMemoryDecorator::MeasurementRequestQueue::Validate() {
   check_invariants(bounded_measurement_requests_, true);
   check_invariants(lazy_measurement_requests_, false);
 #endif
+}
+
+void V8DetailedMemoryDecorator::MeasurementRequestQueue::ApplyToAllRequests(
+    base::RepeatingCallback<void(V8DetailedMemoryRequest*)> callback) const {
+  // First collect all requests to notify. The callback may add or remove
+  // requests from the queue, invalidating iterators.
+  std::vector<V8DetailedMemoryRequest*> requests_to_notify;
+  requests_to_notify.insert(requests_to_notify.end(),
+                            bounded_measurement_requests_.begin(),
+                            bounded_measurement_requests_.end());
+  requests_to_notify.insert(requests_to_notify.end(),
+                            lazy_measurement_requests_.begin(),
+                            lazy_measurement_requests_.end());
+  for (V8DetailedMemoryRequest* request : requests_to_notify) {
+    callback.Run(request);
+    // The callback may have deleted |request| so it is no longer safe to
+    // reference.
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1203,26 +1252,15 @@ void V8DetailedMemoryRequestAnySeq::InitializeWrappedRequest(
 // V8DetailedMemoryRequestOneShotAnySeq
 
 V8DetailedMemoryRequestOneShotAnySeq::V8DetailedMemoryRequestOneShotAnySeq(
+    MeasurementMode mode)
+    : mode_(mode) {}
+
+V8DetailedMemoryRequestOneShotAnySeq::V8DetailedMemoryRequestOneShotAnySeq(
     RenderProcessHostId process_id,
     MeasurementCallback callback,
     MeasurementMode mode)
-    : wrapped_callback_(std::move(callback)) {
-  // GetProcessNodeForRenderProcessHostId must be called from the UI thread.
-  auto ui_task_runner = content::GetUIThreadTaskRunner({});
-  if (ui_task_runner->RunsTasksInCurrentSequence()) {
-    InitializeWrappedRequest(
-        mode,
-        PerformanceManager::GetProcessNodeForRenderProcessHostId(process_id));
-  } else {
-    ui_task_runner->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(
-            &PerformanceManager::GetProcessNodeForRenderProcessHostId,
-            process_id),
-        base::BindOnce(
-            &V8DetailedMemoryRequestOneShotAnySeq::InitializeWrappedRequest,
-            weak_factory_.GetWeakPtr(), mode));
-  }
+    : mode_(mode) {
+  StartMeasurement(process_id, std::move(callback));
 }
 
 V8DetailedMemoryRequestOneShotAnySeq::~V8DetailedMemoryRequestOneShotAnySeq() {
@@ -1236,26 +1274,52 @@ V8DetailedMemoryRequestOneShotAnySeq::~V8DetailedMemoryRequestOneShotAnySeq() {
           std::move(request_)));
 }
 
+void V8DetailedMemoryRequestOneShotAnySeq::StartMeasurement(
+    RenderProcessHostId process_id,
+    MeasurementCallback callback) {
+  // GetProcessNodeForRenderProcessHostId must be called from the UI thread.
+  auto ui_task_runner = content::GetUIThreadTaskRunner({});
+  if (ui_task_runner->RunsTasksInCurrentSequence()) {
+    InitializeWrappedRequest(
+        std::move(callback), mode_,
+        PerformanceManager::GetProcessNodeForRenderProcessHostId(process_id));
+  } else {
+    ui_task_runner->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(
+            &PerformanceManager::GetProcessNodeForRenderProcessHostId,
+            process_id),
+        base::BindOnce(
+            &V8DetailedMemoryRequestOneShotAnySeq::InitializeWrappedRequest,
+            weak_factory_.GetWeakPtr(), std::move(callback), mode_));
+  }
+}
+
 void V8DetailedMemoryRequestOneShotAnySeq::InitializeWrappedRequest(
+    MeasurementCallback callback,
     MeasurementMode mode,
     base::WeakPtr<ProcessNode> process_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Pass ownership of |callback| to a wrapper, |wrapped_callback|, that will
+  // be owned by the wrapped request. The wrapper will be invoked and destroyed
+  // on the PM sequence. However, |callback| must be both called and destroyed
+  // on this sequence, so indirect all accesses to it through SequenceBound.
+  auto wrapped_callback = base::BindOnce(
+      &V8DetailedMemoryRequestOneShotAnySeq::OnMeasurementAvailable,
+      base::SequenceBound<MeasurementCallback>(
+          base::SequencedTaskRunnerHandle::Get(), std::move(callback)));
+
   // Can't use make_unique since this calls the private any-sequence
   // constructor. After construction the V8DetailedMemoryRequestOneShot must
   // only be accessed on the graph sequence.
   request_ = base::WrapUnique(new V8DetailedMemoryRequestOneShot(
       util::PassKey<V8DetailedMemoryRequestOneShotAnySeq>(),
-      std::move(process_node),
-      base::BindOnce(
-          &V8DetailedMemoryRequestOneShotAnySeq::OnMeasurementAvailable,
-          base::SequencedTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr()),
-      mode));
+      std::move(process_node), std::move(wrapped_callback), mode));
 }
 
 // static
 void V8DetailedMemoryRequestOneShotAnySeq::OnMeasurementAvailable(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::WeakPtr<V8DetailedMemoryRequestOneShotAnySeq> request,
+    base::SequenceBound<MeasurementCallback> sequence_bound_callback,
     const ProcessNode* process_node,
     const V8DetailedMemoryProcessData* process_data) {
   DCHECK(process_node);
@@ -1278,20 +1342,16 @@ void V8DetailedMemoryRequestOneShotAnySeq::OnMeasurementAvailable(
       },
       base::Unretained(&all_frame_data)));
 
-  task_runner->PostTask(
+  sequence_bound_callback.PostTaskWithThisObject(
       FROM_HERE,
       base::BindOnce(
-          &V8DetailedMemoryRequestOneShotAnySeq::InvokeWrappedCallback,
-          std::move(request), process_node->GetRenderProcessHostId(),
-          *process_data, std::move(all_frame_data)));
-}
-
-void V8DetailedMemoryRequestOneShotAnySeq::InvokeWrappedCallback(
-    RenderProcessHostId process_id,
-    const V8DetailedMemoryProcessData& process_data,
-    const FrameDataMap& frame_data) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(wrapped_callback_).Run(process_id, process_data, frame_data);
+          [](RenderProcessHostId process_id,
+             const V8DetailedMemoryProcessData& process_data,
+             const FrameDataMap& frame_data, MeasurementCallback* callback) {
+            std::move(*callback).Run(process_id, process_data, frame_data);
+          },
+          process_node->GetRenderProcessHostId(), *process_data,
+          std::move(all_frame_data)));
 }
 
 }  // namespace v8_memory

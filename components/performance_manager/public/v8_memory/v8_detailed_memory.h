@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/public/graph/frame_node.h"
@@ -429,9 +430,11 @@ class V8DetailedMemoryRequest {
 
   // Private constructor for V8DetailedMemoryRequestOneShot. Sets
   // min_time_between_requests_ to 0, which is not allowed for repeating
-  // requests.
+  // requests, and registers |on_owner_unregistered_closure| to be called from
+  // OnOwnerUnregistered.
   V8DetailedMemoryRequest(util::PassKey<V8DetailedMemoryRequestOneShot>,
-                          MeasurementMode mode);
+                          MeasurementMode mode,
+                          base::OnceClosure on_owner_unregistered_closure);
 
   // V8DetailedMemoryDecorator::MeasurementRequestQueue calls
   // OnOwnerUnregistered for all requests in the queue when the owning
@@ -463,6 +466,11 @@ class V8DetailedMemoryRequest {
   // Sequence that |off_sequence_request_| lives on.
   scoped_refptr<base::SequencedTaskRunner> off_sequence_request_sequence_;
 
+  // Additional closure that will be called from OnOwnerUnregistered for
+  // one-shot requests. Used to clean up resources in the
+  // V8DetailedMemoryRequestOneShot wrapper.
+  base::OnceClosure on_owner_unregistered_closure_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
@@ -477,10 +485,12 @@ class V8DetailedMemoryRequestOneShot final : public V8DetailedMemoryObserver {
 
   using MeasurementMode = V8DetailedMemoryRequest::MeasurementMode;
 
-  // Creates a one-shot memory measurement request that will immediately be
-  // sent to |process| (which must be a renderer process). The process will
-  // perform the measurement during a GC as determined by |mode|, and
-  // |callback| will be called with the results.
+  // Creates a one-shot memory measurement request that will be sent when
+  // StartMeasurement is called.
+  explicit V8DetailedMemoryRequestOneShot(
+      MeasurementMode mode = MeasurementMode::kDefault);
+
+  // Creates a one-shot memory measurement request and calls StartMeasurement.
   V8DetailedMemoryRequestOneShot(
       const ProcessNode* process,
       MeasurementCallback callback,
@@ -492,6 +502,20 @@ class V8DetailedMemoryRequestOneShot final : public V8DetailedMemoryObserver {
       delete;
   V8DetailedMemoryRequestOneShot& operator=(
       const V8DetailedMemoryRequestOneShot&) = delete;
+
+  // Sends the measurement request to |process| (which must be a renderer
+  // process). The process will perform the measurement during a GC as
+  // determined by the MeasurementMode, and |callback| will be called with the
+  // results.
+  //
+  // |callback| is owned by the request object but will be destroyed after it
+  // is called or once no response can be received (such as if the ProcessNode
+  // is destroyed). It is safe for the callback to own resources that will be
+  // freed when the callback is destroyed. It is even safe for the callback to
+  // own |this|, making the V8DetailedMemoryRequestOneShot self-owning (it will
+  // be deleted along with the callback).
+  void StartMeasurement(const ProcessNode* process,
+                        MeasurementCallback callback);
 
   MeasurementMode mode() const { return mode_; }
 
@@ -512,10 +536,11 @@ class V8DetailedMemoryRequestOneShot final : public V8DetailedMemoryObserver {
       MeasurementMode mode = MeasurementMode::kDefault);
 
  private:
-  void InitializeRequest(const ProcessNode* process, MeasurementMode mode);
-  void InitializeRequestFromOffSequence(base::WeakPtr<ProcessNode> process,
-                                        MeasurementMode mode);
+  void InitializeRequest();
+  void StartMeasurementFromOffSequence(base::WeakPtr<ProcessNode>,
+                                       MeasurementCallback callback);
   void DeleteRequest();
+  void OnOwnerUnregistered();
 
 #if DCHECK_IS_ON()
   const ProcessNode* process_;
@@ -628,6 +653,9 @@ class V8DetailedMemoryRequestOneShotAnySeq {
                               const V8DetailedMemoryProcessData& process_data,
                               const FrameDataMap& frame_data)>;
 
+  explicit V8DetailedMemoryRequestOneShotAnySeq(
+      MeasurementMode mode = MeasurementMode::kDefault);
+
   V8DetailedMemoryRequestOneShotAnySeq(
       RenderProcessHostId process_id,
       MeasurementCallback callback,
@@ -640,23 +668,23 @@ class V8DetailedMemoryRequestOneShotAnySeq {
   V8DetailedMemoryRequestOneShotAnySeq& operator=(
       const V8DetailedMemoryRequestOneShotAnySeq&) = delete;
 
+  void StartMeasurement(RenderProcessHostId process_id,
+                        MeasurementCallback callback);
+
  private:
-  void InitializeWrappedRequest(MeasurementMode mode,
+  void InitializeWrappedRequest(MeasurementCallback callback,
+                                MeasurementMode mode,
                                 base::WeakPtr<ProcessNode>);
 
-  // Called on the PM sequence when a measurement is available. It will call
-  // request->InvokeWrappedCallback on |task_runner|.
+  // Called on the PM sequence when a measurement is available.
+  // |sequence_bound_callback| will wrap the callback passed to the
+  // constructor, so it is both called and freed on the request's sequence.
   static void OnMeasurementAvailable(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::WeakPtr<V8DetailedMemoryRequestOneShotAnySeq> request,
+      base::SequenceBound<MeasurementCallback> sequence_bound_callback,
       const ProcessNode* process_node,
       const V8DetailedMemoryProcessData* process_data);
 
-  void InvokeWrappedCallback(RenderProcessHostId process_id,
-                             const V8DetailedMemoryProcessData& process_data,
-                             const FrameDataMap& frame_data);
-
-  MeasurementCallback wrapped_callback_;
+  MeasurementMode mode_;
 
   // The wrapped request. Must only be accessed from the PM sequence.
   std::unique_ptr<V8DetailedMemoryRequestOneShot> request_;
@@ -691,6 +719,9 @@ void SetBindV8DetailedMemoryReporterCallbackForTesting(
 // measurement requests can have a high performance penalty so this should only
 // be enabled in tests.
 void SetEagerMemoryMeasurementEnabledForTesting(bool enable);
+
+// Destroys the V8DetailedMemoryDecorator. Exposed for testing.
+void DestroyV8DetailedMemoryDecoratorForTesting(Graph* graph);
 
 }  // namespace internal
 

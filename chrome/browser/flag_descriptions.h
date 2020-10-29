@@ -200,6 +200,9 @@ extern const char kBackForwardCacheDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
+extern const char kCheckOfflineCapabilityName[];
+extern const char kCheckOfflineCapabilityDescription[];
+
 extern const char kContextMenuGoogleLensChipName[];
 extern const char kContextMenuGoogleLensChipDescription[];
 
@@ -998,9 +1001,6 @@ extern const char kOsSettingsDeepLinkingDescription[];
 
 extern const char kEnableDeJellyName[];
 extern const char kEnableDeJellyDescription[];
-
-extern const char kOverlayNewLayoutName[];
-extern const char kOverlayNewLayoutDescription[];
 
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];

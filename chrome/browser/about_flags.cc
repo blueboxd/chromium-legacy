@@ -44,8 +44,8 @@
 #include "chrome/browser/permissions/abusive_origin_notifications_permission_revocation_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_features.h"
-#include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_params.h"
+#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
+#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
@@ -4949,9 +4949,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEphemeralTabUsingBottomSheetName,
      flag_descriptions::kEphemeralTabUsingBottomSheetDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEphemeralTabUsingBottomSheet)},
-    {"overlay-new-layout", flag_descriptions::kOverlayNewLayoutName,
-     flag_descriptions::kOverlayNewLayoutDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kOverlayNewLayout)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -6697,6 +6694,10 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::
              kAutofillEnablePasswordInfoBarAccountIndicationFooter)},
 #endif
+
+    {"check-offline-capability", flag_descriptions::kCheckOfflineCapabilityName,
+     flag_descriptions::kCheckOfflineCapabilityDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCheckOfflineCapability)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

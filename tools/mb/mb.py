@@ -1532,7 +1532,6 @@ class MetaBuildWrapper(object):
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
-          '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
           '--logdog-bin-cmd', '../../.task_template_packages/logdog_butler',
@@ -1547,7 +1546,6 @@ class MetaBuildWrapper(object):
       ]
     elif is_cros_device and test_type != 'script':
       cmdline += [
-          '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--logs-dir=${ISOLATED_OUTDIR}',
       ]

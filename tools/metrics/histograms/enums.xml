@@ -7319,6 +7319,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Some data available to fill"/>
 </enum>
 
+<enum name="BooleanAutofillFormFillSuccessIOS">
+  <int value="0" label="Not filled"/>
+  <int value="1" label="Filled"/>
+</enum>
+
 <enum name="BooleanAutofillInteractionAfterParsedAsType">
   <int value="0" label="No interaction"/>
   <int value="1" label="Interaction observed"/>
@@ -16640,6 +16645,11 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="5" label="HeavyAd Element opened"/>
   <int value="6" label="ContentSecurityPolicy Directive opened"/>
   <int value="7" label="ContentSecurityPolicy Element opened"/>
+  <int value="8" label="CrossOriginEmbedderPolicy LearnMore opened"/>
+  <int value="9" label="MixedContent LearnMore opened"/>
+  <int value="10" label="SameSiteCookie LearnMore opened"/>
+  <int value="11" label="HeavyAd LearnMore opened"/>
+  <int value="12" label="ContentSecurityPolicy LearnMore opened"/>
 </enum>
 
 <enum name="DevToolsKeybindSets">
@@ -30066,6 +30076,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3711" label="BarcodeDetectorDetect"/>
   <int value="3712" label="FaceDetectorDetect"/>
   <int value="3713" label="TextDetectorDetect"/>
+  <int value="3714" label="LocalStorageFirstUsedBeforeFcp"/>
+  <int value="3715" label="LocalStorageFirstUsedAfterFcp"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39788,6 +39800,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Migration stopped"/>
 </enum>
 
+<enum name="KeyPermissionsManagerMigrationStatus">
+  <int value="0" label="kStarted"/>
+  <int value="1" label="kSucceeded"/>
+  <int value="2" label="kFailed"/>
+</enum>
+
 <enum name="KidsManagementURLCheckerResponseStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Network Error"/>
@@ -42406,6 +42424,7 @@ from previous Chrome versions.
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1321640296"
       label="AutofillDownstreamCvcPromptUseGooglePayLogo:enabled"/>
+  <int value="-1321212159" label="MediaAppAnnotation:enabled"/>
   <int value="-1320181781" label="ChromeOSDirectVideoDecoder:disabled"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
@@ -42516,6 +42535,7 @@ from previous Chrome versions.
       label="HappinessTrackingSurveysForDesktopSettings:enabled"/>
   <int value="-1220675698" label="OmniboxDeferredKeyboardPopup:enabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
+  <int value="-1218063855" label="MediaAppAnnotation:disabled"/>
   <int value="-1217623062"
       label="AutofillAlwaysReturnCloudTokenizedCard:disabled"/>
   <int value="-1217462552"

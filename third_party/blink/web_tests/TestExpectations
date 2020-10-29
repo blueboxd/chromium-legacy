@@ -2612,6 +2612,13 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.worker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-clone.any.sharedworker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.serviceworker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.15 ] virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-clone.any.serviceworker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-clone.any.serviceworker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-clone.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webxr/xr_viewport_scale.https.html [ Timeout ]
 crbug.com/626703 external/wpt/editing/other/select-all-and-delete-in-html-element-having-contenteditable.html [ Timeout ]
 crbug.com/626703 external/wpt/paint-timing/with-first-paint/first-contentful-image.html [ Timeout ]
@@ -4250,7 +4257,6 @@ crbug.com/683800 [ Win7 Debug ] external/wpt/selection/* [ Failure Pass ]
 
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
-crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.https.html [ Failure Timeout ]
 
@@ -6053,6 +6059,7 @@ crbug.com/1107944 [ Mac ] http/tests/devtools/tracing/timeline-paint/timeline-pa
 
 # Temporarily disable tests to allow a fix in devtools frontend
 crbug.com/1011811 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
+crbug.com/1035309 http/tests/devtools/throttling/mobile-throttling.js [ Pass Failure ]
 
 crbug.com/1092794 fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.html [ Pass Failure ]
 
@@ -6213,6 +6220,9 @@ crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-polic
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-disallowed-for-all.https.sub.html [ Failure ]
 crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout Failure ]
 crbug.com/1140329 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
+
+# DevTools: TypeScriptify elements/StylesSidebarPane.js
+crbug.com/1011811 http/tests/devtools/elements/styles-1/add-new-rule-keyboard.js [ Pass Failure Timeout ]
 
 #Sheriff 2020-10-21
 crbug.com/1141206 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]

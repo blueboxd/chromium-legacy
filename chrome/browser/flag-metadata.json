@@ -649,7 +649,7 @@
   {
     "name": "cookies-without-same-site-must-be-secure",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "copy-link-to-text",
@@ -796,7 +796,7 @@
   {
     "name": "default-browser-setting",
     "owners": [ "gambard", "bling-flags" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "delay-async-script-execution",
@@ -816,7 +816,7 @@
   {
     "name": "desktop-version-default",
     "owners": [ "gambard", "bling-flags" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "destroy-profile-on-browser-close",
@@ -3100,6 +3100,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "media-app-annotation",
+    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "media-history",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 88
@@ -4127,7 +4132,7 @@
   {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "scanning-ui",

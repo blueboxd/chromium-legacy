@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3cd384a5b039c4428c05e4a81f974f9dd80c9976',
+  'skia_revision': '83c38a8fd6b106fe2627f912adc82dbcf3e75d6e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'cd60eacd80faad38c7643bdc1444dbf5e0b6f040',
+  'v8_revision': '74cd21ef855b0602e4b70e049794699fe06b4f82',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f418c109094a2dd99ac26e6860dcde30ebb9ea8f',
+  'angle_revision': '3591997b58bfb1aab16a2d3d071529275bb84b05',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2bb8035ddc14c8ae40b8b18118ff3d786f72b752',
+  'dawn_revision': 'a584311a6a73a2b8b21703874742128c6d92f549',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5a566e7c68497ab5510b1948133c49a361cf76d1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d7b7cafac212eac78efb1901148ba4f7cf7d5718',
     'condition': 'checkout_src_internal',
   },
 

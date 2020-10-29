@@ -1207,7 +1207,7 @@
   {
     "name": "enable-autofill-credit-card-authentication",
     "owners": [ "jsaul@google.com", "manasverma@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 94
   },
   {
     "name": "enable-autofill-credit-card-cvc-prompt-google-logo",
@@ -1818,7 +1818,7 @@
   {
     "name": "enable-nacl",
     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 100
   },
   {
     "name": "enable-native-context-menus",
@@ -1884,11 +1884,6 @@
     "name": "enable-notification-indicator",
     "owners": [ "mmourgos", "newcomer" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "enable-offer-store-unmasked-wallet-cards",
-    "owners": [ "jsaul@google.com" ],
-    "expiry_milestone": 86
   },
   {
     "name": "enable-offline-previews",
@@ -3282,7 +3277,7 @@
   {
     "name": "new-usb-backend",
     "owners": [ "reillyg@chromium.org" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "notification-scheduler-debug-options",
@@ -3435,11 +3430,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "omnibox-deferred-keyboard-popup",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 87
-  },
-  {
     "name": "omnibox-display-title-for-current-url",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
@@ -3463,16 +3453,6 @@
     "name": "omnibox-experimental-suggest-scoring",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "omnibox-history-quick-provider-allow-but-do-not-score-midword-terms",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
-    "name": "omnibox-history-quick-provider-allow-midword-continuations",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 88
   },
   {
     "name": "omnibox-keyword-search-button",
@@ -4400,7 +4380,7 @@
   {
     "name": "split-settings-sync",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "ssl-committed-interstitials",

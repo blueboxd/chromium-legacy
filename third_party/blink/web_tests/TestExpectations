@@ -77,6 +77,17 @@ external/wpt/css/compositing/root-element-background-transparency.html [ Failure
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-csp.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewport-device-width-link-headers.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Timeout Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-css.js [ Timeout ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-iframe.js [ Timeout ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js.js [ Timeout ]
+# Minor issues, need rebaselining
+crbug.com/901056 virtual/synchronous_html_parser/fast/css/focus-display-block-inline.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/fast/css/fontfaceset-multiple-families.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/content-security-policy-issue-creation-img.js [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/network/initiator-minified.js [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/signed-exchange/subresource/sxg-subresource.tentative.html [ Failure Timeout ]
+
 
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
@@ -1193,7 +1204,6 @@ crbug.com/1040826 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failu
 crbug.com/1040826 [ Linux ] fast/selectors/input-with-selection-pseudo-element.html [ Failure ]
 crbug.com/1040826 [ Win ] fast/selectors/input-with-selection-pseudo-element.html [ Failure ]
 crbug.com/1040826 fast/table/cell-change-baseline-then-border.html [ Failure ]
-crbug.com/1040826 fast/forms/text/input-implicit-length-limit.html [ Timeout Pass ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -6181,8 +6191,6 @@ crbug.com/1133821 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 #Sheriff 2020-10-07
 crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Timeout ]
 crbug.com/1135978 [ Linux Release ] fast/dom/css-delete-doc.html [ Pass Timeout ]
-
-crbug.com/1134237 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/beforematch-origin-trial-interfaces.html [ Failure ]
 
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]

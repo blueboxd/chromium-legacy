@@ -17,7 +17,6 @@ HoldingSpaceItemViewsContainer::~HoldingSpaceItemViewsContainer() = default;
 void HoldingSpaceItemViewsContainer::Reset() {
   model_observer_.RemoveAll();
   controller_observer_.RemoveAll();
-  RemoveAllHoldingSpaceItemViews();
 }
 
 void HoldingSpaceItemViewsContainer::ChildPreferredSizeChanged(
@@ -35,7 +34,7 @@ void HoldingSpaceItemViewsContainer::OnHoldingSpaceModelAttached(
   model_observer_.Add(model);
   for (const auto& item : model->items()) {
     if (item->IsFinalized())
-      AddHoldingSpaceItemView(item.get());
+      AddHoldingSpaceItemView(item.get(), /*due_to_finalization=*/false);
   }
 }
 
@@ -50,7 +49,7 @@ void HoldingSpaceItemViewsContainer::OnHoldingSpaceItemAdded(
   if (!item->IsFinalized())
     return;
 
-  AddHoldingSpaceItemView(item);
+  AddHoldingSpaceItemView(item, /*due_to_finalization=*/false);
 }
 
 void HoldingSpaceItemViewsContainer::OnHoldingSpaceItemRemoved(
@@ -60,7 +59,7 @@ void HoldingSpaceItemViewsContainer::OnHoldingSpaceItemRemoved(
 
 void HoldingSpaceItemViewsContainer::OnHoldingSpaceItemFinalized(
     const HoldingSpaceItem* item) {
-  AddHoldingSpaceItemView(item);
+  AddHoldingSpaceItemView(item, /*due_to_finalization=*/true);
 }
 
 }  // namespace ash

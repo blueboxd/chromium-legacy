@@ -32,12 +32,6 @@ public class IncognitoTabModelImpl implements IncognitoTabModel {
         /** Creates a fully working TabModel to delegate calls to. */
         TabModel createTabModel();
 
-        /**
-         * @param model {@link TabModel} to act on.
-         * @return Whether the provided {@link TabModel} is currently selected in the corresponding
-         * {@link IncognitoTabModelDelegate}.
-         */
-        boolean isCurrentModel(TabModel model);
     }
 
     private final IncognitoTabModelDelegate mDelegate;
@@ -47,6 +41,7 @@ public class IncognitoTabModelImpl implements IncognitoTabModel {
     private TabModel mDelegateModel;
     private boolean mIsAddingTab;
     private boolean mIsClosingTab;
+    private boolean mActive;
 
     /**
      * Constructor for IncognitoTabModel.
@@ -197,8 +192,8 @@ public class IncognitoTabModelImpl implements IncognitoTabModel {
     }
 
     @Override
-    public boolean isCurrentModel() {
-        return mDelegate.isCurrentModel(this);
+    public boolean isActiveModel() {
+        return mActive;
     }
 
     @Override
@@ -271,6 +266,7 @@ public class IncognitoTabModelImpl implements IncognitoTabModel {
 
     @Override
     public void setActive(boolean active) {
+        mActive = active;
         if (active) ensureTabModelImpl();
         mDelegateModel.setActive(active);
         if (!active) destroyIncognitoIfNecessary();

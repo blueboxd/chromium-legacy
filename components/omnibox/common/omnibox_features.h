@@ -75,14 +75,11 @@ extern const base::Feature kOnDeviceHeadProviderNonIncognito;
 // Provider-specific - These features change the behavior of specific providers.
 extern const base::Feature kOmniboxExperimentalSuggestScoring;
 extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
-extern const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms;
-extern const base::Feature kHistoryQuickProviderAllowMidwordContinuations;
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kBookmarkPaths;
 extern const base::Feature kCompactSuggestions;
-extern const base::Feature kDeferredKeyboardPopup;
 extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxSearchReadyIncognito;
@@ -103,6 +100,9 @@ extern const base::Feature kOmniboxAssistantVoiceSearch;
 extern const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover;
 extern const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction;
 extern const base::Feature kMaybeElideToRegistrableDomain;
+
+// Navigation experiments.
+extern const base::Feature kDefaultTypedNavigationsToHttps;
 
 // Experiment to control whether visits from CCT are hidden.
 // TODO(https://crbug.com/1141501): this is for an experiment, and will be

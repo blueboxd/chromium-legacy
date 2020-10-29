@@ -84,6 +84,7 @@ public class TabModelImpl extends TabModelJniBridge {
      * Whether this tab model supports undoing.
      */
     private boolean mIsUndoSupported = true;
+    private boolean mActive;
 
     public TabModelImpl(@NonNull Profile profile, boolean isTabbedActivity,
             TabCreator regularTabCreator, TabCreator incognitoTabCreator,
@@ -144,7 +145,7 @@ public class TabModelImpl extends TabModelJniBridge {
         // valid tabs, if the TabModel becomes active before any Tab is restored to that model.
         if (hasValidTab() && mIndex == INVALID_TAB_INDEX) {
             // Actually select the first tab if it is the active model, otherwise just set mIndex.
-            if (isCurrentModel()) {
+            if (isActiveModel()) {
                 TabModelUtils.setIndex(this, 0);
             } else {
                 mIndex = 0;
@@ -197,7 +198,7 @@ public class TabModelImpl extends TabModelJniBridge {
                 }
             }
 
-            if (!isCurrentModel()) {
+            if (!isActiveModel()) {
                 // When adding new tabs in the background, make sure we set a valid index when the
                 // first one is added.  When in the foreground, calls to setIndex will take care of
                 // this.
@@ -278,7 +279,7 @@ public class TabModelImpl extends TabModelJniBridge {
         //   * Otherwise, if closing the last incognito tab, select the current normal tab.
         //   * Otherwise, select nothing.
         Tab nextTab = null;
-        if (!isCurrentModel()) {
+        if (!isActiveModel()) {
             nextTab = TabModelUtils.getCurrentTab(mModelDelegate.getCurrentModel());
         } else if (tabToClose != currentTab && currentTab != null && !currentTab.isClosing()) {
             nextTab = currentTab;
@@ -341,7 +342,7 @@ public class TabModelImpl extends TabModelJniBridge {
         WebContents webContents = tab.getWebContents();
         if (webContents != null) webContents.setAudioMuted(false);
 
-        boolean activeModel = isCurrentModel();
+        boolean activeModel = isActiveModel();
 
         if (mIndex == INVALID_TAB_INDEX) {
             // If we're the active model call setIndex to actually select this tab, otherwise just
@@ -547,7 +548,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
             // This can cause recursive entries into setIndex, which causes duplicate notifications
             // and UMA records.
-            if (!isCurrentModel()) mModelDelegate.selectModel(isIncognito());
+            if (!isActiveModel()) mModelDelegate.selectModel(isIncognito());
 
             if (!hasValidTab()) {
                 mIndex = INVALID_TAB_INDEX;
@@ -574,8 +575,8 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
-    public boolean isCurrentModel() {
-        return mModelDelegate.isCurrentModel(this);
+    public boolean isActiveModel() {
+        return mActive;
     }
 
     /**
@@ -888,5 +889,10 @@ public class TabModelImpl extends TabModelJniBridge {
         mRecentlyClosedBridge.openRecentlyClosedTab();
         // If there is only one tab, select it.
         if (getCount() == 1) setIndex(0, TabSelectionType.FROM_NEW);
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        mActive = active;
     }
 }

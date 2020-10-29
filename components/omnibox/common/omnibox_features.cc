@@ -270,23 +270,6 @@ const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile{
     "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If disabled, terms with no wordstart matches disqualify the suggestion unless
-// they occur in the URL host. If enabled, terms with no wordstart matches are
-// allowed but not scored. E.g., both inputs 'java script' and 'java cript' will
-// match a suggestion titled 'javascript' and score equivalently.
-const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms{
-    "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If disabled, midword matches are ignored except in the URL host, and input
-// terms with no wordstart matches are scored 0, resulting in an overall score
-// of 0. If enabled, midword matches are allowed and scored when they begin
-// immediately after the previous match ends. E.g. 'java script' will match a
-// suggestion titled 'javascript' but the input 'java cript' won't.
-const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
-    "OmniboxHistoryQuickProviderAllowMidwordContinuations",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, inputs may match bookmark paths. These path matches won't
 // contribute to scoring. E.g. 'planets jupiter' can suggest a bookmark titled
 // 'Jupiter' with URL 'en.wikipedia.org/wiki/Jupiter' located in a path
@@ -298,11 +281,6 @@ const base::Feature kBookmarkPaths{"OmniboxBookmarkPaths",
 // kAdaptiveSuggestionsCount feature to fit more suggestions on screen.
 const base::Feature kCompactSuggestions{"OmniboxCompactSuggestions",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, defers keyboard popup when user highlights the omnibox until
-// the user taps the Omnibox again.
-extern const base::Feature kDeferredKeyboardPopup{
-    "OmniboxDeferredKeyboardPopup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enbaled, frequently visited sites are presented in form of a single row
 // with a carousel of tiles, instead of one URL per row.
@@ -376,6 +354,15 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction{
 const base::Feature kMaybeElideToRegistrableDomain{
     "OmniboxUIExperimentElideToRegistrableDomain",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to default typed navigations to use HTTPS instead of HTTP.
+// This only applies to navigations that don't have a scheme such as
+// "example.com". Presently, typing "example.com" in a clean browsing profile
+// loads http://example.com. When this feature is enabled, it should load
+// https://example.com instead, with fallback to http://example.com if
+// necessary.
+const base::Feature kDefaultTypedNavigationsToHttps{
+    "OmniboxDefaultTypedNavigationsToHttps", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // NOTE: while this is enabled by default, CCT visits are only tagged with the
 // necessary transition type if the intent launching CCT supplies the

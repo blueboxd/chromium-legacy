@@ -975,12 +975,10 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
-#if BUILDFLAG(ENABLE_TAB_SEARCH)
 const char kEnableTabSearchName[] = "Enable Tab Search";
 const char kEnableTabSearchDescription[] =
     "Enable the Tab Search feature in Top Chrome UI, which will show a popup "
     "bubble that allows users to search over their currently open tabs.";
-#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)";
 
 const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
 const char kEnableTextFragmentAnchorDescription[] =
@@ -1509,14 +1507,6 @@ const char kOmniboxCompactSuggestionsDescription[] =
     "Conserve the space for Omnibox Suggestions by slightly reducing their "
     "size.";
 
-const char kOmniboxDeferredKeyboardPopupName[] =
-    "Omnibox: Defer keyboard popup";
-const char kOmniboxDeferredKeyboardPopupDescription[] =
-    "Defer keyboard popup when user selects the Omnibox to allow presenting "
-    "more instant/zero-prefix suggestions. The soft keyboard will only be "
-    "shown when user taps the Omnibox again, or if there's no suggestions to "
-    "show to the user.";
-
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
@@ -1529,17 +1519,6 @@ const char kOmniboxExperimentalSuggestScoringName[] =
 const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
-
-const char kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsName[] =
-    "Omnibox History Quick Provider Allow but Do Not Score Midword Terms";
-const char
-    kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsDescription[] =
-        "Midword terms are allowed but not scored.";
-const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsName[] =
-    "Omnibox History Quick Provider Allow Midword Continuations";
-const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsDescription[] =
-    "Midword matches are allowed and scored when the match begins immediately "
-    "after the previous match ends.";
 
 const char kOmniboxLocalZeroSuggestFrecencyRankingName[] =
     "Frecency ranking for local history zero-prefix suggestions";

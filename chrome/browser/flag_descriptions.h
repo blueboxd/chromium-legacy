@@ -566,10 +566,8 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
-#if BUILDFLAG(ENABLE_TAB_SEARCH)
 extern const char kEnableTabSearchName[];
 extern const char kEnableTabSearchDescription[];
-#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
 extern const char kEnableTextFragmentAnchorName[];
 extern const char kEnableTextFragmentAnchorDescription[];
@@ -888,22 +886,11 @@ extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 extern const char kOmniboxCompactSuggestionsName[];
 extern const char kOmniboxCompactSuggestionsDescription[];
 
-extern const char kOmniboxDeferredKeyboardPopupName[];
-extern const char kOmniboxDeferredKeyboardPopupDescription[];
-
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
-
-extern const char
-    kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsName[];
-extern const char
-    kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsDescription[];
-extern const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsName[];
-extern const char
-    kOmniboxHistoryQuickProviderAllowMidwordContinuationsDescription[];
 
 extern const char kOmniboxLocalZeroSuggestFrecencyRankingName[];
 extern const char kOmniboxLocalZeroSuggestFrecencyRankingDescription[];

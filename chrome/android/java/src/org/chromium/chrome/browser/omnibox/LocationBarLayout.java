@@ -148,7 +148,6 @@ public class LocationBarLayout extends FrameLayout
     private AssistantVoiceSearchService mAssistantVoiceSearchService;
     private Runnable mKeyboardResizeModeTask;
     private Runnable mKeyboardHideTask;
-    private boolean mKeyboardShouldShow;
     private ObservableSupplier<Profile> mProfileSupplier;
     private Callback<Profile> mProfileSupplierObserver;
     private CallbackController mCallbackController = new CallbackController();
@@ -418,7 +417,7 @@ public class LocationBarLayout extends FrameLayout
                 setUrlBarText(mToolbarDataProvider.getUrlBarData(), UrlBar.ScrollType.NO_SCROLL,
                         SelectionState.SELECT_ALL);
             }
-            setKeyboardVisibility(false);
+            setKeyboardVisibility(false, false);
         }
     }
 
@@ -476,12 +475,6 @@ public class LocationBarLayout extends FrameLayout
         mStatusCoordinator.updateStatusIcon();
         // Update the URL in case the scheme change triggers a URL emphasis change.
         setUrlToPageUrl();
-    }
-
-    @Override
-    public void setKeyboardVisibility(boolean shouldShow) {
-        mKeyboardShouldShow = shouldShow;
-        setKeyboardVisibilityInternal(false);
     }
 
     @Override
@@ -657,7 +650,6 @@ public class LocationBarLayout extends FrameLayout
             }
         } else {
             assert pastedText == null;
-            setKeyboardVisibility(false);
             mUrlBar.clearFocus();
         }
 
@@ -1050,7 +1042,6 @@ public class LocationBarLayout extends FrameLayout
         updateShouldAnimateIconChanges();
 
         if (mUrlHasFocus) {
-            mKeyboardShouldShow = false;
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
             UrlBarData urlBarData = mToolbarDataProvider.getUrlBarData();
             if (urlBarData.editingText != null) {
@@ -1140,13 +1131,19 @@ public class LocationBarLayout extends FrameLayout
                     MarginLayoutParamsCompat.getMarginStart(urlActionContainerLayoutParams)
                     + MarginLayoutParamsCompat.getMarginEnd(urlActionContainerLayoutParams);
         }
+        // Include the space which the URL bar will be translated post-layout into the end
+        // margin so the URL bar doesn't overlap with the URL actions container when focused.
+        if (mStatusCoordinator.isSearchEngineStatusIconVisible() && hasFocus()) {
+            urlContainerMarginEnd += mStatusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
+        }
         return urlContainerMarginEnd;
     }
 
     /**
      * Updates the layout params for the location bar start aligned views.
      */
-    protected void updateLayoutParams() {
+    @VisibleForTesting
+    void updateLayoutParams() {
         int startMargin = 0;
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
@@ -1188,12 +1185,6 @@ public class LocationBarLayout extends FrameLayout
         int urlContainerMarginEnd = getUrlContainerMarginEnd();
         LayoutParams urlLayoutParams = (LayoutParams) mUrlBar.getLayoutParams();
         if (MarginLayoutParamsCompat.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
-            // Include the space which the URL bar will be translated post-layout into the
-            // end-margin so the URL bar doesn't overlap with the URL actions container.
-            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                        mToolbarDataProvider.isIncognito())) {
-                urlContainerMarginEnd += mStatusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
-            }
             MarginLayoutParamsCompat.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
             mUrlBar.setLayoutParams(urlLayoutParams);
         }
@@ -1332,7 +1323,7 @@ public class LocationBarLayout extends FrameLayout
      * @param hasFocus Whether the URL field has gained focus.
      */
     protected void finishUrlFocusChange(boolean hasFocus) {
-        setKeyboardVisibilityInternal(true);
+        setKeyboardVisibility(hasFocus, true);
         setUrlFocusChangeInProgress(false);
         updateShouldAnimateIconChanges();
     }
@@ -1341,11 +1332,12 @@ public class LocationBarLayout extends FrameLayout
      * Controls keyboard visibility.
      * TODO(https://crbug.com/1060729): This should be relocated to UrlBar component.
      *
+     * @param shouldShow Whether the soft keyboard should be shown.
      * @param shouldDelayHiding When true, keyboard hide operation will be delayed slightly to
      *         improve the animation smoothness.
      */
-    private void setKeyboardVisibilityInternal(boolean shouldDelayHiding) {
-        boolean showKeyboard = mUrlHasFocus && mKeyboardShouldShow;
+    @Override
+    public void setKeyboardVisibility(boolean showKeyboard, boolean shouldDelayHiding) {
         // Cancel pending jobs to prevent any possibility of keyboard flicker.
         if (mKeyboardHideTask != null) {
             removeCallbacks(mKeyboardHideTask);

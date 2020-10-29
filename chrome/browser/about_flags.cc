@@ -47,7 +47,6 @@
 #include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/isolated_prerender_params.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -113,6 +112,7 @@
 #include "components/query_tiles/switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/search/ntp_features.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/features.h"
 #include "components/security_state/core/features.h"
@@ -3871,10 +3871,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kCompactSuggestions,
                                     kCompactSuggestionsVariations,
                                     "OmniboxCompactSuggestions")},
-    {"omnibox-deferred-keyboard-popup",
-     flag_descriptions::kOmniboxDeferredKeyboardPopupName,
-     flag_descriptions::kOmniboxDeferredKeyboardPopupDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kDeferredKeyboardPopup)},
     {"omnibox-most-visited-tiles",
      flag_descriptions::kOmniboxMostVisitedTilesName,
      flag_descriptions::kOmniboxMostVisitedTilesDescription, kOsAndroid,
@@ -3947,23 +3943,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxExperimentalSuggestScoringName,
      flag_descriptions::kOmniboxExperimentalSuggestScoringDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxExperimentalSuggestScoring)},
-
-    {"omnibox-history-quick-provider-allow-but-do-not-score-midword-terms",
-     flag_descriptions::
-         kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsName,
-     flag_descriptions::
-         kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms)},
-    {"omnibox-history-quick-provider-allow-midword-continuations",
-     flag_descriptions::
-         kOmniboxHistoryQuickProviderAllowMidwordContinuationsName,
-     flag_descriptions::
-         kOmniboxHistoryQuickProviderAllowMidwordContinuationsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         omnibox::kHistoryQuickProviderAllowMidwordContinuations)},
 
     {"omnibox-trending-zero-prefix-suggestions-on-ntp",
      flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPName,
@@ -6500,11 +6479,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContentSettingsRedesignDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kContentSettingsRedesign)},
 
-#if BUILDFLAG(ENABLE_TAB_SEARCH)
     {"enable-tab-search", flag_descriptions::kEnableTabSearchName,
      flag_descriptions::kEnableTabSearchDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabSearch)},
-#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
 #if defined(OS_ANDROID)
     {"cpu-affinity-restrict-to-little-cores",

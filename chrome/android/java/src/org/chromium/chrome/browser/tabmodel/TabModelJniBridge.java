@@ -154,10 +154,10 @@ public abstract class TabModelJniBridge implements TabModel {
 
     @CalledByNative
     @Override
-    public abstract boolean isCurrentModel();
+    public abstract boolean isActiveModel();
 
     @Override
-    public void setActive(boolean active) {}
+    public abstract void setActive(boolean active);
 
     @NativeMethods
     interface Natives {

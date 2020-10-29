@@ -52,6 +52,7 @@ if (enable_js_type_check) {
         "settings:closure_compile",
         "settings:closure_compile_module",
         "signin:closure_compile",
+        "tab_search_merge:closure_compile",
         "usb_internals:closure_compile",
         "user_manager:closure_compile",
         "web_app_internals:closure_compile",
@@ -75,9 +76,6 @@ if (enable_js_type_check) {
     }
     if (enable_nacl) {
       deps += [ "about_nacl:closure_compile" ]
-    }
-    if (enable_tab_search) {
-      deps += [ "tab_search_merge:closure_compile" ]
     }
     if (enable_webui_tab_strip) {
       deps += [ "tab_strip:closure_compile" ]
@@ -222,6 +220,26 @@ if (!is_android) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
+
+  grit("tab_search_resources") {
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+    source = "tab_search_merge/tab_search_resources.grd"
+    deps = [
+      "//chrome/browser/resources/tab_search_merge:web_components",
+      "//chrome/browser/ui/webui/tab_search:mojo_bindings_js",
+    ]
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/tab_search_resources.h",
+      "grit/tab_search_resources_map.cc",
+      "grit/tab_search_resources_map.h",
+      "tab_search_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
 }
 
 if (is_chromeos) {
@@ -333,6 +351,39 @@ if (is_chromeos) {
     output_dir = "$root_gen_dir/chrome"
   }
 
+  grit("os_settings_resources") {
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+    deps = [ "//chrome/browser/ui/webui/settings/chromeos:mojom_js" ]
+    if (optimize_webui) {
+      # Required due to flattenhtml="true" on a generated file.
+      enable_input_discovery_for_gn_analyze = false
+      source = "settings/os_settings_resources_vulcanized.grd"
+
+      deps += [
+        "//chrome/browser/resources/settings/chromeos:build",
+        "//chrome/browser/resources/settings/chromeos:build_polymer3",
+      ]
+    } else {
+      source = "settings/os_settings_resources.grd"
+      deps += [
+        "//chrome/browser/resources/settings/chromeos:polymer3_elements",
+        "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
+      ]
+    }
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/os_settings_resources.h",
+      "grit/os_settings_resources_map.cc",
+      "grit/os_settings_resources_map.h",
+      "os_settings_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("bluetooth_pairing_dialog_resources") {
     grit_flags = [
       "-E",
@@ -371,28 +422,6 @@ if (enable_extensions) {
     outputs = [
       "grit/sync_file_system_internals_resources.h",
       "sync_file_system_internals_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-}
-
-if (enable_tab_search) {
-  grit("tab_search_resources") {
-    grit_flags = [
-      "-E",
-      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-    ]
-    source = "tab_search_merge/tab_search_resources.grd"
-    deps = [
-      "//chrome/browser/resources/tab_search_merge:web_components",
-      "//chrome/browser/ui/webui/tab_search:mojo_bindings_js",
-    ]
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/tab_search_resources.h",
-      "grit/tab_search_resources_map.cc",
-      "grit/tab_search_resources_map.h",
-      "tab_search_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

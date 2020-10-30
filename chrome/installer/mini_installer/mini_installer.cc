@@ -33,6 +33,7 @@
 #include <sddl.h>
 #include <shellapi.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <initializer_list>
@@ -46,8 +47,6 @@
 #include "chrome/installer/mini_installer/regkey.h"
 
 namespace mini_installer {
-
-typedef StackString<MAX_PATH> PathString;
 
 // This structure passes data back and forth for the processing
 // of resource callbacks.
@@ -102,6 +101,41 @@ void WriteInstallResults(const Configuration& configuration,
     }
   }
 }
+
+// Success metric reporting ----------------------------------------------------
+
+// A single DWORD value may be written to the ExtraCode1 registry value on
+// success. This is used to report a sample for a metric of a specific category.
+
+// Categories of metrics written into ExtraCode1 on success. Values should not
+// be reordered or reused unless the population reporting such categories
+// becomes insiginficant or is filtered out based on release version.
+enum MetricCategory : uint16_t {
+  // The sample 0 indicates that %TMP% was used to hold the work dir. Active
+  // from release 86.0.4237.0.
+  kTemporaryDirectoryWithFallback = 1,
+
+  // The sample 0 indicates that CWD was used to hold the work dir. Active from
+  // release 86.0.4237.0.
+  kTemporaryDirectoryWithoutFallback = 2,
+};
+
+using MetricSample = uint16_t;
+
+// Returns an ExtraCode1 value encoding a sample for a particular category.
+constexpr DWORD MetricToExtraCode1(MetricCategory category,
+                                   MetricSample sample) {
+  return category << 16 | sample;
+}
+
+// Metrics relating to work dir selection; see https://crbug.com/516207.
+enum TempDirMetric : DWORD {
+  // The fallback directory (%TMP%) was used to hold the work dir.
+  kWithFallback = MetricToExtraCode1(kTemporaryDirectoryWithFallback, 0),
+
+  // The current working directory was used to hold the work dir.
+  kWithoutFallback = MetricToExtraCode1(kTemporaryDirectoryWithoutFallback, 0)
+};
 
 // Writes the value |extra_code_1| into ExtraCode1 for reporting by Omaha.
 void WriteExtraCode1(const Configuration& configuration, DWORD extra_code_1) {
@@ -744,7 +778,8 @@ bool CreateWorkDir(const wchar_t* base_path,
 // Creates and returns a temporary directory in |work_dir| that can be used to
 // extract mini_installer payload. |work_dir| ends with a path separator.
 // |used_fallback| is set to true if the %TMP% directory was used rather than
-// the directory containing |module|.
+// the directory containing |module|. Returns true if |work_dir| is available
+// for use, or false in case of error (indicated by |exit_code|).
 bool GetWorkDir(HMODULE module,
                 PathString* work_dir,
                 bool* used_fallback,
@@ -758,8 +793,13 @@ bool GetWorkDir(HMODULE module,
   }
 
   // Failing that, try to create one in the TMP directory.
-  return GetTempDir(&base_path, exit_code) &&
-         CreateWorkDir(base_path.get(), work_dir, exit_code);
+  if (GetTempDir(&base_path, exit_code) &&
+      CreateWorkDir(base_path.get(), work_dir, exit_code)) {
+    *used_fallback = true;
+    return true;
+  }
+
+  return false;
 }
 
 ProcessExitResult WMain(HMODULE module) {
@@ -816,11 +856,9 @@ ProcessExitResult WMain(HMODULE module) {
     // that it's safe to remove the fallback code and associated cleanup. See
     // https://crbug.com/516207 for more info.
     // Pick two arbitrary values that should stand out obviously in queries.
-    constexpr DWORD kSucceededWithFallback = 0x1U << 16;
-    constexpr DWORD kSucceededWithoutFallback = 0x2U << 16;
     WriteExtraCode1(configuration, work_dir_in_fallback
-                                       ? kSucceededWithFallback
-                                       : kSucceededWithoutFallback);
+                                       ? TempDirMetric::kWithFallback
+                                       : TempDirMetric::kWithoutFallback);
   } else {
     WriteInstallResults(configuration, exit_code);
   }

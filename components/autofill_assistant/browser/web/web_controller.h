@@ -215,14 +215,14 @@ class WebController {
   virtual void GetVisualViewport(
       base::OnceCallback<void(const ClientStatus&, const RectF&)> callback);
 
-  // Gets the position of the element identified by the selector.
+  // Gets the position of the |element|.
   //
   // If unsuccessful, the callback gets the failure status with an empty rect.
   //
   // If successful, the callback gets a success status with a set of
   // (left, top, right, bottom) coordinates rect, expressed in absolute CSS
   // coordinates.
-  virtual void GetElementRect(const Selector& selector,
+  virtual void GetElementRect(const ElementFinder::Result& element,
                               ElementRectGetter::ElementRectCallback callback);
 
   // Calls the callback once the main document window has been resized.
@@ -233,8 +233,8 @@ class WebController {
   // empty, in the main document.
   virtual void GetDocumentReadyState(
       const Selector& optional_frame,
-      base::OnceCallback<void(const ClientStatus&,
-                              DocumentReadyState end_state)> callback);
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback);
 
   // Waits for the value of Document.readyState to satisfy |min_ready_state| in
   // |optional_frame| or, if it is empty, in the main document.
@@ -242,7 +242,8 @@ class WebController {
       const Selector& optional_frame,
       DocumentReadyState min_ready_state,
       base::OnceCallback<void(const ClientStatus&,
-                              DocumentReadyState end_state)> callback);
+                              DocumentReadyState,
+                              base::TimeDelta)> callback);
 
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
@@ -377,9 +378,6 @@ class WebController {
       size_t index,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
-  void OnFindElementForRect(ElementRectGetter::ElementRectCallback callback,
-                            const ClientStatus& status,
-                            std::unique_ptr<ElementFinder::Result> result);
   void OnGetElementRect(ElementRectGetter* getter_to_release,
                         ElementRectGetter::ElementRectCallback callback,
                         const ClientStatus& rect_status,
@@ -412,8 +410,9 @@ class WebController {
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForWaitForDocumentReadyState(
       DocumentReadyState min_ready_state,
-      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
-          callback,
+      base::OnceCallback<void(const ClientStatus&,
+                              DocumentReadyState,
+                              base::TimeDelta)> callback,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element);
 

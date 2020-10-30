@@ -32,8 +32,11 @@ void UploadDomAction::InternalProcessAction(ProcessActionCallback callback) {
     return;
   }
   delegate_->ShortWaitForElement(
-      selector, base::BindOnce(&UploadDomAction::OnWaitForElement,
-                               weak_ptr_factory_.GetWeakPtr(), selector));
+      selector,
+      base::BindOnce(&UploadDomAction::OnWaitForElementTimed,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::BindOnce(&UploadDomAction::OnWaitForElement,
+                                    weak_ptr_factory_.GetWeakPtr(), selector)));
 }
 
 void UploadDomAction::OnWaitForElement(const Selector& selector,
@@ -43,11 +46,14 @@ void UploadDomAction::OnWaitForElement(const Selector& selector,
     return;
   }
 
-  action_delegate_util::FindElementAndGetProperty(
-      delegate_, selector,
-      base::BindOnce(&ActionDelegate::GetOuterHtml, delegate_->GetWeakPtr()),
-      base::BindOnce(&UploadDomAction::OnGetOuterHtml,
-                     weak_ptr_factory_.GetWeakPtr()));
+  delegate_->FindElement(
+      selector,
+      base::BindOnce(
+          &action_delegate_util::TakeElementAndGetProperty<std::string>,
+          base::BindOnce(&ActionDelegate::GetOuterHtml,
+                         delegate_->GetWeakPtr()),
+          base::BindOnce(&UploadDomAction::OnGetOuterHtml,
+                         weak_ptr_factory_.GetWeakPtr())));
 }
 
 void UploadDomAction::OnGetOuterHtml(const ClientStatus& status,

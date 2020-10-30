@@ -251,91 +251,107 @@ const NGFragmentItem* NGFragmentItems::EndOfReusableItems(
   return nullptr;  // all items are reusable.
 }
 
-bool NGFragmentItems::TryDirtyFirstLineFor(
-    const LayoutObject& layout_object) const {
-  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
-  DCHECK(!layout_object.IsFloatingOrOutOfFlowPositioned());
-  if (wtf_size_t index = layout_object.FirstInlineFragmentItemIndex()) {
-    const NGFragmentItem& item = Items()[index - 1];
-    DCHECK_EQ(&layout_object, item.GetLayoutObject());
-    item.SetDirty();
-    return true;
-  }
-  return false;
+// static
+bool NGFragmentItems::TryDirtyFirstLineFor(const LayoutObject& layout_object,
+                                           const LayoutBlockFlow& container) {
+  DCHECK(layout_object.IsDescendantOf(&container));
+  NGInlineCursor cursor(container);
+  cursor.MoveTo(layout_object);
+  if (!cursor)
+    return false;
+  DCHECK(cursor.Current().Item());
+  DCHECK_EQ(&layout_object, cursor.Current().GetLayoutObject());
+  cursor.Current()->SetDirty();
+  return true;
 }
 
-bool NGFragmentItems::TryDirtyLastLineFor(
-    const LayoutBlockFlow& container,
-    const LayoutObject& layout_object) const {
+// static
+bool NGFragmentItems::TryDirtyLastLineFor(const LayoutObject& layout_object,
+                                          const LayoutBlockFlow& container) {
+  DCHECK(layout_object.IsDescendantOf(&container));
   NGInlineCursor cursor(container);
   cursor.MoveTo(layout_object);
   if (!cursor)
     return false;
   cursor.MoveToLastForSameLayoutObject();
   DCHECK(cursor.Current().Item());
-  const NGFragmentItem& item = *cursor.Current().Item();
-  DCHECK_EQ(&layout_object, item.GetLayoutObject());
-  item.SetDirty();
+  DCHECK_EQ(&layout_object, cursor.Current().GetLayoutObject());
+  cursor.Current()->SetDirty();
   return true;
 }
 
+// static
 void NGFragmentItems::DirtyLinesFromChangedChild(
-    const LayoutBlockFlow& container,
-    const LayoutObject* child) const {
-  if (UNLIKELY(!child)) {
-    front().SetDirty();
-    return;
+    const LayoutObject& child,
+    const LayoutBlockFlow& container) {
+  if (child.IsInLayoutNGInlineFormattingContext() &&
+      !child.IsFloatingOrOutOfFlowPositioned()) {
+    if (TryDirtyFirstLineFor(child, container))
+      return;
   }
-
-  if (child->IsInLayoutNGInlineFormattingContext() &&
-      !child->IsFloatingOrOutOfFlowPositioned() && TryDirtyFirstLineFor(*child))
-    return;
 
   // If |child| is new, or did not generate fragments, mark the fragments for
   // previous |LayoutObject| instead.
-  while (true) {
-    if (const LayoutObject* previous = child->PreviousSibling()) {
-      while (const LayoutInline* layout_inline =
-                 ToLayoutInlineOrNull(previous)) {
+  for (const LayoutObject* current = &child;;) {
+    if (const LayoutObject* previous = current->PreviousSibling()) {
+      while (const auto* layout_inline = DynamicTo<LayoutInline>(previous)) {
         if (const LayoutObject* last_child = layout_inline->LastChild())
           previous = last_child;
         else
           break;
       }
-      child = previous;
-      if (UNLIKELY(child->IsFloatingOrOutOfFlowPositioned()))
+      current = previous;
+      if (UNLIKELY(current->IsFloatingOrOutOfFlowPositioned()))
         continue;
-      if (child->IsInLayoutNGInlineFormattingContext() &&
-          TryDirtyLastLineFor(container, *child))
-        return;
+      if (current->IsInLayoutNGInlineFormattingContext()) {
+        if (TryDirtyLastLineFor(*current, container))
+          return;
+      }
       continue;
     }
 
-    child = child->Parent();
-    if (!child || child->IsLayoutBlockFlow()) {
-      front().SetDirty();
+    current = current->Parent();
+    if (!current || current->IsLayoutBlockFlow()) {
+      DirtyFirstItem(container);
       return;
     }
-    DCHECK(child->IsLayoutInline());
-    if (child->IsInLayoutNGInlineFormattingContext() &&
-        TryDirtyFirstLineFor(*child))
-      return;
+    DCHECK(current->IsLayoutInline());
+    if (current->IsInLayoutNGInlineFormattingContext()) {
+      if (TryDirtyFirstLineFor(*current, container))
+        return;
+    }
   }
 }
 
+// static
+void NGFragmentItems::DirtyFirstItem(const LayoutBlockFlow& container) {
+  for (const NGPhysicalBoxFragment& fragment : container.PhysicalFragments()) {
+    if (const NGFragmentItems* items = fragment.Items()) {
+      items->front().SetDirty();
+      return;
+    }
+  }
+}
+
+// static
 void NGFragmentItems::DirtyLinesFromNeedsLayout(
-    const LayoutBlockFlow* container) const {
-  DCHECK_EQ(this, container->FragmentItems());
+    const LayoutBlockFlow& container) {
+  DCHECK(std::any_of(container.PhysicalFragments().begin(),
+                     container.PhysicalFragments().end(),
+                     [](const NGPhysicalBoxFragment& fragment) {
+                       return fragment.HasItems();
+                     }));
+
   // Mark dirty for the first top-level child that has |NeedsLayout|.
   //
   // TODO(kojii): We could mark first descendant to increase reuse
   // opportunities. Doing this complicates the logic, especially when culled
   // inline is involved, and common case is to append to large IFC. Choose
   // simpler logic and faster to check over more reuse opportunities.
-  for (LayoutObject* child = container->FirstChild(); child;
+  for (LayoutObject* child = container.FirstChild(); child;
        child = child->NextSibling()) {
     if (child->NeedsLayout()) {
-      DirtyLinesFromChangedChild(*container, child);
+      DirtyLinesFromChangedChild(*child, container);
       return;
     }
   }

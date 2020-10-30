@@ -7,6 +7,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper_impl.h"
+#include "chromeos/components/camera_app_ui/camera_app_window_manager_factory.h"
 #include "chromeos/components/camera_app_ui/resources.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -74,6 +75,16 @@ content::WebUIDataSource* CreateUntrustedCameraAppUIHTMLSource() {
                                       kChromeosCameraAppResources[i].value);
   }
   untrusted_source->AddFrameAncestor(GURL(kChromeUICameraAppURL));
+
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc,
+      std::string("connect-src http://www.google-analytics.com/ 'self';"));
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      std::string("worker-src 'self';"));
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      std::string("trusted-types ga-js-static mp4-js-static;"));
 
   return untrusted_source;
 }
@@ -226,6 +237,11 @@ void CameraAppUI::BindInterface(
 
 aura::Window* CameraAppUI::window() {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
+}
+
+CameraAppWindowManager* CameraAppUI::app_window_manager() {
+  return chromeos::CameraAppWindowManagerFactory::GetForBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(CameraAppUI)

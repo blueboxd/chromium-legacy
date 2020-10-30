@@ -1193,8 +1193,7 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.h
 crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
 ### Textfield NG
-crbug.com/1040826 external/wpt/css/css-pseudo/first-line-and-placeholder.html [ Failure ]
-crbug.com/1040826 fast/events/mouse-relative-position.html [ Failure ]
+crbug.com/1143621 external/wpt/css/css-pseudo/first-line-and-placeholder.html [ Failure ]
 crbug.com/1040826 fast/forms/input-in-table-cell-no-value.html [ Failure ]
 crbug.com/1040826 fast/forms/placeholder-position.html [ Failure ]
 crbug.com/1040826 [ Linux ] fast/forms/text/input-placeholder-paint-order.html [ Failure ]
@@ -6059,7 +6058,6 @@ crbug.com/1107944 [ Mac ] http/tests/devtools/tracing/timeline-paint/timeline-pa
 
 # Temporarily disable tests to allow a fix in devtools frontend
 crbug.com/1011811 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
-crbug.com/1035309 http/tests/devtools/throttling/mobile-throttling.js [ Pass Failure ]
 
 crbug.com/1092794 fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.html [ Pass Failure ]
 

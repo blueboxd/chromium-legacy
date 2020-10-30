@@ -118,7 +118,10 @@ copy("chrome_camera_app_js") {
     "js/toast.js",
     "js/tooltip.js",
     "js/type.js",
+    "js/untrusted_ga_helper.js",
+    "js/untrusted_helper_interfaces.js",
     "js/untrusted_script_loader.js",
+    "js/untrusted_video_processor_helper.js",
     "js/util.js",
     "js/waitable_event.js",
   ]
@@ -167,7 +170,6 @@ copy("chrome_camera_app_js_models") {
     "js/models/file_util.js",
     "js/models/lazy_directory_entry.js",
     "js/models/mp4_video_processor.js",
-    "js/models/nop_video_processor.js",
     "js/models/result_saver.js",
     "js/models/video_saver.js",
   ]

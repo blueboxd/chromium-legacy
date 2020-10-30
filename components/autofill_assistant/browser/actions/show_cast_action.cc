@@ -56,9 +56,12 @@ void ShowCastAction::InternalProcessAction(ProcessActionCallback callback) {
   }
 
   delegate_->ShortWaitForElement(
-      selector, base::BindOnce(&ShowCastAction::OnWaitForElement,
+      selector, base::BindOnce(&ShowCastAction::OnWaitForElementTimed,
                                weak_ptr_factory_.GetWeakPtr(),
-                               std::move(callback), selector, top_padding));
+                               base::BindOnce(&ShowCastAction::OnWaitForElement,
+                                              weak_ptr_factory_.GetWeakPtr(),
+                                              std::move(callback), selector,
+                                              top_padding)));
 }
 
 void ShowCastAction::OnWaitForElement(ProcessActionCallback callback,
@@ -78,8 +81,9 @@ void ShowCastAction::OnWaitForElement(ProcessActionCallback callback,
   actions->emplace_back(base::BindOnce(&ActionDelegate::ScrollToElementPosition,
                                        delegate_->GetWeakPtr(), selector,
                                        top_padding));
-  action_delegate_util::FindElementAndPerformAll(
-      delegate_, selector, std::move(actions),
+  action_delegate_util::FindElementAndPerform(
+      delegate_, selector,
+      base::BindOnce(&action_delegate_util::PerformAll, std::move(actions)),
       base::BindOnce(&ShowCastAction::OnScrollToElementPosition,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

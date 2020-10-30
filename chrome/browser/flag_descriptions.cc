@@ -2398,6 +2398,11 @@ const char kUnsafeFastJSCallsDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
+const char kUseFirstPartySetName[] = "First-Party Set";
+const char kUseFirstPartySetDescription[] =
+    "Use the provided list of origins as a First-Party Set, with the first "
+    "valid origin as the owner of the set.";
+
 const char kUsernameFirstFlowName[] = "Username first flow";
 const char kUsernameFirstFlowDescription[] =
     "Support of username saving and filling on username first flow i.e. login "
@@ -4227,6 +4232,18 @@ const char kImeEmojiSuggestAdditionName[] =
     "Enable emoji suggestion (addition)";
 const char kImeEmojiSuggestAdditionDescription[] =
     "Enable emoji suggestion as addition to the text written for native IME.";
+
+const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
+const char kImeInputLogicFstDescription[] =
+    "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
+
+const char kImeInputLogicHmmName[] = "Enable HMM Input Logic on IME";
+const char kImeInputLogicHmmDescription[] =
+    "Enable HMM Input Logic to replace the IME legacy input logic on NaCl";
+
+const char kImeInputLogicMozcName[] = "Enable MOZC Input Logic on IME";
+const char kImeInputLogicMozcDescription[] =
+    "Enable MOZC Input Logic to replace the IME legacy input logic on NaCl";
 
 const char kImeMozcProtoName[] = "Enable protobuf on Japanese IME";
 const char kImeMozcProtoDescription[] =

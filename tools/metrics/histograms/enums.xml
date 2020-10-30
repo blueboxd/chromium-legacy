@@ -16580,6 +16580,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="35" label="keyboardShortcutEditor"/>
   <int value="36" label="cssFlexboxFeatures"/>
   <int value="37" label="showWebVitalsInPerformancePanel"/>
+  <int value="38" label="recorder"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -25207,6 +25208,7 @@ Called by update_extension_histograms.py.-->
   <int value="1524"
       label="FILEMANAGERPRIVATEINTERNAL_GETARCDOCUMENTSPROVIDERTHUMBNAIL"/>
   <int value="1525" label="ACCESSIBILITY_PRIVATE_ISFEATUREENABLED"/>
+  <int value="1526" label="INPUTMETHODPRIVATE_ONAUTOCORRECT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -39817,6 +39819,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Migration stopped"/>
 </enum>
 
+<enum name="KeyPermissionsManagerMigrationStatus">
+  <int value="0" label="kStarted"/>
+  <int value="1" label="kSucceeded"/>
+  <int value="2" label="kFailed"/>
+</enum>
+
 <enum name="KidsManagementURLCheckerResponseStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Network Error"/>
@@ -44240,6 +44248,7 @@ from previous Chrome versions.
   <int value="484596410" label="EnterpriseRealtimeExtensionRequest:disabled"/>
   <int value="485957747" label="finch-seed-ignore-pending-download"/>
   <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
+  <int value="491258649" label="UseFirstPartySet"/>
   <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
   <int value="492985975" label="use-monitor-color-space"/>

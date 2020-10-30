@@ -233,8 +233,9 @@ assert(
     use_debug_fission == "default" || use_debug_fission || !use_debug_fission,
     "Invalid use_debug_fission.")
 if (use_debug_fission == "default") {
-  use_debug_fission = is_debug && !is_android && !is_fuchsia && !is_apple &&
-                      !is_win && (use_gold || use_lld) && cc_wrapper == ""
+  use_debug_fission = (is_android && is_official_build) ||
+                      (is_debug && !is_android && !is_fuchsia && !is_apple &&
+                       !is_win && (use_gold || use_lld) && cc_wrapper == "")
 }
 
 # If it wasn't manually set, set to an appropriate default.
@@ -272,6 +273,9 @@ if (symbol_level == -1) {
     symbol_level = 0
   }
 }
+
+# Split dwarf works only for symbol_level == 2.
+use_debug_fission = use_debug_fission && symbol_level == 2
 
 # Non-component debug builds with symbol_level = 2 are an undesirable (very slow
 # build times) and unsupported (some test binaries will fail with > 4 GB PDBs)

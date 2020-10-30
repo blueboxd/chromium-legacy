@@ -1350,6 +1350,21 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-cros-ime-input-logic-fst",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-cros-ime-input-logic-hmm",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-cros-ime-input-logic-mozc",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-cros-ime-mozc-proto",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 90
@@ -3758,7 +3773,7 @@
   {
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 92
   },
   {
     "name": "pluginvm-show-camera-permissions",
@@ -4649,6 +4664,12 @@
     "expiry_milestone": -1
   },
   {
+      "name": "use-first-party-set",
+      "owners": [ "chrome-first-party-sets@chromium.org" ],
+      // This flag is used by site developers to test their site configurations.
+      "expiry_milestone": -1
+  },
+  {
     "name": "use-hdr-transfer-function",
     "owners": [ "mcasas", "chromeos-gfx@google.com" ],
     "expiry_milestone": 89
@@ -4778,6 +4799,11 @@
     "name": "web-share",
     "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "web-view-native-context-menu",
+    "owners": ["gambard","bling-flags@google.com"],
+    "expiry_milestone": 90
   },
   {
     "name": "webpage-alternative-text-zoom",

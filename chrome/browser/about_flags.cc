@@ -3586,6 +3586,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeEmojiSuggestAdditionName,
      flag_descriptions::kImeEmojiSuggestAdditionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEmojiSuggestAddition)},
+    {"enable-cros-ime-input-logic-fst",
+     flag_descriptions::kImeInputLogicFstName,
+     flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
+    {"enable-cros-ime-input-logic-hmm",
+     flag_descriptions::kImeInputLogicHmmName,
+     flag_descriptions::kImeInputLogicHmmDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicHmm)},
+    {"enable-cros-ime-input-logic-mozc",
+     flag_descriptions::kImeInputLogicMozcName,
+     flag_descriptions::kImeInputLogicMozcDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicMozc)},
     {"enable-cros-ime-mozc-proto", flag_descriptions::kImeMozcProtoName,
      flag_descriptions::kImeMozcProtoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeMozcProto)},
@@ -6676,6 +6688,9 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::
              kAutofillEnablePasswordInfoBarAccountIndicationFooter)},
 #endif
+    {"use-first-party-set", flag_descriptions::kUseFirstPartySetName,
+     flag_descriptions::kUseFirstPartySetDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(network::switches::kUseFirstPartySet, "")},
 
     {"check-offline-capability", flag_descriptions::kCheckOfflineCapabilityName,
      flag_descriptions::kCheckOfflineCapabilityDescription, kOsAll,

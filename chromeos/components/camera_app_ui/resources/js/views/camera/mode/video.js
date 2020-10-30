@@ -29,9 +29,7 @@ import {RecordTime} from './record_time.js';
  * Video recording MIME type. Mkv with AVC1 is the only preferred format.
  * @type {string}
  */
-const VIDEO_MIMETYPE = browserProxy.isMp4RecordingEnabled() ?
-    'video/x-matroska;codecs=avc1,pcm' :
-    'video/x-matroska;codecs=avc1';
+const VIDEO_MIMETYPE = 'video/x-matroska;codecs=avc1,pcm';
 
 /**
  * Contains video recording result.
@@ -309,6 +307,7 @@ export class Video extends ModeBase {
         (this.mediaRecorder_.state === 'recording' ||
          this.mediaRecorder_.state === 'paused')) {
       this.mediaRecorder_.stop();
+      browserProxy.setBeforeUnloadListenerEnabled(false);
     }
   }
 
@@ -353,6 +352,9 @@ export class Video extends ModeBase {
       this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.addEventListener('stop', onstop);
       this.mediaRecorder_.addEventListener('start', onstart);
+
+      browserProxy.setBeforeUnloadListenerEnabled(true);
+
       this.mediaRecorder_.start(100);
       state.set(state.State.RECORDING_PAUSED, false);
       state.set(state.State.RECORDING_UI_PAUSED, false);

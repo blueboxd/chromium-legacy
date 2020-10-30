@@ -442,6 +442,7 @@ input::-webkit-textfield-decoration-container {
     align-items: center;
     -webkit-user-modify: read-only !important;
     content: none !important;
+    writing-mode: inherit !important;
     -internal-align-self-block: center;
 }
 
@@ -515,7 +516,10 @@ textarea {
 ::-webkit-input-placeholder {
     -webkit-text-security: none;
     color: #757575;
+    direction: inherit !important;
     pointer-events: none !important;
+    text-orientation: inherit !important;
+    writing-mode: inherit !important;
 }
 
 input::-webkit-input-placeholder {

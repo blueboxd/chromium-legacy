@@ -1390,6 +1390,9 @@ extern const char kUnsafeFastJSCallsDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
+extern const char kUseFirstPartySetName[];
+extern const char kUseFirstPartySetDescription[];
+
 extern const char kUsePreferredIntervalForVideoName[];
 extern const char kUsePreferredIntervalForVideoDescription[];
 
@@ -2462,6 +2465,15 @@ extern const char kImeAssistPersonalInfoDescription[];
 
 extern const char kImeEmojiSuggestAdditionName[];
 extern const char kImeEmojiSuggestAdditionDescription[];
+
+extern const char kImeInputLogicFstName[];
+extern const char kImeInputLogicFstDescription[];
+
+extern const char kImeInputLogicHmmName[];
+extern const char kImeInputLogicHmmDescription[];
+
+extern const char kImeInputLogicMozcName[];
+extern const char kImeInputLogicMozcDescription[];
 
 extern const char kImeMozcProtoName[];
 extern const char kImeMozcProtoDescription[];

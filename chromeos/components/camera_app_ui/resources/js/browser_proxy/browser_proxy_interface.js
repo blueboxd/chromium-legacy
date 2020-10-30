@@ -107,15 +107,10 @@ export class BrowserProxy {
   getTextDirection() {}
 
   /**
-   * @abstract
-   */
-  addDummyHistoryIfNotAvailable() {}
-
-  /**
    * @return {boolean}
    * @abstract
    */
-  isMp4RecordingEnabled() {}
+  shouldAddFakeHistory() {}
 
   /**
    * @return {!Promise}
@@ -127,6 +122,13 @@ export class BrowserProxy {
    * @abstract
    */
   openFeedback() {}
+
+  /**
+   * @param {function(): !Promise} exploitUsage
+   * @param {function(): !Promise} releaseUsage
+   * @abstract
+   */
+  async initCameraUsageMonitor(exploitUsage, releaseUsage) {}
 
   /**
    * @param {function(): void} listener
@@ -146,4 +148,10 @@ export class BrowserProxy {
    * @abstract
    */
   getUntrustedOrigin() {}
+
+  /**
+   * @param {boolean} enabled
+   * @abstract
+   */
+  setBeforeUnloadListenerEnabled(enabled) {}
 }

@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -35,6 +36,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     uint32_t options,
     int frame_tree_node_id,
     const network::ResourceRequest& resource_request,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
@@ -48,6 +50,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     RecursivePrefetchTokenGenerator recursive_prefetch_token_generator)
     : frame_tree_node_id_(frame_tree_node_id),
       resource_request_(resource_request),
+      network_isolation_key_(network_isolation_key),
       network_loader_factory_(std::move(network_loader_factory)),
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
@@ -60,6 +63,9 @@ PrefetchURLLoader::PrefetchURLLoader(
           signed_exchange_utils::IsSignedExchangeHandlingEnabled(
               browser_context)) {
   DCHECK(network_loader_factory_);
+  DCHECK(!resource_request.trusted_params ||
+         resource_request.trusted_params->isolation_info.request_type() ==
+             net::IsolationInfo::RequestType::kOther);
 
   if (is_signed_exchange_handling_enabled_) {
     // Set the SignedExchange accept header.
@@ -139,6 +145,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     DCHECK(!signed_exchange_prefetch_handler_);
     const bool keep_entry_for_prefetch_cache =
         !!prefetched_signed_exchange_cache_adapter_;
+
     // Note that after this point this doesn't directly get upcalls from the
     // network. (Until |this| calls the handler's FollowRedirect.)
     signed_exchange_prefetch_handler_ =
@@ -146,7 +153,7 @@ void PrefetchURLLoader::OnReceiveResponse(
             frame_tree_node_id_, resource_request_, std::move(response),
             mojo::ScopedDataPipeConsumerHandle(), loader_.Unbind(),
             client_receiver_.Unbind(), network_loader_factory_,
-            url_loader_throttles_getter_, this,
+            url_loader_throttles_getter_, this, network_isolation_key_,
             signed_exchange_prefetch_metric_recorder_, accept_langs_,
             keep_entry_for_prefetch_cache);
     return;

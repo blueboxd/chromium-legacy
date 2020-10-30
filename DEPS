@@ -182,7 +182,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:576741d3eed0fa33971fb34cd823650e6f5b47fb',
+  'luci_go': 'git_revision:1a022d3a4c50be4207ee93451255d71896416596',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -206,7 +206,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '624482861e16c00dbfa15de62061de0c2dbf526f',
+  'skia_revision': '9615bcf71f2a06900309062b6c218f5bf7ce795c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -218,11 +218,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a653a9badb55294ab1710a7ac41a87b614dbac81',
+  'angle_revision': 'a8c01862f57fa91092304bcd02f8072783160848',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '2be25f08deafe1fb1eada032cd3b2aae3021f367',
+  'swiftshader_revision': '1459d852b166b479ff206246cfa9fa530ffbae7d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '804e625def2cfb64ef2f4c8877cd3fa11e86e208',
+  'freetype_revision': 'e9a7015ec876bc79a345af03bb756a0980345498',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '24bd418544c6f5a68a023fdb51e12ff9b757b743',
+  'catapult_revision': '7030291356e4ba8dd8a59c7a632764e5b8238a14',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e3c2eb0f04c8aae1326a8b51d7dfafee4a44ffc7',
+  'devtools_frontend_revision': 'e184bf1e5f83f9d17aaeb7bbe0782d12bd75637b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -333,7 +333,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'bb003dd7b64eacffd85cb795cdabbc7305162ada',
+  'quiche_revision': '29ce0bde7aa71bdf36936a0a6a6b7be0919db7cc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -912,7 +912,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e8dff372902fa201728c53ff30822b203d2ddb01',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c7be37e121739c84b8dad04a23434e02177b9b2d',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@85b44b21edd6cdd84bae3d36f71e28934fb3f0c3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e96b7cfe71db7bc2299d4072e6bea6fddf220291',
     'condition': 'checkout_src_internal',
   },
 

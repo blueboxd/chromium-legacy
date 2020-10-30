@@ -46,13 +46,6 @@ void PerformActionsSequentially(
                                    element, std::move(done)));
 }
 
-void PerformAllImpl(std::unique_ptr<ElementActionVector> perform_actions,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> done) {
-  PerformActionsSequentially(std::move(perform_actions), 0, element,
-                             std::move(done), OkClientStatus());
-}
-
 void OnFindElement(ElementActionCallback perform,
                    base::OnceCallback<void(const ClientStatus&)> done,
                    const ClientStatus& element_status,
@@ -79,46 +72,14 @@ void FindElementAndPerformImpl(
       base::BindOnce(&OnFindElement, std::move(perform), std::move(done)));
 }
 
-template <typename R>
-void RetainElementAndExecuteGetCallback(
-    std::unique_ptr<ElementFinder::Result> element,
-    base::OnceCallback<void(const ClientStatus&, const R&)> callback,
-    const ClientStatus& status,
-    const R& result) {
-  DCHECK(element != nullptr);
-  std::move(callback).Run(status, result);
-}
-
-template <typename R>
-void OnFindElementForGet(
-    ElementActionGetCallback<R> perform_and_get,
-    base::OnceCallback<void(const ClientStatus&, const R&)> done,
-    const ClientStatus& element_status,
-    std::unique_ptr<ElementFinder::Result> element_result) {
-  if (!element_status.ok()) {
-    VLOG(1) << __func__ << " Failed to find element.";
-    std::move(done).Run(element_status, R());
-    return;
-  }
-
-  std::move(perform_and_get)
-      .Run(*element_result,
-           base::BindOnce(&RetainElementAndExecuteGetCallback<R>,
-                          std::move(element_result), std::move(done)));
-}
-
-template <typename R>
-void FindElementAndGetImpl(
-    const ActionDelegate* delegate,
-    const Selector& selector,
-    ElementActionGetCallback<R> perform_and_get,
-    base::OnceCallback<void(const ClientStatus&, const R&)> done) {
-  delegate->FindElement(
-      selector, base::BindOnce(&OnFindElementForGet<R>,
-                               std::move(perform_and_get), std::move(done)));
-}
-
 }  // namespace
+
+void PerformAll(std::unique_ptr<ElementActionVector> perform_actions,
+                const ElementFinder::Result& element,
+                base::OnceCallback<void(const ClientStatus&)> done) {
+  PerformActionsSequentially(std::move(perform_actions), 0, element,
+                             std::move(done), OkClientStatus());
+}
 
 void FindElementAndPerform(const ActionDelegate* delegate,
                            const Selector& selector,
@@ -128,24 +89,12 @@ void FindElementAndPerform(const ActionDelegate* delegate,
                             std::move(done));
 }
 
-void FindElementAndPerformAll(
-    const ActionDelegate* delegate,
-    const Selector& selector,
-    std::unique_ptr<ElementActionVector> perform_actions,
-    base::OnceCallback<void(const ClientStatus&)> done) {
-  FindElementAndPerformImpl(
-      delegate, selector,
-      base::BindOnce(&PerformAllImpl, std::move(perform_actions)),
-      std::move(done));
-}
-
-void FindElementAndGetProperty(
-    const ActionDelegate* delegate,
-    const Selector& selector,
-    ElementActionGetCallback<std::string> perform_and_get,
-    base::OnceCallback<void(const ClientStatus&, const std::string&)> done) {
-  FindElementAndGetImpl<std::string>(
-      delegate, selector, std::move(perform_and_get), std::move(done));
+void TakeElementAndPerform(ElementActionCallback perform,
+                           base::OnceCallback<void(const ClientStatus&)> done,
+                           const ClientStatus& element_status,
+                           std::unique_ptr<ElementFinder::Result> element) {
+  OnFindElement(std::move(perform), std::move(done), element_status,
+                std::move(element));
 }
 
 void ClickOrTapElement(const ActionDelegate* delegate,
@@ -177,7 +126,7 @@ void PerformClickOrTapElement(
   actions->emplace_back(base::BindOnce(&ActionDelegate::ClickOrTapElement,
                                        delegate->GetWeakPtr(), click_type));
 
-  PerformAllImpl(std::move(actions), element, std::move(done));
+  PerformAll(std::move(actions), element, std::move(done));
 }
 
 void SendKeyboardInput(const ActionDelegate* delegate,
@@ -223,7 +172,7 @@ void PerformSendKeyboardInput(
                                        delegate->GetWeakPtr(), codepoints,
                                        delay_in_millis));
 
-  PerformAllImpl(std::move(actions), element, std::move(done));
+  PerformAll(std::move(actions), element, std::move(done));
 }
 
 void SetFieldValue(const ActionDelegate* delegate,
@@ -303,7 +252,7 @@ void PerformSetFieldValue(const ActionDelegate* delegate,
     }
   }
 
-  PerformAllImpl(std::move(actions), element, std::move(done));
+  PerformAll(std::move(actions), element, std::move(done));
 }
 
 }  // namespace action_delegate_util

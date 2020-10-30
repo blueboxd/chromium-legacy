@@ -151,14 +151,7 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
-  addDummyHistoryIfNotAvailable() {
-    // Since GA will use history.length to generate hash but it is not available
-    // in platform apps, set it to 1 manually.
-    window.history.length = 1;
-  }
-
-  /** @override */
-  isMp4RecordingEnabled() {
+  shouldAddFakeHistory() {
     return true;
   }
 
@@ -227,6 +220,15 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
+  async initCameraUsageMonitor(exploitUsage, releaseUsage) {
+    // For platform app, since the multi-window behavior is handled in
+    // background page, we can assume when the new CCA instance is launched,
+    // the camera usage has been already released by the previous CCA instance
+    // and we can safely use the camera.
+    await exploitUsage();
+  }
+
+  /** @override */
   setupUnloadListener(listener) {
     // Platform app should use chrome.app.window.AppWindow onClosed event
     // listener in background page instead of window unload event listener.
@@ -241,6 +243,11 @@ class ChromeAppBrowserProxy {
   /** @override */
   getUntrustedOrigin() {
     return UntrustedOrigin.CHROME_EXTENSION;
+  }
+
+  /** @override */
+  setBeforeUnloadListenerEnabled(enabled) {
+    // Do nothing since beforeunload event is unavailable for platform apps.
   }
 }
 

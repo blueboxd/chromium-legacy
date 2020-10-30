@@ -21,6 +21,16 @@ import {UntrustedOrigin} from '../type.js';
 import {BrowserProxy} from './browser_proxy_interface.js';
 
 /**
+ * The 'beforeunload' listener which will show confirm dialog when trying to
+ * close window.
+ * @param {!Event} event The 'beforeunload' event.
+ */
+function beforeUnloadListener(event) {
+  event.preventDefault();
+  event.returnValue = '';
+}
+
+/**
  * The WebUI implementation of the CCA's interaction with the browser.
  * @implements {BrowserProxy}
  */
@@ -144,12 +154,7 @@ class WebUIBrowserProxy {
   }
 
   /** @override */
-  addDummyHistoryIfNotAvailable() {
-    // no-ops
-  }
-
-  /** @override */
-  isMp4RecordingEnabled() {
+  shouldAddFakeHistory() {
     return false;
   }
 
@@ -165,6 +170,12 @@ class WebUIBrowserProxy {
   }
 
   /** @override */
+  async initCameraUsageMonitor(exploitUsage, releaseUsage) {
+    return ChromeHelper.getInstance().initCameraUsageMonitor(
+        exploitUsage, releaseUsage);
+  }
+
+  /** @override */
   setupUnloadListener(listener) {
     window.addEventListener('unload', listener);
   }
@@ -177,6 +188,15 @@ class WebUIBrowserProxy {
   /** @override */
   getUntrustedOrigin() {
     return UntrustedOrigin.CHROME_UNTRUSTED;
+  }
+
+  /** @override */
+  setBeforeUnloadListenerEnabled(enabled) {
+    if (enabled) {
+      window.addEventListener('beforeunload', beforeUnloadListener);
+    } else {
+      window.removeEventListener('beforeunload', beforeUnloadListener);
+    }
   }
 }
 

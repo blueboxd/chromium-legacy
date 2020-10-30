@@ -170,12 +170,6 @@ extern const base::Feature kHelpAppFirstRun;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kHelpAppSearchServiceIntegration;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kImeInputLogicHmm;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kImeInputLogicFst;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kImeInputLogicMozc;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeMojoDecoder;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeOptionsInSettings;
@@ -246,6 +240,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotesNotification;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotesNotificationAllChannels;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kReleaseNotesSuggestionChip;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kFiltersInRecents;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kScanningUI;

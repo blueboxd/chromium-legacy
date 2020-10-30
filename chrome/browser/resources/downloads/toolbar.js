@@ -18,6 +18,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import {PageHandlerInterface} from './downloads.mojom-webui.js';
 import {SearchService} from './search_service.js';
 
 Polymer({
@@ -44,7 +45,7 @@ Polymer({
     },
   },
 
-  /** @private {?downloads.mojom.PageHandlerInterface} */
+  /** @private {?PageHandlerInterface} */
   mojoHandler_: null,
 
   /** @override */
@@ -90,11 +91,6 @@ Polymer({
         this.items.some(data => !data.isDangerous && !data.isMixedContent);
     getToastManager().show(loadTimeData.getString('toastClearedAll'),
         /* hideSlotted= */ !canUndo);
-    if (canUndo) {
-      this.fire('iron-announce', {
-        text: loadTimeData.getString('undoDescription'),
-      });
-    }
   },
 
   /** @private */

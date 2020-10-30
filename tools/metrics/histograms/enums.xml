@@ -2981,6 +2981,7 @@ Unknown properties are collapsed to zero. -->
   <int value="34" label="LaCrOS"/>
   <int value="35" label="Remote App"/>
   <int value="36" label="Borealis App"/>
+  <int value="37" label="Help App"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
@@ -3145,6 +3146,21 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Shortcut install, menu showed 'Add To Homescreen'"/>
   <int value="5"
       label="Shortcut install, menu showed 'Install' (failure mode)"/>
+</enum>
+
+<enum name="AppWillTerminateReceived">
+  <int value="0" label="WasNotReceivedForXte">
+    ApplicationWillTerminate notification was not received for this XTE.
+  </int>
+  <int value="1" label="WasNotReceivedForUte">
+    ApplicationWillTerminate notification was not received for this UTE.
+  </int>
+  <int value="2" label="WasReceivedForXte">
+    ApplicationWillTerminate notification was received for this XTE.
+  </int>
+  <int value="3" label="WasReceivedForUte">
+    ApplicationWillTerminate notification was received for this UTE.
+  </int>
 </enum>
 
 <enum name="AppWindowDragEndWindowState">
@@ -42324,7 +42340,6 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
   <int value="-1408370474" label="AssistantRoutines:enabled"/>
   <int value="-1408288176" label="enable-account-consistency"/>
-  <int value="-1407769602" label="UsageStats:disabled"/>
   <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
   <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
   <int value="-1404469375" label="RemoteCopyProgressNotification:enabled"/>
@@ -45042,7 +45057,6 @@ from previous Chrome versions.
   <int value="1300753556" label="ManualPasswordGenerationAndroid:disabled"/>
   <int value="1301902557" label="AutofillCreditCardAuthentication:disabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>
-  <int value="1303260487" label="UsageStats:enabled"/>
   <int value="1304636193" label="ArcEnableUnifiedAudioFocus:enabled"/>
   <int value="1305792241" label="SafeBrowsingEnhancedProtection:disabled"/>
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>

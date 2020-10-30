@@ -1535,8 +1535,7 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
   if (buffers_needing_clearing == 0 || (mask && framebuffer_binding_))
     return kSkipped;
 
-  WebGLContextAttributes* context_attributes = getContextAttributes();
-  if (!context_attributes) {
+  if (isContextLost()) {
     // Unlikely, but context was lost.
     return kSkipped;
   }
@@ -1558,14 +1557,19 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
       true, true, true,
       !GetDrawingBuffer()->RequiresAlphaChannelToBePreserved());
   GLbitfield clear_mask = GL_COLOR_BUFFER_BIT;
-  if (context_attributes->depth()) {
+
+  const bool has_depth =
+      CreationAttributes().depth && GetDrawingBuffer()->HasDepthBuffer();
+  const bool has_stencil =
+      CreationAttributes().stencil && GetDrawingBuffer()->HasStencilBuffer();
+
+  if (has_depth) {
     if (!combined_clear || !depth_mask_ || !(mask & GL_DEPTH_BUFFER_BIT))
       ContextGL()->ClearDepthf(1.0f);
     clear_mask |= GL_DEPTH_BUFFER_BIT;
     ContextGL()->DepthMask(true);
   }
-  if (context_attributes->stencil() ||
-      GetDrawingBuffer()->HasImplicitStencilBuffer()) {
+  if (has_stencil || GetDrawingBuffer()->HasImplicitStencilBuffer()) {
     if (combined_clear && (mask & GL_STENCIL_BUFFER_BIT))
       ContextGL()->ClearStencil(clear_stencil_ & stencil_mask_);
     else
@@ -1895,27 +1899,12 @@ bool WebGLRenderingContextBase::ValidateAndUpdateBufferBindTarget(
   return true;
 }
 
-void WebGLRenderingContextBase::bindBufferImpl(GLenum target,
-                                               WebGLBuffer* buffer) {
+void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer) {
   if (!ValidateNullableWebGLObject("bindBuffer", buffer))
     return;
   if (!ValidateAndUpdateBufferBindTarget("bindBuffer", target, buffer))
     return;
   ContextGL()->BindBuffer(target, ObjectOrZero(buffer));
-}
-
-void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer) {
-  fast_call_.FlushDeferredEvents(this);
-
-  bindBufferImpl(target, buffer);
-}
-
-void WebGLRenderingContextBase::bindBuffer(
-    GLenum target,
-    WebGLBuffer* buffer,
-    v8::FastApiCallbackOptions& options) {
-  auto scoped_call = fast_call_.EnterScoped(&options.fallback);
-  bindBufferImpl(target, buffer);
 }
 
 void WebGLRenderingContextBase::bindFramebuffer(GLenum target,
@@ -1946,8 +1935,8 @@ void WebGLRenderingContextBase::bindRenderbuffer(
     render_buffer->SetHasEverBeenBound();
 }
 
-void WebGLRenderingContextBase::bindTextureImpl(GLenum target,
-                                                WebGLTexture* texture) {
+void WebGLRenderingContextBase::bindTexture(GLenum target,
+                                            WebGLTexture* texture) {
   if (!ValidateNullableWebGLObject("bindTexture", texture))
     return;
   if (texture && texture->GetTarget() && texture->GetTarget() != target) {
@@ -2020,21 +2009,6 @@ void WebGLRenderingContextBase::bindTextureImpl(GLenum target,
   // platforms is fairly involved (will require a HashMap from texture ID
   // in all ports), and we have not had any complaints, so the logic has
   // been removed.
-}
-
-void WebGLRenderingContextBase::bindTexture(GLenum target,
-                                            WebGLTexture* texture) {
-  fast_call_.FlushDeferredEvents(this);
-
-  bindTextureImpl(target, texture);
-}
-
-void WebGLRenderingContextBase::bindTexture(
-    GLenum target,
-    WebGLTexture* texture,
-    v8::FastApiCallbackOptions& options) {
-  auto scoped_call = fast_call_.EnterScoped(&options.fallback);
-  bindTextureImpl(target, texture);
 }
 
 void WebGLRenderingContextBase::blendColor(GLfloat red,
@@ -2739,9 +2713,9 @@ bool WebGLRenderingContextBase::ValidateWebGLProgramOrShader(
   return true;
 }
 
-void WebGLRenderingContextBase::drawArrays(GLenum mode,
-                                           GLint first,
-                                           GLsizei count) {
+void WebGLRenderingContextBase::drawArraysImpl(GLenum mode,
+                                               GLint first,
+                                               GLsizei count) {
   if (!ValidateDrawArrays("drawArrays"))
     return;
 
@@ -2757,18 +2731,10 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode,
   ContextGL()->DrawArrays(mode, first, count);
 }
 
-void WebGLRenderingContextBase::drawArrays(
-    GLenum mode,
-    GLint first,
-    GLsizei count,
-    v8::FastApiCallbackOptions& options) {
-  drawArrays(mode, first, count);
-}
-
-void WebGLRenderingContextBase::drawElements(GLenum mode,
-                                             GLsizei count,
-                                             GLenum type,
-                                             int64_t offset) {
+void WebGLRenderingContextBase::drawElementsImpl(GLenum mode,
+                                                 GLsizei count,
+                                                 GLenum type,
+                                                 int64_t offset) {
   if (!ValidateDrawElements("drawElements", type, offset))
     return;
 
@@ -2784,15 +2750,6 @@ void WebGLRenderingContextBase::drawElements(GLenum mode,
   ContextGL()->DrawElements(
       mode, count, type,
       reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
-}
-
-void WebGLRenderingContextBase::drawElements(
-    GLenum mode,
-    GLsizei count,
-    GLenum type,
-    int64_t offset,
-    v8::FastApiCallbackOptions& options) {
-  drawElements(mode, count, type, offset);
 }
 
 void WebGLRenderingContextBase::DrawArraysInstancedANGLE(GLenum mode,
@@ -8528,8 +8485,8 @@ void WebGLRenderingContextBase::ApplyStencilTest() {
   if (framebuffer_binding_) {
     have_stencil_buffer = framebuffer_binding_->HasStencilBuffer();
   } else {
-    WebGLContextAttributes* attributes = getContextAttributes();
-    have_stencil_buffer = attributes && attributes->stencil();
+    have_stencil_buffer = !isContextLost() && CreationAttributes().stencil &&
+                          GetDrawingBuffer()->HasStencilBuffer();
   }
   EnableOrDisable(GL_STENCIL_TEST, stencil_enabled_ && have_stencil_buffer);
 }

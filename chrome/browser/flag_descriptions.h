@@ -1842,9 +1842,6 @@ extern const char kVideoTutorialsInstantFetchDescription[];
 extern const char kPrefetchNotificationSchedulingIntegrationName[];
 extern const char kPrefetchNotificationSchedulingIntegrationDescription[];
 
-extern const char kUsageStatsDescription[];
-extern const char kUsageStatsName[];
-
 extern const char kUseChimeAndroidSdkDescription[];
 extern const char kUseChimeAndroidSdkName[];
 
@@ -2465,15 +2462,6 @@ extern const char kImeAssistPersonalInfoDescription[];
 
 extern const char kImeEmojiSuggestAdditionName[];
 extern const char kImeEmojiSuggestAdditionDescription[];
-
-extern const char kImeInputLogicFstName[];
-extern const char kImeInputLogicFstDescription[];
-
-extern const char kImeInputLogicHmmName[];
-extern const char kImeInputLogicHmmDescription[];
-
-extern const char kImeInputLogicMozcName[];
-extern const char kImeInputLogicMozcDescription[];
 
 extern const char kImeMozcProtoName[];
 extern const char kImeMozcProtoDescription[];

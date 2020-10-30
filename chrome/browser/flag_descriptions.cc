@@ -1137,7 +1137,7 @@ const char kEffectiveConnectionType4GDescription[] = "4G";
 const char kFileHandlingAPIName[] = "File Handling API";
 const char kFileHandlingAPIDescription[] =
     "Enables the file handling API, allowing websites to register as file "
-    "handlers. This depends on native-file-system";
+    "handlers.";
 
 const char kFillOnAccountSelectName[] = "Fill passwords on account selection";
 const char kFillOnAccountSelectDescription[] =
@@ -3192,12 +3192,6 @@ const char kUpdateNotificationServiceImmediateShowOptionName[] =
 const char kUpdateNotificationServiceImmediateShowOptionDescription[] =
     "Show update notification right immediately";
 
-const char kUsageStatsDescription[] =
-    "When set, enables sharing of per-domain usage stats with the Digital "
-    "Wellbeing app on Android, and allows Digital Wellbeing to suspend access "
-    "to websites in order to enforce user-defined time limits.";
-const char kUsageStatsName[] = "Share Usage Stats with Digital Wellbeing";
-
 const char kUseChimeAndroidSdkDescription[] =
     "Enable Chime SDK to receive push notification.";
 const char kUseChimeAndroidSdkName[] = "Use Chime SDK";
@@ -4233,18 +4227,6 @@ const char kImeEmojiSuggestAdditionName[] =
     "Enable emoji suggestion (addition)";
 const char kImeEmojiSuggestAdditionDescription[] =
     "Enable emoji suggestion as addition to the text written for native IME.";
-
-const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
-const char kImeInputLogicFstDescription[] =
-    "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
-
-const char kImeInputLogicHmmName[] = "Enable HMM Input Logic on IME";
-const char kImeInputLogicHmmDescription[] =
-    "Enable HMM Input Logic to replace the IME legacy input logic on NaCl";
-
-const char kImeInputLogicMozcName[] = "Enable MOZC Input Logic on IME";
-const char kImeInputLogicMozcDescription[] =
-    "Enable MOZC Input Logic to replace the IME legacy input logic on NaCl";
 
 const char kImeMozcProtoName[] = "Enable protobuf on Japanese IME";
 const char kImeMozcProtoDescription[] =

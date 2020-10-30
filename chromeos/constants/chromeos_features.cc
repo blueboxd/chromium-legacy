@@ -257,8 +257,8 @@ const base::Feature kExoPointerLock{"ExoPointerLock",
 
 // Enables policy that controls feature to allow Family Link accounts on school
 // owned devices.
-const base::Feature kFamilyLinkOnSchoolDevice{
-    "FamilyLinkOnSchoolDevice", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFamilyLinkOnSchoolDevice{"FamilyLinkOnSchoolDevice",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the camera folder handling in files app.
 const base::Feature kFilesCameraFolder{"FilesCameraFolder",
@@ -366,21 +366,6 @@ const base::Feature kHelpAppFirstRun{"HelpAppFirstRun",
 // Enable the search service integration in the Help app.
 const base::Feature kHelpAppSearchServiceIntegration{
     "HelpAppSearchServiceIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable or disable Unified Input Logic for HMM decoder in the IME extension
-// on Chrome OS.
-const base::Feature kImeInputLogicHmm{"ImeInputLogicHmm",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable or disable Unified Input Logic for FST decoder in the IME extension
-// on Chrome OS.
-const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable or disable Unified Input Logic for Mozc decoder in the IME extension
-// on Chrome OS.
-const base::Feature kImeInputLogicMozc{"ImeInputLogicMozc",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable IME decoder via Mojo connection on Chrome OS.
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
@@ -536,6 +521,10 @@ const base::Feature kReleaseNotesNotification{"ReleaseNotesNotification",
 // channels. Used for testing.
 const base::Feature kReleaseNotesNotificationAllChannels{
     "ReleaseNotesNotificationAllChannels", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables Release Notes suggestion chip on Chrome OS.
+const base::Feature kReleaseNotesSuggestionChip{
+    "ReleaseNotesSuggestionChip", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables an experimental scanning UI on Chrome OS.
 const base::Feature kScanningUI{"ScanningUI",

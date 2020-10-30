@@ -3586,18 +3586,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeEmojiSuggestAdditionName,
      flag_descriptions::kImeEmojiSuggestAdditionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEmojiSuggestAddition)},
-    {"enable-cros-ime-input-logic-fst",
-     flag_descriptions::kImeInputLogicFstName,
-     flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
-    {"enable-cros-ime-input-logic-hmm",
-     flag_descriptions::kImeInputLogicHmmName,
-     flag_descriptions::kImeInputLogicHmmDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicHmm)},
-    {"enable-cros-ime-input-logic-mozc",
-     flag_descriptions::kImeInputLogicMozcName,
-     flag_descriptions::kImeInputLogicMozcDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicMozc)},
     {"enable-cros-ime-mozc-proto", flag_descriptions::kImeMozcProtoName,
      flag_descriptions::kImeMozcProtoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeMozcProto)},
@@ -5721,9 +5709,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid, MULTI_VALUE_TYPE(kNotificationSchedulerChoices)},
 
 #if defined(OS_ANDROID)
-    {"usage-stats", flag_descriptions::kUsageStatsName,
-     flag_descriptions::kUsageStatsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kUsageStatsFeature)},
 
     {"use-chime-android-sdk", flag_descriptions::kUseChimeAndroidSdkName,
      flag_descriptions::kUseChimeAndroidSdkDescription, kOsAndroid,

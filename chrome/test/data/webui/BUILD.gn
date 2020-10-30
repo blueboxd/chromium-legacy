@@ -26,7 +26,7 @@ if (include_js_tests) {
       "history/history_focus_test.js",
       "print_preview/print_preview_interactive_ui_tests.js",
       "settings/cr_settings_v3_interactive_ui_tests.js",
-      "tab_search_merge/tab_search_interactive_ui_tests.js",
+      "tab_search/tab_search_interactive_ui_tests.js",
     ]
 
     gen_include_files = [
@@ -97,7 +97,7 @@ if (include_js_tests) {
       "settings/a11y/v3_a11y_browsertest.js",
       "settings/cr_settings_v3_browsertest.js",
       "settings/settings_idle_load_v3_browsertest.js",
-      "tab_search_merge/tab_search_browsertest.js",
+      "tab_search/tab_search_browsertest.js",
       "text_defaults_browsertest.js",
       "webui_resource_async_browsertest.js",
     ]
@@ -353,7 +353,6 @@ if (include_js_tests) {
     sources = [
       "bluetooth_internals_browsertest.js",
       "cr_components/cr_components_mojo_browsertest.js",
-      "downloads/downloads_browsertest.js",
       "engagement/site_engagement_browsertest.js",
       "interventions_internals_browsertest.js",
       "media/media_engagement_browsertest.js",
@@ -381,25 +380,18 @@ if (include_js_tests) {
       deps += [ "//chromeos/services/machine_learning/public/cpp:test_support" ]
     }
 
-    extra_js_files = [ "//chrome/browser/resources/downloads/constants.js" ]
-
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
-  if (is_win || is_mac || is_linux || is_chromeos) {
-    # discards_browsertest.js is the only test suite here for now, and it's
-    # desktop-only. When more test suites are converted to type "mojo_webui",
-    # this target should be defined unconditionally and this outer condition
-    # used only to constrain the inclusion of discards_browsertest.js.
-    js2gtest("browser_tests_js_mojo_webui") {
-      test_type = "mojo_webui"
-      sources = [ "discards/discards_browsertest.js" ]
-      defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-      data = [ "mojo_webui_test_support.js" ]
+  js2gtest("browser_tests_js_mojo_webui") {
+    test_type = "mojo_webui"
+    sources = [ "downloads/downloads_browsertest.js" ]
+    if (is_win || is_mac || is_linux || is_chromeos) {
+      sources += [ "discards/discards_browsertest.js" ]
     }
-  } else {
-    group("browser_tests_js_mojo_webui") {
-    }
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+    data = [ "mojo_webui_test_support.js" ]
+    extra_js_files = [ "//chrome/browser/resources/downloads/constants.js" ]
   }
 
   js2gtest("interactive_ui_tests_js_mojo_lite_webui") {
@@ -488,7 +480,7 @@ group("closure_compile") {
     "read_later:closure_compile",
     "settings:closure_compile",
     "signin:closure_compile",
-    "tab_search_merge:closure_compile",
+    "tab_search:closure_compile",
     "tab_strip:closure_compile",
 
     # TODO(crbug.com/1000989): Add page specific targets here.

@@ -30,6 +30,12 @@ class View;
 // Handles events on Widgets in context-specific ways.
 class VIEWS_EXPORT WidgetDelegate {
  public:
+  using ClientViewFactory =
+      base::OnceCallback<std::unique_ptr<ClientView>(Widget*)>;
+  using NonClientFrameViewFactory =
+      base::OnceCallback<std::unique_ptr<NonClientFrameView>(Widget*)>;
+  using OverlayViewFactory = base::OnceCallback<std::unique_ptr<View>()>;
+
   struct Params {
     Params();
     ~Params();
@@ -60,6 +66,14 @@ class VIEWS_EXPORT WidgetDelegate {
     // If true, focus moves out of this Widget and to this Widget's toplevel
     // Widget; if false, focus cycles within this Widget.
     bool focus_traverses_out = false;
+
+    // Controls whether the user can traverse widget views using up/down and
+    // left/right arrow keys in addition to TAB.
+    // TODO(dfried): Can only be set on top-level widgets. If we need to enable
+    // this for child widgets, we'll need to move away from checking
+    // FocusManager::arrow_key_traversal_enabled_for_widget_ on arrow key press
+    // to checking the current view's widget's enable_arrow_key_traversal().
+    bool enable_arrow_key_traversal = false;
 
     // The widget's icon, if any.
     gfx::ImageSkia icon;
@@ -306,6 +320,7 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetCanMinimize(bool can_minimize);
   void SetCanResize(bool can_resize);
   void SetFocusTraversesOut(bool focus_traverses_out);
+  void SetEnableArrowKeyTraversal(bool enable_arrow_key_traversal);
   void SetIcon(const gfx::ImageSkia& icon);
   void SetInitiallyFocusedView(View* initially_focused_view);
   void SetModalType(ui::ModalType modal_type);
@@ -342,6 +357,10 @@ class VIEWS_EXPORT WidgetDelegate {
   void RegisterWindowClosingCallback(base::OnceClosure callback);
   void RegisterDeleteDelegateCallback(base::OnceClosure callback);
 
+  void SetClientViewFactory(ClientViewFactory factory);
+  void SetNonClientFrameViewFactory(NonClientFrameViewFactory factory);
+  void SetOverlayViewFactory(OverlayViewFactory factory);
+
   // Called to notify the WidgetDelegate of changes to the state of its Widget.
   // It is not usually necessary to call these from client code.
   void WidgetInitializing(Widget* widget);
@@ -353,6 +372,9 @@ class VIEWS_EXPORT WidgetDelegate {
   bool ShouldCenterWindowTitleText() const;
 
   bool focus_traverses_out() const { return params_.focus_traverses_out; }
+  bool enable_arrow_key_traversal() const {
+    return params_.enable_arrow_key_traversal;
+  }
   bool owned_by_widget() const { return params_.owned_by_widget; }
 
   void set_internal_name(std::string name) { params_.internal_name = name; }
@@ -381,6 +403,10 @@ class VIEWS_EXPORT WidgetDelegate {
   std::vector<base::OnceClosure> window_will_close_callbacks_;
   std::vector<base::OnceClosure> window_closing_callbacks_;
   std::vector<base::OnceClosure> delete_delegate_callbacks_;
+
+  ClientViewFactory client_view_factory_;
+  NonClientFrameViewFactory non_client_frame_view_factory_;
+  OverlayViewFactory overlay_view_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };

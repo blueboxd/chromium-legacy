@@ -14778,7 +14778,7 @@
     },
     {
       'name': 'PacHttpsUrlStrippingEnabled',
-      'owners': ['eroman@chromium.org'],
+      'owners': ['net-dev@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [ 'chrome.*:52-74', 'chrome_os:52-74' ],
@@ -23504,7 +23504,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['agawronska@chromium.org', 'cros-families-eng@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:87-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,

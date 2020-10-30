@@ -52,7 +52,7 @@ if (enable_js_type_check) {
         "settings:closure_compile",
         "settings:closure_compile_module",
         "signin:closure_compile",
-        "tab_search_merge:closure_compile",
+        "tab_search:closure_compile",
         "usb_internals:closure_compile",
         "user_manager:closure_compile",
         "web_app_internals:closure_compile",
@@ -225,9 +225,9 @@ if (!is_android) {
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
-    source = "tab_search_merge/tab_search_resources.grd"
+    source = "tab_search/tab_search_resources.grd"
     deps = [
-      "//chrome/browser/resources/tab_search_merge:web_components",
+      "//chrome/browser/resources/tab_search:web_components",
       "//chrome/browser/ui/webui/tab_search:mojo_bindings_js",
     ]
     defines = chrome_grit_defines
@@ -346,36 +346,6 @@ if (is_chromeos) {
       "grit/nearby_shared_resources_v3_map.cc",
       "grit/nearby_shared_resources_v3_map.h",
       "nearby_shared_resources_v3.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-
-  grit("os_settings_resources") {
-    grit_flags = [
-      "-E",
-      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      "-E",
-      "root_src_dir=" + rebase_path("//", root_build_dir),
-    ]
-
-    defines = chrome_grit_defines
-
-    # These arguments are needed since the grd is generated at build time.
-    enable_input_discovery_for_gn_analyze = false
-    defines += [ "SHARED_INTERMEDIATE_DIR=" +
-                 rebase_path(root_gen_dir, root_build_dir) ]
-    settings_gen_dir = "$root_gen_dir/chrome/browser/resources/settings"
-    source = "$settings_gen_dir/chromeos/os_settings_resources.grd"
-    deps = [
-      "//chrome/browser/resources/settings/chromeos:build_grd",
-      "//chrome/browser/ui/webui/settings/chromeos:mojom_js",
-    ]
-
-    outputs = [
-      "grit/os_settings_resources.h",
-      "grit/os_settings_resources_map.cc",
-      "grit/os_settings_resources_map.h",
-      "os_settings_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

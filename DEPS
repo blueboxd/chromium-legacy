@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'df208a341b645f868148218da13c48e9a8e6402a',
+  'skia_revision': 'de48febf8bd268ea00f80338f0ac981a3f7a6036',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '96789f0aa67d93ea125191724666dab1be5a639c',
+  'v8_revision': '69c856dc816ff1dd65fcc536095b44399a7434b9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -226,7 +226,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '415d1ec806bb37d92cb8deee893791c682cb54d5',
+  'pdfium_revision': '1443e5ac0acfb54ef2b6c2da3b26a8758bac1e6a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7030291356e4ba8dd8a59c7a632764e5b8238a14',
+  'catapult_revision': 'dcd4fb3a509b843e2a37f1eb76efac93737657fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6bc1c128830e9b51d34325aae4b1d284788b997b',
+  'devtools_frontend_revision': 'af569c7b8893a54e104cae6b9701b106b57e719c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fa71f05ed064d6165762f6752786812547574d6f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@48c16e2ff4611ed26d37a73a26bc53519cabf5df',
     'condition': 'checkout_src_internal',
   },
 

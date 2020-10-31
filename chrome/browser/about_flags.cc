@@ -2588,11 +2588,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription,
      kOsAura,
      FEATURE_VALUE_TYPE(features::kOverlayScrollbarFlashAfterAnyScrollUpdate)},
-    {"overlay-scrollbars-flash-when-mouse-enter",
-     flag_descriptions::kOverlayScrollbarsFlashWhenMouseEnterName,
-     flag_descriptions::kOverlayScrollbarsFlashWhenMouseEnterDescription,
-     kOsAura,
-     FEATURE_VALUE_TYPE(features::kOverlayScrollbarFlashWhenMouseEnter)},
 #endif  // USE_AURA
     {"enable-quic", flag_descriptions::kQuicName,
      flag_descriptions::kQuicDescription, kOsAll,
@@ -3649,8 +3644,8 @@ const FeatureEntry kFeatureEntries[] = {
          ::switches::kEnableExperimentalAccessibilityChromeVoxTutorial)},
     {"enable-magnifier-new-focus-following",
      flag_descriptions::kMagnifierNewFocusFollowingName,
-     flag_descriptions::kMagnifierNewFocusFollowingDescription,
-     kOsCrOS, FEATURE_VALUE_TYPE(features::kMagnifierNewFocusFollowing)},
+     flag_descriptions::kMagnifierNewFocusFollowingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kMagnifierNewFocusFollowing)},
 #endif  // OS_CHROMEOS
 #if defined(OS_MAC)
     {"enable-immersive-fullscreen-toolbar",
@@ -5518,10 +5513,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
-    {"privacy-elevated-android", flag_descriptions::kPrivacyElevatedAndroidName,
-     flag_descriptions::kPrivacyElevatedAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kPrivacyElevatedAndroid)},
-
     {"privacy-reordered-android",
      flag_descriptions::kPrivacyReorderedAndroidName,
      flag_descriptions::kPrivacyReorderedAndroidDescription, kOsAndroid,
@@ -6687,6 +6678,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnablePasswordInfoBarAccountIndicationFooter)},
+
+    {"incognito-screenshot", flag_descriptions::kIncognitoScreenshotName,
+     flag_descriptions::kIncognitoScreenshotDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kIncognitoScreenshot)},
 #endif
     {"use-first-party-set", flag_descriptions::kUseFirstPartySetName,
      flag_descriptions::kUseFirstPartySetDescription, kOsAll,

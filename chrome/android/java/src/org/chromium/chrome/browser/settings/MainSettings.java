@@ -131,7 +131,6 @@ public class MainSettings extends PreferenceFragmentCompat
                 Profile.getLastUsedRegularProfile());
         if (signinManager.isSigninSupported()) {
             signinManager.addSignInStateObserver(this);
-            mSignInPreference.registerForUpdates();
         }
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
@@ -146,7 +145,6 @@ public class MainSettings extends PreferenceFragmentCompat
                 Profile.getLastUsedRegularProfile());
         if (signinManager.isSigninSupported()) {
             signinManager.removeSignInStateObserver(this);
-            mSignInPreference.unregisterForUpdates();
         }
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
@@ -162,20 +160,6 @@ public class MainSettings extends PreferenceFragmentCompat
 
     private void createPreferences() {
         SettingsUtils.addPreferencesFromResource(this, R.xml.main_preferences);
-        // If the flag for elevating the privacy is enabled, put the "Privacy"
-        // into the reserved space in the Basics section and move the "Homepage"
-        // down to Advanced to where "Privacy" was. See (crbug.com/1099233) for
-        // more context.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_ELEVATED_ANDROID)) {
-            Preference privacyPreference = findPreference(PREF_PRIVACY);
-            Preference homepagePreference = findPreference(PREF_HOMEPAGE);
-            getPreferenceScreen().removePreference(privacyPreference);
-            getPreferenceScreen().removePreference(homepagePreference);
-            privacyPreference.setOrder(PRIVACY_ORDER_ELEVATED);
-            homepagePreference.setOrder(PRIVACY_ORDER_DEFAULT);
-            getPreferenceScreen().addPreference(privacyPreference);
-            getPreferenceScreen().addPreference(homepagePreference);
-        }
 
         // If the flag for adding a "Security" section is enabled, the "Privacy" section will be
         // renamed to a "Privacy and security" section and the "Security" section will be added
@@ -219,11 +203,6 @@ public class MainSettings extends PreferenceFragmentCompat
         if (!TemplateUrlServiceFactory.get().isLoaded()) {
             TemplateUrlServiceFactory.get().registerLoadListener(this);
             TemplateUrlServiceFactory.get().load();
-        }
-
-        // This checks whether the flag for Downloads Preferences is enabled.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
-            getPreferenceScreen().removePreference(findPreference(PREF_DOWNLOADS));
         }
 
         // Only show the Safety check section if both Safety check and Password check flags are on.
@@ -409,14 +388,10 @@ public class MainSettings extends PreferenceFragmentCompat
         // "You and Google" section header if the personalized sync promo is shown.
         boolean isShowingPersonalizedPromo =
                 mSignInPreference.getState() == SignInPreference.State.PERSONALIZED_PROMO;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            findPreference(PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
-                    .setVisible(!isShowingPersonalizedPromo);
-        } else if (isShowingPersonalizedPromo) {
-            removePreferenceIfPresent(PREF_ACCOUNT_SECTION);
-        } else {
-            addPreferenceIfAbsent(PREF_ACCOUNT_SECTION);
-        }
+        String prefName = ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                ? PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION
+                : PREF_ACCOUNT_SECTION;
+        findPreference(prefName).setVisible(!isShowingPersonalizedPromo);
     }
 
     // TemplateUrlService.LoadListener implementation.

@@ -238,7 +238,7 @@
   {
     "name": "autofill-always-return-cloud-tokenized-card",
     "owners": [ "aneeshali@google.com", "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 94
   },
   {
     "name": "autofill-assistant-chrome-entry",
@@ -293,7 +293,7 @@
   {
     "name": "autofill-enable-virtual-card",
     "owners": [ "siyua", "jsaul@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 94
   },
   {
     "name": "autofill-enforce-min-required-fields-for-heuristics",
@@ -2894,6 +2894,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "incognito-screenshot",
+    "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "infobar-overlay-ui",
     "owners": [ "sczs", "bling-flags" ],
     "expiry_milestone": 85
@@ -3009,7 +3014,7 @@
   {
     "name": "legacy-tls-enforced",
     "owners": [ "cthomp" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "legacy-tls-interstitial",
@@ -3649,11 +3654,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "overlay-scrollbars-flash-when-mouse-enter",
-    "owners": [ "chaopeng", "bokan", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "overlay-strategies",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & debugging on ChromeOS, which has no way to
@@ -3712,7 +3712,7 @@
   },
   {
     "name": "password-change-support",
-    "owners": [ "selakovic" ],
+    "owners": [ "selakovic@google.com" ],
     "expiry_milestone": 87
   },
   {
@@ -3791,11 +3791,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "policy-atomic-group-enabled",
-    "owners": [ "ydago" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
     "expiry_milestone": 86
@@ -3843,15 +3838,6 @@
       "msramek",
       "chrome-friendly-settings@google.com"],
     "expiry_milestone": 90
-  },
-  {
-    "name": "privacy-elevated-android",
-    "owners": [
-      "andzaytsev",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 89
   },
   {
     "name": "privacy-reordered-android",

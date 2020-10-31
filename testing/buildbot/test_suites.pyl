@@ -1872,6 +1872,20 @@
       },
     },
 
+    'gpu_angle_deqp_gles3_metal_gtests': {
+      'angle_deqp_gles3_metal_tests': {
+        'args': [
+          'angle_deqp_gles3_tests',
+          '--use-angle=metal',
+        ],
+        'desktop_args': [
+          '--bot-mode',
+        ],
+        'test': 'angle_deqp_gles3_tests',
+        'use_isolated_scripts_api': True,
+      },
+    },
+
     'gpu_angle_deqp_gles3_vulkan_gtests': {
       'angle_deqp_gles3_vulkan_tests': {
         'args': [
@@ -3003,6 +3017,19 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests': {
+      'webgl_conformance_fast_call': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--enable-unsafe-fast-js-calls --use-gl=angle --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 2,
@@ -4180,6 +4207,7 @@
           '--browser=android-chromium',
           '-v',
           '--passthrough',
+          '--retry-limit=2',
         ],
         'isolate_name': 'telemetry_perf_unittests',
       },
@@ -4189,6 +4217,7 @@
           '--browser=android-chromium-monochrome',
           '-v',
           '--passthrough',
+          '--retry-limit=2',
         ],
         'isolate_name': 'telemetry_perf_unittests',
       },
@@ -4201,6 +4230,7 @@
           'BrowserMinidumpTest',
           '-v',
           '--passthrough',
+          '--retry-limit=2',
         ],
         'isolate_name': 'telemetry_perf_unittests',
       },
@@ -5021,6 +5051,7 @@
       'gpu_angle_deqp_gles2_gl_gtests',
       'gpu_angle_deqp_gles2_metal_gtests',
       'gpu_angle_deqp_gles3_gl_gtests',
+      'gpu_angle_deqp_gles3_metal_gtests',
     ],
 
     'gpu_angle_deqp_win7_nvidia_gtests': [
@@ -5471,6 +5502,7 @@
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
@@ -5504,6 +5536,7 @@
       'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],

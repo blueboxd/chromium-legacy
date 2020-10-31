@@ -16,11 +16,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -56,13 +58,15 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
     private Tab mTab;
     private int mPrimaryColor;
-    private OverviewModeBehavior mOverviewModeBehavior;
+    private LayoutStateProvider mLayoutStateProvider;
 
     private boolean mIsIncognito;
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
 
     private long mNativeLocationBarModelAndroid;
+    private ObserverList<LocationBarDataProvider.Observer> mLocationBarDataObservers =
+            new ObserverList<>();
 
     /**
      * Default constructor for this class.
@@ -109,6 +113,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         mTab = tab;
         mIsIncognito = isIncognito;
         updateUsingBrandColor();
+        notifyTitleChanged();
+        notifyUrlChanged();
     }
 
     @Override
@@ -125,6 +131,16 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     }
 
     @Override
+    public void addObserver(LocationBarDataProvider.Observer observer) {
+        mLocationBarDataObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(LocationBarDataProvider.Observer observer) {
+        mLocationBarDataObservers.removeObserver(observer);
+    }
+
+    @Override
     public String getCurrentUrl() {
         // Provide NTP url instead of most recent tab url for searches in overview mode (when Start
         // Surface is enabled). .
@@ -137,6 +153,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         // Tab.getUrl() returns empty string if it does not have a URL.
         return getTab().getUrlString().trim();
+    }
+
+    public void notifyUrlChanged() {
+        for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
+            observer.onUrlChanged();
+        }
     }
 
     @Override
@@ -253,6 +275,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         return TextUtils.isEmpty(title) ? title : title.trim();
     }
 
+    public void notifyTitleChanged() {
+        for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
+            observer.onTitleChanged();
+        }
+    }
+
     @Override
     public boolean isIncognito() {
         return mIsIncognito;
@@ -266,7 +294,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public boolean isInOverviewAndShowingOmnibox() {
         if (!mShouldShowOmniboxInOverviewMode) return false;
 
-        return mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
+        return mLayoutStateProvider != null
+                && mLayoutStateProvider.isLayoutVisible(LayoutType.TAB_SWITCHER);
     }
 
     /**
@@ -297,8 +326,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         return lastUsedRegularProfile;
     }
 
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        mOverviewModeBehavior = overviewModeBehavior;
+    public void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+        mLayoutStateProvider = layoutStateProvider;
     }
 
     public void setShouldShowOmniboxInOverviewMode(boolean shouldShowOmniboxInOverviewMode) {

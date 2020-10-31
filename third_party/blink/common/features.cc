@@ -666,6 +666,12 @@ const base::Feature kThrottleInstallingServiceWorker{
 const base::FeatureParam<int> kInstallingServiceWorkerOutstandingThrottledLimit{
     &kThrottleInstallingServiceWorker, "limit", 3};
 
+// Enables storing and loading security policies (for now, referrer policy) in
+// the policy container. The policy container for the current document is
+// attached to the RenderFrameHost and mirrored to the LocalFrame in Blink.
+const base::Feature kPolicyContainer{"PolicyContainer",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kInputPredictorTypeChoice{
     "InputPredictorTypeChoice", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -782,6 +788,13 @@ const base::Feature kLogUnexpectedIPCPostedToBackForwardCachedDocuments{
 // https://github.com/WICG/pwa-url-handler/blob/master/explainer.md
 const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables Protocol handling feature in web apps. Controls parsing of
+// "protocol_handlers" field in web app manifests. See explainer for more
+// information:
+// https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/URLProtocolHandler/explainer.md
+const base::Feature kWebAppEnableProtocolHandlers{
+    "WebAppEnableProtocolHandlers", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled NV12 frames on a GPU will be forwarded to libvpx encoders
 // without conversion to I420.

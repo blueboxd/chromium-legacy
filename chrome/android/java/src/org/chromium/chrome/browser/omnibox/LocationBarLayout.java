@@ -43,10 +43,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gsa.GSAState;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -98,10 +97,10 @@ import java.util.List;
  * This class represents the location bar where the user types in URLs and
  * search terms.
  */
-public class LocationBarLayout extends FrameLayout
-        implements OnClickListener, AutocompleteDelegate, FakeboxDelegate,
-                   VoiceRecognitionHandler.Delegate, AssistantVoiceSearchService.Observer,
-                   Destroyable, UrlBarDelegate {
+public class LocationBarLayout
+        extends FrameLayout implements OnClickListener, AutocompleteDelegate, FakeboxDelegate,
+                                       VoiceRecognitionHandler.Delegate,
+                                       AssistantVoiceSearchService.Observer, UrlBarDelegate {
     private static final int KEYBOARD_HIDE_DELAY_MS = 150;
     private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
 
@@ -245,8 +244,10 @@ public class LocationBarLayout extends FrameLayout
         mVoiceRecognitionHandler = new VoiceRecognitionHandler(this);
     }
 
-    @Override
-    public void destroy() {
+    /**
+     * Called when activity is being destroyed.
+     */
+    void destroy() {
         mUrlFocusChangeListeners.clear();
 
         if (mAutocompleteCoordinator != null) {
@@ -356,10 +357,7 @@ public class LocationBarLayout extends FrameLayout
         mAutocompleteCoordinator.prefetchZeroSuggestResults();
     }
 
-    /**
-     * Handles native dependent initialization for this class.
-     */
-    public void onNativeLibraryReady() {
+    public void onFinishNativeInitialization() {
         TemplateUrlServiceFactory.get().runWhenLoaded(this::registerTemplateUrlObserver);
         mNativeInitialized = true;
 
@@ -407,7 +405,7 @@ public class LocationBarLayout extends FrameLayout
 
     public void revertChanges() {
         if (!mUrlHasFocus) {
-            setUrlToPageUrl();
+            setUrl(mLocationBarDataProvider.getCurrentUrl());
         } else {
             String currentUrl = mLocationBarDataProvider.getCurrentUrl();
             if (NativePageFactory.isNativePageUrl(
@@ -474,7 +472,7 @@ public class LocationBarLayout extends FrameLayout
     public void updateStatusIcon() {
         mStatusCoordinator.updateStatusIcon();
         // Update the URL in case the scheme change triggers a URL emphasis change.
-        setUrlToPageUrl();
+        setUrl(mLocationBarDataProvider.getCurrentUrl());
     }
 
     @Override
@@ -581,7 +579,7 @@ public class LocationBarLayout extends FrameLayout
     public void backKeyPressed() {
         setUrlBarFocus(false, null, OmniboxFocusReason.UNFOCUS);
         // Revert the URL to match the current page.
-        setUrlToPageUrl();
+        setUrl(mLocationBarDataProvider.getCurrentUrl());
         focusCurrentTab();
     }
 
@@ -596,7 +594,7 @@ public class LocationBarLayout extends FrameLayout
      * @param updateUrl Whether to update the URL as a result of this call.
      */
     public void updateLoadingState(boolean updateUrl) {
-        if (updateUrl) setUrlToPageUrl();
+        if (updateUrl) setUrl(mLocationBarDataProvider.getCurrentUrl());
         mStatusCoordinator.updateStatusIcon();
     }
 
@@ -709,7 +707,7 @@ public class LocationBarLayout extends FrameLayout
         // If the URL changed colors and is not focused, update the URL to account for the new
         // color scheme.
         if (mUrlCoordinator.setUseDarkTextColors(useDarkColors) && !mUrlBar.hasFocus()) {
-            setUrlToPageUrl();
+            setUrl(mLocationBarDataProvider.getCurrentUrl());
         }
 
         mStatusCoordinator.setUseDarkColors(useDarkColors);
@@ -733,8 +731,6 @@ public class LocationBarLayout extends FrameLayout
     public View getSecurityIconView() {
         return mStatusCoordinator.getSecurityIconView();
     }
-
-    public void setTitleToPageTitle() {}
 
     public void setShowTitle(boolean showTitle) {}
 
@@ -774,9 +770,7 @@ public class LocationBarLayout extends FrameLayout
      *
      * <p>If the current tab is null, the URL text will be cleared.
      */
-    public void setUrlToPageUrl() {
-        String currentUrl = mLocationBarDataProvider.getCurrentUrl();
-
+    protected void setUrl(String currentUrl) {
         // If the URL is currently focused, do not replace the text they have entered with the URL.
         // Once they stop editing the URL, the current tab's URL will automatically be filled in.
         if (mUrlBar.hasFocus()) {
@@ -890,8 +884,8 @@ public class LocationBarLayout extends FrameLayout
         mUrlCoordinator.setAllowFocus(focusable);
     }
 
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        mAutocompleteCoordinator.setOverviewModeBehavior(overviewModeBehavior);
+    public void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+        mAutocompleteCoordinator.setLayoutStateProvider(layoutStateProvider);
     }
 
     @CallSuper
@@ -1046,7 +1040,7 @@ public class LocationBarLayout extends FrameLayout
 
             // Focus change caused by a close-tab may result in an invalid current tab.
             if (mLocationBarDataProvider.hasTab()) {
-                setUrlToPageUrl();
+                setUrl(mLocationBarDataProvider.getCurrentUrl());
             }
 
             // Moving focus away from UrlBar(EditText) to a non-editable focus holder, such as
@@ -1218,8 +1212,8 @@ public class LocationBarLayout extends FrameLayout
 
     /**
      * Changes the text on the url bar.  The text update will be applied regardless of the current
-     * focus state (comparing to {@link #setUrlToPageUrl()} which only applies text updates when
-     * not focused).
+     * focus state (comparing to {@link #setUrlToPageUrl(mLocationBarDataProvider.getCurrentUrl())}
+     * which only applies text updates when not focused).
      *
      * @param urlBarData The contents of the URL bar, both for editing and displaying.
      * @param scrollType Specifies how the text should be scrolled in the unfocused state.

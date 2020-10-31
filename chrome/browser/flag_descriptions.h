@@ -762,6 +762,9 @@ extern const char kCompositorThreadedScrollbarScrollingDescription[];
 extern const char kImpulseScrollAnimationsName[];
 extern const char kImpulseScrollAnimationsDescription[];
 
+extern const char kIncognitoScreenshotName[];
+extern const char kIncognitoScreenshotDescription[];
+
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
@@ -1008,9 +1011,6 @@ extern const char kOverlayScrollbarsDescription[];
 extern const char kOverlayScrollbarsFlashAfterAnyScrollUpdateName[];
 extern const char kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription[];
 
-extern const char kOverlayScrollbarsFlashWhenMouseEnterName[];
-extern const char kOverlayScrollbarsFlashWhenMouseEnterDescription[];
-
 extern const char kOverlayStrategiesName[];
 extern const char kOverlayStrategiesDescription[];
 extern const char kOverlayStrategiesDefault[];
@@ -1088,9 +1088,6 @@ extern const char kPrintServerScalingDescription[];
 
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
-
-extern const char kPrivacyElevatedAndroidName[];
-extern const char kPrivacyElevatedAndroidDescription[];
 
 extern const char kPrivacyReorderedAndroidName[];
 extern const char kPrivacyReorderedAndroidDescription[];

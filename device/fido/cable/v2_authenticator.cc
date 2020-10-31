@@ -459,11 +459,8 @@ class TunnelTransport : public Transport {
 class CTAP2Processor : public Transaction {
  public:
   CTAP2Processor(std::unique_ptr<Transport> transport,
-                 std::unique_ptr<Platform> platform,
-                 Transaction::CompleteCallback complete_callback)
-      : transport_(std::move(transport)),
-        platform_(std::move(platform)),
-        complete_callback_(std::move(complete_callback)) {
+                 std::unique_ptr<Platform> platform)
+      : transport_(std::move(transport)), platform_(std::move(platform)) {
     transport_->StartReading(
         base::BindRepeating(&CTAP2Processor::OnData, base::Unretained(this)));
   }
@@ -474,7 +471,7 @@ class CTAP2Processor : public Transaction {
 
     if (!msg) {
       FIDO_LOG(ERROR) << "Closing transaction due to transport EOF";
-      std::move(complete_callback_).Run();
+      platform_->OnCompleted(transaction_done_);
       return;
     }
 
@@ -482,7 +479,7 @@ class CTAP2Processor : public Transaction {
     if (!response) {
       // Fatal error.
       // TODO: need to signal this to the UI.
-      std::move(complete_callback_).Run();
+      platform_->OnCompleted(false);
       return;
     }
 
@@ -549,7 +546,15 @@ class CTAP2Processor : public Transaction {
           return base::nullopt;
         }
 
-        std::vector<int> algorithms;
+        auto params = std::make_unique<Platform::MakeCredentialParams>();
+        params->origin = *make_cred_request.origin;
+        params->rp_id = *make_cred_request.rp_id;
+        params->challenge = *make_cred_request.challenge;
+        params->user_id = *make_cred_request.user_id;
+        params->callback =
+            base::BindOnce(&CTAP2Processor::OnMakeCredentialResponse,
+                           weak_factory_.GetWeakPtr());
+
         if (!device::cbor_extract::ForEachPublicKeyEntry(
                 *make_cred_request.cred_params, cbor::Value("alg"),
                 base::BindRepeating(
@@ -567,11 +572,10 @@ class CTAP2Processor : public Transaction {
                       out->push_back(static_cast<int>(alg));
                       return true;
                     },
-                    base::Unretained(&algorithms)))) {
+                    base::Unretained(&params->algorithms)))) {
           return base::nullopt;
         }
 
-        std::vector<std::vector<uint8_t>> excluded_credential_ids;
         if (make_cred_request.excluded_credentials &&
             !device::cbor_extract::ForEachPublicKeyEntry(
                 *make_cred_request.excluded_credentials, cbor::Value("id"),
@@ -584,19 +588,13 @@ class CTAP2Processor : public Transaction {
                       out->push_back(value.GetBytestring());
                       return true;
                     },
-                    base::Unretained(&excluded_credential_ids)))) {
+                    base::Unretained(&params->excluded_cred_ids)))) {
           return base::nullopt;
         }
 
         // TODO: plumb the rk flag through once GmsCore supports resident
         // keys. This will require support for optional maps in |Extract|.
-        platform_->MakeCredential(
-            *make_cred_request.origin, *make_cred_request.rp_id,
-            *make_cred_request.challenge, *make_cred_request.user_id,
-            algorithms, excluded_credential_ids,
-            /*resident_key_required=*/false,
-            base::BindOnce(&CTAP2Processor::OnMakeCredentialResponse,
-                           weak_factory_.GetWeakPtr()));
+        platform_->MakeCredential(std::move(params));
         return std::vector<uint8_t>();
       }
 
@@ -606,6 +604,7 @@ class CTAP2Processor : public Transaction {
           FIDO_LOG(ERROR) << "Invalid makeCredential payload";
           return base::nullopt;
         }
+
         GetAssertionRequest get_assertion_request;
         if (!device::cbor_extract::Extract<GetAssertionRequest>(
                 &get_assertion_request, kGetAssertionParseSteps,
@@ -614,7 +613,14 @@ class CTAP2Processor : public Transaction {
           return base::nullopt;
         }
 
-        std::vector<std::vector<uint8_t>> allowed_credential_ids;
+        auto params = std::make_unique<Platform::GetAssertionParams>();
+        params->origin = *get_assertion_request.origin;
+        params->rp_id = *get_assertion_request.rp_id;
+        params->challenge = *get_assertion_request.challenge;
+        params->callback =
+            base::BindOnce(&CTAP2Processor::OnGetAssertionResponse,
+                           weak_factory_.GetWeakPtr());
+
         if (get_assertion_request.allowed_credentials &&
             !device::cbor_extract::ForEachPublicKeyEntry(
                 *get_assertion_request.allowed_credentials, cbor::Value("id"),
@@ -627,16 +633,11 @@ class CTAP2Processor : public Transaction {
                       out->push_back(value.GetBytestring());
                       return true;
                     },
-                    base::Unretained(&allowed_credential_ids)))) {
+                    base::Unretained(&params->allowed_cred_ids)))) {
           return base::nullopt;
         }
 
-        platform_->GetAssertion(
-            *get_assertion_request.origin, *get_assertion_request.rp_id,
-            *get_assertion_request.challenge, allowed_credential_ids,
-            base::BindOnce(&CTAP2Processor::OnGetAssertionResponse,
-                           weak_factory_.GetWeakPtr()));
-
+        platform_->GetAssertion(std::move(params));
         return std::vector<uint8_t>();
       }
 
@@ -688,6 +689,7 @@ class CTAP2Processor : public Transaction {
                       response_payload->end());
     }
 
+    transaction_done_ = true;
     transport_->Write(std::move(response));
   }
 
@@ -725,12 +727,13 @@ class CTAP2Processor : public Transaction {
                       response_payload->end());
     }
 
+    transaction_done_ = true;
     transport_->Write(std::move(response));
   }
 
+  bool transaction_done_ = false;
   const std::unique_ptr<Transport> transport_;
   const std::unique_ptr<Platform> platform_;
-  Transaction::CompleteCallback complete_callback_;
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CTAP2Processor> weak_factory_{this};
 };
@@ -819,16 +822,19 @@ class PairingDataGenerator {
 }  // namespace
 
 Platform::BLEAdvert::~BLEAdvert() = default;
+Platform::MakeCredentialParams::MakeCredentialParams() = default;
+Platform::MakeCredentialParams::~MakeCredentialParams() = default;
+Platform::GetAssertionParams::GetAssertionParams() = default;
+Platform::GetAssertionParams::~GetAssertionParams() = default;
 Platform::~Platform() = default;
 Transport::~Transport() = default;
 Transaction::~Transaction() = default;
 
 std::unique_ptr<Transaction> TransactWithPlaintextTransport(
     std::unique_ptr<Platform> platform,
-    std::unique_ptr<Transport> transport,
-    Transaction::CompleteCallback complete_callback) {
-  return std::make_unique<CTAP2Processor>(
-      std::move(transport), std::move(platform), std::move(complete_callback));
+    std::unique_ptr<Transport> transport) {
+  return std::make_unique<CTAP2Processor>(std::move(transport),
+                                          std::move(platform));
 }
 
 std::unique_ptr<Transaction> TransactFromQRCode(
@@ -838,8 +844,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
     const std::string& authenticator_name,
     base::span<const uint8_t, 16> qr_secret,
     base::span<const uint8_t, kP256X962Length> peer_identity,
-    base::Optional<std::vector<uint8_t>> contact_id,
-    Transaction::CompleteCallback complete_callback) {
+    base::Optional<std::vector<uint8_t>> contact_id) {
   auto generate_pairing_data = PairingDataGenerator::GetClosure(
       root_secret, authenticator_name, contact_id);
 
@@ -848,7 +853,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
       std::make_unique<TunnelTransport>(platform_ptr, network_context,
                                         qr_secret, peer_identity,
                                         std::move(generate_pairing_data)),
-      std::move(platform), std::move(complete_callback));
+      std::move(platform));
 }
 
 std::unique_ptr<Transaction> TransactFromFCM(
@@ -858,8 +863,7 @@ std::unique_ptr<Transaction> TransactFromFCM(
     std::array<uint8_t, kRoutingIdSize> routing_id,
     base::span<const uint8_t, kTunnelIdSize> tunnel_id,
     base::span<const uint8_t> pairing_id,
-    base::span<const uint8_t, kClientNonceSize> client_nonce,
-    Transaction::CompleteCallback complete_callback) {
+    base::span<const uint8_t, kClientNonceSize> client_nonce) {
   std::array<uint8_t, 32> paired_secret;
   paired_secret = Derive<EXTENT(paired_secret)>(
       root_secret, pairing_id, DerivedValueType::kPairedSecret);
@@ -869,7 +873,7 @@ std::unique_ptr<Transaction> TransactFromFCM(
       std::make_unique<TunnelTransport>(platform_ptr, network_context,
                                         paired_secret, client_nonce, routing_id,
                                         tunnel_id, IdentityKey(root_secret)),
-      std::move(platform), std::move(complete_callback));
+      std::move(platform));
 }
 
 }  // namespace authenticator

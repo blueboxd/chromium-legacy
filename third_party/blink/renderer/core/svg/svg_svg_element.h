@@ -48,10 +48,11 @@ class SVGSVGElement final : public SVGGraphicsElement,
  public:
   explicit SVGSVGElement(Document&);
 
-  float IntrinsicWidth() const;
-  float IntrinsicHeight() const;
+  base::Optional<float> IntrinsicWidth() const;
+  base::Optional<float> IntrinsicHeight() const;
   FloatSize CurrentViewportSize() const;
   FloatRect CurrentViewBoxRect() const;
+  bool HasEmptyViewBox() const;
   const SVGPreserveAspectRatio* CurrentPreserveAspectRatio() const;
 
   float currentScale() const;
@@ -99,9 +100,6 @@ class SVGSVGElement final : public SVGGraphicsElement,
                         Element* anchor_node);
   bool ZoomAndPanEnabled() const;
 
-  bool HasIntrinsicWidth() const;
-  bool HasIntrinsicHeight() const;
-
   SVGAnimatedLength* x() const { return x_.Get(); }
   SVGAnimatedLength* y() const { return y_.Get(); }
   SVGAnimatedLength* width() const { return width_.Get(); }
@@ -134,6 +132,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   bool SelfHasRelativeLengths() const override;
 
+  bool HasValidViewBox() const;
   bool ShouldSynthesizeViewBox() const;
   void UpdateUserTransform();
 

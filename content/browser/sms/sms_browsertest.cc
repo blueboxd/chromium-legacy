@@ -824,16 +824,16 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordTimeoutAsOutcome) {
         mock_provider_ptr->NotifyFailure(FailureType::kPromptTimeout);
       }));
 
-  EXPECT_TRUE(ExecJs(shell(), R"(
-       navigator.credentials.get({otp: {transport: ["sms"]}});
-     )"));
-
   base::RunLoop ukm_loop;
 
   // Wait for UKM to be recorded to avoid race condition between outcome
   // capture and evaluation.
   ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                         ukm_loop.QuitClosure());
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+       navigator.credentials.get({otp: {transport: ["sms"]}});
+     )"));
 
   ukm_loop.Run();
 
@@ -885,6 +885,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordUserCancelledAsOutcome) {
+  base::HistogramTester histogram_tester;
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWebOtpBackend, switches::kWebOtpBackendUserConsent);
   GURL url = GetTestUrl(nullptr, "simple_page.html");
@@ -901,10 +902,6 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordUserCancelledAsOutcome) {
         mock_provider_ptr->NotifyFailure(FailureType::kPromptCancelled);
       }));
 
-  EXPECT_TRUE(ExecJs(shell(), R"(
-       navigator.credentials.get({otp: {transport: ["sms"]}});
-     )"));
-
   base::RunLoop ukm_loop;
 
   // Wait for UKM to be recorded to avoid race condition between outcome
@@ -912,9 +909,16 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordUserCancelledAsOutcome) {
   ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                         ukm_loop.QuitClosure());
 
+  EXPECT_TRUE(ExecJs(shell(), R"(
+       navigator.credentials.get({otp: {transport: ["sms"]}});
+     )"));
+
   ukm_loop.Run();
 
+  content::FetchHistogramsFromChildProcesses();
   ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kUserCancelled);
+  ExpectTimingUKM("TimeUserCancelMs");
+  histogram_tester.ExpectTotalCount("Blink.Sms.Receive.TimeUserCancel", 1);
 }
 
 // Disabled test: https://crbug.com/1134455

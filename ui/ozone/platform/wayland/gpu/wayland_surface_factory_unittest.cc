@@ -76,9 +76,12 @@ class FakeGLImageNativePixmap : public gl::GLImageEGL {
     // The GLImage must be set busy as it has been scheduled before when
     // GbmSurfacelessWayland::ScheduleOverlayPlane was called.
     DCHECK(busy_);
+    std::vector<gfx::GpuFence> acquire_fences;
+    if (gpu_fence)
+      acquire_fences.push_back(std::move(*gpu_fence));
     return pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
                                          bounds_rect, crop_rect, enable_blend,
-                                         std::move(gpu_fence));
+                                         std::move(acquire_fences), {});
   }
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override {
     return pixmap_;
@@ -175,7 +178,7 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
     WaylandTest::SetUp();
 
     auto manager_ptr = connection_->buffer_manager_host()->BindInterface();
-    buffer_manager_gpu_->Initialize(std::move(manager_ptr), {}, false);
+    buffer_manager_gpu_->Initialize(std::move(manager_ptr), {}, false, false);
 
     // Wait until initialization and mojo calls go through.
     base::RunLoop().RunUntilIdle();

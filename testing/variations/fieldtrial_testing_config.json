@@ -1190,25 +1190,6 @@
             ]
         }
     ],
-    "BlinkSchedulerPrioritizeRenderingUntilBeginMainFrame": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame"
-                    ]
-                }
-            ]
-        }
-    ],
     "BrowserJankinessProfiling": [
         {
             "platforms": [
@@ -5629,21 +5610,6 @@
                     "name": "Enabled_threshold_1_holdback_20190521",
                     "enable_features": [
                         "GWSPrefetchHoldback"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PrivacyElevatedAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PrivacyElevatedAndroid"
                     ]
                 }
             ]

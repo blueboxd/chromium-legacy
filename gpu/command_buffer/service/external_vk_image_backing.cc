@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
+#include "gpu/command_buffer/service/external_vk_image_overlay_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
@@ -153,6 +154,7 @@ bool UseMinimalUsageFlags(SharedContextState* context_state) {
 
 void WaitSemaphoresOnGrContext(GrDirectContext* gr_context,
                                std::vector<ExternalSemaphore>* semaphores) {
+  DCHECK(!gr_context->abandoned());
   std::vector<GrBackendSemaphore> backend_senampres;
   backend_senampres.reserve(semaphores->size());
   for (auto& semaphore : *semaphores) {
@@ -377,8 +379,10 @@ ExternalVkImageBacking::~ExternalVkImageBacking() {
   if (write_semaphore_)
     semaphores.emplace_back(std::move(write_semaphore_));
 
-  WaitSemaphoresOnGrContext(context_state()->gr_context(), &semaphores);
-  ReturnPendingSemaphoresWithFenceHelper(std::move(semaphores));
+  if (!semaphores.empty() && !context_state()->gr_context()->abandoned()) {
+    WaitSemaphoresOnGrContext(context_state()->gr_context(), &semaphores);
+    ReturnPendingSemaphoresWithFenceHelper(std::move(semaphores));
+  }
 
   fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(image_));
   backend_texture_ = GrBackendTexture();
@@ -773,6 +777,13 @@ ExternalVkImageBacking::ProduceSkia(
   DCHECK(context_state->GrContextIsVulkan());
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
+}
+
+std::unique_ptr<SharedImageRepresentationOverlay>
+ExternalVkImageBacking::ProduceOverlay(SharedImageManager* manager,
+                                       MemoryTypeTracker* tracker) {
+  return std::make_unique<ExternalVkImageOverlayRepresentation>(manager, this,
+                                                                tracker);
 }
 
 void ExternalVkImageBacking::InstallSharedMemory(

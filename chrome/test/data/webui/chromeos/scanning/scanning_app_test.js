@@ -11,6 +11,12 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {setScanServiceForTesting} from 'chrome://scanning/mojo_interface_provider.js';
 import {ScannerArr} from 'chrome://scanning/scanning_app_types.js';
 import {getColorModeString, getPageSizeString, getSourceTypeString, tokenToString} from 'chrome://scanning/scanning_app_util.js';
+import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
+
+import {flushTasks} from '../../test_util.m.js';
+
+import * as utils from './scanning_app_test_utils.js';
+import {TestScanningBrowserProxy} from './test_scanning_browser_proxy.js';
 
 const ColorMode = {
   BLACK_AND_WHITE: chromeos.scanning.mojom.ColorMode.kBlackAndWhite,
@@ -36,45 +42,7 @@ const SourceType = {
   ADF_DUPLEX: chromeos.scanning.mojom.SourceType.kAdfDuplex,
 };
 
-/**
- * @param {!mojoBase.mojom.UnguessableToken} id
- * @param {!string} displayName
- * @return {!chromeos.scanning.mojom.Scanner}
- */
-function createScanner(id, displayName) {
-  let scanner = {
-    'id': id,
-    'displayName': strToMojoString16(displayName),
-  };
-  return scanner;
-}
-
-/**
- * @param {number} type
- * @param {!string} name
- * @return {!chromeos.scanning.mojom.ScanSource}
- */
-function createSource(type, name) {
-  let source = {
-    'type': type,
-    'name': name,
-  };
-  return source;
-}
-
-/**
- * Converts a JS string to a mojo_base::mojom::String16 object.
- * @param {!string} str
- * @return {!object}
- */
-function strToMojoString16(str) {
-  let arr = [];
-  for (var i = 0; i < str.length; i++) {
-    arr[i] = str.charCodeAt(i);
-  }
-
-  return {data: arr};
-}
+const pageSizes = [PageSize.A4, PageSize.Letter, PageSize.Max];
 
 class FakeScanService {
   constructor() {
@@ -227,24 +195,22 @@ suite('ScanningAppTest', () => {
     const secondScannerId = {high: 0, low: 2};
     const secondScannerName = 'Scanner 2';
     const expectedScanners = [
-      createScanner(firstScannerId, firstScannerName),
-      createScanner(secondScannerId, secondScannerName)
+      utils.createScanner(firstScannerId, firstScannerName),
+      utils.createScanner(secondScannerId, secondScannerName)
     ];
 
     const firstCapabilities = {
       sources: [
-        {
-          type: SourceType.FLATBED,
-          name: 'platen',
-          pageSizes: [PageSize.A4, PageSize.Letter, PageSize.Max]
-        },
-        {type: SourceType.ADF_DUPLEX, name: 'adf duplex'}
+        utils.createScannerSource(SourceType.FLATBED, 'platen', pageSizes),
+        utils.createScannerSource(
+            SourceType.ADF_DUPLEX, 'adf duplex', pageSizes),
       ],
       colorModes: [ColorMode.BLACK_AND_WHITE, ColorMode.COLOR],
       resolutions: [75, 100, 300]
     };
     const secondCapabilities = {
-      sources: [{type: SourceType.ADF_SIMPLEX, name: 'adf simplex'}],
+      sources: [utils.createScannerSource(
+          SourceType.ADF_SIMPLEX, 'adf simplex', pageSizes)],
       colorModes: [ColorMode.GRAYSCALE],
       resolutions: [150, 600]
     };
@@ -326,7 +292,7 @@ suite('ScanningAppTest', () => {
               scanningApp.$$('#resolutionSelect').$$('select').disabled);
           assertFalse(scanningApp.$$('#scanButton').disabled);
           assertEquals(
-              'Scan complete! File(s) saved to My files.',
+              'Scan complete! File(s) saved to /home/chronos/user/MyFiles.',
               scanningApp.$$('#statusText').textContent.trim());
         });
   });
@@ -378,8 +344,8 @@ suite('ScannerSelectTest', () => {
     const secondScannerId = {high: 0, low: 2};
     const secondScannerName = 'Scanner 2';
     const scannerArr = [
-      createScanner(firstScannerId, firstScannerName),
-      createScanner(secondScannerId, secondScannerName)
+      utils.createScanner(firstScannerId, firstScannerName),
+      utils.createScanner(secondScannerId, secondScannerName)
     ];
     scannerSelect.scanners = scannerArr;
     scannerSelect.loaded = true;
@@ -400,7 +366,7 @@ suite('ScannerSelectTest', () => {
     const select = scannerSelect.$$('select');
     assertTrue(!!select);
 
-    let scannerArr = [createScanner({high: 0, low: 1}, 'Scanner 1')];
+    let scannerArr = [utils.createScanner({high: 0, low: 1}, 'Scanner 1')];
     scannerSelect.scanners = scannerArr;
     scannerSelect.loaded = true;
     flush();
@@ -409,8 +375,8 @@ suite('ScannerSelectTest', () => {
     assertEquals(1, select.length);
     assertTrue(select.disabled);
 
-    scannerArr =
-        scannerArr.concat([createScanner({high: 0, low: 2}, 'Scanner 2')]);
+    scannerArr = scannerArr.concat(
+        [utils.createScanner({high: 0, low: 2}, 'Scanner 2')]);
     scannerSelect.scanners = scannerArr;
     flush();
 
@@ -456,8 +422,10 @@ suite('SourceSelectTest', () => {
     assertTrue(select.disabled);
     assertEquals(0, select.length);
 
-    const firstSource = createSource(SourceType.FLATBED, 'platen');
-    const secondSource = createSource(SourceType.ADF_SIMPLEX, 'adf simplex');
+    const firstSource =
+        utils.createScannerSource(SourceType.FLATBED, 'platen', pageSizes);
+    const secondSource = utils.createScannerSource(
+        SourceType.ADF_SIMPLEX, 'adf simplex', pageSizes);
     const sourceArr = [firstSource, secondSource];
     sourceSelect.sources = sourceArr;
     flush();
@@ -479,7 +447,8 @@ suite('SourceSelectTest', () => {
     const select = sourceSelect.$$('select');
     assertTrue(!!select);
 
-    let sourceArr = [createSource(SourceType.FLATBED, 'flatbed')];
+    let sourceArr =
+        [utils.createScannerSource(SourceType.FLATBED, 'flatbed', pageSizes)];
     sourceSelect.sources = sourceArr;
     flush();
 
@@ -487,8 +456,8 @@ suite('SourceSelectTest', () => {
     assertEquals(1, select.length);
     assertTrue(select.disabled);
 
-    sourceArr =
-        sourceArr.concat([createSource(SourceType.ADF_DUPLEX, 'adf duplex')]);
+    sourceArr = sourceArr.concat([utils.createScannerSource(
+        SourceType.ADF_DUPLEX, 'adf duplex', pageSizes)]);
     sourceSelect.sources = sourceArr;
     flush();
 
@@ -760,10 +729,19 @@ suite('ScanToSelectTest', () => {
   /** @type {?ScanToSelectElement} */
   let scanToSelect = null;
 
-  /** {string} */
+  /** @type {?TestScanningBrowserProxy} */
+  let scanningBrowserProxy = null;
+
+  /** @const {string} */
   const myFiles = 'My files';
 
+  /** @const {string} */
+  const selectFolderText = 'Select folder in Files app…';
+
   setup(() => {
+    scanningBrowserProxy = new TestScanningBrowserProxy();
+    ScanningBrowserProxyImpl.instance_ = scanningBrowserProxy;
+
     scanToSelect = document.createElement('scan-to-select');
     assertTrue(!!scanToSelect);
     document.body.appendChild(scanToSelect);
@@ -777,11 +755,83 @@ suite('ScanToSelectTest', () => {
   });
 
   test('initializeScanToSelect', () => {
-    // The dropdown should be disabled and only have one entry for 'My files'.
     const select = scanToSelect.$$('select');
     assertTrue(!!select);
-    assertTrue(select.disabled);
-    assertEquals(1, select.length);
+    assertFalse(select.disabled);
+    assertEquals(2, select.length);
     assertEquals(myFiles, select.options[0].textContent.trim());
+    assertEquals(selectFolderText, select.options[1].textContent.trim());
+  });
+
+  // Verifies the 'Scan To' dropdown updates when the user chooses a folder in
+  // the select dialog.
+  test('selectFolderDialog', () => {
+    const googleDrivePath = '/this/is/a/Google/Drive';
+    const googleDrive = 'Drive';
+    const myDownloadsPath = '/this/is/a/test/directory/My Downloads';
+    const myDownloads = 'My Downloads';
+
+    // Simulate clicking the 'Select folder' option.
+    scanningBrowserProxy.setSelectedPath(
+        {baseName: myDownloads, filePath: myDownloadsPath});
+    const select = scanToSelect.$$('select');
+    select.selectedIndex = 1;
+    select.dispatchEvent(new CustomEvent('change'));
+    return flushTasks()
+        .then(() => {
+          assertEquals(myDownloadsPath, scanToSelect.selectedFilePath);
+          assertEquals(
+              myDownloads,
+              select.options[select.selectedIndex].textContent.trim());
+          assertEquals(0, select.selectedIndex);
+
+          scanningBrowserProxy.setSelectedPath(
+              {baseName: googleDrive, filePath: googleDrivePath});
+          select.selectedIndex = 1;
+          select.dispatchEvent(new CustomEvent('change'));
+          return flushTasks();
+        })
+        .then(() => {
+          assertEquals(googleDrivePath, scanToSelect.selectedFilePath);
+          assertEquals(
+              googleDrive,
+              select.options[select.selectedIndex].textContent.trim());
+          assertEquals(0, select.selectedIndex);
+        });
+  });
+
+  // Verifys the 'Scan To' dropdown retains the previous selection when the user
+  // cancels the select dialog.
+  test('cancelSelectDialog', () => {
+    const myDownloadsPath = '/this/is/a/test/directory/My Downloads';
+    const myDownloads = 'My Downloads';
+
+    // Simulate clicking the 'Select folder' option.
+    scanningBrowserProxy.setSelectedPath(
+        {baseName: myDownloads, filePath: myDownloadsPath});
+    const select = scanToSelect.$$('select');
+    select.selectedIndex = 1;
+    select.dispatchEvent(new CustomEvent('change'));
+    return flushTasks()
+        .then(() => {
+          assertEquals(myDownloadsPath, scanToSelect.selectedFilePath);
+          assertEquals(
+              myDownloads,
+              select.options[select.selectedIndex].textContent.trim());
+          assertEquals(0, select.selectedIndex);
+
+          // Simulate canceling the select dialog
+          scanningBrowserProxy.setSelectedPath({baseName: '', filePath: ''});
+          select.selectedIndex = 1;
+          select.dispatchEvent(new CustomEvent('change'));
+          return flushTasks();
+        })
+        .then(() => {
+          assertEquals(myDownloadsPath, scanToSelect.selectedFilePath);
+          assertEquals(
+              myDownloads,
+              select.options[select.selectedIndex].textContent.trim());
+          assertEquals(0, select.selectedIndex);
+        });
   });
 });

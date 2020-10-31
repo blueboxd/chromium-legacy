@@ -46,7 +46,6 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillExtractAllDatalists;
 extern const base::Feature kAutofillFixFillableFieldTypes;
-extern const base::Feature kAutofillImportPrefilledCountryAndStateValues;
 extern const base::Feature kAutofillKeepInitialFormValuesInCache;
 extern const base::Feature kAutofillRetrieveFromCacheWithRendererIds;
 extern const base::Feature
@@ -59,8 +58,6 @@ extern const base::Feature kAutofillOffNoServerData;
 extern const base::Feature kAutofillPreventMixedFormsFilling;
 extern const base::Feature kAutofillProbableFormSubmissionInBrowser;
 extern const base::Feature kAutofillProfileClientValidation;
-extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
-extern const base::Feature kAutofillProfileImportFromUnifiedSection;
 extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;

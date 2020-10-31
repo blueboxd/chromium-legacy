@@ -21,9 +21,6 @@ public interface LocationBar extends Destroyable {
     /** Handle all necessary tasks that can be delayed until initialization completes. */
     default void onDeferredStartup() {}
 
-    /** Handles native dependent initialization for this class. */
-    void onNativeLibraryReady();
-
     /** Triggered when the current tab has changed to a {@link NewTabPage}. */
     default void onTabLoadingNTP(NewTabPage ntp) {}
 
@@ -32,18 +29,6 @@ public interface LocationBar extends Destroyable {
      * current tab is incognito.
      */
     void updateVisualsForState();
-
-    /**
-     * Sets the displayed URL to be the URL of the page currently showing.
-     *
-     * <p>The URL is converted to the most user friendly format (removing HTTP:// for example).
-     *
-     * <p>If the current tab is null, the URL text will be cleared.
-     */
-    void setUrlToPageUrl();
-
-    /** Sets the displayed title to the page title. */
-    void setTitleToPageTitle();
 
     /**
      * Sets whether the location bar should have a layout showing a title.

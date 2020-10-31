@@ -13,8 +13,10 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
@@ -38,14 +40,17 @@ import java.util.List;
  *
  * <p>The coordinator creates and owns elements within this component.
  */
-public final class LocationBarCoordinator
-        implements LocationBar, FakeboxDelegate, UrlBar.UrlBarDelegate {
+public final class LocationBarCoordinator implements LocationBar, FakeboxDelegate,
+                                                     UrlBar.UrlBarDelegate, NativeInitObserver,
+                                                     LocationBarDataProvider.Observer {
     /** Identifies coordinators with methods specific to a device type. */
     public interface SubCoordinator extends Destroyable {}
 
     private LocationBarLayout mLocationBarLayout;
     @Nullable
     private SubCoordinator mSubCoordinator;
+    private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+    private LocationBarDataProvider mLocationbarDataProvider;
 
     /**
      * Creates {@link LocationBarCoordinator} and its subcoordinator: {@link
@@ -68,6 +73,7 @@ public final class LocationBarCoordinator
      * @param shareDelegateSupplier A supplier for {@link ShareDelegate} object.
      * @param incognitoStateProvider An {@link IncognitoStateProvider} to access the current
      *         incognito state.
+     * @param activityLifecycleDispatcher Allows observation of the activity state.
      * @throws IllegalArgumentException if the view is neither {@link LocationBarPhone} nor {@link
      *         LocationBarTablet}.
      */
@@ -78,7 +84,8 @@ public final class LocationBarCoordinator
             WindowAndroid windowAndroid, ActivityTabProvider activityTabProvider,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             Supplier<ShareDelegate> shareDelegateSupplier,
-            IncognitoStateProvider incognitoStateProvider) {
+            IncognitoStateProvider incognitoStateProvider,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mLocationBarLayout = (LocationBarLayout) locationBarLayout;
 
         if (locationBarLayout instanceof LocationBarPhone) {
@@ -92,15 +99,25 @@ public final class LocationBarCoordinator
             throw new IllegalArgumentException(locationBarLayout.getClass().toString());
         }
 
+        mLocationbarDataProvider = locationBarDataProvider;
         mLocationBarLayout.setLocationBarDataProvider(locationBarDataProvider);
+        locationBarDataProvider.addObserver(this);
         mLocationBarLayout.setProfileSupplier(profileObservableSupplier);
         mLocationBarLayout.setDefaultTextEditActionModeCallback(actionModeCallback);
         mLocationBarLayout.initializeControls(windowDelegate, windowAndroid, activityTabProvider,
                 modalDialogManagerSupplier, shareDelegateSupplier, incognitoStateProvider);
+
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
+        mActivityLifecycleDispatcher.register(this);
     }
 
     @Override
     public void destroy() {
+        if (mActivityLifecycleDispatcher != null) {
+            mActivityLifecycleDispatcher.unregister(this);
+            mActivityLifecycleDispatcher = null;
+        }
+
         if (mSubCoordinator != null) {
             mSubCoordinator.destroy();
             mSubCoordinator = null;
@@ -109,16 +126,20 @@ public final class LocationBarCoordinator
             mLocationBarLayout.destroy();
             mLocationBarLayout = null;
         }
+        if (mLocationbarDataProvider != null) {
+            mLocationbarDataProvider.removeObserver(this);
+            mLocationbarDataProvider = null;
+        }
+    }
+
+    @Override
+    public void onFinishNativeInitialization() {
+        mLocationBarLayout.onFinishNativeInitialization();
     }
 
     @Override
     public void onDeferredStartup() {
         mLocationBarLayout.onDeferredStartup();
-    }
-
-    @Override
-    public void onNativeLibraryReady() {
-        mLocationBarLayout.onNativeLibraryReady();
     }
 
     @Override
@@ -129,16 +150,6 @@ public final class LocationBarCoordinator
     @Override
     public void updateVisualsForState() {
         mLocationBarLayout.updateVisualsForState();
-    }
-
-    @Override
-    public void setUrlToPageUrl() {
-        mLocationBarLayout.setUrlToPageUrl();
-    }
-
-    @Override
-    public void setTitleToPageTitle() {
-        mLocationBarLayout.setTitleToPageTitle();
     }
 
     @Override
@@ -252,6 +263,15 @@ public final class LocationBarCoordinator
         return this;
     }
 
+    // LocationBarDataObserver implementation
+    @Override
+    public void onTitleChanged() {}
+
+    @Override
+    public void onUrlChanged() {
+        mLocationBarLayout.setUrl(mLocationbarDataProvider.getCurrentUrl());
+    }
+
     /**
      * Returns the {@link LocationBarCoordinatorPhone} for this coordinator.
      *
@@ -276,9 +296,9 @@ public final class LocationBarCoordinator
         return (LocationBarCoordinatorTablet) mSubCoordinator;
     }
 
-    /** Sets the {@link OverviewModeBehavior}. */
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        mLocationBarLayout.setOverviewModeBehavior(overviewModeBehavior);
+    /** Sets the {@link LayoutStateProvider}. */
+    public void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+        mLocationBarLayout.setLayoutStateProvider(layoutStateProvider);
     }
 
     /**

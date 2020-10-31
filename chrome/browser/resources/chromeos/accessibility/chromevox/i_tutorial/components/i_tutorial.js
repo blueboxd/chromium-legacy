@@ -114,10 +114,11 @@ Polymer({
 
     // Labels and text content.
 
-    chooseYourExperience: {
+    mainMenuHeader: {
       type: String,
-      value: 'Choose your tutorial experience',
+      value: 'ChromeVox tutorial',
     },
+
     quickOrientation: {type: String, value: 'Quick orientation'},
 
     essentialKeys: {type: String, value: 'Essential keys'},
@@ -143,6 +144,16 @@ Polymer({
     lessonMenu: {type: String, value: 'All lessons'},
 
     exitTutorial: {type: String, value: 'Exit tutorial'},
+
+    mainMenuHeaderHint: {
+      type: String,
+      value: 'Press Search + left/right arrow to browse topics'
+    },
+
+    lessonMenuHeaderHint: {
+      type: String,
+      value: `Press Search + left/right arrow to browse lessons for this topic`
+    },
 
     lessonData: {
       type: Array,
@@ -463,7 +474,6 @@ Polymer({
       // Executes once all lessons have been added to the dom.
       this.show();
     });
-    this.$.tutorial.addEventListener('focus', this.onFocus.bind(this), true);
     this.addEventListener('startpractice', (evt) => {
       this.isPracticeAreaActive = true;
       this.startNudges(NudgeType.PRACTICE_AREA);
@@ -859,7 +869,6 @@ Polymer({
     }
   },
 
-  /** @private */
   restartNudges() {
     this.stopNudges();
     this.setNudgeInterval();
@@ -894,20 +903,6 @@ Polymer({
   requestFullyDescribe() {
     this.dispatchEvent(
         new CustomEvent('requestfullydescribe', {composed: true}));
-  },
-
-  /**
-   * @param {Event} evt
-   * @private
-   */
-  onFocus(evt) {
-    // Restart nudges whenever focus changes. Skip this for the practice area
-    // so nudges are given in regular intervals.
-    if (this.isPracticeAreaActive) {
-      return;
-    }
-
-    this.restartNudges();
   },
 
   /** @return {!TutorialLesson} */

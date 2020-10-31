@@ -7625,6 +7625,12 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="User did change scale"/>
 </enum>
 
+<enum name="BooleanDirection">
+  <int value="0" label="Predicted direction was the same as real trajectory"/>
+  <int value="1"
+      label="Predicted direction was not the same as real trajectory"/>
+</enum>
+
 <enum name="BooleanDispatched">
   <int value="0" label="Not dispatched"/>
   <int value="1" label="Dispatched"/>
@@ -9640,6 +9646,14 @@ histogram as enum -->
   <int value="0" label="Back"/>
   <int value="1" label="Front"/>
   <int value="2" label="External"/>
+</enum>
+
+<enum name="ChromeOSChannel">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Canary"/>
+  <int value="2" label="Dev"/>
+  <int value="3" label="Beta"/>
+  <int value="4" label="Stable"/>
 </enum>
 
 <enum name="ChromeOSColorProfile">
@@ -22179,11 +22193,6 @@ Called by update_document_policy_enum.py.-->
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
   <int value="584" label="PolicyAtomicGroupsEnabled"/>
-  <int value="586" label="BlockLargeFileTransfer"/>
-  <int value="587" label="DelayDeliveryUntilVerdict"/>
-  <int value="588" label="AllowPasswordProtectedFiles"/>
-  <int value="590" label="URLsToCheckComplianceOfDownloadedContent"/>
-  <int value="591" label="URLsToNotCheckComplianceOfUploadedContent"/>
   <int value="592" label="DictationEnabled"/>
   <int value="593" label="KeyboardFocusHighlightEnabled"/>
   <int value="594" label="CursorHighlightEnabled"/>
@@ -22192,7 +22201,6 @@ Called by update_document_policy_enum.py.-->
   <int value="597" label="AutoclickEnabled"/>
   <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
-  <int value="600" label="URLsToCheckForMalwareOfUploadedContent"/>
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
@@ -22260,8 +22268,6 @@ Called by update_document_policy_enum.py.-->
   <int value="665" label="ReportDeviceCrashReportInfo"/>
   <int value="666" label="ScreenCaptureAllowed"/>
   <int value="667" label="AdvancedProtectionDeepScanningEnabled"/>
-  <int value="668" label="BlockUnsupportedFiletypes"/>
-  <int value="669" label="URLsToNotCheckForMalwareOfDownloadedContent"/>
   <int value="670" label="DeviceMinimumVersion"/>
   <int value="671" label="ReportDeviceTimezoneInfo"/>
   <int value="672" label="SystemProxySettings"/>
@@ -30097,6 +30103,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3713" label="TextDetectorDetect"/>
   <int value="3714" label="LocalStorageFirstUsedBeforeFcp"/>
   <int value="3715" label="LocalStorageFirstUsedAfterFcp"/>
+  <int value="3716" label="CSSPseudoHostCompoundList"/>
+  <int value="3717" label="CSSPseudoHostContextCompoundList"/>
+  <int value="3718" label="CSSPseudoHostDynamicSpecificity"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41824,6 +41833,7 @@ from previous Chrome versions.
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1895050832" label="GlobalMediaControlsCastStartStop:disabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
+  <int value="-1894289914" label="IncognitoScreenshot:disabled"/>
   <int value="-1894054576" label="FontAccess:enabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
@@ -45155,6 +45165,7 @@ from previous Chrome versions.
   <int value="1381817717" label="EduCoexistence:enabled"/>
   <int value="1382107019" label="LevelDBPerformRewrite:disabled"/>
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
+  <int value="1383197819" label="IncognitoScreenshot:enabled"/>
   <int value="1383526461" label="QuickAnswersRichUi:enabled"/>
   <int value="1383591631" label="enable-gesture-typing"/>
   <int value="1384614036" label="disable-unified-media-pipeline"/>
@@ -57754,6 +57765,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Toggle Quiet Mode Off"/>
   <int value="4" label="Toggle Locate Phone On"/>
   <int value="5" label="Toggle Locate Phone Off"/>
+</enum>
+
+<enum name="PhoneHubScreen">
+  <int value="0" label="BluetoothOrWifiDisabled"/>
+  <int value="1" label="ConnectionError"/>
+  <int value="2" label="InitialConnecting"/>
+  <int value="3" label="Reconnecting"/>
+  <int value="4" label="Onboarding.ExistingMultideviceUser"/>
+  <int value="5" label="Onboarding.NewMultideviceUser"/>
+  <int value="6" label="PhoneConnected"/>
+  <int value="7" label="OnboardingDismissPrompt"/>
+  <int value="8" label="Invalid"/>
 </enum>
 
 <enum name="PhoneNumberRegexVariantResult">

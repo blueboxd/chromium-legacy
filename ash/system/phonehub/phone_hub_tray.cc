@@ -14,8 +14,10 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
+#include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/quick_actions_view.h"
 #include "ash/system/phonehub/task_continuation_view.h"
+#include "ash/system/phonehub/ui_constants.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -41,8 +43,7 @@ namespace {
 constexpr int kTrayIconMainAxisInset = 8;
 constexpr int kTrayIconCrossAxisInset = 0;
 
-constexpr gfx::Insets kBubblePadding(0, 0, 16, 0);
-constexpr int kBubbleWidth = 400;
+constexpr gfx::Insets kBubblePadding(0, 0, kBubbleBottomPaddingDip, 0);
 
 }  // namespace
 
@@ -137,8 +138,6 @@ void PhoneHubTray::Initialize() {
 }
 
 bool PhoneHubTray::PerformAction(const ui::Event& event) {
-  // TODO(tengs): Log usage metrics.
-
   if (bubble_)
     CloseBubble();
   else
@@ -155,7 +154,7 @@ void PhoneHubTray::ShowBubble(bool show_by_click) {
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
   init_params.shelf_alignment = shelf()->alignment();
-  init_params.preferred_width = kBubbleWidth;
+  init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
   init_params.has_shadow = false;
   init_params.translucent = true;
@@ -182,8 +181,8 @@ void PhoneHubTray::ShowBubble(bool show_by_click) {
   // on the current mode.
   auto content_view = ui_controller_->CreateContentView(bubble_view);
   content_view_ = content_view.get();
-  if (content_view_)
-    bubble_view->AddChildView(std::move(content_view));
+  DCHECK(content_view_);
+  bubble_view->AddChildView(std::move(content_view));
 
   bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view,
                                                 false /* is_persistent */);
@@ -197,6 +196,9 @@ void PhoneHubTray::ShowBubble(bool show_by_click) {
     Shell::Get()->focus_cycler()->FocusWidget(widget);
     widget->Activate();
   }
+
+  phone_hub_metrics::LogScreenOnBubbleOpen(
+      content_view_->GetScreenForMetrics());
 }
 
 TrayBubbleView* PhoneHubTray::GetBubbleView() {
@@ -212,13 +214,23 @@ bool PhoneHubTray::CanOpenConnectedDeviceSettings() {
 }
 
 void PhoneHubTray::OpenConnectedDevicesSettings() {
+  DCHECK(content_view_);
+  phone_hub_metrics::LogScreenOnSettingsButtonClicked(
+      content_view_->GetScreenForMetrics());
+
   DCHECK(CanOpenConnectedDeviceSettings());
   Shell::Get()->system_tray_model()->client()->ShowConnectedDevicesSettings();
 }
 
 void PhoneHubTray::CloseBubble() {
-  if (content_view_)
-    content_view_->OnBubbleClose();
+  if (!bubble_)
+    return;
+
+  DCHECK(content_view_);
+  phone_hub_metrics::LogScreenOnBubbleClose(
+      content_view_->GetScreenForMetrics());
+
+  content_view_->OnBubbleClose();
   content_view_ = nullptr;
   bubble_.reset();
   SetIsActive(false);

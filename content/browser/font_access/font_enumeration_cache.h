@@ -21,8 +21,6 @@
 #define PLATFORM_HAS_LOCAL_FONT_ENUMERATION_IMPL 1
 #endif
 
-using blink::mojom::FontEnumerationStatus;
-
 namespace content {
 
 // A class that encapsulates building a font enumeration cache once,
@@ -36,13 +34,17 @@ class CONTENT_EXPORT FontEnumerationCache {
   FontEnumerationCache();
   ~FontEnumerationCache();
 
+  using CacheTaskCallback =
+      base::OnceCallback<void(blink::mojom::FontEnumerationStatus,
+                              base::ReadOnlySharedMemoryRegion)>;
+
   static FontEnumerationCache* GetInstance();
 
   // Enqueue a request to get notified about the availability of the shared
   // memory region holding the font enumeration cache.
   void QueueShareMemoryRegionWhenReady(
       scoped_refptr<base::TaskRunner> task_runner,
-      blink::mojom::FontAccessManager::EnumerateLocalFontsCallback callback);
+      CacheTaskCallback callback);
 
   // Returns whether the cache population has completed and the shared memory
   // region is ready.
@@ -61,19 +63,17 @@ class CONTENT_EXPORT FontEnumerationCache {
   // Retrieve the prepared memory region if it is available.
   base::ReadOnlySharedMemoryRegion DuplicateMemoryRegion();
 
-  // Used to bind an EnumerateLocalFontsCallback to a provided TaskRunner.
+  // Used to bind a CacheTaskCallback to a provided TaskRunner.
   struct CallbackOnTaskRunner {
-    CallbackOnTaskRunner(
-        scoped_refptr<base::TaskRunner>,
-        blink::mojom::FontAccessManager::EnumerateLocalFontsCallback);
+    CallbackOnTaskRunner(scoped_refptr<base::TaskRunner>, CacheTaskCallback);
     CallbackOnTaskRunner(CallbackOnTaskRunner&&);
     ~CallbackOnTaskRunner();
     scoped_refptr<base::TaskRunner> task_runner;
-    blink::mojom::FontAccessManager::EnumerateLocalFontsCallback mojo_callback;
+    CacheTaskCallback callback;
   };
 
   // Method to bind to callbacks_task_runner_ for execution when the font cache
-  // build is complete. It will run EnumerateLocalFontsCallback on its bound
+  // build is complete. It will run CacheTaskCallback on its bound
   // TaskRunner through CallbackOnTaskRunner.
   void RunPendingCallback(CallbackOnTaskRunner pending_callback);
   void StartCallbacksTaskQueue();
@@ -83,10 +83,11 @@ class CONTENT_EXPORT FontEnumerationCache {
   // Build the cache given a properly formed enumeration cache table.
   void BuildEnumerationCache(
       std::unique_ptr<blink::FontEnumerationTable> table);
+  void InitializeCacheState();
 
   base::MappedReadOnlyRegion enumeration_cache_memory_;
-  base::AtomicFlag enumeration_cache_built_;
-  base::AtomicFlag enumeration_cache_build_started_;
+  std::unique_ptr<base::AtomicFlag> enumeration_cache_built_;
+  std::unique_ptr<base::AtomicFlag> enumeration_cache_build_started_;
 
   // All responses are serialized through this DeferredSequencedTaskRunner. It
   // is started when the table is ready and guarantees that requests made before
@@ -94,7 +95,8 @@ class CONTENT_EXPORT FontEnumerationCache {
   scoped_refptr<base::DeferredSequencedTaskRunner> callbacks_task_runner_ =
       base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
 
-  FontEnumerationStatus status_ = FontEnumerationStatus::kOk;
+  blink::mojom::FontEnumerationStatus status_ =
+      blink::mojom::FontEnumerationStatus::kOk;
 
   base::Optional<std::string> locale_override_;
 

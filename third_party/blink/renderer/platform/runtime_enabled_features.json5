@@ -586,10 +586,6 @@
       name: "CSSReducedFontLoadingLayoutInvalidations",
       status: "stable",
     },
-    {
-      name: "CSSRevert",
-      status: "stable",
-    },
     // Scrollbar styling.
     // https://drafts.csswg.org/css-scrollbars/
     {
@@ -608,10 +604,6 @@
     {
       name: "CSSSnapSize",
       status: "experimental",
-    },
-    {
-      name: "CSSSupportsSelector",
-      status: "stable",
     },
     // Make system color keywords compute to themselves.
     // https://github.com/w3c/csswg-drafts/issues/3847
@@ -1543,10 +1535,6 @@
       name: "Portals",
       status: "test",
       origin_trial_feature_name: "Portals",
-    },
-    {
-      name: "PortalsDefaultActivation",
-      status: "test",
     },
     {
       name: "PreciseMemoryInfo",

@@ -31,6 +31,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppFactoryDelegate;
 import org.chromium.components.payments.PaymentAppFactoryParams;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
@@ -132,8 +133,6 @@ public class AndroidPaymentAppFinderUnitTest {
                 .onPaymentAppCreated(Mockito.any(PaymentApp.class));
         Mockito.verify(delegate, Mockito.never())
                 .onPaymentAppCreationError(Mockito.any(String.class));
-        Mockito.verify(delegate, Mockito.never())
-                .onAutofillPaymentAppCreatorAvailable(Mockito.any(AutofillPaymentAppCreator.class));
         Mockito.verify(delegate).onCanMakePaymentCalculated(false);
         Mockito.verify(delegate).onDoneCreatingPaymentApps(/*factory=*/null);
     }

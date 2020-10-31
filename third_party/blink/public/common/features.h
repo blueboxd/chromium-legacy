@@ -230,6 +230,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInstallingServiceWorkerOutstandingThrottledLimit;
 
+// Enables storing and loading security policies (for now, referrer policy) in
+// the policy container. The policy container for the current document is
+// attached to the RenderFrameHost and mirrored to the LocalFrame in Blink.
+BLINK_COMMON_EXPORT extern const base::Feature kPolicyContainer;
+
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
 // on finch and also for choosing predictor type for predictedEvents API without
@@ -317,6 +322,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcLibvpxEncodeNV12;
 }  // namespace features
 }  // namespace blink

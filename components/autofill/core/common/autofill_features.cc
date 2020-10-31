@@ -158,13 +158,6 @@ const base::Feature kAutofillExtractAllDatalists{
 const base::Feature kAutofillFixFillableFieldTypes{
     "AutofillFixFillableFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, prefilled country and state values are not reset before
-// an address profile import.
-// TODO(crbug.com/1100231): Remove once fix is tested.
-const base::Feature kAutofillImportPrefilledCountryAndStateValues{
-    "AutofillImportPrefilledCountryAndStateValues",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, Autofill keeps the initial field values in the |FormStructure|
 // cache for all field types.
 const base::Feature kAutofillKeepInitialFormValuesInCache{
@@ -216,15 +209,6 @@ const base::Feature kAutofillProbableFormSubmissionInBrowser{
 
 const base::Feature kAutofillProfileClientValidation{
     "AutofillProfileClientValidation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillProfileImportFromUnifiedSection{
-    "AutofillProfileImportFromUnifiedSection",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// TODO(crbug.com/1101280): Remove once feature is tested.
-const base::Feature kAutofillProfileImportFromUnfocusableFields{
-    "AutofillProfileImportFromUnfocusableFields",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether Autofill uses server-side validation to ensure that fields
 // with invalid data are not suggested.

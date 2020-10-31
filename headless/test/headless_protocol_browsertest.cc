@@ -11,7 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "headless/app/headless_shell_switches.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
 
 namespace headless {
@@ -267,8 +267,9 @@ class HeadlessProtocolBrowserTestWithProxy
     : public HeadlessProtocolBrowserTest {
  public:
   HeadlessProtocolBrowserTestWithProxy()
-      : proxy_server_(net::SpawnedTestServer::TYPE_HTTP,
-                      base::FilePath(FILE_PATH_LITERAL("headless/test/data"))) {
+      : proxy_server_(net::EmbeddedTestServer::TYPE_HTTP) {
+    proxy_server_.AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("headless/test/data")));
   }
 
   void SetUp() override {
@@ -277,11 +278,11 @@ class HeadlessProtocolBrowserTestWithProxy
   }
 
   void TearDown() override {
-    proxy_server_.Stop();
+    EXPECT_TRUE(proxy_server_.ShutdownAndWaitUntilComplete());
     HeadlessProtocolBrowserTest::TearDown();
   }
 
-  net::SpawnedTestServer* proxy_server() { return &proxy_server_; }
+  net::EmbeddedTestServer* proxy_server() { return &proxy_server_; }
 
  protected:
   std::vector<std::string> GetPageUrlExtraParams() override {
@@ -290,31 +291,15 @@ class HeadlessProtocolBrowserTestWithProxy
   }
 
  private:
-  net::SpawnedTestServer proxy_server_;
+  net::EmbeddedTestServer proxy_server_;
 };
 
-// BeginFrameControl is not supported on MacOS yet, see: https://cs.chromium.org
-// chromium/src/headless/lib/browser/protocol/target_handler.cc?
-// rcl=5811aa08e60ba5ac7622f029163213cfbdb682f7&l=32
-// TODO(crbug.com/954398): Suite is timeout-flaky on Windows.
-// TODO(crbug.com/1020046): Suite is flaky on TSan Linux.
-#if defined(OS_MAC) || defined(NO_WIN_FLAKES) || \
-    ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER))
-#define HEADLESS_PROTOCOL_TEST_WITH_PROXY(TEST_NAME, SCRIPT_NAME) \
-  IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTestWithProxy,    \
-                         DISABLED_##TEST_NAME) {                  \
-    test_folder_ = "/protocol/";                                  \
-    script_name_ = SCRIPT_NAME;                                   \
-    RunTest();                                                    \
-  }
-#else
 #define HEADLESS_PROTOCOL_TEST_WITH_PROXY(TEST_NAME, SCRIPT_NAME)           \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTestWithProxy, TEST_NAME) { \
     test_folder_ = "/protocol/";                                            \
     script_name_ = SCRIPT_NAME;                                             \
     RunTest();                                                              \
   }
-#endif
 
 HEADLESS_PROTOCOL_TEST_WITH_PROXY(BrowserSetProxyConfig,
                                   "sanity/browser-set-proxy-config.js")

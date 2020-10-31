@@ -147,10 +147,6 @@
 #include "extensions/common/manifest.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugin_policy_handler.h"
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
@@ -664,30 +660,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserGuestModeEnforced,
     prefs::kBrowserGuestModeEnforced,
     base::Value::Type::BOOLEAN },
-  { key::kDelayDeliveryUntilVerdict,
-    prefs::kDelayDeliveryUntilVerdict,
-    base::Value::Type::INTEGER },
-  { key::kBlockLargeFileTransfer,
-    prefs::kBlockLargeFileTransfer,
-    base::Value::Type::INTEGER },
-  { key::kAllowPasswordProtectedFiles,
-    prefs::kAllowPasswordProtectedFiles,
-    base::Value::Type::INTEGER },
-  { key::kBlockUnsupportedFiletypes,
-    prefs::kBlockUnsupportedFiletypes,
-    base::Value::Type::INTEGER },
-  { key::kURLsToCheckComplianceOfDownloadedContent,
-    prefs::kURLsToCheckComplianceOfDownloadedContent,
-    base::Value::Type::LIST },
-  { key::kURLsToCheckForMalwareOfUploadedContent,
-    prefs::kURLsToCheckForMalwareOfUploadedContent,
-    base::Value::Type::LIST },
-  { key::kURLsToNotCheckForMalwareOfDownloadedContent,
-    prefs::kURLsToNotCheckForMalwareOfDownloadedContent,
-    base::Value::Type::LIST },
-  { key::kURLsToNotCheckComplianceOfUploadedContent,
-    prefs::kURLsToNotCheckComplianceOfUploadedContent,
-    base::Value::Type::LIST },
   { key::kWebRtcAllowLegacyTLSProtocols,
     prefs::kWebRTCAllowLegacyTLSProtocols,
     base::Value::Type::BOOLEAN },
@@ -1970,10 +1942,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<SpellcheckLanguageBlocklistPolicyHandler>(
           policy::key::kSpellcheckLanguageBlocklist)));
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  handlers->AddHandler(std::make_unique<PluginPolicyHandler>());
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   return handlers;
 }

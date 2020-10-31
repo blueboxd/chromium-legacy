@@ -513,6 +513,9 @@
 <translation id="6476800141292307438">הדפדפן מתרגם את הדף ל<ph name="LANGUAGE" />. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="648164694371393720">שגיאת אימות</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
+<translation id="6497772452874122664">אם הכתובת <ph name="TIME" /> מהימנה מבחינתך, אפשר להשתמש בסיסמה שנשמרה באתר אחר.
+
+כדאי לנסות להשתמש בסיסמה ייחודית בכל אתר.</translation>
 <translation id="651505212789431520">לבטל את הסנכרון? אפשר להפעיל את הסנכרון בכל זמן דרך 'הגדרות'.</translation>
 <translation id="6561262006871132942">הגדלת התצוגה</translation>
 <translation id="6585618849026997638">כדי לחזור אל דף שחשוב לך אפשר להוסיף אותו לסימניות</translation>
@@ -592,6 +595,7 @@
 <translation id="739941347996872055">הכרטיסייה הקודמת</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> מאמרים שלא נקראו.</translation>
+<translation id="7412027924265291969">המשך</translation>
 <translation id="7425346204213733349">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
 <translation id="7435356471928173109">מנהל המערכת כיבה את התכונה הזו</translation>
 <translation id="7454057999980797137">מדינה / ארץ</translation>
@@ -646,7 +650,7 @@
 <translation id="7982789257301363584">רשת</translation>
 <translation id="7993619969781047893">ייתכן שהתכונות של חלק מהאתרים לא יפעלו כראוי</translation>
 <translation id="800361585186029508">‏פתיחת כתובות ה-URL שהוזנו ב-Google Chrome.</translation>
-<translation id="8007420562015504427">חיפוש במצב גלישה בסתר</translation>
+<translation id="8007420562015504427">חיפוש במצב אנונימי</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8023878949384262191">מרחיב את הקטע.</translation>
 <translation id="8027581147000338959">פתח בחלון חדש</translation>
@@ -683,7 +687,7 @@
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8490978609246021741">שמירת השינויים</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
-<translation id="850600235656508448">פתיחה במצב גלישה בסתר</translation>
+<translation id="850600235656508448">פתיחה במצב אנונימי</translation>
 <translation id="8510057420705599706">‏הפעולה הזו תוציא אותך מהחשבון ותשבית את הסנכרון, אבל הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים ב-Chrome יישארו במכשיר הזה.</translation>
 <translation id="8517375800490286174">רישיונות קוד פתוח</translation>
 <translation id="8524799873541103884">כרטיסיות <ph name="INCOGNITO" /> ‏<ph name="FIRST_VISIBLE_TAB" /> עד <ph name="LAST_VISIBLE_TAB" /> מתוך <ph name="NUMBER_OF_OPEN_TABS" /></translation>

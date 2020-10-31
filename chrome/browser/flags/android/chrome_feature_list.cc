@@ -91,7 +91,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kNetworkServiceInProcess,
     &features::kOverscrollHistoryNavigation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
-    &features::kPrivacyElevatedAndroid,
     &features::kPrivacyReorderedAndroid,
     &features::kPrioritizeBootstrapTasks,
     &features::kQuietNotificationPrompts,
@@ -170,6 +169,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHomepageSettingsUIConversion,
     &kHorizontalTabSwitcherAndroid,
     &kImmersiveUiMode,
+    &kIncognitoScreenshot,
     &kInlineUpdateFlow,
     &kInstantStart,
     &kKitKatSupported,
@@ -489,6 +489,9 @@ const base::Feature kHorizontalTabSwitcherAndroid{
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIncognitoScreenshot{"IncognitoScreenshot",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInlineUpdateFlow{"InlineUpdateFlow",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

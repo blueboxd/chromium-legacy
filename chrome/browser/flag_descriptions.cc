@@ -1298,6 +1298,11 @@ const char kImpulseScrollAnimationsDescription[] =
     "Replaces the default scroll animation with Impulse-style scroll "
     "animations.";
 
+const char kIncognitoScreenshotName[] = "Incognito Screenshot";
+const char kIncognitoScreenshotDescription[] =
+    "Enables Incognito screenshots on Android. It will also make Incognito "
+    "thumbnails visible.";
+
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
@@ -1742,12 +1747,6 @@ const char kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription[] =
     "Flash Overlay Scrollbars After any scroll update happends in page. You"
     " must also enable Overlay Scrollbars.";
 
-const char kOverlayScrollbarsFlashWhenMouseEnterName[] =
-    "Flash Overlay Scrollbars When Mouse Enter";
-const char kOverlayScrollbarsFlashWhenMouseEnterDescription[] =
-    "Flash Overlay Scrollbars When Mouse Enter a scrollable area. You must also"
-    " enable Overlay Scrollbars.";
-
 const char kOverlayStrategiesName[] = "Select HW overlay strategies";
 const char kOverlayStrategiesDescription[] =
     "Select strategies used to promote quads to HW overlays.";
@@ -1871,12 +1870,6 @@ const char kPrintServerScalingDescription[] =
 const char kPrivacyAdvisorName[] = "Privacy Advisor";
 const char kPrivacyAdvisorDescription[] =
     "Provides contextual entry points for adjusting privacy settings";
-
-const char kPrivacyElevatedAndroidName[] =
-    "Elevate Privacy in Settings on Android";
-const char kPrivacyElevatedAndroidDescription[] =
-    "Moves the Privacy section up to Basics and moves the Homepage one to "
-    " Advanced.";
 
 const char kPrivacyReorderedAndroidName[] =
     "Reorder settings in Privacy on Android";

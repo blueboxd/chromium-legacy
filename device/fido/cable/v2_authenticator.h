@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "device/fido/cable/v2_constants.h"
@@ -39,6 +39,26 @@ class Platform {
       base::OnceCallback<void(uint32_t status,
                               base::span<const uint8_t> client_data_json,
                               base::span<const uint8_t> attestation_obj)>;
+
+  struct MakeCredentialParams {
+    MakeCredentialParams();
+    ~MakeCredentialParams();
+    MakeCredentialParams(const MakeCredentialParams&) = delete;
+    MakeCredentialParams& operator=(const MakeCredentialParams&) = delete;
+    MakeCredentialParams(MakeCredentialParams&&) = delete;
+
+    std::string origin;
+    std::string rp_id;
+    std::vector<uint8_t> challenge;
+    std::vector<uint8_t> user_id;
+    std::vector<int> algorithms;
+    std::vector<std::vector<uint8_t>> excluded_cred_ids;
+    bool resident_key_required = false;
+    MakeCredentialCallback callback;
+  };
+
+  virtual void MakeCredential(std::unique_ptr<MakeCredentialParams> params) = 0;
+
   using GetAssertionCallback =
       base::OnceCallback<void(uint32_t status,
                               base::span<const uint8_t> client_data_json,
@@ -46,22 +66,26 @@ class Platform {
                               base::span<const uint8_t> auth_data,
                               base::span<const uint8_t> sig)>;
 
-  virtual void MakeCredential(
-      const std::string& origin,
-      const std::string& rp_id,
-      base::span<const uint8_t> challenge,
-      base::span<const uint8_t> user_id,
-      base::span<const int> algorithms,
-      base::span<const std::vector<uint8_t>> excluded_cred_ids,
-      bool resident_key_required,
-      MakeCredentialCallback callback) = 0;
+  struct GetAssertionParams {
+    GetAssertionParams();
+    ~GetAssertionParams();
+    GetAssertionParams(const GetAssertionParams&) = delete;
+    GetAssertionParams& operator=(const GetAssertionParams&) = delete;
+    GetAssertionParams(GetAssertionParams&&) = delete;
 
-  virtual void GetAssertion(
-      const std::string& origin,
-      const std::string& rp_id,
-      base::span<const uint8_t> challenge,
-      base::span<const std::vector<uint8_t>> allowed_cred_ids,
-      GetAssertionCallback callback) = 0;
+    std::string origin;
+    std::string rp_id;
+    std::vector<uint8_t> challenge;
+    std::vector<std::vector<uint8_t>> allowed_cred_ids;
+    GetAssertionCallback callback;
+  };
+
+  virtual void GetAssertion(std::unique_ptr<GetAssertionParams> params) = 0;
+
+  // OnCompleted is called when the transaction has completed. Note that calling
+  // this may result in the |Transaction| that owns this |Platform| being
+  // deleted.
+  virtual void OnCompleted(bool success) = 0;
 
   virtual std::unique_ptr<BLEAdvert> SendBLEAdvert(
       base::span<const uint8_t, kAdvertSize> payload) = 0;
@@ -93,8 +117,7 @@ class Transaction {
 // caBLEv2 transaction.
 std::unique_ptr<Transaction> TransactWithPlaintextTransport(
     std::unique_ptr<Platform> platform,
-    std::unique_ptr<Transport> transport,
-    Transaction::CompleteCallback complete_callback);
+    std::unique_ptr<Transport> transport);
 
 // TransactFromQRCode starts a network-based transaction based on the decoded
 // contents of a QR code.
@@ -106,8 +129,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
     // TODO: name this constant.
     base::span<const uint8_t, 16> qr_secret,
     base::span<const uint8_t, kP256X962Length> peer_identity,
-    base::Optional<std::vector<uint8_t>> contact_id,
-    Transaction::CompleteCallback complete_callback);
+    base::Optional<std::vector<uint8_t>> contact_id);
 
 // TransactFromQRCode starts a network-based transaction based on the decoded
 // contents of a cloud message.
@@ -118,8 +140,7 @@ std::unique_ptr<Transaction> TransactFromFCM(
     std::array<uint8_t, kRoutingIdSize> routing_id,
     base::span<const uint8_t, kTunnelIdSize> tunnel_id,
     base::span<const uint8_t> pairing_id,
-    base::span<const uint8_t, kClientNonceSize> client_nonce,
-    Transaction::CompleteCallback complete_callback);
+    base::span<const uint8_t, kClientNonceSize> client_nonce);
 
 }  // namespace authenticator
 }  // namespace cablev2

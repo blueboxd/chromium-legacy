@@ -60,7 +60,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
-#include "content/common/page_messages.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer_host.mojom.h"
 #include "content/common/unfreezable_frame_messages.h"
@@ -1590,7 +1589,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     render_frame->frame_->SetCommittedFirstRealLoad();
 
   std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-      agent_scheduling_group, params->main_frame_widget_routing_id,
       compositor_deps);
 
   // Non-owning pointer that is self-referencing and destroyed by calling
@@ -1600,6 +1598,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       render_widget.get(), web_frame, std::move(params->frame_widget_host),
       std::move(params->frame_widget), std::move(params->widget_host),
       std::move(params->widget),
+      viz::FrameSinkId(RenderThread::Get()->GetClientId(),
+                       params->main_frame_widget_routing_id),
       /*is_for_nested_main_frame=*/params->type !=
           mojom::ViewWidgetType::kTopLevel,
       /*hidden=*/true, render_view->widgets_never_composited());
@@ -1761,8 +1761,8 @@ void RenderFrameImpl::CreateFrame(
     // TODO(crbug.com/419087): Can we merge this code with
     // RenderFrameImpl::CreateMainFrame()?
 
-    std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-        agent_scheduling_group, widget_params->routing_id, compositor_deps);
+    std::unique_ptr<RenderWidget> render_widget =
+        RenderWidget::CreateForFrame(compositor_deps);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). The RenderViewImpl has a RenderWidget already, but not a
@@ -1772,6 +1772,8 @@ void RenderFrameImpl::CreateFrame(
         std::move(widget_params->frame_widget_host),
         std::move(widget_params->frame_widget),
         std::move(widget_params->widget_host), std::move(widget_params->widget),
+        viz::FrameSinkId(RenderThread::Get()->GetClientId(),
+                         widget_params->routing_id),
         /*is_for_nested_main_frame=*/false,
         /*hidden=*/true, render_view->widgets_never_composited());
 
@@ -1810,8 +1812,8 @@ void RenderFrameImpl::CreateFrame(
     // Makes a new RenderWidget for the child local root. It provides the
     // local root with a new compositing, painting, and input coordinate
     // space/context.
-    std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-        agent_scheduling_group, widget_params->routing_id, compositor_deps);
+    std::unique_ptr<RenderWidget> render_widget =
+        RenderWidget::CreateForFrame(compositor_deps);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this
@@ -1822,6 +1824,8 @@ void RenderFrameImpl::CreateFrame(
         std::move(widget_params->frame_widget_host),
         std::move(widget_params->frame_widget),
         std::move(widget_params->widget_host), std::move(widget_params->widget),
+        viz::FrameSinkId(RenderThread::Get()->GetClientId(),
+                         widget_params->routing_id),
         /*hidden=*/true, render_view->widgets_never_composited());
 
     // Adds a reference on RenderWidget, making it self-referencing. So it
@@ -2210,16 +2214,6 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
-  // Page IPCs are routed via the main frame (both local and remote) and then
-  // forwarded to the RenderView. See comment in
-  // RenderFrameHostManager::SendPageMessage() for more information.
-  if ((IPC_MESSAGE_CLASS(msg) == PageMsgStart)) {
-    if (render_view())
-      return render_view()->OnMessageReceived(msg);
-
-    return false;
-  }
-
   // We may get here while detaching, when the WebFrame has been deleted.  Do
   // not process any messages in this state.
   if (!frame_)
@@ -3789,7 +3783,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     const blink::WebString& sink_id) {
   return media_factory_.CreateMediaPlayer(
       source, client, inspector_context, encrypted_client, initial_cdm, sink_id,
-      GetLocalRootRenderWidget()->GetFrameSinkId(),
+      GetLocalRootRenderWidget()->GetFrameWidget()->GetFrameSinkId(),
       GetLocalRootRenderWidget()->layer_tree_host()->GetSettings());
 }
 

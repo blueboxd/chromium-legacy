@@ -1574,6 +1574,7 @@
         'per_profile': False
       },
       'example_value': True,
+      'default': True,
       'id': 654,
       'caption': '''DNS interception checks enabled''',
       'tags': [],
@@ -3308,7 +3309,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:8-87', 'chrome_os:11-87'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -3339,7 +3340,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:11-87', 'chrome_os:11-87'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -3370,7 +3371,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:11-87', 'chrome_os:11-87'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -7647,12 +7648,13 @@
         'per_profile': False,
       },
       'example_value': True,
+      'default': True,
       'id': 84,
       'caption': '''Allow invocation of file selection dialogs''',
       'tags': [],
-      'desc': '''Setting the policy or leaving it unset means Chrome can display, and users can open, file selection dialogs.
+      'desc': '''Setting the policy to Enabled or leaving it unset means Chrome can display, and users can open, file selection dialogs.
 
-      Turning off the policy means that whenever users perform actions provoking a file selection dialog, such as importing bookmarks, uploading files, and saving links, a message appears instead. The user is assumed to have clicked Cancel on the file selection dialog.''',
+      Setting the policy to Disabled means that whenever users perform actions provoking a file selection dialog, such as importing bookmarks, uploading files, and saving links, a message appears instead. The user is assumed to have clicked Cancel on the file selection dialog.''',
     },
     {
       'name': 'SecurityKeyPermitAttestation',
@@ -7709,6 +7711,7 @@
         'dynamic_refresh': True,
       },
       'example_value': 3600000,
+      'default': 3 * 60 * 60 * 1000,
       'id': 90,
       'caption': '''Refresh rate for Device Policy''',
       'tags': [],
@@ -7732,6 +7735,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': False,
       'id': 97,
       'caption': '''Import bookmarks from default browser on first run''',
       'tags': ['local-data-access'],
@@ -7752,6 +7756,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': False,
       'id': 98,
       'caption': '''Import browsing history from default browser on first run''',
       'tags': ['local-data-access'],
@@ -8536,6 +8541,7 @@
         'per_profile': False,
       },
       'example_value': False,
+      'default': False,
       'id': 235,
       'caption': '''Require online OCSP/CRL checks for local trust anchors''',
       'tags': [],
@@ -11444,6 +11450,7 @@
         'per_profile': False,
       },
       'example_value': False,
+      'default': True,
       'id': 491,
       'caption': '''Allow wake locks''',
       'tags': [],
@@ -13909,6 +13916,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 281,
       'caption': '''Enable Touch to Search''',
       'tags': [],
@@ -14424,6 +14432,7 @@
         'dynamic_refresh': True,
       },
       'example_value': True,
+      'default': True,
       'id': 325,
       'caption': '''Enable queries to Quirks Server for hardware profiles''',
       'tags': [],
@@ -14519,6 +14528,7 @@
         'per_profile': False,
       },
       'example_value': True,
+      'default': False,
       'device_only': True,
       'default_for_managed_devices_doc_only': False,
       'id': 763,
@@ -14526,9 +14536,10 @@
       'tags': [],
       'desc':
       '''Allows enabling or disabling a notification when disk space is low. This applies to all users on the device.
-      If there is exactly one user account on a managed device, the notification is always shown, regardless of the value of this policy.
-      If there are multiple user accounts on a a managed device, the notification is only shown when this policy is set to True.
-      On unmanaged devices the notification is always shown.''',
+
+      This policy is ignored and the notification is always shown if the device is unmanaged or there is only one user.
+
+      If there are multiple user accounts on a managed device, the notification will only be shown when this policy is enabled.''',
     },
     {
       'name': 'NetworkThrottlingEnabled',
@@ -14916,6 +14927,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 338,
       'default_for_enterprise_users': False,
       'caption': '''Show content suggestions on the New Tab page''',
@@ -14936,6 +14948,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 653,
       'default_for_enterprise_users': True,
       'caption': '''Allow users to customize the background on the New Tab page''',
@@ -16359,6 +16372,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 370,
       'caption': '''Allow queries to a Google time service''',
       'tags': [],
@@ -16423,6 +16437,7 @@
         'per_profile': True,
       },
       'example_value': False,
+      'default': False,
       'id': 373,
       'caption': '''Use System Default Printer as Default''',
       'tags': [],
@@ -20268,6 +20283,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 570,
       'caption': '''Allow user feedback''',
       'tags': [],
@@ -20716,6 +20732,7 @@
         'per_profile': False,
       },
       'example_value': True,
+      'default': True,
       'id': 566,
       'caption': '''Enable security warnings for command-line flags''',
       'tags': ['system-security'],
@@ -20926,6 +20943,7 @@
         'type': 'boolean',
       },
       'example_value': True,
+      'default': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -20936,266 +20954,6 @@
       'desc': '''Setting the policy to Enabled or leaving it unset displays media controls on the lock screen if users lock the device when media is playing.
 
       Setting the policy to Disabled turns media controls on the lock screen off.'''
-    },
-    {
-      'name': 'BlockLargeFileTransfer',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
-      },
-      'items': [
-        {
-          'name': 'None',
-          'value': 0,
-          'caption': '''Don't block large files''',
-        },
-        {
-          'name': 'Block-large-downloads',
-          'value': 1,
-          'caption': '''Block large file downloads''',
-        },
-        {
-          'name': 'Block-large-uploads',
-          'value': 2,
-          'caption': '''Block large file uploads''',
-        },
-        {
-          'name': 'Block-large-uploads-and-downloads',
-          'value': 3,
-          'caption': '''Block large file uploads and downloads''',
-        },
-      ],
-      'example_value': 0,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 586,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''Prevent user to transfer large files''',
-      'tags': [],
-      'desc': '''This policy controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves when a user attempts to either upload or download files that are too large to send for either malware or sensitive data protection scanning (50MB or larger).  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
-
-      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to upload or download files of any size.
-
-      If this policy is set to 'Block large downloads', files that are too large to be scanned are deleted beforing making them available to the user.  Because the size cannot always be determined before downloading, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may download files and then determine that they surpass the allowed size limit.
-
-      If this policy is set to 'Block large uploads', files that are too large to be scanned cannot be selected for upload.
-
-      If this policy is set to 'Block large file uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Block large downloads' and 'Block large uploads'.
-      '''
-    },
-    {
-      'name': 'DelayDeliveryUntilVerdict',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
-      },
-      'items': [
-        {
-          'name': 'None',
-          'value': 0,
-          'caption': '''Don't delay any deliveries''',
-        },
-        {
-          'name': 'Delay-downloads',
-          'value': 1,
-          'caption': '''Delay downloads until scan verdict is known''',
-        },
-        {
-          'name': 'Delay-uploads',
-          'value': 2,
-          'caption': '''Delay uploads until scan verdict is known''',
-        },
-        {
-          'name': 'Delay-uploads-and-downloads',
-          'value': 3,
-          'caption': '''Delay both uploads and downloads until scan verdict is known''',
-        },
-      ],
-      'example_value': 0,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 587,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''Delay delivery of files until scanning verdicts are known''',
-      'tags': [],
-      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves with uploaded and downloaded data that is deemed to require scanning.  Delaying delivery means that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not permit the user to access a downloaded file, select a file for uploading, paste from the clipboard, or drag and drop data until it has been scanned and the verdict of that scan is known.  This restriction only applies to files or data that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
-
-      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delay any files for uploading, paste from the clipboard, drag and drop data or delay access to any downloaded files.  The scan will proceed in the background.
-
-      If this policy is set to 'Delay downloads', users will not be able to access downloaded files until they have been scanned and the verdict of scan is known.
-
-      If this policy is set to 'Delay uploads' and the user attempts to upload a file, paste from the clipboard, or drag and drop data the operation will not proceed until the data has been scanned and the verdict of scan is known.
-
-      If this policy is set to 'Delay both uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Delay downloads' and 'Delay uploads'.
-      '''
-    },
-    {
-      'name': 'AllowPasswordProtectedFiles',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
-      },
-      'items': [
-        {
-          'name': 'None',
-          'value': 0,
-          'caption': '''Don't allow password protected files''',
-        },
-        {
-          'name': 'Allow-downloads',
-          'value': 1,
-          'caption': '''Allow downloads of password protected files''',
-        },
-        {
-          'name': 'Allow-uploads',
-          'value': 2,
-          'caption': '''Allow uploads of password protected files''',
-        },
-        {
-          'name': 'Allow-uploads-and-downloads',
-          'value': 3,
-          'caption': '''Allow both uploads and downloads of password protected files''',
-        },
-      ],
-      'example_value': 0,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 588,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''Allow users to upload or download password protected files''',
-      'tags': [],
-      'desc': '''Controls whether users are allowed to upload or download password protected files when scanning is required.  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
-
-      If this policy is set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> blocks the user from upload or download password protected files.
-
-      If this policy is set to 'Allow downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to download password protected files.
-
-      If this policy is set to 'Allow uploads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to upload password protected files.
-
-      If this policy is not set or set to 'Allow uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Allow downloads' and 'Allow uploads'.
-      '''
-    },
-    {
-      'name': 'BlockUnsupportedFiletypes',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
-      },
-      'items': [
-        {
-          'name': 'Block-unsupported-filetypes-none',
-          'value': 0,
-          'caption': '''Do not block unsupported filetypes''',
-        },
-        {
-          'name': 'Block-unsupported-filetypes-downloads',
-          'value': 1,
-          'caption': '''Block download of unsupported filetypes''',
-        },
-        {
-          'name': 'Block-unsupported-filetypes-uploads',
-          'value': 2,
-          'caption': '''Block upload of unsupported filetypes''',
-        },
-        {
-          'name': 'Block-unsupported-filetypes-uploads-and-downloads',
-          'value': 3,
-          'caption': '''Block uploads and downloads of unsupported filetypes''',
-        },
-      ],
-      'example_value': 0,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 668,
-      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''Block users from uploading or downloading files that are presently unsupported for a DLP or malware scan.''',
-      'tags': [],
-      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> handles data that is uploaded, downloaded, pasted from the clipboard, or dragged and dropped that have unsupported filetypes regarding DLP or malware scan.
-
-      If this policy is not set or set to 'Block unsupported filetypes none' (0), <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows upload or download for data with unsupported filetypes regarding DLP or malware scan.
-
-      If this policy is set to 'Block unsupported filetypes downloads' (1) and the user attempts to download a file from a URL in the <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME">URLsToCheckComplianceOfDownloadedContent</ph> policy and has unsupported filetypes regarding DLP or malware scan, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will block the data downloaded.
-
-      If this policy is set to 'Block unsupported filetypes uploads' (2) and the user attempts to upload a file to a domain not in the <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME">URLsToNotCheckComplianceOfUploadedContent</ph> and the file has unsupported filetype regarding DLP or malware scan, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will block the file uploaded, data pasted from the clipboard, or data dragged and dropped.
-
-      If this policy is set to 'Block unsupported filetypes uploads and downloads' (3), <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Block unsupported filetypes uploads' and 'Block unsupported filetypes downloads'.
-      '''
-    },
-    {
-      'name': 'URLsToCheckComplianceOfDownloadedContent',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' },
-      },
-      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 590,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''URL patterns to check downloaded content against sensitive data protection rules''',
-      'tags': [],
-      'desc': '''List of url patterns for which downloaded content needs to be checked for sensitive data protection rule violations before being saved on local storage.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
-
-      If this policy is not set or set to an empty list of url patterns, no downloaded content is checked for sensitive data protection rule violations.
-
-      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
-      '''
-    },
-    {
-      'name': 'URLsToNotCheckComplianceOfUploadedContent',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' },
-      },
-      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 591,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''URL patterns to not check uploaded content against sensitive data protection rules''',
-      'tags': [],
-      'desc': '''List of url patterns for which uploaded files, data pasted from the clipboard, or data dragged and dropped does not need to be checked for sensitive data protection rule violations.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
-
-      If this policy is not set or set to an empty list of url patterns, all content is checked for sensitive data protection rule violations.
-
-      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
-      '''
     },
     {
       'name': 'OnFileDownloadedEnterpriseConnector',
@@ -21567,60 +21325,6 @@
       Setting the policy to Disabled has a detrimental effect on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s security and stability as unknown and potentially hostile code can load inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s renderer processes. Only turn off the policy if there are compatibility issues with third-party software that must run inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s renderer processes.
 
       Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies ).''',
-    },
-    {
-      # TODO(rogerta): Use a custom policy handler to show in chrome://policy that this policy depends on the state of SendFilesForMalwareCheck.
-      'name': 'URLsToCheckForMalwareOfUploadedContent',
-      'owners': ['rogerta@chromium.org', 'drubery@chromium.org'],
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' },
-      },
-      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 600,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''URL patterns to check uploaded content for malware''',
-      'tags': [],
-      'desc': '''List of url patterns for which uploaded content needs to be checked for malware.  This policy is used only if <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph> is set to a value allowing or enforcing malware checks for uploads.
-
-      If this policy is not set or set to an empty list of url patterns, no uploaded content is checked for malware.
-
-      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
-      '''
-    },
-    {
-      # TODO(rogerta): Use a custom policy handler to show in chrome://policy that this policy depends on the state of SendFilesForMalwareCheck.
-      'name': 'URLsToNotCheckForMalwareOfDownloadedContent',
-      'owners': ['rogerta@chromium.org', 'drubery@chromium.org'],
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' },
-      },
-      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 669,
-      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''URL patterns to not check downloaded  content for malware''',
-      'tags': [],
-      'desc': '''List of url patterns for which downloaded content does not need to be checked for malware.  This policy is used only if <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph> is set to a value allowing or enforcing malware checks for downloads.
-
-      If this policy is not set or set to an empty list of url patterns, all downloaded content is checked for malware.
-
-      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
-      '''
     },
     {
       'name': 'HSTSPolicyBypassList',
@@ -22335,6 +22039,7 @@
         'per_profile': True,
       },
       'example_value': 1,
+      'default': 0,
       'id': 706,
       'caption': '''Print Rasterization Mode''',
       'tags': [],
@@ -22623,10 +22328,13 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 662,
       'caption': '''Enable <ph name="CHROME_DEVICES_LINK">chrome://devices</ph>''',
       'tags': [],
-      'desc': '''This policy controls access to controllable features in the local discovery UI (<ph name="CHROME_DEVICES_LINK">chrome://devices</ph>) which shows discoverable devices near the user as well as cloud devices registered to them. On all operating systems except for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, the local discovery UI also allows users to add classic printers connected to their computers to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.''',
+      'desc': '''This policy controls access to controllable features in the local discovery UI (<ph name="CHROME_DEVICES_LINK">chrome://devices</ph>) which shows discoverable devices near the user as well as cloud devices registered to them. On all operating systems except for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, the local discovery UI also allows users to add classic printers connected to their computers to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
+
+      Leaving this policy unset leaves this feature Enabled.''',
     },
     {
       'name': 'ScreenCaptureAllowed',
@@ -23022,6 +22730,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'dynamic_refresh': True,
       },
       'example_value': True,
+      'default': True,
       'id': 758,
       'caption': '''Control the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature.''',
       'tags': [],
@@ -23278,6 +22987,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'per_profile': True,
       },
       'example_value': True,
+      'default': False,
       'id': 781,
       'caption': '''Suppress <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> deprecation messages''',
       'tags': [],
@@ -23472,6 +23182,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'per_profile': False,
       },
       'example_value': False,
+      'default': False,
       'id': 787,
       'caption': '''Allow legacy TLS/DTLS downgrade in WebRTC''',
       'tags': [],
@@ -23494,6 +23205,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 788,
       'caption': 'Enable Media Recommendations',
       'tags': [],
@@ -24543,7 +24255,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 589],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
   'highest_id_currently_used': 801,
   'highest_atomic_group_id_currently_used': 40

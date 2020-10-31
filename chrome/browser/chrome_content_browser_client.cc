@@ -1270,9 +1270,7 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
   return metadata;
 }
 
-ChromeContentBrowserClient::ChromeContentBrowserClient(
-    StartupData* startup_data)
-    : startup_data_(startup_data) {
+ChromeContentBrowserClient::ChromeContentBrowserClient() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   extra_parts_.push_back(new ChromeContentBrowserClientPluginsPart);
 #endif
@@ -1355,31 +1353,31 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
   // Construct the Main browser parts based on the OS type.
 #if defined(OS_WIN)
   main_parts =
-      std::make_unique<ChromeBrowserMainPartsWin>(parameters, startup_data_);
+      std::make_unique<ChromeBrowserMainPartsWin>(parameters, &startup_data_);
 #elif defined(OS_MAC)
   main_parts =
-      std::make_unique<ChromeBrowserMainPartsMac>(parameters, startup_data_);
+      std::make_unique<ChromeBrowserMainPartsMac>(parameters, &startup_data_);
 #elif defined(OS_CHROMEOS)
   main_parts = std::make_unique<chromeos::ChromeBrowserMainPartsChromeos>(
-      parameters, startup_data_);
+      parameters, &startup_data_);
 #elif defined(OS_LINUX)
   main_parts =
-      std::make_unique<ChromeBrowserMainPartsLinux>(parameters, startup_data_);
+      std::make_unique<ChromeBrowserMainPartsLinux>(parameters, &startup_data_);
 #elif defined(OS_ANDROID)
   main_parts = std::make_unique<ChromeBrowserMainPartsAndroid>(parameters,
-                                                               startup_data_);
+                                                               &startup_data_);
 #elif defined(OS_POSIX)
   main_parts =
-      std::make_unique<ChromeBrowserMainPartsPosix>(parameters, startup_data_);
+      std::make_unique<ChromeBrowserMainPartsPosix>(parameters, &startup_data_);
 #else
   NOTREACHED();
   main_parts =
-      std::make_unique<ChromeBrowserMainParts>(parameters, startup_data_);
+      std::make_unique<ChromeBrowserMainParts>(parameters, &startup_data_);
 #endif
 
   bool add_profiles_extra_parts = true;
 #if defined(OS_ANDROID)
-  if (startup_data_->HasBuiltProfilePrefService())
+  if (startup_data_.HasBuiltProfilePrefService())
     add_profiles_extra_parts = false;
 #endif
   if (add_profiles_extra_parts)
@@ -2921,6 +2919,68 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
   return nullptr;
 }
 
+#if !defined(OS_ANDROID)
+blink::mojom::PreferredColorScheme ToBlinkPreferredColorScheme(
+    ui::NativeTheme::PreferredColorScheme native_theme_scheme) {
+  switch (native_theme_scheme) {
+    case ui::NativeTheme::PreferredColorScheme::kDark:
+      return blink::mojom::PreferredColorScheme::kDark;
+    case ui::NativeTheme::PreferredColorScheme::kLight:
+      return blink::mojom::PreferredColorScheme::kLight;
+  }
+
+  NOTREACHED();
+}
+#endif  // !defined(OS_ANDROID)
+
+// Returns true if preferred color scheme is modified based on at least one of
+// the following -
+// |url| - Last committed url.
+// |web_contents| - For Android based on IsNightModeEnabled().
+// |native_theme| - For other platforms based on native theme scheme.
+bool UpdatePreferredColorScheme(WebPreferences* web_prefs,
+                                const GURL& url,
+                                WebContents* web_contents,
+                                const ui::NativeTheme* native_theme) {
+  auto old_preferred_color_scheme = web_prefs->preferred_color_scheme;
+
+#if defined(OS_ANDROID)
+  auto* delegate = TabAndroid::FromWebContents(web_contents)
+                       ? static_cast<android::TabWebContentsDelegateAndroid*>(
+                             web_contents->GetDelegate())
+                       : nullptr;
+  if (delegate) {
+    web_prefs->preferred_color_scheme =
+        delegate->IsNightModeEnabled()
+            ? blink::mojom::PreferredColorScheme::kDark
+            : blink::mojom::PreferredColorScheme::kLight;
+  }
+#else
+  // Update based on native theme scheme.
+  web_prefs->preferred_color_scheme =
+      ToBlinkPreferredColorScheme(native_theme->GetPreferredColorScheme());
+#endif  // defined(OS_ANDROID)
+
+  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
+  // disabled; some of the UI is not yet correctly themed.
+  if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+    // Update based on last committed url.
+    bool force_light = url.SchemeIs(content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (!force_light) {
+      force_light = url.SchemeIs(extensions::kExtensionScheme) &&
+                    url.host_piece() == extension_misc::kPdfExtensionId;
+    }
+#endif
+    if (force_light) {
+      web_prefs->preferred_color_scheme =
+          blink::mojom::PreferredColorScheme::kLight;
+    }
+  }
+
+  return old_preferred_color_scheme != web_prefs->preferred_color_scheme;
+}
+
 }  // namespace
 
 base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
@@ -3137,26 +3197,6 @@ content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #endif
 }
 
-bool UpdatePreferredColorSchemesBasedOnURLIfNeeded(WebPreferences* web_prefs,
-                                                   const GURL& url) {
-  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
-  // disabled; some of the UI is not yet correctly themed.
-  if (base::FeatureList::IsEnabled(features::kWebUIDarkMode))
-    return false;
-  bool force_light = url.SchemeIs(content::kChromeUIScheme);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!force_light) {
-    force_light = url.SchemeIs(extensions::kExtensionScheme) &&
-                  url.host_piece() == extension_misc::kPdfExtensionId;
-  }
-#endif
-  auto old_preferred_color_scheme = web_prefs->preferred_color_scheme;
-  if (force_light)
-    web_prefs->preferred_color_scheme =
-        blink::mojom::PreferredColorScheme::kLight;
-  return old_preferred_color_scheme != web_prefs->preferred_color_scheme;
-}
-
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh,
     WebPreferences* web_prefs) {
@@ -3304,11 +3344,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
       web_prefs->picture_in_picture_enabled =
           delegate->IsPictureInPictureEnabled();
-
-      web_prefs->preferred_color_scheme =
-          delegate->IsNightModeEnabled()
-              ? blink::mojom::PreferredColorScheme::kDark
-              : blink::mojom::PreferredColorScheme::kLight;
     }
 #endif  // defined(OS_ANDROID)
 
@@ -3426,7 +3461,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  auto* native_theme = GetWebTheme();
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required
@@ -3445,20 +3479,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired
             : blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
   }
-
-  switch (native_theme->GetPreferredColorScheme()) {
-    case ui::NativeTheme::PreferredColorScheme::kDark:
-      web_prefs->preferred_color_scheme =
-          blink::mojom::PreferredColorScheme::kDark;
-      break;
-    case ui::NativeTheme::PreferredColorScheme::kLight:
-      web_prefs->preferred_color_scheme =
-          blink::mojom::PreferredColorScheme::kLight;
-      break;
-  }
 #endif  // !defined(OS_ANDROID)
 
-  switch (native_theme->GetPreferredContrast()) {
+  switch (GetWebTheme()->GetPreferredContrast()) {
     case ui::NativeTheme::PreferredContrast::kNoPreference:
       web_prefs->preferred_contrast =
           blink::mojom::PreferredContrast::kNoPreference;
@@ -3471,8 +3494,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       break;
   }
 
-  UpdatePreferredColorSchemesBasedOnURLIfNeeded(
-      web_prefs, rvh->GetSiteInstance()->GetSiteURL());
+  UpdatePreferredColorScheme(web_prefs, rvh->GetSiteInstance()->GetSiteURL(),
+                             contents, GetWebTheme());
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
 
@@ -3498,8 +3521,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
     WebContents* web_contents,
     WebPreferences* prefs) {
-  return UpdatePreferredColorSchemesBasedOnURLIfNeeded(
-      prefs, web_contents->GetLastCommittedURL());
+  return UpdatePreferredColorScheme(prefs, web_contents->GetLastCommittedURL(),
+                                    web_contents, GetWebTheme());
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
@@ -3804,23 +3827,21 @@ bool ChromeContentBrowserClient::IsRendererCodeIntegrityEnabled() {
 void ChromeContentBrowserClient::WillStartServiceManager() {
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (startup_data_) {
-    auto* chrome_feature_list_creator =
-        startup_data_->chrome_feature_list_creator();
-    // This has to run very early before ServiceManagerContext is created.
-    const policy::PolicyMap& policies =
-        chrome_feature_list_creator->browser_policy_connector()
-            ->GetPolicyService()
-            ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                                  std::string()));
-    const base::Value* audio_sandbox_enabled_policy_value =
-        policies.GetValue(policy::key::kAudioSandboxEnabled);
-    if (audio_sandbox_enabled_policy_value) {
-      bool force_enable_audio_sandbox;
-      audio_sandbox_enabled_policy_value->GetAsBoolean(
-          &force_enable_audio_sandbox);
-      SetForceAudioServiceSandboxed(force_enable_audio_sandbox);
-    }
+  auto* chrome_feature_list_creator =
+      startup_data_.chrome_feature_list_creator();
+  // This has to run very early before ServiceManagerContext is created.
+  const policy::PolicyMap& policies =
+      chrome_feature_list_creator->browser_policy_connector()
+          ->GetPolicyService()
+          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                std::string()));
+  const base::Value* audio_sandbox_enabled_policy_value =
+      policies.GetValue(policy::key::kAudioSandboxEnabled);
+  if (audio_sandbox_enabled_policy_value) {
+    bool force_enable_audio_sandbox;
+    audio_sandbox_enabled_policy_value->GetAsBoolean(
+        &force_enable_audio_sandbox);
+    SetForceAudioServiceSandboxed(force_enable_audio_sandbox);
   }
 #endif
 }
@@ -4842,8 +4863,8 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
     DCHECK(g_browser_process->local_state());
     local_state = g_browser_process->local_state();
   } else {
-    DCHECK(startup_data_->chrome_feature_list_creator()->local_state());
-    local_state = startup_data_->chrome_feature_list_creator()->local_state();
+    DCHECK(startup_data_.chrome_feature_list_creator()->local_state());
+    local_state = startup_data_.chrome_feature_list_creator()->local_state();
   }
 
   if (!data_use_measurement::ChromeDataUseMeasurement::GetInstance())

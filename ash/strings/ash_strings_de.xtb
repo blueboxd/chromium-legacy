@@ -56,6 +56,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1420527829902822813">Screenshot aufgenommen und in der Zwischenablage gespeichert</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Spracheinstellungen anzeigen</translation>
+<translation id="1456407467406159627">Die Bildschirmaufzeichnung wurde aufgrund von vertraulichen Inhalten auf Ihrem Bildschirm angehalten.</translation>
 <translation id="1460620680449458626">Ton ist aus.</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1475439723810528286">Auf eine beliebige Stelle tippen, um den ganzen Bildschirm aufzuzeichnen</translation>
@@ -150,6 +151,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2369165858548251131">"Hallo" auf Chinesisch</translation>
 <translation id="2390318262976603432">Spracheinstellungen</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="240006516586367791">Mediensteuerelemente</translation>
 <translation id="2405664212338326887">Nicht verbunden</translation>
 <translation id="2408955596600435184">PIN eingeben</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
@@ -220,6 +222,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
 <translation id="3139942575505304791">Desktop 1</translation>
+<translation id="3147157020428159854">Bildschirmaufzeichnung angehalten</translation>
 <translation id="315116470104423982">Mobile Daten</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
@@ -291,6 +294,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="380165613292957338">Hallo, wie kann ich dir helfen?</translation>
 <translation id="3826099427150913765">Zu Passwort wechseln</translation>
 <translation id="383629559565718788">Tastatureinstellungen anzeigen</translation>
+<translation id="3846214748874656680">Vollbildmodus beenden</translation>
 <translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="385300504083504382">Anfang</translation>
@@ -655,7 +659,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="7551643184018910560">An Ablage anpinnen</translation>
 <translation id="7561982940498449837">Menü schließen</translation>
 <translation id="7564874036684306347">Das Verschieben von Fenstern auf einen anderen Desktop kann zu unerwartetem Verhalten führen. Nachfolgende Benachrichtigungen, Fenster und Dialogfelder werden unter Umständen zwischen den Desktops aufgeteilt.</translation>
-<translation id="7568637526529101738">Wenn Sie mit der rechten Maustaste klicken oder lange drücken, zeigt Assistant Informationen wie die Definition oder das Umrechnen von Einheiten für Ihre Auswahl.</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
 <translation id="7579778809502851308">Bildschirmaufnahme</translation>
 <translation id="7590883480672980941">Eingabeeinstellungen</translation>
@@ -707,6 +710,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="7995804128062002838">Die Bildschirmaufnahme ist fehlgeschlagen</translation>
 <translation id="8000066093800657092">Kein Netzwerk</translation>
 <translation id="8004512796067398576">Erhöhen</translation>
+<translation id="8029247720646289474">Fehler bei Hotspotverbindung</translation>
 <translation id="8029629653277878342">Für mehr Sicherheit ist das Passwort oder die PIN erforderlich</translation>
 <translation id="8030169304546394654">Verbindung getrennt</translation>
 <translation id="8042893070933512245">Menü "Bedienungshilfen" öffnen</translation>
@@ -742,7 +746,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> und Ihr Smartphone werden automatisch miteinander verbunden</translation>
 <translation id="8380784334203145311">Gute Nacht,</translation>
 <translation id="8388750414311082622">Letzter Desktop kann nicht entfernt werden.</translation>
-<translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Deine Eltern haben dieses Gerät gesperrt</translation>
 <translation id="8412677897383510995">Displayeinstellungen anzeigen</translation>
 <translation id="8425213833346101688">Ändern</translation>

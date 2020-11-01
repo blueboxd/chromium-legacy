@@ -206,7 +206,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'de48febf8bd268ea00f80338f0ac981a3f7a6036',
+  'skia_revision': 'b21c1f2d44007e582459cdfc6a7a4d8a5a8fb0dc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '5cbd052dfba9b77bc74887ac6d498aff436880e1',
+  'freetype_revision': '6fca2e5b1b5d07b16f79d46ac5ff89b1d51e73bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@48c16e2ff4611ed26d37a73a26bc53519cabf5df',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c3ff034225df32a9913ce41b8ebfc29b0d5ef174',
     'condition': 'checkout_src_internal',
   },
 
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'wwoFvUm67SLBY3_HfnEX0lkXxs04pITqyLjVOEmfCZAC',
+        'version': 'x8G0oGkWj2Hup5CVLLCVSrGuClVEJMHx_wsJ2YHbyFIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1588,7 +1588,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'yybQT1NgYyoLnnwaj0ajD2KILEngxWARvh81yQLwFQEC',
+        'version': 'TtjDJ91MefDaeWtRnA-od1nfQY6iFpxeVI9wigBmohkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

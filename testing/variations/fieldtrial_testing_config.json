@@ -2644,21 +2644,6 @@
             ]
         }
     ],
-    "EnableAutofillPasswordReauthIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableAutofillPasswordReauthIOS"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableContextMenuPerformanceHints": [
         {
             "platforms": [
@@ -4438,21 +4423,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableNativeContextMenus"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NativeWindowOcclusionTrackerWin": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "NativeWindowOcclusionTrackerWin",
-                    "enable_features": [
-                        "CalculateNativeWinOcclusion"
                     ]
                 }
             ]
@@ -7683,21 +7653,6 @@
                     "name": "Disabled_20200708",
                     "disable_features": [
                         "WebComponentsV0"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebContentsOcclusionWin": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "WebContentsOcclusionWin",
-                    "enable_features": [
-                        "WebContentsOcclusion"
                     ]
                 }
             ]

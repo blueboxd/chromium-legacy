@@ -24,7 +24,6 @@ namespace features {
 extern const base::Feature kAutofillAddressEnhancementVotes;
 extern const base::Feature kAutofillAddressProfileSavePrompt;
 extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
-extern const base::Feature kAutofillAllowHtmlTypeCountryCodesWithFullNames;
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAlwaysFillAddresses;
 extern const base::Feature
@@ -68,14 +67,11 @@ extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillSkipFillingFieldsWithChangedValues;
 extern const base::Feature kAutofillTokenPrefixMatching;
-extern const base::Feature kAutofillTouchToFill;
 extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 extern const base::Feature kAutofillUseNewSectioningMethod;
-extern const base::Feature kAutofillUsePageLanguageToTranslateCountryNames;
 extern const base::Feature kAutofillUseParseCityStateCountryZipCodeInHeuristic;
 extern const base::Feature kAutofillUsePageLanguageToSelectFieldParsingPatterns;
-extern const base::Feature kAutofillUseVariationCountryCode;
 
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;

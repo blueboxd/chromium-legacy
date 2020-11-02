@@ -39,13 +39,6 @@ const base::Feature kAutofillAddressProfileSavePrompt{
 const base::Feature kAutofillAllowDuplicateFormSubmissions{
     "AutofillAllowDuplicateFormSubmissions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls if a full country name instead of a country code in a field with a
-// type derived from HTML_TYPE_COUNTRY_CODE can be used to set the profile
-// country.
-const base::Feature kAutofillAllowHtmlTypeCountryCodesWithFullNames{
-    "AutofillAllowHtmlTypeCountryCodesWithFullNames",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether autofill activates on non-HTTP(S) pages. Useful for
 // automated with data URLS in cases where it's too difficult to use the
 // embedded test server. Generally avoid using.
@@ -268,10 +261,6 @@ const base::Feature kAutofillSkipFillingFieldsWithChangedValues{
 const base::Feature kAutofillTokenPrefixMatching{
     "AutofillTokenPrefixMatching", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the touch to fill feature for Android.
-const base::Feature kAutofillTouchToFill = {"TouchToFillAndroid",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Autofill upload throttling is used for testing.
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -286,13 +275,6 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// TODO(crbug.com/1075604): Remove once launched.
-// Controls whether the page language is used as a fall-back locale to translate
-// the country name when a profile is imported from a form.
-const base::Feature kAutofillUsePageLanguageToTranslateCountryNames{
-    "AutofillUsePageLanguageToTranslateCountryNames",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to use the |ParseCityStateCountryZipCode| or not for
 // predicting the heuristic type.
@@ -310,13 +292,6 @@ const base::Feature kAutofillUseParseCityStateCountryZipCodeInHeuristic{
 const base::Feature kAutofillUsePageLanguageToSelectFieldParsingPatterns{
     "AutofillUsePageLanguageToSelectFieldParsingPatterns",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether or not autofill utilizes the country code from the Chrome
-// variation service. The country code is used for determining the address
-// requirements for address profile creation and as source for a default country
-// used in a new address profile.
-const base::Feature kAutofillUseVariationCountryCode{
-    "AutofillUseVariationCountryCode", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is

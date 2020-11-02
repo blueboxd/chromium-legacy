@@ -1187,11 +1187,7 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.h
 crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
 ### Textfield NG
-crbug.com/1143621 external/wpt/css/css-pseudo/first-line-and-placeholder.html [ Failure ]
 crbug.com/1040826 fast/forms/input-in-table-cell-no-value.html [ Failure ]
-crbug.com/1040826 fast/forms/placeholder-position.html [ Failure ]
-crbug.com/1040826 [ Linux ] fast/forms/text/input-placeholder-paint-order.html [ Failure ]
-crbug.com/1040826 [ Win ] fast/forms/text/input-placeholder-paint-order.html [ Failure ]
 crbug.com/1040826 [ Linux ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/1040826 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/1040826 [ Linux ] fast/selectors/input-with-selection-pseudo-element.html [ Failure ]
@@ -2470,12 +2466,6 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-line-breaking-001.html [ Failure 
 crbug.com/27659 external/wpt/css/css-ruby/ruby-line-breaking-003.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
-
-# Disabling tests temporarily in order to land a devtools-frontend color-swatch change. Will re-enable soon.
-crbug.com/1137438 http/tests/devtools/elements/styles-1/color-swatch.js [ Failure Pass ]
-crbug.com/1137438 http/tests/devtools/elements/styles/url-color-swatch.js [ Failure Pass ]
-crbug.com/1137438 http/tests/devtools/sources/color-swatch-position.js [ Failure Pass ]
-crbug.com/1137438 http/tests/devtools/elements/css-variables/color-swatch.js [ Failure Pass ]
 
 # WebRTC: Perfect Negotiation times out in Plan B. This is expected.
 crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
@@ -6239,3 +6229,9 @@ crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ P
 crbug.com/1143170 http/tests/devtools/quick-open/command-menu.js [ Skip ]
 crbug.com/1143170 http/tests/devtools/a11y-axe-core/sources/source-navigator-snippets-a11y-test.js [ Skip ]
 crbug.com/1143170 http/tests/devtools/sources/debugger-ui/script-snippet-model.js [ Skip ]
+
+# Eco-Infra Sheriff 2020-11-02
+crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Pass Failure ]
+crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Pass Failure ]
+crbug.com/1144677 external/wpt/infrastructure/reftest/reftest.www.sub.html [ Failure ]
+crbug.com/1144677 external/wpt/paint-timing/fcp-only/fcp-ensure-update-the-rendering-step.html [ Pass Failure ]

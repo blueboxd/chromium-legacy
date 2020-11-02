@@ -90,7 +90,7 @@
     "owners": [ "//content/browser/web_package/OWNERS" ],
     // Used by developers for testing signed exchange loading using normal
     // certs. See https://crbug.com/862003
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "allow-sync-xhr-in-page-dismissal",
@@ -145,7 +145,7 @@
   {
     "name": "app-service-intent-handling",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "arc-custom-tabs-experiment",
@@ -383,7 +383,7 @@
   {
     "name": "avatar-toolbar-button",
     "owners": [ "droger", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 92
   },
   {
     "name": "back-forward-cache",
@@ -1390,11 +1390,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-cros-virtual-keyboard-floating-resizable",
-    "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "enable-data-reduction-proxy-server-experiment",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2161,12 +2156,12 @@
   {
     "name": "enable-sxg-prefetch-cache-for-navigations",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "enable-sxg-subresource-prefetching",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "enable-tab-engagement-reporting",
@@ -4523,11 +4518,6 @@
     "name": "touch-selection-strategy",
     "owners": [ "omrilio" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "touch-to-fill",
-    "owners": [ "jdoerrie" ],
-    "expiry_milestone": 87
   },
   {
     "name": "touchpad-overscroll-history-navigation",

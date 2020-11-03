@@ -54,6 +54,10 @@ class MODULES_EXPORT MediaDevices final
                                 const MediaStreamConstraints*,
                                 ExceptionState&);
 
+  ScriptPromise getCurrentBrowsingContextMedia(ScriptState*,
+                                               const MediaStreamConstraints*,
+                                               ExceptionState&);
+
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
@@ -66,7 +70,7 @@ class MODULES_EXPORT MediaDevices final
   void ContextDestroyed() override;
 
   // mojom::blink::MediaDevicesListener implementation.
-  void OnDevicesChanged(MediaDeviceType,
+  void OnDevicesChanged(mojom::blink::MediaDeviceType,
                         const Vector<WebMediaDeviceInfo>&) override;
 
   // Callback for testing only.

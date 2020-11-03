@@ -26,9 +26,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/attestation/mock_machine_certificate_uploader.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -73,6 +75,9 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/attestation/fake_attestation_client.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
@@ -123,6 +128,7 @@
 
 namespace em = enterprise_management;
 
+using base::test::RunOnceCallback;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
@@ -191,15 +197,16 @@ constexpr char kSamlVerifiedAccessResponseHeader[] =
     "x-verified-access-challenge-response";
 
 constexpr char kTpmChallenge[] = {0, 1, 2, 'c', 'h', 'a', 'l', 253, 254, 255};
-constexpr char kTpmChallengeResponse[] = {0,   1,   2,   'r', 'e',
-                                          's', 'p', 253, 254, 255};
 
 std::string GetTpmChallenge() {
   return std::string(kTpmChallenge, base::size(kTpmChallenge));
 }
 
 std::string GetTpmResponse() {
-  return std::string(kTpmChallengeResponse, base::size(kTpmChallengeResponse));
+  return AttestationClient::Get()
+      ->GetTestInterface()
+      ->GetEnterpriseChallengeFakeSignature(GetTpmChallenge(),
+                                            /*include_spkac=*/false);
 }
 
 std::string GetTpmChallengeBase64() {
@@ -208,8 +215,8 @@ std::string GetTpmChallengeBase64() {
 }
 
 std::string GetTpmResponseBase64() {
-  return base::Base64Encode(
-      base::as_bytes(base::span<const char>(kTpmChallengeResponse)));
+  const std::string response = GetTpmResponse();
+  return base::Base64Encode(base::as_bytes(base::make_span(response)));
 }
 
 // Returns relay state from http get/post requests.
@@ -632,6 +639,19 @@ class SamlTest : public OobeBaseTest {
   }
 
   void SetUpOnMainThread() override {
+    // Allowlist the default EMK to sign enterprise challenge.
+    ::attestation::SignEnterpriseChallengeRequest
+        sign_enterprise_challenge_request;
+    sign_enterprise_challenge_request.set_username("");
+    sign_enterprise_challenge_request.set_key_label(
+        attestation::kEnterpriseMachineKey);
+    sign_enterprise_challenge_request.set_domain("google.com");
+    sign_enterprise_challenge_request.set_device_id("device_id");
+    AttestationClient::Get()
+        ->GetTestInterface()
+        ->AllowlistSignEnterpriseChallengeKey(
+            sign_enterprise_challenge_request);
+
     fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
         saml_test_users::kFirstUserCorpExampleComEmail, kTestAuthSIDCookie1,
         kTestAuthLSIDCookie1);
@@ -1902,6 +1922,7 @@ class SAMLDeviceAttestationTest : public SamlTest {
   StubCrosSettingsProvider* settings_provider_ = nullptr;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;
+  attestation::MockMachineCertificateUploader mock_cert_uploader_;
   NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
   chromeos::ScopedStubInstallAttributes stub_install_attributes_;
 };
@@ -1914,8 +1935,6 @@ void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {
   mock_async_method_caller_ = new NiceMock<cryptohome::MockAsyncMethodCaller>();
   mock_async_method_caller_->SetUp(/*success=*/true,
                                    cryptohome::MountError::MOUNT_ERROR_NONE);
-  ON_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
-      .WillByDefault(WithArgs<6, 8>(Invoke(FakeEnterpriseChallenge)));
 
   // Ownership of mock_async_method_caller_ is transferred to
   // AsyncMethodCaller::InitializeForTesting.
@@ -1925,9 +1944,13 @@ void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {
   ON_CALL(mock_attestation_flow_, GetCertificate)
       .WillByDefault(WithArgs<5>(Invoke(FakeGetCertificateCallbackTrue)));
 
+  // By default make it reply that the certificate is already uploaded.
+  ON_CALL(mock_cert_uploader_, WaitForUploadComplete)
+      .WillByDefault(RunOnceCallback<0>(/*certificate_uploaded=*/true));
+
   attestation::TpmChallengeKeyFactory::SetForTesting(
       std::make_unique<attestation::TpmChallengeKeyImpl>(
-          &mock_attestation_flow_));
+          &mock_attestation_flow_, &mock_cert_uploader_));
 
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 }
@@ -2112,8 +2135,9 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, TimeoutError) {
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
 
-  ON_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
-      .WillByDefault(WithArgs<6, 8>(Invoke(FakeEnterpriseChallengeWithDelay)));
+  AttestationClient::Get()
+      ->GetTestInterface()
+      ->set_sign_enterprise_challenge_delay(kBuildResponseTaskDelay);
 
   auto handler = std::make_unique<SamlChallengeKeyHandler>();
   handler->SetTpmResponseTimeoutForTesting(kTimeoutTaskDelay);

@@ -5,17 +5,22 @@
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 
 #include "ash/in_session_auth/auth_dialog_contents_view.h"
+#include "ash/in_session_auth/webauthn_request_registrar_impl.h"
 #include "ash/public/cpp/in_session_auth_dialog_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"
+#include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace ash {
 
-InSessionAuthDialogControllerImpl::InSessionAuthDialogControllerImpl() =
-    default;
+InSessionAuthDialogControllerImpl::InSessionAuthDialogControllerImpl()
+    : webauthn_request_registrar_(
+          std::make_unique<WebAuthnRequestRegistrarImpl>()) {}
 
 InSessionAuthDialogControllerImpl::~InSessionAuthDialogControllerImpl() =
     default;
@@ -26,11 +31,13 @@ void InSessionAuthDialogControllerImpl::SetClient(
 }
 
 void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
+    aura::Window* source_window,
     FinishCallback finish_callback) {
   DCHECK(client_);
   // Concurrent requests are not supported.
   DCHECK(!dialog_);
 
+  window_tracker_.Add(source_window);
   finish_callback_ = std::move(finish_callback);
 
   AccountId account_id =
@@ -43,7 +50,8 @@ void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
         account_id,
         base::BindOnce(
             &InSessionAuthDialogControllerImpl::OnStartFingerprintAuthSession,
-            weak_factory_.GetWeakPtr(), account_id, auth_methods));
+            weak_factory_.GetWeakPtr(), account_id, auth_methods,
+            source_window));
     // OnStartFingerprintAuthSession checks PIN availability.
     return;
   }
@@ -51,12 +59,13 @@ void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
   client_->CheckPinAuthAvailability(
       account_id,
       base::BindOnce(&InSessionAuthDialogControllerImpl::OnPinCanAuthenticate,
-                     weak_factory_.GetWeakPtr(), auth_methods));
+                     weak_factory_.GetWeakPtr(), auth_methods, source_window));
 }
 
 void InSessionAuthDialogControllerImpl::OnStartFingerprintAuthSession(
     AccountId account_id,
     uint32_t auth_methods,
+    aura::Window* source_window,
     bool success) {
   if (success)
     auth_methods |= AuthDialogContentsView::kAuthFingerprint;
@@ -64,11 +73,12 @@ void InSessionAuthDialogControllerImpl::OnStartFingerprintAuthSession(
   client_->CheckPinAuthAvailability(
       account_id,
       base::BindOnce(&InSessionAuthDialogControllerImpl::OnPinCanAuthenticate,
-                     weak_factory_.GetWeakPtr(), auth_methods));
+                     weak_factory_.GetWeakPtr(), auth_methods, source_window));
 }
 
 void InSessionAuthDialogControllerImpl::OnPinCanAuthenticate(
     uint32_t auth_methods,
+    aura::Window* source_window,
     bool pin_auth_available) {
   if (pin_auth_available)
     auth_methods |= AuthDialogContentsView::kAuthPin;
@@ -81,7 +91,15 @@ void InSessionAuthDialogControllerImpl::OnPinCanAuthenticate(
     return;
   }
 
-  dialog_ = std::make_unique<InSessionAuthDialog>(auth_methods);
+  if (!window_tracker_.Contains(source_window)) {
+    LOG(ERROR) << "Source window is no longer available.";
+    Cancel();
+    return;
+  }
+
+  window_tracker_.Remove(source_window);
+  Shell::Get()->focus_controller()->AddObserver(this);
+  dialog_ = std::make_unique<InSessionAuthDialog>(auth_methods, source_window);
 }
 
 void InSessionAuthDialogControllerImpl::DestroyAuthenticationDialog() {
@@ -93,6 +111,8 @@ void InSessionAuthDialogControllerImpl::DestroyAuthenticationDialog() {
     client_->EndFingerprintAuthSession();
 
   dialog_.reset();
+  window_tracker_.RemoveAll();
+  Shell::Get()->focus_controller()->RemoveObserver(this);
 }
 
 void InSessionAuthDialogControllerImpl::AuthenticateUserWithPin(
@@ -152,6 +172,14 @@ void InSessionAuthDialogControllerImpl::Cancel() {
   DestroyAuthenticationDialog();
   if (finish_callback_)
     std::move(finish_callback_).Run(false);
+}
+
+void InSessionAuthDialogControllerImpl::OnWindowFocused(
+    aura::Window* gained_focus,
+    aura::Window* lost_focus) {
+  if (dialog_ && lost_focus == dialog_->widget()->GetNativeWindow()) {
+    Cancel();
+  }
 }
 
 }  // namespace ash

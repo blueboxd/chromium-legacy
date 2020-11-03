@@ -4582,6 +4582,13 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="No answer, defaults to not accepted"/>
 </enum>
 
+<enum name="AutofillAssistantOnboardingFetcherResultStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="No body received"/>
+  <int value="2" label="Invalid JSON"/>
+  <int value="3" label="Invalid data"/>
+</enum>
+
 <enum name="AutofillAssistantPaymentRequestAutofillInfoChanged">
   <int value="0" label="Changed &amp; Success"/>
   <int value="1" label="Not changed &amp; Success"/>
@@ -30125,6 +30132,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3716" label="CSSPseudoHostCompoundList"/>
   <int value="3717" label="CSSPseudoHostContextCompoundList"/>
   <int value="3718" label="CSSPseudoHostDynamicSpecificity"/>
+  <int value="3719" label="GetCurrentBrowsingContextMedia"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -30243,6 +30251,14 @@ Called by update_feature_policy_enum.py.-->
   <int value="6" label="SadTab Page"/>
   <int value="7" label="Supervised User Interstitial"/>
   <int value="8" label="Assistant"/>
+  <int value="9" label="Desktop Tab Groups"/>
+  <int value="10" label="Media App"/>
+  <int value="11" label="Help App"/>
+  <int value="12" label="Kaleidoscope"/>
+  <int value="13" label="Network Health Page"/>
+  <int value="14" label="Tab Search"/>
+  <int value="15" label="Camera App"/>
+  <int value="16" label="Capture Mode"/>
 </enum>
 
 <enum name="FeedControlsActions">
@@ -39074,6 +39090,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Unspecified"/>
   <int value="1" label="Light"/>
   <int value="2" label="Dark"/>
+</enum>
+
+<enum name="IOSWidgetKitAction">
+  <int value="0" label="Dino Widget - Game"/>
+  <int value="1" label="Search Widget - Search"/>
+  <int value="2" label="Quick Actions Widget - Search"/>
+  <int value="3" label="Quick Actions Widget - Incognito"/>
+  <int value="4" label="Quick Actions Widget - Voice Search"/>
+  <int value="5" label="Quick Actions Widget - QR Reader"/>
 </enum>
 
 <enum name="IOSWKWebViewLinkPreviewAction">
@@ -63896,6 +63921,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="CanvasCaptureStream"/>
   <int value="7" label="VideoCaptureStream"/>
   <int value="8" label="GetDisplayMedia"/>
+  <int value="9" label="kGetCurrentBrowsingContextMedia"/>
 </enum>
 
 <enum name="RTCQuicStreamReadIntoResult">
@@ -64332,6 +64358,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="18" label="kGetPublicKeyFailedError"/>
   <int value="19" label="kMarkCorporateKeyFailedError"/>
   <int value="20" label="kAttestationServiceInternalError"/>
+  <int value="21" label="kUploadCertificateFailedError"/>
 </enum>
 
 <enum name="SamlInSessionPasswordChangeEvent">

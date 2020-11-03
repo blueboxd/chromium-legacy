@@ -65130,8 +65130,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
+              "os": "Windows-10-18363"
             }
           ],
           "hard_timeout": 900,
@@ -68233,7 +68232,7 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
-              "os": "Windows-10"
+              "os": "Windows-10-18363"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -68256,7 +68255,7 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
-              "os": "Windows-10"
+              "os": "Windows-10-18363"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

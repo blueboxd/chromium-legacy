@@ -23,7 +23,6 @@
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/password_manager/core/browser/password_form_forward.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -33,6 +32,7 @@ class InProcessImporterBridge;
 
 namespace importer {
 struct ImporterAutofillFormDataEntry;
+struct ImportedPasswordForm;
 struct SearchEngineInfo;
 }
 
@@ -73,7 +73,7 @@ class ExternalProcessImporterClient
   void OnFaviconsImportGroup(
       const favicon_base::FaviconUsageDataList& favicons_group) override;
   void OnPasswordFormImportReady(
-      const password_manager::PasswordForm& form) override;
+      const importer::ImportedPasswordForm& form) override;
   void OnKeywordsImportReady(
       const std::vector<importer::SearchEngineInfo>& search_engines,
       bool unique_on_host_and_path) override;

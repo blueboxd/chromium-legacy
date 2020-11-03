@@ -5959,6 +5959,11 @@ crbug.com/1097005 http/tests/devtools/console/console-object-preview.js [ Pass F
 crbug.com/1097005 http/tests/devtools/console/console-preserve-scroll.js [ Pass Failure Crash Timeout ]
 crbug.com/1097005 http/tests/devtools/console/console-search.js [ Pass Failure Crash Timeout ]
 
+crbug.com/1143648 http/tests/devtools/security/origin-view-ct-compliance.js [ Pass Failure ]
+crbug.com/1143648 http/tests/devtools/security/origin-view-noncryptographic-secure-origin.js [ Pass Failure ]
+crbug.com/1143648 http/tests/devtools/security/origin-view-then-interstitial.js [ Pass Failure ]
+crbug.com/1143648 http/tests/devtools/security/security-details-updated-with-security-state.js [ Pass Failure ]
+
 crbug.com/1093445 http/tests/loading/pdf-commit-load-callbacks.html [ Pass Failure ]
 crbug.com/1093497 http/tests/history/client-redirect-after-push-state.html [ Pass Failure ]
 
@@ -6014,7 +6019,7 @@ crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-
 # Temporarily disable tests to allow fixing of devtools path escaping
 crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Pass Timeout Failure ]
 crbug.com/1094436 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Pass Failure ]
-crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Skip ]
+crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Pass Timeout ]
 crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Failure Crash ]
 
 # This test fails due to the linked bug since input is now routed through the compositor.
@@ -6217,11 +6222,6 @@ crbug.com/1142877 external/wpt/mediacapture-fromelement/capture.html [ Pass Fail
 #Sheriff 2020-10-29
 crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
 
-# DevTools roll
-crbug.com/1143170 http/tests/devtools/quick-open/command-menu.js [ Skip ]
-crbug.com/1143170 http/tests/devtools/a11y-axe-core/sources/source-navigator-snippets-a11y-test.js [ Skip ]
-crbug.com/1143170 http/tests/devtools/sources/debugger-ui/script-snippet-model.js [ Skip ]
-
 # Eco-Infra Sheriff 2020-11-02
 crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Pass Failure ]
 crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Pass Failure ]
@@ -6229,3 +6229,6 @@ crbug.com/1144677 external/wpt/infrastructure/reftest/reftest.www.sub.html [ Fai
 crbug.com/1144677 external/wpt/paint-timing/fcp-only/fcp-ensure-update-the-rendering-step.html [ Pass Failure ]
 
 crbug.com/1144537 external/wpt/xhr/responsexml-document-properties.htm [ Pass Failure ]
+
+# Sheriff 2020-11-03
+crbug.com/1145019 [ Win7 ] fast/events/updateLayoutForHitTest.html [ Failure ]

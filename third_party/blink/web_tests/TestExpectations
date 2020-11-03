@@ -246,8 +246,6 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 
-crbug.com/1137143 http/tests/inspector-protocol/runtime/remote-object-id-cross-process.js [ Pass Failure ]
-
 # Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
@@ -333,10 +331,6 @@ crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filte
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
-
-# Service workers new newtwork button added
-crbug.com/1137050 http/tests/devtools/service-workers/service-workers-view.js [ Skip ]
-crbug.com/1137050 http/tests/devtools/service-workers/service-workers-redundant.js [ Skip ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
@@ -1701,7 +1695,6 @@ crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set
 crbug.com/1049641 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Pass Timeout ]
 
 # Sheriff 2019-08-19
-crbug.com/626703 [ Win7 ] external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/dom/documents/resource-metadata-management/document-lastModified-01.html [ Failure ]
 
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
@@ -2957,7 +2950,6 @@ crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-16.xml [ Skip ]
-crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-83.xml [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-64.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-62.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-19b.xml [ Skip ]
@@ -6235,3 +6227,5 @@ crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-001.html [
 crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Pass Failure ]
 crbug.com/1144677 external/wpt/infrastructure/reftest/reftest.www.sub.html [ Failure ]
 crbug.com/1144677 external/wpt/paint-timing/fcp-only/fcp-ensure-update-the-rendering-step.html [ Pass Failure ]
+
+crbug.com/1144537 external/wpt/xhr/responsexml-document-properties.htm [ Pass Failure ]

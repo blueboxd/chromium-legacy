@@ -616,25 +616,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmAttestationRegisterKey(attestation::AttestationKeyType key_type,
-                                 const cryptohome::AccountIdentifier& id,
-                                 const std::string& key_name,
-                                 AsyncMethodCallback callback) override {
-    dbus::MethodCall method_call(
-        cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationRegisterKey);
-    dbus::MessageWriter writer(&method_call);
-    bool is_user_specific = (key_type == attestation::KEY_USER);
-    writer.AppendBool(is_user_specific);
-    writer.AppendString(id.account_id());
-    writer.AppendString(key_name);
-    proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  // CryptohomeClient override.
   void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
       const cryptohome::AccountIdentifier& id,
@@ -663,29 +644,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
     writer.AppendString(key_name_for_spkac);
-    proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  // CryptohomeClient override.
-  void TpmAttestationSignSimpleChallenge(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& id,
-      const std::string& key_name,
-      const std::string& challenge,
-      AsyncMethodCallback callback) override {
-    dbus::MethodCall method_call(
-        cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSignSimpleChallenge);
-    dbus::MessageWriter writer(&method_call);
-    bool is_user_specific = (key_type == attestation::KEY_USER);
-    writer.AppendBool(is_user_specific);
-    writer.AppendString(id.account_id());
-    writer.AppendString(key_name);
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,

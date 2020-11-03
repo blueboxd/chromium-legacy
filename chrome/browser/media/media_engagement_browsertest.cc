@@ -17,9 +17,9 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
@@ -256,7 +256,8 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     // need it before the page navigates.
     InjectTimerTaskRunner();
 
-    ui_test_utils::NavigateToURL(browser(), http_server_origin2_.GetURL("/"));
+    ui_test_utils::NavigateToURL(
+        browser(), http_server_origin2_.GetURL("/engagement_test.html"));
   }
 
   const net::EmbeddedTestServer& http_server() const { return http_server_; }
@@ -527,9 +528,6 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Flaky: https://crbug.com/1115238
-#define MAYBE_RecordVisitOnNewOrigin DISABLED_RecordVisitOnNewOrigin
-#elif defined(OS_MAC)
-// Consistently fails: https://crbug.com/1144680
 #define MAYBE_RecordVisitOnNewOrigin DISABLED_RecordVisitOnNewOrigin
 #else
 #define MAYBE_RecordVisitOnNewOrigin RecordVisitOnNewOrigin

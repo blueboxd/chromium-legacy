@@ -3599,6 +3599,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-cros-ime-sandbox", flag_descriptions::kImeServiceSandboxName,
      flag_descriptions::kImeServiceSandboxDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableImeSandbox)},
+    {"enable-cros-ime-service-decoder",
+     flag_descriptions::kImeServiceDecoderName,
+     flag_descriptions::kImeServiceDecoderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeMojoDecoder)},
     {"enable-cros-language-settings-update",
      flag_descriptions::kCrosLanguageSettingsUpdateName,
      flag_descriptions::kCrosLanguageSettingsUpdateDescription, kOsCrOS,
@@ -5172,11 +5176,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill_assistant::features::kAutofillAssistantDirectActions)},
 #endif  // defined(OS_ANDROID)
-
-    {"disable-best-effort-tasks",
-     flag_descriptions::kDisableBestEffortTasksName,
-     flag_descriptions::kDisableBestEffortTasksDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisableBestEffortTasks)},
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
     {"web-contents-occlusion", flag_descriptions::kWebContentsOcclusionName,

@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './file_path.mojom-lite.js';
 import './color_mode_select.js';
 import './file_type_select.js';
@@ -14,6 +17,7 @@ import './resolution_select.js';
 import './scan_preview.js';
 import './scan_to_select.js';
 import './scanner_select.js';
+import './scanning_fonts_css.js';
 import './scanning_shared_css.js';
 import './source_select.js';
 
@@ -22,7 +26,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {getScanService} from './mojo_interface_provider.js';
 import {ScannerArr} from './scanning_app_types.js';
-import {colorModeFromString, pageSizeFromString, tokenToString} from './scanning_app_util.js';
+import {colorModeFromString, fileTypeFromString, pageSizeFromString, tokenToString} from './scanning_app_util.js';
 
 /**
  * The default save directory for completed scans.
@@ -44,14 +48,11 @@ Polymer({
   /** @private {?chromeos.scanning.mojom.ScanServiceInterface} */
   scanService_: null,
 
-  /** @private {!Map<!string, !mojoBase.mojom.UnguessableToken>} */
+  /** @private {!Map<string, !mojoBase.mojom.UnguessableToken>} */
   scannerIds_: new Map(),
 
   properties: {
-    /**
-     * @type {!ScannerArr}
-     * @private
-     */
+    /** @private {!ScannerArr} */
     scanners_: {
       type: Array,
       value: () => [],
@@ -63,59 +64,50 @@ Polymer({
       observer: 'onSelectedScannerIdChange_',
     },
 
-    /**
-     * @type {?chromeos.scanning.mojom.ScannerCapabilities}
-     * @private
-     */
+    /** @private {?chromeos.scanning.mojom.ScannerCapabilities} */
     capabilities_: Object,
 
-    /** @type {?string} */
+    /** @type {string} */
     selectedSource: String,
 
-    /** @type {?string} */
+    /** @type {string} */
     selectedFileType: String,
 
     /** @type {string} */
     selectedFilePath: String,
 
-    /** @type {?string} */
+    /** @type {string} */
     selectedColorMode: String,
 
-    /** @type {?string} */
+    /** @type {string} */
     selectedPageSize: String,
 
-    /** @type {?string} */
+    /** @type {string} */
     selectedResolution: String,
 
-    /**
-     * @type {!Array<chromeos.scanning.mojom.PageSize>}
-     * @private
-     */
+    /** @private {!Array<chromeos.scanning.mojom.PageSize>} */
     selectedSourcePageSizes_: {
       type: Array,
       value: () => [],
       computed: 'computePageSizes_(selectedSource)',
     },
 
-    /**
-     * @type {?string}
-     * @private
-     */
+    /** @private {string} */
     statusText_: String,
 
-    /** @private */
+    /** @private {boolean} */
     settingsDisabled_: {
       type: Boolean,
       value: false,
     },
 
-    /** @private */
+    /** @private {boolean} */
     scanButtonDisabled_: {
       type: Boolean,
       value: true,
     },
 
-    /** @private */
+    /** @private {boolean} */
     loaded_: {
       type: Boolean,
       value: false,
@@ -137,7 +129,7 @@ Polymer({
   },
 
   /**
-   * @param {?string} selectedSource
+   * @param {string} selectedSource
    * @return {!Array<chromeos.scanning.mojom.PageSize>}
    * @private
    */
@@ -223,10 +215,10 @@ Polymer({
       return;
     }
 
-    // TODO(jschettler): Remove this once ScanService supports other file types.
-    if (this.selectedFileType !==
-        chromeos.scanning.mojom.FileType.kPng.toString()) {
-      this.statusText_ = 'PNG is the only supported file type.';
+    // TODO(jschettler): Remove this once ScanService supports PDF.
+    if (this.selectedFileType ==
+        chromeos.scanning.mojom.FileType.kPdf.toString()) {
+      this.statusText_ = 'PDF is not a supported file type.';
       return;
     }
 
@@ -234,12 +226,10 @@ Polymer({
     this.settingsDisabled_ = true;
     this.scanButtonDisabled_ = true;
 
-    // TODO(jschettler): Use the selected file type when ScanService supports
-    // it.
     const settings = {
       'sourceName': this.selectedSource,
       'scanToPath': {'path': this.selectedFilePath},
-      'fileType': chromeos.scanning.mojom.FileType.kPng,
+      'fileType': fileTypeFromString(this.selectedFileType),
       'colorMode': colorModeFromString(this.selectedColorMode),
       'pageSize': pageSizeFromString(this.selectedPageSize),
       'resolutionDpi': Number(this.selectedResolution),
@@ -266,5 +256,19 @@ Polymer({
 
     this.settingsDisabled_ = false;
     this.scanButtonDisabled_ = false;
+  },
+
+  /** @private */
+  toggleClicked_() {
+    this.$.collapse.toggle();
+  },
+
+  /**
+   * @param {boolean} opened Whether the section is expanded or not.
+   * @return {string} Icon name.
+   * @private
+   */
+  getArrowIcon_(opened) {
+    return opened ? 'cr:expand-less' : 'cr:expand-more';
   },
 });

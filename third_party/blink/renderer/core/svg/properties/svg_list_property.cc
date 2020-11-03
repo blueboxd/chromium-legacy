@@ -43,7 +43,8 @@ void SVGListPropertyBase::Clear() {
   values_.clear();
 }
 
-void SVGListPropertyBase::Insert(uint32_t index, SVGPropertyBase* new_item) {
+void SVGListPropertyBase::Insert(uint32_t index,
+                                 SVGListablePropertyBase* new_item) {
   values_.insert(index, new_item);
   new_item->SetOwnerList(this);
 }
@@ -54,12 +55,13 @@ void SVGListPropertyBase::Remove(uint32_t index) {
   values_.EraseAt(index);
 }
 
-void SVGListPropertyBase::Append(SVGPropertyBase* new_item) {
+void SVGListPropertyBase::Append(SVGListablePropertyBase* new_item) {
   values_.push_back(new_item);
   new_item->SetOwnerList(this);
 }
 
-void SVGListPropertyBase::Replace(uint32_t index, SVGPropertyBase* new_item) {
+void SVGListPropertyBase::Replace(uint32_t index,
+                                  SVGListablePropertyBase* new_item) {
   DCHECK_EQ(values_[index]->OwnerList(), this);
   values_[index]->SetOwnerList(nullptr);
   values_[index] = new_item;

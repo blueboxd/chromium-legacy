@@ -3106,6 +3106,17 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="Printing turned off"/>
 </enum>
 
+<enum name="AppMenuSimilarSelectionType">
+  <int value="0"
+      label="selected adding to bookmarks, and then selected all bookmarks"/>
+  <int value="1"
+      label="selected all bookmarks, and then selected adding to bookmarks"/>
+  <int value="2"
+      label="selected downloading the page, and then selected all downloads"/>
+  <int value="3"
+      label="selected all downloads, and then selected downloading the page"/>
+</enum>
+
 <enum name="AppPromoAction">
   <int value="0" label="PROMO_LAUNCH_APP"/>
   <int value="1" label="PROMO_LAUNCH_WEB_STORE"/>
@@ -9187,6 +9198,13 @@ Called by update_bad_message_reasons.py.-->
   <int value="4" label="AVFoundation is enabled and is loaded succesfully"/>
 </enum>
 
+<enum name="CaptureModeEntryType">
+  <int value="0" label="Partial Screenshot Accelerator"/>
+  <int value="1" label="Window Screenshot Accelerator"/>
+  <int value="2" label="Quick Settings"/>
+  <int value="3" label="Stylus Palette"/>
+</enum>
+
 <enum name="CapturePixelFormat">
   <obsolete>
     Deprecated as of 08/2015.
@@ -13094,6 +13112,7 @@ Called by update_net_error_codes.py.-->
   <int value="21" label="kMethodDisallowedByPreflightResponse"/>
   <int value="22" label="kHeaderDisallowedByPreflightResponse"/>
   <int value="23" label="kRedirectContainsCredentials"/>
+  <int value="24" label="kInsecurePrivateNetwork"/>
 </enum>
 
 <enum name="CorsAccessCheckResult">
@@ -29851,7 +29870,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3467" label="CSSContainAllWithoutContentVisibility"/>
   <int value="3468" label="TimerInstallFromBeforeUnload"/>
   <int value="3469" label="TimerInstallFromUnload"/>
-  <int value="3470" label="ElementAttachInternalsBeforeConstructor"/>
+  <int value="3470" label="OBSOLETE_ElementAttachInternalsBeforeConstructor"/>
   <int value="3471" label="SMILElementHasRepeatNEventListener"/>
   <int value="3472" label="WebTransport"/>
   <int value="3473" label="WebkitPrerenderStartEventFired"/>
@@ -36139,7 +36158,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HoldingSpacePodAction">
-  <int value="0" label="kClick"/>
+  <int value="0" label="kClick (Deprecated)"/>
+  <int value="1" label="kShow"/>
+  <int value="2" label="kClose"/>
 </enum>
 
 <enum name="HomeButtonPreferenceStateType">
@@ -44209,6 +44230,7 @@ from previous Chrome versions.
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
   <int value="434530296"
       label="HappinessTrackingSurveysForDesktopMigration:disabled"/>
+  <int value="436249288" label="ImeMojoDecoder:disabled"/>
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
   <int value="439525862" label="GlobalMediaControlsForCast:disabled"/>
   <int value="444411390" label="enable-incognito-shortcut-on-desktop"/>
@@ -44659,6 +44681,7 @@ from previous Chrome versions.
   <int value="885186849" label="finch-seed-expiration-age"/>
   <int value="885971656" label="EnablePlayStoreAppSearch:enabled"/>
   <int value="886907524" label="autoplay-policy"/>
+  <int value="886990840" label="ImeMojoDecoder:enabled"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="889837286" label="EnableHostnameSetting:enabled"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
@@ -65144,6 +65167,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Skipped: Unsupported scheme"/>
 </enum>
 
+<enum name="SBDeepScanTriggers">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Advanced Protection Prompt"/>
+  <int value="2" label="Enterprise policy"/>
+</enum>
+
 <enum name="SBDownloadFeedbackUploadResult">
   <int value="0" label="UPLOAD_SUCCESS"/>
   <int value="1" label="UPLOAD_CANCELLED"/>
@@ -69896,6 +69925,31 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="16" label="Browser crash count"/>
 </enum>
 
+<enum name="StabilityPageLoadType">
+  <summary>
+    Load types included in the &quot;Total pageloads&quot; shown on the
+    stability dashboard.
+  </summary>
+  <int value="0" label="Visible tab - Main frame different document"/>
+  <int value="1" label="Visible tab - Sub frame different document"/>
+  <int value="2" label="Visible tab - Main frame same document"/>
+  <int value="3" label="Visible tab - Sub frame same document"/>
+  <int value="4" label="Visible tab - No commit"/>
+  <int value="5" label="Hidden tab - Main frame different document"/>
+  <int value="6" label="Hidden tab - Sub frame different document"/>
+  <int value="7" label="Hidden tab - Main frame same document"/>
+  <int value="8" label="Hidden tab - Sub frame same document"/>
+  <int value="9" label="Hidden tab - No commit"/>
+  <int value="10" label="Prerender - Main frame different document"/>
+  <int value="11" label="Prerender - Sub frame different document"/>
+  <int value="12" label="Prerender - Main frame same document"/>
+  <int value="13" label="Prerender - Sub frame same document"/>
+  <int value="14" label="Prerender - No commit"/>
+  <int value="15" label="Extension background page"/>
+  <int value="16" label="DevTools"/>
+  <int value="17" label="Unknown"/>
+</enum>
+
 <enum name="StandardActions">
   <summary>
     Standard Activity Actions, as defined by
@@ -72963,6 +73017,25 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Application UI"/>
   <int value="3" label="Accept languages"/>
   <int value="4" label="Default English"/>
+</enum>
+
+<enum name="TranslateTriggerDecision">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Disabled, doesn't need translation"/>
+  <int value="2" label="Disabled, translation feature disabled"/>
+  <int value="3" label="Disabled, offline"/>
+  <int value="4" label="Disabled, missing API key"/>
+  <int value="5" label="Disabled, MIME type not supported"/>
+  <int value="6" label="Disabled, URL not supported"/>
+  <int value="7" label="Disabled, never offer translations"/>
+  <int value="8" label="Disabled, similar languages"/>
+  <int value="9" label="Disabled, unsupported language"/>
+  <int value="10" label="Disabled, never translate language"/>
+  <int value="11" label="Disabled, never translate site"/>
+  <int value="12" label="Disabled, ranker decision"/>
+  <int value="13" label="Show UI"/>
+  <int value="14" label="Automatic translation, by link"/>
+  <int value="15" label="Automatic translation, by user preference"/>
 </enum>
 
 <enum name="TriggerHelpUIResult">

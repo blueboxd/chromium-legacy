@@ -218,7 +218,8 @@ TEST_F(PhoneHubTrayTest, HideNotificationOptInViewWhenAccessHasBeenGranted) {
 
   ClickTrayButton();
 
-  EXPECT_FALSE(notification_opt_in_view());
+  EXPECT_TRUE(notification_opt_in_view());
+  EXPECT_FALSE(notification_opt_in_view()->GetVisible());
 }
 
 TEST_F(PhoneHubTrayTest, StartNotificationSetUpFlow) {
@@ -239,6 +240,18 @@ TEST_F(PhoneHubTrayTest, StartNotificationSetUpFlow) {
       });
 
   ClickOnAndWait(notification_opt_in_view()->set_up_button_for_testing());
+
+  // Simulate that notification access has been granted.
+  GetNotificationAccessManager()->SetHasAccessBeenGrantedInternal(true);
+
+  // This view should be dismissed.
+  EXPECT_FALSE(notification_opt_in_view()->GetVisible());
+
+  // Simulate that notification access has been revoked by the phone.
+  GetNotificationAccessManager()->SetHasAccessBeenGrantedInternal(false);
+
+  // This view should show up again.
+  EXPECT_TRUE(notification_opt_in_view()->GetVisible());
 }
 
 TEST_F(PhoneHubTrayTest, HideTrayItemOnUiStateChange) {
@@ -349,17 +362,23 @@ TEST_F(PhoneHubTrayTest, ClickButtonsOnDisconnectedView) {
   GetFeatureStatusProvider()->SetStatus(
       chromeos::phonehub::FeatureStatus::kEnabledButDisconnected);
 
+  EXPECT_EQ(0u, GetConnectionScheduler()->num_schedule_connection_now_calls());
+
+  // In error state, clicking the tray button should schedule a connection
+  // attempt.
   ClickTrayButton();
   EXPECT_TRUE(phone_hub_tray_->is_active());
+  EXPECT_EQ(1u, GetConnectionScheduler()->num_schedule_connection_now_calls());
+
+  // Make sure the testing environment is in disconnected view.
   EXPECT_TRUE(content_view());
   EXPECT_EQ(PhoneHubViewID::kDisconnectedView, content_view()->GetID());
 
   // Simulates a click on the "Refresh" button.
-  EXPECT_EQ(0u, GetConnectionScheduler()->num_schedule_connection_now_calls());
   ClickOnAndWait(disconnected_refresh_button());
 
   // Clicking "Refresh" button should schedule a connection attempt.
-  EXPECT_EQ(1u, GetConnectionScheduler()->num_schedule_connection_now_calls());
+  EXPECT_EQ(2u, GetConnectionScheduler()->num_schedule_connection_now_calls());
 
   // Clicking "Learn More" button should open the corresponding help center
   // article in a browser tab.

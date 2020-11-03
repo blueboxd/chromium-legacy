@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 
+#include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -153,7 +154,7 @@ void EventReportValidator::ExpectUnscannedFileEvent(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
@@ -182,7 +183,7 @@ void EventReportValidator::ExpectDangerousDeepScanningResult(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
@@ -212,7 +213,7 @@ void EventReportValidator::ExpectSensitiveDataEvent(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
@@ -244,7 +245,7 @@ void EventReportValidator::
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
@@ -284,7 +285,7 @@ void EventReportValidator::
   result_ = expected_result;
   dlp_verdict_ = expected_dlp_verdict;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
@@ -321,7 +322,7 @@ void EventReportValidator::ExpectDangerousDownloadEvent(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
@@ -433,7 +434,7 @@ void EventReportValidator::ValidateField(
 }
 
 void EventReportValidator::ExpectNoReport() {
-  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _)).Times(0);
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _)).Times(0);
 }
 
 void EventReportValidator::SetDoneClosure(base::RepeatingClosure closure) {
@@ -630,6 +631,17 @@ void ClearUrlsToCheckForMalwareOfDownloadsForConnectors() {
       MakeListValue({"malware"}));
 }
 
+void SetAnalysisConnector(enterprise_connectors::AnalysisConnector connector,
+                          const std::string& pref_value) {
+  ListPrefUpdate settings_list(g_browser_process->local_state(),
+                               ConnectorPref(connector));
+  DCHECK(settings_list.Get());
+  if (!settings_list->empty())
+    settings_list->Clear();
+
+  settings_list->Append(*base::JSONReader::Read(pref_value));
+}
+
 void SetOnSecurityEventReporting(bool enabled) {
   ListPrefUpdate settings_list(g_browser_process->local_state(),
                                enterprise_connectors::kOnSecurityEventPref);
@@ -645,6 +657,14 @@ void SetOnSecurityEventReporting(bool enabled) {
   } else {
     settings_list->ClearList();
   }
+}
+
+void ClearAnalysisConnector(
+    enterprise_connectors::AnalysisConnector connector) {
+  ListPrefUpdate settings_list(g_browser_process->local_state(),
+                               ConnectorPref(connector));
+  DCHECK(settings_list.Get());
+  settings_list->Clear();
 }
 
 }  // namespace safe_browsing

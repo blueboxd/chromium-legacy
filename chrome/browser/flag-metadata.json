@@ -821,7 +821,7 @@
   {
     "name": "detect-target-embedding-lookalikes",
     "owners": [ "jdeblasio", "meacer" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "device-discovery-notifications",
@@ -873,11 +873,6 @@
     // This flag does not expire because it allows users to disable HW video
     // encoding for debugging purpose and temporary workaround for some issues.
     "expiry_milestone": -1
-  },
-  {
-    "name": "disable-best-effort-tasks",
-    "owners": [ "catan-team@chromium.org" ],
-    "expiry_milestone": 75
   },
   {
     "name": "disable-camera-frame-rotation-at-source",
@@ -1375,6 +1370,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-cros-ime-service-decoder",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "enable-cros-language-settings-update",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 90
@@ -1593,17 +1593,17 @@
   },
   {
     "name": "enable-google-srp-isolated-prerender-nsp",
-    "owners": [ "//chrome/browser/prerender/OWNERS" ],
+    "owners": [ "//chrome/browser/prefetch/prefetch_proxy/OWNERS" ],
     "expiry_milestone": 90
   },
   {
     "name": "enable-google-srp-isolated-prerender-probing",
-    "owners": [ "//chrome/browser/prerender/OWNERS" ],
+    "owners": [ "//chrome/browser/prefetch/prefetch_proxy/OWNERS" ],
     "expiry_milestone": 90
   },
   {
     "name": "enable-google-srp-isolated-prerenders",
-    "owners": [ "//chrome/browser/prerender/OWNERS" ],
+    "owners": [ "//chrome/browser/prefetch/prefetch_proxy/OWNERS" ],
     "expiry_milestone": 90
   },
   {
@@ -2360,7 +2360,7 @@
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
     "owners": [ "qingsi" ],
-    "expiry_milestone": 90 
+    "expiry_milestone": 90
   },
   {
     "name": "enable-webrtc-hybrid-agc",
@@ -4103,7 +4103,7 @@
   {
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 89
   },
   {
     "name": "same-site-by-default-cookies",
@@ -4327,11 +4327,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "smart-text-selection",
-    "owners": [ "djacobo", "linben" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "smbfs-file-shares",
     "owners": [ "simmonsjosh@google.com", "dats" ],
     "expiry_milestone": 90
@@ -4552,12 +4547,12 @@
   {
     "name": "turn-off-streaming-media-caching-always",
     "owners": [ "shawnpi@microsoft.com", "cassew@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "turn-off-streaming-media-caching-on-battery",
     "owners": [ "shawnpi@microsoft.com", "cassew@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "ui-disable-partial-swap",

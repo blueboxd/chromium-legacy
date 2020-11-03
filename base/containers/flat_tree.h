@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/functional/not_fn.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
@@ -68,40 +67,42 @@ struct IsTransparentCompare<T, void_t<typename T::is_transparent>>
 // The helper class GetKeyFromValue provides the means to extract a key from a
 // value for comparison purposes. It should implement:
 //   const Key& operator()(const Value&).
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 class flat_tree {
- protected:
-  using underlying_type = std::vector<Value>;
-
  public:
   // --------------------------------------------------------------------------
   // Types.
   //
   using key_type = Key;
   using key_compare = KeyCompare;
-  using value_type = Value;
+  using value_type = typename Container::value_type;
 
   // Wraps the templated key comparison to compare values.
-  struct value_compare {
+  class value_compare : public key_compare {
+   public:
+    value_compare() = default;
+
+    template <class Cmp>
+    explicit value_compare(Cmp&& compare_arg)
+        : KeyCompare(std::forward<Cmp>(compare_arg)) {}
+
     bool operator()(const value_type& left, const value_type& right) const {
       GetKeyFromValue extractor;
-      return comp(extractor(left), extractor(right));
+      return key_compare::operator()(extractor(left), extractor(right));
     }
-
-    NO_UNIQUE_ADDRESS key_compare comp;
   };
 
-  using pointer = typename underlying_type::pointer;
-  using const_pointer = typename underlying_type::const_pointer;
-  using reference = typename underlying_type::reference;
-  using const_reference = typename underlying_type::const_reference;
-  using size_type = typename underlying_type::size_type;
-  using difference_type = typename underlying_type::difference_type;
-  using iterator = typename underlying_type::iterator;
-  using const_iterator = typename underlying_type::const_iterator;
-  using reverse_iterator = typename underlying_type::reverse_iterator;
-  using const_reverse_iterator =
-      typename underlying_type::const_reverse_iterator;
+  using pointer = typename Container::pointer;
+  using const_pointer = typename Container::const_pointer;
+  using reference = typename Container::reference;
+  using const_reference = typename Container::const_reference;
+  using size_type = typename Container::size_type;
+  using difference_type = typename Container::difference_type;
+  using iterator = typename Container::iterator;
+  using const_iterator = typename Container::const_iterator;
+  using reverse_iterator = typename Container::reverse_iterator;
+  using const_reverse_iterator = typename Container::const_reverse_iterator;
+  using container_type = Container;
 
   // --------------------------------------------------------------------------
   // Lifetime.
@@ -130,10 +131,10 @@ class flat_tree {
             InputIterator last,
             const key_compare& comp = key_compare());
 
-  flat_tree(const underlying_type& items,
+  flat_tree(const container_type& items,
             const key_compare& comp = key_compare());
 
-  flat_tree(underlying_type&& items, const key_compare& comp = key_compare());
+  flat_tree(container_type&& items, const key_compare& comp = key_compare());
 
   flat_tree(std::initializer_list<value_type> ilist,
             const key_compare& comp = key_compare());
@@ -145,11 +146,11 @@ class flat_tree {
             const key_compare& comp = key_compare());
 
   flat_tree(sorted_unique_t,
-            const underlying_type& items,
+            const container_type& items,
             const key_compare& comp = key_compare());
 
   flat_tree(sorted_unique_t,
-            underlying_type&& items,
+            container_type&& items,
             const key_compare& comp = key_compare());
 
   flat_tree(sorted_unique_t,
@@ -165,7 +166,7 @@ class flat_tree {
 
   flat_tree& operator=(const flat_tree&);
   flat_tree& operator=(flat_tree&&) noexcept(
-      std::is_nothrow_move_assignable<underlying_type>::value);
+      std::is_nothrow_move_assignable<container_type>::value);
   // Takes the first if there are duplicates in the initializer list.
   flat_tree& operator=(std::initializer_list<value_type> ilist);
 
@@ -173,7 +174,7 @@ class flat_tree {
   // Memory management.
   //
   // Beware that shrink_to_fit() simply forwards the request to the
-  // underlying_type and its implementation is free to optimize otherwise and
+  // container_type and its implementation is free to optimize otherwise and
   // leave capacity() to be greater that its size.
   //
   // reserve() and shrink_to_fit() invalidate iterators and references.
@@ -247,13 +248,13 @@ class flat_tree {
   //
   // Assume that either operation invalidates iterators and references.
 
-  // Extracts the underlying_type and returns it to the caller. Ensures that
+  // Extracts the container_type and returns it to the caller. Ensures that
   // `this` is `empty()` afterwards.
-  underlying_type extract() &&;
+  container_type extract() &&;
 
-  // Replaces the underlying_type with `body`. Expects that `body` is sorted
+  // Replaces the container_type with `body`. Expects that `body` is sorted
   // and has no repeated elements with regard to value_comp().
-  void replace(underlying_type&& body);
+  void replace(container_type&& body);
 
   // --------------------------------------------------------------------------
   // Erase operations.
@@ -327,7 +328,7 @@ class flat_tree {
   void swap(flat_tree& other) noexcept;
 
   friend bool operator==(const flat_tree& lhs, const flat_tree& rhs) {
-    return lhs.body_ == rhs.body_;
+    return lhs.impl_.body_ == rhs.impl_.body_;
   }
 
   friend bool operator!=(const flat_tree& lhs, const flat_tree& rhs) {
@@ -335,7 +336,7 @@ class flat_tree {
   }
 
   friend bool operator<(const flat_tree& lhs, const flat_tree& rhs) {
-    return lhs.body_ < rhs.body_;
+    return lhs.impl_.body_ < rhs.impl_.body_;
   }
 
   friend bool operator>(const flat_tree& lhs, const flat_tree& rhs) {
@@ -377,11 +378,12 @@ class flat_tree {
   // to a key on the right.
   struct KeyValueCompare {
     // The key comparison object must outlive this class.
-    explicit KeyValueCompare(const key_compare& comp) : comp_(comp) {}
+    explicit KeyValueCompare(const key_compare& key_comp)
+        : key_comp_(key_comp) {}
 
     template <typename T, typename U>
     bool operator()(const T& lhs, const U& rhs) const {
-      return comp_(extract_if_value_type(lhs), extract_if_value_type(rhs));
+      return key_comp_(extract_if_value_type(lhs), extract_if_value_type(rhs));
     }
 
    private:
@@ -395,7 +397,7 @@ class flat_tree {
       return k;
     }
 
-    const key_compare& comp_;
+    const key_compare& key_comp_;
   };
 
   iterator const_cast_it(const_iterator c_it) {
@@ -413,7 +415,7 @@ class flat_tree {
     auto position = lower_bound(GetKeyFromValue()(val));
 
     if (position == end() || value_comp()(val, *position))
-      return {body_.emplace(position, std::forward<V>(val)), true};
+      return {impl_.body_.emplace(position, std::forward<V>(val)), true};
 
     *position = std::forward<V>(val);
     return {position, false};
@@ -434,7 +436,7 @@ class flat_tree {
       // emplace_back might invalidate position, which is why distance needs to
       // be cached.
       const difference_type distance = std::distance(begin(), position);
-      body_.emplace_back(std::forward<V>(val));
+      impl_.body_.emplace_back(std::forward<V>(val));
       return {std::next(begin(), distance), true};
     }
 
@@ -457,7 +459,7 @@ class flat_tree {
       // emplace_back might invalidate position, which is why distance needs to
       // be cached.
       const difference_type distance = std::distance(begin(), position);
-      body_.emplace_back(std::forward<V>(val));
+      impl_.body_.emplace_back(std::forward<V>(val));
       return {std::next(begin(), distance), true};
     }
 
@@ -475,11 +477,24 @@ class flat_tree {
 
   void sort_and_unique() { sort_and_unique(begin(), end()); }
 
-  underlying_type body_;
   // To support comparators that may not be possible to default-construct, we
-  // have to store an instance of Compare. Since Compare commonly is stateless,
-  // we use the NO_UNIQUE_ADDRESS attribute to save space.
-  NO_UNIQUE_ADDRESS key_compare comp_;
+  // have to store an instance of Compare. Using this to store all internal
+  // state of flat_tree and using private inheritance to store compare lets us
+  // take advantage of an empty base class optimization to avoid extra space in
+  // the common case when Compare has no state.
+  struct Impl : private value_compare {
+    Impl() = default;
+
+    template <class Cmp, class... Body>
+    explicit Impl(Cmp&& compare_arg, Body&&... underlying_type_args)
+        : value_compare(std::forward<Cmp>(compare_arg)),
+          body_(std::forward<Body>(underlying_type_args)...) {}
+
+    const value_compare& get_value_comp() const { return *this; }
+    const key_compare& get_key_comp() const { return *this; }
+
+    container_type body_;
+  } impl_;
 
   // If the compare is not transparent we want to construct key_type once.
   template <typename K>
@@ -490,74 +505,74 @@ class flat_tree {
 // ----------------------------------------------------------------------------
 // Lifetime.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     const KeyCompare& comp)
-    : comp_(comp) {}
+    : impl_(comp) {}
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class InputIterator>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     InputIterator first,
     InputIterator last,
     const KeyCompare& comp)
-    : body_(first, last), comp_(comp) {
+    : impl_(comp, first, last) {
   sort_and_unique();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
-    const underlying_type& items,
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
+    const container_type& items,
     const KeyCompare& comp)
-    : body_(items), comp_(comp) {
+    : impl_(comp, items) {
   sort_and_unique();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
-    underlying_type&& items,
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
+    container_type&& items,
     const KeyCompare& comp)
-    : body_(std::move(items)), comp_(comp) {
+    : impl_(comp, std::move(items)) {
   sort_and_unique();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     std::initializer_list<value_type> ilist,
     const KeyCompare& comp)
     : flat_tree(std::begin(ilist), std::end(ilist), comp) {}
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class InputIterator>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     sorted_unique_t,
     InputIterator first,
     InputIterator last,
     const KeyCompare& comp)
-    : body_(first, last), comp_(comp) {
+    : impl_(comp, first, last) {
   DCHECK(is_sorted_and_unique(*this, comp));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     sorted_unique_t,
-    const underlying_type& items,
+    const container_type& items,
     const KeyCompare& comp)
-    : body_(items), comp_(comp) {
+    : impl_(comp, items) {
   DCHECK(is_sorted_and_unique(*this, comp));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     sorted_unique_t,
-    underlying_type&& items,
+    container_type&& items,
     const KeyCompare& comp)
-    : body_(std::move(items)), comp_(comp) {
+    : impl_(comp, std::move(items)) {
   DCHECK(is_sorted_and_unique(*this, comp));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
     sorted_unique_t,
     std::initializer_list<value_type> ilist,
     const KeyCompare& comp)
@@ -566,20 +581,20 @@ flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
 // ----------------------------------------------------------------------------
 // Assignments.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::operator=(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::operator=(
     const flat_tree&) -> flat_tree& = default;
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::
 operator=(flat_tree&&) noexcept(
-    std::is_nothrow_move_assignable<underlying_type>::value)
+    std::is_nothrow_move_assignable<container_type>::value)
     -> flat_tree& = default;
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::operator=(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::operator=(
     std::initializer_list<value_type> ilist) -> flat_tree& {
-  body_ = ilist;
+  impl_.body_ = ilist;
   sort_and_unique();
   return *this;
 }
@@ -587,119 +602,120 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::operator=(
 // ----------------------------------------------------------------------------
 // Memory management.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::reserve(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+void flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::reserve(
     size_type new_capacity) {
-  body_.reserve(new_capacity);
+  impl_.body_.reserve(new_capacity);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::capacity() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::capacity() const
     -> size_type {
-  return body_.capacity();
+  return impl_.body_.capacity();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::shrink_to_fit() {
-  body_.shrink_to_fit();
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+void flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::shrink_to_fit() {
+  impl_.body_.shrink_to_fit();
 }
 
 // ----------------------------------------------------------------------------
 // Size management.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::clear() {
-  body_.clear();
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+void flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::clear() {
+  impl_.body_.clear();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::size() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::size() const
     -> size_type {
-  return body_.size();
+  return impl_.body_.size();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::max_size() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::max_size() const
     -> size_type {
-  return body_.max_size();
+  return impl_.body_.max_size();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-bool flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::empty() const {
-  return body_.empty();
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+bool flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::empty() const {
+  return impl_.body_.empty();
 }
 
 // ----------------------------------------------------------------------------
 // Iterators.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::begin() -> iterator {
-  return body_.begin();
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::begin()
+    -> iterator {
+  return impl_.body_.begin();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::begin() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::begin() const
     -> const_iterator {
-  return body_.begin();
+  return ranges::begin(impl_.body_);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::cbegin() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::cbegin() const
     -> const_iterator {
-  return body_.cbegin();
+  return impl_.body_.cbegin();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::end() -> iterator {
-  return body_.end();
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::end() -> iterator {
+  return impl_.body_.end();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::end() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::end() const
     -> const_iterator {
-  return body_.end();
+  return ranges::end(impl_.body_);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::cend() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::cend() const
     -> const_iterator {
-  return body_.cend();
+  return impl_.body_.cend();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::rbegin()
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::rbegin()
     -> reverse_iterator {
-  return body_.rbegin();
+  return impl_.body_.rbegin();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::rbegin() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::rbegin() const
     -> const_reverse_iterator {
-  return body_.rbegin();
+  return impl_.body_.rbegin();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::crbegin() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::crbegin() const
     -> const_reverse_iterator {
-  return body_.crbegin();
+  return impl_.body_.crbegin();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::rend()
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::rend()
     -> reverse_iterator {
-  return body_.rend();
+  return impl_.body_.rend();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::rend() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::rend() const
     -> const_reverse_iterator {
-  return body_.rend();
+  return impl_.body_.rend();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::crend() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::crend() const
     -> const_reverse_iterator {
-  return body_.crend();
+  return impl_.body_.crend();
 }
 
 // ----------------------------------------------------------------------------
@@ -708,28 +724,28 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::crend() const
 // Currently we use position_hint the same way as eastl or boost:
 // https://github.com/electronicarts/EASTL/blob/master/include/EASTL/vector_set.h#L493
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::insert(
     const value_type& val) -> std::pair<iterator, bool> {
   return emplace_key_args(GetKeyFromValue()(val), val);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::insert(
     value_type&& val) -> std::pair<iterator, bool> {
   return emplace_key_args(GetKeyFromValue()(val), std::move(val));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::insert(
     const_iterator position_hint,
     const value_type& val) -> iterator {
   return emplace_hint_key_args(position_hint, GetKeyFromValue()(val), val)
       .first;
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::insert(
     const_iterator position_hint,
     value_type&& val) -> iterator {
   return emplace_hint_key_args(position_hint, GetKeyFromValue()(val),
@@ -737,9 +753,9 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
       .first;
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class InputIterator>
-void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
+void flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::insert(
     InputIterator first,
     InputIterator last) {
   if (first == last)
@@ -777,16 +793,16 @@ void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::insert(
                      value_comp());
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class... Args>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace(Args&&... args)
-    -> std::pair<iterator, bool> {
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::emplace(
+    Args&&... args) -> std::pair<iterator, bool> {
   return insert(value_type(std::forward<Args>(args)...));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class... Args>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_hint(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::emplace_hint(
     const_iterator position_hint,
     Args&&... args) -> iterator {
   return insert(position_hint, value_type(std::forward<Args>(args)...));
@@ -795,41 +811,41 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_hint(
 // ----------------------------------------------------------------------------
 // Underlying type operations.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::
-    extract() && -> underlying_type {
-  return std::exchange(body_, underlying_type());
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::
+    extract() && -> container_type {
+  return std::exchange(impl_.body_, container_type());
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::replace(
-    underlying_type&& body) {
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+void flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::replace(
+    container_type&& body) {
   // Ensure that `body` is sorted and has no repeated elements according to
   // `value_comp()`.
   DCHECK(is_sorted_and_unique(body, value_comp()));
-  body_ = std::move(body);
+  impl_.body_ = std::move(body);
 }
 
 // ----------------------------------------------------------------------------
 // Erase operations.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::erase(
     iterator position) -> iterator {
-  CHECK(position != body_.end());
-  return body_.erase(position);
+  CHECK(position != impl_.body_.end());
+  return impl_.body_.erase(position);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::erase(
     const_iterator position) -> iterator {
-  CHECK(position != body_.end());
-  return body_.erase(position);
+  CHECK(position != impl_.body_.end());
+  return impl_.body_.erase(position);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(const K& val)
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::erase(const K& val)
     -> size_type {
   auto eq_range = equal_range(val);
   auto res = std::distance(eq_range.first, eq_range.second);
@@ -837,93 +853,93 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(const K& val)
   return res;
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::erase(
     const_iterator first,
     const_iterator last) -> iterator {
-  return body_.erase(first, last);
+  return impl_.body_.erase(first, last);
 }
 
 // ----------------------------------------------------------------------------
 // Comparators.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::key_comp() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::key_comp() const
     -> key_compare {
-  return comp_;
+  return impl_.get_key_comp();
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::value_comp() const
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::value_comp() const
     -> value_compare {
-  return value_compare{comp_};
+  return impl_.get_value_comp();
 }
 
 // ----------------------------------------------------------------------------
 // Search operations.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::count(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::count(
     const K& key) const -> size_type {
   auto eq_range = equal_range(key);
   return std::distance(eq_range.first, eq_range.second);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::find(const K& key)
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::find(const K& key)
     -> iterator {
   return const_cast_it(base::as_const(*this).find(key));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::find(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::find(
     const K& key) const -> const_iterator {
   auto eq_range = equal_range(key);
   return (eq_range.first == eq_range.second) ? end() : eq_range.first;
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-bool flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::contains(
+bool flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::contains(
     const K& key) const {
   auto lower = lower_bound(key);
-  return lower != end() && !comp_(key, GetKeyFromValue()(*lower));
+  return lower != end() && !key_comp()(key, GetKeyFromValue()(*lower));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::equal_range(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::equal_range(
     const K& key) -> std::pair<iterator, iterator> {
   auto res = base::as_const(*this).equal_range(key);
   return {const_cast_it(res.first), const_cast_it(res.second)};
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::equal_range(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::equal_range(
     const K& key) const -> std::pair<const_iterator, const_iterator> {
   auto lower = lower_bound(key);
 
-  KeyValueCompare comp(comp_);
-  if (lower == end() || comp(key, *lower))
+  GetKeyFromValue extractor;
+  if (lower == end() || impl_.get_key_comp()(key, extractor(*lower)))
     return {lower, lower};
 
   return {lower, std::next(lower)};
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::lower_bound(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::lower_bound(
     const K& key) -> iterator {
   return const_cast_it(base::as_const(*this).lower_bound(key));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::lower_bound(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::lower_bound(
     const K& key) const -> const_iterator {
   static_assert(std::is_convertible<const KeyTypeOrK<K>&, const K&>::value,
                 "Requested type cannot be bound to the container's key_type "
@@ -931,20 +947,20 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::lower_bound(
 
   const KeyTypeOrK<K>& key_ref = key;
 
-  KeyValueCompare comp(comp_);
-  return ranges::lower_bound(*this, key_ref, comp);
+  KeyValueCompare key_value(impl_.get_key_comp());
+  return ranges::lower_bound(*this, key_ref, key_value);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::upper_bound(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::upper_bound(
     const K& key) -> iterator {
   return const_cast_it(base::as_const(*this).upper_bound(key));
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <typename K>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::upper_bound(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::upper_bound(
     const K& key) const -> const_iterator {
   static_assert(std::is_convertible<const KeyTypeOrK<K>&, const K&>::value,
                 "Requested type cannot be bound to the container's key_type "
@@ -952,51 +968,50 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::upper_bound(
 
   const KeyTypeOrK<K>& key_ref = key;
 
-  KeyValueCompare comp(comp_);
-  return ranges::upper_bound(*this, key_ref, comp);
+  KeyValueCompare key_value(impl_.get_key_comp());
+  return ranges::upper_bound(*this, key_ref, key_value);
 }
 
 // ----------------------------------------------------------------------------
 // General operations.
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
-void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::swap(
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
+void flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::swap(
     flat_tree& other) noexcept {
-  std::swap(*this, other);
+  std::swap(impl_, other.impl_);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class... Args>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::unsafe_emplace(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::unsafe_emplace(
     const_iterator position,
     Args&&... args) -> iterator {
-  return body_.emplace(position, std::forward<Args>(args)...);
+  return impl_.body_.emplace(position, std::forward<Args>(args)...);
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class K, class... Args>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_key_args(
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::emplace_key_args(
     const K& key,
     Args&&... args) -> std::pair<iterator, bool> {
   auto lower = lower_bound(key);
-  if (lower == end() || comp_(key, GetKeyFromValue()(*lower)))
+  if (lower == end() || key_comp()(key, GetKeyFromValue()(*lower)))
     return {unsafe_emplace(lower, std::forward<Args>(args)...), true};
   return {lower, false};
 }
 
-template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+template <class Key, class GetKeyFromValue, class KeyCompare, class Container>
 template <class K, class... Args>
-auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_hint_key_args(
-    const_iterator hint,
-    const K& key,
-    Args&&... args) -> std::pair<iterator, bool> {
-  KeyValueCompare comp(comp_);
-  if ((hint == begin() || comp(*std::prev(hint), key))) {
-    if (hint == end() || comp(key, *hint)) {
+auto flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::
+    emplace_hint_key_args(const_iterator hint, const K& key, Args&&... args)
+        -> std::pair<iterator, bool> {
+  GetKeyFromValue extractor;
+  if ((hint == begin() || key_comp()(extractor(*std::prev(hint)), key))) {
+    if (hint == end() || key_comp()(key, extractor(*hint))) {
       // *(hint - 1) < key < *hint => key did not exist and hint is correct.
       return {unsafe_emplace(hint, std::forward<Args>(args)...), true};
     }
-    if (!comp(*hint, key)) {
+    if (!key_comp()(extractor(*hint), key)) {
       // key == *hint => no-op, return correct hint.
       return {const_cast_it(hint), false};
     }
@@ -1005,13 +1020,6 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_hint_key_args(
   return emplace_key_args(key, std::forward<Args>(args)...);
 }
 
-// For containers like sets, the key is the same as the value. This implements
-// the GetKeyFromValue template parameter to flat_tree for this case.
-template <class Key>
-struct GetKeyFromValueIdentity {
-  const Key& operator()(const Key& k) const { return k; }
-};
-
 }  // namespace internal
 
 // ----------------------------------------------------------------------------
@@ -1019,12 +1027,12 @@ struct GetKeyFromValueIdentity {
 
 // Erases all elements that match predicate. It has O(size) complexity.
 template <class Key,
-          class Value,
           class GetKeyFromValue,
           class KeyCompare,
+          class Container,
           typename Predicate>
 size_t EraseIf(
-    base::internal::flat_tree<Key, Value, GetKeyFromValue, KeyCompare>&
+    base::internal::flat_tree<Key, GetKeyFromValue, KeyCompare, Container>&
         container,
     Predicate pred) {
   auto it = ranges::remove_if(container, pred);

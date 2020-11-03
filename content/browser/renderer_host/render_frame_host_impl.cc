@@ -5268,27 +5268,24 @@ void RenderFrameHostImpl::CreatePortal(
     mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
     CreatePortalCallback callback) {
   if (!Portal::IsEnabled()) {
-    mojo::ReportBadMessage(
+    frame_host_associated_receiver_.ReportBadMessage(
         "blink.mojom.Portal can only be used if the Portals feature is "
         "enabled.");
-    frame_host_associated_receiver_.reset();
     return;
   }
 
   // We don't support attaching a portal inside a nested browsing context.
   if (!is_main_frame()) {
-    mojo::ReportBadMessage(
+    frame_host_associated_receiver_.ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
-    frame_host_associated_receiver_.reset();
     return;
   }
 
   // TODO(crbug.com/1051639): We need to find a long term solution to when/how
   // portals should work in sandboxed documents.
   if (active_sandbox_flags_ != network::mojom::WebSandboxFlags::kNone) {
-    mojo::ReportBadMessage(
+    frame_host_associated_receiver_.ReportBadMessage(
         "RFHI::CreatePortal called in a sandboxed browsing context");
-    frame_host_associated_receiver_.reset();
     return;
   }
 
@@ -5297,8 +5294,8 @@ void RenderFrameHostImpl::CreatePortal(
   // TODO(1008989): Once issue 1008989 is fixed we could move this check into
   // |Portal::Create|.
   if (!GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
-    mojo::ReportBadMessage("Portal creation is restricted to the HTTP family.");
-    frame_host_associated_receiver_.reset();
+    frame_host_associated_receiver_.ReportBadMessage(
+        "Portal creation is restricted to the HTTP family.");
     return;
   }
 
@@ -5323,8 +5320,8 @@ void RenderFrameHostImpl::AdoptPortal(const blink::PortalToken& portal_token,
                                       AdoptPortalCallback callback) {
   Portal* portal = FindPortalByToken(portal_token);
   if (!portal) {
-    mojo::ReportBadMessage("Unknown portal_token when adopting portal.");
-    frame_host_associated_receiver_.reset();
+    frame_host_associated_receiver_.ReportBadMessage(
+        "Unknown portal_token when adopting portal.");
     return;
   }
   DCHECK_EQ(portal->owner_render_frame_host(), this);
@@ -5343,10 +5340,11 @@ void RenderFrameHostImpl::CreateNewPopupWidget(
     mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
         blink_popup_widget_host,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
-    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
-    CreateNewPopupWidgetCallback callback) {
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
+  // We still need to allocate a widget routing id. Even though the renderer
+  // doesn't receive it, the browser side still uses routing ids to track
+  // widgets in various global tables.
   int32_t widget_route_id = GetProcess()->GetNextRoutingID();
-  std::move(callback).Run(widget_route_id);
   RenderWidgetHostImpl* widget = delegate_->CreateNewPopupWidget(
       agent_scheduling_group_, widget_route_id,
       std::move(blink_popup_widget_host), std::move(blink_widget_host),

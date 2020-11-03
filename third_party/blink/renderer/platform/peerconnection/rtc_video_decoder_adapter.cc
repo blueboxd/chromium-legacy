@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
@@ -212,19 +211,20 @@ RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
       config_(config) {
   DVLOG(1) << __func__;
   DETACH_FROM_SEQUENCE(decoding_sequence_checker_);
+  DETACH_FROM_SEQUENCE(media_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 RTCVideoDecoderAdapter::~RTCVideoDecoderAdapter() {
   DVLOG(1) << __func__;
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 }
 
 bool RTCVideoDecoderAdapter::InitializeSync(
     const media::VideoDecoderConfig& config) {
   DVLOG(3) << __func__;
   // Can be called on |worker_thread_| or |decoding_thread_|.
-  DCHECK(!media_task_runner_->BelongsToCurrentThread());
+  DCHECK(!media_task_runner_->RunsTasksInCurrentSequence());
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
@@ -288,8 +288,8 @@ int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_ASH)
   }
 
-  if (missing_frames || !input_image._completeFrame) {
-    DVLOG(2) << "Missing or incomplete frames";
+  if (missing_frames) {
+    DVLOG(2) << "Missing frames";
     // We probably can't handle broken frames. Request a key frame.
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
@@ -402,7 +402,7 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     const media::VideoDecoderConfig& config,
     InitCB init_cb) {
   DVLOG(3) << __func__;
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
   // On ReinitializeSync() calls, |video_decoder_| may already be set.
   if (!video_decoder_) {
@@ -444,7 +444,7 @@ void RTCVideoDecoderAdapter::OnInitializeDone(base::OnceCallback<void(bool)> cb,
 
 void RTCVideoDecoderAdapter::DecodeOnMediaThread() {
   DVLOG(4) << __func__;
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
   int max_decode_requests = video_decoder_->GetMaxDecodeRequests();
   while (outstanding_decode_requests_ < max_decode_requests) {
@@ -474,7 +474,7 @@ void RTCVideoDecoderAdapter::DecodeOnMediaThread() {
 
 void RTCVideoDecoderAdapter::OnDecodeDone(media::Status status) {
   DVLOG(3) << __func__ << "(" << status.code() << ")";
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
   outstanding_decode_requests_--;
 
@@ -496,7 +496,7 @@ void RTCVideoDecoderAdapter::OnDecodeDone(media::Status status) {
 
 void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
   DVLOG(3) << __func__;
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
   const base::TimeDelta timestamp = frame->timestamp();
   webrtc::VideoFrame rtc_frame =
@@ -570,7 +570,7 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
 
 void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
                                                 FlushDoneCB flush_fail_cb) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
   // Remove any pending tasks.
   {

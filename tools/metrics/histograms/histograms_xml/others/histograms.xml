@@ -1461,15 +1461,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>aidanday@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
-    The total number of bookmarks a user has saved. Recorded when a profile is
-    opened - precisely, when bookmarks are loaded into storage from disk. The
-    count includes all bookmarks both in the &quot;Bookmarks Bar&quot; and also
-    under &quot;Other Bookmarks&quot;.
+    The total number of bookmarks a user has saved, excluding folders. Recorded
+    when a profile is opened - precisely, when bookmarks are loaded into storage
+    from disk. The count includes all bookmarks both in the &quot;Bookmarks
+    Bar&quot; and also under &quot;Other Bookmarks&quot;.
   </summary>
 </histogram>
 
 <histogram name="Bookmarks.Count.OnProfileLoad.DuplicateUrl" units="bookmarks"
     expires_after="2021-04-04">
+  <obsolete>
+    Replaced with Bookmarks.Count.OnProfileLoad.DuplicateUrl2 as of 11/2020 to
+    provide more granular buckets above 10K duplicates
+  </obsolete>
   <owner>mamir@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -1477,6 +1481,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     at least one other bookmark. This excludes folders (which don't have a URL).
     Recorded when bookmarks are loaded into storage from disk if there is at
     least one duplicate.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.Count.OnProfileLoad.DuplicateUrl2" units="bookmarks"
+    expires_after="2021-04-04">
+  <owner>mastiz@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The number of bookmarks a user has saved with a URL that is also present in
+    at least one other bookmark. This excludes not only folders (which don't
+    have a URL) but it also excludes one bookmark per unique URL (that is, all
+    except one are considered duplicates). Recorded when bookmarks are loaded
+    into storage from disk if there is at least one duplicate.
   </summary>
 </histogram>
 
@@ -10114,7 +10131,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PerformanceMonitor.AverageCPU" units="PercentCPUUsage"
-    expires_after="M88">
+    expires_after="2021-10-30">
   <owner>fdoray@chromium.org</owner>
   <owner>oysteine@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -10137,7 +10154,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="PerformanceMonitor.EnergyImpact"
-    units="ScaledUnits" expires_after="2021-07-30">
+    units="ScaledUnits" expires_after="2021-10-30">
   <owner>lgrey@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -10159,7 +10176,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PerformanceMonitor.IdleWakeups" units="WakeupsPerSecond"
-    expires_after="2021-06-03">
+    expires_after="2021-10-30">
   <owner>lgrey@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -10168,7 +10185,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PerformanceMonitor.PackageExitIdleWakeups"
-    units="WakeupsPerSecond" expires_after="2021-07-03">
+    units="WakeupsPerSecond" expires_after="2021-10-30">
   <owner>lgrey@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -10535,10 +10552,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Previews.CacheControlNoTransform.BlockedPreview"
-    enum="PreviewsType" expires_after="2020-12-12">
-  <owner>dougarnett@chromium.org</owner>
+    enum="PreviewsType" expires_after="2021-03-31">
+  <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
-  <owner>src/components/data_reduction_proxy/OWNERS</owner>
+  <owner>src/components/previews/OWNERS</owner>
   <summary>
     Blocked previews due to Cache-Control:no-transform directive.
   </summary>
@@ -10679,9 +10696,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Previews.Triggered.EffectiveConnectionType2"
     enum="NQEEffectiveConnectionType" expires_after="2020-12-12">
+  <obsolete>
+    Obsolete as of 11/2020.
+  </obsolete>
   <owner>dougarnett@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
-  <owner>src/components/data_reduction_proxy/OWNERS</owner>
+  <owner>src/components/previews/OWNERS</owner>
   <summary>
     Records the effective connection type of a navigation that triggers a
     preview. This is captured at commit time but uses the effective connection
@@ -12386,7 +12406,9 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Setup.Install.CumulativeDiskUsage2" units="MB"
-    expires_after="M86">
+    expires_after="never">
+<!-- expires-never: used to monitor memory usage of setup installer.  -->
+
   <owner>etiennep@chromium.org</owner>
   <owner>grt@chromium.org</owner>
   <summary>
@@ -12444,7 +12466,9 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Setup.Install.PeakPagefileUsage" units="KB"
-    expires_after="M82">
+    expires_after="never">
+<!-- expires-never: used to monitor memory usage of setup installer.  -->
+
   <owner>huangs@chromium.org</owner>
   <summary>
     The peak page file usage by setup.exe in KB during install or uninstall
@@ -12453,7 +12477,9 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Setup.Install.PeakWorkingSetSize" units="KB"
-    expires_after="M82">
+    expires_after="never">
+<!-- expires-never: used to monitor memory usage of setup installer.  -->
+
   <owner>huangs@chromium.org</owner>
   <summary>
     The peak working set size of setup.exe in KB during install or uninstall
@@ -17036,7 +17062,7 @@ regressions. -->
 </histogram>
 
 <histogram name="XR.WebXR.ReferenceSpace.Requested" enum="XRReferenceSpaceType"
-    expires_after="2020-12-13">
+    expires_after="2021-03-15">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>

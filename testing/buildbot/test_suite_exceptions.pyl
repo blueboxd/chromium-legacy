@@ -1879,6 +1879,31 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
         ],
       },
+      # TODO(crbug.com/1132206): Apply this to all of the bot's tests if the
+      # cache affinity works.
+      'chromeos-betty-pi-arc-chrome': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86',
+              'pool': 'chrome.tests',
+            }
+          ],
+          'optional_dimensions': {
+            '60': [
+              {
+                'caches': 'cros_vm',
+              }
+            ],
+          },
+          'named_caches': [
+            {
+              'name': 'cros_vm',
+              'path': 'magic_cros_vm_cache',
+            },
+          ],
+        },
+      },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'swarming': {
           'shards': 4,
@@ -2894,6 +2919,12 @@
         ]
       },
     },
+  },
+  'webgl_conformance_fast_call_tests': {
+    'remove_from': [
+      # Test failures on x86. https://crbug.com/1144751
+      'Win10 FYI x86 Release (NVIDIA)',
+    ],
   },
   'webgl_conformance_gl_passthrough_tests': {
     'remove_from': [

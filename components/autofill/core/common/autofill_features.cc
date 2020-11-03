@@ -151,22 +151,10 @@ const base::Feature kAutofillExtractAllDatalists{
 const base::Feature kAutofillFixFillableFieldTypes{
     "AutofillFixFillableFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, Autofill keeps the initial field values in the |FormStructure|
-// cache for all field types.
-const base::Feature kAutofillKeepInitialFormValuesInCache{
-    "AutofillKeepCachedFormValues", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, Autofill will use FieldRendererIds instead of unique_names
 // to align forms in FormStructure::RetrieveFromCache().
 const base::Feature kAutofillRetrieveFromCacheWithRendererIds{
     "AutofillRetrieveFromCacheWithRendererIds",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, Autofill will try to retrieve cached fields by signatures as a
-// fallback that is useful if unique renderer ids are unstable.
-// TODO(crbug.com/1125624): Remove experiment once trial ended.
-const base::Feature kAutofillRetrieveFromCacheWithFieldSignatureAsFallback{
-    "AutofillRetrieveFromCacheWithFieldSignatureAsFallback",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, autofill suggestions are displayed in the keyboard accessory
@@ -265,6 +253,13 @@ const base::Feature kAutofillTokenPrefixMatching{
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to use the AutofillUseAlternativeStateNameMap for filling
+// of state selection fields, comparison of profiles and sending state votes to
+// the server.
+// TODO(crbug.com/1143516): Remove the feature when the experiment is completed.
+const base::Feature kAutofillUseAlternativeStateNameMap{
+    "AutofillUseAlternativeStateNameMap", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether suggestions' labels use the improved label disambiguation
 // format.
 const base::Feature kAutofillUseImprovedLabelDisambiguation{
@@ -275,17 +270,6 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to use the |ParseCityStateCountryZipCode| or not for
-// predicting the heuristic type.
-// |ParseCityStateCountryZipCode| is intended to prevent the misclassification
-// of the country field into |ADDRESS_HOME_STATE| while determining the
-// heuristic type. The misclassification happens sometimes because the regular
-// expression for |ADDRESS_HOME_STATE| contains the term "region" which is also
-// used for country selectors.
-const base::Feature kAutofillUseParseCityStateCountryZipCodeInHeuristic{
-    "AutofillUseParseCityStateCountryZipCodeInHeuristic",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether page language is used to match patterns.
 // TODO(crbug.com/1134496): Remove once launched.

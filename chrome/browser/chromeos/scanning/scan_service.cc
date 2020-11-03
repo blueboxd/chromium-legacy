@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/scanning/scan_service.h"
 
+#include <cstdint>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +16,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager.h"
 #include "chrome/browser/chromeos/scanning/scanning_type_converters.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_util.h"
 
 namespace chromeos {
 
@@ -22,8 +25,24 @@ namespace {
 
 namespace mojo_ipc = scanning::mojom;
 
-// Path to the user's "My files" folder.
-constexpr char kMyFilesPath[] = "/home/chronos/user/MyFiles";
+// Path to the active user's "My files" folder.
+constexpr char kActiveUserMyFilesPath[] = "/home/chronos/user/MyFiles";
+
+// The conversion quality when converting from PNG to JPG.
+constexpr int kJpgQuality = 100;
+
+// Converts |png_img| to JPG.
+std::string PngToJpg(const std::string& png_img) {
+  std::vector<uint8_t> jpg_img;
+  const gfx::Image img = gfx::Image::CreateFrom1xPNGBytes(
+      reinterpret_cast<const unsigned char*>(png_img.c_str()), png_img.size());
+  if (!gfx::JPEG1xEncodedDataFromImage(img, kJpgQuality, &jpg_img)) {
+    LOG(ERROR) << "Failed to convert image from PNG to JPG.";
+    return "";
+  }
+
+  return std::string(jpg_img.begin(), jpg_img.end());
+}
 
 }  // namespace
 
@@ -132,18 +151,30 @@ void ScanService::OnPageReceived(const base::FilePath& scan_to_path,
                                  const mojo_ipc::FileType file_type,
                                  std::string scanned_image,
                                  uint32_t page_number) {
-  // TODO(jschettler): Add support for converting the scanned image to other
-  // file types.
-  if (file_type != mojo_ipc::FileType::kPng) {
-    LOG(ERROR) << "Selected file type not supported.";
-    save_failed_ = true;
-    return;
+  std::string filename;
+  std::string file_ext;
+  switch (file_type) {
+    case mojo_ipc::FileType::kPng:
+      file_ext = "png";
+      break;
+    case mojo_ipc::FileType::kJpg:
+      file_ext = "jpg";
+      scanned_image = PngToJpg(scanned_image);
+      if (scanned_image == "") {
+        save_failed_ = true;
+        return;
+      }
+      break;
+    default:
+      LOG(ERROR) << "Selected file type not supported.";
+      save_failed_ = true;
+      return;
   }
 
-  const std::string filename = base::StringPrintf(
-      "scan_%02d%02d%02d-%02d%02d%02d_%d.png", start_time_.year,
+  filename = base::StringPrintf(
+      "scan_%02d%02d%02d-%02d%02d%02d_%d.%s", start_time_.year,
       start_time_.month, start_time_.day_of_month, start_time_.hour,
-      start_time_.minute, start_time_.second, page_number);
+      start_time_.minute, start_time_.second, page_number, file_ext.c_str());
   const auto file_path = scan_to_path.Append(filename);
   if (!base::WriteFile(file_path, scanned_image)) {
     LOG(ERROR) << "Failed to save scanned image: " << file_path.value().c_str();
@@ -156,13 +187,11 @@ void ScanService::OnScanCompleted(ScanCallback callback, bool success) {
 }
 
 bool ScanService::FilePathSupported(const base::FilePath& file_path) {
-  // TODO(jschettler): Remove this check once the path is selected by the user.
-  if (file_path == base::FilePath(kMyFilesPath))
-    return true;
-
-  if (!file_path.ReferencesParent() &&
-      (file_path == my_files_path_ || my_files_path_.IsParent(file_path) ||
-       google_drive_path_.IsParent(file_path))) {
+  if (file_path == base::FilePath(kActiveUserMyFilesPath) ||
+      file_path == my_files_path_ ||
+      (!file_path.ReferencesParent() &&
+       (my_files_path_.IsParent(file_path) ||
+        google_drive_path_.IsParent(file_path)))) {
     return true;
   }
 

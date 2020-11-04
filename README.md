@@ -26,7 +26,7 @@ Some features not implemented in 10.7 are disabled (maybe simply commented out),
             - FIXED
     - ~~menus/sheets~~
         - ~~have no shadow~~
-        - temporally FIXED (popups has some glitches on corners)
+        - temporally FIXED (popups have some glitches on corners)
     - scrollbars
         - won't disappear despite "Show scrollbars when scrolling" option is enabled
 - GPU assists (rendering / encoding / decoding)

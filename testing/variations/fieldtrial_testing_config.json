@@ -3290,6 +3290,27 @@
             ]
         }
     ],
+    "HostResolverDispatch": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "0:0:0:0:0:0:64",
+                    "enable_features": [
+                        "DNSConcurrencyDoesNotUseFeatures"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSCrashReportBreadcrumbs": [
         {
             "platforms": [
@@ -5335,41 +5356,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PdfHonorJsContentSettings"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PdfPartialLoading": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "PdfIncrementalLoading",
-                        "PdfPartialLoading"
-                    ]
-                },
-                {
-                    "name": "IncrementalOnly",
-                    "enable_features": [
-                        "PdfIncrementalLoading"
-                    ],
-                    "disable_features": [
-                        "PdfPartialLoading"
-                    ]
-                },
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PdfIncrementalLoading",
-                        "PdfPartialLoading"
                     ]
                 }
             ]

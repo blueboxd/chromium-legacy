@@ -523,29 +523,21 @@ void CameraDeviceDelegate::SetPhotoOptions(
     is_set_exposure_time_ = false;
   }
 
-  bool is_resolution_specified = settings->has_width && settings->has_height;
-  bool should_reconfigure_streams =
-      is_resolution_specified && (current_blob_resolution_.IsEmpty() ||
-                                  current_blob_resolution_.width() !=
-                                      static_cast<int32_t>(settings->width) ||
-                                  current_blob_resolution_.height() !=
-                                      static_cast<int32_t>(settings->height));
-  if (!request_manager_->HasStreamsConfiguredForTakePhoto() ||
-      should_reconfigure_streams) {
-    if (is_resolution_specified) {
-      gfx::Size new_blob_resolution(static_cast<int32_t>(settings->width),
-                                    static_cast<int32_t>(settings->height));
-      request_manager_->StopPreview(
-          base::BindOnce(&CameraDeviceDelegate::OnFlushed, GetWeakPtr(),
-                         std::move(new_blob_resolution)));
-    } else {
-      request_manager_->StopPreview(base::BindOnce(
-          &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), base::nullopt));
-    }
-    set_photo_option_callback_ = std::move(callback);
+  // If there is callback of SetPhotoOptions(), the streams might being
+  // reconfigured and we should notify them once the reconfiguration is done.
+  auto on_reconfigured_callback = base::BindOnce(
+      [](VideoCaptureDevice::SetPhotoOptionsCallback callback) {
+        std::move(callback).Run(true);
+      },
+      std::move(callback));
+  if (!on_reconfigured_callbacks_.empty()) {
+    on_reconfigured_callbacks_.push(std::move(on_reconfigured_callback));
   } else {
-    set_photo_option_callback_.Reset();
-    std::move(callback).Run(true);
+    if (MaybeReconfigureForPhotoStream(std::move(settings))) {
+      on_reconfigured_callbacks_.push(std::move(on_reconfigured_callback));
+    } else {
+      std::move(on_reconfigured_callback).Run();
+    }
   }
   result_metadata_frame_number_for_photo_state_ = current_request_frame_number_;
 }
@@ -558,6 +550,32 @@ void CameraDeviceDelegate::SetRotation(int rotation) {
 
 base::WeakPtr<CameraDeviceDelegate> CameraDeviceDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+bool CameraDeviceDelegate::MaybeReconfigureForPhotoStream(
+    mojom::PhotoSettingsPtr settings) {
+  bool is_resolution_specified = settings->has_width && settings->has_height;
+  bool should_reconfigure_streams =
+      (is_resolution_specified && (current_blob_resolution_.IsEmpty() ||
+                                   current_blob_resolution_.width() !=
+                                       static_cast<int32_t>(settings->width) ||
+                                   current_blob_resolution_.height() !=
+                                       static_cast<int32_t>(settings->height)));
+  if (!should_reconfigure_streams) {
+    return false;
+  }
+
+  if (is_resolution_specified) {
+    gfx::Size new_blob_resolution(static_cast<int32_t>(settings->width),
+                                  static_cast<int32_t>(settings->height));
+    request_manager_->StopPreview(
+        base::BindOnce(&CameraDeviceDelegate::OnFlushed, GetWeakPtr(),
+                       std::move(new_blob_resolution)));
+  } else {
+    request_manager_->StopPreview(base::BindOnce(
+        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), base::nullopt));
+  }
+  return true;
 }
 
 void CameraDeviceDelegate::TakePhotoImpl() {
@@ -573,15 +591,18 @@ void CameraDeviceDelegate::TakePhotoImpl() {
     return;
   }
 
-  SetPhotoOptions(
-      mojom::PhotoSettings::New(),
-      base::BindOnce(
-          [](base::WeakPtr<Camera3AController> controller,
-             base::OnceClosure callback, bool result) {
-            controller->Stabilize3AForStillCapture(std::move(callback));
-          },
-          camera_3a_controller_->GetWeakPtr(),
-          std::move(construct_request_cb)));
+  // Trigger the reconfigure process if it not yet triggered.
+  if (on_reconfigured_callbacks_.empty()) {
+    request_manager_->StopPreview(base::BindOnce(
+        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), base::nullopt));
+  }
+  auto on_reconfigured_callback = base::BindOnce(
+      [](base::WeakPtr<Camera3AController> controller,
+         base::OnceClosure callback) {
+        controller->Stabilize3AForStillCapture(std::move(callback));
+      },
+      camera_3a_controller_->GetWeakPtr(), std::move(construct_request_cb));
+  on_reconfigured_callbacks_.push(std::move(on_reconfigured_callback));
 }
 
 void CameraDeviceDelegate::OnMojoConnectionError() {
@@ -1082,8 +1103,9 @@ void CameraDeviceDelegate::OnGotFpsRange(
     TakePhotoImpl();
   }
 
-  if (set_photo_option_callback_) {
-    std::move(set_photo_option_callback_).Run(true);
+  while (!on_reconfigured_callbacks_.empty()) {
+    std::move(on_reconfigured_callbacks_.front()).Run();
+    on_reconfigured_callbacks_.pop();
   }
 }
 

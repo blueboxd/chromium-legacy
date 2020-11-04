@@ -108,29 +108,6 @@ const char
     TabStatsTracker::UmaStatsReportingDelegate::kWindowCountHistogramName[] =
         "Tabs.WindowCount";
 
-// Tab discard and reload histogram names in the same order as in discard reason
-// enum.
-const char* kTabDiscardCountHistogramNames[] = {
-    "Discarding.DiscardsPer10Minutes.Extension",
-    "Discarding.DiscardsPer10Minutes.Urgent",
-};
-
-const char* kTabReloadCountHistogramNames[] = {
-    "Discarding.ReloadsPer10Minutes.Extension",
-    "Discarding.ReloadsPer10Minutes.Urgent",
-};
-
-static_assert(base::size(kTabDiscardCountHistogramNames) ==
-                  static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue) +
-                      1,
-              "There must be an entry in kTabDiscardCountHistogramNames for "
-              "each discard reason.");
-static_assert(base::size(kTabReloadCountHistogramNames) ==
-                  static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue) +
-                      1,
-              "There must be an entry in kTabReloadCountHistogramNames for "
-              "each discard reason.");
-
 const TabStatsDataStore::TabsStats& TabStatsTracker::tab_stats() const {
   return tab_stats_data_store_->tab_stats();
 }
@@ -193,21 +170,11 @@ TabStatsTracker::TabStatsTracker(PrefService* pref_service)
   heartbeat_timer_.Start(FROM_HERE, kTabsHeartbeatReportingInterval,
                          base::BindRepeating(&TabStatsTracker::OnHeartbeatEvent,
                                              base::Unretained(this)));
-
-  // Report discarding stats every 10 minutes.
-  tab_discard_reload_stats_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMinutes(10),
-      base::BindRepeating(&TabStatsTracker::OnTabDiscardCountReportInterval,
-                          base::Unretained(this)));
-
-  g_browser_process->GetTabManager()->AddObserver(this);
 }
 
 TabStatsTracker::~TabStatsTracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BrowserList::GetInstance()->RemoveObserver(this);
-
-  base::PowerMonitor::RemoveObserver(this);
 }
 
 // static
@@ -245,7 +212,6 @@ class TabStatsTracker::WebContentsUsageObserver
                            TabStatsTracker* tab_stats_tracker)
       : content::WebContentsObserver(web_contents),
         tab_stats_tracker_(tab_stats_tracker),
-        visibility_(web_contents->GetVisibility()),
         ukm_source_id_(ukm::GetSourceIdForWebContentsDocument(web_contents)) {}
 
   // content::WebContentsObserver:
@@ -277,18 +243,11 @@ class TabStatsTracker::WebContentsUsageObserver
   }
 
   void OnVisibilityChanged(content::Visibility visibility) override {
-    // Record Tab.Visibility.* histogram and do associated bookkeeping.
-    // Recording is done at every visibility state change rather than just when
-    // the WebContents is destroyed to reduce data loss on session end.
-    RecordVisibilityHistogram(visibility);
-
     if (visibility == content::Visibility::VISIBLE)
       tab_stats_tracker_->tab_stats_data_store()->OnTabVisible(web_contents());
   }
 
   void WebContentsDestroyed() override {
-    RecordVisibilityHistogram(visibility_);
-
     if (ukm_source_id_) {
       ukm::builders::TabManager_TabLifetime(ukm_source_id_)
           .SetTimeSinceNavigation(
@@ -303,44 +262,10 @@ class TabStatsTracker::WebContentsUsageObserver
 
  private:
   TabStatsTracker* tab_stats_tracker_;
-  // Current tab visibility.
-  content::Visibility visibility_;
-  // The last time at which |visibility_| changed.
-  base::TimeTicks last_visibility_change_time_ = base::TimeTicks::Now();
   // The last navigation time associated with this tab.
   base::TimeTicks navigation_time_ = base::TimeTicks::Now();
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
-
-  void RecordVisibilityHistogram(content::Visibility new_visibility) {
-    const base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta duration = now - last_visibility_change_time_;
-    switch (visibility_) {
-      case content::Visibility::VISIBLE: {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Tab.Visibility.Visible", duration,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   base::TimeDelta::FromDays(1), 50);
-        break;
-      }
-
-      case content::Visibility::OCCLUDED: {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Tab.Visibility.Occluded", duration,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   base::TimeDelta::FromDays(1), 50);
-        break;
-      }
-
-      case content::Visibility::HIDDEN: {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Tab.Visibility.Hidden", duration,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   base::TimeDelta::FromDays(1), 50);
-        break;
-      }
-    }
-
-    visibility_ = new_visibility;
-    last_visibility_change_time_ = now;
-  }
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsUsageObserver);
 };
@@ -400,19 +325,6 @@ void TabStatsTracker::OnResume() {
       tab_stats_data_store_->tab_stats().total_tab_count);
 }
 
-// resource_coordinator::TabLifecycleObserver:
-void TabStatsTracker::OnDiscardedStateChange(
-    content::WebContents* contents,
-    ::mojom::LifecycleUnitDiscardReason reason,
-    bool is_discarded) {
-  // Increment the count in the data store for tabs metrics reporting.
-  tab_stats_data_store_->OnTabDiscardStateChange(reason, is_discarded);
-}
-
-void TabStatsTracker::OnAutoDiscardableStateChange(
-    content::WebContents* contents,
-    bool is_auto_discardable) {}
-
 void TabStatsTracker::OnInterval(
     base::TimeDelta interval,
     TabStatsDataStore::TabsStateDuringIntervalMap* interval_map) {
@@ -421,20 +333,6 @@ void TabStatsTracker::OnInterval(
   reporting_delegate_->ReportUsageDuringInterval(*interval_map, interval);
   // Reset the interval data.
   tab_stats_data_store_->ResetIntervalData(interval_map);
-}
-
-void TabStatsTracker::OnTabDiscardCountReportInterval() {
-  for (size_t reason = 0;
-       reason < static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue) + 1;
-       reason++) {
-    base::UmaHistogramCounts100(
-        kTabDiscardCountHistogramNames[reason],
-        tab_stats_data_store_->tab_stats().tab_discard_counts[reason]);
-    base::UmaHistogramCounts100(
-        kTabReloadCountHistogramNames[reason],
-        tab_stats_data_store_->tab_stats().tab_reload_counts[reason]);
-  }
-  tab_stats_data_store_->ClearTabDiscardAndReloadCounts();
 }
 
 void TabStatsTracker::OnInitialOrInsertedTab(

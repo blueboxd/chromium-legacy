@@ -7884,7 +7884,8 @@
        "SystemProxySettings": {
         "system_proxy_enabled": "true",
         "system_services_username": "test_user",
-        "system_services_password": "0000"
+        "system_services_password": "0000",
+        "policy_credentials_auth_schemes": ["basic","digest"]
        }
       },
       "prefs": {
@@ -8086,7 +8087,7 @@
           "DataLeakPreventionRulesList": [
             {
               "name": "Support agent work flows",
-              "description": "Allow copy and paste for work purposes but block screenshots and printing",
+              "description": "Allow copy and paste for work purposes but block screenshots, screen share and printing",
               "sources": {
                 "urls": [
                   "salesforce.com",
@@ -8121,6 +8122,10 @@
                 },
                 {
                   "class": "PRIVACY_SCREEN",
+                  "level": "BLOCK"
+                },
+                {
+                  "class": "SCREEN_SHARE",
                   "level": "BLOCK"
                 }
               ]

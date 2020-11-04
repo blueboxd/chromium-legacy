@@ -497,6 +497,7 @@ component("base") {
     "scoped_generic.h",
     "scoped_native_library.cc",
     "scoped_native_library.h",
+    "scoped_observation.h",
     "scoped_observer.h",
     "sequence_checker.h",
     "sequence_checker_impl.cc",
@@ -1294,6 +1295,8 @@ component("base") {
     sources += [
       "allocator/allocator_shim.cc",
       "allocator/allocator_shim.h",
+      "allocator/allocator_shim_default_dispatch_to_partition_alloc.cc",
+      "allocator/allocator_shim_default_dispatch_to_partition_alloc.h",
       "allocator/allocator_shim_internals.h",
     ]
     if (is_android) {
@@ -1321,12 +1324,7 @@ component("base") {
       ]
     }
 
-    if (use_allocator == "partition") {
-      sources += [
-        "allocator/allocator_shim_default_dispatch_to_partition_alloc.cc",
-        "allocator/allocator_shim_default_dispatch_to_partition_alloc.h",
-      ]
-    } else if (use_allocator == "tcmalloc") {
+    if (use_allocator == "tcmalloc") {
       sources += [ "allocator/allocator_shim_default_dispatch_to_tcmalloc.cc" ]
       deps += [ "//base/allocator:tcmalloc" ]
     } else if (use_allocator == "none") {
@@ -2861,6 +2859,7 @@ test("base_unittests") {
     "scoped_clear_last_error_unittest.cc",
     "scoped_generic_unittest.cc",
     "scoped_native_library_unittest.cc",
+    "scoped_observation_unittest.cc",
     "security_unittest.cc",
     "sequence_checker_unittest.cc",
     "sequence_token_unittest.cc",
@@ -3407,9 +3406,7 @@ test("base_unittests") {
       sources += [ "allocator/winheap_stubs_win_unittest.cc" ]
     }
 
-    if (use_allocator == "partition") {
-      sources += [ "allocator/allocator_shim_default_dispatch_to_partition_alloc_unittest.cc" ]
-    }
+    sources += [ "allocator/allocator_shim_default_dispatch_to_partition_alloc_unittest.cc" ]
   }
 
   if (enable_base_tracing) {

@@ -22,6 +22,8 @@ constexpr OSType kPixelFormatNv12 =
     kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
 // I420 a.k.a. y420
 constexpr OSType kPixelFormatI420 = kCVPixelFormatType_420YpCbCr8Planar;
+// MJPEG a.k.a. dmb1
+constexpr OSType kPixelFormatMjpeg = kCMVideoCodecType_JPEG_OpenDML;
 
 // Pixel formats mappings to allow these pixel formats to be converted to I420
 // with libyuv.
@@ -249,6 +251,20 @@ void ConvertFromI420ToNV12(const I420Planes& source,
   DCHECK_EQ(result, 0);
 }
 
+void ConvertFromMjpegToNV12(uint8_t* source_buffer_data_base_address,
+                            size_t source_buffer_data_size,
+                            const NV12Planes& destination) {
+  // Despite libyuv::MJPGToNV12() taking both source and destination sizes as
+  // arguments, this function is only successful if the sizes match. So here we
+  // require the destination buffer's size to match the source's.
+  int result = libyuv::MJPGToNV12(
+      source_buffer_data_base_address, source_buffer_data_size,
+      destination.y_plane_data, destination.y_plane_stride,
+      destination.uv_plane_data, destination.uv_plane_stride, destination.width,
+      destination.height, destination.width, destination.height);
+  DCHECK_EQ(result, 0);
+}
+
 void ScaleI420(const I420Planes& source, const I420Planes& destination) {
   int result = libyuv::I420Scale(
       source.y_plane_data, source.y_plane_stride, source.u_plane_data,
@@ -318,7 +334,20 @@ void SampleBufferTransformer::Reconfigure(
 
 base::ScopedCFTypeRef<CVPixelBufferRef> SampleBufferTransformer::Transform(
     CMSampleBufferRef sample_buffer) {
-  DCHECK(destination_pixel_buffer_pool_);
+  DCHECK(transformer_ != Transformer::kNotConfigured);
+  CVPixelBufferRef source_pixel_buffer =
+      CMSampleBufferGetImageBuffer(sample_buffer);
+  // Fast path: If source and destination formats are identical, return the
+  // source pixel buffer.
+  if (source_pixel_buffer &&
+      destination_width_ == CVPixelBufferGetWidth(source_pixel_buffer) &&
+      destination_height_ == CVPixelBufferGetHeight(source_pixel_buffer) &&
+      destination_pixel_format_ ==
+          CVPixelBufferGetPixelFormatType(source_pixel_buffer)) {
+    return base::ScopedCFTypeRef<CVPixelBufferRef>(source_pixel_buffer,
+                                                   base::scoped_policy::RETAIN);
+  }
+  // Create destination buffer from pool.
   base::ScopedCFTypeRef<CVPixelBufferRef> destination_pixel_buffer =
       destination_pixel_buffer_pool_->CreateBuffer();
   if (!destination_pixel_buffer) {
@@ -327,20 +356,7 @@ base::ScopedCFTypeRef<CVPixelBufferRef> SampleBufferTransformer::Transform(
     LOG(ERROR) << "Maximum destination buffers exceeded";
     return base::ScopedCFTypeRef<CVPixelBufferRef>();
   }
-  if (CVPixelBufferRef source_pixel_buffer =
-          CMSampleBufferGetImageBuffer(sample_buffer)) {
-    size_t source_width = CVPixelBufferGetWidth(source_pixel_buffer);
-    size_t source_height = CVPixelBufferGetHeight(source_pixel_buffer);
-    OSType source_pixel_format =
-        CVPixelBufferGetPixelFormatType(source_pixel_buffer);
-    // Fast path: If source and destination formats are identical, return the
-    // source pixel buffer.
-    if (destination_width_ == source_width &&
-        destination_height_ == source_height &&
-        destination_pixel_format_ == source_pixel_format) {
-      return base::ScopedCFTypeRef<CVPixelBufferRef>(
-          source_pixel_buffer, base::scoped_policy::RETAIN);
-    }
+  if (source_pixel_buffer) {
     // Pixel buffer path. Do pixel transfer or libyuv conversion + rescale.
     TransformPixelBuffer(source_pixel_buffer, destination_pixel_buffer);
     return destination_pixel_buffer;
@@ -511,88 +527,107 @@ void SampleBufferTransformer::TransformSampleBuffer(
     CMSampleBufferRef source_sample_buffer,
     CVPixelBufferRef destination_pixel_buffer) {
   DCHECK(transformer_ == Transformer::kLibyuv);
-  // Lock destination pixel buffer.
-  CVReturn lock_status =
-      CVPixelBufferLockBaseAddress(destination_pixel_buffer, 0);
-  DCHECK_EQ(lock_status, kCVReturnSuccess);
-
-  // Ensure source pixel format is MJPEG.
+  // Ensure source pixel format is MJPEG and get width and height.
   CMFormatDescriptionRef source_format_description =
       CMSampleBufferGetFormatDescription(source_sample_buffer);
   FourCharCode source_pixel_format =
       CMFormatDescriptionGetMediaSubType(source_format_description);
-  DCHECK(source_pixel_format == kCMVideoCodecType_JPEG_OpenDML);
+  DCHECK(source_pixel_format == kPixelFormatMjpeg);
+  CMVideoDimensions source_dimensions =
+      CMVideoFormatDescriptionGetDimensions(source_format_description);
 
   // Access source pixel buffer bytes.
   uint8_t* source_buffer_data_base_address;
   size_t source_buffer_data_size;
   std::tie(source_buffer_data_base_address, source_buffer_data_size) =
       GetSampleBufferBaseAddressAndSize(source_sample_buffer);
-  int mjpg_width;
-  int mjpg_height;
-  int result =
-      libyuv::MJPGSize(source_buffer_data_base_address, source_buffer_data_size,
-                       &mjpg_width, &mjpg_height);
-  DCHECK(result == 0);
-  size_t source_width = mjpg_width;
-  size_t source_height = mjpg_height;
 
+  // Lock destination pixel buffer.
+  CVReturn lock_status =
+      CVPixelBufferLockBaseAddress(destination_pixel_buffer, 0);
+  DCHECK_EQ(lock_status, kCVReturnSuccess);
+  // Convert to I420 or NV12.
+  switch (destination_pixel_format_) {
+    case kPixelFormatI420:
+      TransformSampleBufferFromMjpegToI420(
+          source_buffer_data_base_address, source_buffer_data_size,
+          source_dimensions.width, source_dimensions.height,
+          destination_pixel_buffer);
+      break;
+    case kPixelFormatNv12:
+      TransformSampleBufferFromMjpegToNV12(
+          source_buffer_data_base_address, source_buffer_data_size,
+          source_dimensions.width, source_dimensions.height,
+          destination_pixel_buffer);
+      break;
+    default:
+      NOTREACHED();
+  }
+  // Unlock destination pixel buffer.
+  lock_status = CVPixelBufferUnlockBaseAddress(destination_pixel_buffer, 0);
+  DCHECK_EQ(lock_status, kCVReturnSuccess);
+}
+
+void SampleBufferTransformer::TransformSampleBufferFromMjpegToI420(
+    uint8_t* source_buffer_data_base_address,
+    size_t source_buffer_data_size,
+    size_t source_width,
+    size_t source_height,
+    CVPixelBufferRef destination_pixel_buffer) {
+  DCHECK(destination_pixel_format_ == kPixelFormatI420);
   // Rescaling has to be done in a separate step.
   const bool rescale_needed = destination_width_ != source_width ||
                               destination_height_ != source_height;
 
-  // We don't know how to convert MJPEG -> NV12 directly, so we always start
-  // with MJPEG -> I420.
-  // TODO(hbos): This is no longer true in libyuv. In a follow-up CL, make use
-  // of eshr@'s MJPEG -> NV12 converter.
-
   // Step 1: Convert MJPEG -> I420.
   I420Planes i420_fullscale_buffer;
-  if (!rescale_needed && destination_pixel_format_ == kPixelFormatI420) {
+  if (!rescale_needed) {
     i420_fullscale_buffer =
         GetI420PlanesFromPixelBuffer(destination_pixel_buffer);
   } else {
-    // Convert into an intermediate buffer, to be converted and/or scaled into
-    // the destination pixel buffer in subsequent steps.
     i420_fullscale_buffer = EnsureI420BufferSizeAndGetPlanes(
         source_width, source_height, &intermediate_i420_buffer_);
   }
-  ConvertFromAnyToI420(source_pixel_format, source_buffer_data_base_address,
+  ConvertFromAnyToI420(kPixelFormatMjpeg, source_buffer_data_base_address,
                        source_buffer_data_size, i420_fullscale_buffer);
 
-  // Step 2: Convert to destination format and then rescale.
-  if (destination_pixel_format_ == kPixelFormatI420) {
-    // We are already at I420.
-    if (rescale_needed) {
-      I420Planes i420_destination_buffer =
-          GetI420PlanesFromPixelBuffer(destination_pixel_buffer);
-      ScaleI420(i420_fullscale_buffer, i420_destination_buffer);
-    }
-  } else if (destination_pixel_format_ == kPixelFormatNv12) {
-    // Convert I420 -> NV12.
-    NV12Planes nv12_fullscale_buffer;
-    if (!rescale_needed) {
-      nv12_fullscale_buffer =
-          GetNV12PlanesFromPixelBuffer(destination_pixel_buffer);
-    } else {
-      nv12_fullscale_buffer = EnsureNV12BufferSizeAndGetPlanes(
-          source_width, source_height, &intermediate_nv12_buffer_);
-    }
-    ConvertFromI420ToNV12(i420_fullscale_buffer, nv12_fullscale_buffer);
-
-    // Rescale NV12.
-    if (rescale_needed) {
-      NV12Planes nv12_destination_buffer =
-          GetNV12PlanesFromPixelBuffer(destination_pixel_buffer);
-      ScaleNV12(nv12_fullscale_buffer, nv12_destination_buffer);
-    }
-  } else {
-    NOTREACHED();
+  // Step 2: Rescale I420.
+  if (rescale_needed) {
+    I420Planes i420_destination_buffer =
+        GetI420PlanesFromPixelBuffer(destination_pixel_buffer);
+    ScaleI420(i420_fullscale_buffer, i420_destination_buffer);
   }
+}
 
-  // Unlock destination pixel buffer.
-  lock_status = CVPixelBufferUnlockBaseAddress(destination_pixel_buffer, 0);
-  DCHECK_EQ(lock_status, kCVReturnSuccess);
+void SampleBufferTransformer::TransformSampleBufferFromMjpegToNV12(
+    uint8_t* source_buffer_data_base_address,
+    size_t source_buffer_data_size,
+    size_t source_width,
+    size_t source_height,
+    CVPixelBufferRef destination_pixel_buffer) {
+  DCHECK(destination_pixel_format_ == kPixelFormatNv12);
+  // Rescaling has to be done in a separate step.
+  const bool rescale_needed = destination_width_ != source_width ||
+                              destination_height_ != source_height;
+
+  // Step 1: Convert MJPEG -> NV12.
+  NV12Planes nv12_fullscale_buffer;
+  if (!rescale_needed) {
+    nv12_fullscale_buffer =
+        GetNV12PlanesFromPixelBuffer(destination_pixel_buffer);
+  } else {
+    nv12_fullscale_buffer = EnsureNV12BufferSizeAndGetPlanes(
+        source_width, source_height, &intermediate_nv12_buffer_);
+  }
+  ConvertFromMjpegToNV12(source_buffer_data_base_address,
+                         source_buffer_data_size, nv12_fullscale_buffer);
+
+  // Step 2: Rescale NV12.
+  if (rescale_needed) {
+    NV12Planes nv12_destination_buffer =
+        GetNV12PlanesFromPixelBuffer(destination_pixel_buffer);
+    ScaleNV12(nv12_fullscale_buffer, nv12_destination_buffer);
+  }
 }
 
 }  // namespace media

@@ -640,7 +640,8 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_StrongTypes) {
 
 // Ensures that rules which can't be parsed are ignored and cause an install
 // warning.
-TEST_P(SingleRulesetTest, InvalidJSONRules_Parsed) {
+// Disabled due to consistent failures on some bots https://crbug.com/1113513.
+TEST_P(SingleRulesetTest, DISABLED_InvalidJSONRules_Parsed) {
   const char* kRules = R"(
     [
       {
@@ -673,23 +674,24 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_Parsed) {
   SetRules(base::JSONReader::ReadDeprecated(kRules));
 
   extension_loader()->set_ignore_manifest_warnings(true);
-
-  // Rules with ids "2" and "3" will be successfully indexed. Note that for rule
-  // with id "3", the "invalidKey" will simply be ignored during parsing
-  // (without causing any install warning).
-  size_t expected_rule_count = 2;
-  LoadAndExpectSuccess(expected_rule_count);
+  LoadAndExpectSuccess(1u);
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
-    ASSERT_EQ(2u, extension()->install_warnings().size());
+    ASSERT_EQ(3u, extension()->install_warnings().size());
     std::vector<InstallWarning> expected_warnings;
 
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
             GetErrorWithFilename(kRuleNotParsedWarning), "id 1",
             "'condition': expected dictionary, got list"),
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
+    expected_warnings.emplace_back(
+        ErrorUtils::FormatErrorMessage(
+            GetErrorWithFilename(kRuleNotParsedWarning), "id 3",
+            "found unexpected key 'invalidKey'"),
         dnr_api::ManifestKeys::kDeclarativeNetRequest,
         dnr_api::DNRInfo::kRuleResources);
     expected_warnings.emplace_back(

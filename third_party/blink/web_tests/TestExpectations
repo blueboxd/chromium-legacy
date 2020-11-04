@@ -111,6 +111,8 @@ crbug.com/762529 http/tests/devtools/network/network-datareceived.js [ Failure ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 # ====== Browserside navigation until here ======
 
+crbug.com/1138757 http/tests/devtools/copy-network-request.js [ Pass Failure ]
+
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -1184,8 +1186,6 @@ crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 crbug.com/1040826 fast/forms/input-in-table-cell-no-value.html [ Failure ]
 crbug.com/1040826 [ Linux ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/1040826 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
-crbug.com/1040826 [ Linux ] fast/selectors/input-with-selection-pseudo-element.html [ Failure ]
-crbug.com/1040826 [ Win ] fast/selectors/input-with-selection-pseudo-element.html [ Failure ]
 crbug.com/1040826 fast/table/cell-change-baseline-then-border.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
@@ -3971,6 +3971,8 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algori
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-percent-rows-filled-shrinkwrap-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-percent-rows-spanned-shrinkwrap-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-stretch-respects-min-size-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-columns-rows-get-set-multiple.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-content-sized-columns-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-columns-computed-implicit-track.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-columns-computed-withcontent.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-columns-computed.html [ Failure ]
@@ -4002,9 +4004,7 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-auto-columns-
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-auto-columns-rows-update.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-auto-flow-resolution.html [ Failure Crash ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-auto-repeat-huge-grid.html [ Failure Crash ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-columns-rows-get-set-multiple.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-columns-rows-get-set.html [ Failure Crash ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-content-sized-columns-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-element-auto-repeat-get-set.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-element-border-grid-item.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-element-border-padding-grid-item.html [ Failure ]
@@ -6195,7 +6195,7 @@ crbug.com/1136726 [ Linux ] virtual/gpu-rasterization/images/imagemap-focus-ring
 crbug.com/1138591 [ Mac10.15 ] http/tests/dom/raf-throttling-out-of-view-cross-origin-page.html [ Failure ]
 
 # WebRTC: Payload demuxing times out in Plan B. This is expected.
-crbug.com/1139052 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/unbundled-pt-demuxing.https.html [ Timeout ]
+crbug.com/1139052 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/rtp-demuxing.html [ Timeout ]
 
 crbug.com/1137228 [ Mac ] external/wpt/infrastructure/testdriver/click_iframe_crossorigin.sub.html [ Pass Failure ]
 
@@ -6222,7 +6222,6 @@ crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ P
 crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Pass Failure ]
 crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Pass Failure ]
 crbug.com/1144677 external/wpt/infrastructure/reftest/reftest.www.sub.html [ Failure ]
-crbug.com/1144677 external/wpt/paint-timing/fcp-only/fcp-ensure-update-the-rendering-step.html [ Pass Failure ]
 
 crbug.com/1144537 external/wpt/xhr/responsexml-document-properties.htm [ Pass Failure ]
 
@@ -6238,3 +6237,13 @@ crbug.com/997202 [ Mac ] virtual/transform-interop/external/wpt/css/css-transfor
 
 # Sheriff 2020-11-04
 crbug.com/1144273 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]
+crbug.com/1145424 [ Linux ] http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Timeout ]
+crbug.com/1145424 [ Win ] http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Timeout ]
+
+# DevTools roll
+crbug.com/1011811 http/tests/devtools/tracing/timeline-misc/timeline-user-timings.js [ Skip ]
+crbug.com/1011811 http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Skip ]
+
+# Disabled until CL with fix gets merged https://chromium-review.googlesource.com/c/chromium/src/+/2504259
+crbug.com/1127115 inspector-protocol/runtime/runtime-console-log-node-letter-case.js [ Failure ]
+crbug.com/1127115 inspector-protocol/runtime/runtime-console-log-node-document-type.js [ Failure ]

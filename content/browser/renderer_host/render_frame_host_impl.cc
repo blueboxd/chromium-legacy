@@ -1831,13 +1831,24 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
 void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  ContentBrowserClient* browser_client = GetContentClient()->browser();
-  if (!associated_registry_->TryBindInterface(interface_name, &handle) &&
-      !browser_client->BindAssociatedReceiverFromFrame(this, interface_name,
-                                                       &handle)) {
-    delegate_->OnAssociatedInterfaceRequest(this, interface_name,
-                                            std::move(handle));
+  // TODO(https://crbug.com/1123438) It is not understood why
+  // OnAssociatedInterfaceRequest can be received after resetting
+  // `associated_registry_`. This is reset in InvalidateMojoConnection(), which
+  // means we want to stop receiving messages on behalf of the frame. Ignoring
+  // this request sounded like the right way to handle this.
+  if (!associated_registry_)
+    return;
+
+  if (associated_registry_->TryBindInterface(interface_name, &handle))
+    return;
+
+  if (GetContentClient()->browser()->BindAssociatedReceiverFromFrame(
+          this, interface_name, &handle)) {
+    return;
   }
+
+  delegate_->OnAssociatedInterfaceRequest(this, interface_name,
+                                          std::move(handle));
 }
 
 void RenderFrameHostImpl::AccessibilityPerformAction(
@@ -4080,9 +4091,8 @@ void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
 
 void RenderFrameHostImpl::RegisterProtocolHandler(const std::string& scheme,
                                                   const GURL& url,
-                                                  const base::string16& title,
                                                   bool user_gesture) {
-  delegate_->RegisterProtocolHandler(this, scheme, url, title, user_gesture);
+  delegate_->RegisterProtocolHandler(this, scheme, url, user_gesture);
 }
 
 void RenderFrameHostImpl::UnregisterProtocolHandler(const std::string& scheme,
@@ -6811,7 +6821,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       remote_interfaces;
   frame_->GetInterfaceProvider(
       remote_interfaces.InitWithNewPipeAndPassReceiver());
-  remote_interfaces_ = std::make_unique<service_manager::InterfaceProvider>();
+  remote_interfaces_ = std::make_unique<service_manager::InterfaceProvider>(
+      base::ThreadTaskRunnerHandle::Get());
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
   // Called to bind the receiver for this interface to the local frame. We need
@@ -8242,7 +8253,8 @@ service_manager::InterfaceProvider* RenderFrameHostImpl::GetJavaInterfaces() {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
     BindInterfaceRegistryForRenderFrameHost(
         provider.InitWithNewPipeAndPassReceiver(), this);
-    java_interfaces_.reset(new service_manager::InterfaceProvider);
+    java_interfaces_.reset(new service_manager::InterfaceProvider(
+        base::ThreadTaskRunnerHandle::Get()));
     java_interfaces_->Bind(std::move(provider));
   }
   return java_interfaces_.get();

@@ -5863,7 +5863,6 @@ void WebContentsImpl::EnumerateDirectory(
 void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
                                               const std::string& protocol,
                                               const GURL& url,
-                                              const base::string16& title,
                                               bool user_gesture) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::RegisterProtocolHandler",
                         "render_frame_host",
@@ -7853,7 +7852,8 @@ service_manager::InterfaceProvider* WebContentsImpl::GetJavaInterfaces() {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
     BindInterfaceRegistryForWebContents(
         provider.InitWithNewPipeAndPassReceiver(), this);
-    java_interfaces_.reset(new service_manager::InterfaceProvider);
+    java_interfaces_.reset(new service_manager::InterfaceProvider(
+        base::ThreadTaskRunnerHandle::Get()));
     java_interfaces_->Bind(std::move(provider));
   }
   return java_interfaces_.get();

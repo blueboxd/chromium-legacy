@@ -1037,8 +1037,8 @@ void NativeWidgetNSWindowBridge::InitCompositorView() {
   // for the composited NonClientFrameView, which should be the case since the
   // native shape is what's most appropriate for displaying sheets on Mac.
   if (is_translucent_window_ && !IsWindowModalSheet()) {
-    [window_ setOpaque:NO];
-    [window_ setBackgroundColor:[NSColor clearColor]];
+//    [window_ setOpaque:NO];
+//    [window_ setBackgroundColor:[NSColor clearColor]];
 
     // Don't block waiting for the initial frame of completely transparent
     // windows. This allows us to avoid blocking on the UI thread e.g, while

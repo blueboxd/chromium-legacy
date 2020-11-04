@@ -41,7 +41,8 @@
 - (void)cr_mouseDownOnFrameView:(NSEvent*)event;
 @end
 
-@implementation NSView (CRFrameViewAdditions)
+@implementation NSView (CRFrameViewAdditions) 
+NSPoint clickedLocation;
 // If a mouseDown: falls through to the frame view, turn it into a window drag.
 - (void)cr_mouseDownOnFrameView:(NSEvent*)event {
   if ([self.window _resizeDirectionForMouseLocation:event.locationInWindow] !=
@@ -53,7 +54,12 @@
                respondsToSelector:@selector(beginWindowDragWithEvent:)])
     [self.window beginWindowDragWithEvent:event];
   else
-    NOTREACHED();
+    clickedLocation = [event locationInWindow];
+}
+
+- (void)cr_mouseDraggedOnFrameView:(NSEvent*)event {
+    NSPoint mouseLocation = [NSEvent mouseLocation];
+    [self.window setFrame:NSMakeRect(mouseLocation.x - clickedLocation.x, mouseLocation.y - clickedLocation.y, self.frame.size.width, self.frame.size.height) display:YES animate:NO];
 }
 @end
 
@@ -62,6 +68,11 @@
   if (self.window.isMovable)
     [self cr_mouseDownOnFrameView:event];
   [super mouseDown:event];
+}
+- (void)mouseDragged:(NSEvent *)event {
+  if (self.window.isMovable)
+    [self cr_mouseDraggedOnFrameView:event];
+  [super mouseDragged:event];
 }
 - (BOOL)usesCustomDrawing {
   return NO;

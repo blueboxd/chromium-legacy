@@ -53,7 +53,6 @@
 
 namespace cc {
 class Layer;
-struct BeginMainFrameMetrics;
 }
 
 namespace blink {
@@ -99,11 +98,9 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void Resize(const gfx::Size&) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
-  void ThemeChanged() override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
-  void SetCursorVisibilityState(bool is_visible) override;
 
   void MouseCaptureLost() override;
   void SetRemoteViewportIntersection(
@@ -119,7 +116,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WebFrameWidget implementation.
   void DidDetachLocalFrameTree() override;
-  WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   void SetZoomLevelForTesting(double zoom_level) override;
   void ResetZoomLevelForTesting() override;
@@ -154,15 +150,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WidgetBaseClient overrides:
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(
-      base::TimeTicks,
-      cc::ActiveFrameSequenceTrackers trackers) override;
-  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
-      override;
-  void BeginUpdateLayers() override;
-  void EndUpdateLayers() override;
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidBeginMainFrame() override;

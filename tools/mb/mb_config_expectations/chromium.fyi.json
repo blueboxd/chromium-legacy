@@ -204,16 +204,6 @@
       "use_goma": true
     }
   },
-  "Win10 Tests x64 1909": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
   "android-code-coverage": {
     "gn_args": {
       "disable_android_lint": true,
@@ -674,6 +664,7 @@
   },
   "linux-lacros-builder-fyi-rel": {
     "gn_args": {
+      "also_build_ash_chrome": true,
       "chromeos_is_browser_only": true,
       "is_component_build": false,
       "is_debug": false,
@@ -686,6 +677,7 @@
   },
   "linux-lacros-tester-fyi-rel": {
     "gn_args": {
+      "also_build_ash_chrome": true,
       "chromeos_is_browser_only": true,
       "is_component_build": false,
       "is_debug": false,

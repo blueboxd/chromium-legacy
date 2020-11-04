@@ -23,6 +23,7 @@
 <translation id="1947737735496445907">הודפסה</translation>
 <translation id="1979103255016296513">המועד האחרון לשינוי הסיסמה כבר חלף</translation>
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN" />.</translation>
+<translation id="2080070583977670716">הגדרות נוספות</translation>
 <translation id="2141644705054017895">‎<ph name="PERCENTAGE_VALUE" />%‎</translation>
 <translation id="2161394479394250669">ביטול משימת ההדפסה</translation>
 <translation id="2326139988748364651">‏<ph name="RESOLUTION_VALUE" /> ‏DPI</translation>
@@ -66,6 +67,7 @@
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4429881212383817840">‏התוקף של כרטיס Kerberos עומד לפוג בקרוב</translation>
 <translation id="445059817448385655">סיסמה ישנה</translation>
+<translation id="4454245904991689773">מיקום שמירת הסריקה</translation>
 <translation id="4483049906298469269">לא ניתן היה לבצע פינג לשער הרשת שאינה מוגדרת כברירת מחדל.</translation>
 <translation id="4548483925627140043">לא אותר אות</translation>
 <translation id="458794348635939462">לא ניתן היה להתאים את הנתונים של כל המארחים</translation>
@@ -140,5 +142,5 @@
 <translation id="8919837981463578619">נכשלה – המגש לא נמצא</translation>
 <translation id="8928727111548978589">נכשלה – הנייר נגמר</translation>
 <translation id="910415269708673980">רענון הכרטיס עבור <ph name="PRINCIPAL_NAME" /></translation>
-<translation id="9111102763498581341">בטל נעילה</translation>
+<translation id="9111102763498581341">ביטול נעילה</translation>
 </translationbundle>

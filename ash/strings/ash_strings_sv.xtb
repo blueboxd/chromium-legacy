@@ -49,6 +49,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1346748346194534595">Höger</translation>
 <translation id="1351937230027495976">Komprimera menyn</translation>
 <translation id="1383876407941801731">Sök</translation>
+<translation id="1390105199421505038">Ta bort kontodialogrutan för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1391102559483454063">På</translation>
 <translation id="1407069428457324124">Mörkt tema</translation>
 <translation id="1419738280318246476">Lås upp enheten så att aviseringen kan göras</translation>
@@ -59,7 +60,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1456407467406159627">Skärminspelningen stoppades på grund av konfidentiellt innehåll på skärmen.</translation>
 <translation id="1460620680449458626">Ljudet är av.</translation>
 <translation id="1467432559032391204">Vänster</translation>
-<translation id="1475439723810528286">Tryck var som helst för att ta en bild av hela skärmen</translation>
 <translation id="1479909375538722835">Flytande tillgänglighetsmeny</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1503394326855300303">Det här ägarkontot måste vara det första inloggade kontot i en session med flera inloggningar.</translation>
@@ -126,7 +126,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2132302418721800944">Spela in hela skärmen</translation>
 <translation id="2135456203358955318">Dockad skärmförstoring</translation>
 <translation id="2144487987174258011">Starta om för att uppdatera Adobe Flash Player</translation>
-<translation id="2180011262286780504">Funktionen för skärmbilder/skärminspelningar har inaktiverats av administratören.</translation>
 <translation id="2208323208084708176">Enhetligt skrivbordsläge</translation>
 <translation id="2220572644011485463">Pinkod eller lösenord</translation>
 <translation id="2222338659135520253">Inloggning krävs</translation>
@@ -369,6 +368,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="4477892968187500306">Den här enheten kan innehålla appar som inte har verifierats av Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Frånkopplade enheter</translation>
+<translation id="4485060137115666462">Assistenten visar information om det som är markerat när du högerklickar eller trycker länge på det, t.ex. en definition, översättning eller en omräkning till en annan enhet.</translation>
 <translation id="4505050298327493054">Aktiv arbetsyta.</translation>
 <translation id="4506458088675900627">Styrplatterörelsen för översikten har ändrats</translation>
 <translation id="4513946894732546136">Feedback</translation>
@@ -597,6 +597,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
 <translation id="6818242057446442178">Bakåt ord för ord</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
+<translation id="6850010208275816200">Den aktuella appen visas i helskärmsläge. Om du blir ombedd att ange ditt lösenord måste du först stänga helskärmsläget.</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> sek</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{En siffra kvar}other{# siffror kvar}}</translation>
@@ -646,6 +647,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="7398254312354928459">Bytte nätverksanslutning</translation>
 <translation id="7405710164030118432">Lås upp enheten genom att ange föräldraåtkomstkoden för Family Link</translation>
 <translation id="741244894080940828">Räkna om</translation>
+<translation id="7413851974711031813">Stäng genom att trycka på Esc</translation>
 <translation id="742594950370306541">Kameran används.</translation>
 <translation id="742608627846767349">Hej!</translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
@@ -797,7 +799,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="8843682306134542540">Aktivera och inaktivera rotationslås. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Sök+Escape</translation>
 <translation id="8853703225951107899">Det gick fortfarande inte att verifiera pinkoden eller lösenordet. Obs! Om du nyligen har bytt lösenord ska du använda det gamla lösenordet. Det nya lösenordet börjar gälla när du loggar ut.</translation>
-<translation id="885387440427703469">Skärmbilder/skärminspelningar har inaktiverats</translation>
 <translation id="8870509716567206129">Appen har inte stöd för delad skärm.</translation>
 <translation id="8871580645200179206">Aktivera och inaktivera mörkt tema. <ph name="STATE_TEXT" /></translation>
 <translation id="8874184842967597500">Inte ansluten</translation>

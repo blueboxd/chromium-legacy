@@ -27,6 +27,49 @@ TEST(HttpsRecordRdataTest, ParsesAlias) {
   std::unique_ptr<HttpsRecordRdata> rdata =
       HttpsRecordRdata::Parse(base::StringPiece(kRdata, sizeof(kRdata) - 1));
   ASSERT_TRUE(rdata);
+  EXPECT_FALSE(rdata->IsMalformed());
+
+  AliasFormHttpsRecordRdata expected("chromium.org");
+  EXPECT_TRUE(rdata->IsEqual(&expected));
+
+  EXPECT_TRUE(rdata->IsAlias());
+  AliasFormHttpsRecordRdata* alias_rdata = rdata->AsAliasForm();
+  ASSERT_TRUE(alias_rdata);
+  EXPECT_EQ(alias_rdata->alias_name(), "chromium.org");
+}
+
+TEST(HttpsRecordRdataTest, ParseAliasWithEmptyName) {
+  const char kRdata[] =
+      // Priority: 0 for alias record
+      "\000\000"
+      // Alias name: ""
+      "\000";
+
+  std::unique_ptr<HttpsRecordRdata> rdata =
+      HttpsRecordRdata::Parse(base::StringPiece(kRdata, sizeof(kRdata) - 1));
+  ASSERT_TRUE(rdata);
+
+  AliasFormHttpsRecordRdata expected("");
+  EXPECT_TRUE(rdata->IsEqual(&expected));
+
+  EXPECT_TRUE(rdata->IsAlias());
+  AliasFormHttpsRecordRdata* alias_rdata = rdata->AsAliasForm();
+  ASSERT_TRUE(alias_rdata);
+  EXPECT_TRUE(alias_rdata->alias_name().empty());
+}
+
+TEST(HttpsRecordRdataTest, IgnoreAliasParams) {
+  const char kRdata[] =
+      // Priority: 0 for alias record
+      "\000\000"
+      // Alias name: chromium.org
+      "\010chromium\003org\000"
+      // no-default-alpn
+      "\000\002\000\000";
+
+  std::unique_ptr<HttpsRecordRdata> rdata =
+      HttpsRecordRdata::Parse(base::StringPiece(kRdata, sizeof(kRdata) - 1));
+  ASSERT_TRUE(rdata);
 
   AliasFormHttpsRecordRdata expected("chromium.org");
   EXPECT_TRUE(rdata->IsEqual(&expected));
@@ -64,6 +107,7 @@ TEST(HttpsRecordRdataTest, ParsesService) {
   std::unique_ptr<HttpsRecordRdata> rdata =
       HttpsRecordRdata::Parse(base::StringPiece(kRdata, sizeof(kRdata) - 1));
   ASSERT_TRUE(rdata);
+  EXPECT_FALSE(rdata->IsMalformed());
 
   IPAddress expected_ipv6;
   ASSERT_TRUE(expected_ipv6.AssignFromIPLiteral("2001:4860:4860::8888"));
@@ -107,7 +151,9 @@ TEST(HttpsRecordRdataTest, RejectCorruptRdata) {
 
   std::unique_ptr<HttpsRecordRdata> rdata =
       HttpsRecordRdata::Parse(base::StringPiece(kRdata, sizeof(kRdata) - 1));
-  EXPECT_FALSE(rdata);
+  ASSERT_TRUE(rdata);
+
+  EXPECT_TRUE(rdata->IsMalformed());
 }
 
 }  // namespace

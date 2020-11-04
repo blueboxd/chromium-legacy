@@ -1766,11 +1766,6 @@ WebViewFrameWidget* WebViewImpl::MainFrameViewWidget() {
   return web_widget_;
 }
 
-void WebViewImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
-    bool suppress_frame_requests) {
-  page_->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
-      suppress_frame_requests);
-}
 void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime",
                last_frame_time);
@@ -1801,55 +1796,6 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
                           .GetScopedTimer(LocalFrameUkmAggregator::kAnimate));
   }
   PageWidgetDelegate::Animate(*page_, last_frame_time);
-}
-
-void WebViewImpl::BeginUpdateLayers() {
-  if (MainFrameImpl())
-    update_layers_start_time_.emplace(base::TimeTicks::Now());
-}
-
-void WebViewImpl::EndUpdateLayers() {
-  if (MainFrameImpl()) {
-    DCHECK(update_layers_start_time_);
-    MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), base::TimeTicks::Now());
-    probe::LayerTreeDidChange(MainFrameImpl()->GetFrame());
-  }
-  update_layers_start_time_.reset();
-}
-
-void WebViewImpl::RecordStartOfFrameMetrics() {
-  if (!MainFrameImpl())
-    return;
-
-  MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().BeginMainFrame();
-}
-
-void WebViewImpl::RecordEndOfFrameMetrics(
-    base::TimeTicks frame_begin_time,
-    cc::ActiveFrameSequenceTrackers trackers) {
-  if (!MainFrameImpl())
-    return;
-
-  MainFrameImpl()
-      ->GetFrame()
-      ->View()
-      ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
-                               trackers);
-}
-
-std::unique_ptr<cc::BeginMainFrameMetrics>
-WebViewImpl::GetBeginMainFrameMetrics() {
-  if (!MainFrameImpl())
-    return nullptr;
-
-  return MainFrameImpl()
-      ->GetFrame()
-      ->View()
-      ->EnsureUkmAggregator()
-      .GetBeginMainFrameMetrics();
 }
 
 void WebViewImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -2521,11 +2467,6 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
             coalesced_event.GetPredictedEventsPointers()));
   }
   return WebInputEventResult::kHandledSystem;
-}
-
-void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
-  if (page_)
-    page_->SetIsCursorVisible(is_visible);
 }
 
 void WebViewImpl::MouseCaptureLost() {
@@ -3780,13 +3721,6 @@ void WebViewImpl::DidCloseContextMenu() {
     frame->Selection().SetCaretBlinkingSuspended(false);
 }
 
-WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()
-    const {
-  WebLocalFrameImpl* local_frame =
-      WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
-  return local_frame ? local_frame->GetInputMethodController() : nullptr;
-}
-
 SkColor WebViewImpl::BackgroundColor() const {
   if (background_color_override_enabled_)
     return background_color_override_;
@@ -3953,8 +3887,7 @@ void WebViewImpl::UpdateRendererPreferences(
                        renderer_preferences_.active_selection_fg_color,
                        renderer_preferences_.inactive_selection_bg_color,
                        renderer_preferences_.inactive_selection_fg_color);
-    if (MainFrameWidget())
-      MainFrameWidget()->ThemeChanged();
+    ThemeChanged();
   }
 #endif
 
@@ -4313,32 +4246,6 @@ Node* WebViewImpl::FindNodeFromScrollableCompositorElementId(
     return nullptr;
 
   return scrollable_area->GetLayoutBox()->GetNode();
-}
-
-void WebViewImpl::SendOverscrollEventFromImplSide(
-    const gfx::Vector2dF& overscroll_delta,
-    cc::ElementId scroll_latched_element_id) {
-  if (!RuntimeEnabledFeatures::OverscrollCustomizationEnabled())
-    return;
-
-  DCHECK(!overscroll_delta.IsZero());
-  Node* target_node =
-      FindNodeFromScrollableCompositorElementId(scroll_latched_element_id);
-  if (target_node) {
-    target_node->GetDocument().EnqueueOverscrollEventForNode(
-        target_node, overscroll_delta.x(), overscroll_delta.y());
-  }
-}
-
-void WebViewImpl::SendScrollEndEventFromImplSide(
-    cc::ElementId scroll_latched_element_id) {
-  if (!RuntimeEnabledFeatures::OverscrollCustomizationEnabled())
-    return;
-
-  Node* target_node =
-      FindNodeFromScrollableCompositorElementId(scroll_latched_element_id);
-  if (target_node)
-    target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {

@@ -102,20 +102,11 @@
       'linux-lacros-tester-rel',
       'linux-lacros-tester-fyi-rel',
     ],
-    'modifications': {
-      'Linux ASan LSan Tests (1)': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-    },
   },
   'angle_white_box_tests': {
     'remove_from': [
       # https://crbug.com/1035178
       'Win10 FYI x64 Release (AMD RX 550)',
-      # https://crbug.com/1035461
-      'Linux FYI GPU TSAN Release',
       # https://crbug.com/1094629
       'Linux FYI Release (AMD R7 240)',
     ],
@@ -296,15 +287,6 @@
           '--target',
           'Debug_x64',
         ],
-      },
-      'Win10 Tests x64 1909': {
-        'args': [
-          '--target',
-          'Release_x64',
-        ],
-        'swarming': {
-          "shards": 28
-        },
       },
       'Win7 Tests (dbg)(1)': {
         'args': [

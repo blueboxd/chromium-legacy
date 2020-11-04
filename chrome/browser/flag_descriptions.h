@@ -87,9 +87,6 @@ extern const char kEnableBloomDescription[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
-extern const char kEnableClipboardProviderImageSuggestionsName[];
-extern const char kEnableClipboardProviderImageSuggestionsDescription[];
-
 extern const char kEnableFtpName[];
 extern const char kEnableFtpDescription[];
 
@@ -342,6 +339,10 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 extern const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[];
 extern const char
     kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[];
+
+extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
+extern const char
+    kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
 
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
@@ -834,12 +835,6 @@ extern const char kMobileIdentityConsistencyDescription[];
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
-extern const char kNearbySharingName[];
-extern const char kNearbySharingDescription[];
-
-extern const char kNearbySharingWebRtcName[];
-extern const char kNearbySharingWebRtcDescription[];
-
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
@@ -986,9 +981,6 @@ extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
 extern const char kOmniboxWebUIOmniboxPopupName[];
 extern const char kOmniboxWebUIOmniboxPopupDescription[];
-
-extern const char kOnTheFlyMhtmlHashComputationName[];
-extern const char kOnTheFlyMhtmlHashComputationDescription[];
 
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
@@ -2516,6 +2508,15 @@ extern const char kMediaSessionNotificationsDescription[];
 
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];
+
+extern const char kNearbySharingName[];
+extern const char kNearbySharingDescription[];
+
+extern const char kNearbySharingDeviceContactsName[];
+extern const char kNearbySharingDeviceContactsDescription[];
+
+extern const char kNearbySharingWebRtcName[];
+extern const char kNearbySharingWebRtcDescription[];
 
 extern const char kOsSettingsPolymer3Name[];
 extern const char kOsSettingsPolymer3Description[];

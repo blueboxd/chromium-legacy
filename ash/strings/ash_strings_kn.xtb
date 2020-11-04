@@ -49,6 +49,7 @@
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="1351937230027495976">ಮೆನುವನ್ನು ಕುಗ್ಗಿಸಿ</translation>
 <translation id="1383876407941801731">Search</translation>
+<translation id="1390105199421505038"><ph name="USER_EMAIL_ADDRESS" /> ಗೆ ಸಂಬಂಧಿಸಿದ ಖಾತೆ ಡೈಲಾಗ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1391102559483454063">ಆನ್</translation>
 <translation id="1407069428457324124">ಡಾರ್ಕ್ ಥೀಮ್</translation>
 <translation id="1419738280318246476">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
@@ -59,7 +60,6 @@
 <translation id="1456407467406159627">ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಗೌಪ್ಯ ವಿಷಯ ಇರುವುದರಿಂದ, ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.</translation>
 <translation id="1460620680449458626">ವಾಲ್ಯೂಮ್ ಅನ್ನು ಮ್ಯೂಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1467432559032391204">ಎಡಕ್ಕೆ</translation>
-<translation id="1475439723810528286">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್‌ ಮಾಡಲು ಎಲ್ಲಿಯಾದರೂ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1479909375538722835">ಫ್ಲೋಟಿಂಗ್ ಪ್ರವೇಶಿಸುವಿಕೆ ಮೆನು</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1503394326855300303">ಬಹು ಸೈನ್-ಇನ್ ಸೆಷನ್‌ನಲ್ಲಿ ಈ ಮಾಲೀಕರ ಖಾತೆಯೇ ಮೊದಲ ಸೈನ್-ಇನ್ ಮಾಡಿದ ಖಾತೆ ಆಗಿರಬೇಕು.</translation>
@@ -126,7 +126,6 @@
 <translation id="2132302418721800944">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡ್ ಮಾಡಿ</translation>
 <translation id="2135456203358955318">ಡಾಕ್‌‌ ಮಾಡಿರುವ ವರ್ಧಕ</translation>
 <translation id="2144487987174258011">Adobe Flash Player ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
-<translation id="2180011262286780504">ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಸಾಮರ್ಥ್ಯವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="2208323208084708176">ಏಕೀಕೃತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್</translation>
 <translation id="2220572644011485463">ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="2222338659135520253">ಸೈನ್ ಇನ್ ಮಾಡುವ ಅಗತ್ಯವಿದೆ</translation>
@@ -369,6 +368,7 @@
 <translation id="4477892968187500306">Google ನಿಂದ ದೃಢೀಕರಿಸದ ಆ್ಯಪ್‌ಗಳನ್ನು ಈ ಸಾಧನವು ಒಳಗೊಂಡಿರಬಹುದು.</translation>
 <translation id="4479639480957787382">ಈಥರ್ನೆಟ್</translation>
 <translation id="4481530544597605423">ಜೋಡಿಯಾಗಿರದ ಸಾಧನಗಳು</translation>
+<translation id="4485060137115666462">ಬಲ-ಕ್ಲಿಕ್ ಅಥವಾ ಲಾಂಗ್ ಪ್ರೆಸ್ ಮಾಡಿ, ಆಗ Assistant ನಿಮಗೆ ಬೇಕಾದ ವ್ಯಾಖ್ಯಾನ, ಅನುವಾದ ಅಥವಾ ಯೂನಿಟ್ ಪರಿವರ್ತನೆಗಳಂತಹ ಮಾಹಿತಿಯನ್ನು ತೋರಿಸುತ್ತದೆ.</translation>
 <translation id="4505050298327493054">ಸಕ್ರಿಯೆ ಡೆಸ್ಕ್</translation>
 <translation id="4506458088675900627">ಅವಲೋಕನದ ಟಚ್‌ಪ್ಯಾಡ್ ಗೆಸ್ಚರ್ ಬದಲಾಗಿದೆ</translation>
 <translation id="4513946894732546136">ಪ್ರತಿಕ್ರಿಯೆ</translation>
@@ -598,6 +598,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="6818242057446442178">ಒಂದು ಪದದಷ್ಟು ಹಿಂದಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
+<translation id="6850010208275816200">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಆ್ಯಪ್ ಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಮೋಡ್‌ನಲ್ಲಿದೆ. ಒಂದು ವೇಳೆ ಆ್ಯಪ್ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಕೇಳಿದರೆ ಮೊದಲು ಪೂರ್ಣ ಸ್ಕ್ರೀನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ.</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> ಸೆ</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE" /></translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{ಒಂದು ಅಂಕಿ ಬಾಕಿಯಿದೆ}one{# ಅಂಕಿಗಳು ಬಾಕಿಯಿವೆ}other{# ಅಂಕಿಗಳು ಬಾಕಿಯಿವೆ}}</translation>
@@ -647,6 +648,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7398254312354928459">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕವನ್ನು ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="7405710164030118432">ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು, ನಿಮ್ಮ Family Link ಪೋಷಕ ಪ್ರವೇಶದ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="741244894080940828">ಪರಿವರ್ತನೆ</translation>
+<translation id="7413851974711031813">ಮುಚ್ಚಲು ಎಸ್ಕೇಪ್ ಬಟನ್ ಒತ್ತಿರಿ</translation>
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="742608627846767349">ಶುಭೋದಯ,</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
@@ -798,7 +800,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8843682306134542540">ಪರದೆ ತಿರುಗಿಸುವಿಕೆಯ ಲಾಕ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">ಹುಡುಕಾಟ+Esc</translation>
 <translation id="8853703225951107899">ನಿಮ್ಮ ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಗಮನಿಸಿ: ನೀವು ಇತ್ತೀಚೆಗೆ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬದಲಾಯಿಸಿದ್ದರೆ, ನಿಮ್ಮ ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಿ. ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡಿದ ನಂತರ ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ.</translation>
-<translation id="885387440427703469">ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="8870509716567206129">ಅಪ್ಲಿಕೇಶನ್ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="8871580645200179206">ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="8874184842967597500">ಕನೆಕ್ಟ್ ಆಗಿಲ್ಲ</translation>

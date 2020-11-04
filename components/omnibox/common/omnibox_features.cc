@@ -77,10 +77,10 @@ const base::Feature kOmniboxTabSwitchSuggestions{
 const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature to enable clipboard provider to suggest searching for copied images.
-const base::Feature kEnableClipboardProviderImageSuggestions{
-    "OmniboxEnableClipboardProviderImageSuggestions",
-    enabled_by_default_android_ios};
+// Feature to enable showing thumbnail in front of the Omnibox clipboard image
+// search suggestion.
+const base::Feature kImageSearchSuggestionThumbnail{
+    "ImageSearchSuggestionThumbnail", enabled_by_default_android_only};
 
 // Feature to enable the search provider to send a request to the suggest
 // server on focus.  This allows the suggest server to warm up, by, for
@@ -296,7 +296,7 @@ const base::Feature kRichAutocompletion{"OmniboxRichAutocompletion",
 
 // Feature that enables Search Ready Omnibox in incognito.
 const base::Feature kOmniboxSearchReadyIncognito{
-    "OmniboxSearchReadyIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxSearchReadyIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature that puts a single row of buttons on suggestions with actionable
 // elements like keywords, tab-switch buttons, and Pedals.

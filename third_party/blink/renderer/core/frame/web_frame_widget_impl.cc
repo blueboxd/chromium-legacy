@@ -314,12 +314,6 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   view->SetLayoutSize(WebSize(layout_size));
 }
 
-void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
-    bool suppress_frame_requests) {
-  GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
-      suppress_frame_requests);
-}
-
 void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                last_frame_time);
@@ -368,22 +362,6 @@ bool WebFrameWidgetImpl::ShouldHandleImeEvents() {
   return LocalRootImpl();
 }
 
-void WebFrameWidgetImpl::BeginUpdateLayers() {
-  if (LocalRootImpl())
-    update_layers_start_time_.emplace(base::TimeTicks::Now());
-}
-
-void WebFrameWidgetImpl::EndUpdateLayers() {
-  if (LocalRootImpl()) {
-    DCHECK(update_layers_start_time_);
-    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), base::TimeTicks::Now());
-    probe::LayerTreeDidChange(LocalRootImpl()->GetFrame());
-  }
-  update_layers_start_time_.reset();
-}
-
 void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
   if (LocalRootImpl()) {
     commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
@@ -403,39 +381,6 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
   commit_compositor_frame_start_time_.reset();
 }
 
-void WebFrameWidgetImpl::RecordStartOfFrameMetrics() {
-  if (!LocalRootImpl())
-    return;
-
-  LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().BeginMainFrame();
-}
-
-void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
-    base::TimeTicks frame_begin_time,
-    cc::ActiveFrameSequenceTrackers trackers) {
-  if (!LocalRootImpl())
-    return;
-
-  LocalRootImpl()
-      ->GetFrame()
-      ->View()
-      ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
-                               trackers);
-}
-
-std::unique_ptr<cc::BeginMainFrameMetrics>
-WebFrameWidgetImpl::GetBeginMainFrameMetrics() {
-  if (!LocalRootImpl())
-    return nullptr;
-
-  return LocalRootImpl()
-      ->GetFrame()
-      ->View()
-      ->EnsureUkmAggregator()
-      .GetBeginMainFrameMetrics();
-}
-
 void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                          DocumentUpdateReason reason) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
@@ -447,13 +392,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
                                       requested_update, reason);
   View()->UpdatePagePopup();
-}
-
-void WebFrameWidgetImpl::ThemeChanged() {
-  LocalFrameView* view = LocalRootImpl()->GetFrameView();
-
-  WebRect damaged_rect(0, 0, size_->width(), size_->height());
-  view->InvalidateRect(damaged_rect);
 }
 
 WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const gfx::PointF& point) {
@@ -574,18 +512,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
                                               LocalRootImpl()->GetFrame());
 }
 
-void WebFrameWidgetImpl::SetCursorVisibilityState(bool is_visible) {
-  GetPage()->SetIsCursorVisible(is_visible);
-}
-
 void WebFrameWidgetImpl::DidDetachLocalFrameTree() {}
-
-WebInputMethodController*
-WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
-  WebLocalFrameImpl* local_frame =
-      WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
-  return local_frame ? local_frame->GetInputMethodController() : nullptr;
-}
 
 bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   Element* element = FocusedElement();

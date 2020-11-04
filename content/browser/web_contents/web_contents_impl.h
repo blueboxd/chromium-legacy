@@ -43,7 +43,6 @@
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/global_routing_id.h"
@@ -1822,10 +1821,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // See getter above.
   bool is_being_destroyed_;
-
-  // Keep track of whether this WebContents is currently iterating over its list
-  // of observers, during which time it should not be deleted.
-  bool is_notifying_observers_;
 
   // Indicates whether we should notify about disconnection of this
   // WebContentsImpl. This is used to ensure disconnection notifications only

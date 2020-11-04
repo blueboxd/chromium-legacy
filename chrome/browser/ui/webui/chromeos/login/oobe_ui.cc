@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
 #include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/parental_handoff_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
@@ -146,6 +147,9 @@ constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 // Components
 constexpr char kI18nBehaviorHTML[] = "components/oobe_i18n_behavior.html";
 constexpr char kI18nBehaviorJS[] = "components/oobe_i18n_behavior.js";
+constexpr char kCommonStylesHTML[] = "components/common_styles.html";
+constexpr char kHDIronIconHTML[] = "components/hd_iron_icon.html";
+constexpr char kHDIronIconJS[] = "components/hd_iron_icon.js";
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
@@ -184,7 +188,7 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
   source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
   source->AddResourcePath(kArcPlaystoreLogoPath,
-      IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
+                          IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
 
   source->AddResourcePath(kRecommendAppListViewJSPath,
                           IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
@@ -510,6 +514,9 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(
       std::make_unique<TpmErrorScreenHandler>(js_calls_container_.get()));
 
+  AddScreenHandler(std::make_unique<ParentalHandoffScreenHandler>(
+      js_calls_container_.get()));
+
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
@@ -614,6 +621,13 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source,
                           IDR_OOBE_COMPONENTS_I18N_BEHAVIOR_HTML);
   source->AddResourcePath(kI18nBehaviorJS,
                           IDR_OOBE_COMPONENTS_I18N_BEHAVIOR_JS);
+
+  source->AddResourcePath(kCommonStylesHTML,
+                          IDR_OOBE_COMPONENTS_COMMON_STYLES_HTML);
+
+  source->AddResourcePath(kHDIronIconHTML,
+                          IDR_OOBE_COMPONENTS_HD_IRON_ICON_HTML);
+  source->AddResourcePath(kHDIronIconJS, IDR_OOBE_COMPONENTS_HD_IRON_ICON_JS);
 }
 
 CoreOobeView* OobeUI::GetCoreOobeView() {

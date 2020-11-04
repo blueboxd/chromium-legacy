@@ -23,6 +23,7 @@
 <translation id="1947737735496445907">Impreso</translation>
 <translation id="1979103255016296513">Está pendiente el cambio de contraseña</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> administra esta cuenta.</translation>
+<translation id="2080070583977670716">Más opciones de configuración</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2161394479394250669">Cancelar el trabajo de impresión</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
@@ -31,7 +32,7 @@
 <translation id="2375079107209812402">Intentos restantes: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2391082728065870591">Enviar informe de comentarios</translation>
 <translation id="2463748424736466148">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intento.}other{<ph name="ERROR_MESSAGE" /> Quedan {0} intentos.}}</translation>
-<translation id="249323605434939166"><ph name="QUERY_TEXT" />: <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2517472476991765520">Buscar</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2872961005593481000">Apagar</translation>

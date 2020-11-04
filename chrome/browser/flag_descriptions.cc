@@ -90,11 +90,6 @@ const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
     "When enabled, Bluetooth Serial Port Profile devices will be enumerated "
     "for use with the Serial API.";
 
-const char kEnableClipboardProviderImageSuggestionsName[] =
-    "Omnibox clipboard image search suggestions";
-const char kEnableClipboardProviderImageSuggestionsDescription[] =
-    "Enables image search suggestions in the Omnibox.";
-
 const char kEnableFtpName[] = "Enable support for FTP URLs";
 const char kEnableFtpDescription[] =
     "When enabled, the browser will handle navigations to ftp:// URLs by "
@@ -548,6 +543,12 @@ const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[] =
 const char kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[] =
     "When enabled, a footer indicating user's e-mail address will appear at "
     "the bottom of corresponding password InfoBars.";
+
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[] =
+    "Display SaveCardInfoBar footer with account indication information";
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
+    "When enabled, a footer indicating user's e-mail address will appear at "
+    "the bottom of SaveCardInfoBar.";
 
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
     "Enable Google Pay branding on CVC prompt on Android";
@@ -1411,14 +1412,6 @@ const char kMouseSubframeNoImplicitCaptureName[] =
 const char kMouseSubframeNoImplicitCaptureDescription[] =
     "When enable, mouse down does not implicit capture for iframe.";
 
-const char kNearbySharingName[] = "Nearby Sharing";
-const char kNearbySharingDescription[] =
-    "Enables Nearby Sharing for sharing content between devices.";
-
-const char kNearbySharingWebRtcName[] = "Nearby Sharing WebRTC";
-const char kNearbySharingWebRtcDescription[] =
-    "Enables use of WebRTC in Nearby Share.";
-
 const char kNewCanvas2DAPIName[] = "Experimental canvas 2D API features";
 const char kNewCanvas2DAPIDescription[] =
     "Enables in-progress features for the canvas 2D API. See "
@@ -1696,12 +1689,6 @@ const char kOmniboxWebUIOmniboxPopupName[] = "WebUI Omnibox Popup";
 const char kOmniboxWebUIOmniboxPopupDescription[] =
     "If enabled, uses WebUI to render the omnibox suggestions popup, similar "
     "to how the NTP \"realbox\" is implemented.";
-
-const char kOnTheFlyMhtmlHashComputationName[] =
-    "On-The-Fly MHTML Hash Computation";
-const char kOnTheFlyMhtmlHashComputationDescription[] =
-    "Save MHTML files to the target location and calculate their content "
-    "digests in one step.";
 
 const char kOopRasterizationName[] = "Out of process rasterization";
 const char kOopRasterizationDescription[] =
@@ -4303,6 +4290,19 @@ const char kMeteredShowToggleDescription[] =
     "Shows a Metered toggle in the Network settings UI for WiFI and Cellular. "
     "The toggle allows users to set whether a network should be considered "
     "metered for purposes of bandwith usage (e.g. for automatic updates).";
+
+const char kNearbySharingName[] = "Nearby Sharing";
+const char kNearbySharingDescription[] =
+    "Enables Nearby Sharing for sharing content between devices.";
+
+const char kNearbySharingDeviceContactsName[] =
+    "Nearby Sharing Device Contacts";
+const char kNearbySharingDeviceContactsDescription[] =
+    "Enables use of device contacts in Nearby Share.";
+
+const char kNearbySharingWebRtcName[] = "Nearby Sharing WebRTC";
+const char kNearbySharingWebRtcDescription[] =
+    "Enables use of WebRTC in Nearby Share.";
 
 const char kOsSettingsPolymer3Name[] = "Enable OS Settings Polymer3";
 const char kOsSettingsPolymer3Description[] =

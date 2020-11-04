@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {SystemDataProviderInterface, SystemInfo, SystemRoutineControllerInterface} from './diagnostics_types.js';
-import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCpuUsage, fakeMemoryUsage, fakeSystemInfo} from './fake_data.js';
+import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCpuUsage, fakeMemoryUsage, fakeRoutineResults, fakeSystemInfo} from './fake_data.js';
 import {FakeSystemDataProvider} from './fake_system_data_provider.js';
 import {FakeSystemRoutineController} from './fake_system_routine_controller.js';
 
@@ -44,6 +44,14 @@ function setupFakeSystemDataProvider_() {
 function setupFakeSystemRoutineController_() {
   // Create controller.
   let controller = new FakeSystemRoutineController();
+
+  // Add a small delay while running fake routines.
+  controller.setDelayTimeInMillisecondsForTesting(2000);
+
+  // Add fake results for routines.
+  for (const [routine, result] of fakeRoutineResults.entries()) {
+    controller.setFakeStandardRoutineResult(routine, result);
+  }
 
   // Set the fake controller.
   setSystemRoutineControllerForTesting(controller);

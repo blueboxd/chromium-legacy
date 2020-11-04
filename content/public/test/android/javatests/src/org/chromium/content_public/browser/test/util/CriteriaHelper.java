@@ -4,22 +4,11 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import android.os.Handler;
-import android.os.Looper;
-
-import org.hamcrest.Matchers;
-
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CriteriaNotSatisfiedException;
-import org.chromium.base.test.util.TimeoutTimer;
-import org.chromium.content_public.browser.test.NestedSystemMessageHandler;
-
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * This class is in the process of being moved to base/. Please use that version instead.
+ *
  * Helper methods for creating and managing criteria.
  *
  * <p>
@@ -83,74 +72,8 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(
             Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
-        assert !ThreadUtils.runningOnUiThread();
-        pollThreadInternal(criteria, maxTimeoutMs, checkIntervalMs, false);
-    }
-
-    private static void pollThreadInternal(
-            Runnable criteria, long maxTimeoutMs, long checkIntervalMs, boolean shouldNest) {
-        Throwable throwable;
-        try {
-            criteria.run();
-            return;
-        } catch (Throwable e) {
-            // Espresso catches, wraps, and re-throws the exception we want the CriteriaHelper
-            // to catch.
-            if (e instanceof CriteriaNotSatisfiedException
-                    || e.getCause() instanceof CriteriaNotSatisfiedException) {
-                throwable = e;
-            } else {
-                throw e;
-            }
-        }
-        TimeoutTimer timer = new TimeoutTimer(maxTimeoutMs);
-        while (!timer.isTimedOut()) {
-            if (shouldNest) {
-                nestThread(checkIntervalMs);
-            } else {
-                sleepThread(checkIntervalMs);
-            }
-            try {
-                criteria.run();
-                return;
-            } catch (Throwable e) {
-                if (e instanceof CriteriaNotSatisfiedException
-                        || e.getCause() instanceof CriteriaNotSatisfiedException) {
-                    throwable = e;
-                } else {
-                    throw e;
-                }
-            }
-        }
-        throw new AssertionError(throwable);
-    }
-
-    private static void sleepThread(long checkIntervalMs) {
-        try {
-            Thread.sleep(checkIntervalMs);
-        } catch (InterruptedException e) {
-            // Catch the InterruptedException. If the exception occurs before maxTimeoutMs
-            // and the criteria is not satisfied, the while loop will run again.
-        }
-    }
-
-    private static void nestThread(long checkIntervalMs) {
-        AtomicBoolean called = new AtomicBoolean(false);
-
-        // Ensure we pump the message handler in case no new tasks arrive.
-        new Handler(Looper.myLooper()).postDelayed(() -> { called.set(true); }, checkIntervalMs);
-
-        TimeoutTimer timer = new TimeoutTimer(checkIntervalMs);
-        // To allow a checkInterval of 0ms, ensure we at least run a single task, which allows a
-        // test to check conditions between each task run on the thread.
-        do {
-            try {
-                NestedSystemMessageHandler.runSingleNestedLooperTask(Looper.myQueue());
-            } catch (IllegalArgumentException | IllegalAccessException | SecurityException
-                    | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        } while (!timer.isTimedOut() && !called.get());
+        org.chromium.base.test.util.CriteriaHelper.pollInstrumentationThread(
+                criteria, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -165,7 +88,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria, long, long)
      */
     public static void pollInstrumentationThread(Runnable criteria) {
-        pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+        org.chromium.base.test.util.CriteriaHelper.pollInstrumentationThread(criteria);
     }
 
     /**
@@ -184,8 +107,8 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(final Callable<Boolean> criteria,
             String failureReason, long maxTimeoutMs, long checkIntervalMs) {
-        pollInstrumentationThread(
-                toNotSatisfiedRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+        org.chromium.base.test.util.CriteriaHelper.pollInstrumentationThread(
+                criteria, failureReason, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -203,7 +126,8 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(
             final Callable<Boolean> criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollInstrumentationThread(criteria, null, maxTimeoutMs, checkIntervalMs);
+        org.chromium.base.test.util.CriteriaHelper.pollInstrumentationThread(
+                criteria, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -217,8 +141,8 @@ public class CriteriaHelper {
      * @param failureReason The static failure reason
      */
     public static void pollInstrumentationThread(Callable<Boolean> criteria, String failureReason) {
-        pollInstrumentationThread(
-                criteria, failureReason, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+        org.chromium.base.test.util.CriteriaHelper.pollInstrumentationThread(
+                criteria, failureReason);
     }
 
     /**
@@ -231,7 +155,7 @@ public class CriteriaHelper {
      * @param criteria The Callable<Boolean> that will be checked.
      */
     public static void pollInstrumentationThread(Callable<Boolean> criteria) {
-        pollInstrumentationThread(criteria, null);
+        org.chromium.base.test.util.CriteriaHelper.pollInstrumentationThread(criteria);
     }
 
     /**
@@ -248,27 +172,8 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(
             final Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
-        assert !ThreadUtils.runningOnUiThread();
-        pollInstrumentationThread(() -> {
-            AtomicReference<Throwable> throwableRef = new AtomicReference<>();
-            ThreadUtils.runOnUiThreadBlocking(() -> {
-                try {
-                    criteria.run();
-                } catch (Throwable t) {
-                    throwableRef.set(t);
-                }
-            });
-            Throwable throwable = throwableRef.get();
-            if (throwable != null) {
-                if (throwable instanceof CriteriaNotSatisfiedException) {
-                    throw new CriteriaNotSatisfiedException(throwable);
-                } else if (throwable instanceof RuntimeException) {
-                    throw (RuntimeException) throwable;
-                } else {
-                    throw new RuntimeException(throwable);
-                }
-            }
-        }, maxTimeoutMs, checkIntervalMs);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThread(
+                criteria, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -279,7 +184,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Runnable)
      */
     public static void pollUiThread(final Runnable criteria) {
-        pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThread(criteria);
     }
 
     /**
@@ -296,8 +201,8 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(final Callable<Boolean> criteria, String failureReason,
             long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThread(
-                toNotSatisfiedRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThread(
+                criteria, failureReason, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -313,7 +218,8 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(
             final Callable<Boolean> criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThread(criteria, null, maxTimeoutMs, checkIntervalMs);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThread(
+                criteria, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -325,7 +231,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThread(final Callable<Boolean> criteria, String failureReason) {
-        pollUiThread(criteria, failureReason, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThread(criteria, failureReason);
     }
 
     /**
@@ -336,7 +242,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThread(final Callable<Boolean> criteria) {
-        pollUiThread(criteria, null);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThread(criteria);
     }
 
     /**
@@ -354,8 +260,8 @@ public class CriteriaHelper {
      */
     public static void pollUiThreadNested(
             Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
-        assert ThreadUtils.runningOnUiThread();
-        pollThreadInternal(criteria, maxTimeoutMs, checkIntervalMs, true);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThreadNested(
+                criteria, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -372,7 +278,8 @@ public class CriteriaHelper {
      */
     public static void pollUiThreadNested(
             final Callable<Boolean> criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThreadNested(toNotSatisfiedRunnable(criteria, null), maxTimeoutMs, checkIntervalMs);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThreadNested(
+                criteria, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -383,7 +290,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Runnable)
      */
     public static void pollUiThreadNested(final Runnable criteria) {
-        pollUiThreadNested(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+        org.chromium.base.test.util.CriteriaHelper.pollUiThreadNested(criteria);
     }
 
     /**
@@ -394,7 +301,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThreadNested(final Callable<Boolean> criteria) {
-        pollUiThreadNested(toNotSatisfiedRunnable(criteria, null));
+        org.chromium.base.test.util.CriteriaHelper.pollUiThreadNested(criteria);
     }
 
     /**
@@ -406,7 +313,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThreadForJUnit(final Callable<Boolean> criteria) {
-        pollUiThreadForJUnit(toNotSatisfiedRunnable(criteria, null));
+        org.chromium.base.test.util.CriteriaHelper.pollUiThreadForJUnit(criteria);
     }
 
     /**
@@ -418,23 +325,6 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThreadForJUnit(final Runnable criteria) {
-        assert ThreadUtils.runningOnUiThread();
-        pollThreadInternal(
-                criteria, DEFAULT_JUNIT_MAX_TIME_TO_POLL, DEFAULT_JUNIT_POLLING_INTERVAL, false);
-    }
-
-    private static Runnable toNotSatisfiedRunnable(
-            Callable<Boolean> criteria, String failureReason) {
-        return () -> {
-            boolean isSatisfied;
-            try {
-                isSatisfied = criteria.call();
-            } catch (RuntimeException re) {
-                throw re;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            Criteria.checkThat(failureReason, isSatisfied, Matchers.is(true));
-        };
+        org.chromium.base.test.util.CriteriaHelper.pollUiThreadForJUnit(criteria);
     }
 }

@@ -771,6 +771,13 @@
       'base_junit_tests': {},
       'chrome_java_test_pagecontroller_junit_tests': {},
       'chrome_junit_tests': {},
+      'chrome_junit_tests_with_shards': {
+        'args': [
+          '--shards=6',
+        ],
+        'test': 'chrome_junit_tests',
+        'experiment_percentage': 10,
+      },
       'components_junit_tests': {},
       'content_junit_tests': {},
       'device_junit_tests': {},
@@ -1988,6 +1995,25 @@
         ],
         'desktop_args': [
           '--bot-mode',
+        ],
+        # Linux has issues with creating too many windows at once.
+        'linux_args': [
+          '--max-processes=4',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'use_isolated_scripts_api': True,
+      },
+    },
+
+    'gpu_angle_end2end_with_retry_gtests': {
+      'angle_end2end_tests': {
+        'args': [
+          'angle_end2end_tests',
+          '--gtest_filter=-*Vulkan_SwiftShader*',
+          '--bot-mode',
+          '--flaky-retries=2',
         ],
         # Linux has issues with creating too many windows at once.
         'linux_args': [
@@ -5010,6 +5036,7 @@
 
     'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts': [
       'gpu_angle_perf_smoke_isolated_scripts',
+      'gpu_angle_restricted_trace_gold_isolated_scripts',
       'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
@@ -5238,6 +5265,12 @@
 
     'gpu_fyi_android_gtests': [
       'gpu_angle_end2end_gtests',
+      'gpu_angle_unit_gtests',
+      'gpu_common_gtests_validating',
+      'gpu_fyi_and_optional_non_linux_gtests',
+    ],
+
+    'gpu_fyi_android_shieldtv_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
@@ -5487,6 +5520,13 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
+    'gpu_fyi_win_nvidia_release_x64_isolated_scripts': [
+      'gpu_angle_perf_smoke_isolated_scripts',
+      'gpu_angle_restricted_trace_gold_isolated_scripts',
+      'gpu_command_buffer_perf_passthrough_isolated_scripts',
+      'rendering_desktop_representative_perf_tests_isolated_scripts',
+    ],
+
     'gpu_fyi_win_optional_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_gles1_conformance_gtests',
@@ -5569,7 +5609,7 @@
     ],
 
     'gpu_win_angle_amd_gtests': [
-      'gpu_angle_end2end_gtests',
+      'gpu_angle_end2end_with_retry_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
     ],

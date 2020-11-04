@@ -8,10 +8,14 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.collection.ArrayMap;
 
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.page_info.CertificateChainHelper;
+import org.chromium.components.payments.BrowserPaymentRequest.Factory;
+import org.chromium.components.payments.PaymentApp.InstrumentDetailsCallback;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -20,6 +24,7 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentErrorReason;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -27,10 +32,16 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.payments.mojom.PaymentResponse;
+import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.payments.mojom.PaymentShippingType;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 import org.chromium.url.Origin;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@link PaymentRequestService}, {@link MojoPaymentRequestGateKeeper} and
@@ -66,6 +77,8 @@ public class PaymentRequestService {
     private final boolean mRequestPayerPhone;
     private final boolean mRequestPayerEmail;
     private final Delegate mDelegate;
+    private final int mShippingType;
+    private PaymentRequestSpec mSpec;
     private boolean mHasClosed;
 
     // mClient is null only when it has closed.
@@ -73,6 +86,27 @@ public class PaymentRequestService {
 
     // mBrowserPaymentRequest is null when it has closed or is uninitiated.
     private BrowserPaymentRequest mBrowserPaymentRequest;
+    /**
+     * A mapping of the payment method names to the corresponding payment method specific data. If
+     * STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT is enabled, then the key "basic-card-payment-options"
+     * also maps to the following payment options:
+     *  - requestPayerEmail
+     *  - requestPayerName
+     *  - requestPayerPhone
+     *  - requestShipping
+     */
+    private HashMap<String, PaymentMethodData> mQueryForQuota;
+    /**
+     * True after at least one usable payment app has been found and the setting allows querying
+     * this value. This value can be used to respond to hasEnrolledInstrument(). Should be read only
+     * after all payment apps have been queried.
+     */
+    private boolean mHasEnrolledInstrument;
+    /**
+     * Whether there's at least one app that is not an autofill card. Should be read only after all
+     * payment apps have been queried.
+     */
+    private boolean mHasNonAutofillApp;
 
     /**
      * An observer interface injected when running tests to allow them to observe events.
@@ -270,7 +304,14 @@ public class PaymentRequestService {
             instance.close();
             return null;
         }
+        instance.startPaymentAppService();
         return instance;
+    }
+
+    private void startPaymentAppService() {
+        PaymentAppService service = PaymentAppService.getInstance();
+        mBrowserPaymentRequest.addPaymentAppFactories(service);
+        service.create(/*delegate=*/mBrowserPaymentRequest.getPaymentAppFactoryDelegate());
     }
 
     /** Abort the request, used before this class's instantiation. */
@@ -308,6 +349,7 @@ public class PaymentRequestService {
         mRequestPayerName = mPaymentOptions.requestPayerName;
         mRequestPayerPhone = mPaymentOptions.requestPayerPhone;
         mRequestPayerEmail = mPaymentOptions.requestPayerEmail;
+        mShippingType = mPaymentOptions.shippingType;
 
         mMerchantName = mWebContents.getTitle();
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
@@ -335,9 +377,8 @@ public class PaymentRequestService {
         return sNativeObserverForTest;
     }
 
-    private boolean initAndValidate(BrowserPaymentRequest.Factory factory,
-            PaymentMethodData[] methodData, PaymentDetails details,
-            boolean googlePayBridgeEligible) {
+    private boolean initAndValidate(Factory factory, PaymentMethodData[] rawMethodData,
+            PaymentDetails details, boolean googlePayBridgeEligible) {
         mBrowserPaymentRequest = factory.createBrowserPaymentRequest(this);
         mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.INITIATED);
 
@@ -364,7 +405,169 @@ public class PaymentRequestService {
             return false;
         }
 
-        return mBrowserPaymentRequest.initAndValidate(methodData, details, googlePayBridgeEligible);
+        mBrowserPaymentRequest.onWhetherGooglePayBridgeEligible(
+                googlePayBridgeEligible, mWebContents, rawMethodData);
+        @Nullable
+        Map<String, PaymentMethodData> methodData = getValidatedMethodData(rawMethodData);
+        mBrowserPaymentRequest.modifyMethodData(methodData);
+        if (methodData == null) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                    ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA, PaymentErrorReason.USER_CANCEL);
+            return false;
+        }
+        methodData = Collections.unmodifiableMap(methodData);
+
+        mQueryForQuota = new HashMap<>(methodData);
+        mBrowserPaymentRequest.onQueryForQuotaCreated(mQueryForQuota);
+
+        if (!PaymentValidator.validatePaymentDetails(details)) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                    ErrorStrings.INVALID_PAYMENT_DETAILS, PaymentErrorReason.USER_CANCEL);
+            return false;
+        }
+
+        if (mBrowserPaymentRequest.disconnectIfExtraValidationFails(
+                    mWebContents, methodData, details, mPaymentOptions)) {
+            return false;
+        }
+
+        PaymentRequestSpec spec = new PaymentRequestSpec(mPaymentOptions, details,
+                methodData.values(), LocaleUtils.getDefaultLocaleString());
+        if (spec.getRawTotal() == null) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                    ErrorStrings.TOTAL_REQUIRED, PaymentErrorReason.USER_CANCEL);
+            return false;
+        }
+        mSpec = spec;
+        mBrowserPaymentRequest.onSpecValidated(mSpec);
+        return true;
+    }
+
+    /**
+     * Invokes the given payment app.
+     * @param paymentApp The payment app to be invoked.
+     * @param callback The callback of the invocation.
+     */
+    public void invokePaymentApp(PaymentApp paymentApp, InstrumentDetailsCallback callback) {
+        mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.PAYMENT_HANDLER_INVOKED);
+        // Create maps that are subsets of mMethodData and mModifiers, that contain the payment
+        // methods supported by the selected payment app. If the intersection of method data
+        // contains more than one payment method, the payment app is at liberty to choose (or have
+        // the user choose) one of the methods.
+        Map<String, PaymentMethodData> methodData = new HashMap<>();
+        Map<String, PaymentDetailsModifier> modifiers = new HashMap<>();
+        for (String paymentMethodName : paymentApp.getInstrumentMethodNames()) {
+            if (mSpec.getMethodData().containsKey(paymentMethodName)) {
+                methodData.put(paymentMethodName, mSpec.getMethodData().get(paymentMethodName));
+            }
+            if (mSpec.getModifiers().containsKey(paymentMethodName)) {
+                modifiers.put(paymentMethodName, mSpec.getModifiers().get(paymentMethodName));
+            }
+        }
+
+        // Create payment options for the invoked payment app.
+        PaymentOptions paymentOptions = new PaymentOptions();
+        paymentOptions.requestShipping = mRequestShipping && paymentApp.handlesShippingAddress();
+        paymentOptions.requestPayerName = mRequestPayerName && paymentApp.handlesPayerName();
+        paymentOptions.requestPayerPhone = mRequestPayerPhone && paymentApp.handlesPayerPhone();
+        paymentOptions.requestPayerEmail = mRequestPayerEmail && paymentApp.handlesPayerEmail();
+        paymentOptions.shippingType = mRequestShipping && paymentApp.handlesShippingAddress()
+                ? mShippingType
+                : PaymentShippingType.SHIPPING;
+
+        // Redact shipping options if the selected app cannot handle shipping.
+        List<PaymentShippingOption> redactedShippingOptions = paymentApp.handlesShippingAddress()
+                ? mSpec.getRawShippingOptions()
+                : Collections.unmodifiableList(new ArrayList<>());
+        paymentApp.invokePaymentApp(mSpec.getId(), mMerchantName, mTopLevelOrigin,
+                mPaymentRequestOrigin, mCertificateChain, Collections.unmodifiableMap(methodData),
+                mSpec.getRawTotal(), mSpec.getRawLineItems(),
+                Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
+                callback);
+        mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
+        boolean isAutofillCard = paymentApp.isAutofillInstrument();
+        // Record what type of app was selected when "Pay" was clicked.
+        boolean isGooglePaymentApp = false;
+        for (String paymentMethodName : paymentApp.getInstrumentMethodNames()) {
+            if (paymentMethodName.equals(MethodStrings.ANDROID_PAY)
+                    || paymentMethodName.equals(MethodStrings.GOOGLE_PAY)) {
+                isGooglePaymentApp = true;
+            }
+        }
+        if (isAutofillCard) {
+            mJourneyLogger.setEventOccurred(Event.SELECTED_CREDIT_CARD);
+        } else if (isGooglePaymentApp) {
+            mJourneyLogger.setEventOccurred(Event.SELECTED_GOOGLE);
+        } else {
+            mJourneyLogger.setEventOccurred(Event.SELECTED_OTHER);
+        }
+    }
+
+    /**
+     * Called when a payment app is created.
+     * @param paymentApp The created payment app.
+     * @param pendingApps The list of created apps increasing until onDoneCreatingPaymentApp().
+     */
+    public void onPaymentAppCreated(PaymentApp paymentApp, List<PaymentApp> pendingApps) {
+        mHasEnrolledInstrument |= paymentApp.canMakePayment();
+        mHasNonAutofillApp |= !paymentApp.isAutofillInstrument();
+
+        if (paymentApp.isAutofillInstrument()) {
+            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_BASIC_CARD);
+        } else if (paymentApp.getInstrumentMethodNames().contains(MethodStrings.GOOGLE_PAY)
+                || paymentApp.getInstrumentMethodNames().contains(MethodStrings.ANDROID_PAY)) {
+            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_GOOGLE);
+        } else {
+            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
+        }
+
+        pendingApps.add(paymentApp);
+    }
+
+    /** @return Whether the instrument has been enrolled. */
+    public boolean getHasEnrolledInstrument() {
+        return mHasEnrolledInstrument;
+    }
+
+    /** Sets whether the instrument has been enrolled. */
+    public void setHasEnrolledInstrument(boolean hasEnrolledInstrument) {
+        mHasEnrolledInstrument = hasEnrolledInstrument;
+    }
+
+    /** @return Whether the created payment apps includes any autofill payment app. */
+    public boolean getHasNonAutofillApp() {
+        return mHasNonAutofillApp;
+    }
+
+    /**
+     * @return The queryForQuota, a mapping of the payment method names to the corresponding payment
+     *         method specific data
+     */
+    public Map<String, PaymentMethodData> getQueryForQuota() {
+        return mQueryForQuota;
+    }
+
+    /**
+     * @param methodDataList A list of PaymentMethodData.
+     * @return The validated method data, a mapping of method names to its PaymentMethodData(s);
+     *         when the given method data is invalid, returns null.
+     */
+    @Nullable
+    private static Map<String, PaymentMethodData> getValidatedMethodData(
+            PaymentMethodData[] methodDataList) {
+        // Payment methodData are required.
+        assert methodDataList != null;
+        if (methodDataList.length == 0) return null;
+        Map<String, PaymentMethodData> result = new ArrayMap<>();
+        for (PaymentMethodData methodData : methodDataList) {
+            String methodName = methodData.supportedMethod;
+            if (TextUtils.isEmpty(methodName)) return null;
+            result.put(methodName, methodData);
+        }
+        return result;
     }
 
     /**

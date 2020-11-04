@@ -8,7 +8,6 @@
 // <include src="../components/oobe_dialog_host_behavior.js">
 // <include src="../components/login_screen_behavior.js">
 // <include src="../components/multi_step_behavior.js">
-// <include src="../components/hd-iron-icon.js">
 // <include src="../components/oobe_buttons.js">
 // <include src="../components/oobe_dialog.js">
 // <include src="../components/oobe_help_dialog.js">
@@ -52,5 +51,6 @@
 // <include src="../family_link_notice.js">
 // <include src="../user_creation.js">
 // <include src="../screen_signin_fatal_error.js">
+// <include src="../parental_handoff.js">
 
 // <include src="components_[OOBE].js">

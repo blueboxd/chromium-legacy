@@ -203,6 +203,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -1913,16 +1914,6 @@ const FeatureEntry::FeatureVariation
          base::size(kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant),
          nullptr}};
 
-const FeatureEntry::FeatureParam
-    kOmniboxImageSearchSuggestionThumbnailVariationConstant[] = {
-        {"ImageSearchSuggestionThumbnail", "true"}};
-const FeatureEntry::FeatureVariation
-    kOmniboxImageSearchSuggestionThumbnailVariation[] = {
-        {"(with thumbnail)",
-         kOmniboxImageSearchSuggestionThumbnailVariationConstant,
-         base::size(kOmniboxImageSearchSuggestionThumbnailVariationConstant),
-         nullptr}};
-
 const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupBackward[] = {
     {"action_bar", "backward_button"}};
 const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupShare[] = {
@@ -3373,10 +3364,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
      flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
-    {"on-the-fly-mhtml-hash-computation",
-     flag_descriptions::kOnTheFlyMhtmlHashComputationName,
-     flag_descriptions::kOnTheFlyMhtmlHashComputationDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOnTheFlyMhtmlHashComputationFeature)},
     {"query-tiles", flag_descriptions::kQueryTilesName,
      flag_descriptions::kQueryTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTiles)},
@@ -5846,17 +5833,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kBackForwardCacheVariations,
                                     "BackForwardCache")},
 
-#if defined(OS_ANDROID)
-    {"enable-clipboard-provider-image-suggestions",
-     flag_descriptions::kEnableClipboardProviderImageSuggestionsName,
-     flag_descriptions::kEnableClipboardProviderImageSuggestionsDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kEnableClipboardProviderImageSuggestions,
-         kOmniboxImageSearchSuggestionThumbnailVariation,
-         "OmniboxEnableClipboardProviderImageSuggestions")},
-#endif  // defined(OS_ANDROID)
-
     {"impulse-scroll-animations",
      flag_descriptions::kImpulseScrollAnimationsName,
      flag_descriptions::kImpulseScrollAnimationsDescription, kOsAll,
@@ -6208,13 +6184,20 @@ const FeatureEntry kFeatureEntries[] = {
     {"copy-link-to-text", flag_descriptions::kCopyLinkToTextName,
      flag_descriptions::kCopyLinkToTextDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kCopyLinkToText)},
-    {"nearby-sharing", flag_descriptions::kNearbySharingName,
-     flag_descriptions::kNearbySharingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNearbySharing)},
-    {"nearby-sharing-webrtc", flag_descriptions::kNearbySharingWebRtcName,
-     flag_descriptions::kNearbySharingWebRtcDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNearbySharingWebRtc)},
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+    {"nearby-sharing", flag_descriptions::kNearbySharingName,
+     flag_descriptions::kNearbySharingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharing)},
+    {"nearby-sharing-device-contacts",
+     flag_descriptions::kNearbySharingDeviceContactsName,
+     flag_descriptions::kNearbySharingDeviceContactsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingDeviceContacts)},
+    {"nearby-sharing-webrtc", flag_descriptions::kNearbySharingWebRtcName,
+     flag_descriptions::kNearbySharingWebRtcDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingWebRtc)},
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
     {"android-default-browser-promo",
@@ -6683,6 +6666,17 @@ const FeatureEntry kFeatureEntries[] = {
     {"check-offline-capability", flag_descriptions::kCheckOfflineCapabilityName,
      flag_descriptions::kCheckOfflineCapabilityDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCheckOfflineCapability)},
+#if defined(OS_ANDROID)
+    {"enable-autofill-save-card-info-bar-account-indication-footer",
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

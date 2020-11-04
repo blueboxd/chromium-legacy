@@ -724,17 +724,17 @@
   {
     "name": "cryptauth-v2-device-activity-status",
     "owners": [ "khorimoto", "nohle", "themaxli" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 93
   },
   {
     "name": "cryptauth-v2-devicesync",
     "owners": [ "khorimoto", "nohle" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 93
   },
   {
     "name": "cryptauth-v2-enrollment",
     "owners": [ "khorimoto", "nohle" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 93
   },
   {
     "name": "cups-ipp-printing-backend",
@@ -889,7 +889,7 @@
   {
     "name": "disable-cryptauth-v1-devicesync",
     "owners": [ "khorimoto", "nohle" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "disable-explicit-dma-fences",
@@ -1243,6 +1243,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-autofill-save-card-info-bar-account-indication-footer",
+    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "expiry_milestone": 95
+  },
+  {
     "name": "enable-autofill-upi-vpa",
     "owners": [ "cfroussios" ],
     "expiry_milestone": 88
@@ -1271,11 +1276,6 @@
     "name": "enable-browsing-data-lifetime-manager",
     "owners": ["ydago"],
     "expiry_milestone": 91
-  },
-  {
-    "name": "enable-clipboard-provider-image-suggestions",
-    "owners": [ "rkgibson", "gangwu", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 90
   },
   {
     "name": "enable-close-all-tabs-confirmation",
@@ -3255,6 +3255,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "nearby-sharing-device-contacts",
+    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "nearby-sharing-webrtc",
     "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 90
@@ -3618,11 +3623,6 @@
     "name": "omnibox-webui-omnibox-popup",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "on-the-fly-mhtml-hash-computation",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
   },
   {
     "name": "open-downloads-in-files.app",
@@ -4131,7 +4131,7 @@
   },
   {
     "name": "screen-capture-android",
-    "owners": [ "alcooper", "guidou" ],
+    "owners": [ "alcooper", "guidou", "miu" ],
     "expiry_milestone": 91
   },
   {

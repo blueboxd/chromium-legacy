@@ -264,7 +264,7 @@ class CORE_EXPORT WebFrameWidgetBase
       cc::ElementId scroll_latched_element_id) override;
   void SendScrollEndEventFromImplSide(
       cc::ElementId scroll_latched_element_id) override;
-
+  WebInputMethodController* GetActiveWebInputMethodController() const override;
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
   void ApplyViewportChangesForTesting(
       const ApplyViewportChangesArgs& args) override;
@@ -329,10 +329,20 @@ class CORE_EXPORT WebFrameWidgetBase
                       const gfx::Rect& window_screen_rect) override;
   gfx::Size VisibleViewportSizeInDIPs() override;
   bool IsHidden() const override;
+  WebString GetLastToolTipTextForTesting() const override;
 
   // WidgetBaseClient methods.
   void RecordDispatchRafAlignedInputTime(
       base::TimeTicks raf_aligned_input_start_time) override;
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
+  void RecordStartOfFrameMetrics() override;
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks,
+      cc::ActiveFrameSequenceTrackers trackers) override;
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
   void DidCommitAndDrawCompositorFrame() override;
   std::unique_ptr<cc::LayerTreeFrameSink> AllocateNewLayerTreeFrameSink()
       override;
@@ -352,6 +362,7 @@ class CORE_EXPORT WebFrameWidgetBase
   bool SupportsBufferedTouchEvents() override { return true; }
   void DidHandleKeyEvent() override;
   WebTextInputType GetTextInputType() override;
+  void SetCursorVisibilityState(bool is_visible) override;
   blink::FrameWidget* FrameWidget() override { return this; }
   void ScheduleAnimation() override;
   bool ShouldAckSyntheticInputImmediately() override;
@@ -576,6 +587,11 @@ class CORE_EXPORT WebFrameWidgetBase
   // Similar to UpdateSurfaceAndScreenInfo but the surface allocation
   // and compositor viewport rect remains the same.
   void UpdateScreenInfo(const ScreenInfo& screen_info);
+  void UpdateSurfaceAndCompositorRect(
+      const viz::LocalSurfaceId& new_local_surface_id,
+      const gfx::Rect& compositor_viewport_pixel_rect);
+  void UpdateCompositorViewportRect(
+      const gfx::Rect& compositor_viewport_pixel_rect);
   void SetWindowSegments(const std::vector<gfx::Rect>& window_segments);
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
@@ -739,6 +755,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Indicates whether we need to consume scroll gestures to move cursor.
   bool swipe_to_move_cursor_activated_ = false;
+
+  // Set when a measurement begins, reset when the measurement is taken.
+  base::Optional<base::TimeTicks> update_layers_start_time_;
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

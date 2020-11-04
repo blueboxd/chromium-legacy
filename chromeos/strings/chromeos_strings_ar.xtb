@@ -23,6 +23,7 @@
 <translation id="1947737735496445907">تمت الطباعة</translation>
 <translation id="1979103255016296513">تأخير تغيير كلمة المرور</translation>
 <translation id="2049639323467105390">تتم إدارة هذا الجهاز بواسطة <ph name="DOMAIN" />.</translation>
+<translation id="2080070583977670716">مزيد من الإعدادات</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2161394479394250669">إلغاء مهمة الطباعة</translation>
 <translation id="2326139988748364651">‏<ph name="RESOLUTION_VALUE" /> نقطة لكل بوصة (DPI)</translation>
@@ -66,6 +67,7 @@
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4429881212383817840">‏ستنتهي صلاحية تذكرة Kerberos قريبًا</translation>
 <translation id="445059817448385655">كلمة المرور القديمة</translation>
+<translation id="4454245904991689773">حفظ الملفات التي تم مسحها ضوئيًا في</translation>
 <translation id="4483049906298469269">تعذَّر فحص اتصال بوابة الشبكة غير التلقائية.</translation>
 <translation id="4548483925627140043">لم يتم العثور على إشارة.</translation>
 <translation id="458794348635939462">تعذَّرت مطابقة جميع الأجهزة المضيفة.</translation>

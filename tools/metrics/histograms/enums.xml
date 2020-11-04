@@ -3228,6 +3228,19 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Crashed"/>
 </enum>
 
+<enum name="ArcCorePriAbiMigEvent">
+<!-- Value from components/arc/mojom/metrics.mojom -->
+
+  <int value="0" label="Unsupported"/>
+  <int value="1" label="Migration Completed"/>
+  <int value="2" label="GMS No Downgrade"/>
+  <int value="3" label="GMS Downgrade Success"/>
+  <int value="4" label="GMS Downgrade Failure"/>
+  <int value="5" label="Webview No Downgrade"/>
+  <int value="6" label="Webview Downgrade Success"/>
+  <int value="7" label="Webview Downgrade Failure"/>
+</enum>
+
 <enum name="ArcCustomTabsSessionEndReason">
   <int value="0" label="Closed"/>
   <int value="1" label="Forwarded to a normal tab"/>
@@ -23641,6 +23654,7 @@ Called by update_extension_histograms.py.-->
   <int value="463" label="PASSWORDS_PRIVATE_ON_WEAK_CREDENTIALS_CHANGED"/>
   <int value="464" label="ACCESSIBILITY_PRIVATE_ON_MAGNIFIER_BOUNDS_CHANGED"/>
   <int value="465" label="FILE_MANAGER_PRIVATE_ON_PIN_TRANSFERS_UPDATED"/>
+  <int value="466" label="ACCESSIBILITY_PRIVATE_ON_POINT_SCAN_SET"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -30133,6 +30147,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3717" label="CSSPseudoHostContextCompoundList"/>
   <int value="3718" label="CSSPseudoHostDynamicSpecificity"/>
   <int value="3719" label="GetCurrentBrowsingContextMedia"/>
+  <int value="3720" label="MouseEventRelativePositionForInlineElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42689,6 +42704,7 @@ from previous Chrome versions.
   <int value="-1153892430"
       label="AlignFontDisplayAutoTimeoutWithLCPGoal:enabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
+  <int value="-1151014496" label="NearbySharingDeviceContacts:disabled"/>
   <int value="-1150881704"
       label="ArcNativeBridge64BitSupportExperiment:enabled"/>
   <int value="-1146814438" label="TabbedAppOverflowMenuIcons:enabled"/>
@@ -43172,6 +43188,8 @@ from previous Chrome versions.
   <int value="-665514294" label="FontAccess:disabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
   <int value="-662720891" label="PreviewsCoinFlipHoldback_UKMOnly:enabled"/>
+  <int value="-662314979"
+      label="AutofillEnableSaveCardInfoBarAccountIndicationFooter:disabled"/>
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
@@ -43440,6 +43458,8 @@ from previous Chrome versions.
   <int value="-385337473" label="enable-fast-unload"/>
   <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-381181808" label="DragAppsInTabletMode:enabled"/>
+  <int value="-380992110"
+      label="AutofillEnableSaveCardInfoBarAccountIndicationFooter:enabled"/>
   <int value="-379809954"
       label="AutofillDoNotMigrateUnsupportedLocalCards:disabled"/>
   <int value="-378218969" label="VaapiJpegImageDecodeAcceleration:disabled"/>
@@ -45345,6 +45365,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:disabled"/>
   <int value="1514066770" label="DisplayCutoutAPI:enabled"/>
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
+  <int value="1514158607" label="NearbySharingDeviceContacts:enabled"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1520181151" label="PrintServerScaling:disabled"/>
@@ -64382,6 +64403,22 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="13" label="In-session change password flow complete."/>
 </enum>
 
+<enum name="SamlInSessionPasswordSyncEvent">
+  <summary>
+    Track how often we call password sync token API and records its result.
+  </summary>
+  <int value="0" label="Start of sync token validation polling in-session."/>
+  <int value="1"
+      label="Start of sync token validation polling on the login screen."/>
+  <int value="2" label="Successful sync token validation."/>
+  <int value="3" label="Failed sync token validation."/>
+  <int value="4" label="API error: missing access token."/>
+  <int value="5" label="API error: wrong server response code."/>
+  <int value="6" label="API error: incorrect serlialized response data."/>
+  <int value="7" label="API error: no sync token in Create response."/>
+  <int value="8" label="API error: no sync token in Get response."/>
+</enum>
+
 <enum name="SamplingProfilerUnwindResult">
   <summary>Track reason for unwind failures in sampling profiler.</summary>
   <int value="0" label="Futex wait for signal handler failed."/>
@@ -66703,6 +66740,19 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="12" label="GET_SHMEM_TEMP_DIR_FAILURE">
     Failure to get a temporary directory for shared memory.
   </int>
+</enum>
+
+<enum name="ShareOptionLocation">
+  <int value="0" label="TOOLBAR"/>
+  <int value="1" label="MENU">Share option chosen to be shown in the menu.</int>
+  <int value="2" label="TOOLBAR_FULL_MENU_FALLBACK">
+    Share option shown in the menu because the toolbar is full.
+  </int>
+  <int value="3" label="NO_SPACE">
+    No share option shown despite share being enabled. This is due to the
+    existence of custom buttons and menu items, which take precedence.
+  </int>
+  <int value="4" label="SHARE_DISABLED"/>
 </enum>
 
 <enum name="SharingActionSource">
@@ -71628,6 +71678,7 @@ would be helpful to identify which type is being sent.
   <int value="10" label="Capture Expired"/>
   <int value="11" label="No Capture"/>
   <int value="12" label="Timed Out"/>
+  <int value="13" label="Stopped Due To Memory Pressure"/>
 </enum>
 
 <enum name="TabbedPaintPreviewExitCause">

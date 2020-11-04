@@ -712,16 +712,16 @@ Status ExecuteClose(Session* session,
       return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
   }
 
-  if (!is_last_web_view) {
-    status = session->chrome->CloseWebView(web_view->GetId());
-    if (status.IsError())
-      return status;
+  status = session->chrome->CloseWebView(web_view->GetId());
+  if (status.IsError())
+    return status;
 
+  if (!is_last_web_view) {
     status = ExecuteGetWindowHandles(session, base::DictionaryValue(), value);
     if (status.IsError())
       return status;
   } else {
-    // If there is only one open window, close is the same as calling "quit".
+    // If there is only one window left, call quit as well.
     session->quit = true;
     status = session->chrome->Quit();
     if (status.IsOk())
@@ -1272,5 +1272,25 @@ Status ExecuteGenerateTestReport(Session* session,
   body.SetString("group", group);
 
   web_view->SendCommandAndGetResult("Page.generateTestReport", body, value);
+  return Status(kOk);
+}
+
+Status ExecuteSetTimezone(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  std::string timezone;
+  if (!params.GetString("timezone", &timezone))
+    return Status(kInvalidArgument, "missing parameter 'timezone'");
+
+  base::DictionaryValue body;
+  body.SetString("timezoneId", timezone);
+
+  web_view->SendCommandAndGetResult("Emulation.setTimezoneOverride", body,
+                                    value);
   return Status(kOk);
 }

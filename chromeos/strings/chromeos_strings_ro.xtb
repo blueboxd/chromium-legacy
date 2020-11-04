@@ -23,6 +23,7 @@
 <translation id="1947737735496445907">Printată</translation>
 <translation id="1979103255016296513">Ai depășit timpul limită pentru schimbarea parolei</translation>
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
+<translation id="2080070583977670716">Mai multe setări</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
 <translation id="2161394479394250669">Anulează sarcina de printare</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
@@ -66,6 +67,7 @@
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4429881212383817840">Tichetul Kerberos expiră în curând</translation>
 <translation id="445059817448385655">Parolă veche</translation>
+<translation id="4454245904991689773">Scanează către</translation>
 <translation id="4483049906298469269">Nu s-a putut da ping către gateway-ul de rețea care nu este prestabilit</translation>
 <translation id="4548483925627140043">Nu s-a detectat semnal</translation>
 <translation id="458794348635939462">Nu s-au putut rezolva toate gazdele</translation>

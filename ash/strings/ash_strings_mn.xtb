@@ -49,6 +49,7 @@
 <translation id="1346748346194534595">Баруун</translation>
 <translation id="1351937230027495976">Цэсийг буулгах</translation>
 <translation id="1383876407941801731">Хайлт</translation>
+<translation id="1390105199421505038"><ph name="USER_EMAIL_ADDRESS" />-н бүртгэлийн харилцах цонхыг хасах</translation>
 <translation id="1391102559483454063">Асаалттай</translation>
 <translation id="1407069428457324124">Бараан загвар</translation>
 <translation id="1419738280318246476">Мэдэгдлийн үйлдлийг гүйцэтгэхийн тулд төхөөрөмжийн түгжээг тайлна уу</translation>
@@ -59,7 +60,6 @@
 <translation id="1456407467406159627">Таны дэлгэц дээрх нууцлалтай контентын улмаас дэлгэцийн үйлдэл бичихийг зогсоосон.</translation>
 <translation id="1460620680449458626">Дууг хаасан.</translation>
 <translation id="1467432559032391204">Зүүн</translation>
-<translation id="1475439723810528286">Бүтэн дэлгэцийн зургийг авахын тулд дурын газар товшино уу</translation>
 <translation id="1479909375538722835">Хөвж буй хандалтын цэс</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1503394326855300303">Эзэмшигчийн дансанд эхлээд олон нэвтрэх хэсэгт нэвтэрсэн байх шаардлагтай.</translation>
@@ -114,7 +114,7 @@
 <translation id="1993072747612765854">Хамгийн сүүлийн <ph name="SYSTEM_APP_NAME" /> шинэчлэлтийн талаар дэлгэрэнгүй үзэх</translation>
 <translation id="1995660704900986789">Унтраах</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
-<translation id="2016340657076538683">Зурвас бичих</translation>
+<translation id="2016340657076538683">Мессеж бичих</translation>
 <translation id="2018630726571919839">Надад онигоо ярьж өгөөч</translation>
 <translation id="2049240716062114887">Дэлгэцийн нэрийг <ph name="DESK_NAME" /> болгож өөрчилсөн</translation>
 <translation id="2050339315714019657">Хөрөг зураг</translation>
@@ -126,7 +126,6 @@
 <translation id="2132302418721800944">Бүтэн дэлгэцийг бичих</translation>
 <translation id="2135456203358955318">Суурилуулсан томруулагч</translation>
 <translation id="2144487987174258011">Adobe Flash Player-г шинэчлэхийн тулд дахин эхлүүлнэ үү</translation>
-<translation id="2180011262286780504">Дэлгэцийн зураг авах боломжийг танай администратор идэвхгүй болгосон байна.</translation>
 <translation id="2208323208084708176">Компьютерийн нэгдмэл горим</translation>
 <translation id="2220572644011485463">ПИН, эсвэл нууц үг</translation>
 <translation id="2222338659135520253">Нэвтрэх шаардлагатай</translation>
@@ -370,6 +369,7 @@
 <translation id="4477892968187500306">Энэ төхөөрөмж нь Google-н баталгаажуулаагүй аппыг агуулж болзошгүй.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Хослоогүй төхөөрөмж</translation>
+<translation id="4485060137115666462">Баруун талыг товших эсвэл удаан дарснаар Туслах таны сонголтын тодорхойлолт, орчуулга эсвэл нэгжийн хөрвүүлэг зэрэг мэдээллийг харуулдаг.</translation>
 <translation id="4505050298327493054">Идэвхтэй дэлгэц.</translation>
 <translation id="4506458088675900627">Тоймын мэдрэгч самбарын зангааг өөрчилсөн</translation>
 <translation id="4513946894732546136">Санал дүгнэлт</translation>
@@ -598,6 +598,7 @@
 <translation id="6803622936009808957">Ямар нэг холбогдох шийдэл олдоогүй учраас дэлгэцүүдийг ойлгож чадахгүй байна. Оронд нь сунгасан десктопыг орууллаа.</translation>
 <translation id="6818242057446442178">Нэг үгээр буцаах</translation>
 <translation id="6820676911989879663">Завсарлага аваарай!</translation>
+<translation id="6850010208275816200">Таны одоогийн апп бүтэн дэлгэцээр байна. Хэрэв апп таны нууц үгийг асуувал эхлээд бүтэн дэлгэцээс гарна уу.</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> сек</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />-ийг идэвхжүүл</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Нэг цифр үлдсэн}other{# цифр үлдсэн}}</translation>
@@ -647,6 +648,7 @@
 <translation id="7398254312354928459">Сүлжээний холболтыг сэлгэсэн</translation>
 <translation id="7405710164030118432">Энэ төхөөрөмжийн түгжээг тайлахын тулд Family Link-н эцэг эхийн нэвтрэх кодоо оруулна уу</translation>
 <translation id="741244894080940828">хөрвүүлэлт</translation>
+<translation id="7413851974711031813">Хаахын тулд escape-г дарна уу</translation>
 <translation id="742594950370306541">Камерыг ашиглаж байна.</translation>
 <translation id="742608627846767349">Өглөөний мэнд,</translation>
 <translation id="743058460480092004">Камер болон микрофоныг ашиглаж байна.</translation>
@@ -799,7 +801,6 @@
 <translation id="8843682306134542540">Эргүүлэлтийн түгжээг унтрааж/асаана уу. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">Таны ПИН эсвэл нууц үгийг баталгаажуулж чадаагүй хэвээрээ байна. Тайлбар: Хэрэв та нууц үгээ саяхан сольсон бол хуучин нууц үгээ ашиглана уу. Таныг гарсны дараа, шинэ нууц үгийг ашиглах боломжтой болно.</translation>
-<translation id="885387440427703469">Дэлгэцийн зураг авах горим идэвхгүй болсон</translation>
 <translation id="8870509716567206129">Апп нь дэлгэц хуваах тохиргоог дэмждэггүй.</translation>
 <translation id="8871580645200179206">Бараан загварыг унтраах/асаах. <ph name="STATE_TEXT" /></translation>
 <translation id="8874184842967597500">Холбогдоогүй</translation>

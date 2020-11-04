@@ -556,6 +556,7 @@ if (is_android) {
 
     sources = [
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
+      "../browser/android/tab_android_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/games/games_service_browsertest.cc",
@@ -2539,6 +2540,7 @@ if (!is_android) {
         "../browser/chromeos/login/screens/multidevice_setup_screen_browsertest.cc",
         "../browser/chromeos/login/screens/network_screen_browsertest.cc",
         "../browser/chromeos/login/screens/packaged_license_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/parental_handoff_screen_browsertest.cc",
         "../browser/chromeos/login/screens/pin_setup_screen_browsertest.cc",
         "../browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.cc",
         "../browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h",
@@ -2601,6 +2603,8 @@ if (!is_android) {
         "../browser/chromeos/login/test/session_flags_manager.h",
         "../browser/chromeos/login/test/session_manager_state_waiter.cc",
         "../browser/chromeos/login/test/session_manager_state_waiter.h",
+        "../browser/chromeos/login/test/user_adding_screen_utils.cc",
+        "../browser/chromeos/login/test/user_adding_screen_utils.h",
         "../browser/chromeos/login/test/user_policy_mixin.cc",
         "../browser/chromeos/login/test/user_policy_mixin.h",
         "../browser/chromeos/login/test/webview_content_extractor.cc",
@@ -4381,6 +4385,7 @@ test("unit_tests") {
       "../browser/enterprise/reporting/extension_request/extension_request_notification_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_observer_factory_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_observer_unittest.cc",
+      "../browser/enterprise/reporting/extension_request/extension_request_report_throttler_unittest.cc",
       "../browser/enterprise/reporting/policy_info_unittest.cc",
       "../browser/enterprise/reporting/profile_report_generator_unittest.cc",
       "../browser/enterprise/reporting/report_generator_unittest.cc",

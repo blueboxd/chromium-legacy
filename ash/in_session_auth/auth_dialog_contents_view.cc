@@ -10,6 +10,7 @@
 #include "ash/login/resources/grit/login_resources.h"
 #include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/login_password_view.h"
+#include "ash/login/ui/login_pin_input_view.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
@@ -37,6 +38,7 @@ namespace {
 const char kTitle[] = "Verify it's you";
 
 const int kContainerPreferredWidth = 512;
+const int kSpacingAfterAvatar = 18;
 const int kSpacingAfterTitle = 16;
 
 const int kBorderTopDp = 24;
@@ -46,6 +48,7 @@ const int kBorderRightDp = 24;
 
 const int kTitleFontSizeDeltaDp = 4;
 
+constexpr int kAvatarSizeDp = 36;
 constexpr int kFingerprintIconSizeDp = 28;
 constexpr int kFingerprintIconTopSpacingDp = 20;
 constexpr int kSpacingBetweenFingerprintIconAndLabelDp = 15;
@@ -254,8 +257,11 @@ class AuthDialogContentsView::FingerprintView : public views::View {
   base::OneShotTimer reset_state_;
 };
 
-AuthDialogContentsView::AuthDialogContentsView(uint32_t auth_methods)
-    : auth_methods_(auth_methods) {
+AuthDialogContentsView::AuthDialogContentsView(
+    uint32_t auth_methods,
+    const AuthMethodsMetadata& auth_metadata,
+    const UserAvatar& avatar)
+    : auth_methods_(auth_methods), auth_metadata_(auth_metadata) {
   DCHECK(auth_methods_ & kAuthPassword);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -272,10 +278,22 @@ AuthDialogContentsView::AuthDialogContentsView(uint32_t auth_methods)
   main_layout_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
+  AddAvatarView(avatar);
+  AddVerticalSpacing(kSpacingAfterAvatar);
   AddTitleView();
   AddVerticalSpacing(kSpacingAfterTitle);
-  AddPasswordView();
-  AddPinView();
+  if (auth_methods_ & kAuthPin) {
+    if (LoginPinInputView::IsAutosubmitSupported(
+            auth_metadata_.autosubmit_pin_length)) {
+      pin_autosubmit_on_ = true;
+      AddPinDigitInputView();
+    } else {
+      pin_autosubmit_on_ = false;
+      AddPinTextInputView();
+    }
+    // PIN pad is always visible regardless of PIN autosubmit status.
+    AddPinPadView();
+  }
 
   if (auth_methods_ & kAuthFingerprint) {
     fingerprint_view_ =
@@ -285,9 +303,6 @@ AuthDialogContentsView::AuthDialogContentsView(uint32_t auth_methods)
 
   AddVerticalSpacing(kSpacingBeforeButtons);
   AddActionButtonsView();
-
-  // Deferred because it needs the pin_view_ pointer.
-  InitPasswordView();
 }
 
 AuthDialogContentsView::~AuthDialogContentsView() = default;
@@ -300,6 +315,14 @@ void AuthDialogContentsView::AddedToWidget() {
         base::BindOnce(&AuthDialogContentsView::OnFingerprintAuthComplete,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+void AuthDialogContentsView::AddAvatarView(const UserAvatar& avatar) {
+  avatar_view_ =
+      container_->AddChildView(std::make_unique<AnimatedRoundedImageView>(
+          gfx::Size(kAvatarSizeDp, kAvatarSizeDp),
+          kAvatarSizeDp / 2 /*corner_radius*/));
+  avatar_view_->SetImage(avatar.image);
 }
 
 void AuthDialogContentsView::AddTitleView() {
@@ -323,44 +346,63 @@ void AuthDialogContentsView::AddTitleView() {
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
 
-void AuthDialogContentsView::AddPasswordView() {
-  password_view_ = container_->AddChildView(
-      std::make_unique<LoginPasswordView>(CreateInSessionAuthPalette()));
+void AuthDialogContentsView::AddPinTextInputView() {
+  pin_text_input_view_ =
+      container_->AddChildView(std::make_unique<LoginPasswordView>(palette_));
 
-  password_view_->SetPaintToLayer();
-  password_view_->layer()->SetFillsBoundsOpaquely(false);
-  password_view_->SetDisplayPasswordButtonVisible(true);
-  password_view_->SetEnabled(true);
-  password_view_->SetEnabledOnEmptyPassword(false);
-  password_view_->SetFocusEnabledForChildViews(true);
-  password_view_->SetVisible(true);
+  pin_text_input_view_->SetPaintToLayer();
+  pin_text_input_view_->layer()->SetFillsBoundsOpaquely(false);
+  pin_text_input_view_->SetDisplayPasswordButtonVisible(true);
+  pin_text_input_view_->SetEnabled(true);
+  pin_text_input_view_->SetEnabledOnEmptyPassword(false);
+  pin_text_input_view_->SetFocusEnabledForChildViews(true);
+  pin_text_input_view_->SetVisible(true);
 
-  password_view_->SetPlaceholderText(
+  pin_text_input_view_->SetPlaceholderText(
       (auth_methods_ & kAuthPin)
           ? l10n_util::GetStringUTF16(
                 IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER)
           : l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER));
 }
 
-void AuthDialogContentsView::AddPinView() {
-  pin_view_ = container_->AddChildView(std::make_unique<LoginPinView>(
-      LoginPinView::Style::kAlphanumeric, CreateInSessionAuthPalette(),
-      base::BindRepeating(&LoginPasswordView::InsertNumber,
-                          base::Unretained(password_view_)),
-      base::BindRepeating(&LoginPasswordView::Backspace,
-                          base::Unretained(password_view_)),
-      base::BindRepeating(&LoginPasswordView::SubmitPassword,
-                          base::Unretained(password_view_))));
-  pin_view_->SetVisible(auth_methods_ & kAuthPin);
+void AuthDialogContentsView::AddPinDigitInputView() {
+  pin_digit_input_view_ =
+      container_->AddChildView(std::make_unique<LoginPinInputView>(palette_));
+  pin_digit_input_view_->UpdateLength(auth_metadata_.autosubmit_pin_length);
+  pin_digit_input_view_->SetVisible(true);
 }
 
-void AuthDialogContentsView::InitPasswordView() {
-  password_view_->Init(
-      base::BindRepeating(&AuthDialogContentsView::OnAuthSubmit,
-                          base::Unretained(this)),
-      base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
-                          base::Unretained(pin_view_)),
-      base::DoNothing(), views::Button::PressedCallback());
+void AuthDialogContentsView::AddPinPadView() {
+  DCHECK(auth_methods_ & kAuthPin);
+  if (pin_autosubmit_on_) {
+    pin_pad_view_ = container_->AddChildView(std::make_unique<LoginPinView>(
+        LoginPinView::Style::kAlphanumeric, palette_,
+        base::BindRepeating(&LoginPinInputView::InsertDigit,
+                            base::Unretained(pin_digit_input_view_)),
+        base::BindRepeating(&LoginPinInputView::Backspace,
+                            base::Unretained(pin_digit_input_view_))));
+    pin_digit_input_view_->Init(
+        base::BindRepeating(&AuthDialogContentsView::OnAuthSubmit,
+                            base::Unretained(this)),
+        base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
+                            base::Unretained(pin_pad_view_)));
+  } else {
+    pin_pad_view_ = container_->AddChildView(std::make_unique<LoginPinView>(
+        LoginPinView::Style::kAlphanumeric, palette_,
+        base::BindRepeating(&LoginPasswordView::InsertNumber,
+                            base::Unretained(pin_text_input_view_)),
+        base::BindRepeating(&LoginPasswordView::Backspace,
+                            base::Unretained(pin_text_input_view_)),
+        base::BindRepeating(&LoginPasswordView::SubmitPassword,
+                            base::Unretained(pin_text_input_view_))));
+    pin_text_input_view_->Init(
+        base::BindRepeating(&AuthDialogContentsView::OnAuthSubmit,
+                            base::Unretained(this)),
+        base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
+                            base::Unretained(pin_pad_view_)),
+        base::DoNothing(), views::Button::PressedCallback());
+  }
+  pin_pad_view_->SetVisible(true);
 }
 
 void AuthDialogContentsView::AddVerticalSpacing(int height) {
@@ -379,25 +421,6 @@ void AuthDialogContentsView::AddActionButtonsView() {
       views::BoxLayout::MainAxisAlignment::kEnd);
 
   // TODO(b/156258540): Add a "Need help?" button that links to a HC article.
-}
-
-void AuthDialogContentsView::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  // TODO(b/156258540): Add a "Need help?" button that links to a HC article.
-}
-
-views::LabelButton* AuthDialogContentsView::AddButton(const std::string& text,
-                                                      int id,
-                                                      views::View* container) {
-  // Creates a button with |text|.
-  auto button =
-      std::make_unique<views::MdTextButton>(this, base::ASCIIToUTF16(text));
-  button->SetID(id);
-
-  views::LabelButton* view = button.get();
-  container->AddChildView(
-      login_views_utils::WrapViewForPreferredSize(std::move(button)));
-  return view;
 }
 
 void AuthDialogContentsView::OnAuthSubmit(const base::string16& pin) {

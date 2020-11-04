@@ -92,10 +92,11 @@ ime::mojom::InputFieldType TextInputTypeToMojoType(ui::TextInputType type) {
 }
 
 ime::mojom::AutocorrectMode AutocorrectFlagsToMojoType(int flags) {
-  if (flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_ON) {
-    return ime::mojom::AutocorrectMode::kEnabled;
+  if ((flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF) ||
+      (flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF)) {
+    return ime::mojom::AutocorrectMode::kDisabled;
   }
-  return ime::mojom::AutocorrectMode::kDisabled;
+  return ime::mojom::AutocorrectMode::kEnabled;
 }
 
 enum class ImeServiceEvent {
@@ -256,7 +257,7 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
       return;
     }
   }
-  autocorrect_manager_->OnKeyEvent();
+  autocorrect_manager_->OnKeyEvent(event);
   auto key_event = ime::mojom::PhysicalKeyEvent::New(
       event.type == "keydown" ? ime::mojom::KeyEventType::kKeyDown
                               : ime::mojom::KeyEventType::kKeyUp,
@@ -313,6 +314,7 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     assistive_suggester_->OnSurroundingTextChanged(text, cursor_pos,
                                                    anchor_pos);
   }
+  autocorrect_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
   if (ShouldUseFstMojoEngine(engine_id) && remote_to_engine_.is_bound()) {
     auto selection = ime::mojom::SelectionRange::New();
     selection->anchor = anchor_pos;
@@ -391,6 +393,42 @@ void NativeInputMethodEngine::ImeObserver::OnSuggestionsChanged(
 void NativeInputMethodEngine::ImeObserver::OnInputMethodOptionsChanged(
     const std::string& engine_id) {
   base_observer_->OnInputMethodOptionsChanged(engine_id);
+}
+
+void NativeInputMethodEngine::ImeObserver::CommitText(const std::string& text) {
+  GetInputContext()->CommitText(NormalizeString(text));
+}
+
+void NativeInputMethodEngine::ImeObserver::SetComposition(
+    const std::string& text) {
+  ui::CompositionText composition;
+  composition.text = base::UTF8ToUTF16(NormalizeString(text));
+  GetInputContext()->UpdateCompositionText(
+      composition, /*cursor_pos=*/composition.text.length(), /*visible=*/true);
+}
+
+void NativeInputMethodEngine::ImeObserver::SetCompositionRange(
+    uint32_t start_byte_index,
+    uint32_t end_byte_index) {
+  const auto ordered_range = std::minmax(start_byte_index, end_byte_index);
+  GetInputContext()->SetComposingRange(
+      ordered_range.first, ordered_range.second,
+      {ui::ImeTextSpan(
+          ui::ImeTextSpan::Type::kComposition, /*start_offset=*/0,
+          /*end_offset=*/ordered_range.second - ordered_range.first)});
+}
+
+void NativeInputMethodEngine::ImeObserver::FinishComposition() {
+  GetInputContext()->ConfirmCompositionText(/*reset_engine=*/false,
+                                            /*keep_selection=*/true);
+}
+
+void NativeInputMethodEngine::ImeObserver::DeleteSurroundingText(
+    uint32_t num_bytes_before_cursor,
+    uint32_t num_bytes_after_cursor) {
+  GetInputContext()->DeleteSurroundingText(
+      /*offset=*/-static_cast<int>(num_bytes_before_cursor),
+      /*length=*/num_bytes_before_cursor + num_bytes_after_cursor);
 }
 
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {

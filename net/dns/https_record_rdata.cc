@@ -127,17 +127,23 @@ bool ParseIpAddresses(base::StringPiece param_value,
 std::unique_ptr<HttpsRecordRdata> HttpsRecordRdata::Parse(
     base::StringPiece data) {
   if (!HasValidSize(data, kType))
-    return nullptr;
+    return std::make_unique<MalformedHttpsRecordRdata>();
 
   base::BigEndianReader reader(data.data(), data.size());
   uint16_t priority;
   CHECK(reader.ReadU16(&priority));
 
+  std::unique_ptr<HttpsRecordRdata> parsed;
   if (priority == 0) {
-    return AliasFormHttpsRecordRdata::Parse(data);
+    parsed = AliasFormHttpsRecordRdata::Parse(data);
   } else {
-    return ServiceFormHttpsRecordRdata::Parse(data);
+    parsed = ServiceFormHttpsRecordRdata::Parse(data);
   }
+
+  if (!parsed)
+    return std::make_unique<MalformedHttpsRecordRdata>();
+
+  return parsed;
 }
 
 HttpsRecordRdata::~HttpsRecordRdata() = default;
@@ -158,6 +164,7 @@ uint16_t HttpsRecordRdata::Type() const {
 
 AliasFormHttpsRecordRdata* HttpsRecordRdata::AsAliasForm() {
   CHECK(IsAlias());
+  CHECK(!IsMalformed());
   return static_cast<AliasFormHttpsRecordRdata*>(this);
 }
 
@@ -167,6 +174,7 @@ const AliasFormHttpsRecordRdata* HttpsRecordRdata::AsAliasForm() const {
 
 ServiceFormHttpsRecordRdata* HttpsRecordRdata::AsServiceForm() {
   CHECK(!IsAlias());
+  CHECK(!IsMalformed());
   return static_cast<ServiceFormHttpsRecordRdata*>(this);
 }
 
@@ -174,10 +182,27 @@ const ServiceFormHttpsRecordRdata* HttpsRecordRdata::AsServiceForm() const {
   return const_cast<HttpsRecordRdata*>(this)->AsServiceForm();
 }
 
-AliasFormHttpsRecordRdata::AliasFormHttpsRecordRdata(std::string alias_name)
-    : alias_name_(std::move(alias_name)) {
-  DCHECK(!alias_name_.empty());
+bool HttpsRecordRdata::IsMalformed() const {
+  return false;
 }
+
+MalformedHttpsRecordRdata::MalformedHttpsRecordRdata() = default;
+
+bool MalformedHttpsRecordRdata::IsEqual(const HttpsRecordRdata* other) const {
+  DCHECK(other);
+  return other->IsMalformed();
+}
+
+bool MalformedHttpsRecordRdata::IsAlias() const {
+  return false;
+}
+
+bool MalformedHttpsRecordRdata::IsMalformed() const {
+  return true;
+}
+
+AliasFormHttpsRecordRdata::AliasFormHttpsRecordRdata(std::string alias_name)
+    : alias_name_(std::move(alias_name)) {}
 
 // static
 std::unique_ptr<AliasFormHttpsRecordRdata> AliasFormHttpsRecordRdata::Parse(
@@ -195,8 +220,15 @@ std::unique_ptr<AliasFormHttpsRecordRdata> AliasFormHttpsRecordRdata::Parse(
   if (!alias_name.has_value())
     return nullptr;
 
-  if (reader.remaining() != 0)
-    return nullptr;
+  // Ignore any params.
+  base::Optional<uint16_t> last_param_key;
+  while (reader.remaining() > 0) {
+    uint16_t param_key;
+    base::StringPiece param_value;
+    if (!ReadNextServiceParam(last_param_key, reader, &param_key, &param_value))
+      return nullptr;
+    last_param_key = param_key;
+  }
 
   return std::make_unique<AliasFormHttpsRecordRdata>(
       std::move(alias_name).value());

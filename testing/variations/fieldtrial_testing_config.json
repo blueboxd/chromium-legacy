@@ -1596,11 +1596,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "ChromeShareHighlightsAndroid",
                         "ChromeShareQRCode",
-                        "ChromeShareScreenshot",
-                        "ChromeSharingHub",
-                        "ChromeSharingHubV15"
+                        "ChromeSharingHub"
                     ]
                 }
             ]
@@ -4673,6 +4670,7 @@
                         "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
+                        "OmniboxOnFocusSuggestionsContextualWebOnContent",
                         "OmniboxReactiveZeroSuggestionsOnNTPOmnibox",
                         "OmniboxReactiveZeroSuggestionsOnNTPRealbox",
                         "OmniboxRemoveSuggestionsFromClipboard",
@@ -4705,6 +4703,7 @@
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
+                        "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
                     ]
                 }

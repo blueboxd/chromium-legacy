@@ -821,7 +821,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.HitTestDocumentUpdate.UpdateTime" units="microseconds"
-    expires_after="2021-03-01">
+    expires_after="2021-05-02">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
 
   <owner>schenney@chromium.org</owner>
@@ -1040,6 +1040,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Note: This histogram does not record metrics on machines with low-resolution
     clocks.
   </summary>
+</histogram>
+
+<histogram name="Blink.Input.GestureScrollBeginAsCursorControl"
+    enum="BooleanSuccess" expires_after="M89">
+  <owner>ctzsm@chromium.org</owner>
+  <owner>changwan@chromium.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>Records if a GestureScrollBegin is for cursor control.</summary>
 </histogram>
 
 <histogram name="Blink.IntersectionObservation.UpdateTime" units="microseconds"
@@ -2154,7 +2162,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.WaitForCommit.UpdateTime" units="microseconds"
-    expires_after="2021-03-01">
+    expires_after="2021-05-02">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
 
   <owner>schenney@chromium.org</owner>

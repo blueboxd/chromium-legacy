@@ -1478,6 +1478,7 @@
         'per_profile': False,
       },
       'example_value': True,
+      'default': True,
       'id': 261,
       'caption': '''Enable WPAD optimization''',
       'tags': ['system-security'],
@@ -3849,6 +3850,7 @@
         'per_profile': True,
       },
       'example_value': False,
+      'default': True,
       'id': 375,
       'caption': '''Enable Safe Browsing for trusted sources''',
       'tags': ['local-data-access'],
@@ -4409,6 +4411,7 @@
         'per_profile': False,
       },
       'example_value': True,
+      'default': True,
       'id': 393,
       'caption': '''Enable NTLMv2 authentication.''',
       'tags': ['website-sharing'],
@@ -7130,6 +7133,7 @@
         'per_profile': True,
       },
       'example_value': 10000,
+      'default': 10000,
       'id': 228,
       'caption': '''Maximum fetch delay after a policy invalidation''',
       'tags': [],
@@ -7633,6 +7637,7 @@
         'per_profile': True,
       },
       'example_value': False,
+      'default': None,
       'id': 267,
       'caption': '''Show the apps shortcut in the bookmark bar''',
       'tags': [],
@@ -10274,6 +10279,7 @@
         'per_profile': True,
       },
       'example_value': False,
+      'default': None,
       'id': 151,
       'caption': '''Enable or disable spell checking web service''',
       'tags': [],
@@ -11472,6 +11478,7 @@
         'per_profile': False,
       },
       'example_value': False,
+      'default': True,
       'id': 203,
       'caption': '''Allow screen wake locks''',
       'tags': [],
@@ -11762,6 +11769,7 @@
         'dynamic_refresh': True,
       },
       'example_value': True,
+      'default': True,
       'id': 185,
       'caption': '''Allow users to redeem offers through Chrome OS Registration''',
       'tags': [],
@@ -13945,10 +13953,11 @@
         'dynamic_refresh': False,
       },
       'example_value': 104857600,
+      'default': 268435456,
       'id': 296,
       'caption': '''Set Apps and Extensions cache size (in bytes)''',
       'tags': [],
-      'desc': '''Setting to lower than 1 MB or leaving it unset means <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> uses the default size for caching apps and extensions for installation by multiple users of a single device, avoiding the need to redownload each one for every user.''',
+      'desc': '''Setting to lower than 1 MB or leaving it unset means <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> uses the default size of 256 MiB for caching apps and extensions for installation by multiple users of a single device, avoiding the need to redownload each one for every user.''',
       'arc_support': 'The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.',
     },
     {
@@ -14575,9 +14584,7 @@
       'caption': '''Enable 802.11r Fast Transition''',
       'desc': '''Setting the policy to Enabled means that Fast Transition is used when the wireless access point supports it. It applies to all users and interfaces on the device.
 
-      Setting the policy to Disabled or leaving it unset means that Fast Transition isn't used.
-
-      Note: To use Fast Transition, also turn on the per-network ONC property.''',
+      Setting the policy to Disabled or leaving it unset means that Fast Transition isn't used.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:72-'],
@@ -16345,7 +16352,7 @@
         'per_profile': True,
       },
       'example_value': True,
-      'default_for_enterprise_users': True,
+      'default_for_enterprise_users': False,
       'id': 761,
       'caption': '''Allow Nearby Share to be enabled.''',
       'tags': ['local-data-access', 'google-sharing'],
@@ -16353,7 +16360,7 @@
 
       If this setting is disabled, users will not be allowed to opt in to Nearby Share.
 
-      If this policy is left not set, the default is allowed for both enterprise-managed users and non-managed users.''',
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
     {
       'name': 'BrowserNetworkTimeQueriesEnabled',
@@ -17268,6 +17275,7 @@
         'per_profile': True,
       },
       'example_value': False,
+      'default': None,
       'id': 408,
       'caption': '''Enable spellcheck''',
       'tags': [],
@@ -17304,6 +17312,7 @@
         'per_profile': True,
       },
       'example_value': 1,
+      'default': 1,
       'id': 409,
       'caption': '''Ads setting for sites with intrusive ads''',
       'tags': [],
@@ -17611,6 +17620,7 @@
         'per_profile': False,
       },
       'example_value': 1,
+      'default': 0,
       'id': 690,
       'caption': '''Control usage of Android apps from untrusted sources for the user''',
       'tags': ['system-security'],
@@ -17653,6 +17663,7 @@
         'dynamic_refresh': True,
       },
       'example_value': 1,
+      'default': 0,
       'id': 695,
       'caption': '''Control usage of Android apps from untrusted sources for the device''',
       'tags': ['system-security'],
@@ -19749,11 +19760,12 @@
         'per_profile': True
       },
       'example_value': 1,
+      'default': 0,
       'id': 518,
       'caption': '''Allow users to manage installed client certificates.''',
-      'desc': '''Setting the policy to None or leaving it unset lets users manage certificates. Setting the policy to 2 means users can only view (not manage) certificates.
+      'desc': '''Setting the policy to 'All' (value 0) or leaving it unset lets users manage certificates. Setting the policy to 'None' (value 2) means users can only view (not manage) certificates.
 
-      Setting the policy to 1 lets users manage user certificates, but not device-wide certificates.''',
+      Setting the policy to 'UserOnly' (value 1) lets users manage user certificates, but not device-wide certificates.''',
     },
     {
       'id': 520,
@@ -20180,6 +20192,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default': True,
       'id': 542,
       'caption': '''Enable Signed HTTP Exchange (SXG) support''',
       'tags': ['filtering'],
@@ -20223,6 +20236,7 @@
         'per_profile': False,
       },
       'example_value': True,
+      'default': None,
       'id': 545,
       'caption': '''Enables a page for in-session change of password for SAML users''',
       'desc': '''Enables a page at chrome://password-change that lets SAML users change their SAML passwords while in-session, which ensures that the SAML password and the device lockscreen password are kept in-sync.
@@ -22612,6 +22626,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'per_profile': True,
       },
       'example_value': False,
+      'default': None,
       'id': 703,
       'caption': '''Enable <ph name="PRODUCT_NAME">Get Image Descriptions from Google</ph>.''',
       'tags': ['google-sharing'],

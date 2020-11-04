@@ -73,12 +73,6 @@ void WebViewFrameWidget::Resize(const gfx::Size& size) {
   web_view_->Resize(size);
 }
 
-void WebViewFrameWidget::SetSuppressFrameRequestsWorkaroundFor704763Only(
-    bool suppress_frame_requests) {
-  web_view_->SetSuppressFrameRequestsWorkaroundFor704763Only(
-      suppress_frame_requests);
-}
-
 void WebViewFrameWidget::BeginMainFrame(base::TimeTicks last_frame_time) {
   web_view_->BeginFrame(last_frame_time);
 }
@@ -90,14 +84,6 @@ void WebViewFrameWidget::DidBeginMainFrame() {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       main_frame->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::DidBeginFrame(*main_frame->GetFrame());
-}
-
-void WebViewFrameWidget::BeginUpdateLayers() {
-  web_view_->BeginUpdateLayers();
-}
-
-void WebViewFrameWidget::EndUpdateLayers() {
-  web_view_->EndUpdateLayers();
 }
 
 void WebViewFrameWidget::BeginCommitCompositorFrame() {
@@ -126,28 +112,9 @@ void WebViewFrameWidget::EndCommitCompositorFrame(
   commit_compositor_frame_start_time_.reset();
 }
 
-void WebViewFrameWidget::RecordStartOfFrameMetrics() {
-  web_view_->RecordStartOfFrameMetrics();
-}
-
-void WebViewFrameWidget::RecordEndOfFrameMetrics(
-    base::TimeTicks frame_begin_time,
-    cc::ActiveFrameSequenceTrackers trackers) {
-  web_view_->RecordEndOfFrameMetrics(frame_begin_time, trackers);
-}
-
-std::unique_ptr<cc::BeginMainFrameMetrics>
-WebViewFrameWidget::GetBeginMainFrameMetrics() {
-  return web_view_->GetBeginMainFrameMetrics();
-}
-
 void WebViewFrameWidget::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                          DocumentUpdateReason reason) {
   web_view_->UpdateLifecycle(requested_update, reason);
-}
-
-void WebViewFrameWidget::ThemeChanged() {
-  web_view_->ThemeChanged();
 }
 
 WebInputEventResult WebViewFrameWidget::HandleInputEvent(
@@ -159,10 +126,6 @@ WebInputEventResult WebViewFrameWidget::DispatchBufferedTouchEvents() {
   return web_view_->DispatchBufferedTouchEvents();
 }
 
-void WebViewFrameWidget::SetCursorVisibilityState(bool is_visible) {
-  web_view_->SetCursorVisibilityState(is_visible);
-}
-
 void WebViewFrameWidget::ApplyViewportChanges(
     const ApplyViewportChangesArgs& args) {
   web_view_->ApplyViewportChanges(args);
@@ -171,16 +134,6 @@ void WebViewFrameWidget::ApplyViewportChanges(
 void WebViewFrameWidget::RecordManipulationTypeCounts(
     cc::ManipulationInfo info) {
   web_view_->RecordManipulationTypeCounts(info);
-}
-void WebViewFrameWidget::SendOverscrollEventFromImplSide(
-    const gfx::Vector2dF& overscroll_delta,
-    cc::ElementId scroll_latched_element_id) {
-  web_view_->SendOverscrollEventFromImplSide(overscroll_delta,
-                                             scroll_latched_element_id);
-}
-void WebViewFrameWidget::SendScrollEndEventFromImplSide(
-    cc::ElementId scroll_latched_element_id) {
-  web_view_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
 }
 
 void WebViewFrameWidget::MouseCaptureLost() {
@@ -242,10 +195,6 @@ void WebViewFrameWidget::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
       frame_view->ConvertToRootFrame(focus));
 }
 
-WebString WebViewFrameWidget::GetLastToolTipTextForTesting() const {
-  return GetPage()->GetChromeClient().GetLastToolTipTextForTesting();
-}
-
 void WebViewFrameWidget::EnableDeviceEmulation(
     const DeviceEmulationParams& parameters) {
   if (!device_emulator_) {
@@ -268,11 +217,6 @@ void WebViewFrameWidget::DisableDeviceEmulation() {
 
 void WebViewFrameWidget::DidDetachLocalFrameTree() {
   web_view_->DidDetachLocalMainFrame();
-}
-
-WebInputMethodController*
-WebViewFrameWidget::GetActiveWebInputMethodController() const {
-  return web_view_->GetActiveWebInputMethodController();
 }
 
 bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
@@ -591,18 +535,6 @@ void WebViewFrameWidget::ApplyVisualPropertiesSizing(
             widget_base_->VisibleViewportSizeInDIPs()),
         visual_properties.browser_controls_params);
   }
-}
-
-void WebViewFrameWidget::UpdateSurfaceAndCompositorRect(
-    const viz::LocalSurfaceId& new_local_surface_id,
-    const gfx::Rect& compositor_viewport_pixel_rect) {
-  widget_base_->UpdateSurfaceAndCompositorRect(new_local_surface_id,
-                                               compositor_viewport_pixel_rect);
-}
-
-void WebViewFrameWidget::UpdateCompositorViewportRect(
-    const gfx::Rect& compositor_viewport_pixel_rect) {
-  widget_base_->UpdateCompositorViewportRect(compositor_viewport_pixel_rect);
 }
 
 }  // namespace blink

@@ -85,7 +85,7 @@ if (is_component_build) {
         content_shared_components + [ "//content/public/app:app_sources" ]
   }
   if(is_mac) {
-    libs = [
+    frameworks = [
       "CoreServices.framework",
       "CoreText.framework",
       "ApplicationServices.framework",

@@ -24,9 +24,10 @@ Some features not implemented in 10.7 are disabled (maybe simply commented out),
         - ~~can't move by dragging title bar region~~
             - ~~you can move by dragging the edges of the window (when the cursor is resizing arrow: &#x2194;&#x2195;)~~
             - FIXED
-    - ~~menus/sheets~~
-        - ~~have no shadow~~
-        - temporally FIXED (popups have some glitches on corners)
+    - menus/sheets
+        - have no shadow
+        - ~~temporally FIXED (popups have some glitches on corners)~~
+          - reverted due to improper rendering of combo box
     - scrollbars
         - won't disappear despite "Show scrollbars when scrolling" option is enabled
 - GPU assists (rendering / encoding / decoding)

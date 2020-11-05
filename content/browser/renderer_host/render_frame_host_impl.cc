@@ -2189,9 +2189,9 @@ bool RenderFrameHostImpl::CreateRenderFrame(
 
   // The process may (if we're sharing a process with another host that already
   // initialized it) or may not (we have our own process or the old process
-  // crashed) have been initialized. Calling Init multiple times will be
+  // crashed) have been initialized. Calling Init() multiple times will be
   // ignored, so this is safe.
-  if (!agent_scheduling_group().InitProcessAndMojos())
+  if (!agent_scheduling_group().Init())
     return false;
 
   DCHECK(GetProcess()->IsInitializedAndNotDead());
@@ -4243,8 +4243,10 @@ void RenderFrameHostImpl::DidChangeThemeColor(
 }
 
 void RenderFrameHostImpl::DidChangeBackgroundColor(
-    const SkColor& background_color) {
-  render_view_host_->DidChangeBackgroundColor(this, background_color);
+    const SkColor& background_color,
+    bool color_adjust) {
+  render_view_host_->DidChangeBackgroundColor(this, background_color,
+                                              color_adjust);
 }
 
 void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(

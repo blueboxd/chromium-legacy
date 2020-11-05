@@ -963,9 +963,11 @@ void LocalFrame::DidChangeThemeColor() {
   GetLocalFrameHostRemote().DidChangeThemeColor(sk_color);
 }
 
-void LocalFrame::DidChangeBackgroundColor(SkColor background_color) {
+void LocalFrame::DidChangeBackgroundColor(SkColor background_color,
+                                          bool color_adjust) {
   DCHECK(!Tree().Parent());
-  GetLocalFrameHostRemote().DidChangeBackgroundColor(background_color);
+  GetLocalFrameHostRemote().DidChangeBackgroundColor(background_color,
+                                                     color_adjust);
 }
 
 LocalFrame& LocalFrame::LocalFrameRoot() const {
@@ -2472,12 +2474,11 @@ void LocalFrame::PluginActionAt(const gfx::Point& location,
   if (!IsA<HTMLObjectElement>(*node) && !IsA<HTMLEmbedElement>(*node))
     return;
 
-  LayoutObject* object = node->GetLayoutObject();
-  if (!object || !object->IsLayoutEmbeddedContent())
+  auto* embedded = DynamicTo<LayoutEmbeddedContent>(node->GetLayoutObject());
+  if (!embedded)
     return;
 
-  WebPluginContainerImpl* plugin_view =
-      ToLayoutEmbeddedContent(object)->Plugin();
+  WebPluginContainerImpl* plugin_view = embedded->Plugin();
   if (!plugin_view)
     return;
 

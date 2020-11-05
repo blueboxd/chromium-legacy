@@ -1393,7 +1393,7 @@ LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
   } else {
     object = Parent();
     if (!object && IsLayoutCustomScrollbarPart()) {
-      object = ToLayoutCustomScrollbarPart(this)
+      object = To<LayoutCustomScrollbarPart>(this)
                    ->GetScrollableArea()
                    ->GetLayoutBox();
     }
@@ -4015,14 +4015,14 @@ bool LayoutObject::GetImageAnimationPolicy(
 bool LayoutObject::IsInsideListMarker() const {
   NOT_DESTROYED();
   return (IsListMarkerForNormalContent() &&
-          ToLayoutListMarker(this)->IsInside()) ||
+          To<LayoutListMarker>(this)->IsInside()) ||
          IsInsideListMarkerForCustomContent();
 }
 
 bool LayoutObject::IsOutsideListMarker() const {
   NOT_DESTROYED();
   return (IsListMarkerForNormalContent() &&
-          !ToLayoutListMarker(this)->IsInside()) ||
+          !To<LayoutListMarker>(this)->IsInside()) ||
          IsOutsideListMarkerForCustomContent();
 }
 

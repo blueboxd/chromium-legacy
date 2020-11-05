@@ -251,7 +251,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
   }
 
   if (o.IsListMarkerForNormalContent()) {
-    String text = ToLayoutListMarker(o).GetText();
+    String text = To<LayoutListMarker>(o).GetText();
     if (!text.IsEmpty()) {
       if (text.length() != 1) {
         text = QuoteAndEscapeNonPrintables(text);
@@ -500,7 +500,7 @@ void Write(WTF::TextStream& ts,
            int indent,
            LayoutAsTextBehavior behavior) {
   if (o.IsSVGShape()) {
-    Write(ts, ToLayoutSVGShape(o), indent);
+    Write(ts, To<LayoutSVGShape>(o), indent);
     return;
   }
   if (o.IsSVGResourceContainer()) {
@@ -512,23 +512,23 @@ void Write(WTF::TextStream& ts,
     return;
   }
   if (o.IsSVGRoot()) {
-    Write(ts, ToLayoutSVGRoot(o), indent);
+    Write(ts, To<LayoutSVGRoot>(o), indent);
     return;
   }
   if (o.IsSVGText()) {
-    WriteSVGText(ts, ToLayoutSVGText(o), indent);
+    WriteSVGText(ts, To<LayoutSVGText>(o), indent);
     return;
   }
   if (o.IsSVGInline()) {
-    WriteSVGInline(ts, ToLayoutSVGInline(o), indent);
+    WriteSVGInline(ts, To<LayoutSVGInline>(o), indent);
     return;
   }
   if (o.IsSVGInlineText()) {
-    WriteSVGInlineText(ts, ToLayoutSVGInlineText(o), indent);
+    WriteSVGInlineText(ts, To<LayoutSVGInlineText>(o), indent);
     return;
   }
   if (o.IsSVGImage()) {
-    WriteSVGImage(ts, ToLayoutSVGImage(o), indent);
+    WriteSVGImage(ts, To<LayoutSVGImage>(o), indent);
     return;
   }
 
@@ -572,7 +572,7 @@ void Write(WTF::TextStream& ts,
     }
 
     if (o.IsLayoutEmbeddedContent()) {
-      FrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
+      FrameView* frame_view = To<LayoutEmbeddedContent>(o).ChildFrameView();
       if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
         if (auto* layout_view = local_frame_view->GetLayoutView()) {
           layout_view->GetDocument().UpdateStyleAndLayout(
@@ -728,8 +728,8 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
           : layer->IntersectsDamageRect(layer_bounds, damage_rect.Rect(),
                                         offset_from_root);
 
-  if (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
-      ToLayoutEmbeddedContent(layer->GetLayoutObject()).IsThrottledFrameView())
+  auto* embedded = DynamicTo<LayoutEmbeddedContent>(layer->GetLayoutObject());
+  if (embedded && embedded->IsThrottledFrameView())
     should_paint = false;
 
 #if DCHECK_IS_ON()
@@ -961,7 +961,7 @@ String MarkerTextForListItem(Element* element) {
   if (ListMarker* list_marker = ListMarker::Get(marker))
     return list_marker->MarkerTextWithoutSuffix(*marker);
   if (marker && marker->IsListMarkerForNormalContent())
-    return ToLayoutListMarker(marker)->GetText();
+    return To<LayoutListMarker>(marker)->GetText();
   return String();
 }
 

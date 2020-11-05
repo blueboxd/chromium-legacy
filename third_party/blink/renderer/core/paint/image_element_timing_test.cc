@@ -44,7 +44,7 @@ class ImageElementTimingTest : public testing::Test,
   // the LayoutImage.
   LayoutImage* SetImageResource(const char* id, int width, int height) {
     ImageResourceContent* content = CreateImageForTest(width, height);
-    if (auto* layout_image = ToLayoutImageOrNull(GetLayoutObjectById(id))) {
+    if (auto* layout_image = DynamicTo<LayoutImage>(GetLayoutObjectById(id))) {
       layout_image->ImageResource()->SetImageResource(content);
       return layout_image;
     }
@@ -54,7 +54,8 @@ class ImageElementTimingTest : public testing::Test,
   // Similar to above but for a LayoutSVGImage.
   LayoutSVGImage* SetSVGImageResource(const char* id, int width, int height) {
     ImageResourceContent* content = CreateImageForTest(width, height);
-    if (auto* layout_image = ToLayoutSVGImageOrNull(GetLayoutObjectById(id))) {
+    if (auto* layout_image =
+            DynamicTo<LayoutSVGImage>(GetLayoutObjectById(id))) {
       layout_image->ImageResource()->SetImageResource(content);
       return layout_image;
     }

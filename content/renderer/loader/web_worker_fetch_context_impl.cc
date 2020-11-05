@@ -20,7 +20,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
-#include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -30,6 +29,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/platform/child_url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/weak_wrapper_resource_load_info_notifier.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
@@ -90,8 +90,11 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override {
-    DCHECK(task_runner_handle);
+          freezable_task_runner_handle,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          unfreezable_task_runner_handle) override {
+    DCHECK(freezable_task_runner_handle);
+    DCHECK(unfreezable_task_runner_handle);
     DCHECK(resource_dispatcher_);
 
     // KeepAlive is not yet supported in web workers.
@@ -102,13 +105,15 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
       // Create our own URLLoader to route the request to the controller service
       // worker.
       return std::make_unique<WebURLLoaderImpl>(
-          resource_dispatcher_.get(), std::move(task_runner_handle),
+          resource_dispatcher_.get(), std::move(freezable_task_runner_handle),
+          std::move(unfreezable_task_runner_handle),
           service_worker_loader_factory_, std::move(keep_alive_handle));
     }
 
     return std::make_unique<WebURLLoaderImpl>(
-        resource_dispatcher_.get(), std::move(task_runner_handle),
-        loader_factory_, std::move(keep_alive_handle));
+        resource_dispatcher_.get(), std::move(freezable_task_runner_handle),
+        std::move(unfreezable_task_runner_handle), loader_factory_,
+        std::move(keep_alive_handle));
   }
 
   void SetServiceWorkerURLLoaderFactory(
@@ -655,8 +660,8 @@ void WebWorkerFetchContextImpl::UpdateSubresourceLoaderFactories(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories) {
   auto subresource_loader_factory_bundle =
-      base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-          std::make_unique<ChildPendingURLLoaderFactoryBundle>(
+      base::MakeRefCounted<blink::ChildURLLoaderFactoryBundle>(
+          std::make_unique<blink::ChildPendingURLLoaderFactoryBundle>(
               std::move(subresource_loader_factories)));
   loader_factory_ = network::SharedURLLoaderFactory::Create(
       subresource_loader_factory_bundle->Clone());

@@ -440,7 +440,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     // Inflate rubyRun's inner blocks.
     LayoutObject* run = parent->SlowFirstChild();
     if (run && run->IsRubyRun()) {
-      child = ToLayoutRubyRun(run)->FirstChild();
+      child = To<LayoutRubyRun>(run)->FirstChild();
       behavior = kDescendToInnerBlocks;
     }
   } else if (parent->IsListMarker()) {
@@ -506,9 +506,9 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     // the wrong cluster root to work from and get the wrong value.
     LayoutObject* marker = nullptr;
     if (parent->IsListItem())
-      marker = ToLayoutListItem(parent)->Marker();
+      marker = To<LayoutListItem>(parent)->Marker();
     else if (parent->IsLayoutNGListItem())
-      marker = ToLayoutNGListItem(parent)->Marker();
+      marker = To<LayoutNGListItem>(parent)->Marker();
 
     // A LayoutNGOutsideListMarker has a text child that needs its font
     // multiplier updated. Just mark the entire subtree, to make sure we get to

@@ -325,7 +325,6 @@ class OpenInControllerBridge
 
   OpenInToolbar* openInToolbar = [self openInToolbar];
   if (!_isOpenInToolbarDisplayed) {
-    [openInToolbar updateBottomMarginHeight];
     [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                      animations:^{
                        [openInToolbar setAlpha:1.0];
@@ -499,7 +498,7 @@ class OpenInControllerBridge
 
   UILabel* label = [[UILabel alloc] init];
   [label setTextColor:[UIColor whiteColor]];
-  [label setFont:GetUIFont(FONT_HELVETICA, true, kLabelTextSize)];
+  [label setFont:[UIFont fontWithName:@"Helvetica-Bold" size:kLabelTextSize]];
   [label setNumberOfLines:0];
   [label setShadowColor:[UIColor blackColor]];
   [label setShadowOffset:CGSizeMake(0.0, 1.0)];

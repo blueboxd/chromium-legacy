@@ -97,7 +97,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/navigation_body_loader.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
@@ -167,6 +166,7 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
+#include "third_party/blink/public/platform/tracked_child_url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/weak_wrapper_resource_load_info_notifier.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -1094,9 +1094,9 @@ CreateDefaultURLLoaderFactory() {
 //
 // It is invalid to call this in an incomplete env where
 // RenderThreadImpl::current() returns nullptr (e.g. in some tests).
-scoped_refptr<ChildURLLoaderFactoryBundle>
+scoped_refptr<blink::ChildURLLoaderFactoryBundle>
 CreateDefaultURLLoaderFactoryBundle() {
-  return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
+  return base::MakeRefCounted<blink::ChildURLLoaderFactoryBundle>(
       base::BindOnce(&CreateDefaultURLLoaderFactory));
 }
 
@@ -1281,7 +1281,9 @@ class RenderFrameImpl::FrameURLLoaderFactory
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override {
+          freezable_task_runner_handle,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          unfreezable_task_runner_handle) override {
     // This should not be called if the frame is detached.
     DCHECK(frame_);
 
@@ -1292,8 +1294,9 @@ class RenderFrameImpl::FrameURLLoaderFactory
     }
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
-        std::move(task_runner_handle), frame_->GetLoaderFactoryBundle(),
-        std::move(keep_alive_handle));
+        std::move(freezable_task_runner_handle),
+        std::move(unfreezable_task_runner_handle),
+        frame_->GetLoaderFactoryBundle(), std::move(keep_alive_handle));
   }
 
  private:
@@ -3246,7 +3249,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
   // TODO(lukasza): https://crbug.com/936696: No need to postpone setting the
   // |new_loader_factories| once we start swapping RenderFrame^H^H^H
   // RenderDocument on every cross-document navigation.
-  scoped_refptr<ChildURLLoaderFactoryBundle> new_loader_factories;
+  scoped_refptr<blink::ChildURLLoaderFactoryBundle> new_loader_factories;
   if (inherit_loaders_from_creator) {
     // The browser process didn't provide any way to fetch subresources, it
     // expects this document to inherit loaders from its parent.
@@ -3366,7 +3369,7 @@ void RenderFrameImpl::CommitFailedNavigation(
   // TODO(lukasza): https://crbug.com/936696: No need to postpone setting the
   // |new_loader_factories| once we start swapping RenderFrame^H^H^H
   // RenderDocument on every cross-document navigation.
-  scoped_refptr<ChildURLLoaderFactoryBundle> new_loader_factories =
+  scoped_refptr<blink::ChildURLLoaderFactoryBundle> new_loader_factories =
       CreateLoaderFactoryBundle(
           std::move(subresource_loader_factories),
           base::nullopt /* subresource_overrides */,
@@ -3652,7 +3655,8 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     loader_factories_ = GetLoaderFactoryBundleFallback();
 
   if (loader_factories_->IsHostChildURLLoaderFactoryBundle()) {
-    static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
+    static_cast<blink::HostChildURLLoaderFactoryBundle*>(
+        loader_factories_.get())
         ->UpdateThisAndAllClones(std::move(subresource_loader_factories));
   } else {
 #if DCHECK_IS_ON()
@@ -3665,7 +3669,8 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     if (url.IsValid() && !url.IsEmpty())
       DCHECK(url.ProtocolIs(url::kAboutScheme));
 #endif
-    auto partial_bundle = base::MakeRefCounted<ChildURLLoaderFactoryBundle>();
+    auto partial_bundle =
+        base::MakeRefCounted<blink::ChildURLLoaderFactoryBundle>();
     static_cast<blink::URLLoaderFactoryBundle*>(partial_bundle.get())
         ->Update(std::move(subresource_loader_factories));
     loader_factories_->Update(partial_bundle->PassInterface());
@@ -3711,8 +3716,8 @@ v8::Local<v8::Object> RenderFrameImpl::GetScriptableObject(
 
 void RenderFrameImpl::UpdateSubresourceFactory(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> info) {
-  auto child_info =
-      std::make_unique<ChildPendingURLLoaderFactoryBundle>(std::move(info));
+  auto child_info = std::make_unique<blink::ChildPendingURLLoaderFactoryBundle>(
+      std::move(info));
   GetLoaderFactoryBundle()->Update(std::move(child_info));
 }
 
@@ -5833,7 +5838,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   GetFrameHost()->OpenURL(std::move(params));
 }
 
-ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
+blink::ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
   if (!loader_factories_)
     loader_factories_ = GetLoaderFactoryBundleFromCreator();
   if (!loader_factories_)
@@ -5841,36 +5846,36 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
   return loader_factories_.get();
 }
 
-scoped_refptr<ChildURLLoaderFactoryBundle>
+scoped_refptr<blink::ChildURLLoaderFactoryBundle>
 RenderFrameImpl::GetLoaderFactoryBundleFallback() {
   return CreateLoaderFactoryBundle(
       nullptr, base::nullopt /* subresource_overrides */,
       mojo::NullRemote() /* prefetch_loader_factory */);
 }
 
-scoped_refptr<ChildURLLoaderFactoryBundle>
+scoped_refptr<blink::ChildURLLoaderFactoryBundle>
 RenderFrameImpl::GetLoaderFactoryBundleFromCreator() {
   RenderFrameImpl* creator = RenderFrameImpl::FromWebFrame(
       frame_->Parent() ? frame_->Parent() : frame_->Opener());
   if (creator) {
     auto bundle_info = base::WrapUnique(
-        static_cast<TrackedChildPendingURLLoaderFactoryBundle*>(
+        static_cast<blink::TrackedChildPendingURLLoaderFactoryBundle*>(
             creator->GetLoaderFactoryBundle()->Clone().release()));
-    return base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
+    return base::MakeRefCounted<blink::TrackedChildURLLoaderFactoryBundle>(
         std::move(bundle_info));
   }
   return nullptr;
 }
 
-scoped_refptr<ChildURLLoaderFactoryBundle>
+scoped_refptr<blink::ChildURLLoaderFactoryBundle>
 RenderFrameImpl::CreateLoaderFactoryBundle(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> info,
     base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory) {
-  scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories =
-      base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
+  scoped_refptr<blink::ChildURLLoaderFactoryBundle> loader_factories =
+      base::MakeRefCounted<blink::HostChildURLLoaderFactoryBundle>(
           GetTaskRunner(blink::TaskType::kInternalLoading));
 
   // CreateDefaultURLLoaderFactoryBundle can't be called if (as in some tests)
@@ -5887,7 +5892,8 @@ RenderFrameImpl::CreateLoaderFactoryBundle(
 
   if (info) {
     loader_factories->Update(
-        std::make_unique<ChildPendingURLLoaderFactoryBundle>(std::move(info)));
+        std::make_unique<blink::ChildPendingURLLoaderFactoryBundle>(
+            std::move(info)));
   }
   if (subresource_overrides) {
     loader_factories->UpdateSubresourceOverrides(&*subresource_overrides);
@@ -6358,7 +6364,7 @@ void RenderFrameImpl::LoadHTMLString(const std::string& html,
       this, kMayReplaceInitialEmptyDocument);
 
   pending_loader_factories_ = CreateLoaderFactoryBundle(
-      ChildPendingURLLoaderFactoryBundle::CreateFromDefaultFactoryImpl(
+      blink::ChildPendingURLLoaderFactoryBundle::CreateFromDefaultFactoryImpl(
           std::make_unique<network::NotImplementedURLLoaderFactory>()),
       base::nullopt,  // |subresource_overrides|
       {});            // prefetch_loader_factory

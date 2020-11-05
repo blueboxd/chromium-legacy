@@ -99,9 +99,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "non_skia_renderer_swiftshader_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -137,9 +134,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "vulkan_swiftshader_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1594,9 +1588,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1680,7 +1671,8 @@
         },
         "name": "content_shell_crash_test",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1719,7 +1711,8 @@
         },
         "name": "flatbuffers_unittests",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2159,9 +2152,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2220,9 +2210,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -9751,16 +9738,6 @@
       }
     ]
   },
-  "android-marshmallow-arm64-16-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "android-marshmallow-arm64-32-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "chromeos-amd64-generic-lacros-rel": {
     "additional_compile_targets": [
       "chrome"
@@ -14543,9 +14520,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -43092,21 +43066,6 @@
       }
     ]
   },
-  "linux-16-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux-32-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux-8-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "linux-annotator-rel": {
     "scripts": [
       {
@@ -43898,9 +43857,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -45581,9 +45537,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -45616,9 +45569,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "high_dpi_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -45648,9 +45598,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -45685,26 +45632,6 @@
         },
         "test_id_prefix": "ninja://:webdriver_wpt_tests/"
       }
-    ]
-  },
-  "linux-builderful-fast-fyi-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux-builderful-slow-fyi-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux-builderless-fast-fyi-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux-builderless-slow-fyi-rel": {
-    "additional_compile_targets": [
-      "all"
     ]
   },
   "linux-chromeos-code-coverage": {
@@ -49018,9 +48945,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -49081,7 +49005,8 @@
         },
         "name": "content_shell_crash_test",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -49120,7 +49045,8 @@
         },
         "name": "flatbuffers_unittests",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -49203,9 +49129,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "non_skia_renderer_swiftshader_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -49233,9 +49156,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "not_site_per_process_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -49363,9 +49283,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "vulkan_swiftshader_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -51095,9 +51012,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -51161,7 +51075,8 @@
         },
         "name": "content_shell_crash_test",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -51202,7 +51117,8 @@
         },
         "name": "flatbuffers_unittests",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -51289,9 +51205,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "non_skia_renderer_swiftshader_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -51321,9 +51234,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "not_site_per_process_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -51454,9 +51364,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "vulkan_swiftshader_blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -56270,9 +56177,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -56364,7 +56268,8 @@
         },
         "name": "content_shell_crash_test",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -56407,7 +56312,8 @@
         },
         "name": "flatbuffers_unittests",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -59749,9 +59655,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -59843,7 +59746,8 @@
         },
         "name": "content_shell_crash_test",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -59886,7 +59790,8 @@
         },
         "name": "flatbuffers_unittests",
         "resultdb": {
-          "enable": false
+          "enable": true,
+          "result_format": "single"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -60215,9 +60120,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -60292,9 +60194,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -60368,9 +60267,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -60443,9 +60339,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -60519,9 +60412,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -60538,21 +60428,6 @@
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       }
-    ]
-  },
-  "win-16-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "win-32-core": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "win-8-core": {
-    "additional_compile_targets": [
-      "all"
     ]
   },
   "win-annotator-rel": {
@@ -60633,9 +60508,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -63789,9 +63661,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "blink_web_tests",
-        "resultdb": {
-          "enable": true
-        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,

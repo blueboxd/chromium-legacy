@@ -206,7 +206,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a8f4c91114b542d658ca35f7d27e794340e3dce0',
+  'skia_revision': '68dcf542b79f1d718d0847560668543fae51d77e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -218,11 +218,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8a275449c2e8c3fa7b9c942c3b673def3e7f51e1',
+  'angle_revision': '658ede5d8c5caba6f5e2c4c0501bfbc345c7e2ef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '19f01495a8a18f2d222c29367901c7c1045ba4a2',
+  'swiftshader_revision': 'ad54c71632cc0f18584a7009f1e6fc44f5453bc7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '0bd50c9043c7764bb8ee3e9420d3c2b22d746890',
+  'freetype_revision': '26e2a89598d69c7aba76c83f6a1fcf1db17574ab',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '62e571e6bb4ceafccc25d7ebad2ef56db26a9216',
+  'devtools_frontend_revision': '1e2067d345cc6d4f228c09f8719ecc81c2b89aad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '9d6265bc072546e92c1cea293e209e079d7345fb',
+  'dawn_revision': '6564890116fd5629ad76948f12ad158d6f111cc3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '4735f01193b87951d66cbd3bda061f8c0106437b',
+  'tint_revision': '88dc2a4895c324a266df98c6c2543723c35d5eb5',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -379,7 +379,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:f5f465b52e5df6d4de9fbe67cc79f1914ba4dbfc',
+  'gn_version': 'git_revision:e002e68a48d1c82648eadde2f6aafa20d08c36f2',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -556,7 +556,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'c371dd4169d3400dc37199732aa4fc46cd106225',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'd4e0da5ce430325e13b1490deac030ce8e7eead0',
       'condition': 'checkout_ios',
   },
 
@@ -912,7 +912,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5bdfcd8f3397c0a51b1539d672a9ed10d4caf239',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8ca189d4e5b8190412ef21a859a55b129d443652',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1248,7 +1248,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '6d65c11720ffca764a104740c9b57b01a56ce80f',
+    Var('chromium_git') + '/openscreen' + '@' + 'ce0db01e081f64951caee1ba8c983e717bc0b9e1',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'QCu1udNpe84cj5K2ZaTcAwnDUyjm45HgGJgtnoFkp7gC'
+              'version': 'GcTt9uPsoI1ThLZlKalBAGZLijn8zwDw_BQtJwWpS08C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bc186f0ead79279e803d017329f61d5a00651c0d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@84e62ab4804ceff01698615ef01ecd57ccb3110d',
     'condition': 'checkout_src_internal',
   },
 
@@ -1588,7 +1588,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'W59w4eCMof8bZydvlzS33CNelnDp1ZjryOeIUy5x1Z8C',
+        'version': '_hGheFl2oO5agp6bFXl5GHcbq1dU78G_xuIV8hCSitQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

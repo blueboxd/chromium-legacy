@@ -1356,12 +1356,17 @@ void RenderFrameHostImpl::OnPortalActivated(
     mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> client_receiver,
     blink::TransferableMessage data,
+    uint64_t trace_id,
     base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
   auto it = portals_.insert(std::move(predecessor)).first;
 
+  TRACE_EVENT_WITH_FLOW0("navigation", "RenderFrameHostImpl::OnPortalActivated",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   GetAssociatedLocalMainFrame()->OnPortalActivated(
       (*it)->portal_token(), std::move(pending_portal),
-      std::move(client_receiver), std::move(data),
+      std::move(client_receiver), std::move(data), trace_id,
       base::BindOnce(
           [](base::OnceCallback<void(blink::mojom::PortalActivateResult)>
                  callback,
@@ -2492,7 +2497,7 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
-  if (delegate_->DidAddMessageToConsole(log_level, message, line_no,
+  if (delegate_->DidAddMessageToConsole(this, log_level, message, line_no,
                                         source_id)) {
     return;
   }
@@ -2623,6 +2628,21 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoForNavigation(
           : net::IsolationInfo::RequestType::kSubFrame;
   return ComputeIsolationInfoInternal(url::Origin::Create(destination),
                                       request_type);
+}
+
+net::IsolationInfo RenderFrameHostImpl::GetIsolationInfoForViewSource() const {
+  // Make sure a subframe has the mode set accordingly so that the
+  // cache can match it correctly.
+  net::IsolationInfo::RequestType view_source_request_type =
+      is_main_frame() ? net::IsolationInfo::RequestType::kMainFrame
+                      : net::IsolationInfo::RequestType::kSubFrame;
+
+  // Use fields from isolation_info_ to avoid computing them again.
+  DCHECK(!isolation_info_.IsEmpty());
+  return net::IsolationInfo::Create(view_source_request_type,
+                                    isolation_info_.top_frame_origin().value(),
+                                    isolation_info_.frame_origin().value(),
+                                    isolation_info_.site_for_cookies());
 }
 
 net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookies() {
@@ -9737,17 +9757,6 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
     return;
 
   DCHECK(false);
-
-  base::debug::ScopedCrashKeyString scoped_url(
-      base::debug::AllocateCrashKeyString("url",
-                                          base::debug::CrashKeySize::Size256),
-      GetLastCommittedURL().possibly_invalid_spec());
-  base::debug::ScopedCrashKeyString scoped_sandbox(
-      base::debug::AllocateCrashKeyString("sandbox",
-                                          base::debug::CrashKeySize::Size256),
-      base::StringPrintf("%u, %u", uint32_t(active_sandbox_flags_),
-                         uint32_t(*active_sandbox_flags_control_)));
-  base::debug::DumpWithoutCrashing();
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(

@@ -881,7 +881,6 @@ if (!is_android) {
       # content_browsertests uses the non-copied files instead.
       "//ppapi:copy_test_files",
       "//ppapi:copy_test_files2",
-      "//ppapi:power_saver_test_plugin",
       "//ppapi:ppapi_tests",
       "//testing/buildbot/filters:browser_tests_filters",
       "//testing/buildbot/filters:linux_trusty_rel_browser_tests_filters",
@@ -4384,7 +4383,6 @@ test("unit_tests") {
       "../browser/enterprise/reporting/extension_request/extension_request_notification_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_observer_factory_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_observer_unittest.cc",
-      "../browser/enterprise/reporting/extension_request/extension_request_report_throttler_unittest.cc",
       "../browser/enterprise/reporting/policy_info_unittest.cc",
       "../browser/enterprise/reporting/profile_report_generator_unittest.cc",
       "../browser/enterprise/reporting/report_generator_unittest.cc",

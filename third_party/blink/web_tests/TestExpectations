@@ -1183,10 +1183,8 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.h
 crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
 ### Textfield NG
-crbug.com/1040826 fast/forms/input-in-table-cell-no-value.html [ Failure ]
 crbug.com/1040826 [ Linux ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/1040826 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
-crbug.com/1040826 fast/table/cell-change-baseline-then-border.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -5646,7 +5644,7 @@ crbug.com/1046784 http/tests/devtools/bindings/navigator-frame-attach-detach.js 
 crbug.com/1046784 http/tests/devtools/forced-layout-in-microtask.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
-crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Timeout ]
+crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Failure Timeout ]
 crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Pass Timeout ]
 
 # Sheriff 2020-01-28
@@ -6236,13 +6234,12 @@ crbug.com/997202 [ Mac ] virtual/threaded/external/wpt/css/css-transforms/animat
 crbug.com/997202 [ Mac ] virtual/transform-interop/external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
 
 # Sheriff 2020-11-04
-crbug.com/1144273 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]
+crbug.com/1144273 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure Timeout ]
 crbug.com/1145424 [ Linux ] http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Timeout ]
 crbug.com/1145424 [ Win ] http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Timeout ]
-
-# DevTools roll
-crbug.com/1011811 http/tests/devtools/tracing/timeline-misc/timeline-user-timings.js [ Skip ]
-crbug.com/1011811 http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Skip ]
+crbug.com/1145641 external/wpt/requestidlecallback/callback-invoked.html [ Pass Timeout ]
+crbug.com/1046784 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Timeout ]
+crbug.com/1145742 [ Fuchsia ] virtual/stable/http/tests/navigation/location-assign-adds-history-item.html [ Pass Crash Timeout ]
 
 # Disabled until CL with fix gets merged https://chromium-review.googlesource.com/c/chromium/src/+/2504259
 crbug.com/1127115 inspector-protocol/runtime/runtime-console-log-node-letter-case.js [ Failure ]

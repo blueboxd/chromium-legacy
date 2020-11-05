@@ -3430,8 +3430,6 @@ static_library("browser") {
       "enterprise/reporting/extension_request/extension_request_observer_factory.h",
       "enterprise/reporting/extension_request/extension_request_policy_handler.cc",
       "enterprise/reporting/extension_request/extension_request_policy_handler.h",
-      "enterprise/reporting/extension_request/extension_request_report_throttler.cc",
-      "enterprise/reporting/extension_request/extension_request_report_throttler.h",
       "enterprise/reporting/prefs.cc",
       "enterprise/reporting/prefs.h",
       "enterprise/reporting/profile_report_generator_desktop.cc",
@@ -4029,6 +4027,7 @@ static_library("browser") {
       "//components/services/app_service/public/cpp:intents",
       "//components/services/app_service/public/cpp:preferred_apps",
       "//components/services/app_service/public/cpp:publisher",
+      "//components/shared_highlighting/core/common",
       "//components/soda:constants",
       "//components/ukm/content",
       "//components/web_modal",
@@ -6279,6 +6278,9 @@ proto_library("permissions_proto") {
 }
 
 grit("resources") {
+  # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+  run_under_python2 = true
+
   source = "browser_resources.grd"
 
   # Required due to flattenhtml = "true" on a generated file.
@@ -6308,10 +6310,11 @@ grit("resources") {
   deps = [
     ":chrome_internal_resources_gen",
     "//chrome/browser/resources/browser_switch:web_components",
-    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
+    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_webui_js",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces_js",
     "//device/bluetooth/public/mojom:mojom_js",
-    "//services/device//public/mojom:usb_test_js",
+    "//services/device/public/mojom:usb_test_webui_js",
+    "//services/device/public/mojom:usb_webui_js",
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
   ]

@@ -99,6 +99,7 @@
 #include "content/browser/web_package/save_as_web_bundle_job.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
+#include "content/browser/xr/service/xr_runtime_manager_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -155,6 +156,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
@@ -3240,20 +3242,28 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
                         "WebContentsImpl::UpdateVisibilityAndNotifyPageAndView",
                         "new_visibility", static_cast<int>(new_visibility));
   // Only hide the page if there are no entities capturing screenshots
-  // or video (e.g. mirroring). If there are, apply the correct state of
-  // kHidden or kHiddenButPainting.
+  // or video (e.g. mirroring or WebXR). If there are, apply the correct state
+  // of kHidden or kHiddenButPainting.
+  bool web_contents_visible_in_vr = false;
+#if BUILDFLAG(ENABLE_VR)
+  web_contents_visible_in_vr =
+      XRRuntimeManagerImpl::GetImmersiveSessionWebContents() == this;
+#endif
+
   PageVisibilityState page_visibility;
-  if (new_visibility == Visibility::VISIBLE || visible_capturer_count_ > 0)
+  if (new_visibility == Visibility::VISIBLE || visible_capturer_count_ > 0 ||
+      web_contents_visible_in_vr) {
     page_visibility = PageVisibilityState::kVisible;
-  else if (hidden_capturer_count_ > 0)
+  } else if (hidden_capturer_count_ > 0) {
     page_visibility = PageVisibilityState::kHiddenButPainting;
-  else
+  } else {
     page_visibility = PageVisibilityState::kHidden;
+  }
   // If there are entities in Picture-in-Picture mode, don't activate the
   // "disable rendering" optimization. A crashed frame might be covered by a sad
   // tab. See docs on SadTabHelper exactly when it is or isn't. Either way,
   // don't make it visible.
-  const bool view_is_visible =
+  bool view_is_visible =
       !IsCrashed() && (page_visibility != PageVisibilityState::kHidden ||
                        HasPictureInPictureVideo());
 
@@ -5429,8 +5439,11 @@ void WebContentsImpl::DidLoadResourceFromMemoryCache(
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
+
+    DCHECK(!blink::IsRequestDestinationFrame(request_destination));
     partition->GetNetworkContext()->NotifyExternalCacheHit(
-        url, http_method, source->GetNetworkIsolationKey());
+        url, http_method, source->GetNetworkIsolationKey(),
+        false /* is_subframe_document_resource */);
   }
 }
 
@@ -5553,8 +5566,8 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   const GURL url(content::kViewSourceScheme + std::string(":") +
                  frame_entry->url().spec());
   navigation_entry->SetVirtualURL(url);
-  navigation_entry->set_isolation_info(
-      frame->GetIsolationInfoForSubresources());
+
+  navigation_entry->set_isolation_info(frame->GetIsolationInfoForViewSource());
 
   // Do not restore scroller position.
   // TODO(creis, lukasza, arthursonzogni): Do not reuse the original PageState,
@@ -7521,6 +7534,7 @@ void WebContentsImpl::OnFocusedElementChangedInFrame(
 }
 
 bool WebContentsImpl::DidAddMessageToConsole(
+    RenderFrameHost* source_frame,
     blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message,
     int32_t line_no,
@@ -7529,7 +7543,8 @@ bool WebContentsImpl::DidAddMessageToConsole(
                         "message", base::trace_event::ValueToString(message));
 
   observers_.ForEachObserver([&](WebContentsObserver* observer) {
-    observer->OnDidAddMessageToConsole(log_level, message, line_no, source_id);
+    observer->OnDidAddMessageToConsole(source_frame, log_level, message,
+                                       line_no, source_id);
   });
 
   if (!delegate_)

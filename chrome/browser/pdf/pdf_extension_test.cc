@@ -911,6 +911,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerThumbnail) {
   RunTestsInJsModule("viewer_thumbnail_test.js", "test.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, Fullscreen) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("fullscreen_test.js", "test.pdf");
+}
+
 class PDFExtensionJSTest : public PDFExtensionJSTestBase,
                            public testing::WithParamInterface<bool> {
  public:
@@ -2951,24 +2957,9 @@ class PDFExtensionAccessibilityTextExtractionTest
   }
 
  private:
-  class TestExpectationsLocator
-      : public content::AccessibilityTestExpectationsLocator {
-   public:
-    TestExpectationsLocator() = default;
-    ~TestExpectationsLocator() override = default;
-
-    base::FilePath::StringType GetExpectedFileSuffix() override {
-      return FILE_PATH_LITERAL("-expected.txt");
-    }
-    base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() override {
-      return FILE_PATH_LITERAL("");
-    }
-  };
-
   void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
     // Load the expectation file.
-    TestExpectationsLocator locator;
-    content::DumpAccessibilityTestHelper test_helper(&locator);
+    content::DumpAccessibilityTestHelper test_helper("content");
     base::Optional<base::FilePath> expected_file_path =
         test_helper.GetExpectationFilePath(test_file_path);
     ASSERT_TRUE(expected_file_path) << "No expectation file present.";
@@ -3212,7 +3203,7 @@ class PDFExtensionAccessibilityTreeDumpTest
     // Exit without running the test if we can't find an expectation file or if
     // the expectation file contains a skip marker.
     // This is used to skip certain tests on certain platforms.
-    content::DumpAccessibilityTestHelper test_helper(formatter.get());
+    content::DumpAccessibilityTestHelper test_helper(test_pass_.name);
     base::FilePath expected_file_path =
         test_helper.GetExpectationFilePath(test_file_path);
     if (expected_file_path.empty()) {

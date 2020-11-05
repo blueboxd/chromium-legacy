@@ -520,11 +520,11 @@ This file contains the strings for ash.
       <message name="IDS_GESTURE_NOTIFICATION_MESSAGE_LEARN_MORE" desc="The body of the notification to show off new gestures. This notification body links to the help page for the gestures.">
         Use gestures to quickly switch between apps and interact with your Chromebook in tablet mode.
       </message>
-      <message name="IDS_OVERVIEW_REVERSE_GESTURE_NOTIFICATION_TITLE" desc="The title of the notification to change reverse gesture when entering/exiting overview mode">
-        The Overview touchpad gesture has changed
+      <message name="IDS_CHANGE_ENTER_OVERVIEW_REVERSE_GESTURE" desc="The toast of changing enter overview gesture">
+        The touchpad gesture to enter Overview has changed. Swipe up with three fingers to enter Overview.
       </message>
-      <message name="IDS_OVERVIEW_REVERSE_GESTURE_NOTIFICATION_MESSAGE" desc="The body of the notification to change reverse gesture when entering/exiting overview mode">
-        Swipe up with three fingers to open and down to close the Overview.
+      <message name="IDS_CHANGE_EXIT_OVERVIEW_REVERSE_GESTURE" desc="The toast of changing exit overview gesture">
+        The touchpad gesture to exit Overview has changed. Swipe down with three fingers to exit Overview.
       </message>
       <message name="IDS_CHANGE_NEXT_DESK_REVERSE_GESTURE" desc="The toast of changing reverse gesture to switch to the next desk.">
         The touchpad gesture to switch to the next desk has changed. Swipe right with four fingers to switch to the next desk.
@@ -2444,6 +2444,21 @@ This file contains the strings for ash.
       </message>
 
       <!-- In-session auth dialog strings -->
+      <message name="IDS_ASH_IN_SESSION_AUTH_TITLE" desc="Text shown in the auth dialog to indicate authentication is needed.">
+        Verify your identity
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_ORIGIN_NAME_PROMPT" desc="Text shown in the auth dialog to indicate which website / app we are authenticating for.">
+        <ph name="ORIGIN_NAME">$1<ex>example.com</ex></ph> would like to confirm it's you
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_ACCESSIBLE_TITLE" desc="Accessibility text read by chromevox to indicate which website / app we are authenticating for.">
+        Verify your identity: <ph name="ORIGIN_NAME">$1<ex>example.com</ex></ph> would like to confirm it's you
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_PIN_INCORRECT" desc="Text shown in the auth dialog to tell the user that incorrect PIN was entered">
+        Incorrect PIN
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_PIN_TOO_MANY_ATTEMPTS" desc="Text shown in the auth dialog to tell the user that PIN auth has reached maximum attempts">
+        Too many attempts
+      </message>
       <message name="IDS_ASH_IN_SESSION_AUTH_FINGERPRINT_AVAILABLE" desc="Text shown in the auth dialog to remind user that fingerprint auth is supported">
         Authenticate with fingerprint
       </message>

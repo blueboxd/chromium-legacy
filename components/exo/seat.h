@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_SEAT_H_
 #define COMPONENTS_EXO_SEAT_H_
 
+#include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -30,14 +31,15 @@ class KeyEvent;
 
 namespace exo {
 class DragDropOperation;
+class ExtendedDragSource;
 class ScopedDataSource;
 class SeatObserver;
 class Surface;
 class XkbTracker;
 
 // The maximum number of different data types that we will write to the
-// clipboard (plain text, RTF, HTML, image)
-constexpr int kMaxClipboardDataTypes = 4;
+// clipboard (plain text, RTF, HTML, image, text/uri-list)
+constexpr int kMaxClipboardDataTypes = 5;
 
 // Seat object represent a group of input devices such as keyboard, pointer and
 // touch devices and keeps track of input focus.
@@ -114,6 +116,11 @@ class Seat : public aura::client::FocusChangeObserver,
   void OnKeyboardLayoutNameChanged(const std::string& layout_name) override;
 #endif
 
+  void set_extended_drag_source(ExtendedDragSource* extended_drag_source) {
+    DCHECK(!extended_drag_source || !extended_drag_source_);
+    extended_drag_source_ = extended_drag_source;
+  }
+
   void set_physical_code_for_currently_processing_event_for_testing(
       ui::DomCode physical_code_for_currently_processing_event) {
     physical_code_for_currently_processing_event_ =
@@ -151,6 +158,10 @@ class Seat : public aura::client::FocusChangeObserver,
                       scoped_refptr<RefCountedScopedClipboardWriter> writer,
                       const SkBitmap& bitmap);
 #endif  // defined(OS_CHROMEOS)
+  void OnFilenamesRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
+                       base::OnceClosure callback,
+                       const std::string& mime_type,
+                       const std::vector<uint8_t>& data);
 
   void OnAllReadsFinished(
       scoped_refptr<RefCountedScopedClipboardWriter> writer);
@@ -178,6 +189,8 @@ class Seat : public aura::client::FocusChangeObserver,
   std::unique_ptr<UILockController> ui_lock_controller_;
   std::unique_ptr<XkbTracker> xkb_tracker_;
 #endif  // defined(OS_CHROMEOS)
+
+  ExtendedDragSource* extended_drag_source_ = nullptr;
 
   base::WeakPtrFactory<Seat> weak_ptr_factory_{this};
 

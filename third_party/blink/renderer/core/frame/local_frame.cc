@@ -174,6 +174,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -1837,6 +1838,10 @@ void LocalFrame::WasHidden() {
     return;
   hidden_ = true;
 
+  if (content_capture_manager_) {
+    content_capture_manager_->OnFrameWasHidden();
+  }
+
   // An iframe may get a "was hidden" notification before it has been attached
   // to the frame tree; in that case, skip further processing.
   if (!Owner() || IsProvisional())
@@ -1874,6 +1879,10 @@ void LocalFrame::WasShown() {
   hidden_ = false;
   if (LocalFrameView* frame_view = View())
     frame_view->ScheduleAnimation();
+
+  if (content_capture_manager_) {
+    content_capture_manager_->OnFrameWasShown();
+  }
 }
 
 bool LocalFrame::ClipsContent() const {
@@ -2566,9 +2575,13 @@ void LocalFrame::OnPortalActivated(
     mojo::PendingAssociatedRemote<mojom::blink::Portal> portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient> portal_client,
     BlinkTransferableMessage data,
+    uint64_t trace_id,
     OnPortalActivatedCallback callback) {
   DCHECK(GetDocument());
   PaintTiming::From(*GetDocument()).OnPortalActivate();
+
+  TRACE_EVENT_WITH_FLOW0("navigation", "LocalFrame::OnPortalActivated",
+                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN);
 
   DOMWindowPortalHost::portalHost(*DomWindow())->OnPortalActivated();
   GetPage()->SetInsidePortal(false);

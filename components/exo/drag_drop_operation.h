@@ -35,6 +35,7 @@ class CopyOutputResult;
 }
 
 namespace exo {
+class ExtendedDragSource;
 class ScopedDataSource;
 
 // This class represents an ongoing drag-drop operation started by an exo
@@ -54,7 +55,8 @@ class DragDropOperation : public DataSourceObserver,
       Surface* origin,
       Surface* icon,
       const gfx::PointF& drag_start_point,
-      ui::mojom::DragEventSource event_source);
+      ui::mojom::DragEventSource event_source,
+      ExtendedDragSource* extended_drag_source);
 
   // Abort the operation if it hasn't been started yet, otherwise do nothing.
   void AbortIfPending();
@@ -85,7 +87,8 @@ class DragDropOperation : public DataSourceObserver,
                     Surface* origin,
                     Surface* icon,
                     const gfx::PointF& drag_start_point,
-                    ui::mojom::DragEventSource event_source);
+                    ui::mojom::DragEventSource event_source,
+                    ExtendedDragSource* extended_drag_source);
   ~DragDropOperation() override;
 
   void CaptureDragIcon();
@@ -93,6 +96,8 @@ class DragDropOperation : public DataSourceObserver,
 
   void OnTextRead(const std::string& mime_type, base::string16 data);
   void OnHTMLRead(const std::string& mime_type, base::string16 data);
+  void OnFilenamesRead(const std::string& mime_type,
+                       const std::vector<uint8_t>& data);
 
   void ScheduleStartDragDropOperation();
 
@@ -129,7 +134,9 @@ class DragDropOperation : public DataSourceObserver,
 
   ui::mojom::DragEventSource event_source_;
 
-  base::WeakPtrFactory<DragDropOperation> weak_ptr_factory_;
+  ExtendedDragSource* extended_drag_source_;
+
+  base::WeakPtrFactory<DragDropOperation> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragDropOperation);
 };

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -422,6 +423,8 @@ source_set("chromeos") {
     "accessibility/magnifier_type.h",
     "accessibility/select_to_speak_event_handler_delegate.cc",
     "accessibility/select_to_speak_event_handler_delegate.h",
+    "account_manager/account_manager_edu_coexistence_controller.cc",
+    "account_manager/account_manager_edu_coexistence_controller.h",
     "account_manager/account_manager_facade_factory_ash.cc",
     "account_manager/account_manager_migrator.cc",
     "account_manager/account_manager_migrator.h",
@@ -921,6 +924,8 @@ source_set("chromeos") {
     "child_accounts/child_user_service.h",
     "child_accounts/child_user_service_factory.cc",
     "child_accounts/child_user_service_factory.h",
+    "child_accounts/edu_coexistence_tos_store_utils.cc",
+    "child_accounts/edu_coexistence_tos_store_utils.h",
     "child_accounts/event_based_status_reporting_service.cc",
     "child_accounts/event_based_status_reporting_service.h",
     "child_accounts/event_based_status_reporting_service_factory.cc",
@@ -3022,7 +3027,8 @@ source_set("chromeos") {
   }
 }
 
-action("dbus_service_files") {
+# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+python2_action("dbus_service_files") {
   sources = [
     "dbus/org.chromium.ChromeFeaturesService.conf",
     "dbus/org.chromium.ComponentUpdaterService.conf",
@@ -3205,6 +3211,7 @@ source_set("unit_tests") {
     "../policy/default_geolocation_policy_handler_unittest.cc",
     "../resources/chromeos/zip_archiver/test/char_coding_test.cc",
     "../ui/browser_finder_chromeos_unittest.cc",
+    "account_manager/account_manager_edu_coexistence_controller_unittest.cc",
     "account_manager/account_migration_runner_unittest.cc",
     "android_sms/android_sms_app_manager_impl_unittest.cc",
     "android_sms/android_sms_app_setup_controller_impl_unittest.cc",
@@ -3989,7 +3996,10 @@ source_set("unit_tests") {
         [ "//chromeos/services/chromebox_for_meetings/public/cpp:test_support" ]
   }
 
-  data = [ "//chromeos/test/data/" ]
+  data = [
+    "//chromeos/test/data/",
+    "//third_party/private_membership/src/internal/testing/regression_test_data/cros_test_data.binarypb",
+  ]
 }
 
 proto_library("attestation_proto") {
@@ -4031,7 +4041,8 @@ proto_library("print_job_info_proto") {
 
 device_policy_remover_path = "$target_gen_dir/device_policy_remover.cc"
 
-action("device_policy_remover_generate") {
+# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+python2_action("device_policy_remover_generate") {
   script = "policy/tools/generate_device_policy_remover.py"
   descriptor_pool_path = "//third_party/protobuf/python"
   symbol_database_path = "$root_out_dir/pyproto"

@@ -11,6 +11,7 @@ import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
+import org.chromium.ui.base.UiFeatures;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -91,9 +92,6 @@ public final class ProductionSupportedFlagList {
                             + "of the total screen size. Depending on the number of WebViews and "
                             + "the size of the screen this might be expensive so hidden behind a "
                             + "feature flag until the true runtime cost can be measured."),
-            Flag.baseFeature(BlinkFeatures.WEB_COMPONENTS_V0,
-                    "Re-enables the deprecated Web Components v0 features (Shadow DOM v0, Custom "
-                            + "Elements v0, and HTML Imports)."),
             Flag.baseFeature(AwFeatures.WEBVIEW_DISPLAY_CUTOUT,
                     "Enables display cutout (notch) support in WebView for Android P and above."),
             Flag.baseFeature(AwFeatures.WEBVIEW_CPU_AFFINITY_RESTRICT_TO_LITTLE_CORES,
@@ -103,5 +101,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES,
                     "Enables autoupgrades for audio/video/image mixed content when mixed content "
                             + "mode is set to MIXED_CONTENT_COMPATIBILITY_MODE"),
+            Flag.baseFeature(
+                    UiFeatures.SWIPE_TO_MOVE_CURSOR, "Enables swipe to move cursor feature."),
     };
 }

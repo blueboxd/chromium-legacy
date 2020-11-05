@@ -523,22 +523,6 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
   return true;
 }
 
-void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
-  EXPECT_TRUE(WaitForLoadStop(shell->web_contents()));
-  TestNavigationObserver same_tab_observer(shell->web_contents(), 1);
-
-  OpenURLParams params(
-      url,
-      content::Referrer(shell->web_contents()->GetLastCommittedURL(),
-                        network::mojom::ReferrerPolicy::kAlways),
-      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
-      true /* is_renderer_initiated */);
-  params.initiator_origin = url::Origin::Create(url);
-  shell->OpenURLFromTab(shell->web_contents(), params);
-
-  same_tab_observer.Wait();
-}
-
 // Helper function to generate a feature policy for a single feature and a list
 // of origins.
 // (Equivalent to the declared policy "feature origin1 origin2 ...".)
@@ -812,8 +796,6 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kDocumentUserActivationRequiredPolicy);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "FeaturePolicyAutoplayFeature");
   }
 
   bool AutoplayAllowed(const ToRenderFrameHost& adapter,
@@ -828,12 +810,6 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
           rfh, test_script, &worked));
     }
     return worked;
-  }
-
-  void NavigateFrameAndWait(FrameTreeNode* node, const GURL& url) {
-    NavigateFrameToURL(node, url);
-    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-    EXPECT_EQ(url, node->current_url());
   }
 };
 
@@ -4262,9 +4238,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, OriginReplication) {
 
 // Test that HasReceivedUserGesture and HasReceivedUserGestureBeforeNavigation
 // are propagated correctly across origins.
-// Flaky. https://crbug.com/1014175
 IN_PROC_BROWSER_TEST_P(SitePerProcessAutoplayBrowserTest,
-                       DISABLED_PropagateUserGestureFlag) {
+                       PropagateUserGestureFlag) {
   GURL main_url(embedded_test_server()->GetURL(
       "example.com", "/media/autoplay/autoplay-enabled.html"));
   GURL foo_url(embedded_test_server()->GetURL(
@@ -4277,12 +4252,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessAutoplayBrowserTest,
       "test.example.com", "/media/autoplay/autoplay-disabled.html"));
 
   // Load a page with an iframe that has autoplay.
-  OpenURLBlockUntilNavigationComplete(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Navigate the subframes to cross-origin pages.
-  NavigateFrameAndWait(root->child_at(0), foo_url);
-  NavigateFrameAndWait(root->child_at(0)->child_at(0), bar_url);
+  EXPECT_TRUE(NavigateFrameToURL(root->child_at(0), foo_url));
+  EXPECT_TRUE(NavigateFrameToURL(root->child_at(0)->child_at(0), bar_url));
 
   // Test that all frames can autoplay if there has been a gesture in the top
   // frame.
@@ -4291,12 +4266,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessAutoplayBrowserTest,
   EXPECT_TRUE(AutoplayAllowed(root->child_at(0)->child_at(0), false));
 
   // Navigate to a new page on the same origin.
-  OpenURLBlockUntilNavigationComplete(shell(), secondary_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), secondary_url));
   root = web_contents()->GetFrameTree()->root();
 
   // Navigate the subframes to cross-origin pages.
-  NavigateFrameAndWait(root->child_at(0), foo_url);
-  NavigateFrameAndWait(root->child_at(0)->child_at(0), bar_url);
+  EXPECT_TRUE(NavigateFrameToURL(root->child_at(0), foo_url));
+  EXPECT_TRUE(NavigateFrameToURL(root->child_at(0)->child_at(0), bar_url));
 
   // Test that all frames can autoplay because the gesture bit has been passed
   // through the navigation.
@@ -4305,16 +4280,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessAutoplayBrowserTest,
   EXPECT_TRUE(AutoplayAllowed(root->child_at(0)->child_at(0), false));
 
   // Navigate to a page with autoplay disabled.
-  OpenURLBlockUntilNavigationComplete(shell(), disabled_url);
-  NavigateFrameAndWait(root->child_at(0), foo_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), disabled_url));
+  EXPECT_TRUE(NavigateFrameToURL(root->child_at(0), foo_url));
 
   // Test that autoplay is no longer allowed.
   EXPECT_TRUE(AutoplayAllowed(shell(), false));
   EXPECT_FALSE(AutoplayAllowed(root->child_at(0), false));
 
   // Navigate to another origin and make sure autoplay is disabled.
-  OpenURLBlockUntilNavigationComplete(shell(), foo_url);
-  NavigateFrameAndWait(root->child_at(0), bar_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), foo_url));
+  EXPECT_TRUE(NavigateFrameToURL(root->child_at(0), bar_url));
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
 }
@@ -4654,17 +4629,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // checking whether the grandchild frame added in step 3 sees proper sandbox
 // flags and origin for its (remote) parent.  This wasn't addressed when
 // https://crbug.com/423587 was fixed.
-// TODO(alexmos): Re-enable when https://crbug.com/610893 is fixed.
-IN_PROC_BROWSER_TEST_P(
-    SitePerProcessBrowserTest,
-    DISABLED_ProxiesForNewChildFramesHaveCorrectReplicationState) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+                       ProxiesForNewChildFramesHaveCorrectReplicationState) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  TestNavigationObserver observer(shell()->web_contents());
 
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
@@ -4676,17 +4648,18 @@ IN_PROC_BROWSER_TEST_P(
   // In the root frame, add a new sandboxed local frame, which itself has a
   // child frame on baz.com.  Wait for three RenderFrameHosts to be created:
   // the new sandboxed local frame, its child (while it's still local), and a
-  // pending RFH when starting the cross-site navigation to baz.com.
+  // speculative RFH when starting the cross-site navigation to baz.com.
   RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 3);
   EXPECT_TRUE(ExecuteScript(root,
                             "addFrame('/frame_tree/page_with_one_frame.html',"
-                            "         'allow-scripts allow-same-origin'))"));
+                            "         'allow-scripts allow-same-origin')"));
   frame_observer.Wait();
 
   // Wait for the cross-site navigation to baz.com in the grandchild to finish.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   FrameTreeNode* bottom_child = root->child_at(1)->child_at(0);
-  TestFrameNavigationObserver navigation_observer(bottom_child);
-  navigation_observer.Wait();
+  EXPECT_EQ(embedded_test_server()->GetURL("baz.com", "/title1.html"),
+            bottom_child->current_url());
 
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
@@ -4698,9 +4671,12 @@ IN_PROC_BROWSER_TEST_P(
       DepictFrameTree(root));
 
   // Use location.ancestorOrigins to check that the grandchild on baz.com sees
-  // correct origin for its parent.
-  EXPECT_EQ(ListValueOf(url::Origin::Create(main_url)),
-            EvalJs(bottom_child, "Array.from(location.ancestorOrigins);"));
+  // correct origin for its parent and grandparent, which are at the same URL
+  // and origin (namely, page_with_one_frame.html on the server's default
+  // origin).
+  EXPECT_EQ(
+      ListValueOf(url::Origin::Create(main_url), url::Origin::Create(main_url)),
+      EvalJs(bottom_child, "Array.from(location.ancestorOrigins);"));
 
   // Check that the sandbox flags in the browser process are correct.
   // "allow-scripts" resets both network::mojom::WebSandboxFlags::Scripts and

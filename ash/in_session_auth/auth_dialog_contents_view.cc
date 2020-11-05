@@ -34,10 +34,7 @@
 namespace ash {
 namespace {
 
-// TODO(b/164195709): Move these strings to a grd file.
-const char kTitle[] = "Verify it's you";
-
-const int kContainerPreferredWidth = 512;
+const int kContainerPreferredWidth = 340;
 const int kSpacingAfterAvatar = 18;
 const int kSpacingAfterTitle = 16;
 
@@ -66,6 +63,8 @@ constexpr SkColor kDisabledFingerprintIconColor =
     SkColorSetA(SK_ColorDKGRAY, 97);
 
 constexpr int kSpacingBeforeButtons = 32;
+
+constexpr int kMaxPinAttempts = 5;
 
 }  // namespace
 
@@ -257,11 +256,71 @@ class AuthDialogContentsView::FingerprintView : public views::View {
   base::OneShotTimer reset_state_;
 };
 
+class AuthDialogContentsView::TitleLabel : public views::Label {
+ public:
+  TitleLabel() {
+    SetSubpixelRenderingEnabled(false);
+    SetAutoColorReadabilityEnabled(false);
+    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+
+    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+
+    SetFontList(base_font_list.Derive(kTitleFontSizeDeltaDp,
+                                      gfx::Font::FontStyle::NORMAL,
+                                      gfx::Font::Weight::NORMAL));
+    SetMaximumWidth(kContainerPreferredWidth);
+    SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+
+    SetPreferredSize(gfx::Size(kContainerPreferredWidth,
+                               GetHeightForWidth(kContainerPreferredWidth)));
+    SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  }
+
+  bool IsShowingError() const { return is_showing_error_; }
+
+  void ShowTitle() {
+    base::string16 title =
+        l10n_util::GetStringUTF16(IDS_ASH_IN_SESSION_AUTH_TITLE);
+    SetText(title);
+    SetEnabledColor(SK_ColorBLACK);
+    is_showing_error_ = false;
+    SetAccessibleName(title);
+  }
+
+  void ShowError(const base::string16& error_text) {
+    SetText(error_text);
+    SetEnabledColor(SK_ColorRED);
+    is_showing_error_ = true;
+    SetAccessibleName(error_text);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                             true /*send_native_event*/);
+  }
+
+  // views::View
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kStaticText;
+    node_data->SetName(accessible_name_);
+  }
+
+ private:
+  void SetAccessibleName(const base::string16& name) {
+    accessible_name_ = name;
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                             true /*send_native_event*/);
+  }
+
+  bool is_showing_error_ = false;
+  base::string16 accessible_name_;
+};
+
 AuthDialogContentsView::AuthDialogContentsView(
     uint32_t auth_methods,
+    const std::string& origin_name,
     const AuthMethodsMetadata& auth_metadata,
     const UserAvatar& avatar)
-    : auth_methods_(auth_methods), auth_metadata_(auth_metadata) {
+    : auth_methods_(auth_methods),
+      origin_name_(origin_name),
+      auth_metadata_(auth_metadata) {
   DCHECK(auth_methods_ & kAuthPassword);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -281,6 +340,8 @@ AuthDialogContentsView::AuthDialogContentsView(
   AddAvatarView(avatar);
   AddVerticalSpacing(kSpacingAfterAvatar);
   AddTitleView();
+  AddVerticalSpacing(kSpacingAfterTitle);
+  AddOriginNameView();
   AddVerticalSpacing(kSpacingAfterTitle);
   if (auth_methods_ & kAuthPin) {
     if (LoginPinInputView::IsAutosubmitSupported(
@@ -326,24 +387,28 @@ void AuthDialogContentsView::AddAvatarView(const UserAvatar& avatar) {
 }
 
 void AuthDialogContentsView::AddTitleView() {
-  title_ = container_->AddChildView(std::make_unique<views::Label>());
-  title_->SetEnabledColor(SK_ColorBLACK);
-  title_->SetSubpixelRenderingEnabled(false);
-  title_->SetAutoColorReadabilityEnabled(false);
-  title_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  title_ = container_->AddChildView(std::make_unique<TitleLabel>());
+  title_->ShowTitle();
+}
 
-  const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+void AuthDialogContentsView::AddOriginNameView() {
+  origin_name_view_ =
+      container_->AddChildView(std::make_unique<views::Label>());
+  origin_name_view_->SetEnabledColor(SK_ColorBLACK);
+  origin_name_view_->SetSubpixelRenderingEnabled(false);
+  origin_name_view_->SetAutoColorReadabilityEnabled(false);
+  origin_name_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
-  title_->SetFontList(base_font_list.Derive(kTitleFontSizeDeltaDp,
-                                            gfx::Font::FontStyle::NORMAL,
-                                            gfx::Font::Weight::NORMAL));
-  title_->SetText(base::UTF8ToUTF16(kTitle));
-  title_->SetMaximumWidth(kContainerPreferredWidth);
-  title_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+  origin_name_view_->SetText(
+      l10n_util::GetStringFUTF16(IDS_ASH_IN_SESSION_AUTH_ORIGIN_NAME_PROMPT,
+                                 base::UTF8ToUTF16(origin_name_)));
+  origin_name_view_->SetMaximumWidth(kContainerPreferredWidth);
+  origin_name_view_->SetMultiLine(true);
 
-  title_->SetPreferredSize(
-      gfx::Size(kContainerPreferredWidth, title_->height()));
-  title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  origin_name_view_->SetPreferredSize(gfx::Size(
+      kContainerPreferredWidth,
+      origin_name_view_->GetHeightForWidth(kContainerPreferredWidth)));
+  origin_name_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 }
 
 void AuthDialogContentsView::AddPinTextInputView() {
@@ -377,32 +442,75 @@ void AuthDialogContentsView::AddPinPadView() {
   if (pin_autosubmit_on_) {
     pin_pad_view_ = container_->AddChildView(std::make_unique<LoginPinView>(
         LoginPinView::Style::kAlphanumeric, palette_,
-        base::BindRepeating(&LoginPinInputView::InsertDigit,
-                            base::Unretained(pin_digit_input_view_)),
-        base::BindRepeating(&LoginPinInputView::Backspace,
-                            base::Unretained(pin_digit_input_view_))));
+        base::BindRepeating(&AuthDialogContentsView::OnInsertDigitFromPinPad,
+                            base::Unretained(this)),
+        base::BindRepeating(&AuthDialogContentsView::OnBackspaceFromPinPad,
+                            base::Unretained(this))));
     pin_digit_input_view_->Init(
         base::BindRepeating(&AuthDialogContentsView::OnAuthSubmit,
                             base::Unretained(this)),
-        base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
-                            base::Unretained(pin_pad_view_)));
+        base::BindRepeating(&AuthDialogContentsView::OnPinTextChanged,
+                            base::Unretained(this)));
   } else {
     pin_pad_view_ = container_->AddChildView(std::make_unique<LoginPinView>(
         LoginPinView::Style::kAlphanumeric, palette_,
-        base::BindRepeating(&LoginPasswordView::InsertNumber,
-                            base::Unretained(pin_text_input_view_)),
-        base::BindRepeating(&LoginPasswordView::Backspace,
-                            base::Unretained(pin_text_input_view_)),
+        base::BindRepeating(&AuthDialogContentsView::OnInsertDigitFromPinPad,
+                            base::Unretained(this)),
+        base::BindRepeating(&AuthDialogContentsView::OnBackspaceFromPinPad,
+                            base::Unretained(this)),
         base::BindRepeating(&LoginPasswordView::SubmitPassword,
                             base::Unretained(pin_text_input_view_))));
     pin_text_input_view_->Init(
         base::BindRepeating(&AuthDialogContentsView::OnAuthSubmit,
                             base::Unretained(this)),
-        base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
-                            base::Unretained(pin_pad_view_)),
+        base::BindRepeating(&AuthDialogContentsView::OnPinTextChanged,
+                            base::Unretained(this)),
         base::DoNothing(), views::Button::PressedCallback());
   }
   pin_pad_view_->SetVisible(true);
+}
+
+void AuthDialogContentsView::OnInsertDigitFromPinPad(int digit) {
+  // Ignore anything if reached max attempts.
+  if (pin_attempts_ >= kMaxPinAttempts)
+    return;
+
+  if (title_->IsShowingError())
+    title_->ShowTitle();
+
+  if (pin_autosubmit_on_) {
+    pin_digit_input_view_->InsertDigit(digit);
+  } else {
+    pin_text_input_view_->InsertNumber(digit);
+  }
+}
+
+void AuthDialogContentsView::OnBackspaceFromPinPad() {
+  // Ignore anything if reached max attempts.
+  if (pin_attempts_ >= kMaxPinAttempts)
+    return;
+
+  if (title_->IsShowingError())
+    title_->ShowTitle();
+
+  if (pin_autosubmit_on_) {
+    pin_digit_input_view_->Backspace();
+  } else {
+    pin_text_input_view_->Backspace();
+  }
+}
+
+void AuthDialogContentsView::OnPinTextChanged(bool is_empty) {
+  // If the user is interacting with the input field, restore the title (clear
+  // error message).
+  //
+  // If |is_empty| is true, this call may come from resetting
+  // |pin_text_input_view_| or |pin_digit_input_view_|, when the error message
+  // hasn't been shown and read yet. In this case we don't restore the title.
+  if (title_->IsShowingError() && !is_empty)
+    title_->ShowTitle();
+
+  pin_pad_view_->OnPasswordTextChanged(is_empty);
 }
 
 void AuthDialogContentsView::AddVerticalSpacing(int height) {
@@ -424,6 +532,11 @@ void AuthDialogContentsView::AddActionButtonsView() {
 }
 
 void AuthDialogContentsView::OnAuthSubmit(const base::string16& pin) {
+  if (pin_autosubmit_on_) {
+    pin_digit_input_view_->SetReadOnly(true);
+  } else {
+    pin_text_input_view_->SetReadOnly(true);
+  }
   InSessionAuthDialogController::Get()->AuthenticateUserWithPin(
       base::UTF16ToUTF8(pin),
       base::BindOnce(&AuthDialogContentsView::OnPinAuthComplete,
@@ -431,7 +544,29 @@ void AuthDialogContentsView::OnAuthSubmit(const base::string16& pin) {
 }
 
 // TODO(b/156258540): Clear PIN if auth failed and retry is allowed.
-void AuthDialogContentsView::OnPinAuthComplete(base::Optional<bool> success) {}
+void AuthDialogContentsView::OnPinAuthComplete(base::Optional<bool> success) {
+  // On success, do nothing, and the dialog will dismiss.
+  if (success.has_value() && success.value())
+    return;
+
+  pin_attempts_++;
+  base::string16 error_text =
+      pin_attempts_ >= kMaxPinAttempts
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_IN_SESSION_AUTH_PIN_TOO_MANY_ATTEMPTS)
+          : l10n_util::GetStringUTF16(IDS_ASH_IN_SESSION_AUTH_PIN_INCORRECT);
+  title_->ShowError(error_text);
+
+  if (pin_attempts_ < kMaxPinAttempts) {
+    if (pin_autosubmit_on_) {
+      pin_digit_input_view_->Reset();
+      pin_digit_input_view_->SetReadOnly(false);
+    } else {
+      pin_text_input_view_->Reset();
+      pin_text_input_view_->SetReadOnly(false);
+    }
+  }
+}
 
 void AuthDialogContentsView::OnFingerprintAuthComplete(
     bool success,
@@ -449,7 +584,9 @@ void AuthDialogContentsView::OnFingerprintAuthComplete(
 void AuthDialogContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::View::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kDialog;
-  node_data->SetName(base::UTF8ToUTF16(kTitle));
+  node_data->SetName(
+      l10n_util::GetStringFUTF16(IDS_ASH_IN_SESSION_AUTH_ACCESSIBLE_TITLE,
+                                 base::UTF8ToUTF16(origin_name_)));
 }
 
 }  // namespace ash

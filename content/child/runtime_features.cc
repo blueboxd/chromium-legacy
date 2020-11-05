@@ -68,12 +68,6 @@ void SetRuntimeFeatureDefaultsForPlatform(
   }
 #endif
 
-#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
-  if (command_line.HasSwitch(switches::kEnableWebGL2ComputeContext)) {
-    WebRuntimeFeatures::EnableWebGL2ComputeContext(true);
-  }
-#endif
-
 #if defined(OS_MAC)
   const bool enable_canvas_2d_image_chromium =
       command_line.HasSwitch(
@@ -299,9 +293,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
     {wf::EnableScrollUnification, features::kScrollUnification},
     {wf::EnableNeverSlowMode, features::kNeverSlowMode},
-    {wf::EnableShadowDOMV0, blink::features::kWebComponentsV0},
-    {wf::EnableCustomElementsV0, blink::features::kWebComponentsV0},
-    {wf::EnableHTMLImports, blink::features::kWebComponentsV0},
     {wf::EnableVideoPlaybackQuality, features::kVideoPlaybackQuality},
     {wf::EnableBrowserVerifiedUserActivationKeyboard,
      features::kBrowserVerifiedUserActivationKeyboard},
@@ -351,7 +342,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kCSSReducedFontLoadingLayoutInvalidations},
           {"CSSMatchedPropertiesCacheDependencies",
            blink::features::kCSSMatchedPropertiesCacheDependencies},
-          {"CustomElementsV0", blink::features::kWebComponentsV0},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints},
           {"EditingNG", blink::features::kEditingNG},
@@ -360,7 +350,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching},
           {"ForceSynchronousHTMLParsing",
            blink::features::kForceSynchronousHTMLParsing},
-          {"HTMLImports", blink::features::kWebComponentsV0},
           {"IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow},
           {"LangClientHintHeader", features::kLangClientHintHeader},
@@ -376,7 +365,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"ParentNodeReplaceChildren",
            blink::features::kParentNodeReplaceChildren},
           {"RawClipboard", blink::features::kRawClipboard},
-          {"ShadowDOMV0", blink::features::kWebComponentsV0},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
           {"TrustedDOMTypes", features::kTrustedDOMTypes},
           {"UserAgentClientHint", features::kUserAgentClientHint},

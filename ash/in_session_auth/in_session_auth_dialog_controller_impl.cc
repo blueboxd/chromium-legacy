@@ -33,6 +33,7 @@ void InSessionAuthDialogControllerImpl::SetClient(
 
 void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
     aura::Window* source_window,
+    const std::string& origin_name,
     FinishCallback finish_callback) {
   DCHECK(client_);
   // Concurrent requests are not supported.
@@ -51,8 +52,8 @@ void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
         account_id,
         base::BindOnce(
             &InSessionAuthDialogControllerImpl::OnStartFingerprintAuthSession,
-            weak_factory_.GetWeakPtr(), account_id, auth_methods,
-            source_window));
+            weak_factory_.GetWeakPtr(), account_id, auth_methods, source_window,
+            origin_name));
     // OnStartFingerprintAuthSession checks PIN availability.
     return;
   }
@@ -60,13 +61,15 @@ void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
   client_->CheckPinAuthAvailability(
       account_id,
       base::BindOnce(&InSessionAuthDialogControllerImpl::OnPinCanAuthenticate,
-                     weak_factory_.GetWeakPtr(), auth_methods, source_window));
+                     weak_factory_.GetWeakPtr(), auth_methods, source_window,
+                     origin_name));
 }
 
 void InSessionAuthDialogControllerImpl::OnStartFingerprintAuthSession(
     AccountId account_id,
     uint32_t auth_methods,
     aura::Window* source_window,
+    const std::string& origin_name,
     bool success) {
   if (success)
     auth_methods |= AuthDialogContentsView::kAuthFingerprint;
@@ -74,12 +77,14 @@ void InSessionAuthDialogControllerImpl::OnStartFingerprintAuthSession(
   client_->CheckPinAuthAvailability(
       account_id,
       base::BindOnce(&InSessionAuthDialogControllerImpl::OnPinCanAuthenticate,
-                     weak_factory_.GetWeakPtr(), auth_methods, source_window));
+                     weak_factory_.GetWeakPtr(), auth_methods, source_window,
+                     origin_name));
 }
 
 void InSessionAuthDialogControllerImpl::OnPinCanAuthenticate(
     uint32_t auth_methods,
     aura::Window* source_window,
+    const std::string& origin_name,
     bool pin_auth_available) {
   if (pin_auth_available)
     auth_methods |= AuthDialogContentsView::kAuthPin;
@@ -113,8 +118,8 @@ void InSessionAuthDialogControllerImpl::OnPinCanAuthenticate(
       user_manager::known_user::GetUserPinLength(account_id);
   window_tracker_.Remove(source_window);
   Shell::Get()->focus_controller()->AddObserver(this);
-  dialog_ = std::make_unique<InSessionAuthDialog>(auth_methods, source_window,
-                                                  auth_metadata, avatar);
+  dialog_ = std::make_unique<InSessionAuthDialog>(
+      auth_methods, source_window, origin_name, auth_metadata, avatar);
 }
 
 void InSessionAuthDialogControllerImpl::DestroyAuthenticationDialog() {
@@ -161,10 +166,8 @@ void InSessionAuthDialogControllerImpl::OnAuthenticateComplete(
     OnAuthenticateCallback callback,
     bool success) {
   std::move(callback).Run(success);
-  // TODO(b/156258540): Manage retry instead of closing directly.
-  DestroyAuthenticationDialog();
-  if (finish_callback_)
-    std::move(finish_callback_).Run(success);
+  if (success)
+    OnAuthSuccess();
 }
 
 void InSessionAuthDialogControllerImpl::OnFingerprintAuthComplete(
@@ -175,12 +178,14 @@ void InSessionAuthDialogControllerImpl::OnFingerprintAuthComplete(
   // fingerprint check.
   std::move(views_callback).Run(success, fingerprint_state);
 
-  if (success) {
-    DestroyAuthenticationDialog();
-    if (finish_callback_)
-      std::move(finish_callback_).Run(success);
-    return;
-  }
+  if (success)
+    OnAuthSuccess();
+}
+
+void InSessionAuthDialogControllerImpl::OnAuthSuccess() {
+  DestroyAuthenticationDialog();
+  if (finish_callback_)
+    std::move(finish_callback_).Run(true);
 }
 
 void InSessionAuthDialogControllerImpl::Cancel() {

@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
@@ -154,10 +153,6 @@ class TabStripTest : public ChromeViewsTestBase,
     tab_strip_->CompleteAnimationAndLayout();
   }
 
-  int TabToNewTabButtonSpacing() {
-    return tab_strip_->TabToNewTabButtonSpacing();
-  }
-
   void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
 
   const StackedTabStripLayout* touch_layout() const {
@@ -261,22 +256,13 @@ TEST_P(TabStripTest, GetModelCount) {
 TEST_P(TabStripTest, AccessibilityEvents) {
   views::test::AXEventCounter ax_counter(views::AXEventManager::Get());
 
-  // When adding tabs, SetSelection() is called after AddTabAt(), as
-  // otherwise the index would not be meaningful.
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), true);
-  ui::ListSelectionModel selection;
-  selection.SetSelectedIndex(1);
-  tab_strip_->SetSelection(selection);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
   EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionAdd));
   EXPECT_EQ(1, ax_counter.GetCount(ax::mojom::Event::kSelection));
   EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionRemove));
 
-  // When removing tabs, SetSelection() is called before RemoveTabAt(), as
-  // otherwise the index would not be meaningful.
-  selection.SetSelectedIndex(0);
-  tab_strip_->SetSelection(selection);
-  tab_strip_->RemoveTabAt(nullptr, 1, true);
+  controller_->RemoveTab(1);
   EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionAdd));
   EXPECT_EQ(2, ax_counter.GetCount(ax::mojom::Event::kSelection));
   EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionRemove));
@@ -290,17 +276,17 @@ TEST_P(TabStripTest, AccessibilityEvents) {
 
 TEST_P(TabStripTest, AccessibilityData) {
   // When adding tabs, indexes should be set.
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), true);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
   VerifyTabIndices();
 
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  controller_->AddTab(0, false);
   VerifyTabIndices();
 
-  tab_strip_->RemoveTabAt(nullptr, 1, false);
+  controller_->RemoveTab(1);
   VerifyTabIndices();
 
-  tab_strip_->MoveTab(1, 0, TabRendererData());
+  controller_->MoveTab(1, 0);
   VerifyTabIndices();
 }
 
@@ -314,7 +300,7 @@ TEST_P(TabStripTest, tab_count) {
 
 TEST_P(TabStripTest, AddTabAt) {
   TestTabStripObserver observer(tab_strip_);
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  controller_->AddTab(0, false);
   ASSERT_EQ(1, tab_strip_->tab_count());
   EXPECT_EQ(0, observer.last_tab_added());
   Tab* tab = tab_strip_->tab_at(0);
@@ -323,13 +309,13 @@ TEST_P(TabStripTest, AddTabAt) {
 
 TEST_P(TabStripTest, MoveTab) {
   TestTabStripObserver observer(tab_strip_);
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), false);
-  tab_strip_->AddTabAt(2, TabRendererData(), false);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
+  controller_->AddTab(2, false);
   ASSERT_EQ(3, tab_strip_->tab_count());
   EXPECT_EQ(2, observer.last_tab_added());
   Tab* tab = tab_strip_->tab_at(0);
-  tab_strip_->MoveTab(0, 1, TabRendererData());
+  controller_->MoveTab(0, 1);
   EXPECT_EQ(0, observer.last_tab_moved_from());
   EXPECT_EQ(1, observer.last_tab_moved_to());
   EXPECT_EQ(tab, tab_strip_->tab_at(1));
@@ -366,13 +352,13 @@ TEST_P(TabStripTest, TabViewOrder) {
   controller_->AddTab(2, false);
   EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
 
-  tab_strip_->MoveTab(0, 1, TabRendererData());
+  controller_->MoveTab(0, 1);
   EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  tab_strip_->MoveTab(1, 2, TabRendererData());
+  controller_->MoveTab(1, 2);
   EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  tab_strip_->MoveTab(1, 0, TabRendererData());
+  controller_->MoveTab(1, 0);
   EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  tab_strip_->MoveTab(0, 2, TabRendererData());
+  controller_->MoveTab(0, 2);
   EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
 }
 
@@ -515,7 +501,9 @@ TEST_P(TabStripTest, GroupedTabSlotVisibility) {
 // across the strip at the top, middle, and bottom, events will target each tab
 // in order.
 TEST_P(TabStripTest, TabForEventWhenStacked) {
-  tab_strip_parent_->SetBounds(0, 0, 250, GetLayoutConstant(TAB_HEIGHT));
+  // This tabstrip width is chosen to make the tabstrip narrow enough to engage
+  // stacked tabs mode.
+  tab_strip_parent_->SetBounds(0, 0, 197, GetLayoutConstant(TAB_HEIGHT));
 
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -572,7 +560,10 @@ TEST_P(TabStripTest, TabGroupCreatedWhenStacked) {
 TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-  tab_strip_parent_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
+  // The tabstrip width is chosen so that it is:
+  // a) narrow enough to enter stacked tabs mode, and
+  // b) wide enough for tabs to show close buttons when not stacked.
+  tab_strip_parent_->SetBounds(0, 0, touch_ui ? 389 : 293, 20);
 
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -850,7 +841,8 @@ TEST_P(TabStripTest, GetTooltipHandler) {
   EXPECT_FALSE(tab_strip_->GetTooltipHandlerForPoint(gfx::Point(-1, 2)));
 }
 
-TEST_P(TabStripTest, NewTabButtonStaysVisible) {
+// TODO(tbergquist): Move this to TabStripRegionViewUnitTest once that exists.
+TEST_P(TabStripTest, DISABLED_NewTabButtonStaysVisible) {
   const int kTabStripWidth = 500;
   tab_strip_parent_->SetBounds(0, 0, kTabStripWidth, 20);
 
@@ -859,10 +851,12 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
 
   CompleteAnimationAndLayout();
 
-  EXPECT_LE(tab_strip_->new_tab_button_ideal_bounds().right(), kTabStripWidth);
+  // EXPECT_LE(tab_strip_->new_tab_button_ideal_bounds().right(),
+  // kTabStripWidth);
 }
 
-TEST_P(TabStripTest, NewTabButtonRightOfTabs) {
+// TODO(tbergquist): Move this to TabStripRegionViewUnitTest once that exists.
+TEST_P(TabStripTest, DISABLED_NewTabButtonRightOfTabs) {
   const int kTabStripWidth = 500;
   tab_strip_parent_->SetBounds(0, 0, kTabStripWidth, 20);
 
@@ -870,8 +864,8 @@ TEST_P(TabStripTest, NewTabButtonRightOfTabs) {
 
   AnimateToIdealBounds();
 
-  EXPECT_EQ(tab_strip_->new_tab_button_ideal_bounds().x(),
-            tab_strip_->ideal_bounds(0).right() + TabToNewTabButtonSpacing());
+  // EXPECT_EQ(tab_strip_->new_tab_button_ideal_bounds().x(),
+  //          tab_strip_->ideal_bounds(0).right() + TabToNewTabButtonSpacing());
 }
 
 // The cached widths are private, but if they give incorrect results it can
@@ -1039,7 +1033,8 @@ TEST_P(TabStripTest, TabNeedsAttentionGeneric) {
   EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
 }
 
-TEST_P(TabStripTest, NewTabButtonInkDrop) {
+// TODO(tbergquist): Move this to TabStripRegionViewUnitTest once that exists.
+TEST_P(TabStripTest, DISABLED_NewTabButtonInkDrop) {
   constexpr int kTabStripWidth = 500;
   tab_strip_parent_->SetBounds(0, 0, kTabStripWidth,
                                GetLayoutConstant(TAB_HEIGHT));
@@ -1049,12 +1044,12 @@ TEST_P(TabStripTest, NewTabButtonInkDrop) {
   // ink drop container size should remain equal to the new tab button visible
   // bounds size. https://crbug.com/814105.
   for (int i = 0; i < 10; ++i) {
-    tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
-        views::InkDropState::ACTION_TRIGGERED);
+    // tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
+    //    views::InkDropState::ACTION_TRIGGERED);
     controller_->AddTab(i, true /* is_active */);
     CompleteAnimationAndLayout();
-    tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
-        views::InkDropState::HIDDEN);
+    // tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
+    //    views::InkDropState::HIDDEN);
   }
 }
 
@@ -1081,7 +1076,7 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
 TEST_P(TabStripTest, GroupHeaderBasics) {
   tab_strip_parent_->SetBounds(0, 0, 1000, 100);
   bounds_animator()->SetAnimationDuration(base::TimeDelta());
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  controller_->AddTab(0, false);
 
   Tab* tab = tab_strip_->tab_at(0);
   const int first_slot_x = tab->x();
@@ -1104,8 +1099,8 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
   tab_strip_parent_->SetBounds(0, 0, 1000, 100);
   bounds_animator()->SetAnimationDuration(base::TimeDelta());
 
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
 
   const int second_slot_x = tab_strip_->tab_at(1)->x();
 
@@ -1120,7 +1115,7 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
 TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
   tab_strip_parent_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 4; i++)
-    tab_strip_->AddTabAt(i, TabRendererData(), false);
+    controller_->AddTab(i, false);
   base::Optional<tab_groups::TabGroupId> group =
       tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
@@ -1138,7 +1133,7 @@ TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
 TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
   tab_strip_parent_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 4; i++)
-    tab_strip_->AddTabAt(i, TabRendererData(), false);
+    controller_->AddTab(i, false);
   base::Optional<tab_groups::TabGroupId> group =
       tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(2, group);
@@ -1156,7 +1151,7 @@ TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
 TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
   tab_strip_parent_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 4; i++)
-    tab_strip_->AddTabAt(i, TabRendererData(), false);
+    controller_->AddTab(i, false);
   base::Optional<tab_groups::TabGroupId> group =
       tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
@@ -1182,7 +1177,7 @@ TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
 TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
   tab_strip_parent_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 3; i++)
-    tab_strip_->AddTabAt(i, TabRendererData(), false);
+    controller_->AddTab(i, false);
   tab_groups::TabGroupId group0 = tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group0);
   tab_groups::TabGroupId group1 = tab_groups::TabGroupId::GenerateNew();
@@ -1211,7 +1206,7 @@ TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
 TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
   tab_strip_parent_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 2; i++)
-    tab_strip_->AddTabAt(i, TabRendererData(), false);
+    controller_->AddTab(i, false);
   tab_groups::TabGroupId group = tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
@@ -1230,9 +1225,9 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
   tab_strip_parent_->SetBounds(0, 0, 1000, 100);
   bounds_animator()->SetAnimationDuration(base::TimeDelta());
 
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), false);
-  tab_strip_->AddTabAt(2, TabRendererData(), false);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
+  controller_->AddTab(2, false);
 
   const int first_slot_x = tab_strip_->tab_at(0)->x();
 
@@ -1247,8 +1242,8 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
 }
 
 TEST_P(TabStripTest, DeleteTabGroupViewsWhenEmpty) {
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
   base::Optional<tab_groups::TabGroupId> group =
       tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
@@ -1319,7 +1314,7 @@ TEST_P(TabStripTest, GroupHighlightBasics) {
 TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
   tab_strip_parent_->SetBounds(0, 0, 1000, 100);
 
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  controller_->AddTab(0, false);
   Tab* tab = tab_strip_->tab_at(0);
   const int initial_height = tab->height();
 
@@ -1340,7 +1335,8 @@ TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
 // of the new tab button and users are able to hit the new tab button when the
 // tab strip is flush with the top of the screen when the window is maximized
 // (https://crbug.com/1136557).
-TEST_P(TabStripTest, NewTabButtonFlushWithTopOfTabStrip) {
+// TODO(tbergquist): Move this to TabStripRegionViewUnitTest once that exists.
+TEST_P(TabStripTest, DISABLED_NewTabButtonFlushWithTopOfTabStrip) {
   tab_strip_parent_->SetBounds(0, 0, 1000, 100);
   controller_->AddTab(0, true);
 
@@ -1348,8 +1344,8 @@ TEST_P(TabStripTest, NewTabButtonFlushWithTopOfTabStrip) {
 
   // The new tab button should sit flush with the top of the
   // |tab_strip_|.
-  EXPECT_EQ(tab_strip_, tab_strip_->new_tab_button()->parent());
-  EXPECT_EQ(0, tab_strip_->new_tab_button()->bounds().y());
+  // EXPECT_EQ(tab_strip_, tab_strip_->new_tab_button()->parent());
+  // EXPECT_EQ(0, tab_strip_->new_tab_button()->bounds().y());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, TabStripTest, ::testing::Values(false, true));

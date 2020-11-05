@@ -72,6 +72,7 @@ ContentCaptureTask::~ContentCaptureTask() = default;
 void ContentCaptureTask::Shutdown() {
   DCHECK(local_frame_root_);
   local_frame_root_ = nullptr;
+  CancelTask();
 }
 
 bool ContentCaptureTask::CaptureContent(Vector<cc::NodeInfo>& data) {
@@ -103,10 +104,10 @@ bool ContentCaptureTask::CaptureContent() {
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentStarted();
   bool result = CaptureContent(buffer);
-  if (histogram_reporter_)
-    histogram_reporter_->OnCaptureContentEnded(buffer.size());
   if (!buffer.IsEmpty())
     task_session_->SetCapturedContent(buffer);
+  if (histogram_reporter_)
+    histogram_reporter_->OnCaptureContentEnded(buffer.size());
   return result;
 }
 
@@ -230,8 +231,15 @@ void ContentCaptureTask::Run(TimerBase*) {
   task_delay_->IncreaseDelayExponent();
   if (histogram_reporter_)
     histogram_reporter_->OnTaskRun();
-  if (!RunInternal()) {
+  bool completed = RunInternal();
+  if (!completed) {
     ScheduleInternal(ScheduleReason::kRetryTask);
+  }
+  if (histogram_reporter_ &&
+      (completed || task_state_ == TaskState::kCaptureContent)) {
+    // The current capture session ends if the task indicates it completed or
+    // is about to capture the new changes.
+    histogram_reporter_->OnAllCapturedContentSent();
   }
 }
 
@@ -299,6 +307,10 @@ bool ContentCaptureTask::ShouldPause() {
   return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
 }
 
+void ContentCaptureTask::CancelTask() {
+  if (delay_task_ && delay_task_->IsActive())
+    delay_task_->Stop();
+}
 void ContentCaptureTask::ClearDocumentSessionsForTesting() {
   task_session_->ClearDocumentSessionsForTesting();
 }
@@ -310,8 +322,7 @@ base::TimeDelta ContentCaptureTask::GetTaskNextFireIntervalForTesting() const {
 }
 
 void ContentCaptureTask::CancelTaskForTesting() {
-  if (delay_task_ && delay_task_->IsActive())
-    delay_task_->Stop();
+  CancelTask();
 }
 
 void ContentCaptureTask::Trace(Visitor* visitor) const {

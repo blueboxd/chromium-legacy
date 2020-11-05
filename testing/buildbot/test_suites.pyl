@@ -91,9 +91,9 @@
         'args': [
           '--platform=android',
         ],
-        # TODO (crbug.com/1135909): Re-enable resultdb.
         'resultdb': {
-          'enable': False,
+          'enable': True,
+          'result_format': 'single'
         }
       },
     },
@@ -448,12 +448,6 @@
         'resultdb': {
           'enable': False,
         },
-      },
-      'cros_browser_sanity_test': {
-        # TODO(crbug.com/1140593): Re-enable resultdb.
-        'resultdb': {
-          'enable': False,
-        }
       },
       'disk_usage_tast_test': {
         "args": [
@@ -962,9 +956,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -1004,9 +996,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -1031,9 +1021,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -1079,9 +1067,9 @@
 
     'client_v8_chromium_isolated_scripts': {
       'content_shell_crash_test': {
-        # TODO (crbug.com/1135909): Re-enable resultdb.
         'resultdb': {
-          'enable': False,
+          'enable': True,
+          'result_format': 'single'
         }
       },
       'telemetry_gpu_unittests': {
@@ -1157,10 +1145,9 @@
             },
           ],
         },
-        # TODO(crbug.com/1137507): Enable resutldb after it can support
-        # single integration test suites.
         'resultdb': {
-          'enable': False,
+          'enable': True,
+          'result_format': 'single'
         },
       },
     },
@@ -1204,24 +1191,23 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
         }
       },
       'content_shell_crash_test': {
-        # TODO (crbug.com/1135909): Re-enable resultdb.
         'resultdb': {
-          'enable': False,
+          'enable': True,
+          'result_format': 'single'
         }
       },
       'extension_docserver_python_unittests': {},
       'flatbuffers_unittests': {
         'resultdb': {
-          'enable': False,
+          'enable': True,
+          'result_format': 'single'
         }
       },
       'grit_python_unittests': {},
@@ -1283,9 +1269,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -1308,9 +1292,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 4,
@@ -2189,9 +2171,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
       },
     },
@@ -2227,9 +2207,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
       },
    },
@@ -3255,9 +3233,7 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'isolate_name': 'webgpu_blink_web_tests',
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
       },
     },
 
@@ -3295,9 +3271,7 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'isolate_name': 'webgpu_blink_web_tests',
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
       },
     },
 
@@ -3573,9 +3547,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 10,
@@ -4074,9 +4046,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
       },
       'vulkan_swiftshader_blink_web_tests': {
@@ -4104,9 +4074,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'resultdb': {
-          'enable': True,
-        },
+	# TODO(crbug.com/1141606) - re-enable resultdb integration
         'results_handler': 'layout tests',
       },
     },

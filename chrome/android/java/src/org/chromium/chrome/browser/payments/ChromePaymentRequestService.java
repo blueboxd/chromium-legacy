@@ -24,7 +24,6 @@ import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.BrowserPaymentRequest;
-import org.chromium.components.payments.CanMakePaymentQuery;
 import org.chromium.components.payments.CheckoutFunnelStep;
 import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
@@ -56,8 +55,6 @@ import org.chromium.components.payments.SkipToGPayHelper;
 import org.chromium.components.payments.UrlUtil;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.CanMakePaymentQueryResult;
-import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentComplete;
@@ -131,7 +128,6 @@ public class ChromePaymentRequestService
     private final boolean mRequestPayerEmail;
     private final int mShippingType;
 
-    private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mIsCurrentPaymentRequestShowing;
     private boolean mWasRetryCalled;
@@ -167,9 +163,6 @@ public class ChromePaymentRequestService
      * be shown more than once. This boolean is used to make sure it is only logged once.
      */
     private boolean mDidRecordShowEvent;
-
-    /** True if any of the requested payment methods are supported. */
-    private boolean mCanMakePayment;
 
     /** Whether PaymentRequest.show() was invoked with a user gesture. */
     private boolean mIsUserGestureShow;
@@ -408,7 +401,7 @@ public class ChromePaymentRequestService
         mWaitForUpdatedDetails = waitForUpdatedDetails;
 
         mJourneyLogger.setTriggerTime();
-        if (disconnectIfNoPaymentMethodsSupported()) return;
+        if (disconnectIfNoPaymentMethodsSupported(hasAvailableApps())) return;
         if (mIsFinishedQueryingPaymentApps && !showAppSelector()) return;
 
         triggerPaymentAppUiSkipIfApplicable();
@@ -1123,30 +1116,9 @@ public class ChromePaymentRequestService
         }
 
         if (mIsFinishedQueryingPaymentApps) {
-            respondCanMakePaymentQuery();
+            mPaymentRequestService.respondCanMakePaymentQuery();
         } else {
-            mIsCanMakePaymentResponsePending = true;
-        }
-    }
-
-    private void respondCanMakePaymentQuery() {
-        if (mPaymentRequestService == null) return;
-
-        mIsCanMakePaymentResponsePending = false;
-
-        boolean response = mCanMakePayment && mDelegate.prefsCanMakePayment();
-        mPaymentRequestService.onCanMakePayment(response
-                        ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                        : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
-
-        mJourneyLogger.setCanMakePaymentValue(response || mPaymentRequestService.isOffTheRecord());
-
-        if (PaymentRequestService.getObserverForTest() != null) {
-            PaymentRequestService.getObserverForTest()
-                    .onPaymentRequestServiceCanMakePaymentQueryResponded();
-        }
-        if (PaymentRequestService.getNativeObserverForTest() != null) {
-            PaymentRequestService.getNativeObserverForTest().onCanMakePaymentReturned();
+            mPaymentRequestService.setCanMakePaymentResponsePending(true);
         }
     }
 
@@ -1161,39 +1133,9 @@ public class ChromePaymentRequestService
         }
 
         if (mIsFinishedQueryingPaymentApps) {
-            respondHasEnrolledInstrumentQuery(mPaymentRequestService.getHasEnrolledInstrument());
+            mPaymentRequestService.respondHasEnrolledInstrumentQuery();
         } else {
-            mIsHasEnrolledInstrumentResponsePending = true;
-        }
-    }
-
-    private void respondHasEnrolledInstrumentQuery(boolean response) {
-        if (mPaymentRequestService == null) return;
-
-        mIsHasEnrolledInstrumentResponsePending = false;
-
-        if (CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin, mPaymentRequestOrigin,
-                    mPaymentRequestService.getQueryForQuota())) {
-            mPaymentRequestService.onHasEnrolledInstrument(response
-                            ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
-                            : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
-        } else if (shouldEnforceCanMakePaymentQueryQuota()) {
-            mPaymentRequestService.onHasEnrolledInstrument(
-                    HasEnrolledInstrumentQueryResult.QUERY_QUOTA_EXCEEDED);
-        } else {
-            mPaymentRequestService.onHasEnrolledInstrument(response
-                            ? HasEnrolledInstrumentQueryResult.WARNING_HAS_ENROLLED_INSTRUMENT
-                            : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
-        }
-
-        mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsOffTheRecord);
-
-        if (PaymentRequestService.getObserverForTest() != null) {
-            PaymentRequestService.getObserverForTest()
-                    .onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
-        }
-        if (PaymentRequestService.getNativeObserverForTest() != null) {
-            PaymentRequestService.getNativeObserverForTest().onHasEnrolledInstrumentReturned();
+            mPaymentRequestService.setIsHasEnrolledInstrumentResponsePending(true);
         }
     }
 
@@ -1202,7 +1144,8 @@ public class ChromePaymentRequestService
      * enforced only on https:// scheme origins. However, the tests also enable the quota on
      * localhost and file:// scheme origins to verify its behavior.
      */
-    private boolean shouldEnforceCanMakePaymentQueryQuota() {
+    @Override
+    public boolean shouldEnforceCanMakePaymentQueryQuota() {
         // If |mWebContents| is destroyed, don't bother checking the localhost or file:// scheme
         // exemption. It doesn't really matter anyways.
         return mWebContents.isDestroyed()
@@ -1343,13 +1286,13 @@ public class ChromePaymentRequestService
     public void onCanMakePaymentCalculated(boolean canMakePayment) {
         if (mPaymentRequestService == null) return;
 
-        mCanMakePayment = canMakePayment;
+        mPaymentRequestService.setCanMakePayment(canMakePayment);
 
-        if (!mIsCanMakePaymentResponsePending) return;
+        if (!mPaymentRequestService.isCanMakePaymentResponsePending()) return;
 
         // canMakePayment doesn't need to wait for all apps to be queried because it only needs to
         // test the existence of a payment handler.
-        respondCanMakePaymentQuery();
+        mPaymentRequestService.respondCanMakePaymentQuery();
     }
 
     // PaymentAppFactoryDelegate implementation.
@@ -1373,7 +1316,8 @@ public class ChromePaymentRequestService
     public void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory /* Unused */) {
         mIsFinishedQueryingPaymentApps = true;
 
-        if (mPaymentRequestService == null || disconnectIfNoPaymentMethodsSupported()) {
+        if (mPaymentRequestService == null
+                || disconnectIfNoPaymentMethodsSupported(hasAvailableApps())) {
             return;
         }
 
@@ -1382,12 +1326,12 @@ public class ChromePaymentRequestService
                 mPaymentRequestService.getHasEnrolledInstrument()
                 && mDelegate.prefsCanMakePayment());
 
-        if (mIsCanMakePaymentResponsePending) {
-            respondCanMakePaymentQuery();
+        if (mPaymentRequestService.isCanMakePaymentResponsePending()) {
+            mPaymentRequestService.respondCanMakePaymentQuery();
         }
 
-        if (mIsHasEnrolledInstrumentResponsePending) {
-            respondHasEnrolledInstrumentQuery(mPaymentRequestService.getHasEnrolledInstrument());
+        if (mPaymentRequestService.isHasEnrolledInstrumentResponsePending()) {
+            mPaymentRequestService.respondHasEnrolledInstrumentQuery();
         }
 
         notifyPaymentUiOfPendingApps(mPendingApps);
@@ -1463,24 +1407,21 @@ public class ChromePaymentRequestService
 
     /**
      * If no payment methods are supported, disconnect from the client and return true.
+     * @param hasAvailableApps Whether any payment app is available.
      * @return Whether client has been disconnected.
      */
-    private boolean disconnectIfNoPaymentMethodsSupported() {
+    private boolean disconnectIfNoPaymentMethodsSupported(boolean hasAvailableApps) {
+        assert mPaymentRequestService != null;
         if (!mIsFinishedQueryingPaymentApps || !mIsCurrentPaymentRequestShowing) return false;
-
-        boolean havePaymentApps = !mPendingApps.isEmpty()
-                || (mPaymentUiService.getPaymentMethodsSection() != null
-                        && !mPaymentUiService.getPaymentMethodsSection().isEmpty());
-
-        if (!mCanMakePayment
-                || (!havePaymentApps && !mPaymentUiService.merchantSupportsAutofillCards())) {
+        if (!mPaymentRequestService.getCanMakePayment()
+                || (mPendingApps.isEmpty() && !hasAvailableApps)) {
             // All factories have responded, but none of them have apps. It's possible to add credit
             // cards, but the merchant does not support them either. The payment request must be
             // rejected.
-            mJourneyLogger.setNotShown(mCanMakePayment
+            mJourneyLogger.setNotShown(mPaymentRequestService.getCanMakePayment()
                             ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
                             : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
-            if (mPaymentRequestService.isOffTheRecord()) {
+            if (mDelegate.isOffTheRecord()) {
                 // If the user is in the OffTheRecord mode, hide the absence of their payment
                 // methods from the merchant site.
                 disconnectFromClientWithDebugMessage(
@@ -1505,8 +1446,16 @@ public class ChromePaymentRequestService
             }
             return true;
         }
+        boolean isDisconnected = disconnectForStrictShow(mIsUserGestureShow);
+        if (isDisconnected && PaymentRequestService.getObserverForTest() != null) {
+            PaymentRequestService.getObserverForTest().onPaymentRequestServiceShowFailed();
+        }
+        return isDisconnected;
+    }
 
-        return disconnectForStrictShow();
+    /** @return Whether at least one payment app (including basic-card payment app) is available. */
+    private boolean hasAvailableApps() {
+        return mPaymentUiService.hasAvailableApps();
     }
 
     private boolean isInTwa() {
@@ -1516,9 +1465,10 @@ public class ChromePaymentRequestService
     /**
      * If strict show() conditions are not satisfied, disconnect from client and return true.
      * @return Whether client has been disconnected.
+     * @param isUserGestureShow Whether the PaymentRequest.show() is triggered by user gesture.
      */
-    private boolean disconnectForStrictShow() {
-        if (!mIsUserGestureShow || !mSpec.getMethodData().containsKey(MethodStrings.BASIC_CARD)
+    private boolean disconnectForStrictShow(boolean isUserGestureShow) {
+        if (!isUserGestureShow || !mSpec.getMethodData().containsKey(MethodStrings.BASIC_CARD)
                 || mPaymentRequestService.getHasEnrolledInstrument()
                 || mPaymentRequestService.getHasNonAutofillApp()
                 || !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(

@@ -53,24 +53,6 @@ const char kAutofillEnableOffersInDownstreamDescription[] =
     "When enabled, offer data will be retrieved during downstream and shown in "
     "the dropdown list.";
 
-const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
-    "Autofill Enforce Min Required Fields For Heuristics";
-const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
-    "When enabled, autofill will generally require a form to have at least 3 "
-    "fields before allowing heuristic field-type prediction to occur.";
-
-const char kAutofillEnforceMinRequiredFieldsForQueryName[] =
-    "Autofill Enforce Min Required Fields For Query";
-const char kAutofillEnforceMinRequiredFieldsForQueryDescription[] =
-    "When enabled, autofill will generally require a form to have at least 3 "
-    "fields before querying the autofill server for field-type predictions.";
-
-const char kAutofillEnforceMinRequiredFieldsForUploadName[] =
-    "Autofill Enforce Min Required Fields For Upload";
-const char kAutofillEnforceMinRequiredFieldsForUploadDescription[] =
-    "When enabled, autofill will generally require a form to have at least 3 "
-    "fillable fields before uploading field-type votes for that form.";
-
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
@@ -308,23 +290,11 @@ const char kIOSLookalikeUrlNavigationSuggestionsUIDescription[] =
     "When enabled, an interstitial will be shown on navigations to lookalike "
     "URLs.";
 
-const char kLocationFirstRunModalName[] =
-    "Location Permisssions First Run Modal";
-const char kLocationFirstRunModalDescription[] =
-    "When enabled, a modal detailing location data usage in Chrome will be "
-    "presented just before triggering the native location permissions prompt.";
-
-const char kLocationRemoveFirstRunPromptName[] =
-    "Remove Location Permissions Prompt in First Run";
-const char kLocationRemoveFirstRunPromptDescription[] =
-    "When enabled, a location permissions prompt will not be triggered right "
-    "after First Run anymore.";
-
-const char kLocationStringChangeName[] =
-    "Use New Location Permissions Prompt String";
-const char kLocationStringChangeDescription[] =
-    "When enabled, a better string will used in the location permissions "
-    "prompt.";
+const char kLocationPermissionsPromptName[] =
+    "Location Permisssions Prompt Experiment";
+const char kLocationPermissionsPromptDescription[] =
+    "When enabled, a different user experience flow will be shown to ask for "
+    "location permissions.";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -449,12 +419,6 @@ const char kShowAutofillTypePredictionsDescription[] =
 const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
-
-const char kSSLCommittedInterstitialsName[] =
-    "Enable SSL committed interstitials";
-const char kSSLCommittedInterstitialsDescription[] =
-    "When enabled, SSL interstitial pages will be committed rather than using "
-    "an overlay on the page.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =

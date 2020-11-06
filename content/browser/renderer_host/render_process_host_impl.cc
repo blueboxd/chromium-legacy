@@ -182,6 +182,7 @@
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
@@ -2841,6 +2842,14 @@ void RenderProcessHostImpl::RemoveRoute(int32_t routing_id) {
   Cleanup();
 }
 
+bool RenderProcessHostImpl::TakeFrameTokensForFrameRoutingID(
+    int32_t new_routing_id,
+    base::UnguessableToken& frame_token,
+    base::UnguessableToken& devtools_frame_token) {
+  return widget_helper_->TakeFrameTokensForFrameRoutingID(
+      new_routing_id, frame_token, devtools_frame_token);
+}
+
 void RenderProcessHostImpl::AddObserver(RenderProcessHostObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -3369,6 +3378,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVideoThreads,
     switches::kVideoUnderflowThresholdMs,
     switches::kVModule,
+    switches::kWebViewDrawFunctorUsesVulkan,
     switches::kWebglAntialiasingMode,
     switches::kWebglMSAASampleCount,
     // Please keep these in alphabetical order.

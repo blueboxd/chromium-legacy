@@ -8,11 +8,12 @@
 
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser_jni_headers/AwDrawFnImpl_jni.h"
-#include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
@@ -90,7 +91,7 @@ sk_sp<GrVkSecondaryCBDrawContext> CreateDrawContext(
       .fFormat = params->format,
       .fDrawBounds = &draw_bounds,
   };
-  SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
+  SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
   return GrVkSecondaryCBDrawContext::Make(gr_context, info, drawable_info,
                                           &props);
 }
@@ -140,9 +141,15 @@ static void JNI_AwDrawFnImpl_SetDrawFnFunctionTable(JNIEnv* env,
       reinterpret_cast<AwDrawFnFunctionTable*>(function_table);
 }
 
+// static
+bool AwDrawFnImpl::IsUsingVulkan() {
+  return g_draw_fn_function_table &&
+         g_draw_fn_function_table->query_render_mode() ==
+             AW_DRAW_FN_RENDER_MODE_VULKAN;
+}
+
 AwDrawFnImpl::AwDrawFnImpl()
-    : is_interop_mode_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebViewEnableVulkan)),
+    : is_interop_mode_(!features::IsUsingVulkan()),
       render_thread_manager_(content::GetUIThreadTaskRunner({})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(g_draw_fn_function_table);

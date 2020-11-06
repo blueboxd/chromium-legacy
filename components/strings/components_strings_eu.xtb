@@ -554,7 +554,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3207960819495026254">Laster-marka gisa gordea</translation>
 <translation id="3209034400446768650">Baliteke orriak dirua kobratzea</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> webgunean egiten ari zarena gainbegiratzen ari dira</translation>
-<translation id="3212623355668894776">Itxi gonbidatuentzako leiho guztiak arakatze-jarduerak ezabatzeko gailu honetatik.</translation>
+<translation id="3212623355668894776">Itxi gonbidatu moduko leiho guztiak arakatze-jarduerak ezabatzeko gailu honetatik.</translation>
 <translation id="3215092763954878852">Ezin izan da erabili WebAuthn</translation>
 <translation id="3218181027817787318">Erlatiboa</translation>
 <translation id="3225919329040284222">Zerbitzariak aurkeztu duen ziurtagiria ez dator bat integratutako eskakizunekin. Eskakizun horiek segurtasun handiko webgune batzuek egiten dituzte erabiltzaileak babesteko.</translation>
@@ -1871,6 +1871,7 @@ Xehetasun gehiago:
 <translation id="8507227106804027148">Agindu-lerroa</translation>
 <translation id="8508648098325802031">Bilaketa-ikonoa</translation>
 <translation id="8522552481199248698">Google-ko kontua babesten eta pasahitza aldatzen lagun diezazuke Chrome-k.</translation>
+<translation id="8525306231823319788">Pantaila osoa</translation>
 <translation id="8530813470445476232">Garbitu arakatze-historia, cookieak, cachea eta beste Chrome-ren ezarpenetan</translation>
 <translation id="8533619373899488139">Joan &lt;strong&gt;chrome://policy&lt;/strong&gt; orrira sistemaren administratzaileak blokeatutako URLen zerrenda eta aplikatutako gidalerroak ikusteko.</translation>
 <translation id="8541158209346794904">Bluetooth bidezko gailua</translation>

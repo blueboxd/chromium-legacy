@@ -64,6 +64,7 @@ class SlotAssignmentTest : public testing::Test {
 void SlotAssignmentTest::SetUp() {
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   document_ = &dummy_page_holder_->GetDocument();
+  document_->setAllowDeclarativeShadowDom(true);
   DCHECK(document_);
 }
 
@@ -139,8 +140,7 @@ TEST_F(SlotAssignmentTest, ScheduleVisualUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
-  GetDocument().View()->RunPostLifecycleSteps();
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
 
   auto* div = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   GetDocument().getElementById("host")->appendChild(div);

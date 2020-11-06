@@ -481,10 +481,6 @@ void WebRuntimeFeatures::EnableWebXRPlaneDetection(bool enable) {
   RuntimeEnabledFeatures::SetWebXRPlaneDetectionEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebXRReflectionEstimation(bool enable) {
-  RuntimeEnabledFeatures::SetWebXRReflectionEstimationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebXRViewportScale(bool enable) {
   RuntimeEnabledFeatures::SetWebXRViewportScaleEnabled(enable);
 }
@@ -741,6 +737,10 @@ void WebRuntimeFeatures::EnableConversionMeasurementInfraSupport(bool enable) {
 
 void WebRuntimeFeatures::EnableParseUrlProtocolHandler(bool enable) {
   RuntimeEnabledFeatures::SetParseUrlProtocolHandlerEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebID(bool enable) {
+  RuntimeEnabledFeatures::SetWebIDEnabled(enable);
 }
 
 }  // namespace blink

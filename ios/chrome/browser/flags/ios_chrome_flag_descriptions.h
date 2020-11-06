@@ -41,14 +41,6 @@ extern const char kAutofillEnableGoogleIssuedCardDescription[];
 extern const char kAutofillEnableOffersInDownstreamName[];
 extern const char kAutofillEnableOffersInDownstreamDescription[];
 
-// Enforcing restrictions to enable/disable autofill small form support.
-extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
-extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];
-extern const char kAutofillEnforceMinRequiredFieldsForQueryName[];
-extern const char kAutofillEnforceMinRequiredFieldsForQueryDescription[];
-extern const char kAutofillEnforceMinRequiredFieldsForUploadName[];
-extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
-
 // Title and description for the flag to control the autofill delay.
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
@@ -266,20 +258,10 @@ extern const char kIOSLegacyTLSInterstitialsDescription[];
 extern const char kIOSLookalikeUrlNavigationSuggestionsUIName[];
 extern const char kIOSLookalikeUrlNavigationSuggestionsUIDescription[];
 
-// Title and description for the flag to add a First Run modal for location
-// permissions.
-extern const char kLocationFirstRunModalName[];
-extern const char kLocationFirstRunModalDescription[];
-
-// Title and description for the flag to remove the First Run location
-// permissions prompt.
-extern const char kLocationRemoveFirstRunPromptName[];
-extern const char kLocationRemoveFirstRunPromptDescription[];
-
-// Title and description for the flag to change the string in the location
-// permissions prompt.
-extern const char kLocationStringChangeName[];
-extern const char kLocationStringChangeDescription[];
+// Title and description for the flag to experiment with different location
+// permission user experiences.
+extern const char kLocationPermissionsPromptName[];
+extern const char kLocationPermissionsPromptDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -394,10 +376,6 @@ extern const char kShowAutofillTypePredictionsDescription[];
 // snapshots.
 extern const char kSnapshotDrawViewName[];
 extern const char kSnapshotDrawViewDescription[];
-
-// Title and description for the flag to enable SSL committed interstitials.
-extern const char kSSLCommittedInterstitialsName[];
-extern const char kSSLCommittedInterstitialsDescription[];
 
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.

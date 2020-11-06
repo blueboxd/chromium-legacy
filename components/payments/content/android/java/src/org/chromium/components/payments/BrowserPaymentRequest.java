@@ -14,6 +14,7 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,19 +65,6 @@ public interface BrowserPaymentRequest {
      *         end-user that something is wrong with the data of the payment response.
      */
     void retry(PaymentValidationErrors errors);
-
-    /**
-     * The browser part of the {@link PaymentRequest#hasEnrolledInstrument} implementation.
-     */
-    void hasEnrolledInstrument();
-
-    /** @return Whether CanMakePayment query quota should be enfored. */
-    default boolean shouldEnforceCanMakePaymentQueryQuota() {
-        return false;
-    }
-
-    /** The browser part of the {@link PaymentRequest#canMakePayment} implementation. */
-    void canMakePayment();
 
     /**
      * Delegate to the same method of ChromePaymentRequestService.
@@ -130,9 +118,48 @@ public interface BrowserPaymentRequest {
      */
     void addPaymentAppFactories(PaymentAppService service);
 
-    /** @return A PaymentAppFactoryDelegate to be used with the PaymentAppService. */
-    PaymentAppFactoryDelegate getPaymentAppFactoryDelegate();
-
     default void onWhetherGooglePayBridgeEligible(boolean googlePayBridgeEligible,
             WebContents webContents, PaymentMethodData[] rawMethodData) {}
+
+    /**
+     * @return Whether at least one payment app (including basic-card payment app) is available
+     *         (excluding the pending apps).
+     */
+    default boolean hasAvailableApps() {
+        return false;
+    }
+
+    /**
+     * Shows the payment apps selector.
+     * @return Whether the showing is successful.
+     */
+    default boolean showAppSelector() {
+        return false;
+    }
+
+    /**
+     * Notifies the payment UI service of the payment apps pending to be handled
+     * @param pendingApps The payment apps that are pending to be handled.
+     */
+    default void notifyPaymentUiOfPendingApps(List<PaymentApp> pendingApps) {}
+
+    /**
+     * Skips the app selector UI whether it is currently opened or not, and if applicable, invokes a
+     * payment app.
+     */
+    default void triggerPaymentAppUiSkipIfApplicable() {}
+
+    /**
+     * Called when a new payment app is created.
+     * @param paymentApp The new payment app.
+     */
+    default void onPaymentAppCreated(PaymentApp paymentApp) {}
+
+    /**
+     * @return Whether payment sheet based payment app is supported, e.g., user entering credit
+     *      cards on payment sheet.
+     */
+    default boolean isPaymentSheetBasedPaymentAppSupported() {
+        return false;
+    }
 }

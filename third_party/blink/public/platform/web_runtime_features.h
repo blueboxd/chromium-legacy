@@ -181,6 +181,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebGLDraftExtensions(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLImageChromium(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGPU(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebID(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebNfc(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebShare(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebUsb(bool);
@@ -193,7 +194,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebXRImageTracking(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRLightEstimation(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRPlaneDetection(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebXRReflectionEstimation(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRViewportScale(bool);
   BLINK_PLATFORM_EXPORT static void EnableXSLT(bool);
   BLINK_PLATFORM_EXPORT static void ForceOverlayFullscreenVideo(bool);

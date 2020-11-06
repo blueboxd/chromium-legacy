@@ -1513,6 +1513,19 @@ const FeatureEntry::FeatureVariation kNtpShoppingTasksModuleVariations[] = {
     {"- Real Data", {}, 0, "t3329137" /* variation_id */},
     {"- Fake Data", {}, 0, "t3329139" /* variation_id */},
 };
+
+const FeatureEntry::FeatureParam kNtpRepeatableQueriesInsertPositionStart[] = {
+    {ntp_features::kNtpRepeatableQueriesInsertPositionParam, "start"}};
+const FeatureEntry::FeatureParam kNtpRepeatableQueriesInsertPositionEnd[] = {
+    {ntp_features::kNtpRepeatableQueriesInsertPositionParam, "end"}};
+const FeatureEntry::FeatureVariation kNtpRepeatableQueriesVariations[] = {
+    {"- Start", kNtpRepeatableQueriesInsertPositionStart,
+     base::size(kNtpRepeatableQueriesInsertPositionStart),
+     "t3317864" /* variation_id */},
+    {"- End", kNtpRepeatableQueriesInsertPositionEnd,
+     base::size(kNtpRepeatableQueriesInsertPositionEnd),
+     "t3317864" /* variation_id */},
+};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -3858,10 +3871,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSearchReadyIncognitoName,
      flag_descriptions::kOmniboxSearchReadyIncognitoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxSearchReadyIncognito)},
-    {"omnibox-suggestions-recycler-view",
-     flag_descriptions::kOmniboxSuggestionsRecyclerViewName,
-     flag_descriptions::kOmniboxSuggestionsRecyclerViewDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionsRecyclerView)},
     {"omnibox-suggestions-wrap-around",
      flag_descriptions::kOmniboxSuggestionsWrapAroundName,
      flag_descriptions::kOmniboxSuggestionsWrapAroundDescription, kOsAndroid,
@@ -4311,7 +4320,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"ntp-repeatable-queries", flag_descriptions::kNtpRepeatableQueriesName,
      flag_descriptions::kNtpRepeatableQueriesDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpRepeatableQueries)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpRepeatableQueries,
+                                    kNtpRepeatableQueriesVariations,
+                                    "NtpRepeatableQueries")},
 
     {"ntp-webui", flag_descriptions::kNtpWebUIName,
      flag_descriptions::kNtpWebUIDescription, kOsDesktop,
@@ -4657,25 +4668,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableToolbarStatusChip)},
 
-    {"autofill-enforce-min-required-fields-for-heuristics",
-     flag_descriptions::kAutofillEnforceMinRequiredFieldsForHeuristicsName,
-     flag_descriptions::
-         kAutofillEnforceMinRequiredFieldsForHeuristicsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics)},
-    {"autofill-enforce-min-required-fields-for-query",
-     flag_descriptions::kAutofillEnforceMinRequiredFieldsForQueryName,
-     flag_descriptions::kAutofillEnforceMinRequiredFieldsForQueryDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnforceMinRequiredFieldsForQuery)},
-    {"autofill-enforce-min-required-fields-for-upload",
-     flag_descriptions::kAutofillEnforceMinRequiredFieldsForUploadName,
-     flag_descriptions::kAutofillEnforceMinRequiredFieldsForUploadDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
     {"autofill-rich-metadata-queries",
      flag_descriptions::kAutofillRichMetadataQueriesName,
      flag_descriptions::kAutofillRichMetadataQueriesDescription, kOsAll,
@@ -5497,6 +5489,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrivacyReorderedAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kPrivacyReorderedAndroid)},
 #endif
+
+    {"cookies-page-redesign", flag_descriptions::kCookiesPageRedesignName,
+     flag_descriptions::kCookiesPageRedesignDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kCookiesPageRedesign)},
 
     {"privacy-settings-redesign",
      flag_descriptions::kPrivacySettingsRedesignName,

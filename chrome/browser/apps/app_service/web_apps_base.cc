@@ -115,7 +115,9 @@ void WebAppsBase::Shutdown() {
 
 const web_app::WebApp* WebAppsBase::GetWebApp(
     const web_app::AppId& app_id) const {
-  return GetRegistrar()->GetAppById(app_id);
+  // GetRegistrar() might return nullptr if the legacy bookmark apps registry is
+  // enabled. This may happen in migration browser tests.
+  return GetRegistrar() ? GetRegistrar()->GetAppById(app_id) : nullptr;
 }
 
 void WebAppsBase::OnWebAppUninstalled(const web_app::AppId& app_id) {
@@ -378,8 +380,7 @@ void WebAppsBase::SetPermission(const std::string& app_id,
   }
 
   host_content_settings_map->SetContentSettingDefaultScope(
-      url, url, permission_type, /*resource_identifier=*/std::string(),
-      permission_value);
+      url, url, permission_type, permission_value);
 }
 
 void WebAppsBase::OpenNativeSettings(const std::string& app_id) {
@@ -503,8 +504,8 @@ void WebAppsBase::PopulatePermissions(
   DCHECK(host_content_settings_map);
 
   for (ContentSettingsType type : kSupportedPermissionTypes) {
-    ContentSetting setting = host_content_settings_map->GetContentSetting(
-        url, url, type, /*resource_identifier=*/std::string());
+    ContentSetting setting =
+        host_content_settings_map->GetContentSetting(url, url, type);
 
     // Map ContentSettingsType to an apps::mojom::TriState value
     apps::mojom::TriState setting_val;
@@ -523,8 +524,7 @@ void WebAppsBase::PopulatePermissions(
     }
 
     content_settings::SettingInfo setting_info;
-    host_content_settings_map->GetWebsiteSetting(url, url, type, std::string(),
-                                                 &setting_info);
+    host_content_settings_map->GetWebsiteSetting(url, url, type, &setting_info);
 
     auto permission = apps::mojom::Permission::New();
     permission->permission_id = static_cast<uint32_t>(type);

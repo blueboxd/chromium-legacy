@@ -211,7 +211,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRImageTracking, features::kWebXrIncubations},
     {wf::EnableWebXRLightEstimation, features::kWebXrIncubations},
     {wf::EnableWebXRPlaneDetection, features::kWebXrIncubations},
-    {wf::EnableWebXRReflectionEstimation, features::kWebXrIncubations},
     {wf::EnableWebXRViewportScale, features::kWebXrIncubations},
     {wf::EnableUserActivationSameOriginVisibility,
      features::kUserActivationSameOriginVisibility},
@@ -316,6 +315,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kConversionMeasurement},
     {wf::EnableParseUrlProtocolHandler,
      blink::features::kWebAppEnableProtocolHandlers},
+    {wf::EnableWebID, features::kWebID},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -338,6 +338,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"BlockHTMLParserOnStyleSheets",
            blink::features::kBlockHTMLParserOnStyleSheets},
           {"CSSColorSchemeUARendering", features::kCSSColorSchemeUARendering},
+          {"CSSKeyframesMemoryReduction",
+           blink::features::kCSSKeyframesMemoryReduction},
           {"CSSReducedFontLoadingLayoutInvalidations",
            blink::features::kCSSReducedFontLoadingLayoutInvalidations},
           {"CSSMatchedPropertiesCacheDependencies",

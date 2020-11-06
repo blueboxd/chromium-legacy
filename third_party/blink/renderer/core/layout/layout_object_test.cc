@@ -90,8 +90,6 @@ TEST_F(LayoutObjectTest, DisplayInlineBlockCreateObject) {
 }
 
 TEST_F(LayoutObjectTest, BackdropFilterAsGroupingProperty) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style> div { transform-style: preserve-3d; } </style>
     <div id=target1 style="backdrop-filter: blur(2px)"></div>
@@ -114,8 +112,6 @@ TEST_F(LayoutObjectTest, BackdropFilterAsGroupingProperty) {
 }
 
 TEST_F(LayoutObjectTest, BlendModeAsGroupingProperty) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style> div { transform-style: preserve-3d; } </style>
     <div id=target1 style="mix-blend-mode: multiply"></div>
@@ -133,8 +129,6 @@ TEST_F(LayoutObjectTest, BlendModeAsGroupingProperty) {
 }
 
 TEST_F(LayoutObjectTest, CSSClipAsGroupingProperty) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style> div { transform-style: preserve-3d; } </style>
     <div id=target1 style="clip: rect(1px, 2px, 3px, 4px)"></div>
@@ -158,8 +152,6 @@ TEST_F(LayoutObjectTest, CSSClipAsGroupingProperty) {
 }
 
 TEST_F(LayoutObjectTest, ClipPathAsGroupingProperty) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style> div { transform-style: preserve-3d; } </style>
     <div id=target1 style="clip-path: circle(40%)"></div>
@@ -177,8 +169,6 @@ TEST_F(LayoutObjectTest, ClipPathAsGroupingProperty) {
 }
 
 TEST_F(LayoutObjectTest, IsolationAsGroupingProperty) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style> div { transform-style: preserve-3d; } </style>
     <div id=target1 style="isolation: isolate"></div>
@@ -196,8 +186,6 @@ TEST_F(LayoutObjectTest, IsolationAsGroupingProperty) {
 }
 
 TEST_F(LayoutObjectTest, MaskAsGroupingProperty) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style> div { transform-style: preserve-3d; } </style>
     <div id=target1 style="-webkit-mask:linear-gradient(black,transparent)">
@@ -213,18 +201,6 @@ TEST_F(LayoutObjectTest, MaskAsGroupingProperty) {
                    ->StyleRef()
                    .HasGroupingPropertyForUsedTransformStyle3D());
   EXPECT_TRUE(GetLayoutObjectByElementId("target2")->StyleRef().Preserves3D());
-}
-
-TEST_F(LayoutObjectTest, UseCountBackdropFilterAsGroupingProperty) {
-  SetBodyInnerHTML(R"HTML(
-    <style> div { transform-style: preserve-3d; } </style>
-    <div id=target style="backdrop-filter: blur(2px)"></div>
-  )HTML");
-  EXPECT_FALSE(GetLayoutObjectByElementId("target")
-                   ->StyleRef()
-                   .HasGroupingPropertyForUsedTransformStyle3D());
-  EXPECT_TRUE(GetDocument().IsUseCounted(
-      WebFeature::kAdditionalGroupingPropertiesForCompat));
 }
 
 TEST_F(LayoutObjectTest, UseCountContainWithoutContentVisibility) {
@@ -1077,7 +1053,7 @@ TEST_F(LayoutObjectTest, UpdateVisualRectAfterAncestorLayout) {
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
-    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
     return registry.HasEventHandlers(
         EventHandlerRegistry::EventHandlerClass::kTouchAction);
   }
@@ -1150,7 +1126,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
     <div id='target'>target</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   Element* iframe_element = GetDocument().QuerySelector("iframe");
   auto* frame_owner_element = To<HTMLFrameOwnerElement>(iframe_element);
   Document* iframe_doc = frame_owner_element->contentDocument();
@@ -1160,7 +1136,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
 
   Element* occluder = GetDocument().getElementById("occluder");
   occluder->SetInlineStyleProperty(CSSPropertyID::kMarginTop, "-150px");
-  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   result = target->GetLayoutObject()->HitTestForOcclusion();
   EXPECT_EQ(result.InnerNode(), occluder);
 }
@@ -1183,7 +1159,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
     <div>To keep the image alive when target is set display: none</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
 
   auto* target = GetDocument().getElementById("target");
   auto* target_object = target->GetLayoutObject();
@@ -1215,7 +1191,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
   EXPECT_FALSE(second_line->SlowFirstChild()->ShouldDoFullPaintInvalidation());
 
   target->setAttribute(html_names::kStyleAttr, "display: none");
-  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   target_object = target->GetLayoutObject();
   EXPECT_EQ(nullptr, target_object);
   // The image is still alive because the other div's first line style still
@@ -1294,7 +1270,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImageDirtyStyleCrash) {
     <div id="target">Text</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
 
   CSSStyleSheet* sheet =
       To<HTMLStyleElement>(GetDocument().getElementById("style"))->sheet();

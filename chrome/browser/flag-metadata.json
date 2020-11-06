@@ -642,6 +642,15 @@
     "expiry_milestone": 90
   },
   {
+    "name": "cookies-page-redesign",
+    "owners": [
+      "harrisonsean",
+      "sauski",
+      "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 92
+  },
+  {
     "name": "cookies-without-same-site-must-be-secure",
     "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 90
@@ -3035,17 +3044,7 @@
     "expiry_milestone": -1
   },
   {
-    "name": "location-change-string",
-    "owners": [ "thegreenfrog", "bling-team" ],
-    "expiry_milestone": 91
-  },
-  {
-    "name": "location-first-run-modal",
-    "owners": [ "thegreenfrog", "bling-team" ],
-    "expiry_milestone": 91
-  },
-  {
-    "name": "location-remove-first-run",
+    "name": "location-permissions-prompt",
     "owners": [ "thegreenfrog", "bling-team" ],
     "expiry_milestone": 91
   },
@@ -3562,11 +3561,6 @@
   {
     "name": "omnibox-suggestion-button-row",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 89
-  },
-  {
-    "name": "omnibox-suggestions-recycler-view",
-    "owners": [ "fgorski", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 89
   },
   {
@@ -4342,11 +4336,6 @@
     "name": "split-settings-sync",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "ssl-committed-interstitials",
-    "owners": [ "livvielin" ],
-    "expiry_milestone": 87
   },
   {
     "name": "stop-in-background",

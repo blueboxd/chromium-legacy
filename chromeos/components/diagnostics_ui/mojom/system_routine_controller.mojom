@@ -5,7 +5,10 @@
 module chromeos.diagnostics.mojom;
 
 enum RoutineType {
+  kCpuCache,
   kCpuStress,
+  kCpuFloatingPoint,
+  kCpuPrime,
 };
 
 enum StandardRoutineResult {

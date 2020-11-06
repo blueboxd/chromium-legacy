@@ -17,6 +17,10 @@ namespace {
 
 namespace healthd = cros_healthd::mojom;
 
+constexpr uint32_t kCpuCacheDurationInSeconds = 10;
+constexpr uint32_t kCpuFloatingPointDurationInSeconds = 10;
+constexpr uint32_t kCpuPrimeDurationInSeconds = 10;
+constexpr uint64_t kCpuPrimeMaxNumber = 1000000;
 constexpr uint32_t kCpuStressDurationInSeconds = 10;
 constexpr uint32_t kRoutineResultRefreshIntervalInSeconds = 1;
 
@@ -53,6 +57,19 @@ mojom::StandardRoutineResult TestStatusToResult(
   }
 }
 
+uint32_t GetExpectedRoutineDurationInSeconds(mojom::RoutineType routine_type) {
+  switch (routine_type) {
+    case mojom::RoutineType::kCpuCache:
+      return kCpuCacheDurationInSeconds;
+    case mojom::RoutineType::kCpuFloatingPoint:
+      return kCpuFloatingPointDurationInSeconds;
+    case mojom::RoutineType::kCpuPrime:
+      return kCpuPrimeDurationInSeconds;
+    case mojom::RoutineType::kCpuStress:
+      return kCpuCacheDurationInSeconds;
+  }
+}
+
 }  // namespace
 
 SystemRoutineController::SystemRoutineController() {
@@ -79,23 +96,39 @@ void SystemRoutineController::RunRoutine(
   ExecuteRoutine(type);
 }
 
-void SystemRoutineController::ExecuteRoutine(mojom::RoutineType type) {
-  switch (type) {
+void SystemRoutineController::ExecuteRoutine(mojom::RoutineType routine_type) {
+  BindCrosHealthdDiagnosticsServiceIfNeccessary();
+
+  switch (routine_type) {
+    case mojom::RoutineType::kCpuCache:
+      diagnostics_service_->RunCpuCacheRoutine(
+          kCpuCacheDurationInSeconds,
+          base::BindOnce(&SystemRoutineController::OnRoutineStarted,
+                         base::Unretained(this), routine_type));
+      return;
+    case mojom::RoutineType::kCpuFloatingPoint:
+      diagnostics_service_->RunFloatingPointAccuracyRoutine(
+          kCpuFloatingPointDurationInSeconds,
+          base::BindOnce(&SystemRoutineController::OnRoutineStarted,
+                         base::Unretained(this), routine_type));
+      return;
+    case mojom::RoutineType::kCpuPrime:
+      diagnostics_service_->RunPrimeSearchRoutine(
+          kCpuPrimeDurationInSeconds, kCpuPrimeMaxNumber,
+          base::BindOnce(&SystemRoutineController::OnRoutineStarted,
+                         base::Unretained(this), routine_type));
+      return;
     case mojom::RoutineType::kCpuStress:
-      RunCpuStressRoutine();
+      diagnostics_service_->RunCpuStressRoutine(
+          kCpuStressDurationInSeconds,
+          base::BindOnce(&SystemRoutineController::OnRoutineStarted,
+                         base::Unretained(this), routine_type));
       return;
   }
 }
 
-void SystemRoutineController::RunCpuStressRoutine() {
-  BindCrosHealthdDiagnosticsServiceIfNeccessary();
-  diagnostics_service_->RunCpuStressRoutine(
-      kCpuStressDurationInSeconds,
-      base::BindOnce(&SystemRoutineController::OnCpuStressRoutineStarted,
-                     base::Unretained(this)));
-}
-
-void SystemRoutineController::OnCpuStressRoutineStarted(
+void SystemRoutineController::OnRoutineStarted(
+    mojom::RoutineType routine_type,
     healthd::RunRoutineResponsePtr response_ptr) {
   // Check for error conditions.
   // TODO(baileyberro): Handle additional statuses.
@@ -113,8 +146,8 @@ void SystemRoutineController::OnCpuStressRoutineStarted(
 
   // Sleep for the length of the test using a one-shot timer, then start
   // querying again for status.
-  ScheduleCheckRoutineStatus(kCpuStressDurationInSeconds,
-                             mojom::RoutineType::kCpuStress, id);
+  ScheduleCheckRoutineStatus(GetExpectedRoutineDurationInSeconds(routine_type),
+                             routine_type, id);
 }
 
 void SystemRoutineController::CheckRoutineStatus(

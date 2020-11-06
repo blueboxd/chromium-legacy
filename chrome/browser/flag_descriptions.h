@@ -150,14 +150,6 @@ extern const char kAutofillEnableToolbarStatusChipDescription[];
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
 
-// Enforcing restrictions to enable/disable autofill small form support.
-extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
-extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];
-extern const char kAutofillEnforceMinRequiredFieldsForQueryName[];
-extern const char kAutofillEnforceMinRequiredFieldsForQueryDescription[];
-extern const char kAutofillEnforceMinRequiredFieldsForUploadName[];
-extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
-
 extern const char kAutofillOffNoServerDataName[];
 extern const char kAutofillOffNoServerDataDescription[];
 
@@ -281,6 +273,9 @@ extern const char kCompositedLayerBordersDescription[];
 
 extern const char kCookieDeprecationMessagesName[];
 extern const char kCookieDeprecationMessagesDescription[];
+
+extern const char kCookiesPageRedesignName[];
+extern const char kCookiesPageRedesignDescription[];
 
 extern const char kCookiesWithoutSameSiteMustBeSecureName[];
 extern const char kCookiesWithoutSameSiteMustBeSecureDescription[];
@@ -920,9 +915,6 @@ extern const char kOmniboxSearchReadyIncognitoDescription[];
 
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
-
-extern const char kOmniboxSuggestionsRecyclerViewName[];
-extern const char kOmniboxSuggestionsRecyclerViewDescription[];
 
 extern const char kOmniboxSuggestionsWrapAroundName[];
 extern const char kOmniboxSuggestionsWrapAroundDescription[];

@@ -246,18 +246,9 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   is_hdr_ = color_space_.IsHDR();
   size_ = size;
   format_ = format;
-  base::Optional<SkSurfaceCharacterization> characterization_opt =
-      dependency_->GetRootSurfaceCharacterization();
-  if (characterization_opt) {
-    characterization_ = characterization_opt.value();
-    DCHECK(characterization_.isValid());
-    DCHECK_EQ(size.width(), characterization_.width());
-    DCHECK_EQ(size.height(), characterization_.height());
-  } else {
-    characterization_ = CreateSkSurfaceCharacterization(
-        size, format, false /* mipmap */, color_space_.ToSkColorSpace(),
-        true /* is_root_render_pass */);
-  }
+  characterization_ = CreateSkSurfaceCharacterization(
+      size, format, false /* mipmap */, color_space_.ToSkColorSpace(),
+      true /* is_root_render_pass */);
   RecreateRootRecorder();
 }
 
@@ -588,13 +579,13 @@ void SkiaOutputSurfaceImpl::EndPaint(base::OnceClosure on_finished) {
     // Draw on the root render pass.
     current_buffer_modified_ = true;
     sk_sp<SkDeferredDisplayList> overdraw_ddl;
-    if (debug_settings_->show_overdraw_feedback) {
+    if (overdraw_surface_recorder_) {
       overdraw_ddl = overdraw_surface_recorder_->detach();
       DCHECK(overdraw_ddl);
       overdraw_canvas_.reset();
-      nway_canvas_.reset();
       overdraw_surface_recorder_.reset();
     }
+    nway_canvas_.reset();
 
     auto task = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
@@ -817,8 +808,10 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
     bool mipmap,
     sk_sp<SkColorSpace> color_space,
     bool is_root_render_pass) {
-  if (!gr_context_thread_safe_)
+  if (!gr_context_thread_safe_) {
+    DLOG(ERROR) << "gr_context_thread_safe_ is null.";
     return SkSurfaceCharacterization();
+  }
 
   auto cache_max_resource_bytes = impl_on_gpu_->max_resource_cache_bytes();
   SkSurfaceProps surface_props =
@@ -849,7 +842,9 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
         capabilities_.uses_default_gl_framebuffer, false /* isTextureable */,
         impl_on_gpu_->GetGpuPreferences().enforce_vulkan_protected_memory
             ? GrProtected::kYes
-            : GrProtected::kNo);
+            : GrProtected::kNo,
+        false /* vkRTSupportsInputAttachment */,
+        capabilities_.root_is_vulkan_secondary_command_buffer);
     VkFormat vk_format = VK_FORMAT_UNDEFINED;
     LOG_IF(DFATAL, !characterization.isValid())
         << "\n  surface_size=" << surface_size.ToString()
@@ -1147,6 +1142,7 @@ void SkiaOutputSurfaceImpl::PrepareYUVATextureIndices(
 
 void SkiaOutputSurfaceImpl::ContextLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DLOG(ERROR) << "SkiaOutputSurfaceImpl::ContextLost()";
   gr_context_thread_safe_.reset();
   for (auto& observer : observers_)
     observer.OnContextLost();

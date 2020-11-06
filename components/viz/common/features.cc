@@ -10,6 +10,7 @@
 #include "components/viz/common/switches.h"
 #include "components/viz/common/viz_utils.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -113,8 +114,17 @@ bool IsUsingSkiaRenderer() {
   if (IsUsingVizForWebView())
     return true;
 
+#if BUILDFLAG(IS_ASH)
+  // TODO(https://crbug.com/1145180): SkiaRenderer isn't supported on Chrome
+  // OS boards that still use the legacy video decoder.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          switches::kPlatformDisallowsChromeOSDirectVideoDecoder))
+    return false;
+#endif
+
   return base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
-         base::FeatureList::IsEnabled(kVulkan);
+         features::IsUsingVulkan();
 }
 
 #if defined(OS_ANDROID)
@@ -137,7 +147,8 @@ bool IsUsingVizForWebView() {
   if (!base::FeatureList::IsEnabled(kEnableSharedImageForWebview))
     return false;
 
-  return base::FeatureList::IsEnabled(kVizForWebView);
+  return base::FeatureList::IsEnabled(kVizForWebView) ||
+         features::IsUsingVulkan();
 }
 
 bool IsUsingVizFrameSubmissionForWebView() {

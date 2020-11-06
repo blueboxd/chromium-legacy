@@ -62,6 +62,7 @@
 <translation id="1060292118287751956">स्क्रीन अपडेट करत असलेली वारंवारता निर्धारित करतो</translation>
 <translation id="1061904396131502319">विश्रांतीची वेळ झाली आहे</translation>
 <translation id="1067048845568873861">तयार केले</translation>
+<translation id="1067291318998134776">Linux (बीटा)</translation>
 <translation id="1067922213147265141">इतर Google सेवा</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">तुमच्या कॉंप्युटरवरील दुसर्‍या प्रोग्रामने एक एक्स्टेंशन जोडले जो Chrome ची काम करण्‍याची पद्धत कदाचित बदलू शकतो.
@@ -1144,6 +1145,7 @@
 <translation id="2307462900900812319">नेटवर्क कॉंफिगर करा</translation>
 <translation id="230927227160767054">हे पृष्ठ एक सेवा हँडलर इंस्टॉल करू इच्छिते.</translation>
 <translation id="2309620859903500144">या साइटला तुमचे गती किंवा प्रकाश सेन्सर ॲक्सेस करण्यापासून ब्लॉक केले गेले आहे.</translation>
+<translation id="2311497964614110326">Assistant सह अधिक चांगली, झटपट उत्तरे मिळवा</translation>
 <translation id="2312219318583366810">पेज URL</translation>
 <translation id="2314165183524574721">सध्याचे दृश्यमानता सेटिंग लपवलेले आहे</translation>
 <translation id="2314774579020744484">पेजचे भाषांतर करताना वापरलेली भाषा</translation>
@@ -1257,6 +1259,7 @@
 <translation id="2440604414813129000">स्त्रो&amp;त पाहा</translation>
 <translation id="244231003699905658">चुकीचा ॲड्रेस. कृपया ॲड्रेस तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="2442916515643169563">मजकुराची शॅडो</translation>
+<translation id="2444469058037141906">तुम्हाला काय हवे आहे ते म्हणा किंवा टाइप करा</translation>
 <translation id="2445081178310039857">एक्स्टेंशन मूळ डिरेक्टरी आवश्यक आहे.</translation>
 <translation id="2445484935443597917">नवीन प्रोफाइल तयार करा</translation>
 <translation id="2448312741937722512">प्रकार</translation>
@@ -1374,7 +1377,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> मध्‍ये साइन इन नाही</translation>
 <translation id="2564520396658920462">AppleScript द्वारे JavaScript एक्झिक्युट करणे बंद केले आहे. ते सुरू करण्यासाठी, मेनू बारवरून, पहा &gt; डेव्हलपर &gt; Apple इव्‍हेंटवरून JavaScript चालवू द्या यावर जा. अधिक माहितीसाठी: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">वर्धित केलेले स्पेल चेक</translation>
-<translation id="2566124945717127842">तुमचा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस अगदी नवीन सारखे रीसेट करण्यासाठी Powerwash करा.</translation>
 <translation id="2568774940984945469">इंफोबार कंटेनर</translation>
 <translation id="2571655996835834626">कुकी, JavaScript, प्लग-इन, भौगोलिक स्थान, मायक्रोफोन, कॅमेरा इ. सारख्या वैशिष्ट्यांवरील वेबसाइटचे अ‍ॅक्सेस नियंत्रित करणार्‍या तुमच्या सेटिंग्ज बदला.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> साठी रीड-ओन्ली ॲक्सेस मंजूर केला गेला आहे.</translation>
@@ -1839,7 +1841,6 @@
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> मदत</translation>
 <translation id="3118654181216384296">कृपया काही क्षणांत Linux सुरू करण्याचा पुन्हा प्रयत्न करा.</translation>
 <translation id="3120430004221004537">दिलेल्या ऑपरेशनसाठी यावर अपुरे एंक्रिप्शन आहे: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121793941267913344">हा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस रीसेट करा</translation>
 <translation id="3122464029669770682">सीपीयू</translation>
 <translation id="3122496702278727796">डेटा डिरेक्टरी तयार करण्यात अयशस्वी</translation>
 <translation id="3124111068741548686">वापरकर्ता हँडल</translation>
@@ -2171,6 +2172,7 @@
 <translation id="3514373592552233661">एका पेक्षा जास्त नेटवर्क उपलब्ध असल्यास इतर ज्ञात नेटवर्क ऐवजी प्राधान्यीकृत नेटवर्कना प्राधान्य दिले जाईल</translation>
 <translation id="3515983984924808886">रीसेटची खात्री करण्यासाठी तुमच्या सिक्युरिटी कीला पुन्हा स्पर्श करा. सिक्युरिटी कीवर स्टोअर केलेली सर्व माहिती, तिच्या पिनसह, हटवली जाईल.</translation>
 <translation id="3518985090088779359">स्वीकारा आणि सुरू ठेवा</translation>
+<translation id="3519564332031442870">Print Backend Service</translation>
 <translation id="3521606918211282604">डिस्कचा आकार बदला</translation>
 <translation id="3523642406908660543">एखादी साइट तुमचा कॉंप्युटर ॲक्सेस करण्यासाठी प्लगिन वापरू इच्छिते तेव्हा विचारा (शिफारस केलेले)</translation>
 <translation id="3524965460886318643">ॲक्टिव्हिटी एक्सपोर्ट करा</translation>
@@ -2684,6 +2686,7 @@
 <translation id="4088095054444612037">गटासाठी स्वीकारा</translation>
 <translation id="4089235344645910861">सेटिंग्ज सेव्ह केल्या. सिंक सुरू केले.</translation>
 <translation id="4090103403438682346">पडताळणीने दिलेला ॲक्सेस सक्षम करा</translation>
+<translation id="4090811767089219951">Google Assistant येथेदेखील काम करते</translation>
 <translation id="4090947011087001172"><ph name="SITE" /> साठी साइट परवानग्या रीसेट करायच्या?</translation>
 <translation id="4093865285251893588">प्रोफाइल फोटो</translation>
 <translation id="4093955363990068916">स्थानिक फाईल:</translation>
@@ -2948,6 +2951,7 @@
 <translation id="4441124369922430666">मशीन सुरू होते तेव्हा तुम्ही हा ॲप स्वयंचलितपणे प्रारंभ करू इच्छिता?</translation>
 <translation id="4441147046941420429">पुढे सुरू ठेवण्यासाठी, तुमच्या डिव्हाइसमधून सिक्युरिटी की काढून टाका आणि नंतर ती पुन्हा घालून तिला स्पर्श करा</translation>
 <translation id="444134486829715816">विस्तार करा...</translation>
+<translation id="4441928470323187829">तुमच्या अ‍ॅडमिनिस्ट्रेटरने पिन केले</translation>
 <translation id="4442424173763614572">DNS लुकअप अयश्सवी</translation>
 <translation id="4443536555189480885">&amp;मदत</translation>
 <translation id="4444304522807523469">USB द्वारा संलग्न केलेल्या किंवा स्थानिक नेटवर्कवरील दस्तऐवज स्कॅनर ॲक्सेस करा</translation>
@@ -3669,6 +3673,7 @@
 <translation id="5315873049536339193">ओळख</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5319359161174645648">Google Chrome ची शिफारस करते</translation>
+<translation id="5320112320661303273">तुम्ही आधीपासून Assistant एका वेगळ्या डिव्हाइसवर सेट केले आहे असे दिसते. पुढील सेटिंग सुरू करून Assistant चा पुरेपूर वापर करा.</translation>
 <translation id="532247166573571973">सर्व्हर कदाचित आवाक्याबाहेर असू शकते. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="5324300749339591280">अ‍ॅप्स सूची</translation>
 <translation id="5324780743567488672">तुमचे स्थान वापरून स्वयंचलितपणे टाइम झोन सेट करा</translation>
@@ -5609,6 +5614,7 @@
 <translation id="7632948528260659758">खालील कियोस्‍क अ‍ॅप्स अद्यतनांसाठी अयशस्‍वी झाले आहेत:</translation>
 <translation id="7633724038415831385">तुम्ही फक्त या वेळी अपडेटची प्रतीक्षा कराल. Chromebook वर, सॉफ्टवेअर अपडेट बॅकग्राउंडमध्ये होतात.</translation>
 <translation id="7634566076839829401">काहीतरी चूक झाली, कृपया पुन्हा प्रयत्न करा.</translation>
+<translation id="7635048370253485243">तुमच्या अ‍ॅडमिनिस्ट्रेटरने पिन केले</translation>
 <translation id="763632859238619983">कोणत्याही साइटला पेमेंट हँडलर इंस्टॉल करण्याची अनुमती देऊ नका</translation>
 <translation id="7636919061354591437">या डिव्हाइसवर इंस्टॉल करा</translation>
 <translation id="7638605456503525968">सिरीअल पोर्ट</translation>
@@ -6052,7 +6058,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8101987792947961127">पुढील रीबूटवर Powerwash आवश्यक</translation>
 <translation id="8102139037507939978">system_logs.txt वरून वैयक्तिकरीत्या ओळखण्यायोग्य माहिती स्ट्रिप करा.</translation>
 <translation id="8102159139658438129">तुमच्या कनेक्ट केलेल्या फोनसाठी पर्याय पाहण्याकरिता <ph name="LINK_BEGIN" />सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
-<translation id="8104696615244072556">तुमचे <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस Powerwash करा आणि मागील आवृत्तीकडे परत या.</translation>
 <translation id="8107015733319732394">तुमच्या <ph name="DEVICE_TYPE" /> वर Google Play स्टोअर इंस्टॉल करत आहे. यासाठी काही मिनिटे लागतील.</translation>
 <translation id="810728361871746125">डिस्प्ले रिझोल्युशन</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{कोणत्याही तृतीय पक्ष कुकी नाहीत}=1{१ तृतीय पक्ष कुकी ब्लॉक केली आहे}other{# तृतीय पक्ष कुकी ब्लॉक केल्या आहेत}}</translation>

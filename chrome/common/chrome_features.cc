@@ -141,6 +141,10 @@ const base::Feature kClientStorageAccessContextAuditing{
 const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a redesign of the cookies page.
+const base::Feature kCookiesPageRedesign{"CookiesPageRedesign",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Restricts all of Chrome's threads to use only LITTLE cores on big.LITTLE
 // architectures.
@@ -867,7 +871,7 @@ const base::Feature kWin10AcceleratedDefaultBrowserFlow{
 #endif  // defined(OS_WIN)
 
 const base::Feature kWindowNaming{"WindowNaming",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables writing basic system profile to the persistent histograms files
 // earlier.

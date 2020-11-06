@@ -78,6 +78,7 @@ preprocess_grit("preprocess_web_components") {
   out_manifest = "$target_gen_dir/$preprocess_web_components_manifest"
   in_files = [
     "app.js",
+    "icons.js",
     "read_later_item.js",
   ]
 }
@@ -96,6 +97,7 @@ js_library("app") {
     ":read_later_api_proxy",
     ":read_later_item",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
 }
 
@@ -117,6 +119,7 @@ js_library("read_later_item") {
 html_to_js("web_components") {
   js_files = [
     "app.js",
+    "icons.js",
     "read_later_item.js",
   ]
 }

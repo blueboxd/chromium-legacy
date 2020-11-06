@@ -57,10 +57,12 @@ import java.util.Map;
  * class need to close them with
  * {@link PaymentRequestService#close()}, after which no usage is allowed.
  */
-public class PaymentRequestService {
+public class PaymentRequestService implements PaymentAppFactoryDelegate, PaymentAppFactoryParams,
+                                              PaymentRequestUpdateEventListener {
     private static final String TAG = "PaymentRequestServ";
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static NativeObserverForTest sNativeObserverForTest;
+    private static boolean sIsLocalHasEnrolledInstrumentQueryQuotaEnforcedForTest;
     private final Runnable mOnClosedListener;
     private final WebContents mWebContents;
     private final JourneyLogger mJourneyLogger;
@@ -72,7 +74,6 @@ public class PaymentRequestService {
     @Nullable
     private final byte[][] mCertificateChain;
     private final boolean mIsOffTheRecord;
-    @Nullable
     private final PaymentOptions mPaymentOptions;
     private final boolean mRequestShipping;
     private final boolean mRequestPayerName;
@@ -80,13 +81,24 @@ public class PaymentRequestService {
     private final boolean mRequestPayerEmail;
     private final Delegate mDelegate;
     private final int mShippingType;
+    private final List<PaymentApp> mPendingApps = new ArrayList<>();
     private PaymentRequestSpec mSpec;
     private boolean mHasClosed;
+    private boolean mIsFinishedQueryingPaymentApps;
+    private boolean mIsCurrentPaymentRequestShowing;
+
+    /** If not empty, use this error message for rejecting PaymentRequest.show(). */
+    private String mRejectShowErrorMessage;
+
+    /** Whether PaymentRequest.show() was invoked with a user gesture. */
+    private boolean mIsUserGestureShow;
 
     // mClient is null only when it has closed.
+    @Nullable
     private PaymentRequestClient mClient;
 
     // mBrowserPaymentRequest is null when it has closed or is uninitiated.
+    @Nullable
     private BrowserPaymentRequest mBrowserPaymentRequest;
     /**
      * A mapping of the payment method names to the corresponding payment method specific data. If
@@ -114,6 +126,8 @@ public class PaymentRequestService {
 
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
+    @Nullable
+    private PaymentApp mInvokedPaymentApp;
 
     /**
      * An observer interface injected when running tests to allow them to observe events.
@@ -158,6 +172,14 @@ public class PaymentRequestService {
          * @return Whether the preferences allow CAN_MAKE_PAYMENT.
          */
         boolean prefsCanMakePayment();
+
+        /**
+         * @return If the merchant's WebContents is running inside of a Trusted Web Activity,
+         *         returns the package name for Trusted Web Activity. Otherwise returns an empty
+         *         string or null.
+         */
+        @Nullable
+        String getTwaPackageName();
     }
 
     /**
@@ -233,10 +255,9 @@ public class PaymentRequestService {
             BrowserPaymentRequest.Factory browserPaymentRequestFactory) {
         return new MojoPaymentRequestGateKeeper(
                 (client, methodData, details, options, googlePayBridgeEligible, onClosedListener)
-                        -> PaymentRequestService.createIfParamsValid(renderFrameHost,
-                                isOffTheRecord, browserPaymentRequestFactory, client, methodData,
-                                details, options, googlePayBridgeEligible, onClosedListener,
-                                delegate));
+                        -> createIfParamsValid(renderFrameHost, isOffTheRecord,
+                                browserPaymentRequestFactory, client, methodData, details, options,
+                                googlePayBridgeEligible, onClosedListener, delegate));
     }
 
     /**
@@ -318,7 +339,7 @@ public class PaymentRequestService {
     private void startPaymentAppService() {
         PaymentAppService service = PaymentAppService.getInstance();
         mBrowserPaymentRequest.addPaymentAppFactories(service);
-        service.create(/*delegate=*/mBrowserPaymentRequest.getPaymentAppFactoryDelegate());
+        service.create(/*delegate=*/this);
     }
 
     /** Abort the request, used before this class's instantiation. */
@@ -494,6 +515,7 @@ public class PaymentRequestService {
                 mSpec.getRawTotal(), mSpec.getRawLineItems(),
                 Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
                 callback);
+        mInvokedPaymentApp = paymentApp;
         mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
         boolean isAutofillCard = paymentApp.isAutofillInstrument();
         // Record what type of app was selected when "Pay" was clicked.
@@ -502,6 +524,7 @@ public class PaymentRequestService {
             if (paymentMethodName.equals(MethodStrings.ANDROID_PAY)
                     || paymentMethodName.equals(MethodStrings.GOOGLE_PAY)) {
                 isGooglePaymentApp = true;
+                break;
             }
         }
         if (isAutofillCard) {
@@ -513,12 +536,156 @@ public class PaymentRequestService {
         }
     }
 
+    // Implements PaymentAppFactoryDelegate:
+    @Override
+    public void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory /* Unused */) {
+        if (mBrowserPaymentRequest == null) return;
+        mIsFinishedQueryingPaymentApps = true;
+
+        if (disconnectIfNoPaymentMethodsSupported(mBrowserPaymentRequest.hasAvailableApps())) {
+            return;
+        }
+
+        // Always return false when can make payment is disabled.
+        mHasEnrolledInstrument &= mDelegate.prefsCanMakePayment();
+
+        if (mIsCanMakePaymentResponsePending) {
+            respondCanMakePaymentQuery();
+        }
+
+        if (mIsHasEnrolledInstrumentResponsePending) {
+            respondHasEnrolledInstrumentQuery();
+        }
+
+        mBrowserPaymentRequest.notifyPaymentUiOfPendingApps(mPendingApps);
+        mPendingApps.clear();
+        if (isCurrentPaymentRequestShowing() && !mBrowserPaymentRequest.showAppSelector()) return;
+
+        mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
+    }
+
     /**
-     * Called when a payment app is created.
-     * @param paymentApp The created payment app.
-     * @param pendingApps The list of created apps increasing until onDoneCreatingPaymentApp().
+     * If no payment methods are supported, disconnect from the client and return true.
+     * @param hasAvailableApps Whether any payment app is available.
+     * @return Whether client has been disconnected.
      */
-    public void onPaymentAppCreated(PaymentApp paymentApp, List<PaymentApp> pendingApps) {
+    public boolean disconnectIfNoPaymentMethodsSupported(boolean hasAvailableApps) {
+        if (!mIsFinishedQueryingPaymentApps || !isCurrentPaymentRequestShowing()) return false;
+        if (!mCanMakePayment || (mPendingApps.isEmpty() && !hasAvailableApps)) {
+            // All factories have responded, but none of them have apps. It's possible to add credit
+            // cards, but the merchant does not support them either. The payment request must be
+            // rejected.
+            mJourneyLogger.setNotShown(mCanMakePayment
+                            ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
+                            : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
+            if (mDelegate.isOffTheRecord()) {
+                // If the user is in the OffTheRecord mode, hide the absence of their payment
+                // methods from the merchant site.
+                mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                        ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
+            } else {
+                if (sNativeObserverForTest != null) {
+                    sNativeObserverForTest.onNotSupportedError();
+                }
+
+                if (TextUtils.isEmpty(mRejectShowErrorMessage) && !isInTwa()
+                        && mSpec.getMethodData().get(MethodStrings.GOOGLE_PLAY_BILLING) != null) {
+                    mRejectShowErrorMessage = ErrorStrings.APP_STORE_METHOD_ONLY_SUPPORTED_IN_TWA;
+                }
+                mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                        ErrorMessageUtil.getNotSupportedErrorMessage(mSpec.getMethodData().keySet())
+                                + (TextUtils.isEmpty(mRejectShowErrorMessage)
+                                                ? ""
+                                                : " " + mRejectShowErrorMessage),
+                        PaymentErrorReason.NOT_SUPPORTED);
+            }
+            if (sObserverForTest != null) {
+                sObserverForTest.onPaymentRequestServiceShowFailed();
+            }
+            return true;
+        }
+        return disconnectForStrictShow(mIsUserGestureShow);
+    }
+
+    /**
+     * If strict show() conditions are not satisfied, disconnect from client and return true.
+     * @param isUserGestureShow Whether the PaymentRequest.show() is triggered by user gesture.
+     * @return Whether client has been disconnected.
+     */
+    private boolean disconnectForStrictShow(boolean isUserGestureShow) {
+        if (!isUserGestureShow || !mSpec.getMethodData().containsKey(MethodStrings.BASIC_CARD)
+                || mHasEnrolledInstrument || mHasNonAutofillApp
+                || !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
+            return false;
+        }
+
+        if (sObserverForTest != null) {
+            sObserverForTest.onPaymentRequestServiceShowFailed();
+        }
+        mRejectShowErrorMessage = ErrorStrings.STRICT_BASIC_CARD_SHOW_REJECT;
+        mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                ErrorMessageUtil.getNotSupportedErrorMessage(mSpec.getMethodData().keySet()) + " "
+                        + mRejectShowErrorMessage,
+                PaymentErrorReason.NOT_SUPPORTED);
+
+        return true;
+    }
+
+    private boolean isInTwa() {
+        return !TextUtils.isEmpty(mDelegate.getTwaPackageName());
+    }
+
+    /** @return Whether PaymentRequest.show() was invoked with a user gesture. */
+    public boolean isUserGestureShow() {
+        return mIsUserGestureShow;
+    }
+
+    /**
+     * Records that PaymentRequest.show() was invoked with a user gesture.
+     * @param userGestureShow Whether it is invoked with a user gesture.
+     */
+    public void setUserGestureShow(boolean userGestureShow) {
+        mIsUserGestureShow = userGestureShow;
+    }
+
+    /** @return Whether the current payment request service has called show(). */
+    public boolean isCurrentPaymentRequestShowing() {
+        return mIsCurrentPaymentRequestShowing;
+    }
+
+    /**
+     * Records whether the current payment request service has called show().
+     * @param isShowing Whether show() has been called.
+     */
+    public void setCurrentPaymentRequestShowing(boolean isShowing) {
+        mIsCurrentPaymentRequestShowing = isShowing;
+    }
+
+    /**
+     * @return Whether all payment apps have been queried of canMakePayment() and
+     *         hasEnrolledInstrument().
+     */
+    public boolean isFinishedQueryingPaymentApps() {
+        return mIsFinishedQueryingPaymentApps;
+    }
+
+    @VisibleForTesting
+    public static void setIsLocalHasEnrolledInstrumentQueryQuotaEnforcedForTest() {
+        sIsLocalHasEnrolledInstrumentQueryQuotaEnforcedForTest = true;
+    }
+
+    // Implements PaymentAppFactoryDelegate:
+    @Override
+    public PaymentAppFactoryParams getParams() {
+        return this;
+    }
+
+    // Implements PaymentAppFactoryDelegate:
+    @Override
+    public void onPaymentAppCreated(PaymentApp paymentApp) {
+        if (mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.onPaymentAppCreated(paymentApp);
         mHasEnrolledInstrument |= paymentApp.canMakePayment();
         mHasNonAutofillApp |= !paymentApp.isAutofillInstrument();
 
@@ -531,33 +698,12 @@ public class PaymentRequestService {
             mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
         }
 
-        pendingApps.add(paymentApp);
-    }
-
-    /** @return Whether the response of CanMakePayment is pending. */
-    public boolean isCanMakePaymentResponsePending() {
-        return mIsCanMakePaymentResponsePending;
-    }
-
-    /** Sets pending for the response of CanMakePayment. */
-    public void setCanMakePaymentResponsePending(boolean isPending) {
-        mIsCanMakePaymentResponsePending = isPending;
-    }
-
-    /** @return Whether the response of HasEnrolledInstrument is pending. */
-    public boolean isHasEnrolledInstrumentResponsePending() {
-        return mIsHasEnrolledInstrumentResponsePending;
-    }
-
-    /** Sets pending for HasEnrolledInstrument. */
-    public void setIsHasEnrolledInstrumentResponsePending(boolean isPending) {
-        mIsHasEnrolledInstrumentResponsePending = isPending;
+        mPendingApps.add(paymentApp);
     }
 
     /** Responds to the CanMakePayment query from the merchant page. */
     public void respondCanMakePaymentQuery() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
+        if (mClient == null) return;
 
         mIsCanMakePaymentResponsePending = false;
 
@@ -577,21 +723,22 @@ public class PaymentRequestService {
 
     /** Responds to the HasEnrolledInstrument query from the merchant page. */
     public void respondHasEnrolledInstrumentQuery() {
+        if (mClient == null) return;
         boolean response = mHasEnrolledInstrument;
         mIsHasEnrolledInstrumentResponsePending = false;
 
+        int result;
         if (CanMakePaymentQuery.canQuery(
                     mWebContents, mTopLevelOrigin, mPaymentRequestOrigin, mQueryForQuota)) {
-            onHasEnrolledInstrument(response
-                            ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
-                            : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
-        } else if (mBrowserPaymentRequest.shouldEnforceCanMakePaymentQueryQuota()) {
-            onHasEnrolledInstrument(HasEnrolledInstrumentQueryResult.QUERY_QUOTA_EXCEEDED);
+            result = response ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
+                              : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT;
+        } else if (shouldEnforceHasEnrolledInstrumentQueryQuota()) {
+            result = HasEnrolledInstrumentQueryResult.QUERY_QUOTA_EXCEEDED;
         } else {
-            onHasEnrolledInstrument(response
-                            ? HasEnrolledInstrumentQueryResult.WARNING_HAS_ENROLLED_INSTRUMENT
-                            : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
+            result = response ? HasEnrolledInstrumentQueryResult.WARNING_HAS_ENROLLED_INSTRUMENT
+                              : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT;
         }
+        mClient.onHasEnrolledInstrument(result);
 
         mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsOffTheRecord);
 
@@ -603,41 +750,46 @@ public class PaymentRequestService {
         }
     }
 
+    /**
+     * @return Whether hasEnrolledInstrument() query quota should be enforced. By default, the quota
+     *         is enforced only on https:// scheme origins. However, the tests also enable the quota
+     *         on localhost and file:// scheme origins to verify its behavior.
+     */
+    private boolean shouldEnforceHasEnrolledInstrumentQueryQuota() {
+        // If |mWebContents| is destroyed, don't bother checking the localhost or file:// scheme
+        // exemption. It doesn't really matter anyways.
+        return mWebContents.isDestroyed()
+                || !UrlUtil.isLocalDevelopmentUrl(mWebContents.getLastCommittedUrl())
+                || sIsLocalHasEnrolledInstrumentQueryQuotaEnforcedForTest;
+    }
+
     /** @return Whether the instrument has been enrolled. */
     public boolean getHasEnrolledInstrument() {
         return mHasEnrolledInstrument;
     }
 
-    /** Sets whether the instrument has been enrolled. */
-    public void setHasEnrolledInstrument(boolean hasEnrolledInstrument) {
-        mHasEnrolledInstrument = hasEnrolledInstrument;
-    }
-
-    /**
-     * Sets the result of CanMakePayment request.
-     * @param canMakePayment Whether the user can make a payment with the merchant specified
-     *         request.
-     */
-    public void setCanMakePayment(boolean canMakePayment) {
+    // Implements PaymentAppFactoryDelegate:
+    @Override
+    public void onCanMakePaymentCalculated(boolean canMakePayment) {
+        if (mBrowserPaymentRequest == null) return;
         mCanMakePayment = canMakePayment;
+        if (!mIsCanMakePaymentResponsePending) return;
+        // canMakePayment doesn't need to wait for all apps to be queried because it only needs to
+        // test the existence of a payment handler.
+        respondCanMakePaymentQuery();
     }
 
-    /** @return The result of the CanMakePayment request. */
-    public boolean getCanMakePayment() {
-        return mCanMakePayment;
+    // Implements PaymentAppFactoryDelegate:
+    @Override
+    public void onPaymentAppCreationError(String errorMessage) {
+        if (TextUtils.isEmpty(mRejectShowErrorMessage)) {
+            mRejectShowErrorMessage = errorMessage;
+        }
     }
 
     /** @return Whether the created payment apps includes any autofill payment app. */
     public boolean getHasNonAutofillApp() {
         return mHasNonAutofillApp;
-    }
-
-    /**
-     * @return The queryForQuota, a mapping of the payment method names to the corresponding payment
-     *         method specific data
-     */
-    public Map<String, PaymentMethodData> getQueryForQuota() {
-        return mQueryForQuota;
     }
 
     /**
@@ -720,20 +872,30 @@ public class PaymentRequestService {
 
     /** The component part of the {@link PaymentRequest#canMakePayment} implementation. */
     /* package */ void canMakePayment() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onCanMakePaymentCalled();
+        }
 
-        mBrowserPaymentRequest.canMakePayment();
+        if (mIsFinishedQueryingPaymentApps) {
+            respondCanMakePaymentQuery();
+        } else {
+            mIsCanMakePaymentResponsePending = true;
+        }
     }
 
     /**
      * The component part of the {@link PaymentRequest#hasEnrolledInstrument} implementation.
      */
     /* package */ void hasEnrolledInstrument() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onHasEnrolledInstrumentCalled();
+        }
 
-        mBrowserPaymentRequest.hasEnrolledInstrument();
+        if (mIsFinishedQueryingPaymentApps) {
+            respondHasEnrolledInstrumentQuery();
+        } else {
+            mIsHasEnrolledInstrumentResponsePending = true;
+        }
     }
 
     /**
@@ -793,6 +955,8 @@ public class PaymentRequestService {
         if (mHasClosed) return;
         mHasClosed = true;
 
+        mIsCurrentPaymentRequestShowing = false;
+
         if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.close();
         mBrowserPaymentRequest = null;
@@ -816,14 +980,6 @@ public class PaymentRequestService {
     public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
         assert observerForTest != null;
         sObserverForTest = observerForTest;
-    }
-
-    /** Invokes {@link PaymentRequestClient.onPaymentMethodChange}. */
-    public void onPaymentMethodChange(String methodName, String stringifiedDetails) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onPaymentMethodChange(methodName, stringifiedDetails);
     }
 
     /** Invokes {@link PaymentRequestClient.onShippingAddressChange}. */
@@ -883,22 +1039,6 @@ public class PaymentRequestService {
         mClient.onAbort(abortedSuccessfully);
     }
 
-    /** Invokes {@link PaymentRequestClient.onCanMakePayment}. */
-    public void onCanMakePayment(int result) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onCanMakePayment(result);
-    }
-
-    /** Invokes {@link PaymentRequestClient.onHasEnrolledInstrument}. */
-    public void onHasEnrolledInstrument(int result) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onHasEnrolledInstrument(result);
-    }
-
     /** Invokes {@link PaymentRequestClient.warnNoFavicon}. */
     public void warnNoFavicon() {
         // Every caller should stop referencing this class once close() is called.
@@ -915,55 +1055,9 @@ public class PaymentRequestService {
         return mJourneyLogger;
     }
 
-    /** @return The WebContents of the merchant's page, cannot be null. */
-    public WebContents getWebContents() {
-        return mWebContents;
-    }
-
     /** @return Whether the WebContents is currently showing an off-the-record tab. */
     public boolean isOffTheRecord() {
         return mIsOffTheRecord;
-    }
-
-    /** @return The certificate chain from the merchant page's WebContents, can be null. */
-    @Nullable
-    public byte[][] getCertificateChain() {
-        return mCertificateChain;
-    }
-
-    /** @return The origin of the page at which the PaymentRequest is created. */
-    public String getPaymentRequestOrigin() {
-        return mPaymentRequestOrigin;
-    }
-
-    /** @return The merchant page's title. */
-    public String getMerchantName() {
-        return mMerchantName;
-    }
-
-    /** @return The origin of the top level frame of the merchant page. */
-    public String getTopLevelOrigin() {
-        return mTopLevelOrigin;
-    }
-
-    /** @return The payment options requested by the merchant, can be null. */
-    @Nullable
-    public PaymentOptions getPaymentOptions() {
-        return mPaymentOptions;
-    }
-
-    /** @return The RendererFrameHost of the merchant page. */
-    public RenderFrameHost getRenderFrameHost() {
-        return mRenderFrameHost;
-    }
-
-    /**
-     * @return The origin of the iframe that invoked the PaymentRequest API. Can be opaque. Used by
-     * security features like 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'. Should not be
-     * null.
-     */
-    public Origin getPaymentRequestSecurityOrigin() {
-        return mPaymentRequestSecurityOrigin;
     }
 
     /**
@@ -979,5 +1073,172 @@ public class PaymentRequestService {
             shippingAddress.recipient = "";
             shippingAddress.addressLine = new String[0];
         }
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public WebContents getWebContents() {
+        return mWebContents;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public RenderFrameHost getRenderFrameHost() {
+        return mRenderFrameHost;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public boolean hasClosed() {
+        return mHasClosed;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Map<String, PaymentMethodData> getMethodData() {
+        // GetMethodData should not get called after PR is closed.
+        assert !mHasClosed;
+        assert !mSpec.isDestroyed();
+        return mSpec.getMethodData();
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getId() {
+        assert !mHasClosed;
+        assert !mSpec.isDestroyed();
+        return mSpec.getId();
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getTopLevelOrigin() {
+        return mTopLevelOrigin;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getPaymentRequestOrigin() {
+        return mPaymentRequestOrigin;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Origin getPaymentRequestSecurityOrigin() {
+        return mPaymentRequestSecurityOrigin;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    @Nullable
+    public byte[][] getCertificateChain() {
+        return mCertificateChain;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Map<String, PaymentDetailsModifier> getUnmodifiableModifiers() {
+        assert !mHasClosed;
+        assert !mSpec.isDestroyed();
+        return Collections.unmodifiableMap(mSpec.getModifiers());
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentItem getRawTotal() {
+        assert !mHasClosed;
+        assert !mSpec.isDestroyed();
+        return mSpec.getRawTotal();
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public boolean getMayCrawl() {
+        return !mBrowserPaymentRequest.isPaymentSheetBasedPaymentAppSupported()
+                || PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentRequestUpdateEventListener getPaymentRequestUpdateEventListener() {
+        return this;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentOptions getPaymentOptions() {
+        return mPaymentOptions;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentRequestSpec getSpec() {
+        return mSpec;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    @Nullable
+    public String getTwaPackageName() {
+        return mDelegate.getTwaPackageName();
+    }
+
+    /** @return The invoked payment app, can be null. */
+    @Nullable
+    public PaymentApp getInvokedPaymentApp() {
+        return mInvokedPaymentApp;
+    }
+
+    /** Sets no payment app is invoked. */
+    public void resetInvokedPaymentApp() {
+        mInvokedPaymentApp = null;
+    }
+
+    // Implements PaymentRequestUpdateEventListener:
+    @Override
+    public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
+        if (TextUtils.isEmpty(methodName) || stringifiedDetails == null
+                || mInvokedPaymentApp == null
+                || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || mClient == null) {
+            return false;
+        }
+        mClient.onPaymentMethodChange(methodName, stringifiedDetails);
+        return true;
+    }
+
+    // Implements PaymentRequestUpdateEventListener:
+    @Override
+    public boolean changeShippingOptionFromInvokedApp(String shippingOptionId) {
+        if (TextUtils.isEmpty(shippingOptionId) || mInvokedPaymentApp == null
+                || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || !mRequestShipping
+                || mSpec.getRawShippingOptions() == null || mClient == null) {
+            return false;
+        }
+
+        boolean isValidId = false;
+        for (PaymentShippingOption option : mSpec.getRawShippingOptions()) {
+            if (shippingOptionId.equals(option.id)) {
+                isValidId = true;
+                break;
+            }
+        }
+        if (!isValidId) return false;
+
+        mClient.onShippingOptionChange(shippingOptionId);
+        return true;
+    }
+
+    // Implements PaymentRequestUpdateEventListener:
+    @Override
+    public boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress) {
+        if (shippingAddress == null || mInvokedPaymentApp == null
+                || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || !mRequestShipping
+                || mClient == null) {
+            return false;
+        }
+
+        onShippingAddressChange(shippingAddress);
+        return true;
     }
 }

@@ -237,24 +237,6 @@ const char kAutofillEnableVirtualCardDescription[] =
     "When enabled, if all requirements are met, Autofill will offer to use "
     "virtual credit cards in form filling.";
 
-const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
-    "Autofill Enforce Min Required Fields For Heuristics";
-const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
-    "When enabled, autofill will generally require a form to have at least 3 "
-    "fields before allowing heuristic field-type prediction to occur.";
-
-const char kAutofillEnforceMinRequiredFieldsForQueryName[] =
-    "Autofill Enforce Min Required Fields For Query";
-const char kAutofillEnforceMinRequiredFieldsForQueryDescription[] =
-    "When enabled, autofill will generally require a form to have at least 3 "
-    "fields before querying the autofill server for field-type predictions.";
-
-const char kAutofillEnforceMinRequiredFieldsForUploadName[] =
-    "Autofill Enforce Min Required Fields For Upload";
-const char kAutofillEnforceMinRequiredFieldsForUploadDescription[] =
-    "When enabled, autofill will generally require a form to have at least 3 "
-    "fillable fields before uploading field-type votes for that form.";
-
 const char kAutofillOffNoServerDataName[] = "Autofill Off No Server Data";
 const char kAutofillOffNoServerDataDescription[] =
     "Disables Autofill for fields with autocomplete off that have no "
@@ -354,6 +336,9 @@ const char kContextMenuSearchAndShopWithGoogleLensName[] =
 const char kContextMenuSearchAndShopWithGoogleLensDescription[] =
     "Display an additional menu item for a Shopping intent to Google Lens "
     "below Search with Google Lens when Lens shopping feature is enabled";
+
+const char kCookiesPageRedesignName[] = "Cookies Page Redesign";
+const char kCookiesPageRedesignDescription[] = "Enables cookies page redesign";
 
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
@@ -1580,11 +1565,6 @@ const char kOmniboxSpareRendererName[] =
 const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
-
-const char kOmniboxSuggestionsRecyclerViewName[] =
-    "Omnibox Suggestions using a recycler view";
-const char kOmniboxSuggestionsRecyclerViewDescription[] =
-    "Use an Android RecyclerView to render the Omnibox Suggestions drop down.";
 
 const char kOmniboxSuggestionsWrapAroundName[] =
     "Omnibox Suggestions Wrap-Around";

@@ -6608,6 +6608,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="232" label="RFH_RECEIVED_ASSOCIATED_MESSAGE_WHILE_BFCACHED"/>
   <int value="233" label="RWH_CLOSE_PORTAL"/>
   <int value="234" label="MSDH_INVALID_STREAM_TYPE"/>
+  <int value="235" label="RFH_CREATE_CHILD_FRAME_TOKENS_NOT_FOUND"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -29718,7 +29719,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3294" label="ForceEncodedAudioInsertableStreams"/>
   <int value="3295" label="ForceEncodedVideoInsertableStreams"/>
   <int value="3296" label="TransformStyleContainingBlockComputedUsedMismatch"/>
-  <int value="3297" label="AdditionalGroupingPropertiesForCompat"/>
+  <int value="3297" label="OBSOLETE_AdditionalGroupingPropertiesForCompat"/>
   <int value="3298" label="PopupDoesNotExceedOwnerWindowBounds"/>
   <int value="3299" label="PopupExceedsOwnerWindowBounds"/>
   <int value="3300" label="PopupExceedsOwnerWindowBoundsForIframe"/>
@@ -30150,6 +30151,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3719" label="GetCurrentBrowsingContextMedia"/>
   <int value="3720" label="MouseEventRelativePositionForInlineElement"/>
   <int value="3721" label="V8SharedArrayBufferConstructedWithoutIsolation"/>
+  <int value="3722" label="V8HTMLVideoElement_GetVideoPlaybackQuality_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37560,6 +37562,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="98" label="MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID"/>
   <int value="99" label="CONDITIONAL_TAB_STRIP_INFOBAR_ANDROID"/>
   <int value="100" label="LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID"/>
+  <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC"/>
+  <int value="102" label="EXPERIMENTAL_INFOBAR_DELEGATE_LACROS"/>
 </enum>
 
 <enum name="InfoBarResponse">
@@ -45744,6 +45748,7 @@ from previous Chrome versions.
   <int value="1896527497" label="ImmersiveUiMode:enabled"/>
   <int value="1898231011" label="enable-native-notifications"/>
   <int value="1899248188" label="MediaApp:disabled"/>
+  <int value="1900153036" label="CookiesPageRedesign:disabled"/>
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
@@ -45951,6 +45956,7 @@ from previous Chrome versions.
   <int value="2099945365" label="OmniboxAssistantVoiceSearch:enabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104340988" label="CrostiniUsername:disabled"/>
+  <int value="2104718356" label="CookiesPageRedesign:enabled"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>

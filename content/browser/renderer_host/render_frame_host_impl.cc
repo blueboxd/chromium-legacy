@@ -126,6 +126,7 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/webauth_request_security_checker.h"
+#include "content/browser/webid/federated_auth_request_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -2542,6 +2543,9 @@ void RenderFrameHostImpl::OnCreateChildFrame(
         GetProcess(), bad_message::RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE);
   }
 
+  DCHECK(frame_token);
+  DCHECK(devtools_frame_token);
+
   // The RenderFrame corresponding to this host sent an IPC message to create a
   // child, but by the time we get here, it's possible for the RenderFrameHost
   // to become pending deletion, or for its process to have disconnected (maybe
@@ -2559,6 +2563,38 @@ void RenderFrameHostImpl::OnCreateChildFrame(
                         frame_name, frame_unique_name, is_created_by_script,
                         frame_token, devtools_frame_token, frame_policy,
                         frame_owner_properties, was_discarded_, owner_type);
+}
+
+void RenderFrameHostImpl::CreateChildFrame(
+    int new_routing_id,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        new_interface_provider_provider_receiver,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
+    blink::mojom::TreeScopeType scope,
+    const std::string& frame_name,
+    const std::string& frame_unique_name,
+    bool is_created_by_script,
+    const blink::FramePolicy& frame_policy,
+    blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
+    const blink::mojom::FrameOwnerElementType owner_type) {
+  base::UnguessableToken frame_token;
+  base::UnguessableToken devtools_frame_token;
+  if (!static_cast<RenderProcessHostImpl*>(GetProcess())
+           ->TakeFrameTokensForFrameRoutingID(new_routing_id, frame_token,
+                                              devtools_frame_token)) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CREATE_CHILD_FRAME_TOKENS_NOT_FOUND);
+    return;
+  }
+
+  // TODO(crbug.com/1145708). The interface exposed to tests should
+  // match the mojo interface.
+  OnCreateChildFrame(
+      new_routing_id, std::move(new_interface_provider_provider_receiver),
+      std::move(browser_interface_broker_receiver), scope, frame_name,
+      frame_unique_name, is_created_by_script, frame_token,
+      devtools_frame_token, frame_policy, *frame_owner_properties, owner_type);
 }
 
 void RenderFrameHostImpl::DidNavigate(
@@ -7939,6 +7975,12 @@ void RenderFrameHostImpl::BindWebOTPServiceReceiver(
   auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
   if (WebOTPService::Create(fetcher, this, std::move(receiver)))
     document_used_web_otp_ = true;
+}
+
+void RenderFrameHostImpl::BindFederatedAuthRequestReceiver(
+    mojo::PendingReceiver<blink::mojom::FederatedAuthRequest> receiver) {
+  DCHECK(base::FeatureList::IsEnabled(features::kWebID));
+  FederatedAuthRequestImpl::Create(this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindRestrictedCookieManager(

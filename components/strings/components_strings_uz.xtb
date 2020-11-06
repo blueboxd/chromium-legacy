@@ -976,7 +976,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4854362297993841467">Bu yetkazib berish usuli hozirda ishlamayapti. Boshqa usuldan foydalaning.</translation>
 <translation id="4876188919622883022">Soddalashgan shaklda</translation>
 <translation id="4876305945144899064">Ko‘satilmagan</translation>
-<translation id="4877083676943085827">{COUNT,plural, =0{Yoʻq}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Hech qanday}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> – qidiruv</translation>
 <translation id="4879491255372875719">Avtomatik (birlamchi)</translation>
 <translation id="4879725228911483934">Ekranlaringizga oynalarni ochish va joylashtirish</translation>
@@ -1881,6 +1881,7 @@ Batafsil axborot:
 <translation id="8507227106804027148">Buyruqlar qatori</translation>
 <translation id="8508648098325802031">Qidiruv ikonkasi</translation>
 <translation id="8522552481199248698">Chrome Google hisobingizni himoyalash va parolni almashtirish uchun yordam beradi.</translation>
+<translation id="8525306231823319788">To‘liq ekran rejimi</translation>
 <translation id="8530813470445476232">Brauzer tarixi, cookie fayllar, kesh va boshqa Chrome sozlamalarini tozalang</translation>
 <translation id="8533619373899488139">Administrator tomonidan tuzilgan URL manzillar qora roʻyxati va boshqa parametrlarni &lt;strong&gt;chrome://policy&lt;/strong&gt; sahifasi orqali koʻrish mumkin.</translation>
 <translation id="8541158209346794904">Bluetooth qurilma</translation>

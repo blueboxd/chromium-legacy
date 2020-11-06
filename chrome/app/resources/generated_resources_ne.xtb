@@ -62,6 +62,7 @@
 <translation id="1060292118287751956">यसले स्क्रिन अपडेट हुने फ्रिक्वेन्सी निर्धारण गर्छ</translation>
 <translation id="1061904396131502319">विश्राम लिने समय हुनै लाग्यो</translation>
 <translation id="1067048845568873861">सिर्जना गरियो</translation>
+<translation id="1067291318998134776">Linux (बिटा)</translation>
 <translation id="1067922213147265141">Google का अन्य सेवाहरू</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">तपाईँको कम्प्युटरमा अर्को प्रोग्रामले एउटा विस्तार थप्यो जसले Chrome को कार्य गर्ने तरिकालाई बदल्न सक्छ। <ph name="EXTENSION_NAME" /></translation>
@@ -1141,6 +1142,7 @@
 <translation id="2307462900900812319">नेटवर्क कन्फिगर गर्नुहोस्</translation>
 <translation id="230927227160767054">यस पृष्ठले एक सेवा सञ्चालनकर्ता स्थापना गर्न चाहन्छ।</translation>
 <translation id="2309620859903500144">यो साइटलाई तपाईंको चाल वा प्रकाशसम्बन्धी सेन्सरहरूको पहुँच राख्नबाट रोक लागाइएको छ।</translation>
+<translation id="2311497964614110326">सहायक प्रयोग गरी अझ राम्रा जवाफहरू अझ छिटो प्राप्त गर्नुहोस्</translation>
 <translation id="2312219318583366810">पेजको URL</translation>
 <translation id="2314165183524574721">हालको भिजिबिलिटी सेटिङ यस प्रकार छ: लुकाइएको</translation>
 <translation id="2314774579020744484">पृष्ठहरू अनुवाद गर्दा प्रयोग हुने भाषा</translation>
@@ -1254,6 +1256,7 @@
 <translation id="2440604414813129000">स्रो&amp;त हेर्नुहोस्</translation>
 <translation id="244231003699905658">अमान्य ठेगाना कृपया उक्त ठेगानाको जाँच गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="2442916515643169563">पाठको छायाँ</translation>
+<translation id="2444469058037141906">आफूले चाहेको कुरा भने वा टाइप गरे पुग्छ</translation>
 <translation id="2445081178310039857">एक्सटेन्सन मूल डाइरेक्टरी आवश्यक छ।</translation>
 <translation id="2445484935443597917">नयाँ प्रोफाइल बनाउनुहोस्</translation>
 <translation id="2448312741937722512">प्रकार</translation>
@@ -1371,7 +1374,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> मा साइन इन भएको छैन</translation>
 <translation id="2564520396658920462">AppleScript मार्फत JavaScript कार्यान्वयन गर्ने सुविधा निष्क्रिय पारिएको छ। मेनु बारबाट यो सुविधा सक्रिय गर्न हेर्नुहोस्&gt; विकासकर्ता &gt; Apple Events बाट JavaScript लाई अनुमति दिनुहोस् नामक विकल्पमा जानुहोस् । थप जानकारीका लागि https://support.google.com/chrome/?p=applescript मा जानुहोस्</translation>
 <translation id="2564653188463346023">परिष्कृत हिज्जे जाँच</translation>
-<translation id="2566124945717127842">तपाईंको <ph name="IDS_SHORT_PRODUCT_NAME" /> लाई नयाँ जस्तै हुने गरि रिसेट गर्न पावरवाश गर्नुहोस्।</translation>
 <translation id="2568774940984945469">इनफोबर कन्टेनर</translation>
 <translation id="2571655996835834626">कुकी, JavaScript, प्लग-इन, भूस्थान, माइक्रोफोन र क्यामेरा जस्ता सुविधाहरूमाथि वेबसाइटको पहुँच नियन्त्रण गर्ने आफ्ना सेटिङहरू परिवर्तन गर्नुहोस्।</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> मा पढ्ने-मात्र अनुमति प्रदान गरिएको छ।</translation>
@@ -1837,7 +1839,6 @@
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> मद्दत</translation>
 <translation id="3118654181216384296">कृपया केही मिनेटपछि पुनः Linux सुरु गरी हेर्नुहोस्।</translation>
 <translation id="3120430004221004537">"<ph name="DEVICE_NAME" />" मा दिइएको कार्यको लागि अपर्याप्त इन्क्रिप्सन</translation>
-<translation id="3121793941267913344">यो <ph name="IDS_SHORT_PRODUCT_NAME" /> यन्त्रलाई रिसेट गर्नुहोस्</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">डाटा डाइरेक्टरी सिर्जना गर्न असफल भयो</translation>
 <translation id="3124111068741548686">प्रयोगकर्ता ह्यान्डलहरू</translation>
@@ -2169,6 +2170,7 @@
 <translation id="3514373592552233661">एक भन्दा बढी नेटवर्कहरू उपलब्ध भएमा रुचाइएको नेटवर्कलाई अन्य ज्ञात नेटवर्कहरूलाई भन्दा बढी प्राथमिकता दिइनेछ</translation>
 <translation id="3515983984924808886">रिसेट गर्ने कार्य पुष्टि गर्न आफ्नो सुरक्षा साँचो फेरि छुनुहोस्। सुरक्षा साँचोको PIN लगायत यस साँचोमा भण्डार गरिएका सबै जानकारी मेटाइने छन्।</translation>
 <translation id="3518985090088779359">स्वीकार र जारी</translation>
+<translation id="3519564332031442870">प्रिन्टको ब्याकइन्ड सेवा</translation>
 <translation id="3521606918211282604">डिस्कको आकार बदल्नुहोस्</translation>
 <translation id="3523642406908660543">तपाईँको कम्प्युटर पहुँच गर्नको लागि साइटले प्लगइन प्रयोग गर्न कहिले चाहन्छ सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="3524965460886318643">निर्यातसम्बन्धी क्रियाकलापहरू</translation>
@@ -2683,6 +2685,7 @@
 <translation id="4088095054444612037">समूहको लागि स्वीकार गर्नुहोस्</translation>
 <translation id="4089235344645910861">सेटिङहरू सुरक्षित गरियो। सिंक सुरु भयो।</translation>
 <translation id="4090103403438682346">रुजू गरिएको पहुँच सक्षम बनाउनुहोस्</translation>
+<translation id="4090811767089219951">तपाईंको Google सहायक यहाँ पनि चल्छ</translation>
 <translation id="4090947011087001172"><ph name="SITE" /> का साइटसम्बन्धी अनुमतिहरू रिसेट गर्ने हो?</translation>
 <translation id="4093865285251893588">प्रोफाइल फोटो</translation>
 <translation id="4093955363990068916">स्थानीय फाइल:</translation>
@@ -2947,6 +2950,7 @@
 <translation id="4441124369922430666">के तपाईं मेसिन खुला हुँदा यो एप्लिकेसन स्वत: सुरु गर्न चाहनुहुन्छ?</translation>
 <translation id="4441147046941420429">जारी राख्न, आफ्नो यन्त्रबाट सुरक्षा साँचो हटाउनुहोस्, त्यसपछि उक्त साँचो पुनः छिराउनुहोस् र त्यसमा छुनुहोस्</translation>
 <translation id="444134486829715816">विस्तृत गर्नुहोस्</translation>
+<translation id="4441928470323187829">तपाईंका एड्मिनले पिन गर्नुभएको</translation>
 <translation id="4442424173763614572">DNS लुकअप असफल भयो</translation>
 <translation id="4443536555189480885">&amp;मद्दत</translation>
 <translation id="4444304522807523469">USB मार्फत वा स्थानीय सञ्जालमा सम्मिलित कागजात स्क्यानरहरू पहुँच गर्नुहोस्</translation>
@@ -3668,6 +3672,7 @@
 <translation id="5315873049536339193">पहिचान</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>
 <translation id="5319359161174645648">Google ले Chrome प्रयोग गर्ने सुझाव दिन्छ</translation>
+<translation id="5320112320661303273">तपाईंले कुनै अर्को यन्त्रमा सहायक सेटअप गरिसक्नुभएको छ जस्तो देखिन्छ। निम्न सेटिङ अन गरी आफ्नो सहायकबाट अझ बढी फाइदा लिनुहोस्।</translation>
 <translation id="532247166573571973">सर्भर पहुँचयोग्य नहुन सक्छ। पछि फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="5324300749339591280">एपको सूची</translation>
 <translation id="5324780743567488672">तपाईँको स्थान प्रयोग गरेर समय क्षेत्र सेट गर्नुहोस्</translation>
@@ -5606,6 +5611,7 @@
 <translation id="7632948528260659758">निम्न किओस्क एपहरू अद्यावधिकको लागि असफल भएको छ:</translation>
 <translation id="7633724038415831385">तपाईं यस पटक मात्र कुनै सफ्टवेयर अपडेट गर्न पर्खनु पर्ने छ। Chromebook मा सफ्टवेयर पृष्ठभूमिमा अपडेट हुन्छ।</translation>
 <translation id="7634566076839829401">केहि गलत भयो। फेरि प्रयास गर्नुहोस्।</translation>
+<translation id="7635048370253485243">तपाईंका एड्मिनले पिन गर्नुभएको</translation>
 <translation id="763632859238619983">कुनै पनि साइटलाई भुक्तानी ह्यान्ड्लर स्थापना गर्न अनुमति नदिनुहोस्</translation>
 <translation id="7636919061354591437">यो यन्त्रमा स्थापना गर्नुहोस्</translation>
 <translation id="7638605456503525968">सिरियल पोर्टहरू</translation>
@@ -6050,7 +6056,6 @@
 <translation id="8101987792947961127">अर्को रिबुटमा पावरवास आवश्यक छ</translation>
 <translation id="8102139037507939978">system_logs.txt बाट व्यक्तिगत रूपमा पहिचान गर्न मिल्ने जानकारी हटाइयोस्।</translation>
 <translation id="8102159139658438129">आफ्नो जोडिएको फोनसम्बन्धी विकल्पहरू हेर्न <ph name="LINK_BEGIN" />सेटिङहरू<ph name="LINK_END" />मा जानुहोस्</translation>
-<translation id="8104696615244072556">Powerwash तपाईँको <ph name="IDS_SHORT_PRODUCT_NAME" /> उपकरणलाई powerwash गरी पहिलेको संस्करणमा फर्कन सक्नुहुन्छ।</translation>
 <translation id="8107015733319732394">तपाईंको <ph name="DEVICE_TYPE" /> मा उक्त Google Play स्टोर स्थापना गर्दै। यस कार्यमा केही समय लाग्नसक्छ।</translation>
 <translation id="810728361871746125">डिस्प्लेको रिजोल्युसन</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{कुनै पनि तेस्रो पक्षीय कुकी छैन}=1{१ तेस्रो पक्षीय कुकीलाई रोक लगाइयो}other{# वटा तेस्रो पक्षीय कुकीलाई रोक लगाइयो}}</translation>

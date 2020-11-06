@@ -4548,6 +4548,11 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="CanvasAnimation" enum="Boolean">
+    <summary>
+      True when a canvas animation was active this frame.
+    </summary>
+  </metric>
   <metric name="Commit">
     <summary>
       The duration of the commit stage.&quot;
@@ -4593,6 +4598,11 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+  <metric name="JSAnimation" enum="Boolean">
+    <summary>
+      True when a inline style animation was active this frame.
+    </summary>
   </metric>
   <metric name="MainThreadAnimation" enum="Boolean">
     <summary>
@@ -4973,9 +4983,19 @@ be describing additional metrics about the same event.
       interactions.
     </summary>
   </metric>
+  <metric name="MainThread.CanvasAnimation">
+    <summary>
+      The throughput of the main thread during canvas animation.
+    </summary>
+  </metric>
   <metric name="MainThread.CompositorAnimation">
     <summary>
       The throughput of the main thread during a compositor animation.
+    </summary>
+  </metric>
+  <metric name="MainThread.JSAnimation">
+    <summary>
+      The throughput of the main thread during inline style animation.
     </summary>
   </metric>
   <metric name="MainThread.MainThreadAnimation">
@@ -5803,6 +5823,55 @@ be describing additional metrics about the same event.
     <summary>
       The decision for whether media requests associated with this frame will be
       potentially throttled.
+    </summary>
+  </metric>
+</event>
+
+<event name="LoadCountsPerTopLevelDocument">
+  <owner>fdoray@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Counts loads of each type that occured on a top-level document. Recorded
+    when a top-level document is unloaded. This can be used to diagnose changes
+    to the &quot;Total pageloads&quot; shown on stability dashboard.
+
+    Exponential bucketing is applied to all counts. The bucketing function
+    preserves exact count up until 20.
+  </summary>
+  <metric name="NumMainFrameSameDocumentLoads_Hidden">
+    <summary>
+      Number of main frame same-document loads that occurred while the page was
+      hidden.
+    </summary>
+  </metric>
+  <metric name="NumMainFrameSameDocumentLoads_Visible">
+    <summary>
+      Number of main frame same-document loads that occurred while the page was
+      visible.
+    </summary>
+  </metric>
+  <metric name="NumSubFrameDifferentDocumentLoads_Hidden">
+    <summary>
+      Number of sub frame different-document loads that occurred while the page
+      was hidden.
+    </summary>
+  </metric>
+  <metric name="NumSubFrameDifferentDocumentLoads_Visible">
+    <summary>
+      Number of sub frame different-document loads that occurred while the page
+      was visible.
+    </summary>
+  </metric>
+  <metric name="NumSubFrameSameDocumentLoads_Hidden">
+    <summary>
+      Number of sub frame same-document loads that occurred while the page was
+      hidden.
+    </summary>
+  </metric>
+  <metric name="NumSubFrameSameDocumentLoads_Visible">
+    <summary>
+      Number of sub frame same-document loads that occurred while the page was
+      visible.
     </summary>
   </metric>
 </event>

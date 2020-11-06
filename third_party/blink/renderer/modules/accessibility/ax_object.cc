@@ -734,13 +734,11 @@ void AXObject::GetSparseAXAttributes(
     AXSparseAttributeClient& sparse_attribute_client) const {
   AXSparseAttributeAOMPropertyClient property_client(*ax_object_cache_,
                                                      sparse_attribute_client);
-  HashSet<QualifiedName> shadowed_aria_attributes;
   AccessibleNode* accessible_node = GetAccessibleNode();
 
   // Virtual nodes for AOM are still tied to the AXTree.
   if (accessible_node && IsVirtualObject())
-    accessible_node->GetAllAOMProperties(&property_client,
-                                         shadowed_aria_attributes);
+    accessible_node->GetAllAOMProperties(&property_client);
 
   Element* element = GetElement();
   if (!element)
@@ -752,8 +750,6 @@ void AXObject::GetSparseAXAttributes(
   HashSet<QualifiedName> set_attributes;
   for (const Attribute& attr : attributes) {
     set_attributes.insert(attr.GetName());
-    if (shadowed_aria_attributes.Contains(attr.GetName()))
-      continue;
 
     AXSparseAttributeSetter* setter =
         ax_sparse_attribute_setter_map.at(attr.GetName());
@@ -929,6 +925,10 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
                                   Url().GetString().Utf8());
   }
 
+  if (accessibility_mode.has_mode(ui::AXMode::kScreenReader)) {
+    SerializeStyleAttributes(node_data);
+  }
+
   SerializePartialSparseAttributes(node_data);
 
   if (Element* element = this->GetElement()) {
@@ -1036,12 +1036,99 @@ void AXObject::SerializeTableAttributes(ui::AXNodeData* node_data) {
   }
 }
 
+void AXObject::SerializeStyleAttributes(ui::AXNodeData* node_data) {
+  // Text attributes.
+  if (BackgroundColor()) {
+    node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kBackgroundColor,
+                               BackgroundColor());
+  }
+
+  if (GetColor()) {
+    node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kColor,
+                               GetColor());
+  }
+
+  AXObject* parent = ParentObjectUnignored();
+  if (FontFamily().length()) {
+    if (!parent || parent->FontFamily() != FontFamily()) {
+      TruncateAndAddStringAttribute(
+          node_data, ax::mojom::blink::StringAttribute::kFontFamily,
+          FontFamily().Utf8());
+    }
+  }
+
+  // Font size is in pixels.
+  if (FontSize()) {
+    node_data->AddFloatAttribute(ax::mojom::blink::FloatAttribute::kFontSize,
+                                 FontSize());
+  }
+
+  if (FontWeight()) {
+    node_data->AddFloatAttribute(ax::mojom::blink::FloatAttribute::kFontWeight,
+                                 FontWeight());
+  }
+
+  if (RoleValue() == ax::mojom::blink::Role::kListItem &&
+      GetListStyle() != ax::mojom::blink::ListStyle::kNone) {
+    node_data->SetListStyle(GetListStyle());
+  }
+
+  if (GetTextDirection() != ax::mojom::blink::WritingDirection::kNone) {
+    node_data->SetTextDirection(GetTextDirection());
+  }
+
+  if (GetTextPosition() != ax::mojom::blink::TextPosition::kNone) {
+    node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kTextPosition,
+                               static_cast<int32_t>(GetTextPosition()));
+  }
+
+  int32_t text_style = 0;
+  ax::mojom::blink::TextDecorationStyle text_overline_style;
+  ax::mojom::blink::TextDecorationStyle text_strikethrough_style;
+  ax::mojom::blink::TextDecorationStyle text_underline_style;
+  GetTextStyleAndTextDecorationStyle(&text_style, &text_overline_style,
+                                     &text_strikethrough_style,
+                                     &text_underline_style);
+  if (text_style) {
+    node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kTextStyle,
+                               text_style);
+  }
+
+  if (text_overline_style != ax::mojom::blink::TextDecorationStyle::kNone) {
+    node_data->AddIntAttribute(
+        ax::mojom::blink::IntAttribute::kTextOverlineStyle,
+        static_cast<int32_t>(text_overline_style));
+  }
+
+  if (text_strikethrough_style !=
+      ax::mojom::blink::TextDecorationStyle::kNone) {
+    node_data->AddIntAttribute(
+        ax::mojom::blink::IntAttribute::kTextStrikethroughStyle,
+        static_cast<int32_t>(text_strikethrough_style));
+  }
+
+  if (text_underline_style != ax::mojom::blink::TextDecorationStyle::kNone) {
+    node_data->AddIntAttribute(
+        ax::mojom::blink::IntAttribute::kTextUnderlineStyle,
+        static_cast<int32_t>(text_underline_style));
+  }
+}
+
 void AXObject::SerializePartialSparseAttributes(ui::AXNodeData* node_data) {
+  if (IsVirtualObject()) {
+    AccessibleNode* accessible_node = GetAccessibleNode();
+    if (accessible_node) {
+      AXNodeDataAOMPropertyClient property_client(*ax_object_cache_,
+                                                  *node_data);
+      accessible_node->GetAllAOMProperties(&property_client);
+    }
+  }
+
   Element* element = GetElement();
   if (!element)
     return;
 
-  TempSetterMap& setter_map = GetTempSetterMap(node_data);
+  TempSetterMap& setter_map = GetTempSetterMap();
   AttributeCollection attributes = element->AttributesWithoutUpdate();
   HashSet<QualifiedName> set_attributes;
   for (const Attribute& attr : attributes) {
@@ -1049,7 +1136,7 @@ void AXObject::SerializePartialSparseAttributes(ui::AXNodeData* node_data) {
     AXSparseSetterFunc callback = setter_map.at(attr.GetName());
 
     if (callback)
-      callback.Run(node_data, attr.Value());
+      callback.Run(this, node_data, attr.Value());
   }
 
   if (!element->DidAttachInternals())
@@ -1063,7 +1150,7 @@ void AXObject::SerializePartialSparseAttributes(ui::AXNodeData* node_data) {
     AXSparseSetterFunc callback = setter_map.at(attr);
 
     if (callback)
-      callback.Run(node_data, internals_attributes.at(attr));
+      callback.Run(this, node_data, internals_attributes.at(attr));
   }
 }
 

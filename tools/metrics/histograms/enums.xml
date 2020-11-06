@@ -9220,6 +9220,15 @@ Called by update_bad_message_reasons.py.-->
   <int value="4" label="AVFoundation is enabled and is loaded succesfully"/>
 </enum>
 
+<enum name="CaptureModeBarButtonType">
+  <int value="0" label="Screen Capture Button"/>
+  <int value="1" label="Screen Record Button"/>
+  <int value="2" label="Full Button"/>
+  <int value="3" label="Region Button"/>
+  <int value="4" label="Window Button"/>
+  <int value="5" label="Exit Button"/>
+</enum>
+
 <enum name="CaptureModeEntryType">
   <int value="0" label="Partial Screenshot Accelerator"/>
   <int value="1" label="Window Screenshot Accelerator"/>
@@ -20082,6 +20091,15 @@ Called by update_document_policy_enum.py.-->
   <int value="16" label="Angle OpenGL ES EGL"/>
 </enum>
 
+<enum name="EligibilityFailureReason">
+  <int value="0" label="AGSA_CANT_HANDLE_INTENT"/>
+  <int value="1" label="AGSA_VERSION_BELOW_MINIMUM"/>
+  <int value="2" label="AGSA_DOESNT_SUPPORT_VOICE_SEARCH_CHECK_NOT_COMPLETE"/>
+  <int value="3" label="AGSA_DOESNT_SUPPORT_VOICE_SEARCH"/>
+  <int value="4" label="CHROME_NOT_GOOGLE_SIGNED"/>
+  <int value="5" label="AGSA_NOT_GOOGLE_SIGNED"/>
+</enum>
+
 <enum name="EmbeddedWorkerStartingPhase">
   <int value="0" label="NOT_STARTING"/>
   <int value="1" label="ALLOCATING_PROCESS"/>
@@ -30152,6 +30170,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3720" label="MouseEventRelativePositionForInlineElement"/>
   <int value="3721" label="V8SharedArrayBufferConstructedWithoutIsolation"/>
   <int value="3722" label="V8HTMLVideoElement_GetVideoPlaybackQuality_Method"/>
+  <int value="3723" label="XRWebGLBindingGetReflectionCubeMap"/>
+  <int value="3724" label="XRFrameGetLightEstimate"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43993,6 +44013,8 @@ from previous Chrome versions.
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
   <int value="136924140" label="OfflineIndicatorV2:enabled"/>
   <int value="138345654" label="enable-ambient-authentication-in-incognito"/>
+  <int value="138598687"
+      label="HappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite:enabled"/>
   <int value="139569991" label="SharingDeviceExpiration:disabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
@@ -44783,6 +44805,8 @@ from previous Chrome versions.
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
   <int value="955901619" label="EmojiSuggestAddition:disabled"/>
+  <int value="956709316"
+      label="HappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite:disabled"/>
   <int value="956716414" label="GlobalMediaControlsPictureInPicture:disabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
@@ -54743,6 +54767,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1526" label="Get Image Descriptions From Google"/>
   <int value="1527" label="Live Captions"/>
   <int value="1528" label="Cursor Colors: On/Off"/>
+  <int value="1529" label="Fullscreen Magnifier Focus Following"/>
   <int value="1600" label="Powerwash"/>
   <int value="1700" label="Change Chrome Channel"/>
   <int value="1701" label="Copy Detailed Build Info"/>

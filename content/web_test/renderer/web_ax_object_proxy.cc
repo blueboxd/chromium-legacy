@@ -619,24 +619,12 @@ class SparseAttributeAdapter : public blink::WebAXSparseAttributeClient {
   SparseAttributeAdapter() {}
   ~SparseAttributeAdapter() override {}
 
-  std::map<blink::WebAXBoolAttribute, bool> bool_attributes;
-  std::map<blink::WebAXStringAttribute, blink::WebString> string_attributes;
   std::map<blink::WebAXObjectAttribute, blink::WebAXObject> object_attributes;
   std::map<blink::WebAXObjectVectorAttribute,
            blink::WebVector<blink::WebAXObject>>
       object_vector_attributes;
 
  private:
-  void AddBoolAttribute(blink::WebAXBoolAttribute attribute,
-                        bool value) override {
-    bool_attributes[attribute] = value;
-  }
-
-  void AddStringAttribute(blink::WebAXStringAttribute attribute,
-                          const blink::WebString& value) override {
-    string_attributes[attribute] = value;
-  }
-
   void AddObjectAttribute(blink::WebAXObjectAttribute attribute,
                           const blink::WebAXObject& value) override {
     object_attributes[attribute] = value;
@@ -1141,10 +1129,7 @@ bool WebAXObjectProxy::IsAutofillAvailable() {
 
 bool WebAXObjectProxy::IsBusy() {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  return attribute_adapter
-      .bool_attributes[blink::WebAXBoolAttribute::kAriaBusy];
+  return GetAXNodeData().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy);
 }
 
 std::string WebAXObjectProxy::Restriction() {
@@ -1288,12 +1273,14 @@ v8::Local<v8::Object> WebAXObjectProxy::ActiveDescendant() {
 
 unsigned int WebAXObjectProxy::BackgroundColor() {
   UpdateLayout();
-  return accessibility_object_.BackgroundColor();
+  return GetAXNodeData().GetIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor);
 }
 
 unsigned int WebAXObjectProxy::Color() {
   UpdateLayout();
-  unsigned int color = accessibility_object_.GetColor();
+  unsigned int color =
+      GetAXNodeData().GetIntAttribute(ax::mojom::IntAttribute::kColor);
   // Remove the alpha because it's always 1 and thus not informative.
   return color & 0xFFFFFF;
 }
@@ -1306,13 +1293,15 @@ unsigned int WebAXObjectProxy::ColorValue() {
 
 std::string WebAXObjectProxy::FontFamily() {
   UpdateLayout();
-  std::string font_family(accessibility_object_.FontFamily().Utf8());
+  std::string font_family = GetAXNodeData().GetStringAttribute(
+      ax::mojom::StringAttribute::kFontFamily);
   return font_family.insert(0, "AXFontFamily: ");
 }
 
 float WebAXObjectProxy::FontSize() {
   UpdateLayout();
-  return accessibility_object_.FontSize();
+  return GetAXNodeData().GetFloatAttribute(
+      ax::mojom::FloatAttribute::kFontSize);
 }
 
 std::string WebAXObjectProxy::Autocomplete() {
@@ -1378,11 +1367,8 @@ std::string WebAXObjectProxy::Invalid() {
 
 std::string WebAXObjectProxy::KeyShortcuts() {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  return attribute_adapter
-      .string_attributes[blink::WebAXStringAttribute::kAriaKeyShortcuts]
-      .Utf8();
+  return GetAXNodeData().GetStringAttribute(
+      ax::mojom::StringAttribute::kKeyShortcuts);
 }
 
 int32_t WebAXObjectProxy::AriaColumnCount() {
@@ -1443,11 +1429,8 @@ std::string WebAXObjectProxy::Relevant() {
 
 std::string WebAXObjectProxy::RoleDescription() {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  return attribute_adapter
-      .string_attributes[blink::WebAXStringAttribute::kAriaRoleDescription]
-      .Utf8();
+  return GetAXNodeData().GetStringAttribute(
+      ax::mojom::StringAttribute::kRoleDescription);
 }
 
 std::string WebAXObjectProxy::Sort() {

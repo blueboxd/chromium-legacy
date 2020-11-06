@@ -8777,8 +8777,7 @@ class ThemeColorTestLocalFrameHost : public FakeLocalFrameHost {
 
  private:
   // FakeLocalFrameHost:
-  void DidChangeThemeColor(
-      const base::Optional<::SkColor>& theme_color) override {
+  void DidChangeThemeColor(base::Optional<::SkColor> theme_color) override {
     did_notify_ = true;
   }
 
@@ -13043,8 +13042,7 @@ TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {
   String text = "";
   for (LayoutObject* obj = layout_object; obj; obj = obj->NextInPreOrder()) {
     if (obj->IsText()) {
-      LayoutText* layout_text = ToLayoutText(obj);
-      text = layout_text->GetText();
+      text = To<LayoutText>(obj)->GetText();
       break;
     }
   }

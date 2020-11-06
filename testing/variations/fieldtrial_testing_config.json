@@ -1385,6 +1385,7 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "check_mode": "enforce",
                         "timeout_second": "10"
                     },
                     "enable_features": [
@@ -3370,21 +3371,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSLegacyTLSInterstitial"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSLookalikeInterstitials": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IOSLookalikeUrlNavigationSuggestionsUI"
                     ]
                 }
             ]

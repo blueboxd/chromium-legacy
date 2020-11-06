@@ -96,6 +96,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/no_state_prefetch/browser/prerender_field_trial.h"
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -106,7 +107,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/policy/core/common/features.h"
-#include "components/prerender/browser/prerender_field_trial.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/query_tiles/switches.h"
@@ -1890,16 +1890,10 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 
 const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearchGreyMic[] = {
     {"min_agsa_version", "10.95"},
-    {"min_android_sdk", "21"},
-    {"min_memory_mb", "1024"},
-    {"enabled_locales", ""},
     {"colorful_mic", "false"}};
 
 const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearchColorfulMic[] = {
     {"min_agsa_version", "10.95"},
-    {"min_android_sdk", "21"},
-    {"min_memory_mb", "1024"},
-    {"enabled_locales", ""},
     {"colorful_mic", "true"}};
 
 const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
@@ -4836,6 +4830,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHappinessTrackingSurveysForDesktopDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
+
+    {"happiness-tracking-surveys-for-desktop-devtools-issues-cookies-same-site",
+     flag_descriptions::
+         kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteName,
+     flag_descriptions::
+         kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         features::
+             kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite)},
 
     {"happiness-tracking-surveys-for-desktop-demo",
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,

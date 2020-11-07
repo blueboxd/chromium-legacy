@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/sequence_bound.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache.h"
@@ -316,7 +316,7 @@ TEST_F(SiteDataRecorderTest, FeatureEventsGetForwardedWhenInBackground) {
     EXPECT_CALL(*mock_writer, NotifySiteUnloaded(TabVisibility::kBackground));
   }));
 
-  NavigatePageNodeOnUIThread(web_contents(), GURL("about://blank"));
+  NavigatePageNodeOnUIThread(web_contents(), GURL("about:blank"));
 }
 
 TEST_F(SiteDataRecorderTest, FeatureEventsIgnoredWhenLoadingInBackground) {

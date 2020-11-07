@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
@@ -368,6 +369,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kParentNodeReplaceChildren},
           {"RawClipboard", blink::features::kRawClipboard},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
+          {"TargetBlankImpliesNoOpener",
+           blink::features::kTargetBlankImpliesNoOpener},
           {"TrustedDOMTypes", features::kTrustedDOMTypes},
           {"UserAgentClientHint", features::kUserAgentClientHint},
           {"WebAppManifestDisplayOverride",
@@ -410,6 +413,8 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnablePresentationAPI, switches::kDisablePresentationAPI, false},
       {wrf::EnableRemotePlaybackAPI, switches::kDisableRemotePlaybackAPI,
        false},
+      {wrf::EnableTargetBlankImpliesNoOpener,
+       switches::kDisableTargetBlankImpliesNoOpener, false},
       {wrf::EnableTimerThrottlingForBackgroundTabs,
        switches::kDisableBackgroundTimerThrottling, false},
       // End of Stable Features
@@ -588,6 +593,19 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   }
 }
 
+// Ensures that the various ways of enabling/disabling features do not produce
+// an invalid configuration.
+void ResolveInvalidConfigurations() {
+  // Portals cannot be enabled without the support of the browser process.
+  if (!base::FeatureList::IsEnabled(blink::features::kPortals)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsPortalsEnabled())
+        << "Portals cannot be enabled in this configuration. Use --"
+        << switches::kEnableFeatures << "=" << blink::features::kPortals.name
+        << " instead.";
+    WebRuntimeFeatures::EnablePortals(false);
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -637,6 +655,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
        FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
     WebRuntimeFeatures::EnableFeatureFromString(feature, false);
   }
+
+  ResolveInvalidConfigurations();
 }
 
 }  // namespace content

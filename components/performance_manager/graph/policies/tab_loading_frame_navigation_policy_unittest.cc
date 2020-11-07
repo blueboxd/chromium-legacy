@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/task_traits.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
@@ -266,10 +266,10 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, OnlyHttpContentsThrottled) {
   }
 
   {
-    // Expect about:// contents not to be throttled.
+    // Expect about:blank contents not to be throttled.
     SCOPED_TRACE("about");
     content::NavigationSimulator::NavigateAndCommitFromBrowser(
-        web_contents(), GURL("about://blank"));
+        web_contents(), GURL("about:blank"));
     EXPECT_FALSE(policy()->ShouldThrottleWebContents(web_contents()));
     ExpectThrottledPageCount(0);
   }

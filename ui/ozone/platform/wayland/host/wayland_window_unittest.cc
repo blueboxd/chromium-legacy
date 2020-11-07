@@ -7,22 +7,30 @@
 #include <memory>
 #include <utility>
 
+#include <cursor-shapes-unstable-v1-client-protocol.h>
 #include <linux/input.h>
 #include <wayland-server-core.h>
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
+#include "base/files/file_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection_test_api.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
+#include "ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.h"
 #include "ui/ozone/platform/wayland/test/mock_pointer.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_keyboard.h"
@@ -31,6 +39,7 @@
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/wm/wm_move_resize_handler.h"
 
@@ -79,6 +88,25 @@ class ScopedWlArray {
 
  private:
   wl_array array_;
+};
+
+base::ScopedFD MakeFD() {
+  base::FilePath temp_path;
+  EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
+  auto file =
+      base::File(temp_path, base::File::FLAG_READ | base::File::FLAG_WRITE |
+                                base::File::FLAG_CREATE_ALWAYS);
+  return base::ScopedFD(file.TakePlatformFile());
+}
+
+class MockZcrCursorShapes : public WaylandZcrCursorShapes {
+ public:
+  MockZcrCursorShapes() : WaylandZcrCursorShapes(nullptr, nullptr) {}
+  MockZcrCursorShapes(const MockZcrCursorShapes&) = delete;
+  MockZcrCursorShapes& operator=(const MockZcrCursorShapes&) = delete;
+  ~MockZcrCursorShapes() override = default;
+
+  MOCK_METHOD(void, SetCursorShape, (int32_t), (override));
 };
 
 }  // namespace
@@ -160,6 +188,14 @@ class WaylandWindowTest : public WaylandTest {
     hit_tests->push_back(static_cast<int>(HTTOP));
     hit_tests->push_back(static_cast<int>(HTTOPLEFT));
     hit_tests->push_back(static_cast<int>(HTTOPRIGHT));
+  }
+
+  MockZcrCursorShapes* InstallMockZcrCursorShapes() {
+    auto zcr_cursor_shapes = std::make_unique<MockZcrCursorShapes>();
+    MockZcrCursorShapes* mock_cursor_shapes = zcr_cursor_shapes.get();
+    WaylandConnectionTestApi test_api(connection_.get());
+    test_api.SetZcrCursorShapes(std::move(zcr_cursor_shapes));
+    return mock_cursor_shapes;
   }
 
   void VerifyAndClearExpectations() {
@@ -789,6 +825,56 @@ TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
 TEST_P(WaylandWindowTest, CanDispatchMouseEventUnfocus) {
   EXPECT_FALSE(window_->has_pointer_focus());
   EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event_));
+}
+
+TEST_P(WaylandWindowTest, SetCursorUsesZcrCursorShapesForCommonTypes) {
+  MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
+
+  // Verify some commonly-used cursors.
+  EXPECT_CALL(*mock_cursor_shapes,
+              SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_POINTER));
+  auto pointer_cursor =
+      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kPointer);
+  window_->SetCursor(pointer_cursor.get());
+
+  EXPECT_CALL(*mock_cursor_shapes,
+              SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_HAND));
+  auto hand_cursor =
+      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kHand);
+  window_->SetCursor(hand_cursor.get());
+
+  EXPECT_CALL(*mock_cursor_shapes,
+              SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_IBEAM));
+  auto ibeam_cursor =
+      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kIBeam);
+  window_->SetCursor(ibeam_cursor.get());
+}
+
+TEST_P(WaylandWindowTest, SetCursorCallsZcrCursorShapesOncePerCursor) {
+  MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
+  auto hand_cursor =
+      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kHand);
+  // Setting the same cursor twice on the client only calls the server once.
+  EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(1);
+  window_->SetCursor(hand_cursor.get());
+  window_->SetCursor(hand_cursor.get());
+}
+
+TEST_P(WaylandWindowTest, SetCursorDoesNotUseZcrCursorShapesForNoneCursor) {
+  MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
+  EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(0);
+  // The "none" cursor is represented by nullptr.
+  window_->SetCursor(nullptr);
+}
+
+TEST_P(WaylandWindowTest, SetCursorDoesNotUseZcrCursorShapesForCustomCursors) {
+  MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
+
+  // Custom cursors require bitmaps, so they do not use server-side cursors.
+  EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(0);
+  auto custom_cursor = base::MakeRefCounted<BitmapCursorOzone>(
+      mojom::CursorType::kCustom, SkBitmap(), gfx::Point());
+  window_->SetCursor(custom_cursor.get());
 }
 
 ACTION_P(CloneEvent, ptr) {
@@ -1877,6 +1963,87 @@ TEST_P(WaylandWindowTest, DestroysCreatesPopupsOnHideShow) {
 
   EXPECT_TRUE(mock_surface->xdg_surface());
   EXPECT_TRUE(mock_surface->xdg_surface()->xdg_popup());
+}
+
+TEST_P(WaylandWindowTest, RemovesReattachesBackgroundOnHideShow) {
+  EXPECT_TRUE(connection_->buffer_manager_host());
+
+  auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false);
+
+  // Setup wl_buffers.
+  constexpr uint32_t buffer_id1 = 1;
+  constexpr uint32_t buffer_id2 = 2;
+  gfx::Size buffer_size(1024, 768);
+  auto length = 1024 * 768 * 4;
+  buffer_manager_gpu_->CreateShmBasedBuffer(MakeFD(), length, buffer_size,
+                                            buffer_id1);
+  buffer_manager_gpu_->CreateShmBasedBuffer(MakeFD(), length, buffer_size,
+                                            buffer_id2);
+
+  Sync();
+
+  // Create window.
+  MockPlatformWindowDelegate delegate;
+  auto window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kWindow, gfx::kNullAcceleratedWidget,
+      gfx::Rect(0, 0, 100, 100), &delegate);
+  ASSERT_TRUE(window);
+  auto states = InitializeWlArrayWithActivatedState();
+
+  Sync();
+
+  // Configure window to be ready to attach wl_buffers.
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window->root_surface()->GetSurfaceId());
+  EXPECT_TRUE(mock_surface->xdg_surface());
+  EXPECT_TRUE(mock_surface->xdg_surface()->xdg_toplevel());
+  SendConfigureEvent(mock_surface->xdg_surface(), 100, 100, 1, states.get());
+
+  // Commit a frame with only background.
+  std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlays;
+  ui::ozone::mojom::WaylandOverlayConfigPtr background{
+      ui::ozone::mojom::WaylandOverlayConfig::New()};
+  background->z_order = INT32_MIN;
+  background->transform = gfx::OVERLAY_TRANSFORM_NONE;
+  background->buffer_id = buffer_id1;
+  overlays.push_back(std::move(background));
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), std::move(overlays));
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  EXPECT_NE(mock_surface->attached_buffer(), nullptr);
+
+  // Hiding window attaches a nil wl_buffer as background.
+  window->Hide();
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  EXPECT_EQ(mock_surface->attached_buffer(), nullptr);
+
+  mock_surface->ReleaseBuffer(mock_surface->prev_attached_buffer());
+  window->Show(false);
+
+  Sync();
+
+  SendConfigureEvent(mock_surface->xdg_surface(), 100, 100, 2, states.get());
+
+  // Commit a frame with only the primary_plane.
+  overlays.clear();
+  ui::ozone::mojom::WaylandOverlayConfigPtr primary{
+      ui::ozone::mojom::WaylandOverlayConfig::New()};
+  primary->z_order = 0;
+  primary->transform = gfx::OVERLAY_TRANSFORM_NONE;
+  primary->buffer_id = buffer_id2;
+  overlays.push_back(std::move(primary));
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), std::move(overlays));
+
+  Sync();
+
+  // WaylandWindow should automatically reattach the background.
+  EXPECT_NE(mock_surface->attached_buffer(), nullptr);
 }
 
 // Tests that if the window gets hidden and shown again, the title, app id and

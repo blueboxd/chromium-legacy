@@ -34,6 +34,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
@@ -52,8 +54,6 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.ClickUtils;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -244,6 +244,18 @@ public class LocationBarLayoutTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0, urlBar.getSelectionStart());
             Assert.assertEquals(VERBOSE_URL.length(), urlBar.getSelectionEnd());
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testSetSearchQueryFocuses() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final String query = "testing query";
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setSearchQuery(query);
+            Assert.assertEquals(query, locationBar.mUrlCoordinator.getTextWithoutAutocomplete());
         });
     }
 

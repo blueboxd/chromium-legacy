@@ -37,6 +37,7 @@
 <translation id="2805756323405976993">Mga App</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">I-REFRESH</translation>
+<translation id="3009958530611748826">Pumili ng folder kung saan magse-save</translation>
 <translation id="3083667275341675831">Mga Diagnostic sa Pagkakonekta</translation>
 <translation id="3091839911843451378">Hindi na-print - Huminto</translation>
 <translation id="3188257591659621405">Aking mga file</translation>
@@ -49,6 +50,7 @@
 <translation id="3515615323037921860">Mga Pag-print</translation>
 <translation id="3527036260304016759">Hindi na-print - Hindi kilalang error</translation>
 <translation id="360565022852130722">Naka-secure ang WiFi network gamit ang mahinang protocol na WEP 802.1x</translation>
+<translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> (na) review)</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="38114475217616659">I-clear ang lahat ng history</translation>
 <translation id="3820172043799983114">Di-wasto ang PIN.</translation>
@@ -65,6 +67,7 @@
 <translation id="4297501883039923494">Huminto - Hindi kilalang error</translation>
 <translation id="4378373042927530923">Hindi Tumakbo</translation>
 <translation id="4382484599443659549">PDF</translation>
+<translation id="4425149324548788773">Aking Drive</translation>
 <translation id="4429881212383817840">Mag-e-expire na ang ticket ng Kerberos</translation>
 <translation id="445059817448385655">Lumang password</translation>
 <translation id="4454245904991689773">Pag-scan sa</translation>
@@ -79,10 +82,12 @@
 <translation id="4731797938093519117">Pangunahing access</translation>
 <translation id="4773299976671772492">Inihinto</translation>
 <translation id="4808449224298348341">Kinansela ang pag-print ng <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4832079907277790330">Pumili ng folder sa Files app...</translation>
 <translation id="4890353053343094602">Pumili agad ng bago</translation>
 <translation id="4917889632206600977">Huminto - Wala nang papel</translation>
 <translation id="4932733599132424254">Petsa</translation>
 <translation id="4985509611418653372">Patakbuhin</translation>
+<translation id="4991056862642197104">Ilagay ang iyong dokumento, at i-click ang I-scan para makapagsimula</translation>
 <translation id="5094480857972195099">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang user na ito at puwede nitong pamahalaan ang mga setting at subaybayan ang aktibidad ng user sa remote na paraan.</translation>
 <translation id="520299634122159966">Walang available na scanner</translation>
 <translation id="5212543919916444558">Wala akong makitang kahit ano sa iyong screen kung saan ako makakatulong.
@@ -98,6 +103,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="5832805196449965646">Magdagdag ng Tao</translation>
 <translation id="5895138241574237353">I-restart</translation>
+<translation id="6040143037577758943">Isara</translation>
 <translation id="6048107060512778456">Hindi na-print - Naipit ang papel</translation>
 <translation id="6058625436358447366">Para tapusin, ilagay ang iyong luma at bagong password</translation>
 <translation id="6106186594183574873">Para tapusin, ilagay ang iyong lumang password</translation>
@@ -111,6 +117,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6527081081771465939">Hindi alam na panseguridad na protocol ng WiFi</translation>
 <translation id="6564646048574748301">Hindi na-print - Hindi makakonekta sa printer</translation>
+<translation id="6618744767048954150">Tumatakbo</translation>
 <translation id="6620487321149975369">Lalabas sa history ang mga pag-print maliban na lang kung manual na aalisin ang mga ito</translation>
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6704062477274546131">Resolution ng DNS</translation>
@@ -120,6 +127,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7359657277149375382">Uri ng file</translation>
 <translation id="7561454561030345039">Pinapamahalaan ng iyong administrator ang pagkilos na ito.</translation>
+<translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="7805768142964895445">Katayuan</translation>

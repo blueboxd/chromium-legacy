@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/sharing/nearby/nearby_connections_conversions.h"
 #include "chrome/services/sharing/nearby/test_support/fake_adapter.h"
@@ -186,28 +186,27 @@ class NearbyConnectionsTest : public testing::Test {
     auto dependencies = mojom::NearbyConnectionsDependencies::New(
         bluetooth_adapter_.adapter_.BindNewPipeAndPassRemote(),
         std::move(webrtc_dependencies));
-    service_controller_ =
+    auto service_controller =
         std::make_unique<testing::NiceMock<MockServiceController>>();
-    service_controller_ptr_ = service_controller_.get();
+    service_controller_ptr_ = service_controller.get();
     nearby_connections_ = std::make_unique<NearbyConnections>(
         remote_.BindNewPipeAndPassReceiver(), std::move(dependencies),
         /*io_task_runner=*/nullptr,
         base::BindOnce(&NearbyConnectionsTest::OnDisconnect,
                        base::Unretained(this)),
-        std::make_unique<Core>(
-            [&]() { return service_controller_.release(); }));
+        std::move(service_controller));
   }
 
   void OnDisconnect() { disconnect_run_loop_.Quit(); }
 
   ClientProxy* StartDiscovery(
-      FakeEndpointDiscoveryListener& fake_discovery_listener) {
+      FakeEndpointDiscoveryListener& fake_discovery_listener,
+      bool is_out_of_band_connection = false) {
     ClientProxy* client_proxy;
     EXPECT_CALL(*service_controller_ptr_, StartDiscovery)
-        .WillOnce([&client_proxy](ClientProxy* client,
-                                  const std::string& service_id,
-                                  const ConnectionOptions& options,
-                                  const DiscoveryListener& listener) {
+        .WillOnce([&](ClientProxy* client, const std::string& service_id,
+                      const ConnectionOptions& options,
+                      const DiscoveryListener& listener) {
           client_proxy = client;
           EXPECT_EQ(kServiceId, service_id);
           EXPECT_EQ(Strategy::kP2pPointToPoint, options.strategy);
@@ -215,8 +214,13 @@ class NearbyConnectionsTest : public testing::Test {
           EXPECT_FALSE(options.allowed.ble);
           EXPECT_FALSE(options.allowed.web_rtc);
           EXPECT_TRUE(options.allowed.wifi_lan);
-          EXPECT_EQ(kFastAdvertisementServiceUuid,
-                    options.fast_advertisement_service_uuid);
+          if (is_out_of_band_connection) {
+            EXPECT_TRUE(options.is_out_of_band_connection);
+          } else {
+            EXPECT_FALSE(options.is_out_of_band_connection);
+            EXPECT_EQ(kFastAdvertisementServiceUuid,
+                      options.fast_advertisement_service_uuid);
+          }
           client->StartedDiscovery(service_id, options.strategy, listener,
                                    /*mediums=*/{});
           return Status{Status::kAlreadyDiscovering};
@@ -230,7 +234,8 @@ class NearbyConnectionsTest : public testing::Test {
                                         /*ble=*/false,
                                         /*web_rtc=*/false,
                                         /*wifi_lan=*/true),
-            device::BluetoothUUID(kFastAdvertisementServiceUuid)),
+            device::BluetoothUUID(kFastAdvertisementServiceUuid),
+            is_out_of_band_connection),
         fake_discovery_listener.receiver.BindNewPipeAndPassRemote(),
         base::BindLambdaForTesting([&](mojom::Status status) {
           EXPECT_EQ(mojom::Status::kAlreadyDiscovering, status);
@@ -278,7 +283,7 @@ class NearbyConnectionsTest : public testing::Test {
 
     base::RunLoop start_advertising_run_loop;
     nearby_connections_->StartAdvertising(
-        endpoint_info, kServiceId, CreateAdvertisingOptions(),
+        kServiceId, endpoint_info, CreateAdvertisingOptions(),
         fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
         base::BindLambdaForTesting([&](mojom::Status status) {
           EXPECT_EQ(mojom::Status::kSuccess, status);
@@ -328,7 +333,7 @@ class NearbyConnectionsTest : public testing::Test {
 
     base::RunLoop request_connection_run_loop;
     nearby_connections_->RequestConnection(
-        endpoint_info, endpoint_data.remote_endpoint_id,
+        kServiceId, endpoint_info, endpoint_data.remote_endpoint_id,
         CreateConnectionOptions(bluetooth_mac_address),
         fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
         base::BindLambdaForTesting([&](mojom::Status status) {
@@ -356,7 +361,7 @@ class NearbyConnectionsTest : public testing::Test {
 
     base::RunLoop accept_connection_run_loop;
     nearby_connections_->AcceptConnection(
-        remote_endpoint_id,
+        kServiceId, remote_endpoint_id,
         fake_payload_listener.receiver.BindNewPipeAndPassRemote(),
         base::BindLambdaForTesting([&](mojom::Status status) {
           EXPECT_EQ(mojom::Status::kSuccess, status);
@@ -375,9 +380,6 @@ class NearbyConnectionsTest : public testing::Test {
   std::unique_ptr<NearbyConnections> nearby_connections_;
   testing::NiceMock<MockServiceController>* service_controller_ptr_;
   base::RunLoop disconnect_run_loop_;
-
- private:
-  std::unique_ptr<testing::NiceMock<MockServiceController>> service_controller_;
 };
 
 TEST_F(NearbyConnectionsTest, RemoteDisconnect) {
@@ -449,7 +451,7 @@ TEST_F(NearbyConnectionsTest, StopDiscovery) {
 
   base::RunLoop stop_discovery_run_loop;
   nearby_connections_->StopDiscovery(
-      base::BindLambdaForTesting([&](mojom::Status status) {
+      kServiceId, base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         stop_discovery_run_loop.Quit();
       }));
@@ -457,6 +459,51 @@ TEST_F(NearbyConnectionsTest, StopDiscovery) {
 
   // StopDiscovery is also called when Core is destroyed.
   EXPECT_CALL(*service_controller_ptr_, StopDiscovery(testing::_)).Times(1);
+}
+
+TEST_F(NearbyConnectionsTest, InjectEndpoint) {
+  const std::vector<uint8_t> bluetooth_mac_address(
+      std::begin(kBluetoothMacAddress), std::end(kBluetoothMacAddress));
+  const EndpointData endpoint_data = CreateEndpointData(1);
+
+  base::RunLoop discovery_run_loop;
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  fake_discovery_listener.endpoint_found_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id,
+                                     mojom::DiscoveredEndpointInfoPtr info) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        EXPECT_EQ(endpoint_data.remote_endpoint_info, info->endpoint_info);
+        EXPECT_EQ(kServiceId, info->service_id);
+        discovery_run_loop.Quit();
+      });
+
+  ClientProxy* client_proxy = StartDiscovery(
+      fake_discovery_listener, /*is_out_of_band_connection=*/true);
+
+  EXPECT_CALL(*service_controller_ptr_, InjectEndpoint)
+      .WillOnce([&](ClientProxy* client, const std::string& service_id,
+                    const OutOfBandConnectionMetadata& metadata) {
+        EXPECT_EQ(kServiceId, service_id);
+        EXPECT_EQ(Medium::BLUETOOTH, metadata.medium);
+        EXPECT_EQ(bluetooth_mac_address,
+                  ByteArrayToMojom(metadata.remote_bluetooth_mac_address));
+        client_proxy->OnEndpointFound(
+            kServiceId, endpoint_data.remote_endpoint_id,
+            ByteArrayFromMojom(endpoint_data.remote_endpoint_info),
+            /*mediums=*/{});
+        return Status{Status::kSuccess};
+      });
+
+  base::RunLoop inject_run_loop;
+  nearby_connections_->InjectBluetoothEndpoint(
+      kServiceId, bluetooth_mac_address,
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        inject_run_loop.Quit();
+      }));
+
+  discovery_run_loop.Run();
+  inject_run_loop.Run();
 }
 
 TEST_F(NearbyConnectionsTest, RequestConnectionInitiated) {
@@ -588,7 +635,7 @@ TEST_F(NearbyConnectionsTest, RequestConnectionOnBandwidthUpgrade) {
       });
   base::RunLoop bandwidth_upgrade_run_loop;
   nearby_connections_->InitiateBandwidthUpgrade(
-      endpoint_data.remote_endpoint_id,
+      kServiceId, endpoint_data.remote_endpoint_id,
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         bandwidth_upgrade_run_loop.Quit();
@@ -657,7 +704,7 @@ TEST_F(NearbyConnectionsTest, RequestConnectionDisconnect) {
 
   base::RunLoop disconnect_from_endpoint_run_loop;
   nearby_connections_->DisconnectFromEndpoint(
-      endpoint_data.remote_endpoint_id,
+      kServiceId, endpoint_data.remote_endpoint_id,
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         disconnect_from_endpoint_run_loop.Quit();
@@ -725,7 +772,7 @@ TEST_F(NearbyConnectionsTest, SendBytesPayload) {
 
   base::RunLoop send_payload_run_loop;
   nearby_connections_->SendPayload(
-      {endpoint_data.remote_endpoint_id},
+      kServiceId, {endpoint_data.remote_endpoint_id},
       mojom::Payload::New(kPayloadId,
                           mojom::PayloadContent::NewBytes(
                               mojom::BytesPayload::New(expected_payload))),
@@ -769,7 +816,7 @@ TEST_F(NearbyConnectionsTest, SendBytesPayloadCancelled) {
 
   base::RunLoop send_payload_run_loop;
   nearby_connections_->SendPayload(
-      {endpoint_data.remote_endpoint_id},
+      kServiceId, {endpoint_data.remote_endpoint_id},
       mojom::Payload::New(kPayloadId,
                           mojom::PayloadContent::NewBytes(
                               mojom::BytesPayload::New(expected_payload))),
@@ -785,7 +832,8 @@ TEST_F(NearbyConnectionsTest, SendBytesPayloadCancelled) {
 
   base::RunLoop cancel_payload_run_loop;
   nearby_connections_->CancelPayload(
-      kPayloadId, base::BindLambdaForTesting([&](mojom::Status status) {
+      kServiceId, kPayloadId,
+      base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         cancel_payload_run_loop.Quit();
       }));
@@ -840,7 +888,7 @@ TEST_F(NearbyConnectionsTest, SendFilePayload) {
 
   base::RunLoop send_payload_run_loop;
   nearby_connections_->SendPayload(
-      {endpoint_data.remote_endpoint_id},
+      kServiceId, {endpoint_data.remote_endpoint_id},
       mojom::Payload::New(kPayloadId,
                           mojom::PayloadContent::NewFile(
                               mojom::FilePayload::New(std::move(input_file)))),
@@ -928,7 +976,7 @@ TEST_F(NearbyConnectionsTest, StopAdvertising) {
 
   base::RunLoop stop_advertising_run_loop;
   nearby_connections_->StopAdvertising(
-      base::BindLambdaForTesting([&](mojom::Status status) {
+      kServiceId, base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         stop_advertising_run_loop.Quit();
       }));
@@ -983,7 +1031,7 @@ TEST_F(NearbyConnectionsTest, DisconnectAllEndpoints) {
 
   base::RunLoop stop_endpoints_run_loop;
   nearby_connections_->StopAllEndpoints(
-      base::BindLambdaForTesting([&](mojom::Status status) {
+      kServiceId, base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         stop_endpoints_run_loop.Quit();
       }));
@@ -1000,7 +1048,7 @@ TEST_F(NearbyConnectionsTest, InitiateBandwidthUpgradeFails) {
   EndpointData endpoint_data = CreateEndpointData(1);
   base::RunLoop bandwidth_upgrade_run_loop;
   nearby_connections_->InitiateBandwidthUpgrade(
-      endpoint_data.remote_endpoint_id,
+      kServiceId, endpoint_data.remote_endpoint_id,
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kOutOfOrderApiCall, status);
         bandwidth_upgrade_run_loop.Quit();
@@ -1020,7 +1068,7 @@ TEST_F(NearbyConnectionsTest, InitiateBandwidthUpgradeAfterDiscoveringFails) {
   // Requesting a bandwidth upgrade should fail.
   base::RunLoop bandwidth_upgrade_run_loop;
   nearby_connections_->InitiateBandwidthUpgrade(
-      endpoint_data.remote_endpoint_id,
+      kServiceId, endpoint_data.remote_endpoint_id,
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kOutOfOrderApiCall, status);
         bandwidth_upgrade_run_loop.Quit();
@@ -1037,7 +1085,7 @@ TEST_F(NearbyConnectionsTest, InitiateBandwidthUpgradeAfterAdvertisingFails) {
   // Requesting a bandwidth upgrade should fail.
   base::RunLoop bandwidth_upgrade_run_loop;
   nearby_connections_->InitiateBandwidthUpgrade(
-      endpoint_data.remote_endpoint_id,
+      kServiceId, endpoint_data.remote_endpoint_id,
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kOutOfOrderApiCall, status);
         bandwidth_upgrade_run_loop.Quit();
@@ -1066,7 +1114,7 @@ TEST_F(NearbyConnectionsTest, InitiateBandwidthUpgradeAfterConnectionSucceeds) {
   // Requesting a bandwidth upgrade should succeed.
   base::RunLoop bandwidth_upgrade_run_loop;
   nearby_connections_->InitiateBandwidthUpgrade(
-      endpoint_data.remote_endpoint_id,
+      kServiceId, endpoint_data.remote_endpoint_id,
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         bandwidth_upgrade_run_loop.Quit();
@@ -1139,7 +1187,7 @@ TEST_F(NearbyConnectionsTest, ReceiveFilePayload) {
 
   base::RunLoop register_payload_run_loop;
   nearby_connections_->RegisterPayloadFile(
-      kPayloadId, std::move(input_file), std::move(output_file),
+      kServiceId, kPayloadId, std::move(input_file), std::move(output_file),
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kSuccess, status);
         register_payload_run_loop.Quit();
@@ -1217,7 +1265,7 @@ TEST_F(NearbyConnectionsTest, ReceiveFilePayloadNotRegistered) {
 TEST_F(NearbyConnectionsTest, RegisterPayloadFileInvalid) {
   base::RunLoop register_payload_run_loop;
   nearby_connections_->RegisterPayloadFile(
-      kPayloadId, base::File(), base::File(),
+      kServiceId, kPayloadId, base::File(), base::File(),
       base::BindLambdaForTesting([&](mojom::Status status) {
         EXPECT_EQ(mojom::Status::kError, status);
         register_payload_run_loop.Quit();

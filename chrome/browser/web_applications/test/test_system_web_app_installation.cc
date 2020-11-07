@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
@@ -92,18 +92,18 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation(SystemAppType type,
   }
 
   test_web_app_provider_creator_ = std::make_unique<TestWebAppProviderCreator>(
-      base::BindOnce(&TestSystemWebAppInstallation::CreateWebAppProvider,
-                     // base::Unretained is safe here. This callback is called
-                     // at TestingProfile::Init, which is at test startup.
-                     // TestSystemWebAppInstallation is intended to have the
-                     // same lifecycle as the test, it won't be destroyed before
-                     // the test finishes.
-                     base::Unretained(this), info));
+      base::BindRepeating(&TestSystemWebAppInstallation::CreateWebAppProvider,
+                          // base::Unretained is safe here. This callback is
+                          // called at TestingProfile::Init, which is at test
+                          // startup. TestSystemWebAppInstallation is intended
+                          // to have the same lifecycle as the test, it won't be
+                          // destroyed before the test finishes.
+                          base::Unretained(this), info));
 }
 
 TestSystemWebAppInstallation::TestSystemWebAppInstallation() {
   test_web_app_provider_creator_ = std::make_unique<
-      TestWebAppProviderCreator>(base::BindOnce(
+      TestWebAppProviderCreator>(base::BindRepeating(
       &TestSystemWebAppInstallation::CreateWebAppProviderWithNoSystemWebApps,
       // base::Unretained is safe here. This callback is called
       // at TestingProfile::Init, which is at test startup.

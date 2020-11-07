@@ -2625,7 +2625,7 @@ enum WebFeature {
   kForceEncodedAudioInsertableStreams = 3294,
   kForceEncodedVideoInsertableStreams = 3295,
   kTransformStyleContainingBlockComputedUsedMismatch = 3296,
-  kAdditionalGroupingPropertiesForCompat = 3297,
+  kOBSOLETE_AdditionalGroupingPropertiesForCompat = 3297,
   kPopupDoesNotExceedOwnerWindowBounds = 3298,
   kPopupExceedsOwnerWindowBounds = 3299,
   kPopupExceedsOwnerWindowBoundsForIframe = 3300,
@@ -3051,6 +3051,9 @@ enum WebFeature {
   kV8HTMLVideoElement_GetVideoPlaybackQuality_Method = 3722,
   kXRWebGLBindingGetReflectionCubeMap = 3723,
   kXRFrameGetLightEstimate = 3724,
+  kV8HTMLDialogElement_Show_Method = 3725,
+  kV8HTMLDialogElement_ShowModal_Method = 3726,
+  kAdFrameDetected = 3727,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

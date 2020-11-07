@@ -33,7 +33,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/time/time_override.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -2610,7 +2610,7 @@ TEST_F(WallpaperControllerTest, ShowOneShotWallpaper) {
   EXPECT_EQ(kOneShotWallpaperColor, GetWallpaperColor());
   EXPECT_EQ(WallpaperType::ONE_SHOT, controller_->GetWallpaperType());
   EXPECT_FALSE(controller_->IsBlurAllowedForLockState());
-  EXPECT_FALSE(controller_->ShouldApplyDimming());
+  EXPECT_FALSE(controller_->ShouldApplyColorFilter());
 
   // Verify that we can reload wallpaer without losing it.
   // This is important for screen rotation.
@@ -2620,7 +2620,7 @@ TEST_F(WallpaperControllerTest, ShowOneShotWallpaper) {
   EXPECT_EQ(kOneShotWallpaperColor, GetWallpaperColor());
   EXPECT_EQ(WallpaperType::ONE_SHOT, controller_->GetWallpaperType());
   EXPECT_FALSE(controller_->IsBlurAllowedForLockState());
-  EXPECT_FALSE(controller_->ShouldApplyDimming());
+  EXPECT_FALSE(controller_->ShouldApplyColorFilter());
 
   // Verify the user wallpaper info is unaffected, and the one-shot wallpaper
   // can be replaced by the user wallpaper.

@@ -15,7 +15,6 @@
 #include "ash/system/power/battery_image_source.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/string16.h"
@@ -111,6 +110,8 @@ PhoneStatusView::PhoneStatusView(chromeos::phonehub::PhoneModel* phone_model,
       battery_label_(new views::Label) {
   DCHECK(delegate);
 
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
   SetID(PhoneHubViewID::kPhoneStatusView);
 
   SetBorder(views::CreateEmptyBorder(kBorderInsets));
@@ -125,8 +126,11 @@ PhoneStatusView::PhoneStatusView(chromeos::phonehub::PhoneModel* phone_model,
   phone_model_->AddObserver(this);
 
   phone_name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
-  style.SetupLabel(phone_name_label_);
+  phone_name_label_->SetEnabledColor(
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(phone_name_label_,
+                                   TrayPopupUtils::FontStyle::kSubHeader);
   phone_name_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
   AddView(TriView::Container::START, phone_name_label_);
 

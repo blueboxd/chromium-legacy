@@ -2326,6 +2326,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             blink::switches::kUserAgentClientHintDisable);
       }
 
+      if (!local_state->GetBoolean(
+              policy::policy_prefs::kTargetBlankImpliesNoOpener)) {
+        command_line->AppendSwitch(
+            switches::kDisableTargetBlankImpliesNoOpener);
+      }
+
 #if defined(OS_ANDROID)
       // Communicating to content/ for BackForwardCache.
       if (prefs->HasPrefPath(policy::policy_prefs::kBackForwardCacheEnabled) &&
@@ -5676,8 +5682,10 @@ void ChromeContentBrowserClient::BlockBluetoothScanning(
       ContentSettingsType::BLUETOOTH_SCANNING, CONTENT_SETTING_BLOCK);
 }
 
-bool ChromeContentBrowserClient::ShouldLoadExtraIcuDataFile() {
+bool ChromeContentBrowserClient::ShouldLoadExtraIcuDataFile(
+    std::string* split_name) {
 #if defined(OS_ANDROID)
+  *split_name = "extra_icu";
   return extra_icu::ModuleProvider::IsModuleInstalled();
 #endif
   return false;

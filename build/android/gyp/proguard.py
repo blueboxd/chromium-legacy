@@ -373,6 +373,7 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors):
         'com/google/protos/research/ink/InkEventProto',
         'ink_sdk/com/google/protobuf/Internal$EnumVerifier',
         'ink_sdk/com/google/protobuf/MessageLite',
+        'com/google/protobuf/GeneratedMessageLite$GeneratedExtension',
 
         # Referenced from GeneratedExtensionRegistryLite.
         # Exists only for Chrome Modern (not Monochrome nor Trichrome).

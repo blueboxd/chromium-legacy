@@ -295,9 +295,7 @@ config("compiler") {
     if (fatal_linker_warnings && !is_apple && current_os != "aix") {
       ldflags += [ "-Wl,--fatal-warnings" ]
     }
-    if (fatal_linker_warnings && is_apple &&
-        # TODO(https://crbug.com/1107955): Enable in arm64 component builds.
-        !(is_mac && target_cpu == "arm64" && is_component_build)) {
+    if (fatal_linker_warnings && is_apple) {
       ldflags += [ "-Wl,-fatal_warnings" ]
     }
   } else {
@@ -490,25 +488,6 @@ config("compiler") {
       "-mllvm",
       "-instcombine-lower-dbg-declare=0",
     ]
-
-    # Pinned clang has enable-dse-memoryssa enabled by default but it's broken,
-    # so we have to force it off.
-    # Trunk clang has it disabled by default but it might work, so we force it
-    # on so the ToT bots can check if it works now.
-    if (!llvm_force_head_revision) {
-      cflags += [
-        # TODO(https://crbug.com/1127713): Investigate, remove.
-        "-mllvm",
-        "-enable-dse-memoryssa=false",
-      ]
-    }
-    if (llvm_force_head_revision) {
-      cflags += [
-        # TODO(https://crbug.com/1127713): Investigate, remove.
-        "-mllvm",
-        "-enable-dse-memoryssa=true",
-      ]
-    }
   }
 
   # C11/C++11 compiler flags setup.

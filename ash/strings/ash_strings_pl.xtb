@@ -8,6 +8,7 @@
 <translation id="1036672894875463507">To ja, Twój Asystent Google. Chętnie Ci pomogę.
 Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1037492556044956303">Dodano urządzenie <ph name="DEVICE_NAME" /></translation>
+<translation id="1047773237499189053">Dostępna jest nowa funkcja. Aby dowiedzieć się więcej, naciśnij klawisz strzałki w górę.</translation>
 <translation id="1056775291175587022">Brak sieci</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Sieć komórkowa: <ph name="ADDRESS" /></translation>
@@ -20,6 +21,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1153356358378277386">Sparowane urządzenia</translation>
 <translation id="1175572348579024023">Przewijanie</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
+<translation id="118532027333893379">Aby zrobić zrzut całego ekranu, kliknij w dowolnym miejscu</translation>
 <translation id="1190609913194133056">Centrum powiadomień</translation>
 <translation id="1195412055398077112">nadmiarowość obrazu</translation>
 <translation id="119944043368869598">Wyczyść wszystko</translation>
@@ -49,7 +51,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
-<translation id="1390105199421505038">Okno usuwania konta <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1391102559483454063">Włączono</translation>
 <translation id="1407069428457324124">Tryb ciemny</translation>
 <translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
@@ -74,7 +75,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1589090746204042747">uzyskiwać dostęp do całej Twojej aktywności w tej sesji;</translation>
 <translation id="1611993646327628135">Włączono</translation>
 <translation id="1632985212731562677">Funkcję Switch Access możesz wyłączyć, otwierając Ustawienia &gt; Ułatwienia dostępu.</translation>
-<translation id="1651447046299738444">Wygląda na to, że na Twoim Chromebooku wyłączone jest połączenie Bluetooth lub Wi-Fi. Aby korzystać z funkcji Phone Hub, sprawdź połączenie.</translation>
 <translation id="1654477262762802994">Rozpocznij zapytanie głosowe</translation>
 <translation id="1667964833127753507">Tryb koloru neutralnego nie wyświetla kolorów wyodrębnionych z tapety. Zamiast nich używa jasnych i ciemnych odcieni stonowanych neutralnie.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
@@ -125,6 +125,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="2132302418721800944">Nagraj cały ekran</translation>
 <translation id="2135456203358955318">Lupa zadokowana</translation>
+<translation id="2158971754079422508"><ph name="DESC_TEXT" />: spróbuj ponownie</translation>
 <translation id="2208323208084708176">Tryb ujednoliconego pulpitu</translation>
 <translation id="2220572644011485463">Kod PIN lub hasło</translation>
 <translation id="2222338659135520253">Musisz się zalogować</translation>
@@ -136,6 +137,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="229397294990920565">Wyłączam mobilną transmisję danych…</translation>
 <translation id="2295777434187870477">Mikrofon jest włączony. Przełączając go, wyciszysz odbierane dźwięki.</translation>
 <translation id="2298170939937364391">Lupa pełnego ekranu została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+M.</translation>
+<translation id="2301480084224169662"><ph name="DESC_TEXT" />. Kliknij okno, by wyświetlić wynik za pomocą Asystenta.</translation>
 <translation id="2302092602801625023">To konto jest zarządzane przez Family Link</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
 <translation id="2322173485024759474">Cofnij o jedną literę</translation>
@@ -143,7 +145,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2341729377289034582">Zablokowano w orientacji pionowej</translation>
 <translation id="2352467521400612932">Ustawienia rysika</translation>
 <translation id="2354174487190027830">Aktywuję <ph name="NAME" /></translation>
-<translation id="2356210126990741501">Wygląda na to, że Twój telefon nie jest online. Na razie nie możemy pobrać z niego żadnych gadżetów dla Ciebie.</translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2365393535144473978">Wraz z mobilną transmisją danych zostanie włączony Bluetooth.</translation>
 <translation id="2369165858548251131">„Cześć” po chińsku</translation>
@@ -163,6 +164,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2484513351006226581">Naciśnij <ph name="KEYBOARD_SHORTCUT" />, by przełączyć układ klawiatury.</translation>
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
+<translation id="2536159006530886390">Nie udało się połączyć z internetem.</translation>
 <translation id="2542089167727451762">Kliknij swoje zdjęcie profilowe</translation>
 <translation id="255671100581129685">Asystent Google jest niedostępny w sesji publicznej.</translation>
 <translation id="256712445991462162">Lupa zadokowana</translation>
@@ -184,11 +186,11 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
+<translation id="28232023175184696">Nie udało się połączyć z internetem. Kliknij, by spróbować jeszcze raz.</translation>
 <translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> nie obsługuje ustawienia <ph name="SPECIFIED_RESOLUTION" />. Rozdzielczość została zmieniona na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Półka</translation>
 <translation id="2841907151129139818">Przełączono na tryb tabletu</translation>
 <translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
-<translation id="2846247265041961677">Ups, nie udało się znaleźć telefonu</translation>
 <translation id="2865888419503095837">Informacje o sieci</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2878884018241093801">Brak ostatnich elementów</translation>
@@ -324,12 +326,12 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4129129681837227511">Aby wyświetlać powiadomienia na ekranie blokady, odblokuj ekran i zmień ustawienie</translation>
 <translation id="4146833061457621061">Włącz muzykę</translation>
 <translation id="4149156641122542261">Urządzenie <ph name="DEVICE_TYPE" /> zarządzane przez <ph name="DOMAIN" /></translation>
+<translation id="415719264485676252">Zrzut ekranu jest zablokowany</translation>
 <translation id="4157822100366708405">Ustawienia trybu ciemnego</translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195877955194704651">Automatyczne klikanie przycisku</translation>
 <translation id="4197790712631116042">Wyłączono</translation>
 <translation id="4201033867194214117">Funkcja <ph name="FEATURE_NAME" /> jest niedostępna.</translation>
-<translation id="4212246570487010370">Przeglądaj dalej</translation>
 <translation id="4212472694152630271">Zmień na PIN</translation>
 <translation id="4215497585250573029">Ustawienia sieci VPN</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
@@ -358,7 +360,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4412944820643904175">Funkcja <ph name="FEATURE_NAME" /> jest wyłączona.</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
-<translation id="4444978951615977024">Ups, sprawdź połączenie</translation>
 <translation id="4450893287417543264">Nie pokazuj ponownie</translation>
 <translation id="445864333228800152">Dobry wieczór,</translation>
 <translation id="4458688154122353284">Zatrzymaj nagrywanie ekranu</translation>
@@ -392,6 +393,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4710243778082831592">Ustawienia IME</translation>
 <translation id="4731797938093519117">Dostęp rodzica</translation>
 <translation id="4734965478015604180">Poziomo</translation>
+<translation id="4744944742468440486">Informacje związane z zaznaczoną treścią</translation>
 <translation id="4759238208242260848">Pobrane pliki</translation>
 <translation id="4774338217796918551">Możesz wrócić jutro o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -400,7 +402,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4814539958450445987">Ekran logowania</translation>
 <translation id="4831034276697007977">Czy na pewno chcesz wyłączyć automatyczne kliknięcia?</translation>
-<translation id="4836108105469522644">Włącz powiadomienia z telefonu z Androidem</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
 <translation id="485592688953820832">Brak działania (wstrzymaj)</translation>
 <translation id="4868492592575313542">aktywna</translation>
@@ -473,6 +474,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="558849140439112033">Przeciągnij, by wybrać obszar, który chcesz przechwycić</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Naciśnij Ctrl + Alt + Z, by wyłączyć komunikaty głosowe.</translation>
+<translation id="5601503069213153581">PIN</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Gniazdo mikrofonu</translation>
 <translation id="5669267381087807207">Aktywowanie</translation>
@@ -492,7 +494,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="5769373120130404283">Ekran chroniący prywatność</translation>
 <translation id="5777841717266010279">Zakończyć udostępnianie ekranu?</translation>
 <translation id="5790085346892983794">Udało się</translation>
-<translation id="579415080077680903">Wyciszenie</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5837036133683224804">Zatrzymaj usługę <ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -505,12 +506,12 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5920710855273935292">Mikrofon jest wyciszony.</translation>
-<translation id="594179686076170922">Łączę z Twoim telefonem…</translation>
 <translation id="5946788582095584774">Funkcja <ph name="FEATURE_NAME" /> jest włączona.</translation>
 <translation id="5947494881799873997">Przywróć</translation>
 <translation id="595202126637698455">Śledzenie wydajności jest włączone</translation>
 <translation id="5957083217255311415">Mobilna transmisja danych jest wyłączona.</translation>
 <translation id="5958529069007801266">Użytkownik nadzorowany</translation>
+<translation id="5960825221082587934">Asystent poda Ci informacje związane z zaznaczoną treścią, takie jak definicja, tłumaczenie czy przeliczenie jednostek.</translation>
 <translation id="5977415296283489383">Słuchawki</translation>
 <translation id="5978382165065462689">Udostępnianie sterowania ekranem przy użyciu pomocy zdalnej.</translation>
 <translation id="5980301590375426705">Zakończ sesję gościa</translation>
@@ -532,7 +533,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
 <translation id="6164005077879661055">W chwili usunięcia użytkownika nadzorowanego wszystkie powiązane z nim pliki i dane lokalne zostaną trwale usunięte. Lista stron, na które wszedł ten użytkownik, oraz jego ustawienia mogą być wciąż widoczne dla menedżera na <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Dowiedz się więcej</translation>
-<translation id="6192859646269780503">Znajdź telefon</translation>
 <translation id="622484624075952240">W dół</translation>
 <translation id="6236290670123303279">Zarządzaj ustawieniami</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -594,6 +594,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="6777216307882431711">Zasilanie podłączonych urządzeń USB-C</translation>
 <translation id="6790428901817661496">Odtwórz</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
+<translation id="6816797338148849397">Dostępne są informacje związane z zaznaczoną treścią. Aby je otworzyć, naciśnij klawisz strzałki w górę.</translation>
 <translation id="6818242057446442178">Cofnij o jedno słowo</translation>
 <translation id="6820676911989879663">Zrób sobie przerwę</translation>
 <translation id="6850010208275816200">Bieżąca aplikacja działa w trybie pełnoekranowym. Jeśli aplikacja pyta o hasło, najpierw zamknij ten tryb.</translation>
@@ -606,11 +607,11 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="6910714959251846841">Ta aktualizacja wymaga usunięcia wszystkich danych z urządzenia za pomocą funkcji Powerwash. Dowiedz się więcej o najnowszej aktualizacji <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Nie udało się rozpoznać karty elektronicznej. Spróbuj ponownie.</translation>
 <translation id="6945221475159498467">Wybierz</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
 <translation id="7007983414944123363">Nie udało się zweryfikować Twojego kodu PIN ani hasła. Spróbuj ponownie.</translation>
-<translation id="7013005189539051442">Włącz hotspot</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Połącz urządzenie <ph name="DEVICE_NAME" /> z telefonem</translation>
 <translation id="7026338066939101231">Zmniejsz</translation>
@@ -657,6 +658,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7497767806359279797">Wybierz język i klawiaturę</translation>
 <translation id="7526573455193969409">Sieć może być monitorowana</translation>
 <translation id="7536035074519304529">Adres IP: <ph name="ADDRESS" /></translation>
+<translation id="7542906349682405018">Administrator zablokował możliwość robienia zrzutów ekranu.</translation>
 <translation id="7548434653388805669">Czas iść spać</translation>
 <translation id="7551643184018910560">Przypnij do półki</translation>
 <translation id="7561982940498449837">Zamknij menu</translation>
@@ -678,7 +680,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7662283695561029522">Kliknij, by skonfigurować</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7705822912736783206">Uwierzytelnij się odciskiem palca</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 powiadomienie}few{# powiadomienia}many{# powiadomień}other{# powiadomienia}}</translation>
 <translation id="7724603315864178912">Wytnij</translation>
 <translation id="7749443890790263709">Osiągnięto maksymalną liczbę biurek.</translation>
@@ -784,6 +785,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
 <translation id="8683506306463609433">Śledzenie wydajności jest aktywne</translation>
+<translation id="8709616837707653427"><ph name="DESC_TEXT" /> Aby zarządzać tą funkcją, naciskaj klawisze strzałek w lewo lub w prawo.</translation>
 <translation id="8712637175834984815">Rozumiem</translation>
 <translation id="8721053961083920564">Przełącz głośność. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Klawiatura może próbować przechwycić naciskane klawisze</translation>
@@ -804,6 +806,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
+<translation id="8883473964424809116">Kliknij, by otworzyć ustawienia Asystenta Google.</translation>
 <translation id="890616557918890486">Zmień źródło</translation>
 <translation id="8909138438987180327">Poziom naładowania baterii: <ph name="PERCENTAGE" />.</translation>
 <translation id="8913384980486163186">Z motywu (domyślnie)</translation>

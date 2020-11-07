@@ -1145,8 +1145,6 @@ static_library("browser") {
     "platform_util_internal.h",
     "plugins/pdf_iframe_navigation_throttle.cc",
     "plugins/pdf_iframe_navigation_throttle.h",
-    "plugins/pdf_plugin_placeholder_observer.cc",
-    "plugins/pdf_plugin_placeholder_observer.h",
     "policy/boolean_disabling_policy_handler.cc",
     "policy/boolean_disabling_policy_handler.h",
     "policy/browsing_history_policy_handler.cc",
@@ -2495,8 +2493,6 @@ static_library("browser") {
       "android/compositor/scene_layer/contextual_search_scene_layer.h",
       "android/compositor/scene_layer/overscroll_scene_layer.cc",
       "android/compositor/scene_layer/overscroll_scene_layer.h",
-      "android/compositor/scene_layer/scene_layer.cc",
-      "android/compositor/scene_layer/scene_layer.h",
       "android/compositor/scene_layer/scrolling_bottom_view_scene_layer.cc",
       "android/compositor/scene_layer/scrolling_bottom_view_scene_layer.h",
       "android/compositor/scene_layer/static_tab_scene_layer.cc",
@@ -3150,6 +3146,7 @@ static_library("browser") {
       "//chrome/browser/share",
       "//chrome/browser/share/android:jni_headers",
       "//chrome/browser/tab:jni_headers",
+      "//chrome/browser/ui/android/layouts:android",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//chrome/browser/updates",
@@ -3189,6 +3186,7 @@ static_library("browser") {
       "//components/javascript_dialogs/android:jni_headers",
       "//components/language/android:language_bridge",
       "//components/location/android:settings",
+      "//components/messages/android",
       "//components/messages/android:feature_flags",
       "//components/module_installer/android:native",
       "//components/offline_pages/task",
@@ -3765,6 +3763,8 @@ static_library("browser") {
       "search/promos/promo_service_factory.cc",
       "search/promos/promo_service_factory.h",
       "search/promos/promo_service_observer.h",
+      "search/repeatable_queries/repeatable_queries_service_factory.cc",
+      "search/repeatable_queries/repeatable_queries_service_factory.h",
       "search/search_engine_base_url_tracker.cc",
       "search/search_engine_base_url_tracker.h",
       "search/search_suggest/search_suggest_data.cc",
@@ -5028,6 +5028,8 @@ static_library("browser") {
       "notifications/popups_only_ui_controller.h",
       "notifications/screen_lock_notification_blocker.cc",
       "notifications/screen_lock_notification_blocker.h",
+      "password_manager/multi_profile_credentials_filter.cc",
+      "password_manager/multi_profile_credentials_filter.h",
       "platform_util.cc",
       "policy/chrome_browser_cloud_management_controller_desktop.cc",
       "policy/chrome_browser_cloud_management_controller_desktop.h",
@@ -5434,8 +5436,6 @@ static_library("browser") {
       "renderer_host/chrome_extension_message_filter.h",
       "speech/extension_api/tts_engine_extension_api.cc",
       "speech/extension_api/tts_engine_extension_api.h",
-      "speech/extension_api/tts_engine_extension_observer.cc",
-      "speech/extension_api/tts_engine_extension_observer.h",
       "speech/extension_api/tts_extension_api.cc",
       "speech/extension_api/tts_extension_api.h",
       "sync_file_system/conflict_resolution_policy.h",
@@ -5602,6 +5602,10 @@ static_library("browser") {
       "//services/device/public/mojom",
     ]
     if (is_chromeos) {
+      sources += [
+        "speech/extension_api/tts_engine_extension_observer_chromeos.cc",
+        "speech/extension_api/tts_engine_extension_observer_chromeos.h",
+      ]
       deps += [ "//chromeos/services/tts/public/mojom" ]
     }
   }
@@ -5874,8 +5878,6 @@ static_library("browser") {
       "renderer_host/pepper/chrome_browser_pepper_host_factory.h",
       "renderer_host/pepper/device_id_fetcher.cc",
       "renderer_host/pepper/device_id_fetcher.h",
-      "renderer_host/pepper/monitor_finder_mac.h",
-      "renderer_host/pepper/monitor_finder_mac.mm",
       "renderer_host/pepper/pepper_isolated_file_system_message_filter.cc",
       "renderer_host/pepper/pepper_isolated_file_system_message_filter.h",
     ]

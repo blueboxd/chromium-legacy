@@ -51,17 +51,17 @@ std::unique_ptr<views::View> PhoneHubUiController::CreateStatusHeaderView(
 }
 
 std::unique_ptr<PhoneHubContentView> PhoneHubUiController::CreateContentView(
-    TrayBubbleView* bubble_view) {
+    OnboardingView::Delegate* delegate) {
   switch (ui_state_) {
     case UiState::kHidden:
       return nullptr;
     case UiState::kOnboardingWithoutPhone:
       return std::make_unique<OnboardingView>(
-          phone_hub_manager_->GetOnboardingUiTracker(), bubble_view,
+          phone_hub_manager_->GetOnboardingUiTracker(), delegate,
           OnboardingView::kNewMultideviceUser);
     case UiState::kOnboardingWithPhone:
       return std::make_unique<OnboardingView>(
-          phone_hub_manager_->GetOnboardingUiTracker(), bubble_view,
+          phone_hub_manager_->GetOnboardingUiTracker(), delegate,
           OnboardingView::kExistingMultideviceUser);
     case UiState::kBluetoothDisabled:
       return std::make_unique<BluetoothDisabledView>();
@@ -147,6 +147,8 @@ PhoneHubUiController::GetUiStateFromPhoneHubManager() {
       return UiState::kPhoneConnecting;
     case FeatureStatus::kEnabledAndConnected:
       return UiState::kPhoneConnected;
+    case FeatureStatus::kLockOrSuspended:
+      return UiState::kHidden;
   }
 }
 

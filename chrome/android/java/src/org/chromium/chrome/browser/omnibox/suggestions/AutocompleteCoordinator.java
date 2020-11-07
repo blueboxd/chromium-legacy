@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +16,10 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.Callback;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -112,24 +111,23 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
 
             @Override
             public void inflate() {
-                ViewGroup container = (ViewGroup) ((ViewStub) mParent.getRootView().findViewById(
-                                                           R.id.omnibox_results_container_stub))
-                                              .inflate();
-                Pair<OmniboxSuggestionsDropdown, MVCListAdapter> dropdownAndAdapter =
-                        OmniboxSuggestionsDropdownFactory.provideDropdownAndAdapter(
-                                context, modelList);
-
-                OmniboxSuggestionsDropdown dropdown = dropdownAndAdapter.first;
-                MVCListAdapter adapter = dropdownAndAdapter.second;
+                OmniboxSuggestionsRecyclerView dropdown;
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                    dropdown = new OmniboxSuggestionsRecyclerView(context);
+                }
 
                 // Start with visibility GONE to ensure that show() is called.
                 // http://crbug.com/517438
                 dropdown.getViewGroup().setVisibility(View.GONE);
                 dropdown.getViewGroup().setClipToPadding(false);
 
-                // Register a view type for a default omnibox suggestion.
+                OmniboxSuggestionsRecyclerViewAdapter adapter =
+                        new OmniboxSuggestionsRecyclerViewAdapter(modelList);
+                dropdown.setAdapter(adapter);
+
                 // Note: clang-format does a bad job formatting lambdas so we turn it off here.
                 // clang-format off
+                // Register a view type for a default omnibox suggestion.
                 adapter.registerType(
                         OmniboxSuggestionUiType.DEFAULT,
                         parent -> new BaseSuggestionView<View>(
@@ -182,8 +180,11 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                         HeaderViewBinder::bind);
                 // clang-format on
 
-                mHolder = new SuggestionListViewHolder(container, dropdown);
+                ViewGroup container = (ViewGroup) ((ViewStub) mParent.getRootView().findViewById(
+                                                           R.id.omnibox_results_container_stub))
+                                              .inflate();
 
+                mHolder = new SuggestionListViewHolder(container, dropdown);
                 for (int i = 0; i < mCallbacks.size(); i++) {
                     mCallbacks.get(i).onResult(mHolder);
                 }
@@ -217,14 +218,6 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      */
     public void setLocationBarDataProvider(LocationBarDataProvider locationBarDataProvider) {
         mMediator.setLocationBarDataProvider(locationBarDataProvider);
-    }
-
-    /**
-     * @param layoutStateProvider A means of accessing the current Layout state and a way to
-     *         listen to state changes.
-     */
-    public void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
-        mMediator.setLayoutStateProvider(layoutStateProvider);
     }
 
     /**

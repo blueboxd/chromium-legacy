@@ -12,7 +12,7 @@ import {tokenToString} from 'chrome://scanning/scanning_app_util.js';
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.m.js';
 
-import {createScanner, createScannerSource} from './scanning_app_test_utils.js';
+import {changeSelect, createScanner, createScannerSource} from './scanning_app_test_utils.js';
 
 const ColorMode = {
   BLACK_AND_WHITE: chromeos.scanning.mojom.ColorMode.kBlackAndWhite,
@@ -55,15 +55,19 @@ class FakeScanService {
      */
     this.capabilities_ = new Map();
 
+    /** @private {?chromeos.scanning.mojom.ScanJobObserverRemote} */
+    this.scanJobObserverRemote_ = null;
+
     this.resetForTest();
   }
 
   resetForTest() {
     this.scanners_ = [];
     this.capabilities_ = new Map();
+    this.scanJobObserverRemote_ = null;
     this.resolverMap_.set('getScanners', new PromiseResolver());
     this.resolverMap_.set('getScannerCapabilities', new PromiseResolver());
-    this.resolverMap_.set('scan', new PromiseResolver());
+    this.resolverMap_.set('startScan', new PromiseResolver());
   }
 
   /**
@@ -114,6 +118,36 @@ class FakeScanService {
     this.capabilities_ = capabilities;
   }
 
+  /**
+   * @param {number} pageNumber
+   * @param {number} progressPercent
+   * @return {!Promise}
+   */
+  simulateProgress(pageNumber, progressPercent) {
+    this.scanJobObserverRemote_.onPageProgress(pageNumber, progressPercent);
+    return flushTasks();
+  }
+
+  /**
+   * @param {number} pageNumber
+   * @return {!Promise}
+   */
+  simulatePageComplete(pageNumber) {
+    this.scanJobObserverRemote_.onPageProgress(pageNumber, 100);
+    const fakePageData = [2, 57, 13, 289];
+    this.scanJobObserverRemote_.onPageComplete(fakePageData);
+    return flushTasks();
+  }
+
+  /**
+   * @param {boolean} success
+   * @return {!Promise}
+   */
+  simulateScanComplete(success) {
+    this.scanJobObserverRemote_.onScanComplete(success);
+    return flushTasks();
+  }
+
   // scanService methods:
 
   /** @return {!Promise<{scanners: !ScannerArr}>} */
@@ -139,11 +173,13 @@ class FakeScanService {
   /**
    * @param {!mojoBase.mojom.UnguessableToken} scanner_id
    * @param {!chromeos.scanning.mojom.ScanSettings} settings
+   * @param {!chromeos.scanning.mojom.ScanJobObserverRemote} remote
    * @return {!Promise<{success: boolean}>}
    */
-  scan(scanner_id, settings) {
+  startScan(scanner_id, settings, remote) {
     return new Promise(resolve => {
-      this.methodCalled('scan');
+      this.scanJobObserverRemote_ = remote;
+      this.methodCalled('startScan');
       resolve({success: true});
     });
   }
@@ -248,8 +284,34 @@ export function scanningAppTest() {
     capabilities.set(firstScannerId, firstCapabilities);
     capabilities.set(secondScannerId, secondCapabilities);
 
+    /** @type {!HTMLSelectElement} */
+    let scannerSelect;
+    /** @type {!HTMLSelectElement} */
+    let sourceSelect;
+    /** @type {!HTMLSelectElement} */
+    let fileTypeSelect;
+    /** @type {!HTMLSelectElement} */
+    let colorModeSelect;
+    /** @type {!HTMLSelectElement} */
+    let pageSizeSelect;
+    /** @type {!HTMLSelectElement} */
+    let resolutionSelect;
+    /** @type {!CrButtonElement} */
+    let scanButton;
+    /** @type {!Element} */
+    let statusText;
+
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
+          scannerSelect = scanningApp.$$('#scannerSelect').$$('select');
+          sourceSelect = scanningApp.$$('#sourceSelect').$$('select');
+          fileTypeSelect = scanningApp.$$('#fileTypeSelect').$$('select');
+          colorModeSelect = scanningApp.$$('#colorModeSelect').$$('select');
+          pageSizeSelect = scanningApp.$$('#pageSizeSelect').$$('select');
+          resolutionSelect = scanningApp.$$('#resolutionSelect').$$('select');
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          statusText = /** @type {!Element} */ (scanningApp.$$('#statusText'));
           return fakeScanService_.whenCalled('getScannerCapabilities');
         })
         .then(() => {
@@ -270,34 +332,23 @@ export function scanningAppTest() {
 
           // Before the scan button is clicked, the settings and scan button
           // should be enabled, and there should be no scan status.
-          const scannerSelect = scanningApp.$$('#scannerSelect').$$('select');
           assertFalse(scannerSelect.disabled);
-          const sourceSelect = scanningApp.$$('#sourceSelect').$$('select');
           assertFalse(sourceSelect.disabled);
-          const fileTypeSelect = scanningApp.$$('#fileTypeSelect').$$('select');
           assertFalse(fileTypeSelect.disabled);
-          const colorModeSelect =
-              scanningApp.$$('#colorModeSelect').$$('select');
           assertFalse(colorModeSelect.disabled);
-          const pageSizeSelect = scanningApp.$$('#pageSizeSelect').$$('select');
           assertFalse(pageSizeSelect.disabled);
-          const resolutionSelect =
-              scanningApp.$$('#resolutionSelect').$$('select');
           assertFalse(resolutionSelect.disabled);
-          const scanButton = scanningApp.$$('#scanButton');
           assertFalse(scanButton.disabled);
-          const statusText = scanningApp.$$('#statusText');
           assertEquals('', statusText.textContent.trim());
 
-          // PNG is currently the only supported file type.
-          fileTypeSelect.value = FileType.PNG.toString();
-          fileTypeSelect.dispatchEvent(new CustomEvent('change'));
-          flush();
+          // Click the Scan button and wait till the scan is started.
           scanButton.click();
-
-          // After the scan button is clicked, the settings and scan button
-          // should be disabled, and the scan status should indicate that
-          // scanning is in progress.
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // After the scan button is clicked and the scan has started, the
+          // settings and scan button should be disabled, and the scan status
+          // should indicate that scanning is in progress.
           assertTrue(scannerSelect.disabled);
           assertTrue(sourceSelect.disabled);
           assertTrue(fileTypeSelect.disabled);
@@ -305,24 +356,38 @@ export function scanningAppTest() {
           assertTrue(pageSizeSelect.disabled);
           assertTrue(resolutionSelect.disabled);
           assertTrue(scanButton.disabled);
-          assertEquals('Scanning...', statusText.textContent.trim());
-          return fakeScanService_.whenCalled('scan');
+          assertEquals('Scanning page 1: 0%', statusText.textContent.trim());
+
+          // Simulate a progress update and verify the status is set correctly.
+          return fakeScanService_.simulateProgress(1, 17);
+        })
+        .then(() => {
+          assertEquals('Scanning page 1: 17%', statusText.textContent.trim());
+
+          // Simulate a page complete update and verify the status is set
+          // correctly.
+          return fakeScanService_.simulatePageComplete(1);
+        })
+        .then(() => {
+          assertEquals('Scanning page 1: 100%', statusText.textContent.trim());
+
+          // Complete the scan.
+          return fakeScanService_.simulateScanComplete(true);
         })
         .then(() => {
           // After scanning is complete, the settings and scan button should be
           // enabled, and the scan status should indicate that scanning is
           // complete.
-          assertFalse(scanningApp.$$('#scannerSelect').$$('select').disabled);
-          assertFalse(scanningApp.$$('#sourceSelect').$$('select').disabled);
-          assertFalse(scanningApp.$$('#fileTypeSelect').$$('select').disabled);
-          assertFalse(scanningApp.$$('#colorModeSelect').$$('select').disabled);
-          assertFalse(scanningApp.$$('#pageSizeSelect').$$('select').disabled);
-          assertFalse(
-              scanningApp.$$('#resolutionSelect').$$('select').disabled);
-          assertFalse(scanningApp.$$('#scanButton').disabled);
+          assertFalse(scannerSelect.disabled);
+          assertFalse(sourceSelect.disabled);
+          assertFalse(fileTypeSelect.disabled);
+          assertFalse(colorModeSelect.disabled);
+          assertFalse(pageSizeSelect.disabled);
+          assertFalse(resolutionSelect.disabled);
+          assertFalse(scanButton.disabled);
           assertEquals(
               'Scan complete! File(s) saved to /home/chronos/user/MyFiles.',
-              scanningApp.$$('#statusText').textContent.trim());
+              statusText.textContent.trim());
         });
   });
 

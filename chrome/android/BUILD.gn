@@ -2104,6 +2104,7 @@ android_library("base_module_java") {
     "java/src/org/chromium/chrome/browser/ChromeBackupAgent.java",
     "java/src/org/chromium/chrome/browser/base/MainDexApplicationImpl.java",
     "java/src/org/chromium/chrome/browser/base/SplitChromeApplication.java",
+    "java/src/org/chromium/chrome/browser/base/SplitCompatAppComponentFactory.java",
     "java/src/org/chromium/chrome/browser/base/SplitCompatApplication.java",
     "java/src/org/chromium/chrome/browser/base/SplitCompatBackupAgent.java",
     "java/src/org/chromium/chrome/browser/base/SplitCompatCustomTabsService.java",
@@ -2741,9 +2742,7 @@ instrumentation_test_runner("monochrome_public_bundle_smoke_test") {
   android_test_apk = ":chrome_bundle_smoke_test_apk"
   android_test_apk_name = "ChromeBundleSmokeTest"
   never_incremental = true
-  if (!enable_chrome_module) {
-    modules = [ "test_dummy" ]
-  }
+  modules = [ "test_dummy" ]
   extra_args = _bundle_smoke_test_extra_args
 }
 
@@ -2753,13 +2752,7 @@ instrumentation_test_runner(
   android_test_apk = ":chrome_bundle_smoke_test_apk"
   android_test_apk_name = "ChromeBundleSmokeTest"
   never_incremental = true
-
-  # TODO(crbug.com/1126301): This is identical to
-  # monochrome_public_bundle_smoke_test if enable_chrome_module is enabled, so
-  # should be removed if enable_chrome_module is ever enabled by default.
-  if (!enable_chrome_module) {
-    fake_modules = [ "test_dummy" ]
-  }
+  fake_modules = [ "test_dummy" ]
   extra_args =
       _bundle_smoke_test_extra_args + _bundle_fake_modules_smoke_test_extra_args
 }
@@ -2786,9 +2779,7 @@ instrumentation_test_runner("trichrome_chrome_bundle_smoke_test") {
   android_test_apk = ":chrome_bundle_smoke_test_apk"
   android_test_apk_name = "ChromeBundleSmokeTest"
   never_incremental = true
-  if (!enable_chrome_module) {
-    modules = [ "test_dummy" ]
-  }
+  modules = [ "test_dummy" ]
   additional_apks = [ "//chrome/android:trichrome_library_apk" ]
   extra_args = _bundle_smoke_test_extra_args
 }
@@ -2798,13 +2789,7 @@ instrumentation_test_runner("trichrome_chrome_bundle_fake_modules_smoke_test") {
   android_test_apk = ":chrome_bundle_smoke_test_apk"
   android_test_apk_name = "ChromeBundleSmokeTest"
   never_incremental = true
-
-  # TODO(crbug.com/1126301): This is identical to
-  # trichrome_chrome_bundle_smoke_test if enable_chrome_module is enabled, so
-  # should be removed if enable_chrome_module is ever enabled by default.
-  if (!enable_chrome_module) {
-    fake_modules = [ "test_dummy" ]
-  }
+  fake_modules = [ "test_dummy" ]
   additional_apks = [ "//chrome/android:trichrome_library_apk" ]
   extra_args =
       _bundle_smoke_test_extra_args + _bundle_fake_modules_smoke_test_extra_args
@@ -3217,7 +3202,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/compositor/overlays/toolbar/TopToolbarSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/resources/ResourceFactory.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ContextualSearchSceneLayer.java",
-    "java/src/org/chromium/chrome/browser/compositor/scene_layer/SceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ScrollingBottomViewSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/StaticTabSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/TabListSceneLayer.java",

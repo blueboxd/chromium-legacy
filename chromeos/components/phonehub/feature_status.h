@@ -51,8 +51,13 @@ enum class FeatureStatus {
   // The feature is enabled, and there is an active connection with the phone.
   kEnabledAndConnected = 7,
 
+  // The feature is unavailable because the device is in a suspended state. This
+  // includes the having either the lockscreen active or in a power suspend
+  // state, e.g. lid closed.
+  kLockOrSuspended = 8,
+
   // Max value needed for metrics.
-  kMaxValue = kEnabledAndConnected
+  kMaxValue = kLockOrSuspended,
 };
 
 std::ostream& operator<<(std::ostream& stream, FeatureStatus status);

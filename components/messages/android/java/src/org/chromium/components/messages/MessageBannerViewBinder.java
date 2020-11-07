@@ -4,16 +4,21 @@
 
 package org.chromium.components.messages;
 
+import static org.chromium.components.messages.MessageBannerProperties.ALPHA;
 import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION;
 import static org.chromium.components.messages.MessageBannerProperties.ICON;
+import static org.chromium.components.messages.MessageBannerProperties.ICON_RESOURCE_ID;
 import static org.chromium.components.messages.MessageBannerProperties.ON_TOUCH_RUNNABLE;
 import static org.chromium.components.messages.MessageBannerProperties.PRIMARY_BUTTON_CLICK_LISTENER;
 import static org.chromium.components.messages.MessageBannerProperties.PRIMARY_BUTTON_TEXT;
 import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_ICON;
 import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_ICON_CONTENT_DESCRIPTION;
 import static org.chromium.components.messages.MessageBannerProperties.TITLE;
+import static org.chromium.components.messages.MessageBannerProperties.TRANSLATION_Y;
 
 import android.annotation.SuppressLint;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -34,6 +39,9 @@ public class MessageBannerViewBinder {
             view.setDescription(model.get(DESCRIPTION));
         } else if (propertyKey == ICON) {
             view.setIcon(model.get(ICON));
+        } else if (propertyKey == ICON_RESOURCE_ID) {
+            view.setIcon(
+                    AppCompatResources.getDrawable(view.getContext(), model.get(ICON_RESOURCE_ID)));
         } else if (propertyKey == SECONDARY_ICON) {
             view.setSecondaryIcon(model.get(SECONDARY_ICON));
         } else if (propertyKey == SECONDARY_ICON_CONTENT_DESCRIPTION) {
@@ -48,6 +56,10 @@ public class MessageBannerViewBinder {
                     return false;
                 });
             }
+        } else if (propertyKey == ALPHA) {
+            view.setAlpha(model.get(ALPHA));
+        } else if (propertyKey == TRANSLATION_Y) {
+            view.setTranslationY(model.get(TRANSLATION_Y));
         }
     }
 }

@@ -2541,10 +2541,10 @@ static_library("ui") {
       "webui/settings/chromeos/settings_user_action_tracker.h",
       "webui/settings/chromeos/switch_access_handler.cc",
       "webui/settings/chromeos/switch_access_handler.h",
+      "webui/settings/chromeos/tts_handler.cc",
+      "webui/settings/chromeos/tts_handler.h",
       "webui/settings/chromeos/wallpaper_handler.cc",
       "webui/settings/chromeos/wallpaper_handler.h",
-      "webui/settings/tts_handler.cc",
-      "webui/settings/tts_handler.h",
       "webui/signin/inline_login_dialog_chromeos.cc",
       "webui/signin/inline_login_dialog_chromeos.h",
       "webui/signin/inline_login_dialog_chromeos_onboarding.cc",
@@ -4441,12 +4441,6 @@ static_library("ui") {
       "//components/printing/browser",
       "//printing",
     ]
-    if (!is_chromeos && !is_android) {
-      sources += [
-        "webui/settings/printing_handler.cc",
-        "webui/settings/printing_handler.h",
-      ]
-    }
     if (use_cups) {
       configs += [ "//printing:cups" ]
     }

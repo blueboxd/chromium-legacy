@@ -93,7 +93,6 @@ by a child template that "extends" this file.
         android:protectionLevel="signature" />
     <permission android:name="{{ manifest_package }}.permission.DEBUG"
                 android:label="Debug web pages"
-                android:permissionGroup="android.permission-group.DEVELOPMENT_TOOLS"
                 android:protectionLevel="signature" />
     <permission android:name="{{ manifest_package }}.permission.TRANSLATE"
         android:protectionLevel="signature" />
@@ -178,6 +177,9 @@ by a child template that "extends" this file.
         {% endif %}
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowAudioPlaybackCapture="false"
+        {% if definitions_in_split %}
+        android:appComponentFactory="org.chromium.chrome.browser.base.SplitCompatAppComponentFactory"
+        {% endif %}
         {% block extra_application_attributes %}{% endblock %}>
 
       {% macro application_definitions() %}
@@ -1069,6 +1071,7 @@ by a child template that "extends" this file.
               <category android:name="androidx.browser.customtabs.category.NavBarColorCustomization"/>
               <category android:name="androidx.browser.trusted.category.ImmersiveMode"/>
               <category android:name="androidx.browser.trusted.category.LaunchSiteSettings" />
+              <category android:name="androidx.browser.trusted.category.LaunchWebApkSiteSettings"/>
               <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
               <category android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>
               <category android:name="androidx.browser.trusted.category.WebShareTargetV2"/>

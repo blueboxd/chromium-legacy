@@ -4,7 +4,7 @@
 
 #include "media/gpu/android/frame_info_helper.h"
 
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/mock_texture_owner.h"
@@ -25,7 +25,7 @@ constexpr gfx::Size kTestCodedSize(128, 128);
 std::unique_ptr<FrameInfoHelper> CreateHelper() {
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   auto get_stub_cb =
-      base::Bind([]() -> gpu::CommandBufferStub* { return nullptr; });
+      base::BindRepeating([]() -> gpu::CommandBufferStub* { return nullptr; });
   return FrameInfoHelper::Create(std::move(task_runner),
                                  std::move(get_stub_cb));
 }

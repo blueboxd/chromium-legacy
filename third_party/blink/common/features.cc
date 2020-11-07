@@ -114,8 +114,9 @@ const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
-// For the current origin trial (https://crbug.com/1040212), this is enabled on
-// Android only.
+// Note that default enabling this does not expose the portal
+// element on its own, but does allow its use with an origin trial. This was the
+// case for the M85 Android only origin trial (https://crbug.com/1040212).
 const base::Feature kPortals {
   "Portals",
 #if defined(OS_ANDROID)
@@ -813,5 +814,10 @@ const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
 // with @keyframes rules in their stylesheets.
 const base::Feature kCSSKeyframesMemoryReduction{
     "CSSKeyframesMemoryReduction", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Kill switch for the new behavior whereby anchors with target=_blank get
+// noopener behavior by default. TODO(crbug.com/898942): Remove in Chrome 95.
+const base::Feature kTargetBlankImpliesNoOpener{
+    "TargetBlankImpliesNoOpener", base::FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace blink

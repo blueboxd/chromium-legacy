@@ -22,6 +22,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
+#include "ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.h"
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 
 namespace {
@@ -122,7 +123,8 @@ void WaylandWindow::SetPointerFocus(bool focus) {
 }
 
 void WaylandWindow::Show(bool inactive) {
-  NOTREACHED();
+  if (background_buffer_id_ != 0u)
+    should_attach_background_buffer_ = true;
 }
 
 void WaylandWindow::Hide() {
@@ -218,16 +220,30 @@ void WaylandWindow::SetCursor(PlatformCursor cursor) {
 
   bitmap_ = bitmap;
 
-  if (bitmap_) {
-    // Translate physical pixels to DIPs.
-    gfx::Point hotspot_in_dips =
-        gfx::ScaleToRoundedPoint(bitmap_->hotspot(), 1.0f / ui_scale_);
-    connection_->SetCursorBitmap(bitmap_->bitmaps(), hotspot_in_dips,
-                                 buffer_scale());
-  } else {
+  if (!bitmap_) {
+    // Hide the cursor.
     connection_->SetCursorBitmap(std::vector<SkBitmap>(), gfx::Point(),
                                  buffer_scale());
+    return;
   }
+  // Check for Wayland server-side cursor support (e.g. exo for lacros).
+  if (connection_->zcr_cursor_shapes()) {
+    base::Optional<int32_t> shape =
+        WaylandZcrCursorShapes::ShapeFromType(bitmap->type());
+    // If the server supports this cursor type, use a server-side cursor.
+    if (shape.has_value()) {
+      // We should not have loaded image assets for this cursor.
+      DCHECK(bitmap_->bitmaps().empty());
+      connection_->zcr_cursor_shapes()->SetCursorShape(shape.value());
+      return;
+    }
+    // Fall through to client-side bitmap cursors.
+  }
+  // Translate physical pixels to DIPs.
+  gfx::Point hotspot_in_dips =
+      gfx::ScaleToRoundedPoint(bitmap_->hotspot(), 1.0f / ui_scale_);
+  connection_->SetCursorBitmap(bitmap_->bitmaps(), hotspot_in_dips,
+                               buffer_scale());
 }
 
 void WaylandWindow::MoveCursorTo(const gfx::Point& location) {
@@ -643,11 +659,17 @@ bool WaylandWindow::CommitOverlays(
   }
 
   root_surface_->SetViewportDestination(bounds_px_.size());
+
   if (overlays.front()->z_order == INT32_MIN) {
+    background_buffer_id_ = overlays.front()->buffer_id;
+    should_attach_background_buffer_ = true;
+  }
+
+  if (should_attach_background_buffer_) {
     connection_->buffer_manager_host()->CommitBufferInternal(
-        root_surface(), overlays.front()->buffer_id,
-        /*damage_region=*/gfx::Rect(0, 0, 1, 1),
+        root_surface(), background_buffer_id_, /*damage_region=*/gfx::Rect(),
         /*wait_for_frame_callback=*/true);
+    should_attach_background_buffer_ = false;
   } else {
     // Subsurfaces are set to sync, above surface configs will only take effect
     // when root_surface is committed.

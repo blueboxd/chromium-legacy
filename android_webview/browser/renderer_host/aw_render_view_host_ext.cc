@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace android_webview {
 
@@ -51,11 +52,6 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
     // Otherwise the listener of the response may be starved.
     std::move(result).Run(false);
   }
-}
-
-void AwRenderViewHostExt::ClearCache() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetRenderViewHost()->Send(new AwViewMsg_ClearCache);
 }
 
 void AwRenderViewHostExt::KillRenderProcess() {
@@ -109,9 +105,8 @@ void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
   if (background_color_ == c)
     return;
   background_color_ = c;
-  if (web_contents()->GetRenderViewHost()) {
-    web_contents()->GetMainFrame()->Send(new AwViewMsg_SetBackgroundColor(
-        web_contents()->GetMainFrame()->GetRoutingID(), background_color_));
+  if (local_main_frame_remote_) {
+    local_main_frame_remote_->SetBackgroundColor(background_color_);
   }
 }
 
@@ -149,8 +144,11 @@ void AwRenderViewHostExt::ClearImageRequests() {
 void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
   if (!frame_host->GetParent()) {
-    frame_host->Send(new AwViewMsg_SetBackgroundColor(
-        frame_host->GetRoutingID(), background_color_));
+    local_main_frame_remote_.reset();
+    frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        local_main_frame_remote_.BindNewEndpointAndPassReceiver());
+
+    local_main_frame_remote_->SetBackgroundColor(background_color_);
   }
 }
 

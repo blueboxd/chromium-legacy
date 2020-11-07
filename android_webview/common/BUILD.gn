@@ -59,3 +59,18 @@ source_set("common") {
     "//url",
   ]
 }
+
+mojom("mojom") {
+  # We don't want Blink variants of bindings to be generated.
+  disable_variants = true
+
+  sources = [
+    "mojom/frame.mojom",
+    "mojom/renderer.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//skia/public/mojom",
+  ]
+}

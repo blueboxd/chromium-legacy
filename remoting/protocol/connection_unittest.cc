@@ -543,9 +543,10 @@ TEST_P(ConnectionTest, Video) {
   }
 }
 
+// TODO(crbug.com/1143311): Test is flaky.
 // Verifies that the VideoStream doesn't loose any video frames while the
 // connection is being established.
-TEST_P(ConnectionTest, VideoWithSlowSignaling) {
+TEST_P(ConnectionTest, DISABLED_VideoWithSlowSignaling) {
   // Add signaling delay to slow down connection handshake.
   host_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
   client_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
@@ -578,7 +579,8 @@ TEST_P(ConnectionTest, DestroyOnIncomingMessage) {
   run_loop.Run();
 }
 
-TEST_P(ConnectionTest, VideoStats) {
+// TODO(crbug.com/1146302): Test is flaky.
+TEST_P(ConnectionTest, DISABLED_VideoStats) {
   // Currently this test only works for WebRTC because for ICE connections stats
   // are reported by SoftwareVideoRenderer which is not used in this test.
   // TODO(sergeyu): Fix this.

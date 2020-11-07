@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -110,14 +110,11 @@ void RegisterTrustTokenTestHandlers(net::EmbeddedTestServer* test_server,
         replacements.SetHostStr(host_and_maybe_port);
         GURL destination_url = request.GetURL().ReplaceComponents(replacements);
 
-        std::string error;
         net::HttpRequestHeaders headers;
         for (const auto& name_and_value : request.headers)
           headers.SetHeader(name_and_value.first, name_and_value.second);
 
-        bool success =
-            handler->VerifySignedRequest(destination_url, headers, &error);
-        LOG_IF(ERROR, !success) << error;
+        handler->RecordSignedRequest(destination_url, headers);
 
         // Unlike issuance and redemption, there's no special state to return
         // on success for signing.

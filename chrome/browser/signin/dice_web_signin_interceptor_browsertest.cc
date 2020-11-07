@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAndLoad) {
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_storage->AddProfile(
       profile_path, base::UTF8ToUTF16("TestProfileName"), account_info.gaia,
-      base::UTF8ToUTF16("TestGaiaName"),
+      base::UTF8ToUTF16(account_info.email),
       /*is_consented_primary_account=*/false, /*icon_index=*/0,
       /*supervised_user_id*/ std::string(), EmptyAccountId());
   ProfileAttributesEntry* entry = nullptr;

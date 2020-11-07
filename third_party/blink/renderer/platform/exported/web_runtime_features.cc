@@ -365,6 +365,10 @@ void WebRuntimeFeatures::EnablePortals(bool enable) {
   RuntimeEnabledFeatures::SetPortalsEnabled(enable);
 }
 
+bool WebRuntimeFeatures::IsPortalsEnabled() {
+  return RuntimeEnabledFeatures::PortalsEnabledByRuntimeFlag();
+}
+
 void WebRuntimeFeatures::EnableScriptedSpeechRecognition(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechRecognitionEnabled(enable);
 }
@@ -741,6 +745,10 @@ void WebRuntimeFeatures::EnableParseUrlProtocolHandler(bool enable) {
 
 void WebRuntimeFeatures::EnableWebID(bool enable) {
   RuntimeEnabledFeatures::SetWebIDEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableTargetBlankImpliesNoOpener(bool enable) {
+  RuntimeEnabledFeatures::SetTargetBlankImpliesNoOpenerEnabled(enable);
 }
 
 }  // namespace blink

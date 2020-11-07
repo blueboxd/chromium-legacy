@@ -210,7 +210,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'cee3c81ed40b7f7d46e003b83d1e39a64b67c8c4',
+  'v8_revision': '4075f123295bb39d50e472b7af1fc04d4f4fe228',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a481bee281b16c9d16b1c7d2393a4e169514ac39',
+  'angle_revision': 'e2ecb2ddefbc3e2994d440051b805ef6702a8b4c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -226,7 +226,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '9d6ec8fb24e8026b861a3d90ef02f998f880a725',
+  'pdfium_revision': 'd564b0d2baa3fe03087780d7b03a55ab3e171d41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '18bf81a444b8a46298d1124251fd37fcbfe4b7e7',
+  'devtools_frontend_revision': '83fc3e2cef8720b9c6cfbd83cd52f5142c7f7b76',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'cc2305dd95378e2189a1847a425bd4accf7969fb',
+  'tint_revision': '8655b62207a5b2e16ad0ba2247bf880fcf7901f8',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -556,7 +556,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '67e70a63c9fe47a5632e5fdbe83ce2e60ea77ecb',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'd729b5c464e2f4947056b7d98dd212132f7d7f68',
       'condition': 'checkout_ios',
   },
 
@@ -1107,7 +1107,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '390dfc08e3806a2125d08d4d8d034a24d587d77a',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  'e2219b84bc9d723e26ae6618beecad045612017e',
+    Var('aomedia_git') + '/aom.git' + '@' +  '87c414ed32b50cc41ec54db9653f61b556450d41',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),

@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArrayMap;
 
-import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -30,7 +29,6 @@ import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.NotShownReason;
 import org.chromium.components.payments.PackageManagerDelegate;
-import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppService;
 import org.chromium.components.payments.PaymentAppType;
@@ -42,6 +40,7 @@ import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestServiceUtil;
 import org.chromium.components.payments.PaymentRequestSpec;
+import org.chromium.components.payments.PaymentResponseHelperInterface;
 import org.chromium.components.payments.PaymentUIsObserver;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.Section;
@@ -70,14 +69,9 @@ import java.util.Set;
  * This is the Clank specific parts of {@link PaymentRequest}, with the parts shared with WebLayer
  * living in {@link PaymentRequestService}.
  */
-public class ChromePaymentRequestService
-        implements BrowserPaymentRequest, PaymentApp.AbortCallback,
-                   PaymentApp.InstrumentDetailsCallback,
-                   PaymentResponseHelper.PaymentResponseRequesterDelegate,
-                   PaymentDetailsConverter.MethodChecker, PaymentUiService.Delegate,
-                   PaymentUIsObserver {
-    private static final String TAG = "PaymentRequest";
-
+public class ChromePaymentRequestService implements BrowserPaymentRequest,
+                                                    PaymentDetailsConverter.MethodChecker,
+                                                    PaymentUiService.Delegate, PaymentUIsObserver {
     /**
      * Hold the currently showing PaymentRequest. Used to prevent showing more than one
      * PaymentRequest UI per browser process.
@@ -117,9 +111,6 @@ public class ChromePaymentRequestService
      * be shown more than once. This boolean is used to make sure it is only logged once.
      */
     private boolean mDidRecordShowEvent;
-
-    /** The helper to create and fill the response to send to the merchant. */
-    private PaymentResponseHelper mPaymentResponseHelper;
 
     /** A helper to manage the Skip-to-GPay experimental flow. */
     private SkipToGPayHelper mSkipToGPayHelper;
@@ -834,11 +825,10 @@ public class ChromePaymentRequestService
         }
     }
 
-    // Implements PaymentApp.InstrumentDetailsCallback:
+    // Implements BrowserPaymentRequest:
     @Override
-    public void onInstrumentDetailsLoadingWithoutUI() {
-        if (mPaymentRequestService == null || mPaymentUiService.getPaymentRequestUI() == null
-                || mPaymentResponseHelper == null) {
+    public void onInstrumentDetailsLoading() {
+        if (mPaymentUiService.getPaymentRequestUI() == null) {
             return;
         }
 
@@ -854,10 +844,6 @@ public class ChromePaymentRequestService
         EditableOption selectedContact = mPaymentUiService.getContactSection() != null
                 ? mPaymentUiService.getContactSection().getSelectedItem()
                 : null;
-        mPaymentResponseHelper = new PaymentResponseHelper(selectedShippingAddress,
-                selectedShippingOption, selectedContact, selectedPaymentApp, mPaymentOptions,
-                mSkipToGPayHelper != null, this);
-
         selectedPaymentApp.setPaymentHandlerHost(getPaymentHandlerHost());
         // Only native apps can use PaymentDetailsUpdateService.
         if (selectedPaymentApp.getPaymentAppType() == PaymentAppType.NATIVE_MOBILE_APP) {
@@ -865,7 +851,10 @@ public class ChromePaymentRequestService
                     ((AndroidPaymentApp) selectedPaymentApp).packageName(),
                     mPaymentRequestService /* PaymentApp.PaymentRequestUpdateEventListener */);
         }
-        mPaymentRequestService.invokePaymentApp(selectedPaymentApp, /*callback=*/this);
+        PaymentResponseHelperInterface paymentResponseHelper = new ChromePaymentResponseHelper(
+                selectedShippingAddress, selectedShippingOption, selectedContact,
+                selectedPaymentApp, mPaymentOptions, mSkipToGPayHelper != null);
+        mPaymentRequestService.invokePaymentApp(selectedPaymentApp, paymentResponseHelper);
         return !selectedPaymentApp.isAutofillInstrument();
     }
 
@@ -894,53 +883,12 @@ public class ChromePaymentRequestService
         disconnectFromClientWithDebugMessage(debugMessage, PaymentErrorReason.USER_CANCEL);
     }
 
-    // Implement BrowserPaymentRequest:
-    // This method is not supposed to be used outside this class and
-    // PaymentRequestService.
-    @Override
-    public void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
-        Log.d(TAG, debugMessage);
+    private void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         if (mPaymentRequestService != null) {
-            mPaymentRequestService.onError(reason, debugMessage);
+            mPaymentRequestService.disconnectFromClientWithDebugMessage(debugMessage, reason);
         }
-        close();
-        if (PaymentRequestService.getNativeObserverForTest() != null) {
-            PaymentRequestService.getNativeObserverForTest().onConnectionTerminated();
-        }
-    }
-
-    // Implement BrowserPaymentRequest:
-    /**
-     * Called by the merchant website to abort the payment.
-     */
-    @Override
-    public void abort() {
-        if (mPaymentRequestService == null) return;
-        PaymentApp invokedPaymentApp = mPaymentRequestService.getInvokedPaymentApp();
-        if (invokedPaymentApp != null) {
-            invokedPaymentApp.abortPaymentApp(/*callback=*/this);
-            return;
-        }
-        onInstrumentAbortResult(true);
-    }
-
-    // Implements PaymentApp.InstrumentDetailsCallback:
-    /** Called by the payment app in response to an abort request. */
-    @Override
-    public void onInstrumentAbortResult(boolean abortSucceeded) {
-        if (mPaymentRequestService == null) return;
-        mPaymentRequestService.onAbort(abortSucceeded);
-        if (abortSucceeded) {
-            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
-            close();
-        } else {
-            if (PaymentRequestService.getObserverForTest() != null) {
-                PaymentRequestService.getObserverForTest().onPaymentRequestServiceUnableToAbort();
-            }
-        }
-        if (PaymentRequestService.getNativeObserverForTest() != null) {
-            PaymentRequestService.getNativeObserverForTest().onAbortCalled();
-        }
+        // Either closed before this method or closed by mPaymentRequestService.
+        assert mHasClosed;
     }
 
     // Implement BrowserPaymentRequest:
@@ -1082,18 +1030,9 @@ public class ChromePaymentRequestService
         return mPaymentUiService.canUserAddCreditCard();
     }
 
-    // Implements PaymentApp.InstrumentDetailsCallback:
-    /** Called after retrieving payment details. */
+    // Implements BrowserPaymentRequest:
     @Override
-    public void onInstrumentDetailsReady(
-            String methodName, String stringifiedDetails, PayerData payerData) {
-        assert methodName != null;
-        assert stringifiedDetails != null;
-
-        if (mPaymentRequestService == null || mPaymentResponseHelper == null) {
-            return;
-        }
-
+    public void onInstrumentDetailsReady() {
         // If the payment method was an Autofill credit card with an identifier, record its use.
         PaymentApp selectedPaymentMethod =
                 (PaymentApp) mPaymentUiService.getPaymentMethodsSection().getSelectedItem();
@@ -1110,31 +1049,17 @@ public class ChromePaymentRequestService
                 && mPaymentUiService.getPaymentRequestUI() != null) {
             mPaymentUiService.getPaymentRequestUI().showProcessingMessageAfterUiSkip();
         }
-
-        mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
-
-        mPaymentResponseHelper.onPaymentDetailsReceived(methodName, stringifiedDetails, payerData);
     }
 
+    // Implements BrowserPaymentRequest:
     @Override
-    public void onPaymentResponseReady(PaymentResponse response) {
-        if (mSkipToGPayHelper != null && !mSkipToGPayHelper.patchPaymentResponse(response)) {
-            disconnectFromClientWithDebugMessage(
-                    ErrorStrings.PAYMENT_APP_INVALID_RESPONSE, PaymentErrorReason.NOT_SUPPORTED);
-        }
-        if (mPaymentRequestService == null) return;
-        mPaymentRequestService.onPaymentResponse(response);
-        mPaymentResponseHelper = null;
-        if (PaymentRequestService.getObserverForTest() != null) {
-            PaymentRequestService.getObserverForTest().onPaymentResponseReady();
-        }
+    public boolean patchPaymentResponseIfNeeded(PaymentResponse response) {
+        return mSkipToGPayHelper == null || mSkipToGPayHelper.patchPaymentResponse(response);
     }
 
-    /** Called if unable to retrieve payment details. */
+    // Implements BrowserPaymentRequest:
     @Override
     public void onInstrumentDetailsError(String errorMessage) {
-        if (mPaymentRequestService == null) return;
-        mPaymentRequestService.resetInvokedPaymentApp();
         if (mPaymentUiService.getMinimalUI() != null) {
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
             mPaymentUiService.getMinimalUI().showErrorAndClose(

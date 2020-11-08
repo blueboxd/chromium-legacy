@@ -15,7 +15,6 @@ import org.chromium.base.Log;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.BrowserPaymentRequest.Factory;
-import org.chromium.components.payments.PaymentApp.InstrumentDetailsCallback;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -57,8 +56,11 @@ import java.util.Map;
  * class need to close them with
  * {@link PaymentRequestService#close()}, after which no usage is allowed.
  */
-public class PaymentRequestService implements PaymentAppFactoryDelegate, PaymentAppFactoryParams,
-                                              PaymentRequestUpdateEventListener {
+public class PaymentRequestService
+        implements PaymentAppFactoryDelegate, PaymentAppFactoryParams,
+                   PaymentRequestUpdateEventListener, PaymentApp.AbortCallback,
+                   PaymentApp.InstrumentDetailsCallback,
+                   PaymentResponseHelperInterface.PaymentResponseResultCallback {
     private static final String TAG = "PaymentRequestServ";
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static NativeObserverForTest sNativeObserverForTest;
@@ -100,6 +102,11 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
     // mBrowserPaymentRequest is null when it has closed or is uninitiated.
     @Nullable
     private BrowserPaymentRequest mBrowserPaymentRequest;
+
+    /** The helper to create and fill the response to send to the merchant. */
+    @Nullable
+    private PaymentResponseHelperInterface mPaymentResponseHelper;
+
     /**
      * A mapping of the payment method names to the corresponding payment method specific data. If
      * STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT is enabled, then the key "basic-card-payment-options"
@@ -342,6 +349,22 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
         service.create(/*delegate=*/this);
     }
 
+    /**
+     * Disconnects from the PaymentRequestClient with a debug message.
+     * @param debugMessage The debug message shown for web developers.
+     * @param reason The reason of the disconnection defined in {@link PaymentErrorReason}.
+     */
+    public void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
+        Log.d(TAG, debugMessage);
+        if (mClient != null) {
+            mClient.onError(reason, debugMessage);
+        }
+        close();
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onConnectionTerminated();
+        }
+    }
+
     /** Abort the request, used before this class's instantiation. */
     private static void abortBeforeInstantiation(@Nullable PaymentRequestClient client,
             @Nullable JourneyLogger journeyLogger, String debugMessage, int reason) {
@@ -414,8 +437,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN);
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
-                    ErrorStrings.PROHIBITED_ORIGIN,
+            disconnectFromClientWithDebugMessage(ErrorStrings.PROHIBITED_ORIGIN,
                     PaymentErrorReason.NOT_SUPPORTED_FOR_INVALID_ORIGIN_OR_SSL);
             return false;
         }
@@ -428,7 +450,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
             Log.d(TAG, rejectShowErrorMessage);
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(rejectShowErrorMessage,
+            disconnectFromClientWithDebugMessage(rejectShowErrorMessage,
                     PaymentErrorReason.NOT_SUPPORTED_FOR_INVALID_ORIGIN_OR_SSL);
             return false;
         }
@@ -440,7 +462,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
         mBrowserPaymentRequest.modifyMethodData(methodData);
         if (methodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+            disconnectFromClientWithDebugMessage(
                     ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA, PaymentErrorReason.USER_CANCEL);
             return false;
         }
@@ -451,7 +473,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
 
         if (!PaymentValidator.validatePaymentDetails(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+            disconnectFromClientWithDebugMessage(
                     ErrorStrings.INVALID_PAYMENT_DETAILS, PaymentErrorReason.USER_CANCEL);
             return false;
         }
@@ -465,7 +487,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
                 methodData.values(), LocaleUtils.getDefaultLocaleString());
         if (spec.getRawTotal() == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+            disconnectFromClientWithDebugMessage(
                     ErrorStrings.TOTAL_REQUIRED, PaymentErrorReason.USER_CANCEL);
             return false;
         }
@@ -474,12 +496,33 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
         return true;
     }
 
+    // Implements PaymentResponseHelper.PaymentResponseResultCallback:
+    @Override
+    public void onPaymentResponseReady(PaymentResponse response) {
+        if (!mBrowserPaymentRequest.patchPaymentResponseIfNeeded(response)) {
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.PAYMENT_APP_INVALID_RESPONSE, PaymentErrorReason.NOT_SUPPORTED);
+            // Intentionally do not early-return.
+        }
+        if (mClient != null) {
+            mClient.onPaymentResponse(response);
+        }
+        mPaymentResponseHelper = null;
+        if (sObserverForTest != null) {
+            sObserverForTest.onPaymentResponseReady();
+        }
+    }
+
     /**
      * Invokes the given payment app.
      * @param paymentApp The payment app to be invoked.
-     * @param callback The callback of the invocation.
+     * @param paymentResponseHelper The helper to create and fill the response to send to the
+     *         merchant. The helper should have this instance as the delegate {@link
+     *         PaymentResponseHelperInterface.PaymentResponseRequesterDelegate}.
      */
-    public void invokePaymentApp(PaymentApp paymentApp, InstrumentDetailsCallback callback) {
+    public void invokePaymentApp(
+            PaymentApp paymentApp, PaymentResponseHelperInterface paymentResponseHelper) {
+        mPaymentResponseHelper = paymentResponseHelper;
         mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.PAYMENT_HANDLER_INVOKED);
         // Create maps that are subsets of mMethodData and mModifiers, that contain the payment
         // methods supported by the selected payment app. If the intersection of method data
@@ -514,7 +557,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
                 mPaymentRequestOrigin, mCertificateChain, Collections.unmodifiableMap(methodData),
                 mSpec.getRawTotal(), mSpec.getRawLineItems(),
                 Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
-                callback);
+                /*callback=*/this);
         mInvokedPaymentApp = paymentApp;
         mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
         boolean isAutofillCard = paymentApp.isAutofillInstrument();
@@ -581,7 +624,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
             if (mDelegate.isOffTheRecord()) {
                 // If the user is in the OffTheRecord mode, hide the absence of their payment
                 // methods from the merchant site.
-                mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                disconnectFromClientWithDebugMessage(
                         ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
             } else {
                 if (sNativeObserverForTest != null) {
@@ -592,7 +635,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
                         && mSpec.getMethodData().get(MethodStrings.GOOGLE_PLAY_BILLING) != null) {
                     mRejectShowErrorMessage = ErrorStrings.APP_STORE_METHOD_ONLY_SUPPORTED_IN_TWA;
                 }
-                mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                disconnectFromClientWithDebugMessage(
                         ErrorMessageUtil.getNotSupportedErrorMessage(mSpec.getMethodData().keySet())
                                 + (TextUtils.isEmpty(mRejectShowErrorMessage)
                                                 ? ""
@@ -624,7 +667,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
             sObserverForTest.onPaymentRequestServiceShowFailed();
         }
         mRejectShowErrorMessage = ErrorStrings.STRICT_BASIC_CARD_SHOW_REJECT;
-        mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+        disconnectFromClientWithDebugMessage(
                 ErrorMessageUtil.getNotSupportedErrorMessage(mSpec.getMethodData().keySet()) + " "
                         + mRejectShowErrorMessage,
                 PaymentErrorReason.NOT_SUPPORTED);
@@ -763,15 +806,9 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
                 || sIsLocalHasEnrolledInstrumentQueryQuotaEnforcedForTest;
     }
 
-    /** @return Whether the instrument has been enrolled. */
-    public boolean getHasEnrolledInstrument() {
-        return mHasEnrolledInstrument;
-    }
-
     // Implements PaymentAppFactoryDelegate:
     @Override
     public void onCanMakePaymentCalculated(boolean canMakePayment) {
-        if (mBrowserPaymentRequest == null) return;
         mCanMakePayment = canMakePayment;
         if (!mIsCanMakePaymentResponsePending) return;
         // canMakePayment doesn't need to wait for all apps to be queried because it only needs to
@@ -817,9 +854,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * PaymentRequest#show} for the parameters' specification.
      */
     /* package */ void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.show(isUserGesture, waitForUpdatedDetails);
     }
 
@@ -828,9 +863,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * @param details The details that the merchant provides to update the payment request.
      */
     /* package */ void updateWith(PaymentDetails details) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.updateWith(details);
     }
 
@@ -838,24 +871,22 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * The component part of the {@link PaymentRequest#onPaymentDetailsNotUpdated} implementation.
      */
     /* package */ void onPaymentDetailsNotUpdated() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.onPaymentDetailsNotUpdated();
     }
 
     /** The component part of the {@link PaymentRequest#abort} implementation. */
     /* package */ void abort() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-        mBrowserPaymentRequest.abort();
+        if (mInvokedPaymentApp != null) {
+            mInvokedPaymentApp.abortPaymentApp(/*callback=*/this);
+            return;
+        }
+        onInstrumentAbortResult(true);
     }
 
     /** The component part of the {@link PaymentRequest#complete} implementation. */
     /* package */ void complete(int result) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.complete(result);
     }
 
@@ -864,9 +895,7 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * PaymentRequest#retry} for the parameters' specification.
      */
     /* package */ void retry(PaymentValidationErrors errors) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.retry(errors);
     }
 
@@ -904,9 +933,6 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * stop referencing this class after calling this method.
      */
     /* package */ void closeByRenderer() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
         close();
         if (sObserverForTest != null) {
@@ -923,9 +949,6 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * @param e The mojo exception.
      */
     /* package */ void onConnectionError(MojoException e) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
         mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
         close();
         if (sNativeObserverForTest != null) {
@@ -938,12 +961,8 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
      * @param debugMessage The debug message to be sent to the renderer.
      */
     /* package */ void abortForInvalidDataFromRenderer(String debugMessage) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mBrowserPaymentRequest != null;
-
         mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-        mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
-                debugMessage, PaymentErrorReason.USER_CANCEL);
+        disconnectFromClientWithDebugMessage(debugMessage, PaymentErrorReason.USER_CANCEL);
     }
 
     /**
@@ -957,14 +976,17 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
 
         mIsCurrentPaymentRequestShowing = false;
 
-        if (mBrowserPaymentRequest == null) return;
-        mBrowserPaymentRequest.close();
-        mBrowserPaymentRequest = null;
+        if (mBrowserPaymentRequest != null) {
+            mBrowserPaymentRequest.close();
+            mBrowserPaymentRequest = null;
+        }
 
         // mClient can be null only when this method is called from
         // PaymentRequestService#create().
-        if (mClient != null) mClient.close();
-        mClient = null;
+        if (mClient != null) {
+            mClient.close();
+            mClient = null;
+        }
 
         mOnClosedListener.run();
     }
@@ -984,67 +1006,35 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
 
     /** Invokes {@link PaymentRequestClient.onShippingAddressChange}. */
     public void onShippingAddressChange(PaymentAddress address) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        redactShippingAddress(address);
-        mClient.onShippingAddressChange(address);
+        if (mClient != null) {
+            redactShippingAddress(address);
+            mClient.onShippingAddressChange(address);
+        }
     }
 
     /** Invokes {@link PaymentRequestClient.onShippingOptionChange}. */
     public void onShippingOptionChange(String shippingOptionId) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onShippingOptionChange(shippingOptionId);
+        if (mClient != null) mClient.onShippingOptionChange(shippingOptionId);
     }
 
     /** Invokes {@link PaymentRequestClient.onPayerDetailChange}. */
     public void onPayerDetailChange(PayerDetail detail) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onPayerDetailChange(detail);
-    }
-
-    /** Invokes {@link PaymentRequestClient.onPaymentResponse}. */
-    public void onPaymentResponse(PaymentResponse response) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onPaymentResponse(response);
+        if (mClient != null) mClient.onPayerDetailChange(detail);
     }
 
     /** Invokes {@link PaymentRequestClient.onError}. */
     public void onError(int error, String errorMessage) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onError(error, errorMessage);
+        if (mClient != null) mClient.onError(error, errorMessage);
     }
 
     /** Invokes {@link PaymentRequestClient.onComplete}. */
     public void onComplete() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onComplete();
-    }
-
-    /** Invokes {@link PaymentRequestClient.onAbort}. */
-    public void onAbort(boolean abortedSuccessfully) {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.onAbort(abortedSuccessfully);
+        if (mClient != null) mClient.onComplete();
     }
 
     /** Invokes {@link PaymentRequestClient.warnNoFavicon}. */
     public void warnNoFavicon() {
-        // Every caller should stop referencing this class once close() is called.
-        assert mClient != null;
-
-        mClient.warnNoFavicon();
+        if (mClient != null) mClient.warnNoFavicon();
     }
 
     /**
@@ -1190,11 +1180,6 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
         return mInvokedPaymentApp;
     }
 
-    /** Sets no payment app is invoked. */
-    public void resetInvokedPaymentApp() {
-        mInvokedPaymentApp = null;
-    }
-
     // Implements PaymentRequestUpdateEventListener:
     @Override
     public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
@@ -1240,5 +1225,52 @@ public class PaymentRequestService implements PaymentAppFactoryDelegate, Payment
 
         onShippingAddressChange(shippingAddress);
         return true;
+    }
+
+    // Implements PaymentApp.InstrumentDetailsCallback:
+    @Override
+    public void onInstrumentDetailsLoading() {
+        if (mPaymentResponseHelper == null || mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.onInstrumentDetailsLoading();
+    }
+
+    // Implements PaymentApp.InstrumentDetailsCallback:
+    @Override
+    public void onInstrumentDetailsReady(
+            String methodName, String stringifiedDetails, PayerData payerData) {
+        assert methodName != null;
+        assert stringifiedDetails != null;
+        if (mPaymentResponseHelper == null || mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.onInstrumentDetailsReady();
+        mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
+        mPaymentResponseHelper.generatePaymentResponse(
+                methodName, stringifiedDetails, payerData, /*resultCallback=*/this);
+    }
+
+    // Implements PaymentApp.InstrumentDetailsCallback:
+    @Override
+    public void onInstrumentAbortResult(boolean abortSucceeded) {
+        if (mClient != null) {
+            mClient.onAbort(abortSucceeded);
+        }
+        if (abortSucceeded) {
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
+            close();
+        } else {
+            if (sObserverForTest != null) {
+                sObserverForTest.onPaymentRequestServiceUnableToAbort();
+            }
+        }
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onAbortCalled();
+        }
+    }
+
+    // Implements PaymentApp.AbortCallback:
+    @Override
+    public void onInstrumentDetailsError(String errorMessage) {
+        mInvokedPaymentApp = null;
+        if (mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.onInstrumentDetailsError(errorMessage);
     }
 }

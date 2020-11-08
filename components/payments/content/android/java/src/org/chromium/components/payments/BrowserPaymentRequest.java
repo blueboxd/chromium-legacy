@@ -8,10 +8,10 @@ import androidx.annotation.Nullable;
 
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetails;
-import org.chromium.payments.mojom.PaymentErrorReason;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
+import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 
 import java.util.List;
@@ -53,9 +53,6 @@ public interface BrowserPaymentRequest {
     /** The browser part of the {@link PaymentRequest#onPaymentDetailsNotUpdated} implementation. */
     void onPaymentDetailsNotUpdated();
 
-    /** The browser part of the {@link PaymentRequest#abort} implementation. */
-    void abort();
-
     /** The browser part of the {@link PaymentRequest#complete} implementation. */
     void complete(int result);
 
@@ -65,13 +62,6 @@ public interface BrowserPaymentRequest {
      *         end-user that something is wrong with the data of the payment response.
      */
     void retry(PaymentValidationErrors errors);
-
-    /**
-     * Delegate to the same method of ChromePaymentRequestService.
-     * @param debugMessage The debug message shown for web developers.
-     * @param reason The reason of the disconnection defined in {@link PaymentErrorReason}.
-     */
-    void disconnectFromClientWithDebugMessage(String debugMessage, int reason);
 
     /**
      * Close this instance. The callers of this method should stop referencing this instance upon
@@ -162,4 +152,32 @@ public interface BrowserPaymentRequest {
     default boolean isPaymentSheetBasedPaymentAppSupported() {
         return false;
     }
+
+    /**
+     * Patches the given payment response if needed.
+     * @param response The payment response to be patched in place.
+     * @return Whether the patching is successful.
+     */
+    default boolean patchPaymentResponseIfNeeded(PaymentResponse response) {
+        return true;
+    }
+
+    /**
+     * Called by the payment app to let Chrome know that the payment app's UI is now hidden, but
+     * the payment details have not been returned yet. This is a good time to show a "loading"
+     * progress indicator UI.
+     */
+    default void onInstrumentDetailsLoading() {}
+
+    /**
+     * Called after retrieving payment details.
+     */
+    default void onInstrumentDetailsReady() {}
+
+    /**
+     * Called if unable to retrieve payment details.
+     * @param errorMessage Developer-facing error message to be used when rejecting the promise
+     *                     returned from PaymentRequest.show().
+     */
+    default void onInstrumentDetailsError(String errorMessage) {}
 }

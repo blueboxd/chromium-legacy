@@ -39,22 +39,12 @@ public class WebLayerPaymentRequestService implements BrowserPaymentRequest {
     }
 
     @Override
-    public void abort() {
-        assert false : "Not implemented yet";
-    }
-
-    @Override
     public void complete(int result) {
         assert false : "Not implemented yet";
     }
 
     @Override
     public void retry(PaymentValidationErrors errors) {
-        assert false : "Not implemented yet";
-    }
-
-    @Override
-    public void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         assert false : "Not implemented yet";
     }
 

@@ -6,7 +6,7 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
-#include "base/test/bind.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -424,10 +424,13 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
                        MigrateToPreinstalledWebApp) {
   ScopedTestingPreinstalledAppData preinstalled_apps;
-  preinstalled_apps.apps.push_back(
-      {GetWebAppUrl(), kMigrationFlag, kExtensionId});
-  EXPECT_EQ(1, GetPreinstalledWebApps().disabled_count);
-
+  ExternalInstallOptions options(GetWebAppUrl(), DisplayMode::kBrowser,
+                                 ExternalInstallSource::kExternalDefault);
+  options.gate_on_feature = kMigrationFlag;
+  options.user_type_allowlist = {"unmanaged"};
+  options.uninstall_and_replace.push_back(kExtensionId);
+  preinstalled_apps.apps.push_back(std::move(options));
+  EXPECT_EQ(1u, GetPreinstalledWebApps().size());
   // Set up pre-migration state.
   {
     base::HistogramTester histograms;

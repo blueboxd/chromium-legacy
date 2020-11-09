@@ -18,9 +18,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -252,14 +250,6 @@ QuickUnlockPrivateGetAuthTokenFunction::Run() {
   if (test_observer)
     test_observer->OnGetAuthTokenCalled(params->account_password);
 
-  // Alter |user_context| if the user is supervised.
-  if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
-    user_context = chromeos::ChromeUserManager::Get()
-                       ->GetSupervisedUserManager()
-                       ->GetAuthentication()
-                       ->TransformKey(user_context);
-  }
-
   // Lazily allocate the authenticator. We do this here, instead of in the ctor,
   // so that tests can install a fake.
   DCHECK(!extended_authenticator_);
@@ -479,6 +469,8 @@ QuickUnlockPrivateCheckCredentialFunction::Run() {
   Profile* profile = GetActiveProfile(browser_context());
   PrefService* pref_service = profile->GetPrefs();
   bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
+  bool is_allow_weak_pin_pref_set =
+      pref_service->HasPrefPath(prefs::kPinUnlockWeakPinsAllowed);
 
   // Check and return the problems.
   std::vector<CredentialProblem>& warnings = result->warnings;
@@ -491,7 +483,8 @@ QuickUnlockPrivateCheckCredentialFunction::Run() {
   if (length_problem != CredentialProblem::CREDENTIAL_PROBLEM_NONE)
     errors.push_back(length_problem);
 
-  if (!IsPinDifficultEnough(credential)) {
+  if ((!allow_weak || !is_allow_weak_pin_pref_set) &&
+      !IsPinDifficultEnough(credential)) {
     auto& log = allow_weak ? warnings : errors;
     log.push_back(CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK);
   }

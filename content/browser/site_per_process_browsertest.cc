@@ -39,7 +39,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -6283,7 +6283,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
     params->frame_owner_properties = blink::mojom::FrameOwnerProperties::New();
     params->frame_token = frame_token;
     params->devtools_frame_token = base::UnguessableToken::Create();
-    params->policy_container = CreateStubPolicyContainerClient();
+    params->policy_container = CreateStubPolicyContainer();
     agent_scheduling_group->CreateFrame(std::move(params));
   }
 
@@ -6377,7 +6377,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params->replication_state.unique_name = "name";
     params->frame_token = frame_token;
     params->devtools_frame_token = base::UnguessableToken::Create();
-    params->policy_container = CreateStubPolicyContainerClient();
+    params->policy_container = CreateStubPolicyContainer();
     agent_scheduling_group->CreateFrame(std::move(params));
   }
 

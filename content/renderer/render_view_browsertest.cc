@@ -18,7 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1283,7 +1283,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
       base::UnguessableToken::Create(), replication_state,
       compositor_deps_.get(), std::move(widget_params),
       blink::mojom::FrameOwnerProperties::New(),
-      /*has_committed_real_load=*/true, CreateStubPolicyContainerClient());
+      /*has_committed_real_load=*/true, CreateStubPolicyContainer());
 
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
@@ -1352,7 +1352,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       replication_state, nullptr,
       /*widget_params=*/nullptr, blink::mojom::FrameOwnerProperties::New(),
-      /*has_committed_real_load=*/true, CreateStubPolicyContainerClient());
+      /*has_committed_real_load=*/true, CreateStubPolicyContainer());
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));

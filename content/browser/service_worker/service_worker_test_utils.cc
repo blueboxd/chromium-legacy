@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/test/bind.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -130,7 +130,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
-      blink::mojom::PolicyContainerClientPtr policy_container,
+      blink::mojom::PolicyContainerPtr policy_container,
       CommitNavigationCallback callback) override {
     std::move(on_received_callback_).Run(std::move(container_info));
     std::move(callback).Run(nullptr, nullptr);
@@ -287,7 +287,7 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
       network::mojom::URLResponseHead::New(),
       mojo::ScopedDataPipeConsumerHandle(), nullptr, nullptr, base::nullopt,
       nullptr, std::move(info), mojo::NullRemote(),
-      base::UnguessableToken::Create(), CreateStubPolicyContainerClient(),
+      base::UnguessableToken::Create(), CreateStubPolicyContainer(),
       base::BindOnce(
           [](std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
                  validated_params,

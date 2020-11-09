@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
@@ -150,7 +150,7 @@ class RenderFrameImplTest : public RenderViewTest {
         base::UnguessableToken::Create(), base::UnguessableToken::Create(),
         frame_replication_state, &compositor_deps_, std::move(widget_params),
         blink::mojom::FrameOwnerProperties::New(),
-        /*has_committed_real_load=*/true, CreateStubPolicyContainerClient());
+        /*has_committed_real_load=*/true, CreateStubPolicyContainer());
 
     frame_ = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(kSubframeRouteId));

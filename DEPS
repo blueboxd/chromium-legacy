@@ -182,7 +182,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:576741d3eed0fa33971fb34cd823650e6f5b47fb',
+  'luci_go': 'git_revision:1a022d3a4c50be4207ee93451255d71896416596',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cfe647c02fb4ae5d2a37e3db9cbe21a13bbdfdcd',
+  'skia_revision': 'cffe7e631c4ee2b06685b4811a9932f9cb0a852e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4075f123295bb39d50e472b7af1fc04d4f4fe228',
+  'v8_revision': 'b01fdf67620796b3498f657b5ba71d34cfddccb1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd4439824c55428a699aa543a2f397d06a00841b6',
+  'angle_revision': '46f5f4386f7c7489a66884b9062287a7cb9798de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'bb6ca4c0c230872fa9f2a9c2f175474aae54f720',
+  'devtools_frontend_revision': 'f2eb30ce3c37e4e2c2f89a83dfc6206c9bbb784a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1265,7 +1265,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0e30faf062f7a4c06ff043e7ba2214ef437782ab',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9eff30af501ce97c28adda80548fdcdb7f01995c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

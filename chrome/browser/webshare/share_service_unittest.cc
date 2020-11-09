@@ -8,7 +8,7 @@
 
 #include "base/guid.h"
 #include "base/run_loop.h"
-#include "base/test/bind.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/webshare/share_service_impl.h"
@@ -99,7 +99,6 @@ class ShareServiceUnitTest : public ChromeRenderViewHostTestHarness {
     auto blob = blink::mojom::SerializedBlob::New();
     blob->uuid = uuid;
     blob->content_type = content_type;
-    blob->size = file_length;
 
     base::RunLoop run_loop;
     auto blob_context_getter =
@@ -234,5 +233,25 @@ TEST_F(ShareServiceUnitTest, AndroidPackage) {
             ShareGeneratedFileData(".dex", "text/plain"));
   EXPECT_EQ(ShareError::PERMISSION_DENIED,
             ShareGeneratedFileData(".txt", "vnd.android.package-archive"));
+}
+
+TEST_F(ShareServiceUnitTest, TotalBytes) {
+  EXPECT_EQ(ShareError::OK,
+            ShareGeneratedFileData(".txt", "text/plain",
+                                   kMaxSharedFileBytes / kMaxSharedFileCount,
+                                   kMaxSharedFileCount));
+  EXPECT_EQ(
+      ShareError::PERMISSION_DENIED,
+      ShareGeneratedFileData(".txt", "text/plain",
+                             (kMaxSharedFileBytes / kMaxSharedFileCount) + 1,
+                             kMaxSharedFileCount));
+}
+
+TEST_F(ShareServiceUnitTest, FileBytes) {
+  EXPECT_EQ(ShareError::OK,
+            ShareGeneratedFileData(".txt", "text/plain", kMaxSharedFileBytes));
+  EXPECT_EQ(
+      ShareError::PERMISSION_DENIED,
+      ShareGeneratedFileData(".txt", "text/plain", kMaxSharedFileBytes + 1));
 }
 #endif

@@ -15,6 +15,7 @@
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_mac.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "ui/accessibility/platform/inspect/property_node.h"
 
 // This file uses the deprecated NSObject accessibility interface.
 // TODO(crbug.com/948844): Migrate to the new NSAccessibility interface.
@@ -33,6 +34,7 @@ using content::a11y::IsBrowserAccessibilityCocoa;
 using content::a11y::LineIndexer;
 using content::a11y::OptionalNSObject;
 using std::string;
+using ui::AXPropertyNode;
 
 namespace content {
 
@@ -77,12 +79,6 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
                                        const LineIndexer* line_indexer,
                                        base::DictionaryValue* dict) const;
 
-  const std::string GetAllowEmptyString() override;
-  const std::string GetAllowString() override;
-  const std::string GetDenyString() override;
-  const std::string GetDenyNodeString() override;
-  const std::string GetRunUntilEventString() override;
-
   void AddProperties(const id node,
                      const LineIndexer* line_indexer,
                      base::Value* dict) const;
@@ -90,7 +86,7 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   // Invokes an attributes by a property node.
   OptionalNSObject InvokeAttributeFor(
       const BrowserAccessibilityCocoa* cocoa_node,
-      const PropertyNode& property_node,
+      const AXPropertyNode& property_node,
       const LineIndexer* line_indexer) const;
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
@@ -234,7 +230,8 @@ void AccessibilityTreeFormatterMac::AddProperties(
 
   // Otherwise dump attributes matching allow filters only.
   std::string line_index = line_indexer->IndexBy(node);
-  for (const PropertyNode& property_node : PropertyFilterNodesFor(line_index)) {
+  for (const AXPropertyNode& property_node :
+       PropertyFilterNodesFor(line_index)) {
     AttributeInvoker invoker(node, line_indexer);
     OptionalNSObject value = invoker.Invoke(property_node);
     if (value.IsNotApplicable()) {
@@ -584,26 +581,6 @@ std::string AccessibilityTreeFormatterMac::FormatAttributeValue(
     return "{" + output + "}";
   }
   return "";
-}
-
-const string AccessibilityTreeFormatterMac::GetAllowEmptyString() {
-  return "@MAC-ALLOW-EMPTY:";
-}
-
-const string AccessibilityTreeFormatterMac::GetAllowString() {
-  return "@MAC-ALLOW:";
-}
-
-const string AccessibilityTreeFormatterMac::GetDenyString() {
-  return "@MAC-DENY:";
-}
-
-const string AccessibilityTreeFormatterMac::GetDenyNodeString() {
-  return "@MAC-DENY-NODE:";
-}
-
-const std::string AccessibilityTreeFormatterMac::GetRunUntilEventString() {
-  return "@MAC-RUN-UNTIL-EVENT:";
 }
 
 }  // namespace content

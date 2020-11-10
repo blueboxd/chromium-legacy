@@ -321,7 +321,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       // should not appear. LayoutObject tree should have created an anonymous
       // box to prevent having inline/block-mixed children.
       DCHECK(node->IsInline());
-      LayoutInline* layout_inline = ToLayoutInline(node);
+      auto* layout_inline = To<LayoutInline>(node);
       builder->UpdateShouldCreateBoxFragment(layout_inline);
 
       builder->EnterInline(layout_inline);
@@ -1748,7 +1748,7 @@ static LayoutUnit ComputeContentSize(
       LayoutObject* floating_object = item.GetLayoutObject();
       DCHECK(floating_object && floating_object->IsFloating());
 
-      NGBlockNode float_node(ToLayoutBox(floating_object));
+      NGBlockNode float_node(To<LayoutBox>(floating_object));
       const ComputedStyle& float_style = float_node.Style();
 
       // Floats don't intrude into floats.

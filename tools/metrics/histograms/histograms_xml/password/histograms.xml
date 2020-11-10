@@ -176,20 +176,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PasswordManager.AccountChooserDialogMultipleAccounts"
-    enum="AccountChooserDismissalReason" expires_after="2020-12-12">
+    enum="AccountChooserDismissalReason" expires_after="2021-06-01">
   <owner>vasilii@chromium.org</owner>
   <owner>jdoerrie@chromium.org</owner>
   <summary>
-    The dismissal reason of the account chooser with multiple accounts.
+    The dismissal reason of the account chooser with multiple accounts. Recorded
+    when the account chooser is dismissed.
   </summary>
 </histogram>
 
 <histogram name="PasswordManager.AccountChooserDialogOneAccount"
-    enum="AccountChooserDismissalReason" expires_after="2020-12-12">
+    enum="AccountChooserDismissalReason" expires_after="2021-06-01">
   <owner>vasilii@chromium.org</owner>
   <owner>jdoerrie@chromium.org</owner>
   <summary>
-    The dismissal reason of the account chooser with one account.
+    The dismissal reason of the account chooser with one account. Recorded when
+    the account chooser is dismissed.
   </summary>
 </histogram>
 
@@ -425,49 +427,79 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.AccountStoreVsProfileStore.Additional"
-    units="accounts" expires_after="M90">
-  <owner>mamir@chromium.org</owner>
+<histogram name="PasswordManager.AccountStoreBlocklistedEntriesAfterOptIn"
+    units="credentials" expires_after="M90">
   <owner>treib@chromium.org</owner>
+  <owner>mamir@chromium.org</owner>
   <summary>
-    The number of accounts stored in the password manager's account-scoped store
-    that don't exist in the profile-scoped store. Recorded once per run of
-    Chrome, soon after startup.
+    Records how many blocklisting entries are downloaded to the account store
+    after unlocking account store.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.AccountStoreVsProfileStore.Conflicting"
-    units="accounts" expires_after="M90">
-  <owner>mamir@chromium.org</owner>
+<histogram name="PasswordManager.AccountStoreCredentialsAfterOptIn"
+    units="credentials" expires_after="M90">
   <owner>treib@chromium.org</owner>
+  <owner>mamir@chromium.org</owner>
   <summary>
-    The number of accounts stored in the password manager with a conflicting
-    password between the account-scoped store and profile-scoped store (i.e. the
-    signon realm and username match, but the password does not). Recorded once
-    per run of Chrome, soon after startup.
+    Records how many non-blacklisting credentials are downloaded to the account
+    store after unlocking account store.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.AccountStoreVsProfileStore.Identical"
+<histogram name="PasswordManager.AccountStoreVsProfileStore.{DifferenceType}"
     units="accounts" expires_after="M90">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
-    The number of accounts stored in both the password manager's account-scoped
-    store and profile-scoped store. Recorded once per run of Chrome, soon after
-    startup.
+    The number of accounts {DifferenceType}. Recorded once per run of Chrome,
+    soon after startup. Recorded independent of whether the user is opted in to
+    the account-scoped storage or not, i.e. will contain a lot of useless
+    entries - you might want to look at AccountStoreVsProfileStore2 instead.
   </summary>
+  <token key="DifferenceType">
+    <variant name="Additional"
+        summary="stored in the password manager's account-scoped store that
+                 don't exist in the profile-scoped store"/>
+    <variant name="Conflicting"
+        summary="stored in the password manager with a conflicting password
+                 between the account-scoped store and profile-scoped store
+                 (i.e. the signon realm and username match, but the password
+                 does not)"/>
+    <variant name="Identical"
+        summary="stored in both the password manager's account-scoped store
+                 and profile-scoped store"/>
+    <variant name="Missing"
+        summary="stored in the password manager's profile-scoped store that
+                 don't exist in the account-scoped store"/>
+  </token>
 </histogram>
 
-<histogram name="PasswordManager.AccountStoreVsProfileStore.Missing"
+<histogram name="PasswordManager.AccountStoreVsProfileStore2.{DifferenceType}"
     units="accounts" expires_after="M90">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
-    The number of accounts stored in the password manager's profile-scoped store
-    that don't exist in the account-scoped store. Recorded once per run of
-    Chrome, soon after startup.
+    The number of accounts {DifferenceType}. Recorded once per run of Chrome,
+    soon after startup, only for users who are opted in to the account-scoped
+    storage.
   </summary>
+  <token key="DifferenceType">
+    <variant name="Additional"
+        summary="stored in the password manager's account-scoped store that
+                 don't exist in the profile-scoped store"/>
+    <variant name="Conflicting"
+        summary="stored in the password manager with a conflicting password
+                 between the account-scoped store and profile-scoped store
+                 (i.e. the signon realm and username match, but the password
+                 does not)"/>
+    <variant name="Identical"
+        summary="stored in both the password manager's account-scoped store
+                 and profile-scoped store"/>
+    <variant name="Missing"
+        summary="stored in the password manager's profile-scoped store that
+                 don't exist in the account-scoped store"/>
+  </token>
 </histogram>
 
 <histogram name="PasswordManager.AffiliationBackend.FetchSize" units="facets"

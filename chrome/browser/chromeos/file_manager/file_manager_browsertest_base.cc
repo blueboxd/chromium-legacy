@@ -1916,12 +1916,8 @@ void FileManagerBrowserTestBase::StartTest() {
 
   base::FilePath store;
   CHECK(base::PathService::Get(base::DIR_EXE, &store));
-  store = store.AppendASCII("coverage").AppendASCII("devtools_code_coverage");
-  CHECK(base::CreateDirectory(store));
-
-  base::FilePath tests = store.AppendASCII("tests");
-  if (!base::PathExists(tests))
-    CHECK(base::CreateDirectory(tests));
+  store = store.AppendASCII("devtools_code_coverage");
+  DevToolsListener::SetupCoverageStore(store);
 
   for (auto& agent : devtools_agent_) {
     auto* host = agent.first;

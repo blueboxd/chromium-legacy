@@ -875,6 +875,22 @@ document.getElementById("overlay_in_frame").style.visibility='visible';
 )"));
   }
 
+  // Hide the overlay in the main page.
+  void HideOverlay() {
+    EXPECT_TRUE(ExecJs(shell(),
+                       R"(
+document.getElementById("overlay").style.visibility='hidden';
+)"));
+  }
+
+  // Hide the overlay in the first iframe.
+  void HideOverlayInFrame() {
+    EXPECT_TRUE(ExecJs(shell()->web_contents()->GetAllFrames()[1],
+                       R"(
+document.getElementById("overlay_in_frame").style.visibility='hidden';
+)"));
+  }
+
   // Make sure scrolling is necessary for #scroll_container , no matter the
   // screen height
   void SetupScrollContainerHeights() {
@@ -2027,7 +2043,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   DocumentReadyState end_state;
   base::RunLoop run_loop;
   web_controller_->WaitForDocumentReadyState(
-      Selector(), DOCUMENT_INTERACTIVE,
+      ElementFinder::Result(), DOCUMENT_INTERACTIVE,
       base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
                      base::Unretained(this), run_loop.QuitClosure(), &status,
                      &end_state));
@@ -2043,7 +2059,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   DocumentReadyState end_state;
   base::RunLoop run_loop;
   web_controller_->WaitForDocumentReadyState(
-      Selector(), DOCUMENT_COMPLETE,
+      ElementFinder::Result(), DOCUMENT_COMPLETE,
       base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
                      base::Unretained(this), run_loop.QuitClosure(), &status,
                      &end_state));
@@ -2054,20 +2070,45 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       WaitFrameDocumentReadyStateLoaded) {
+                       WaitFrameDocumentReadyStateComplete) {
   ClientStatus status;
+
+  ElementFinder::Result iframe_element;
+  FindElement(Selector({"#iframe"}), &status, &iframe_element);
+  ASSERT_EQ(ACTION_APPLIED, status.proto_status());
+
   DocumentReadyState end_state;
   base::RunLoop run_loop;
   web_controller_->WaitForDocumentReadyState(
-      Selector({"#iframe"}), DOCUMENT_LOADED,
+      iframe_element, DOCUMENT_COMPLETE,
       base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
                      base::Unretained(this), run_loop.QuitClosure(), &status,
                      &end_state));
   run_loop.Run();
 
   EXPECT_EQ(ACTION_APPLIED, status.proto_status()) << "Status: " << status;
-  EXPECT_THAT(end_state,
-              AnyOf(DOCUMENT_LOADED, DOCUMENT_INTERACTIVE, DOCUMENT_COMPLETE));
+  EXPECT_THAT(end_state, DOCUMENT_COMPLETE);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       WaitExternalFrameDocumentReadyStateComplete) {
+  ClientStatus status;
+
+  ElementFinder::Result iframe_element;
+  FindElement(Selector({"#iframeExternal"}), &status, &iframe_element);
+  ASSERT_EQ(ACTION_APPLIED, status.proto_status());
+
+  DocumentReadyState end_state;
+  base::RunLoop run_loop;
+  web_controller_->WaitForDocumentReadyState(
+      iframe_element, DOCUMENT_COMPLETE,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
+                     base::Unretained(this), run_loop.QuitClosure(), &status,
+                     &end_state));
+  run_loop.Run();
+
+  EXPECT_EQ(ACTION_APPLIED, status.proto_status()) << "Status: " << status;
+  EXPECT_THAT(end_state, DOCUMENT_COMPLETE);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementRect) {
@@ -2472,6 +2513,32 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, CheckOnTop) {
   EXPECT_EQ(WebControllerErrorInfoProto::ON_TOP,
             status.details().web_controller_error_info().failed_web_action());
 }
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, CheckOnTopInFrame) {
+  ClientStatus status;
+  ElementFinder::Result element;
+  FindElement(Selector({"#iframe", "#button"}), &status, &element);
+  ASSERT_TRUE(status.ok());
+
+  // Make sure the button is visible.
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents()->GetAllFrames()[1],
+             "document.getElementById('button').scrollIntoViewIfNeeded();"));
+
+  // The button is covered by an overlay in the main frame
+  ShowOverlay();
+  EXPECT_EQ(ELEMENT_NOT_ON_TOP, CheckOnTop(element).proto_status());
+
+  // The button is covered by an overlay in the iframe
+  HideOverlay();
+  ShowOverlayInFrame();
+  EXPECT_EQ(ELEMENT_NOT_ON_TOP, CheckOnTop(element).proto_status());
+
+  // The button is not covered by any overlay
+  HideOverlayInFrame();
+  EXPECT_EQ(ACTION_APPLIED, CheckOnTop(element).proto_status());
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NthMatch) {
   Selector selector;
   selector.proto.add_filters()->set_css_selector(".nth_match_parent");

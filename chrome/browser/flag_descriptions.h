@@ -1143,6 +1143,9 @@ extern const char kScreenCaptureTestDescription[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
+extern const char kScrollableTabStripButtonsName[];
+extern const char kScrollableTabStripButtonsDescription[];
+
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
 
@@ -2439,15 +2442,6 @@ extern const char kImeAssistPersonalInfoDescription[];
 
 extern const char kImeEmojiSuggestAdditionName[];
 extern const char kImeEmojiSuggestAdditionDescription[];
-
-extern const char kImeInputLogicFstName[];
-extern const char kImeInputLogicFstDescription[];
-
-extern const char kImeInputLogicHmmName[];
-extern const char kImeInputLogicHmmDescription[];
-
-extern const char kImeInputLogicMozcName[];
-extern const char kImeInputLogicMozcDescription[];
 
 extern const char kImeMozcProtoName[];
 extern const char kImeMozcProtoDescription[];

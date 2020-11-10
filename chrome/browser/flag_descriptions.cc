@@ -1964,6 +1964,11 @@ const char kScrollableTabStripDescription[] =
     "Allows users to access tabs by scrolling when they no longer fit in the "
     "tabstrip.";
 
+const char kScrollableTabStripButtonsName[] = "Scrollable TabStrip Buttons";
+const char kScrollableTabStripButtonsDescription[] =
+    "When the scrollable-tabstrip flag is enabled, this enables buttons to "
+    "permanently appear on the tabstrip.";
+
 const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
@@ -4174,18 +4179,6 @@ const char kImeEmojiSuggestAdditionName[] =
     "Enable emoji suggestion (addition)";
 const char kImeEmojiSuggestAdditionDescription[] =
     "Enable emoji suggestion as addition to the text written for native IME.";
-
-const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
-const char kImeInputLogicFstDescription[] =
-    "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
-
-const char kImeInputLogicHmmName[] = "Enable HMM Input Logic on IME";
-const char kImeInputLogicHmmDescription[] =
-    "Enable HMM Input Logic to replace the IME legacy input logic on NaCl";
-
-const char kImeInputLogicMozcName[] = "Enable MOZC Input Logic on IME";
-const char kImeInputLogicMozcDescription[] =
-    "Enable MOZC Input Logic to replace the IME legacy input logic on NaCl";
 
 const char kImeMozcProtoName[] = "Enable protobuf on Japanese IME";
 const char kImeMozcProtoDescription[] =

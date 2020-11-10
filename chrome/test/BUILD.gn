@@ -3617,6 +3617,7 @@ test("unit_tests") {
     "../browser/predictors/resource_prefetch_predictor_tables_unittest.cc",
     "../browser/predictors/resource_prefetch_predictor_unittest.cc",
     "../browser/prefetch/no_state_prefetch/prerender_unittest.cc",
+    "../browser/prefetch/prefetch_proxy/prefetch_proxy_origin_decider_unittest.cc",
     "../browser/prefetch/prefetch_proxy/prefetch_proxy_params_unittest.cc",
     "../browser/prefetch/prefetch_proxy/prefetch_proxy_prefetch_metrics_collector_unittest.cc",
     "../browser/prefetch/prefetch_proxy/prefetch_proxy_proxy_configurator_unittest.cc",
@@ -3863,6 +3864,7 @@ test("unit_tests") {
       "../browser/notifications/notification_channels_provider_android_unittest.cc",
       "../browser/search/contextual_search_policy_handler_android_unittest.cc",
       "../browser/translate/android/translate_bridge_unittest.cc",
+      "../browser/ui/android/autofill_assistant/autofill_assistant_tab_helper_unittest.cc",
       "../browser/ui/android/tab_model/tab_model_list_unittest.cc",
       "../browser/ui/android/toolbar/location_bar_model_android_unittest.cc",
     ]

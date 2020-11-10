@@ -69,18 +69,17 @@ const LayoutInline* GetOOFContainingBlockFromAnonymous(
   // container rather than any anonymous block created to manage a block-flow
   // ancestor of ours in the rel-pos inline's inline flow.
   LayoutBoxModelObject* absolute_containing_block =
-      ToLayoutBox(anonymous_block)->Continuation();
+      To<LayoutBox>(anonymous_block)->Continuation();
   // There may be nested parallel inline continuations. We have now found the
   // innermost inline (which may not be relatively positioned). Locate the
   // inline that serves as the containing block of this box.
   while (!absolute_containing_block->CanContainOutOfFlowPositionedElement(
       child_position)) {
     absolute_containing_block =
-        ToLayoutBoxModelObject(absolute_containing_block->Container());
+        To<LayoutBoxModelObject>(absolute_containing_block->Container());
   }
-  DCHECK(absolute_containing_block->IsLayoutInline());
   // Make absolute_containing_block continuation root.
-  return ToLayoutInline(absolute_containing_block->ContinuationRoot());
+  return To<LayoutInline>(absolute_containing_block->ContinuationRoot());
 }
 
 }  // namespace
@@ -102,11 +101,11 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     const NGConstraintSpace& container_space,
     NGBoxFragmentBuilder* container_builder,
     base::Optional<LogicalSize> initial_containing_block_fixed_size)
-    : container_space_(container_space),
-      container_builder_(container_builder),
+    : container_builder_(container_builder),
       writing_mode_(container_style.GetWritingMode()),
       is_absolute_container_(is_absolute_container),
-      is_fixed_container_(is_fixed_container) {
+      is_fixed_container_(is_fixed_container),
+      has_block_fragmentation_(container_space.HasBlockFragmentation()) {
   if (!container_builder->HasOutOfFlowPositionedCandidates() &&
       !To<LayoutBlock>(container_builder_->GetLayoutObject())
            ->HasPositionedObjects())
@@ -130,7 +129,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 
 void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   if (container_builder_->IsBlockFragmentationContextRoot() &&
-      !container_space_.HasBlockFragmentation() &&
+      !has_block_fragmentation_ &&
       container_builder_->HasOutOfFlowFragmentainerDescendants()) {
     Vector<NGLogicalOutOfFlowPositionedNode> fragmentainer_descendants;
     container_builder_->SwapOutOfFlowFragmentainerDescendants(
@@ -195,7 +194,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   // every OOF candidate not in placed_objects, and treat them as a legacy
   // object (even if they aren't one), while in fact it could be an NG object
   // that we have finished laying out in an earlier fragmentainer. Just bail.
-  if (container_space_.HasBlockFragmentation())
+  if (has_block_fragmentation_)
     return;
 
   wtf_size_t prev_placed_objects_size = placed_objects.size();
@@ -252,7 +251,7 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
     // We perform a pre-layout to correctly determine the static position.
     // Copied from LayoutBlock::LayoutPositionedObject
     // TODO(layout-dev): Remove this once LayoutFlexibleBox is removed.
-    LayoutBox* layout_box = ToLayoutBox(legacy_object);
+    LayoutBox* layout_box = To<LayoutBox>(legacy_object);
     if (layout_box->Parent()->IsFlexibleBox()) {
       LayoutFlexibleBox* parent = ToLayoutFlexibleBox(layout_box->Parent());
       if (parent->SetStaticPositionForPositionedLayout(*layout_box)) {
@@ -277,7 +276,7 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
 
     container_builder_->AddOutOfFlowLegacyCandidate(
         NGBlockNode(layout_box), static_position,
-        ToLayoutInlineOrNull(css_container));
+        DynamicTo<LayoutInline>(css_container));
   }
   return true;
 }
@@ -314,7 +313,7 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     LogicalSize size = containing_block_fragment->Size().ConvertToLogical(
         writing_direction.GetWritingMode());
     size.block_size =
-        LayoutBoxUtils::TotalBlockSize(*ToLayoutBox(containing_block));
+        LayoutBoxUtils::TotalBlockSize(*To<LayoutBox>(containing_block));
 
     const NGPhysicalBoxFragment* fragment =
         To<NGPhysicalBoxFragment>(containing_block_fragment);
@@ -497,7 +496,7 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
                                      candidate.static_position);
       if (IsContainingBlockForCandidate(candidate) &&
           (!only_layout || layout_box == only_layout)) {
-        if (container_space_.HasBlockFragmentation()) {
+        if (has_block_fragmentation_) {
           // If the containing block is fragmented, adjust the offset to be from
           // the first containing block fragment to the fragmentation context
           // root. Also, adjust the static position to be relative to the

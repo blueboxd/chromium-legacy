@@ -72,8 +72,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // cleared within a timeout.
 - (void)clearBrowsingHistory;
 
-// Gets the number of entries in the browsing history database.
-- (NSInteger)getBrowsingHistoryEntryCount;
+// Gets the number of entries in the browsing history database. GREYAssert is
+// induced on error.
+- (NSInteger)browsingHistoryEntryCount;
+
+// Gets the number of items in the back list.
+- (NSInteger)navigationBackListItemsCount;
 
 // Clears browsing cache. Raises an EarlGrey exception if history is not
 // cleared within a timeout.

@@ -205,7 +205,7 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "resultdb": {
-          "enable": false
+          "enable": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1107,6 +1107,9 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_tests",
+        "resultdb": {
+          "enable": true
+        },
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1185,7 +1188,7 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "resultdb": {
-          "enable": false
+          "enable": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,

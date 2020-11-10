@@ -460,7 +460,7 @@ bool ThemePainterDefault::PaintProgressBar(const Element& element,
   if (!o.IsProgress())
     return true;
 
-  const LayoutProgress& layout_progress = ToLayoutProgress(o);
+  const auto& layout_progress = To<LayoutProgress>(o);
   IntRect value_rect = ProgressValueRectFor(layout_progress, rect);
 
   WebThemeEngine::ExtraParams extra_params;
@@ -503,7 +503,7 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
                                                : cancel_button_object;
   if (!base_layout_object.IsBox())
     return false;
-  const LayoutBox& input_layout_box = ToLayoutBox(base_layout_object);
+  const auto& input_layout_box = To<LayoutBox>(base_layout_object);
   PhysicalRect input_content_box = input_layout_box.PhysicalContentBoxRect();
 
   // Make sure the scaled button stays square and will fit in its parent's box.

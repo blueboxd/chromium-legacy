@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
@@ -272,9 +272,7 @@ TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePages) {
 // expected.
 TEST_F(SafeBrowsingServiceTest, RealTimeSafeAndUnsafePages) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({safe_browsing::kSafeBrowsingAvailableOnIOS,
-                                 safe_browsing::kRealTimeUrlLookupEnabled},
-                                {});
+  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
   TestingApplicationContext::GetGlobal();
 
   // Opt into real-time checks.

@@ -4,7 +4,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_policy_controller.h"
@@ -66,14 +66,12 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
 
     // Add accounts in Account Manager.
     account_manager_->UpsertAccount(
-        ::account_manager::AccountKey{
-            primary_account_info.gaia,
-            account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        ::account_manager::AccountKey{primary_account_info.gaia,
+                                      account_manager::AccountType::kGaia},
         primary_account_info.email, AccountManager::kInvalidToken);
     account_manager_->UpsertAccount(
-        ::account_manager::AccountKey{
-            kFakeSecondaryGaiaId,
-            account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        ::account_manager::AccountKey{kFakeSecondaryGaiaId,
+                                      account_manager::AccountType::kGaia},
         kFakeSecondaryUsername, AccountManager::kInvalidToken);
 
     AccountManagerPolicyControllerFactory::GetForBrowserContext(profile());

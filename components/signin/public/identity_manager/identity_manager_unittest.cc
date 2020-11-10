@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
@@ -308,8 +308,8 @@ class IdentityManagerTest : public testing::Test {
                          std::string token) {
 #if defined(OS_CHROMEOS)
     identity_manager()->GetChromeOSAccountManager()->UpsertAccount(
-        ::account_manager::AccountKey{
-            gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        ::account_manager::AccountKey{gaia_id,
+                                      account_manager::AccountType::kGaia},
         email, token);
 #else
     token_service()->UpdateCredentials(account_id, "refresh_token");
@@ -319,9 +319,8 @@ class IdentityManagerTest : public testing::Test {
   void RevokeCredentials(const CoreAccountId& account_id, std::string gaia_id) {
 #if defined(OS_CHROMEOS)
     identity_manager()->GetChromeOSAccountManager()->RemoveAccount(
-        ::account_manager::AccountKey{
-            gaia_id,
-            chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA});
+        ::account_manager::AccountKey{gaia_id,
+                                      account_manager::AccountType::kGaia});
 #else
     token_service()->RevokeCredentials(account_id);
 #endif

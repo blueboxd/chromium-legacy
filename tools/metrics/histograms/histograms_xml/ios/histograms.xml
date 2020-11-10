@@ -826,6 +826,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="IOS.WidgetKit.{Status}" enum="IOSWidgetKitExtensionKind"
+    expires_after="2021-10-30">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>muradyan@chromium.org</owner>
+  <summary>
+    Indicates the {Status} of an iOS 14 widget. Logged when the app goes to
+    foreground. &quot;Current&quot; widgets are logged everytime widgets are
+    detected, &quot;Install&quot; and &quot;Uninstall&quot; are logged only when
+    changes are detected. It is important to consider the bias created towards
+    users that foreground the app more often when doing analysis. This can be
+    accounted by filtering per unique users when looking at the metric.
+  </summary>
+  <token key="Status">
+    <variant name="Current" summary="presence"/>
+    <variant name="Install" summary="installation"/>
+    <variant name="Uninstall" summary="removal"/>
+  </token>
+</histogram>
+
 <histogram name="IOS.WKWebViewClobberedHistory" enum="Boolean"
     expires_after="2021-09-24">
   <owner>ajuma@chromium.org</owner>

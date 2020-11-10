@@ -233,6 +233,19 @@ const std::string& Connection::DisplayString() const {
   return display_string_;
 }
 
+std::string Connection::GetConnectionHostname() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  char* host = nullptr;
+  int display_id = 0;
+  int screen = 0;
+  if (xcb_parse_display(display_string_.c_str(), &host, &display_id, &screen)) {
+    std::string name = host;
+    free(host);
+    return name;
+  }
+  return std::string();
+}
+
 int Connection::DefaultScreenId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This is not part of the setup data as the server has no concept of a
@@ -475,6 +488,10 @@ std::unique_ptr<Error> Connection::ParseError(
   if (auto parser = error_parsers_[error_code])
     return parser(error_bytes);
   return std::make_unique<UnknownError>(error_bytes);
+}
+
+uint32_t Connection::GenerateIdImpl() {
+  return xcb_generate_id(connection_);
 }
 
 }  // namespace x11

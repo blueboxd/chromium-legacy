@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1313,7 +1313,7 @@ IN_PROC_BROWSER_TEST_P(
     content::DOMMessageQueue message_queue;
 
     base::Value request_init(base::Value::Type::DICTIONARY);
-    request_init.SetStringPath("trustToken.type", "srr-token-redemption");
+    request_init.SetStringPath("trustToken.type", "token-redemption");
 
     EXPECT_TRUE(ExecuteContentScript(
         active_web_contents(),
@@ -1336,7 +1336,7 @@ IN_PROC_BROWSER_TEST_P(
     content::DOMMessageQueue message_queue;
 
     base::Value request_init(base::Value::Type::DICTIONARY);
-    request_init.SetStringPath("trustToken.type", "srr-token-redemption");
+    request_init.SetStringPath("trustToken.type", "token-redemption");
 
     EXPECT_TRUE(ExecuteContentScript(
         active_web_contents(),

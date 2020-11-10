@@ -25,6 +25,12 @@ enum class XlibDisplayType {
   kSyncing,
 };
 
+// Loads Xlib, initializes threads, and sets a default error handler.
+COMPONENT_EXPORT(X11) void InitXlib();
+
+// Sets an async error handler which only logs an error message.
+COMPONENT_EXPORT(X11) void SetXlibErrorHandler();
+
 // A scoped Xlib display.
 class COMPONENT_EXPORT(X11) XlibDisplay {
  public:
@@ -32,6 +38,7 @@ class COMPONENT_EXPORT(X11) XlibDisplay {
 
  private:
   friend class Connection;
+  friend class XlibDisplayWrapper;
 
   explicit XlibDisplay(const std::string& address);
 

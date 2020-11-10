@@ -1235,27 +1235,6 @@
             ]
         }
     ],
-    "CSSKeyframesMemoryReduction": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CSSKeyframesMemoryReduction"
-                    ]
-                }
-            ]
-        }
-    ],
     "CSSMatchedPropertiesCacheDependencies": [
         {
             "platforms": [
@@ -6344,6 +6323,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SharedClipboardUI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SharedHighlightingIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SharedHighlightingIOS"
                     ]
                 }
             ]

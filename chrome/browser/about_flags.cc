@@ -5124,6 +5124,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppServiceIntentHandlingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceIntentHandling)},
 
+    {"full-restore", flag_descriptions::kFullRestoreName,
+     flag_descriptions::kFullRestoreDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kFullRestore)},
+
     {"use-fake-device-for-media-stream",
      flag_descriptions::kUseFakeDeviceForMediaStreamName,
      flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
@@ -5481,15 +5485,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAudioWorkletRealtimeThreadName,
      flag_descriptions::kAudioWorkletRealtimeThreadDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)},
-
-#if defined(OS_CHROMEOS)
-    {"maintain-shelf-state-overview",
-     flag_descriptions::kMaintainShelfStateWhenEnteringOverviewName,
-     flag_descriptions::kMaintainShelfStateWhenEnteringOverviewDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         ash::features::kMaintainShelfStateWhenEnteringOverview)},
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
     {"smart-dim-model-v3", flag_descriptions::kSmartDimModelV3Name,

@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "dbus/message.h"
@@ -113,6 +113,19 @@ lorgnette::GetNextImageRequest CreateGetNextImageRequest() {
   lorgnette::GetNextImageRequest request;
   request.set_scan_uuid(kScanUuid);
   return request;
+}
+
+// Convenience method for creating a lorgnette::GetNextImageResponse.
+// If |success| is false, this method will add an appropriate failure reason.
+lorgnette::GetNextImageResponse CreateGetNextImageResponse(bool success) {
+  lorgnette::GetNextImageResponse response;
+  response.set_success(success);
+
+  if (!success) {
+    response.set_failure_reason("PC LOAD LETTER");
+  }
+
+  return response;
 }
 
 // Matcher that verifies that a dbus::Message has member |name|.
@@ -551,7 +564,7 @@ TEST_F(LorgnetteManagerClientTest, EmptyResponseToGetNextImage) {
 }
 
 // Test that the client handles a response to a kGetNextImageMethod D-Bus call
-// with state lorgnette::SCAN_STATE_FAILED.
+// with success equal to false.
 TEST_F(LorgnetteManagerClientTest, GetNextImageScanStateFailed) {
   std::unique_ptr<dbus::Response> start_scan_response =
       dbus::Response::CreateEmpty();
@@ -561,9 +574,9 @@ TEST_F(LorgnetteManagerClientTest, GetNextImageScanStateFailed) {
   SetStartScanExpectation(start_scan_response.get());
   std::unique_ptr<dbus::Response> get_next_image_response =
       dbus::Response::CreateEmpty();
-  ASSERT_TRUE(dbus::MessageWriter(get_next_image_response.get())
-                  .AppendProtoAsArrayOfBytes(CreateStartScanResponse(
-                      lorgnette::ScanState::SCAN_STATE_FAILED)));
+  ASSERT_TRUE(
+      dbus::MessageWriter(get_next_image_response.get())
+          .AppendProtoAsArrayOfBytes(CreateGetNextImageResponse(false)));
   SetGetNextImageExpectation(get_next_image_response.get());
 
   base::RunLoop run_loop;

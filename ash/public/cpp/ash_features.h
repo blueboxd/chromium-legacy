@@ -51,6 +51,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
 // TODO(crbug.com/1111445): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnhancedDeskAnimations;
 
+// Enables the full restore feature. If this is enabled, we will restore apps
+// and app windows after a crash or reboot.
+ASH_PUBLIC_EXPORT extern const base::Feature kFullRestore;
+
 // Limits the windows listed in Alt-Tab to the ones in the currently active
 // desk.
 ASH_PUBLIC_EXPORT extern const base::Feature kLimitAltTabToActiveDesk;
@@ -178,10 +182,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kWebUITabStripTabDragIntegration;
 // Enables notifications to be shown within context menus.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
 
-// Preserve shelf state when entering and exiting overview mode.
-ASH_PUBLIC_EXPORT extern const base::Feature
-    kMaintainShelfStateWhenEnteringOverview;
-
 // Enables the experimental productivity feature that aims to reduce context
 // switching by enabling users to collect content and transfer or access it
 // later.
@@ -203,6 +203,8 @@ ASH_PUBLIC_EXPORT bool IsCaptureModeEnabled();
 ASH_PUBLIC_EXPORT bool IsDarkLightModeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsEnhancedDeskAnimations();
+
+ASH_PUBLIC_EXPORT bool IsFullRestoreEnabled();
 
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
@@ -257,8 +259,6 @@ ASH_PUBLIC_EXPORT bool IsMovablePartialScreenshotEnabled();
 ASH_PUBLIC_EXPORT bool IsAppScalingEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
-
-ASH_PUBLIC_EXPORT bool IsMaintainShelfStateWhenEnteringOverviewEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTemporaryHoldingSpaceEnabled();
 

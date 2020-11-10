@@ -12,7 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/mock_policy_service.h"
@@ -63,6 +63,10 @@ class ReportGeneratorIOSTest : public PlatformTest {
                 std::move(browser_state)));
   }
 
+  ReportGeneratorIOSTest(const ReportGeneratorIOSTest&) = delete;
+  ReportGeneratorIOSTest& operator=(const ReportGeneratorIOSTest&) = delete;
+  ~ReportGeneratorIOSTest() override = default;
+
   void InitMockPolicyService() {
     policy_service_ = std::make_unique<policy::MockPolicyService>();
 
@@ -81,9 +85,6 @@ class ReportGeneratorIOSTest : public PlatformTest {
                     base::Value(true), nullptr);
   }
 
-  ReportGeneratorIOSTest(const ReportGeneratorIOSTest&) = delete;
-  ReportGeneratorIOSTest& operator=(const ReportGeneratorIOSTest&) = delete;
-  ~ReportGeneratorIOSTest() override = default;
 
   std::vector<std::unique_ptr<ReportRequest>> GenerateRequests() {
     histogram_tester_ = std::make_unique<base::HistogramTester>();

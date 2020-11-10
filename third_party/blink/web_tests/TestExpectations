@@ -1017,6 +1017,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-0
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Pass ]
+virtual/layout_ng_block_frag/fast/multicol/file-upload-as-multicol.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/newmulticol/hide-box-vertical-lr.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/span/vertical-lr.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Pass ]
@@ -1030,6 +1031,10 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-lr/float-content-break.html 
 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/float-edge.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/float-paginate.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/unsplittable-inline-block.html [ Pass ]
+virtual/layout_ng_block_frag/fast/multicol/vertical-rl/column-count-with-rules.html [ Pass ]
+virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-big-line.html [ Pass ]
+virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-content-break.html [ Pass ]
+virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-edge.html [ Pass ]
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
@@ -4106,8 +4111,6 @@ crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/tra
 
 crbug.com/1093188 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-two-cue-layout-after-first-end.html [ Pass Failure ]
 
-crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-request/* [ Skip ]
-
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
@@ -6049,10 +6052,6 @@ crbug.com/1113127 fast/canvas/downsample-quality.html [ Pass Failure Crash ]
 crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]
 
 # Virtual dark mode tests currently fails.
-crbug.com/1111937 virtual/dark-color-scheme/fast/forms/color-scheme/text-selection-outside-control.html [ Failure ]
-crbug.com/1111922 virtual/dark-color-scheme/fast/forms/color-scheme/calendar-picker/date-picker-disabled-values.html [ Failure ]
-crbug.com/1096729 virtual/dark-color-scheme/fast/forms/color-scheme/color/color-suggestion-picker-appearance-with-scrollbar.html [ Failure ]
-crbug.com/1096729 virtual/dark-color-scheme/fast/forms/color-scheme/color/color-suggestion-picker-appearance.html [ Failure ]
 crbug.com/1111932 virtual/dark-color-scheme/fast/forms/color-scheme/suggestion-picker/date-suggestion-picker-appearance.html [ Failure ]
 crbug.com/1111932 virtual/dark-color-scheme/fast/forms/color-scheme/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Failure ]
 crbug.com/1111932 virtual/dark-color-scheme/fast/forms/color-scheme/suggestion-picker/month-suggestion-picker-appearance.html [ Failure ]

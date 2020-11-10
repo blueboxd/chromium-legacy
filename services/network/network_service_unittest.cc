@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1215,7 +1215,7 @@ TEST_F(NetworkServiceTestWithService, SetsTrustTokenKeyCommitments) {
 
   auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
   ASSERT_TRUE(base::Base64Decode(
-      "aaaa", &expectation->signed_redemption_record_verification_key));
+      "aaaa", &expectation->redemption_record_verification_key));
   expectation->protocol_version =
       mojom::TrustTokenProtocolVersion::kTrustTokenV1;
   expectation->id = 1;

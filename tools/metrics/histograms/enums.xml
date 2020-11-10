@@ -8724,6 +8724,15 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Yes"/>
 </enum>
 
+<enum name="BorealisStartupResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Cancelled"/>
+  <int value="2" label="Failed mounting DLC"/>
+  <int value="3" label="Failed creating disk image"/>
+  <int value="4" label="Failed starting VM"/>
+  <int value="5" label="Failed awaiting startup"/>
+</enum>
+
 <enum name="BoringSSLReasonCode">
   <obsolete>
     Removed in March 2016.
@@ -10153,6 +10162,12 @@ histogram as enum -->
 <enum name="ChromeSignInPageHashSaved">
   <int value="0" label="A password was typed, a hash is not saved"/>
   <int value="1" label="A hash is saved"/>
+</enum>
+
+<enum name="ChromeStartupDelegateResult">
+  <int value="0" label="Failure"/>
+  <int value="1" label="Allow"/>
+  <int value="2" label="Disallow"/>
 </enum>
 
 <enum name="ChromeVoxGestureType">
@@ -25291,6 +25306,10 @@ Called by update_extension_histograms.py.-->
       label="FILEMANAGERPRIVATEINTERNAL_GETARCDOCUMENTSPROVIDERTHUMBNAIL"/>
   <int value="1525" label="ACCESSIBILITY_PRIVATE_ISFEATUREENABLED"/>
   <int value="1526" label="INPUTMETHODPRIVATE_ONAUTOCORRECT"/>
+  <int value="1527" label="TAB_GROUPS_GET"/>
+  <int value="1528" label="TAB_GROUPS_QUERY"/>
+  <int value="1529" label="TAB_GROUPS_UPDATE"/>
+  <int value="1530" label="ACCESSIBILITY_PRIVATE_UPDATESELECTTOSPEAKPANEL"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25892,6 +25911,7 @@ Called by update_extension_permission.py.-->
   <int value="226" label="kAutofillAssistantPrivate"/>
   <int value="227" label="kEnterpriseNetworkingAttributes"/>
   <int value="228" label="kSearch"/>
+  <int value="229" label="kTabGroups"/>
 </enum>
 
 <enum name="ExtensionPolicyReinstallReason">
@@ -36229,6 +36249,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="kScreenshot"/>
   <int value="2" label="kDownload"/>
   <int value="3" label="kNearbyShare"/>
+  <int value="4" label="kScreenRecording"/>
 </enum>
 
 <enum name="HoldingSpacePodAction">
@@ -39159,6 +39180,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Quick Actions Widget - Incognito"/>
   <int value="4" label="Quick Actions Widget - Voice Search"/>
   <int value="5" label="Quick Actions Widget - QR Reader"/>
+</enum>
+
+<enum name="IOSWidgetKitExtensionKind">
+  <int value="0" label="Dino game widget"/>
+  <int value="1" label="Search widget"/>
+  <int value="2" label="Quick actions widget"/>
 </enum>
 
 <enum name="IOSWKWebViewLinkPreviewAction">
@@ -42293,6 +42320,7 @@ from previous Chrome versions.
   <int value="-1550541457" label="DisplayIdentification:disabled"/>
   <int value="-1549871007" label="OneGoogleBarOnLocalNtp:disabled"/>
   <int value="-1549356351" label="SyncPseudoUSSExtensionSettings:enabled"/>
+  <int value="-1547953198" label="FullRestore:enabled"/>
   <int value="-1547247328" label="OverrideTranslateTriggerInIndia:disabled"/>
   <int value="-1546903171" label="enable-touch-drag-drop"/>
   <int value="-1546351452" label="CrossOriginIsolated:enabled"/>
@@ -42941,6 +42969,7 @@ from previous Chrome versions.
   <int value="-970067535" label="BackgroundTaskComponentUpdate:disabled"/>
   <int value="-969815853" label="migrate-linux-to-logindb:enabled"/>
   <int value="-969332901" label="stop-non-timers-in-background:disabled"/>
+  <int value="-969028093" label="FullRestore:disabled"/>
   <int value="-968675274" label="Rar2Fs:enabled"/>
   <int value="-968010468" label="SharedArrayBuffer:disabled"/>
   <int value="-967825290" label="WebViewConnectionlessSafeBrowsing:disabled"/>
@@ -62912,6 +62941,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="Not shown due to background mode with no windows (deprecated)"/>
 </enum>
 
+<enum name="RelroSharingStatus">
+  <int value="0" label="Not attempted (this value must not be recorded)"/>
+  <int value="1" label="Using shared RELRO succeeded"/>
+  <int value="2" label="Using shared RELRO failed, contents did not match"/>
+</enum>
+
 <enum name="RemoteBookmarkUpdateError">
   <int value="0"
       label="Remote and local bookmarks types don't match (URL vs. Folder)"/>
@@ -71767,6 +71802,7 @@ would be helpful to identify which type is being sent.
   <int value="11" label="No Capture"/>
   <int value="12" label="Timed Out"/>
   <int value="13" label="Stopped Due To Memory Pressure"/>
+  <int value="14" label="Skipped Due To Memory Pressure"/>
 </enum>
 
 <enum name="TabbedPaintPreviewExitCause">

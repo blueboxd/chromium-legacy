@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
@@ -690,9 +690,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
 
   // Get page dir URL which is base URL of this file.
   base::FilePath dir_name = page_file_path.DirName();
-  dir_name = dir_name.Append(
-      base::FilePath::StringType(base::FilePath::kSeparators[0], 1));
-  GURL path_dir_url = net::FilePathToFileURL(dir_name);
+  GURL path_dir_url = net::FilePathToFileURL(dir_name.AsEndingWithSeparator());
 
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);

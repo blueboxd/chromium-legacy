@@ -100,15 +100,18 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
       @"Clearing browser history timed out");
 }
 
-+ (NSInteger)getBrowsingHistoryEntryCount {
-  NSError* error = nil;
-  NSInteger count = chrome_test_util::GetBrowsingHistoryEntryCount(&error);
++ (NSInteger)browsingHistoryEntryCountWithError:
+    (NSError* __autoreleasing*)error {
+  return chrome_test_util::GetBrowsingHistoryEntryCount(error);
+}
 
-  if (error != nil) {
++ (NSInteger)navigationBackListItemsCount {
+  web::WebState* webState = chrome_test_util::GetCurrentWebState();
+
+  if (!webState)
     return -1;
-  }
 
-  return count;
+  return webState->GetNavigationManager()->GetBackwardItems().size();
 }
 
 + (NSError*)removeBrowsingCache {

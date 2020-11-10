@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/bubble/webui_bubble_manager.h"
 
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/bubble/webui_bubble_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -40,14 +41,18 @@ bool WebUIBubbleManagerBase::ShowBubble() {
 
   if (cached_web_view_) {
     cached_web_view_->GetWebContents()->ReloadFocusedFrame();
+    bubble_using_cached_webview_ = true;
   } else {
     cached_web_view_ = CreateWebView();
+    bubble_using_cached_webview_ = false;
   }
 
   bubble_view_ = WebUIBubbleDialogView::CreateWebUIBubbleDialog(
       std::make_unique<WebUIBubbleDialogView>(anchor_view_,
                                               std::move(cached_web_view_)));
   observed_bubble_widget_.Add(bubble_view_->GetWidget());
+  close_bubble_helper_ = std::make_unique<CloseBubbleOnTabActivationHelper>(
+      bubble_view_.get(), BrowserList::GetInstance()->GetLastActive());
   return true;
 }
 
@@ -69,6 +74,7 @@ void WebUIBubbleManagerBase::OnWidgetDestroying(views::Widget* widget) {
   cached_web_view_ = bubble_view_->RemoveWebView();
   observed_bubble_widget_.Remove(bubble_view_->GetWidget());
   cache_timer_->Reset();
+  bubble_using_cached_webview_ = false;
 }
 
 void WebUIBubbleManagerBase::ResetWebViewForTesting() {

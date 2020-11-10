@@ -73,12 +73,16 @@ class SafeBrowsingPrivateEventRouter
   static const char kKeyNetErrorCode[];
   static const char kKeyClickedThrough[];
   static const char kKeyTriggeredRuleName[];
+  static const char kKeyTriggeredRuleId[];
   static const char kKeyTriggeredRuleInfo[];
   static const char kKeyThreatType[];
   static const char kKeyContentType[];
   static const char kKeyContentSize[];
   static const char kKeyTrigger[];
   static const char kKeyEventResult[];
+  static const char kKeyMalwareFamily[];
+  static const char kKeyMalwareCategory[];
+  static const char kKeyEvidenceLockerFilePath[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
@@ -258,14 +262,18 @@ class SafeBrowsingPrivateEventRouter
   std::string GetProfileUserName() const;
 
   // Notifies listeners that deep scanning detected a dangerous download.
-  void OnDangerousDeepScanningResult(const GURL& url,
-                                     const std::string& file_name,
-                                     const std::string& download_digest_sha256,
-                                     const std::string& threat_type,
-                                     const std::string& mime_type,
-                                     const std::string& trigger,
-                                     const int64_t content_size,
-                                     safe_browsing::EventResult event_result);
+  void OnDangerousDeepScanningResult(
+      const GURL& url,
+      const std::string& file_name,
+      const std::string& download_digest_sha256,
+      const std::string& threat_type,
+      const std::string& mime_type,
+      const std::string& trigger,
+      const int64_t content_size,
+      safe_browsing::EventResult event_result,
+      const std::string& malware_family,
+      const std::string& malware_category,
+      const std::string& evidence_locker_filepath);
 
   // Notifies listeners that the analysis connector detected a violation.
   void OnSensitiveDataEvent(

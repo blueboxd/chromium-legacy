@@ -1081,6 +1081,16 @@ _BANNED_CPP_FUNCTIONS = (
         r'^base/tracing/.*',
       ),
     ),
+    (
+      r'/\bScopedObserver',
+      (
+          'ScopedObserver is deprecated.',
+          'Please use base::ScopedObservation for observing a single source,',
+          'or base::ScopedMultiSourceObservation for observing multple sources',
+      ),
+      False,
+      (),
+    ),
 )
 
 # Format: Sequence of tuples containing:
@@ -1354,8 +1364,6 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
-    ('third_party/blink/renderer/bindings/scripts/'
-     'generate_high_entropy_list.pydeps'),
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
 ]

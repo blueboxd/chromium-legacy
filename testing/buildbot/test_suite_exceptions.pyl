@@ -2833,8 +2833,6 @@
   },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
-      # Not enough capacity. https://crbug.com/946694
-      'ANGLE GPU Win10 x64 Release (Intel HD 630)',
       # Not enough capacity. https://crbug.com/982294
       'Mac Pro FYI Release (AMD)',
       'Mac FYI Retina Release (NVIDIA)',
@@ -2853,12 +2851,6 @@
         ]
       },
     },
-  },
-  'webgl_conformance_fast_call_tests': {
-    'remove_from': [
-      # Test failures on x86. https://crbug.com/1144751
-      'Win10 FYI x86 Release (NVIDIA)',
-    ],
   },
   'webgl_conformance_gl_passthrough_tests': {
     'remove_from': [

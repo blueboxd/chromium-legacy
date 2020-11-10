@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
@@ -121,14 +121,6 @@ class BaseTest : public testing::Test {
   void DisableFeatures() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
-  }
-
-  void AddUrlToList(const char* pref_name, const std::string& url) {
-    safe_browsing::AddUrlToListForConnectors(pref_name, url);
-  }
-
-  void AddUrlToList(const char* pref_name, const GURL& url) {
-    AddUrlToList(pref_name, url.host());
   }
 
   void ScanUpload(content::WebContents* web_contents,

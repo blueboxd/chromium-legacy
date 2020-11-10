@@ -27,7 +27,11 @@
 
 // Returns the number of entries in the history database. Returns -1 if there
 // was an error.
-+ (NSInteger)getBrowsingHistoryEntryCount;
++ (NSInteger)browsingHistoryEntryCountWithError:
+    (NSError* __autoreleasing*)error;
+
+// Gets the number of items in the back list. Returns -1 in case of error.
++ (NSInteger)navigationBackListItemsCount;
 
 // Clears browsing cache. Returns nil on success, or else an NSError indicating
 // the operation failed.

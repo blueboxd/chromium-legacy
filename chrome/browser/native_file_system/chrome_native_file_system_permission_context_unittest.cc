@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -414,6 +414,51 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest, PolicyWriteBlockedForUrls) {
 
   EXPECT_FALSE(permission_context()->CanObtainWritePermission(kTestOrigin));
   EXPECT_TRUE(permission_context()->CanObtainWritePermission(kTestOrigin2));
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest, GetLastPickedDirectory) {
+  EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin),
+            base::FilePath());
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest, SetLastPickedDirectory) {
+  EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin),
+            base::FilePath());
+
+  permission_context()->SetLastPickedDirectory(kTestOrigin, kTestPath);
+  auto path = permission_context()->GetLastPickedDirectory(kTestOrigin);
+  EXPECT_EQ(path, kTestPath);
+
+  auto new_path = path.AppendASCII("baz");
+  permission_context()->SetLastPickedDirectory(kTestOrigin, new_path);
+  EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin),
+            new_path);
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest,
+       SetLastPickedDirectory_NewPermissionContext) {
+  EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin),
+            base::FilePath());
+
+  const base::FilePath path = base::FilePath(FILE_PATH_LITERAL("/baz/bar"));
+
+  permission_context()->SetLastPickedDirectory(kTestOrigin, path);
+  ASSERT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin), path);
+
+  TestNativeFileSystemPermissionContext new_permission_context(
+      browser_context());
+  EXPECT_EQ(new_permission_context.GetLastPickedDirectory(kTestOrigin), path);
+
+  auto new_path = path.AppendASCII("foo");
+  new_permission_context.SetLastPickedDirectory(kTestOrigin, new_path);
+  EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin),
+            new_path);
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest, GetDefaultDirectory) {
+  base::ScopedPathOverride user_documents_override(
+      chrome::DIR_USER_DOCUMENTS, temp_dir_.GetPath(), true, true);
+  EXPECT_EQ(permission_context_->GetDefaultDirectory(), temp_dir_.GetPath());
 }
 
 #endif  // !defined(OS_ANDROID)

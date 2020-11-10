@@ -40,9 +40,6 @@ IPC_STRUCT_TRAITS_END()
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
-// Tells render process to kill itself (only for testing).
-IPC_MESSAGE_CONTROL0(AwViewMsg_KillProcess)
-
 // Request for the renderer to determine if the document contains any image
 // elements.  The id should be passed in the response message so the response
 // can be associated with the request.
@@ -70,9 +67,6 @@ IPC_MESSAGE_ROUTED0(AwViewMsg_ResetScrollAndScaleState)
 // the meta viewport tag.
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetInitialPageScale,
                     double /* page_scale_factor */)
-
-IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
-                     bool /* network_up */)
 
 // Tells blink to smooth scroll to the specified location within |duration_ms|.
 IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,

@@ -776,6 +776,27 @@ This file contains the strings for ash.
       <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TEXT" desc="The text for the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature.">
         Are you sure you want to turn off automatic clicks?
       </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_PREV_PARAGRAPH" desc="The label for the Select-to-speak previous paragraph button, that allows users to navigate to the previous paragraph.">
+        Previous paragraph
+      </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_PREV_SENTENCE" desc="The label for the Select-to-speak previous sentence button, that allows users to navigate to the previous sentence.">
+        Previous sentence
+      </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_NEXT_PARAGRAPH" desc="The label for the Select-to-speak next paragraph button, that allows users to navigate to the next paragraph.">
+        Next paragraph
+      </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_NEXT_SENTENCE" desc="The label for the Select-to-speak next sentence button, that allows users to navigate to the next sentence.">
+        Next sentence
+      </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_PAUSE" desc="The label for the Select-to-speak pause button, that allows users to pause text-to-speech playback.">
+        Pause
+      </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_RESUME" desc="The label for the Select-to-speak resume button, that allows users to resume text-to-speech playback.">
+        Resume
+      </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_EXIT" desc="The label for the Select-to-speak exit button, that stops Select-to-speak.">
+        Exit Select-to-speak
+      </message>
       <message name="IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION" desc="The tooltip text for the Switch Access back button. The back button allows users to exit the feature's current focus area.">
         Back button
       </message>
@@ -986,11 +1007,17 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_COPY_IMAGE_TO_CLIPBOARD" desc="Title of the option to copy an image to the clipboard in the holding space item context menu.">
         Copy image
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS" desc="Title of the option to hide previews in the holding space tray context menu.">
+        Hide previews
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PIN" desc="Title of the pin option in the holding space item context menu.">
         Pin
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_IN_FOLDER" desc="Title of the option to show item in its folder in the holding space item context menu.">
         Show in folder
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS" desc="Title of the option to show previews in the holding space tray context menu.">
+        Show previews
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_UNPIN" desc="Title of the unpin option in the holding space item context menu.">
         Unpin
@@ -2494,6 +2521,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_IN_SESSION_AUTH_FINGERPRINT_ACCESSIBLE_DISABLED_FROM_ATTEMPTS" desc="Accessibility text read by chromevox when the user has made too many unsuccessful fingerprint unlock attempts; fingerprint is now disabled until the user authenticates with a different authentication method">
         Too many fingerprint attempts
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_CANCEL" desc="Label of a button in the auth dialog to cancelauthentication and close the dialog">
+        Cancel
       </message>
       <message name="IDS_ASH_IN_SESSION_AUTH_HELP" desc="Label of a button in the auth dialog to open a help article">
         Need help?

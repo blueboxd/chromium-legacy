@@ -698,11 +698,6 @@ const char kNewMacNotificationAPIDescription[] =
     "Enables the usage of Apple's new notification API which will run on macOS "
     "10.14+";
 
-const char kMaintainShelfStateWhenEnteringOverviewName[] =
-    "Allow Home Launcher Shelf In Overview";
-const char kMaintainShelfStateWhenEnteringOverviewDescription[] =
-    "Maintains shelf state when entering and exiting overview mode.";
-
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";
 const char kWinrtGeolocationImplementationDescription[] =
@@ -4149,6 +4144,9 @@ const char kFsNosymfollowDescription[] =
     "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
+
+const char kFullRestoreName[] = "Full restore";
+const char kFullRestoreDescription[] = "Chrome OS full restore";
 
 const char kHelpAppSearchServiceIntegrationName[] =
     "Help App search service integration";

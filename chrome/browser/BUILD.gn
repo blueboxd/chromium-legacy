@@ -1733,6 +1733,8 @@ static_library("browser") {
     "subresource_redirect/https_image_compression_infobar_decider.h",
     "subresource_redirect/subresource_redirect_observer.cc",
     "subresource_redirect/subresource_redirect_observer.h",
+    "subresource_redirect/subresource_redirect_util.cc",
+    "subresource_redirect/subresource_redirect_util.h",
     "sync/bookmark_sync_service_factory.cc",
     "sync/bookmark_sync_service_factory.h",
     "sync/chrome_sync_client.cc",
@@ -2302,6 +2304,8 @@ static_library("browser") {
       "apps/digital_goods/digital_goods_factory_impl.h",
       "apps/digital_goods/digital_goods_impl.cc",
       "apps/digital_goods/digital_goods_impl.h",
+      "apps/digital_goods/util.cc",
+      "apps/digital_goods/util.h",
     ]
     deps += [
       "//chrome/app/theme:chrome_unscaled_resources_grit",
@@ -2416,6 +2420,8 @@ static_library("browser") {
       "android/autofill_assistant/assistant_generic_ui_delegate.h",
       "android/autofill_assistant/assistant_header_delegate.cc",
       "android/autofill_assistant/assistant_header_delegate.h",
+      "android/autofill_assistant/assistant_header_model.cc",
+      "android/autofill_assistant/assistant_header_model.h",
       "android/autofill_assistant/assistant_overlay_delegate.cc",
       "android/autofill_assistant/assistant_overlay_delegate.h",
       "android/autofill_assistant/client_android.cc",
@@ -4267,6 +4273,8 @@ static_library("browser") {
       "nearby_sharing/nearby_share_default_device_name.h",
       "nearby_sharing/nearby_share_delegate_impl.cc",
       "nearby_sharing/nearby_share_delegate_impl.h",
+      "nearby_sharing/nearby_share_metrics_logger.cc",
+      "nearby_sharing/nearby_share_metrics_logger.h",
       "nearby_sharing/nearby_share_settings.cc",
       "nearby_sharing/nearby_share_settings.h",
       "nearby_sharing/nearby_sharing_service.h",
@@ -6324,8 +6332,6 @@ grit("resources") {
     "-E",
     "additional_modules_list_file=" +
         rebase_path(additional_modules_list_file, root_build_dir),
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 
   deps = [
@@ -6431,11 +6437,6 @@ grit("dev_ui_browser_resources") {
   outputs = [
     "grit/dev_ui_browser_resources.h",
     "dev_ui_browser_resources.pak",
-  ]
-
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 
   deps = [

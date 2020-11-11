@@ -813,6 +813,27 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddBookmark(
   return new_java_obj;
 }
 
+ScopedJavaLocalRef<jobject> BookmarkBridge::AddToReadingList(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_title,
+    const JavaParamRef<jstring>& j_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsLoaded());
+
+  const BookmarkNode* node = reading_list_manager_->Add(
+      GURL(base::android::ConvertJavaStringToUTF16(env, j_url)),
+      base::android::ConvertJavaStringToUTF8(env, j_title));
+
+  ScopedJavaLocalRef<jobject> j_bookark_id;
+  if (node) {
+    j_bookark_id =
+        JavaBookmarkIdCreateBookmarkId(env, node->id(), GetBookmarkType(node));
+  }
+
+  return j_bookark_id;
+}
+
 void BookmarkBridge::Undo(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
@@ -1137,6 +1158,9 @@ void BookmarkBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
 }
 
 void BookmarkBridge::PartnerShimChanged(PartnerBookmarksShim* shim) {
+  if (!IsLoaded())
+    return;
+
   BookmarkModelChanged();
 }
 
@@ -1150,10 +1174,6 @@ void BookmarkBridge::ShimBeingDeleted(PartnerBookmarksShim* shim) {
 
 void BookmarkBridge::ReadingListLoaded() {
   NotifyIfDoneLoading();
-}
-
-void BookmarkBridge::ReadingListChanged() {
-  BookmarkModelChanged();
 }
 
 void BookmarkBridge::ReorderChildren(

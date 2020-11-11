@@ -107,23 +107,26 @@ public class AutofillAssistantFacade {
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
         waitForTabWithWebContents(activity, tab -> {
-            if (arguments.containsTriggerScript()) {
+            if (arguments.containsTriggerScript() || arguments.requestsTriggerScript()) {
                 // Create a field trial and assign experiment arm based on script parameter. This
                 // is needed to tag UKM data to allow for A/B experiment comparisons.
                 FieldTrialList.createFieldTrial(LITE_SCRIPT_EXPERIMENT_TRIAL,
                         arguments.isLiteScriptExperiment() ? LITE_SCRIPT_EXPERIMENT_TRIAL_EXPERIMENT
                                                            : LITE_SCRIPT_EXPERIMENT_TRIAL_CONTROL);
 
-                if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
+                if (!AutofillAssistantPreferencesUtil.isProactiveHelpSwitchOn()) {
+                    // Opt out users who have disabled the proactive help Chrome setting.
                     AutofillAssistantMetrics.recordLiteScriptStarted(tab.getWebContents(),
-                            AutofillAssistantPreferencesUtil
-                                            .isAutofillAssistantLiteScriptCancelThresholdReached()
-                                    ? LiteScriptStarted.LITE_SCRIPT_CANCELED_TWO_TIMES
-                                    : LiteScriptStarted.LITE_SCRIPT_ONBOARDING_REJECTED);
-                    // Opt-out users who have seen and rejected the onboarding, or who have canceled
-                    // the lite script too many times.
+                            LiteScriptStarted.LITE_SCRIPT_PROACTIVE_TRIGGERING_DISABLED);
                     return;
                 }
+
+                if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
+                    // Legacy. This should no longer happen, because the proactive help switch
+                    // should only be 'on' if the autofill assistant switch is 'on' as well.
+                    return;
+                }
+
                 if (AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled()
                         == null) {
                     // Opt-out users who don't have DFM installed.

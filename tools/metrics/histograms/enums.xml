@@ -42591,6 +42591,7 @@ from previous Chrome versions.
   <int value="-1342039126" label="AshNewSystemMenu:enabled"/>
   <int value="-1341685799" label="AutofillAssistantDirectActions:enabled"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
+  <int value="-1340460869" label="ShutdownSupportForKeepalive:enabled"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1338306372" label="BrowserTouchBar:enabled"/>
   <int value="-1337185440" label="enable-webvr"/>
@@ -43291,8 +43292,6 @@ from previous Chrome versions.
   <int value="-665514294" label="FontAccess:disabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
   <int value="-662720891" label="PreviewsCoinFlipHoldback_UKMOnly:enabled"/>
-  <int value="-662314979"
-      label="AutofillEnableSaveCardInfoBarAccountIndicationFooter:disabled"/>
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
@@ -43562,8 +43561,6 @@ from previous Chrome versions.
   <int value="-385337473" label="enable-fast-unload"/>
   <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-381181808" label="DragAppsInTabletMode:enabled"/>
-  <int value="-380992110"
-      label="AutofillEnableSaveCardInfoBarAccountIndicationFooter:enabled"/>
   <int value="-379809954"
       label="AutofillDoNotMigrateUnsupportedLocalCards:disabled"/>
   <int value="-378218969" label="VaapiJpegImageDecodeAcceleration:disabled"/>
@@ -44690,6 +44687,7 @@ from previous Chrome versions.
   <int value="727571565" label="PasswordForceSaving"/>
   <int value="728064595" label="RevampedContextMenu:disabled"/>
   <int value="728656094" label="PasswordForceSaving:disabled"/>
+  <int value="728937354" label="ShutdownSupportForKeepalive:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
   <int value="731318054" label="WebAssemblySimd:enabled"/>
@@ -50241,6 +50239,24 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Invalid Operation"/>
 </enum>
 
+<enum name="NearbyShareDiscoveryProgress">
+  <int value="0" label="Discovery not attempted"/>
+  <int value="1" label="Failed to start discovery"/>
+  <int value="2" label="Started discovery; nothing found"/>
+  <int value="3" label="Discovered share target; nothing sent"/>
+  <int value="4" label="Failed to look up selected share target"/>
+  <int value="5" label="Failed to start send"/>
+  <int value="6" label="Started send"/>
+</enum>
+
+<enum name="NearbyShareEnabledState">
+  <int value="0" label="Enabled and onboarded"/>
+  <int value="1" label="Enabled and not onboarded"/>
+  <int value="2" label="Disabled and onboarded"/>
+  <int value="3" label="Disabled and not onboarded"/>
+  <int value="4" label="Disallowed by policy"/>
+</enum>
+
 <enum name="NearbyShareHttpResult">
   <int value="0" label="Success"/>
   <int value="1" label="Timeout"/>
@@ -50251,6 +50267,14 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Response Malformed"/>
   <int value="7" label="Internal Server Error"/>
   <int value="8" label="Unknown"/>
+</enum>
+
+<enum name="NearbyShareServiceStatusCode">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Error"/>
+  <int value="2" label="Out-of-order API call"/>
+  <int value="3" label="Already stopped"/>
+  <int value="4" label="Transfer already in progress"/>
 </enum>
 
 <enum name="NearOomDetectionEndReason">
@@ -60309,7 +60333,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="ProfileAddNewUser">
   <int value="0" label="(Deprecated) Add new user from icon menu"/>
-  <int value="1" label="Add new user from title bar menu"/>
+  <int value="1" label="(Deprecated) Add new user from title bar menu"/>
   <int value="2" label="Add new user from settings dialog"/>
   <int value="3" label="Add new user from the Profile picker"/>
   <int value="4" label="Auto-created after deleting last user"/>
@@ -68552,6 +68576,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="33" label="UMA_TWA_PRIVACY_DISCLOSURE_V2"/>
   <int value="34" label="UMA_HOMEPAGE_PROMO_CHANGED_UNDO"/>
   <int value="35" label="UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO"/>
+  <int value="37" label="UMA_READING_LIST_BOOKMARK_ADDED"/>
 </enum>
 
 <enum name="SnapshotItemId">

@@ -1262,11 +1262,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-autofill-save-card-info-bar-account-indication-footer",
-    "owners": [ "annelim@google.com, mdjones@chromium.org"],
-    "expiry_milestone": 95
-  },
-  {
     "name": "enable-autofill-upi-vpa",
     "owners": [ "cfroussios" ],
     "expiry_milestone": 88
@@ -4282,6 +4277,11 @@
     // This is a debug tool to help in the field with hardware issues that
     // generate spurious touch events.
     "expiry_milestone": -1
+  },
+  {
+    "name": "shutdown-support-for-keepalive",
+    "owners": [ "yhirano" ],
+    "expiry_milestone": 92
   },
   {
     "name" : "side-panel",

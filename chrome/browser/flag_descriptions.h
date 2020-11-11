@@ -301,9 +301,6 @@ extern const char kDebugShortcutsDescription[];
 extern const char kDeviceDiscoveryNotificationsName[];
 extern const char kDeviceDiscoveryNotificationsDescription[];
 
-extern const char kForceEnableDevicesPageName[];
-extern const char kForceEnableDevicesPageDescription[];
-
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 
@@ -334,10 +331,6 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 extern const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[];
 extern const char
     kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[];
-
-extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
-extern const char
-    kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
 
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
@@ -1950,6 +1943,9 @@ extern const char kPasswordsWeaknessCheckDescription[];
 
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];
+
+extern const char kShutdownSupportForKeepaliveName[];
+extern const char kShutdownSupportForKeepaliveDescription[];
 
 extern const char kTabFreezeName[];
 extern const char kTabFreezeDescription[];

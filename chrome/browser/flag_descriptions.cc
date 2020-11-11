@@ -478,12 +478,6 @@ const char kDeviceDiscoveryNotificationsName[] =
 const char kDeviceDiscoveryNotificationsDescription[] =
     "Device discovery notifications on local network.";
 
-const char kForceEnableDevicesPageName[] = "Force enable chrome://devices page";
-const char kForceEnableDevicesPageDescription[] =
-    "With this flag on, the chrome://devices page will show its previous "
-    "content, instead of a warning message. Note: chrome://devices is "
-    "no longer supported, and this flag will be permanently removed in M88.";
-
 const char kDisallowDocWrittenScriptsUiName[] =
     "Block scripts loaded via document.write";
 const char kDisallowDocWrittenScriptsUiDescription[] =
@@ -529,12 +523,6 @@ const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[] =
 const char kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[] =
     "When enabled, a footer indicating user's e-mail address will appear at "
     "the bottom of corresponding password InfoBars.";
-
-const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[] =
-    "Display SaveCardInfoBar footer with account indication information";
-const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
-    "When enabled, a footer indicating user's e-mail address will appear at "
-    "the bottom of SaveCardInfoBar.";
 
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
     "Enable Google Pay branding on CVC prompt on Android";
@@ -3383,6 +3371,13 @@ const char kSCTAuditingName[] = "SCT auditing";
 const char kSCTAuditingDescription[] =
     "Enables SCT auditing for users who have opted in to Safe Browsing "
     "Extended Reporting.";
+
+const char kShutdownSupportForKeepaliveName[] =
+    "Shutdown support for keepalive requests";
+const char kShutdownSupportForKeepaliveDescription[] =
+    "When enabled, keepalive requests "
+    "(https://fetch.spec.whatwg.org/#request-keepalive-flag) blocks the "
+    "browser shutdown sequence for a short period of time.";
 
 const char kTabFreezeName[] = "Tab Freeze";
 const char kTabFreezeDescription[] =

@@ -23,7 +23,6 @@
 // <include src="oobe_screen_autolaunch.js">
 // <include src="oobe_select.js">
 
-// <include src="screen_app_launch_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
 // <include src="screen_discover.js">
@@ -31,7 +30,6 @@
 
 // <include src="../../gaia_auth_host/authenticator.js">
 // <include src="oobe_screen_auto_enrollment_check.js">
-// <include src="oobe_screen_enable_debugging.js">
 // <include src="multi_tap_detector.js">
 // <include src="web_view_helper.js">
 
@@ -44,12 +42,10 @@ cr.define('cr.ui.Oobe', function() {
     initialize() {
       cr.ui.login.DisplayManager.initialize();
       login.AutoEnrollmentCheckScreen.register();
-      login.EnableDebuggingScreen.register();
       login.AutolaunchScreen.register();
       login.AccountPickerScreen.register();
       login.ErrorMessageScreen.register();
       login.ArcTermsOfServiceScreen.register();
-      login.AppLaunchSplashScreen.register();
       login.DiscoverScreen.register();
       login.MultiDeviceSetupScreen.register();
 

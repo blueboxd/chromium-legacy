@@ -38,6 +38,7 @@
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -8781,7 +8782,19 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   // Keep track of the sandbox policy of the document that has just committed.
   // It will be compared with the value computed from the renderer. The latter
   // is expected to be received in DidSetFramePolicyHeaders(..).
-  active_sandbox_flags_control_ = navigation_request->SandboxFlagsToCommit();
+  if (navigation_request->state() >=
+      NavigationRequest::NavigationState::WILL_PROCESS_RESPONSE) {
+    active_sandbox_flags_control_ = navigation_request->SandboxFlagsToCommit();
+  } else {
+    // Navigations that are known by the browser only at DidCommit time will
+    // have their state set to WILL_START_REQUEST and won't have sandbox flags
+    // that are calculated by the browser before commit.
+    // TODO(https://crbug.com/1133115): Remove this once all the cross-document
+    // cases of those navigations have been removed.
+    DCHECK_EQ(navigation_request->state(),
+              NavigationRequest::NavigationState::WILL_START_REQUEST);
+    active_sandbox_flags_control_.reset();
+  }
 
   coep_reporter_ = navigation_request->TakeCoepReporter();
   if (coep_reporter_) {
@@ -8944,7 +8957,7 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
         return;
       break;
     case base::TERMINATION_STATUS_OOM:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
 #if defined(OS_ANDROID)

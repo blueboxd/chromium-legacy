@@ -8,14 +8,18 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A chip to display to the user.
  */
+@JNINamespace("autofill_assistant")
 public class AssistantChip {
     @IntDef({Type.CHIP_ASSISTIVE, Type.BUTTON_FILLED_BLUE, Type.BUTTON_HAIRLINE})
     @Retention(RetentionPolicy.SOURCE)
@@ -75,7 +79,7 @@ public class AssistantChip {
     private final boolean mSticky;
 
     /** The callback that will be triggered when this chip is clicked. */
-    private final Runnable mSelectedListener;
+    private Runnable mSelectedListener;
 
     /**
      * The list of popup items to show when the chip is tapped. When specified, the regular {@code
@@ -87,13 +91,19 @@ public class AssistantChip {
     private @Nullable Callback<Integer> mOnPopupItemSelected;
 
     public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
-            boolean sticky, boolean visible, Runnable selectedListener) {
+            boolean sticky, boolean visible) {
         mType = type;
         mIcon = icon;
         mText = text;
         mDisabled = disabled;
         mSticky = sticky;
         mVisible = visible;
+    }
+
+    public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
+            boolean sticky, boolean visible, Runnable selectedListener) {
+        this(type, icon, text, disabled, sticky, visible);
+        assert selectedListener != null;
         mSelectedListener = selectedListener;
     }
 
@@ -129,8 +139,12 @@ public class AssistantChip {
         return mSticky;
     }
 
-    public Runnable getSelectedListener() {
+    public @Nullable Runnable getSelectedListener() {
         return mSelectedListener;
+    }
+
+    public void setSelectedListener(Runnable selectedListener) {
+        mSelectedListener = selectedListener;
     }
 
     public void setPopupItems(List<String> popupItems, Callback<Integer> onSelectedCallback) {
@@ -156,5 +170,36 @@ public class AssistantChip {
         return this.getType() == that.getType() && this.getText().equals(that.getText())
                 && this.getIcon() == that.getIcon() && this.isSticky() == that.isSticky()
                 && this.isDisabled() == that.isDisabled() && this.isVisible() == that.isVisible();
+    }
+
+    /**
+     * Creates a hairline assistant chip with an empty callback. The callback needs to be bound
+     * before the view is inflated.
+     */
+    @CalledByNative
+    public static AssistantChip createHairlineAssistantChip(
+            int icon, String text, boolean disabled, boolean sticky, boolean visible) {
+        return new AssistantChip(
+                AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled, sticky, visible);
+    }
+
+    /**
+     * Creates a blue-filled assistant chip with an empty callback. The callback needs to be bound
+     * before the view is inflated.
+     */
+    @CalledByNative
+    public static AssistantChip createHighlightedAssistantChip(
+            int icon, String text, boolean disabled, boolean sticky, boolean visible) {
+        return new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky, visible);
+    }
+
+    @CalledByNative
+    private static List<AssistantChip> createChipList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void addChipToList(List<AssistantChip> list, AssistantChip chip) {
+        list.add(chip);
     }
 }

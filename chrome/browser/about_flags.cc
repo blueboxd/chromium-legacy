@@ -2939,10 +2939,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeviceDiscoveryNotificationsDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-    {"force-enable-devices-page",
-     flag_descriptions::kForceEnableDevicesPageName,
-     flag_descriptions::kForceEnableDevicesPageDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kForceEnableDevicesPage)},
     {"enable-webgl-draft-extensions",
      flag_descriptions::kWebglDraftExtensionsName,
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,
@@ -6674,22 +6670,18 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kCheckOfflineCapability,
                                     kCheckOfflineCapabilityVariations,
                                     "CheckOfflineCapability")},
-#if defined(OS_ANDROID)
-    {"enable-autofill-save-card-info-bar-account-indication-footer",
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
-#endif
     {"detect-form-submission-on-form-clear",
      flag_descriptions::kDetectFormSubmissionOnFormClearName,
      flag_descriptions::kDetectFormSubmissionOnFormClearDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kDetectFormSubmissionOnFormClear)},
+
+#if !defined(OS_ANDROID)
+    {"shutdown-support-for-keepalive",
+     flag_descriptions::kShutdownSupportForKeepaliveName,
+     flag_descriptions::kShutdownSupportForKeepaliveDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kShutdownSupportForKeepalive)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

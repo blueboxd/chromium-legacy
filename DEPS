@@ -45,7 +45,6 @@ gclient_gn_args = [
   'checkout_openxr',
   'cros_boards',
   'cros_boards_with_qemu_images',
-  'mac_xcode_version',
 ]
 
 
@@ -185,11 +184,6 @@ vars = {
   # instead of downloading the prebuilt pinned revision.
   'llvm_force_head_revision': False,
 
-  # This can be overridden, e.g. with custom_vars, to download a nonstandard
-  # Xcode version in build/mac_toolchain.py
-  # instead of downloading the prebuilt pinned revision.
-  'mac_xcode_version': 'default',
-
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
@@ -203,11 +197,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1fe2b80dc7824fc579451d6f1829c199eb8cd8f6',
+  'skia_revision': '869eb97f6c2940e446c0f98b43cbf52cf4a01017',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '82f6a0e5ace083d5c20039a4c6d2deb45e4bcede',
+  'v8_revision': 'c6f52c2144993b661cf476f950765b4b5b2bdf69',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -266,7 +260,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'c80cb7a957eae86fa9c052b2e8127b84cd80f6e3',
+  'catapult_revision': '994d3835f535cd1accfab22127924ae0f788b55e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -274,7 +268,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5db9eeec2f2e0eb5b062e8aea9387ee8f9e6fc76',
+  'devtools_frontend_revision': '184f98a6b7b4012f3c2f7911155504dfdf834c18',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -553,7 +547,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'd729b5c464e2f4947056b7d98dd212132f7d7f68',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'd9e294ab0002f2c8569e0dc0e74825e4284d13ee',
       'condition': 'checkout_ios',
   },
 
@@ -909,7 +903,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'cf49cb8206bad8909e2f71c6c8901963cb900b46',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9ca89ac1f4b0101de2c774c9d98bd50917d8b5b8',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1262,7 +1256,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '81e9301838fcce3f967c51b92628ea4f7caa4c20',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0d4297e6b205f90dc52c19a3c1df1607d13a6bd3',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1340,7 +1334,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'DVv5pUl-M5J693D1Gl5WWXRACYvP3V3wzNASbl_CU4wC'
+              'version': '4uI9bijODC2n-stYyPSzvBc51Ce7kFyHjAA1Zcenib8C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1505,7 +1499,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '9c99b7964fabb16a022293ffbd2804f9b46551f6',
+    Var('webrtc_git') + '/src.git' + '@' + '0bfdbc37e9ec9602355206eff012e25cb7eb805c',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1577,7 +1571,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@15391ed1926388b1f5f5cb709b8fcc59f3fde218',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3630044b661016e7d8135de52776535891367c7c',
     'condition': 'checkout_src_internal',
   },
 
@@ -4247,8 +4241,7 @@ hooks = [
     'name': 'mac_toolchain',
     'pattern': '.',
     'condition': 'checkout_mac',
-    'action': ['python', 'src/build/mac_toolchain.py',
-               '--xcode-version', Var('mac_xcode_version')],
+    'action': ['python', 'src/build/mac_toolchain.py'],
   },
   {
     # Update the prebuilt clang toolchain.

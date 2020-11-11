@@ -35,6 +35,16 @@ Polymer({
   },
 
   /**
+   * Returns the translated helper text string with the id attribute. The id is
+   * used to selectively style parts of the string.
+   * @return {string}
+   * @private
+   */
+  getHelperTextHtml_() {
+    return this.i18nAdvanced('scanPreviewHelperText', {attrs: ['id']});
+  },
+
+  /**
    * @return {string}
    * @private
    */
@@ -48,7 +58,8 @@ Polymer({
    * @private
    */
   shouldHideHelperText_() {
-    return this.appState === AppState.SCANNING;
+    return this.appState === AppState.SCANNING ||
+        this.appState === AppState.DONE;
   },
 
   /**

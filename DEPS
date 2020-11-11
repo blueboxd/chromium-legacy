@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '434681c2378b686117c2b003a58c54d78f22185f',
+  'catapult_revision': 'c80cb7a957eae86fa9c052b2e8127b84cd80f6e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -909,7 +909,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b4f4226d153e993888f6e7429dcc9aca480e680e',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'cf49cb8206bad8909e2f71c6c8901963cb900b46',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),

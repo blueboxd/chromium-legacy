@@ -33,7 +33,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
@@ -1484,7 +1484,7 @@ void HTMLCanvasElement::CreateLayer() {
     surface_layer_bridge_ = std::make_unique<::blink::SurfaceLayerBridge>(
         frame->GetPage()->GetChromeClient().GetFrameSinkId(frame),
         ::blink::SurfaceLayerBridge::ContainsVideo::kNo, this,
-        base::DoNothing());
+        base::NullCallback());
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
     // This may cause the canvas to be composited.

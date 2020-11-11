@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -1203,7 +1203,11 @@ GCMStoreImpl::GCMStoreImpl(
                            std::move(encryptor))),
       blocking_task_runner_(blocking_task_runner) {}
 
-GCMStoreImpl::~GCMStoreImpl() {}
+GCMStoreImpl::~GCMStoreImpl() {
+  // |backend_| owns an sql::Database object, which may perform IO when
+  // |destroyed.
+  blocking_task_runner_->ReleaseSoon(FROM_HERE, std::move(backend_));
+}
 
 void GCMStoreImpl::Load(StoreOpenMode open_mode, LoadCallback callback) {
   blocking_task_runner_->PostTask(

@@ -12,7 +12,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -273,6 +273,7 @@ class LayerTreeHostImplTest : public testing::Test,
       base::TimeTicks first_scroll_timestamp) override {
     first_scroll_observed++;
   }
+  bool IsInSynchronousComposite() const override { return false; }
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
   }

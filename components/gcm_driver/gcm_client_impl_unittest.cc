@@ -9,7 +9,7 @@
 #include <initializer_list>
 #include <memory>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -464,6 +464,9 @@ void GCMClientImplTest::SetUp() {
 }
 
 void GCMClientImplTest::TearDown() {
+  gcm_client_.reset();
+  PumpLoopUntilIdle();
+  testing::Test::TearDown();
 }
 
 void GCMClientImplTest::SetFeatureParams(const base::Feature& feature,

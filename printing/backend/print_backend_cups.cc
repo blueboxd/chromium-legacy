@@ -224,10 +224,12 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const std::string& locale,
     bool for_cloud_print) {
 #if defined(OS_MAC)
-  if (!for_cloud_print &&
-      base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend)) {
-    return base::MakeRefCounted<PrintBackendCupsIpp>(
-        CreateConnection(print_backend_settings), locale);
+  if (__builtin_available(macOS 10.10, *)) {
+    if (!for_cloud_print &&
+        base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend)) {
+      return base::MakeRefCounted<PrintBackendCupsIpp>(
+          CreateConnection(print_backend_settings), locale);
+    }
   }
 #endif  // defined(OS_MAC)
   std::string print_server_url_str, cups_blocking;

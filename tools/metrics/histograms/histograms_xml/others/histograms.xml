@@ -3802,6 +3802,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Discarding.OnlineOnReload" enum="Boolean" expires_after="M85">
+  <obsolete>
+    Removed 11/2020.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="DiscardReason" -->
 
   <owner>fdoray@chromium.org</owner>
@@ -16887,7 +16890,6 @@ regressions. -->
 <!-- expires-never: Used to monitor user interaction with the WebUSB API. -->
 
   <owner>reillyg@chromium.org</owner>
-  <owner>juncai@chromium.org</owner>
   <summary>
     Records the reason why the WebUSB device chooser was closed.
   </summary>
@@ -16898,7 +16900,6 @@ regressions. -->
 <!-- expires-never: Used to monitor user interaction with the WebUSB API. -->
 
   <owner>reillyg@chromium.org</owner>
-  <owner>juncai@chromium.org</owner>
   <summary>
     Records the reason why the &quot;WebUSB device detected&quot; notification
     was dismissed.
@@ -16910,7 +16911,6 @@ regressions. -->
 <!-- expires-never: Used to monitor user interaction with the WebUSB API. -->
 
   <owner>reillyg@chromium.org</owner>
-  <owner>juncai@chromium.org</owner>
   <summary>
     Records when the user revokes permission for an origin to connect to a USB
     device using the WebUSB API.

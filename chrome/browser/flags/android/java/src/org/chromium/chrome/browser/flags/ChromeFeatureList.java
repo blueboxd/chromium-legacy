@@ -203,6 +203,8 @@ public abstract class ChromeFeatureList {
             "AutofillEnableGoogleIssuedCard";
     public static final String AUTOFILL_ENABLE_PASSWORD_INFO_BAR_ACCOUNT_INDICATION_FOOTER =
             "AutofillEnablePasswordInfoBarAccountIndicationFooter";
+    public static final String AUTOFILL_ENABLE_SAVE_CARD_INFO_BAR_ACCOUNT_INDICATION_FOOTER =
+            "AutofillEnableSaveCardInfoBarAccountIndicationFooter";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_DEFAULT_BROWSER_PROMO = "AndroidDefaultBrowserPromo";
     public static final String ANDROID_MANAGED_BY_MENU_ITEM = "AndroidManagedByMenuItem";
@@ -217,6 +219,7 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_ASSISTANT = "AutofillAssistant";
     public static final String AUTOFILL_ASSISTANT_CHROME_ENTRY = "AutofillAssistantChromeEntry";
     public static final String AUTOFILL_ASSISTANT_DIRECT_ACTIONS = "AutofillAssistantDirectActions";
+    public static final String AUTOFILL_ASSISTANT_PROACTIVE_HELP = "AutofillAssistantProactiveHelp";
     public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID = "AutofillManualFallbackAndroid";
     public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
     public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";
@@ -447,6 +450,7 @@ public abstract class ChromeFeatureList {
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
+    public static final String VOICE_BUTTON_IN_TOP_TOOLBAR = "VoiceButtonInTopToolbar";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String WEBAPK_ADAPTIVE_ICON = "WebApkAdaptiveIcon";
     public static final String WEB_AUTH = "WebAuthentication";

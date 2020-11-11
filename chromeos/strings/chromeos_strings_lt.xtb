@@ -94,6 +94,7 @@
 Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, „<ph name="PRINTER_NAME" />“, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
+<translation id="5275828089655680674">Iš naujo vykdyti veiksmų sekas</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Pasirinkite naują slaptažodį dabar</translation>
@@ -102,6 +103,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="5431318178759467895">Spalva</translation>
 <translation id="5457599981699367932">Naršyti kaip svečiui</translation>
 <translation id="54609108002486618">Valdoma</translation>
+<translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5832805196449965646">Pridėti asmenį</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
@@ -111,6 +113,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="6108689792487843350">Tinklų sietuvas nepasiekiamas</translation>
 <translation id="6146993107019042706">Norėdami užbaigti įveskite naują slaptažodį</translation>
 <translation id="6147514244879357420">PNG</translation>
+<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6191293864534840972">Netinkamai sukonfigūruoti domenų pavadinimų serveriai</translation>
 <translation id="6325525973963619867">Nepavyko</translation>
 <translation id="636850387210749493">Įmonės registracija</translation>
@@ -133,6 +136,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="7690294790491645610">Patvirtinkite naują slaptažodį</translation>
 <translation id="7805768142964895445">Būsena</translation>
 <translation id="7936303884198020182">Domenų pavadinimų serverių nerasta</translation>
+<translation id="8041089156583427627">Siųsti atsiliepimą</translation>
 <translation id="808894953321890993">Keisti slaptažodį</translation>
 <translation id="8208861521865154048">Privilegijos</translation>
 <translation id="8230672074305416752">Nepavyko patikrinti ryšio su numatytuoju tinklų sietuvu</translation>
@@ -146,6 +150,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="8723108084122415655">Nenumatytojo tinklo delsa viršija slenksčio vertę</translation>
 <translation id="8726019395068607495">Sustabdyta – atidarytos durelės</translation>
 <translation id="8747900814994928677">Patvirtinti pakeitimą</translation>
+<translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8910721771319628100">Numatytojo tinklo delsa viršija slenksčio vertę</translation>
 <translation id="8919837981463578619">Nepavyko – nėra dėklo</translation>
 <translation id="8928727111548978589">Nepavyko – baigėsi popierius</translation>

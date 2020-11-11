@@ -3008,6 +3008,10 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
+    {"voice-button-in-top-toolbar",
+     flag_descriptions::kVoiceButtonInTopToolbarName,
+     flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
     {"share-button-in-top-toolbar",
      flag_descriptions::kShareButtonInTopToolbarName,
      flag_descriptions::kShareButtonInTopToolbarDescription, kOsAndroid,
@@ -5158,6 +5162,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillAssistantDirectActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          autofill_assistant::features::kAutofillAssistantDirectActions)},
+
+    {"autofill-assistant-proactive-help",
+     flag_descriptions::kAutofillAssistantProactiveHelpName,
+     flag_descriptions::kAutofillAssistantProactiveHelpDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill_assistant::features::kAutofillAssistantProactiveHelp)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
@@ -5449,6 +5459,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAllowSyncXHRInPageDismissalDescription,
      kOsAll | kDeprecated,
      FEATURE_VALUE_TYPE(blink::features::kAllowSyncXHRInPageDismissal)},
+
+    {"enable-sync-requires-policies-loaded",
+     flag_descriptions::kEnableSyncRequiresPoliciesLoadedName,
+     flag_descriptions::kEnableSyncRequiresPoliciesLoadedDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncRequiresPoliciesLoaded)},
 
 #if !defined(OS_ANDROID)
     {"form-controls-dark-mode", flag_descriptions::kFormControlsDarkModeName,
@@ -6659,6 +6674,22 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kCheckOfflineCapability,
                                     kCheckOfflineCapabilityVariations,
                                     "CheckOfflineCapability")},
+#if defined(OS_ANDROID)
+    {"enable-autofill-save-card-info-bar-account-indication-footer",
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
+#endif
+    {"detect-form-submission-on-form-clear",
+     flag_descriptions::kDetectFormSubmissionOnFormClearName,
+     flag_descriptions::kDetectFormSubmissionOnFormClearDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kDetectFormSubmissionOnFormClear)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

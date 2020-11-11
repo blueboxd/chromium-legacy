@@ -264,6 +264,9 @@
   <message name="IDS_CELLULAR_SETUP_NEXT_LABEL" desc="Label for button that advances to next step during cellular setup">
     Next
   </message>
+  <message name="IDS_CELLULAR_SETUP_SKIP_DISCOVERY_LABEL" desc="Label for button that skips the multiple profile selection step and sets up a new profile during eSIM cellular setup">
+    Skip &amp; Set up new profile
+  </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_ACTIVATION_CODE" desc="Label for activation code input box">
     Activation code
   </message>
@@ -5838,15 +5841,6 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_SUGGESTION_INSERTED" desc="String announced by screenreader when a suggestion is inserted.">
     Suggestion inserted
-  </message>
-  <message name="IDS_SUGGESTION_AUTOCORRECT_UNDONE" desc="String announced by screenreader when an autocorrected word is reverted. Example, user types 'hllo', system autocorrects to 'hello' but then that autocorrection is manually undone by the user.">
-    correction undone
-  </message>
-  <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON" desc="String announced by screenreader when a button to undo an autocorrect is highlighted. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
-    Undo autocorrect button. Revert to <ph name="TYPED_WORD">$1<ex>hllo</ex></ph>.  Press enter to activate, escape to dismiss.
-  </message>
-  <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN" desc="String announced by screenreader when a button to undo an autocorrect is shown. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
-    Autocorrect undo dialog is shown for <ph name="TYPED_WORD">$1<ex>hllo</ex></ph> corrected to <ph name="CORRECTED_WORD">$2<ex>hello</ex></ph>.  Press up arrow to access, escape to ignore.
   </message>
 
   <!-- Strings for Custom Tab UI -->

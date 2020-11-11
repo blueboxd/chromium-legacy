@@ -13,6 +13,7 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.url.GURL;
 
 import java.util.List;
 import java.util.Map;
@@ -33,16 +34,6 @@ public interface BrowserPaymentRequest {
         BrowserPaymentRequest createBrowserPaymentRequest(
                 PaymentRequestService paymentRequestService);
     }
-
-    /**
-     * The browser part of the {@link PaymentRequest#show} implementation.
-     * @param isUserGesture Whether this method is triggered from a user gesture.
-     * @param waitForUpdatedDetails Whether to wait for updated details. It's true when merchant
-     *         passed in a promise into PaymentRequest.show(), so Chrome should disregard the
-     *         initial payment details and show a spinner until the promise resolves with the
-     *         correct payment details.
-     */
-    void show(boolean isUserGesture, boolean waitForUpdatedDetails);
 
     /**
      * The browser part of the {@link PaymentRequest#updateWith} implementation.
@@ -122,8 +113,9 @@ public interface BrowserPaymentRequest {
     /**
      * Shows the payment apps selector.
      * @return Whether the showing is successful.
+     * @param waitForUpdatedDetails Whether to wait for updated details.
      */
-    default boolean showAppSelector() {
+    default boolean showAppSelector(boolean waitForUpdatedDetails) {
         return false;
     }
 
@@ -180,4 +172,18 @@ public interface BrowserPaymentRequest {
      *                     returned from PaymentRequest.show().
      */
     default void onInstrumentDetailsError(String errorMessage) {}
+
+    /**
+     * Opens a payment handler window and creates a WebContents with the given url to display in it.
+     * @param url The url of the page to be opened in the window.
+     * @return The created WebContents.
+     */
+    default WebContents openPaymentHandlerWindow(GURL url) {
+        return null;
+    }
+
+    /** @return Whether any payment UI is being shown. */
+    default boolean isShowingUi() {
+        return false;
+    }
 }

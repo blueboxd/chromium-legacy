@@ -251,6 +251,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "autofill-assistant-proactive-help",
+    "owners": [ "//components/autofill_assistant/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "autofill-cache-query-responses",
     "owners": [ "rogerm" ],
     "expiry_milestone": 72
@@ -828,6 +833,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "detect-form-submission-on-form-clear",
+    "owners": [ "kazinova", "jdoerrie"],
+    "expiry_milestone": 93
+  },
+  {
     "name": "detect-target-embedding-lookalikes",
     "owners": [ "jdeblasio", "meacer" ],
     "expiry_milestone": 89
@@ -1250,6 +1260,11 @@
     "name": "enable-autofill-refresh-style",
     "owners": [ "tmartino@chromium.org" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-autofill-save-card-info-bar-account-indication-footer",
+    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-upi-vpa",
@@ -2146,6 +2161,11 @@
     "name": "enable-sxg-subresource-prefetching",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "enable-sync-requires-policies-loaded",
+    "owners": ["ydago"],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-tab-engagement-reporting",
@@ -4707,6 +4727,11 @@
     "name": "vm-camera-mic-indicators-and-notifications",
     "owners": [ "lxj", "joelhockey", "timloh" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "voice-button-in-top-toolbar",
+    "owners": [ "jds", "chrome-language" ],
+    "expiry_milestone": 93
   },
   {
     "name": "wallet-requires-first-sync-setup",

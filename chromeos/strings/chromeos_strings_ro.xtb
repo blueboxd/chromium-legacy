@@ -94,6 +94,7 @@
 Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
+<translation id="5275828089655680674">Rulează din nou rutinele</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Alege una nouă acum</translation>
@@ -102,6 +103,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5431318178759467895">Color</translation>
 <translation id="5457599981699367932">Navighează ca invitat</translation>
 <translation id="54609108002486618">Gestionat</translation>
+<translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5832805196449965646">Adăugați un utilizator</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -111,6 +113,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6108689792487843350">Gateway-ul nu poate fi accesat</translation>
 <translation id="6146993107019042706">Pentru a finaliza, introdu noua parolă</translation>
 <translation id="6147514244879357420">PNG</translation>
+<translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6191293864534840972">Servere de nume cu formă incorectă</translation>
 <translation id="6325525973963619867">Eșuat</translation>
 <translation id="636850387210749493">Înscriere pentru întreprindere</translation>
@@ -133,6 +136,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="7690294790491645610">Confirmă noua parolă</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7936303884198020182">Nu s-au găsit servere de nume</translation>
+<translation id="8041089156583427627">Trimiteți feedback</translation>
 <translation id="808894953321890993">Schimbă parola</translation>
 <translation id="8208861521865154048">Avantaje</translation>
 <translation id="8230672074305416752">Nu s-a putut da ping către gateway-ul de rețea prestabilit</translation>
@@ -146,6 +150,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8723108084122415655">Rețeaua care nu este prestabilită depășește pragul de latență</translation>
 <translation id="8726019395068607495">Oprită – Ușă deschisă</translation>
 <translation id="8747900814994928677">Confirmă schimbarea</translation>
+<translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8910721771319628100">Rețeaua prestabilită depășește pragul de latență</translation>
 <translation id="8919837981463578619">Nereușită – Tavă lipsă</translation>
 <translation id="8928727111548978589">Nereușită – Hârtie epuizată</translation>

@@ -69,6 +69,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillCreditCardAuthentication,
     &autofill::features::kAutofillDownstreamCvcPromptUseGooglePayLogo,
     &autofill::features::kAutofillEnablePasswordInfoBarAccountIndicationFooter,
+    &autofill::features::kAutofillEnableSaveCardInfoBarAccountIndicationFooter,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
@@ -77,6 +78,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill_assistant::features::kAutofillAssistant,
     &autofill_assistant::features::kAutofillAssistantChromeEntry,
     &autofill_assistant::features::kAutofillAssistantDirectActions,
+    &autofill_assistant::features::kAutofillAssistantProactiveHelp,
     &device::kWebAuthPhoneSupport,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kDownloadLater,
@@ -136,6 +138,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeShareScreenshot,
     &kChromeSharingHub,
     &kChromeSharingHubV15,
+    &kChromeStartupDelegate,
     &kCommandLineOnNonRooted,
     &kConditionalTabStripAndroid,
     &kContentSuggestionsScrollToLoad,
@@ -221,6 +224,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kUmaBackgroundSessions,
     &kUpdateNotificationSchedulingIntegration,
     &kUpdateNotificationScheduleServiceImmediateShowOption,
+    &kVoiceButtonInTopToolbar,
     &kVrBrowsingFeedback,
     &kWebApkAdaptiveIcon,
     &kPrefetchNotificationSchedulingIntegration,
@@ -658,6 +662,9 @@ const base::Feature kUpdateNotificationScheduleServiceImmediateShowOption{
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kVoiceButtonInTopToolbar{"VoiceButtonInTopToolbar",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

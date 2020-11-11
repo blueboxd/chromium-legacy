@@ -155,6 +155,10 @@ uint32_t TestRenderWidgetHostView::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
 }
 
+void TestRenderWidgetHostView::UpdateCursor(const WebCursor& cursor) {
+  last_cursor_ = cursor;
+}
+
 void TestRenderWidgetHostView::RenderProcessGone() {
   delete this;
 }
@@ -335,14 +339,15 @@ bool TestRenderViewHost::IsTestRenderViewHost() const {
   return true;
 }
 
-void TestRenderViewHost::TestStartDragging(const DropData& drop_data) {
+void TestRenderViewHost::TestStartDragging(const DropData& drop_data,
+                                           SkBitmap bitmap) {
   StoragePartitionImpl* storage_partition =
       static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
   GetWidget()->StartDragging(
       DropDataToDragData(drop_data,
                          storage_partition->GetNativeFileSystemManager(),
                          GetProcess()->GetID()),
-      blink::kDragOperationEvery, SkBitmap(), gfx::Vector2d(),
+      blink::kDragOperationEvery, std::move(bitmap), gfx::Vector2d(),
       blink::mojom::DragEventSourceInfo::New());
 }
 

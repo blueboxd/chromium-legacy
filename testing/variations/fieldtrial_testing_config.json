@@ -1533,7 +1533,8 @@
                     "enable_features": [
                         "ChromeShareQRCode",
                         "ChromeShareScreenshot",
-                        "ChromeSharingHub"
+                        "ChromeSharingHub",
+                        "ChromeSharingHubV15"
                     ],
                     "min_os_version": "5.1"
                 }
@@ -5503,6 +5504,27 @@
             ]
         }
     ],
+    "ProbabilisticCryptidRenderer": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_empty",
+                    "params": {
+                        "asset-key": "empty",
+                        "max-probability-per-million": "20000",
+                        "moratorium-length-millis": "345600000",
+                        "ramp-up-length-millis": "1814400000"
+                    },
+                    "enable_features": [
+                        "ProbabilisticCryptidRenderer"
+                    ]
+                }
+            ]
+        }
+    ],
     "ProtoDBSharedMigration": [
         {
             "platforms": [
@@ -7431,6 +7453,24 @@
                     "name": "VizGLFastSolidColorDraw",
                     "enable_features": [
                         "FastSolidColorDraw"
+                    ]
+                }
+            ]
+        }
+    ],
+    "VoiceButtonInTopToolbar": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "minimum_width": "360"
+                    },
+                    "enable_features": [
+                        "VoiceButtonInTopToolbar"
                     ]
                 }
             ]

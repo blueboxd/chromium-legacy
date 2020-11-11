@@ -52,17 +52,16 @@ export function fileTypeFromString(fileTypeString) {
  * @return {string}
  */
 export function getColorModeString(mojoColorMode) {
-  // TODO(jschettler): Replace with finalized i18n strings.
   switch (mojoColorMode) {
     case chromeos.scanning.mojom.ColorMode.kBlackAndWhite:
-      return 'Black and White';
+      return loadTimeData.getString('blackAndWhiteOptionText');
     case chromeos.scanning.mojom.ColorMode.kGrayscale:
-      return 'Grayscale';
+      return loadTimeData.getString('grayscaleOptionText');
     case chromeos.scanning.mojom.ColorMode.kColor:
-      return 'Color';
+      return loadTimeData.getString('colorOptionText');
     default:
       assertNotReached();
-      return 'Unknown';
+      return loadTimeData.getString('blackAndWhiteOptionText');
   }
 }
 
@@ -73,17 +72,16 @@ export function getColorModeString(mojoColorMode) {
  * @return {string}
  */
 export function getPageSizeString(pageSize) {
-  // TODO(jschettler): Replace with finalized i18n strings.
   switch (pageSize) {
     case chromeos.scanning.mojom.PageSize.kIsoA4:
-      return 'A4';
+      return loadTimeData.getString('a4OptionText');
     case chromeos.scanning.mojom.PageSize.kNaLetter:
-      return 'Letter';
+      return loadTimeData.getString('letterOptionText');
     case chromeos.scanning.mojom.PageSize.kMax:
-      return 'Fit to scan area';
+      return loadTimeData.getString('fitToScanAreaOptionText');
     default:
       assertNotReached();
-      return 'Unknown';
+      return loadTimeData.getString('letterOptionText');
   }
 }
 

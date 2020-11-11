@@ -105,6 +105,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/skia_utils_base.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -1645,12 +1646,6 @@ void RenderWidgetHostImpl::TakeSyntheticGestureController(
   }
 }
 
-void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
-  if (!view_)
-    return;
-  view_->UpdateCursor(cursor);
-}
-
 void RenderWidgetHostImpl::OnCursorVisibilityStateChanged(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
 }
@@ -1835,8 +1830,22 @@ void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
   }
 }
 
-void RenderWidgetHostImpl::SetCursor(const ui::Cursor& cursor) {
-  SetCursor(WebCursor(cursor));
+void RenderWidgetHostImpl::SetCursor(const ui::Cursor& unsafe_cursor) {
+  SkBitmap bitmap;
+  // On receipt of an arbitrary bitmap from the renderer, we convert to an N32
+  // 32bpp bitmap. Other pixel sizes can lead to out-of-bounds mistakes when
+  // transferring the pixels out of the/ bitmap into other buffers.
+  if (!skia::SkBitmapToN32OpaqueOrPremul(unsafe_cursor.custom_bitmap(),
+                                         &bitmap)) {
+    NOTREACHED() << "Unable to convert bitmap for cursor";
+    return;
+  }
+
+  ui::Cursor cursor = unsafe_cursor;
+  cursor.set_custom_bitmap(std::move(bitmap));
+
+  if (view_)
+    view_->UpdateCursor(WebCursor(cursor));
 }
 
 void RenderWidgetHostImpl::ShowContextMenuAtPoint(
@@ -2499,11 +2508,21 @@ void RenderWidgetHostImpl::DidFirstVisuallyNonEmptyPaint() {
 void RenderWidgetHostImpl::StartDragging(
     blink::mojom::DragDataPtr drag_data,
     blink::DragOperationsMask drag_operations_mask,
-    const SkBitmap& bitmap,
+    const SkBitmap& unsafe_bitmap,
     const gfx::Vector2d& bitmap_offset_in_dip,
     blink::mojom::DragEventSourceInfoPtr event_info) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (!view || !GetView()) {
+    // Need to clear drag and drop state in blink.
+    DragSourceSystemDragEnded();
+    return;
+  }
+  SkBitmap bitmap;
+  // On receipt of an arbitrary bitmap from the renderer, we convert to an N32
+  // 32bpp bitmap. Other pixel sizes can lead to out-of-bounds mistakes when
+  // transferring the pixels out of the/ bitmap into other buffers.
+  if (!skia::SkBitmapToN32OpaqueOrPremul(unsafe_bitmap, &bitmap)) {
+    NOTREACHED() << "Unable to convert bitmap for drag-and-drop";
     // Need to clear drag and drop state in blink.
     DragSourceSystemDragEnded();
     return;

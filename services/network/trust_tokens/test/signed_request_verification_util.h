@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "url/gurl.h"
 
@@ -53,10 +54,12 @@ bool ReconstructSigningDataAndVerifySignatures(
     const net::HttpRequestHeaders& headers,
     base::RepeatingCallback<bool(base::span<const uint8_t> data,
                                  base::span<const uint8_t> signature,
-                                 base::span<const uint8_t> verification_key)>
-        verifier = {},  // defaults to Ed25519
+                                 base::span<const uint8_t> verification_key,
+                                 const std::string& sig_alg)> verifier =
+        {},  // defaults to Ed25519
     std::string* error_out = nullptr,
-    std::map<std::string, std::string>* verification_keys_out = nullptr);
+    std::map<std::string, std::string>* verification_keys_out = nullptr,
+    mojom::TrustTokenSignRequestData* sign_request_data_out = nullptr);
 
 // Returns true if |rr_body| a valid CBOR encoding of an "SRR body" struct, as
 // defined in the design doc. Otherwise, returns false and, if |error_out| is

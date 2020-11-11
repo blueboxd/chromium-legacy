@@ -78,6 +78,9 @@ extern const char kConversionMeasurementApiDescription[];
 extern const char kConversionMeasurementDebugModeName[];
 extern const char kConversionMeasurementDebugModeDescription[];
 
+extern const char kDetectFormSubmissionOnFormClearName[];
+extern const char kDetectFormSubmissionOnFormClearDescription[];
+
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
 
@@ -332,6 +335,10 @@ extern const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[];
 extern const char
     kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[];
 
+extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
+extern const char
+    kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
+
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
 
@@ -404,6 +411,9 @@ extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[];
 
 extern const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteName[];
 extern const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription[];
+
+extern const char kEnableSyncRequiresPoliciesLoadedName[];
+extern const char kEnableSyncRequiresPoliciesLoadedDescription[];
 
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
@@ -1491,6 +1501,9 @@ extern const char kAutofillAccessoryViewDescription[];
 extern const char kAutofillAssistantDirectActionsName[];
 extern const char kAutofillAssistantDirectActionsDescription[];
 
+extern const char kAutofillAssistantProactiveHelpName[];
+extern const char kAutofillAssistantProactiveHelpDescription[];
+
 extern const char kAutofillUseMobileLabelDisambiguationName[];
 extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 
@@ -1809,6 +1822,9 @@ extern const char kVideoTutorialsName[];
 extern const char kVideoTutorialsDescription[];
 extern const char kVideoTutorialsInstantFetchName[];
 extern const char kVideoTutorialsInstantFetchDescription[];
+
+extern const char kVoiceButtonInTopToolbarName[];
+extern const char kVoiceButtonInTopToolbarDescription[];
 
 extern const char kPrefetchNotificationSchedulingIntegrationName[];
 extern const char kPrefetchNotificationSchedulingIntegrationDescription[];

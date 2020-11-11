@@ -527,12 +527,12 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ 
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Failure ]
 
 #### external/wpt/css/css-position
-crbug.com/752022 external/wpt/css/css-position/position-sticky-offset-overflow.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tr-top.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tr-bottom.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tfoot-bottom.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-thead-top.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-parsing.html [ Failure ]
+crbug.com/752022 external/wpt/css/css-position/sticky/position-sticky-offset-overflow.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-tr-top.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-tr-bottom.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-tfoot-bottom.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-thead-top.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-parsing.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-left-absolute-child.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-left.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-top-absolute-child.html [ Failure ]
@@ -6240,7 +6240,6 @@ crbug.com/1145424 [ Win ] http/tests/devtools/sources/debugger-ui/reveal-executi
 crbug.com/1145641 external/wpt/requestidlecallback/callback-invoked.html [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Timeout ]
 crbug.com/1145742 [ Fuchsia ] virtual/stable/http/tests/navigation/location-assign-adds-history-item.html [ Pass Crash Timeout ]
-crbug.com/1145716 fast/forms/calendar-picker/datetimelocal-picker-open-to-focused-field.html [ Pass Timeout ]
 
 # Sheriff 2020-11-05
 crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]

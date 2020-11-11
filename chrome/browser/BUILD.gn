@@ -1131,6 +1131,8 @@ static_library("browser") {
     "permissions/permission_decision_auto_blocker_factory.h",
     "permissions/permission_manager_factory.cc",
     "permissions/permission_manager_factory.h",
+    "permissions/pref_notification_permission_ui_selector.cc",
+    "permissions/pref_notification_permission_ui_selector.h",
     "permissions/quiet_notification_permission_ui_config.cc",
     "permissions/quiet_notification_permission_ui_config.h",
     "permissions/quiet_notification_permission_ui_state.cc",
@@ -2434,6 +2436,8 @@ static_library("browser") {
       "android/autofill_assistant/onboarding_coordinator_bridge.h",
       "android/autofill_assistant/onboarding_fetcher_factory.cc",
       "android/autofill_assistant/onboarding_fetcher_factory.h",
+      "android/autofill_assistant/trigger_script_bridge_android.cc",
+      "android/autofill_assistant/trigger_script_bridge_android.h",
       "android/autofill_assistant/ui_controller_android.cc",
       "android/autofill_assistant/ui_controller_android.h",
       "android/autofill_assistant/ui_controller_android_utils.cc",
@@ -5189,13 +5193,6 @@ static_library("browser") {
     if (use_gtk) {
       deps += [ "//ui/gtk" ]
     }
-  }
-
-  if (use_x11) {
-    sources += [
-      "password_manager/password_store_x.cc",
-      "password_manager/password_store_x.h",
-    ]
   }
 
   if (use_x11 || use_ozone) {

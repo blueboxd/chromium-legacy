@@ -126,6 +126,16 @@ HoldingSpaceBrowserTestBase::HoldingSpaceBrowserTestBase() {
 
 HoldingSpaceBrowserTestBase::~HoldingSpaceBrowserTestBase() = default;
 
+void HoldingSpaceBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+}
+
+void HoldingSpaceBrowserTestBase::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+  test_api_ = std::make_unique<HoldingSpaceTestApi>();
+}
+
 // static
 aura::Window* HoldingSpaceBrowserTestBase::GetRootWindowForNewWindows() {
   return HoldingSpaceTestApi::GetRootWindowForNewWindows();
@@ -205,22 +215,16 @@ std::vector<views::View*> HoldingSpaceBrowserTestBase::GetScreenCaptureViews() {
   return test_api_->GetScreenCaptureViews();
 }
 
+views::View* HoldingSpaceBrowserTestBase::GetTrayIcon() {
+  return test_api_->GetTrayIcon();
+}
+
 void HoldingSpaceBrowserTestBase::RequestAndAwaitLockScreen() {
   if (session_manager::SessionManager::Get()->IsScreenLocked())
     return;
 
   chromeos::SessionManagerClient::Get()->RequestLockScreen();
   SessionStateWaiter().WaitFor(session_manager::SessionState::LOCKED);
-}
-
-void HoldingSpaceBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-}
-
-void HoldingSpaceBrowserTestBase::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
-  test_api_ = std::make_unique<HoldingSpaceTestApi>();
 }
 
 }  // namespace ash

@@ -75,6 +75,12 @@ const char kConversionMeasurementDebugModeDescription[] =
     "reporting delays and noise. Only works if the Conversion Measurement API "
     "is already enabled.";
 
+const char kDetectFormSubmissionOnFormClearName[] =
+    "Detect form submission when the form is cleared.";
+const char kDetectFormSubmissionOnFormClearDescription[] =
+    "Detect form submissions for change password forms that are cleared and "
+    "not removed from the page.";
+
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -524,6 +530,12 @@ const char kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[] =
     "When enabled, a footer indicating user's e-mail address will appear at "
     "the bottom of corresponding password InfoBars.";
 
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[] =
+    "Display SaveCardInfoBar footer with account indication information";
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
+    "When enabled, a footer indicating user's e-mail address will appear at "
+    "the bottom of SaveCardInfoBar.";
+
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
     "Enable Google Pay branding on CVC prompt on Android";
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[] =
@@ -664,6 +676,12 @@ const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteName[] =
 const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription[] =
     "Enable the migration of default installed non-G Suite Chrome apps over to "
     "their corresponding web apps.";
+
+const char kEnableSyncRequiresPoliciesLoadedName[] =
+    "Sync waits for all policies to load before starting";
+const char kEnableSyncRequiresPoliciesLoadedDescription[] =
+    "Enables behaviour for Sync to wait for all policies to load before "
+    "starting";
 
 const char kEnableTLS13EarlyDataName[] = "TLS 1.3 Early Data";
 const char kEnableTLS13EarlyDataDescription[] =
@@ -2554,6 +2572,11 @@ const char kAutofillAssistantDirectActionsName[] =
 const char kAutofillAssistantDirectActionsDescription[] =
     "When enabled, expose direct actions from the Autofill Assistant.";
 
+const char kAutofillAssistantProactiveHelpName[] =
+    "Autofill Assistant proactive help";
+const char kAutofillAssistantProactiveHelpDescription[] =
+    "When enabled, allows the Autofill Assistant to proactively trigger.";
+
 const char kAutofillUseMobileLabelDisambiguationName[] =
     "Autofill Uses Mobile Label Disambiguation";
 const char kAutofillUseMobileLabelDisambiguationDescription[] =
@@ -3142,6 +3165,10 @@ const char kVideoTutorialsInstantFetchName[] =
     "Video tutorials fetch on startup";
 const char kVideoTutorialsInstantFetchDescription[] =
     "Fetch video tutorials on startup";
+
+const char kVoiceButtonInTopToolbarName[] = "Voice button in top toolbar";
+const char kVoiceButtonInTopToolbarDescription[] =
+    "Enables showing the voice search button in the top toolbar";
 
 const char kInlineUpdateFlowName[] = "Enable Google Play inline update flow";
 const char kInlineUpdateFlowDescription[] =

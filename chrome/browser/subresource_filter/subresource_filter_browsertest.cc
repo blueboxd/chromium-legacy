@@ -100,10 +100,6 @@ constexpr const char kSubresourceLoadsDisallowedForPage[] =
     "SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed";
 
 // Names of the performance measurement histograms.
-constexpr const char kActivationWallDuration[] =
-    "SubresourceFilter.DocumentLoad.Activation.WallDuration";
-constexpr const char kActivationCPUDuration[] =
-    "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
 constexpr const char kEvaluationTotalWallDurationForPage[] =
     "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration";
 constexpr const char kEvaluationTotalCPUDurationForPage[] =
@@ -119,6 +115,11 @@ constexpr const char kActivationDecision[] =
 // Names of navigation chain patterns histogram.
 const char kActivationListHistogram[] =
     "SubresourceFilter.PageLoad.ActivationList";
+
+const char kPageLoadActivationStateHistogram[] =
+    "SubresourceFilter.PageLoad.ActivationState";
+const char kPageLoadActivationStateDidInheritHistogram[] =
+    "SubresourceFilter.PageLoad.ActivationState.DidInherit";
 
 // Other histograms.
 const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions2";
@@ -887,6 +888,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
 
+  base::HistogramTester tester;
   ASSERT_TRUE(ExecJs(web_contents(),
                      content::JsReplace("popup = window.open($1, 'name1');",
                                         embedded_test_server()->GetURL(
@@ -901,9 +903,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
               title_watcher.WaitAndGetTitle());
   }
 
-  ui_test_utils::NavigateToURL(
-      chrome::FindBrowserWithWebContents(popup_observer.GetWebContents()),
-      GURL("about:blank"));
+  // Check histograms agree that activation was not inherited.
+  tester.ExpectBucketCount(kPageLoadActivationStateHistogram,
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           1);
+  tester.ExpectTotalCount(kPageLoadActivationStateDidInheritHistogram, 0);
+
+  ASSERT_TRUE(
+      ExecJs(web_contents(), "popup = window.open('about:blank', 'name1');"));
 
   ASSERT_TRUE(ExecJs(web_contents(), R"SCRIPT(
     // Get reference to popup without changing its location.
@@ -923,6 +930,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   // Check the load was blocked.
   EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
+
+  // Check the new histograms agree that activation was inherited.
+  tester.ExpectBucketCount(kPageLoadActivationStateHistogram,
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           2);
+  tester.ExpectBucketCount(kPageLoadActivationStateDidInheritHistogram,
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           1);
 }
 
 // Test that resources in a popup with an aborted initial load due to a
@@ -944,6 +959,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
 
+  base::HistogramTester tester;
   content::WebContentsAddedObserver popup_observer;
   ASSERT_TRUE(ExecJs(original_web_contents, R"SCRIPT(
     popup = window.open('http://b.com/slow?100');
@@ -965,6 +981,14 @@ IN_PROC_BROWSER_TEST_F(
 
   // Check the load was blocked.
   EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
+
+  // Check histograms agree that activation was inherited.
+  tester.ExpectBucketCount(kPageLoadActivationStateHistogram,
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           1);
+  tester.ExpectBucketCount(kPageLoadActivationStateDidInheritHistogram,
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           1);
 }
 
 // Tests checking how histograms are recorded. ---------------------------------
@@ -995,14 +1019,6 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
                           time_recorded ? num_subresource_checks : 0);
   tester.ExpectTotalCount(kEvaluationCPUDuration,
                           time_recorded ? num_subresource_checks : 0);
-
-  // Activation WallDuration histogram is always recorded.
-  tester.ExpectTotalCount(kActivationWallDuration, 6);
-
-  // Activation CPUDuration histogram is recorded only if base::ThreadTicks is
-  // supported.
-  tester.ExpectTotalCount(kActivationCPUDuration,
-                          ScopedThreadTimers::IsSupported() ? 6 : 0);
 
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
@@ -1066,9 +1082,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTestWithoutAdTagging,
   // But they still should not be recorded as the filtering is not activated.
   tester.ExpectTotalCount(kEvaluationWallDuration, 0);
   tester.ExpectTotalCount(kEvaluationCPUDuration, 0);
-
-  tester.ExpectTotalCount(kActivationWallDuration, 0);
-  tester.ExpectTotalCount(kActivationCPUDuration, 0);
 
   // Although SubresourceFilterAgents still record the activation decision.
   tester.ExpectUniqueSample(

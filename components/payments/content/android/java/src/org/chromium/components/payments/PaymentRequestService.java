@@ -36,6 +36,7 @@ import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.payments.mojom.PaymentShippingType;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 import java.util.ArrayList;
@@ -62,6 +63,12 @@ public class PaymentRequestService
                    PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelperInterface.PaymentResponseResultCallback {
     private static final String TAG = "PaymentRequestServ";
+    /**
+     * Hold the currently showing PaymentRequest. Used to prevent showing more than one
+     * PaymentRequest UI per browser process.
+     */
+    private static PaymentRequestService sShowingPaymentRequest;
+
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static NativeObserverForTest sNativeObserverForTest;
     private static boolean sIsLocalHasEnrolledInstrumentQueryQuotaEnforcedForTest;
@@ -88,6 +95,7 @@ public class PaymentRequestService
     private boolean mHasClosed;
     private boolean mIsFinishedQueryingPaymentApps;
     private boolean mIsCurrentPaymentRequestShowing;
+    private boolean mWaitForUpdatedDetails;
 
     /** If not empty, use this error message for rejecting PaymentRequest.show(). */
     private String mRejectShowErrorMessage;
@@ -154,6 +162,8 @@ public class PaymentRequestService
         void onAbortCalled();
         void onCompleteCalled();
         void onMinimalUIReady();
+        void onPaymentUiServiceCreated(PaymentUiServiceTestInterface uiService);
+        void onClosed();
     }
 
     /**
@@ -347,6 +357,28 @@ public class PaymentRequestService
         PaymentAppService service = PaymentAppService.getInstance();
         mBrowserPaymentRequest.addPaymentAppFactories(service);
         service.create(/*delegate=*/this);
+    }
+
+    /** @return Whether the payment details is pending to be updated. */
+    public boolean waitForUpdatedDetails() {
+        return mWaitForUpdatedDetails;
+    }
+
+    /** The payment details is no longer pending to be updated. */
+    public void resetWaitForUpdatedDetails() {
+        mWaitForUpdatedDetails = false;
+    }
+
+    /**
+     * Called to open a new PaymentHandler UI on the showing PaymentRequest.
+     * @param url The url of the payment app to be displayed in the UI.
+     * @return The WebContents of the payment handler that's just opened when the opening is
+     *         successful; null if failed.
+     */
+    @Nullable
+    public static WebContents openPaymentHandlerWindow(GURL url) {
+        if (sShowingPaymentRequest == null) return null;
+        return sShowingPaymentRequest.mBrowserPaymentRequest.openPaymentHandlerWindow(url);
     }
 
     /**
@@ -602,7 +634,10 @@ public class PaymentRequestService
 
         mBrowserPaymentRequest.notifyPaymentUiOfPendingApps(mPendingApps);
         mPendingApps.clear();
-        if (isCurrentPaymentRequestShowing() && !mBrowserPaymentRequest.showAppSelector()) return;
+        if (isCurrentPaymentRequestShowing()
+                && !mBrowserPaymentRequest.showAppSelector(mWaitForUpdatedDetails)) {
+            return;
+        }
 
         mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
     }
@@ -612,7 +647,7 @@ public class PaymentRequestService
      * @param hasAvailableApps Whether any payment app is available.
      * @return Whether client has been disconnected.
      */
-    public boolean disconnectIfNoPaymentMethodsSupported(boolean hasAvailableApps) {
+    private boolean disconnectIfNoPaymentMethodsSupported(boolean hasAvailableApps) {
         if (!mIsFinishedQueryingPaymentApps || !isCurrentPaymentRequestShowing()) return false;
         if (!mCanMakePayment || (mPendingApps.isEmpty() && !hasAvailableApps)) {
             // All factories have responded, but none of them have apps. It's possible to add credit
@@ -855,7 +890,43 @@ public class PaymentRequestService
      */
     /* package */ void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
         if (mBrowserPaymentRequest == null) return;
-        mBrowserPaymentRequest.show(isUserGesture, waitForUpdatedDetails);
+        if (mBrowserPaymentRequest.isShowingUi()) {
+            // Can be triggered only by a compromised renderer. In normal operation, calling show()
+            // twice on the same instance of PaymentRequest in JavaScript is rejected at the
+            // renderer level.
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.CANNOT_SHOW_TWICE, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+        if (sShowingPaymentRequest != null) {
+            // The renderer can create multiple instances of PaymentRequest and call show() on each
+            // one. Only the first one will be shown. This also prevents multiple tabs and windows
+            // from showing PaymentRequest UI at the same time.
+            mJourneyLogger.setNotShown(NotShownReason.CONCURRENT_REQUESTS);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.ANOTHER_UI_SHOWING, PaymentErrorReason.ALREADY_SHOWING);
+            if (sObserverForTest != null) {
+                sObserverForTest.onPaymentRequestServiceShowFailed();
+            }
+            return;
+        }
+        sShowingPaymentRequest = this;
+        mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.SHOW_CALLED);
+        mIsCurrentPaymentRequestShowing = true;
+        mIsUserGestureShow = isUserGesture;
+        mWaitForUpdatedDetails = waitForUpdatedDetails;
+
+        mJourneyLogger.setTriggerTime();
+        if (disconnectIfNoPaymentMethodsSupported(mBrowserPaymentRequest.hasAvailableApps())) {
+            return;
+        }
+        if (isFinishedQueryingPaymentApps()
+                && !mBrowserPaymentRequest.showAppSelector(mWaitForUpdatedDetails)) {
+            return;
+        }
+
+        mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
     }
 
     /**
@@ -975,6 +1046,7 @@ public class PaymentRequestService
         mHasClosed = true;
 
         mIsCurrentPaymentRequestShowing = false;
+        sShowingPaymentRequest = null;
 
         if (mBrowserPaymentRequest != null) {
             mBrowserPaymentRequest.close();
@@ -989,6 +1061,10 @@ public class PaymentRequestService
         }
 
         mOnClosedListener.run();
+
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onClosed();
+        }
     }
 
     /** @return An observer for the payment request service, if any; otherwise, null. */

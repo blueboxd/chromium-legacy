@@ -16,7 +16,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/structured_headers.h"
 #include "services/network/public/cpp/trust_token_http_headers.h"
-#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/ed25519_trust_token_request_signer.h"
 #include "services/network/trust_tokens/signed_redemption_record_serialization.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
@@ -55,11 +54,12 @@ bool ReconstructSigningDataAndVerifyForIndividualIssuer(
     const net::HttpRequestHeaders& headers,
     base::RepeatingCallback<bool(base::span<const uint8_t> data,
                                  base::span<const uint8_t> signature,
-                                 base::span<const uint8_t> verification_key)>
-        verifier,
+                                 base::span<const uint8_t> verification_key,
+                                 const std::string& sig_alg)> verifier,
     mojom::TrustTokenSignRequestData sign_request_data,
     std::string* error_out,
-    std::map<std::string, std::string>* verification_keys_out) {
+    std::map<std::string, std::string>* verification_keys_out,
+    const std::string& sig_alg) {
   if (!issuer_and_params.item.is_string()) {
     *error_out = "type-unsafe issuer in Sec-Signature header";
     return false;
@@ -121,14 +121,20 @@ bool ReconstructSigningDataAndVerifyForIndividualIssuer(
                                     written_reconstructed_cbor->end());
 
   if (!verifier) {
-    verifier =
-        base::BindRepeating(&Ed25519TrustTokenRequestSigner::Verify,
-                            std::make_unique<Ed25519TrustTokenRequestSigner>());
+    verifier = base::BindRepeating(
+        [](base::span<const uint8_t> data, base::span<const uint8_t> signature,
+           base::span<const uint8_t> verification_key,
+           const std::string& signing_alg) {
+          std::unique_ptr<Ed25519TrustTokenRequestSigner> signer =
+              std::make_unique<Ed25519TrustTokenRequestSigner>();
+          return signer->Verify(data, signature, verification_key) &&
+                 signing_alg == signer->GetAlgorithmIdentifier();
+        });
   }
 
   if (!verifier.Run(base::make_span(reconstructed_signing_data),
                     base::as_bytes(base::make_span(signature)),
-                    base::as_bytes(base::make_span(public_key)))) {
+                    base::as_bytes(base::make_span(public_key)), sig_alg)) {
     *error_out = "Error verifying signature";
     return false;
   }
@@ -195,13 +201,33 @@ bool ExtractIssuersAndParametersFromSignatureHeaderMap(
   return true;
 }
 
+bool ExtractSigningAlgorithmIdentifierFromSignatureHeaderMap(
+    const SignatureHeaderMap& map,
+    std::string* sig_alg_out,
+    std::string* error_out) {
+  auto it = map.find("alg");
+  if (it == map.end()) {
+    *error_out = "Missing 'alg' element in the Sec-Signature header";
+    return false;
+  }
+
+  if (it->second.member_is_inner_list) {
+    *error_out = "'alg' element should not be a list";
+    return false;
+  }
+
+  *sig_alg_out = it->second.member.front().item.GetString();
+  return true;
+}
+
 bool ValidateSignatureHeaderMapAndExtractFields(
     const SignatureHeaderMap& map,
     std::vector<net::structured_headers::ParameterizedItem>*
         issuers_and_parameters_out,
     mojom::TrustTokenSignRequestData* sign_request_data_out,
+    std::string* sig_alg_out,
     std::string* error_out) {
-  if (map.size() != 2) {
+  if (map.size() != 3) {
     *error_out = "Unexpected number of members in Sec-Signature header map";
     return false;
   }
@@ -213,6 +239,11 @@ bool ValidateSignatureHeaderMapAndExtractFields(
 
   if (!ExtractIssuersAndParametersFromSignatureHeaderMap(
           map, issuers_and_parameters_out, error_out)) {
+    return false;
+  }
+
+  if (!ExtractSigningAlgorithmIdentifierFromSignatureHeaderMap(map, sig_alg_out,
+                                                               error_out)) {
     return false;
   }
 
@@ -264,10 +295,11 @@ bool ReconstructSigningDataAndVerifySignatures(
     const net::HttpRequestHeaders& headers,
     base::RepeatingCallback<bool(base::span<const uint8_t> data,
                                  base::span<const uint8_t> signature,
-                                 base::span<const uint8_t> verification_key)>
-        verifier,
+                                 base::span<const uint8_t> verification_key,
+                                 const std::string& sig_alg)> verifier,
     std::string* error_out,
-    std::map<std::string, std::string>* verification_keys_out) {
+    std::map<std::string, std::string>* verification_keys_out,
+    mojom::TrustTokenSignRequestData* sign_request_data_out) {
   // Make it possible to set the error without needing to check for
   // |error_out|'s presence.
   std::string dummy_error;
@@ -292,11 +324,14 @@ bool ReconstructSigningDataAndVerifySignatures(
   std::vector<net::structured_headers::ParameterizedItem>
       issuers_and_parameters;
   mojom::TrustTokenSignRequestData sign_request_data;
+  std::string sig_alg;
   if (!ValidateSignatureHeaderMapAndExtractFields(
           *signature_header_map, &issuers_and_parameters, &sign_request_data,
-          error_out)) {
+          &sig_alg, error_out)) {
     return false;
   }
+  if (sign_request_data_out)
+    *sign_request_data_out = sign_request_data;
 
   for (net::structured_headers::ParameterizedItem& issuer_and_parameters :
        issuers_and_parameters) {
@@ -304,7 +339,7 @@ bool ReconstructSigningDataAndVerifySignatures(
     // |error_out| on failure.
     if (!ReconstructSigningDataAndVerifyForIndividualIssuer(
             issuer_and_parameters, destination, headers, verifier,
-            sign_request_data, error_out, verification_keys_out)) {
+            sign_request_data, error_out, verification_keys_out, sig_alg)) {
       return false;
     }
   }

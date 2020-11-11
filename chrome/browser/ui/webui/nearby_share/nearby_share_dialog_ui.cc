@@ -6,12 +6,15 @@
 
 #include <string>
 
+#include "base/strings/string_split.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
+#include "chrome/browser/nearby_sharing/file_attachment.h"
 #include "chrome/browser/nearby_sharing/nearby_per_session_discovery_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
+#include "chrome/browser/nearby_sharing/text_attachment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -20,9 +23,11 @@
 #include "chrome/grit/nearby_share_dialog_resources.h"
 #include "chrome/grit/nearby_share_dialog_resources_map.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/url_util.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -62,6 +67,9 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
                                    base::Unretained(this)));
 
   content::WebUIDataSource::Add(profile, html_source);
+
+  const GURL& url = web_ui->GetWebContents()->GetVisibleURL();
+  SetAttachmentFromQueryParameter(url);
 }
 
 NearbyShareDialogUI::~NearbyShareDialogUI() = default;
@@ -107,6 +115,33 @@ void NearbyShareDialogUI::BindInterface(
 void NearbyShareDialogUI::HandleClose(const base::ListValue* args) {
   for (auto& observer : observers_) {
     observer.OnClose();
+  }
+}
+
+void NearbyShareDialogUI::SetAttachmentFromQueryParameter(const GURL& url) {
+  std::vector<std::unique_ptr<Attachment>> attachments;
+  std::string value;
+  for (auto& text_type :
+       std::vector<std::pair<std::string, TextAttachment::Type>>{
+           {"address", TextAttachment::Type::kAddress},
+           {"url", TextAttachment::Type::kUrl},
+           {"phone", TextAttachment::Type::kPhoneNumber},
+           {"text", TextAttachment::Type::kText}}) {
+    if (net::GetValueForKeyInQuery(url, text_type.first, &value)) {
+      attachments.push_back(
+          std::make_unique<TextAttachment>(text_type.second, value));
+      SetAttachments(std::move(attachments));
+      return;
+    }
+  }
+
+  if (net::GetValueForKeyInQuery(url, "file", &value)) {
+    for (std::string& path : base::SplitString(
+             value, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+      attachments.push_back(
+          std::make_unique<FileAttachment>(base::FilePath(path)));
+    }
+    SetAttachments(std::move(attachments));
   }
 }
 

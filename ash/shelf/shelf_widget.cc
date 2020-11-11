@@ -600,7 +600,7 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
 
   // Sets initial session state to make sure the UI is properly shown.
   OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
-  GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
+  delegate_view_->SetEnableArrowKeyTraversal(true);
 
   Shell::Get()->accessibility_controller()->AddObserver(this);
 }
@@ -758,9 +758,11 @@ void ShelfWidget::CalculateTargetBounds() {
       WorkAreaInsets::ForWindow(GetNativeWindow());
 
   if (layout_manager->is_shelf_auto_hidden()) {
+    const display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            GetNativeWindow());
     shelf_in_screen_portion =
-        Shell::Get()->app_list_controller()->home_launcher_transition_state() ==
-                AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown
+        Shell::Get()->app_list_controller()->GetTargetVisibility(display.id())
             ? shelf_size
             : ShelfConfig::Get()->hidden_shelf_in_screen_portion();
   } else if (layout_manager->visibility_state() == SHELF_HIDDEN ||

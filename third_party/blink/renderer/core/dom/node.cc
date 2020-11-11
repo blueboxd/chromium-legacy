@@ -551,7 +551,7 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
 
   ScrollableArea* scrollable_area =
-      ScrollableArea::GetForScrolling(ToLayoutBox(GetLayoutObject()));
+      ScrollableArea::GetForScrolling(To<LayoutBox>(GetLayoutObject()));
   if (!scrollable_area)
     return;
   LayoutBox* box_to_scroll = scrollable_area->GetLayoutBox();
@@ -1046,9 +1046,7 @@ void Node::normalize() {
 }
 
 LayoutBox* Node::GetLayoutBox() const {
-  LayoutObject* layout_object = GetLayoutObject();
-  return layout_object && layout_object->IsBox() ? ToLayoutBox(layout_object)
-                                                 : nullptr;
+  return DynamicTo<LayoutBox>(GetLayoutObject());
 }
 
 void Node::SetLayoutObject(LayoutObject* layout_object) {
@@ -1114,10 +1112,7 @@ void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
 }
 
 LayoutBoxModelObject* Node::GetLayoutBoxModelObject() const {
-  LayoutObject* layout_object = GetLayoutObject();
-  return layout_object && layout_object->IsBoxModelObject()
-             ? ToLayoutBoxModelObject(layout_object)
-             : nullptr;
+  return DynamicTo<LayoutBoxModelObject>(GetLayoutObject());
 }
 
 PhysicalRect Node::BoundingBox() const {
@@ -3052,10 +3047,9 @@ void Node::DefaultEventHandler(Event& event) {
       // LayoutTextControlSingleLine::scrollHeight
       GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInput);
       LayoutObject* layout_object = GetLayoutObject();
-      while (
-          layout_object &&
-          (!layout_object->IsBox() ||
-           !ToLayoutBox(layout_object)->CanBeScrolledAndHasScrollableArea())) {
+      while (layout_object && (!layout_object->IsBox() ||
+                               !To<LayoutBox>(layout_object)
+                                    ->CanBeScrolledAndHasScrollableArea())) {
         if (auto* document = DynamicTo<Document>(layout_object->GetNode())) {
           Element* owner = document->LocalOwner();
           layout_object = owner ? owner->GetLayoutObject() : nullptr;
@@ -3122,6 +3116,11 @@ void Node::DecrementConnectedSubframeCount() {
 }
 
 StaticNodeList* Node::getDestinationInsertionPoints() {
+  // TODO(crbug.com/937746): Anything caught by this DCHECK is using the
+  // now-removed Shadow DOM v0 API.
+  DCHECK(false)
+      << "Shadow DOM v0 has been removed (getDestinationInsertionPoints).";
+
   UpdateDistributionForLegacyDistributedNodes();
   HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
   CollectDestinationInsertionPoints(*this, insertion_points);
@@ -3264,14 +3263,13 @@ void Node::SetCustomElementState(CustomElementState new_state) {
 
   if (element->IsDefined() != was_defined) {
     element->PseudoStateChanged(CSSSelector::kPseudoDefined);
-    if (RuntimeEnabledFeatures::CustomElementsV0Enabled(GetExecutionContext()))
+    if (RuntimeEnabledFeatures::CustomElementsV0Enabled())
       element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
   }
 }
 
 void Node::SetV0CustomElementState(V0CustomElementState new_state) {
-  DCHECK(
-      RuntimeEnabledFeatures::CustomElementsV0Enabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::CustomElementsV0Enabled());
   V0CustomElementState old_state = GetV0CustomElementState();
 
   switch (new_state) {

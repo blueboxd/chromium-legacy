@@ -60,7 +60,7 @@ import java.util.Map;
 public class PaymentRequestService
         implements PaymentAppFactoryDelegate, PaymentAppFactoryParams,
                    PaymentRequestUpdateEventListener, PaymentApp.AbortCallback,
-                   PaymentApp.InstrumentDetailsCallback,
+                   PaymentApp.InstrumentDetailsCallback, PaymentDetailsConverter.MethodChecker,
                    PaymentResponseHelperInterface.PaymentResponseResultCallback {
     private static final String TAG = "PaymentRequestServ";
     /**
@@ -95,7 +95,7 @@ public class PaymentRequestService
     private boolean mHasClosed;
     private boolean mIsFinishedQueryingPaymentApps;
     private boolean mIsCurrentPaymentRequestShowing;
-    private boolean mWaitForUpdatedDetails;
+    private boolean mIsShowWaitingForUpdatedDetails;
 
     /** If not empty, use this error message for rejecting PaymentRequest.show(). */
     private String mRejectShowErrorMessage;
@@ -359,14 +359,20 @@ public class PaymentRequestService
         service.create(/*delegate=*/this);
     }
 
-    /** @return Whether the payment details is pending to be updated. */
-    public boolean waitForUpdatedDetails() {
-        return mWaitForUpdatedDetails;
+    /**
+     * @return Whether the payment details is pending to be updated due to a promise that was
+     *         passed into PaymentRequest.show().
+     */
+    public boolean isShowWaitingForUpdatedDetails() {
+        return mIsShowWaitingForUpdatedDetails;
     }
 
-    /** The payment details is no longer pending to be updated. */
-    public void resetWaitForUpdatedDetails() {
-        mWaitForUpdatedDetails = false;
+    /**
+     * Sets that the payment details is no longer pending to be updated because the promise that
+     * was passed into PaymentRequest.show() has been resolved.
+     */
+    public void resetWaitingForUpdatedDetails() {
+        mIsShowWaitingForUpdatedDetails = false;
     }
 
     /**
@@ -635,7 +641,7 @@ public class PaymentRequestService
         mBrowserPaymentRequest.notifyPaymentUiOfPendingApps(mPendingApps);
         mPendingApps.clear();
         if (isCurrentPaymentRequestShowing()
-                && !mBrowserPaymentRequest.showAppSelector(mWaitForUpdatedDetails)) {
+                && !mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails)) {
             return;
         }
 
@@ -915,18 +921,52 @@ public class PaymentRequestService
         mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.SHOW_CALLED);
         mIsCurrentPaymentRequestShowing = true;
         mIsUserGestureShow = isUserGesture;
-        mWaitForUpdatedDetails = waitForUpdatedDetails;
+        mIsShowWaitingForUpdatedDetails = waitForUpdatedDetails;
 
         mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported(mBrowserPaymentRequest.hasAvailableApps())) {
             return;
         }
         if (isFinishedQueryingPaymentApps()
-                && !mBrowserPaymentRequest.showAppSelector(mWaitForUpdatedDetails)) {
+                && !mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails)) {
             return;
         }
 
         mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
+    }
+
+    // Implements PaymentDetailsConverter.MethodChecker:
+    @Override
+    public boolean isInvokedInstrumentValidForPaymentMethodIdentifier(
+            String methodName, PaymentApp invokedPaymentApp) {
+        return invokedPaymentApp != null
+                && invokedPaymentApp.isValidForPaymentMethodData(methodName, null);
+    }
+
+    private void continueShow(PaymentDetails details) {
+        assert mIsShowWaitingForUpdatedDetails;
+        // mSpec.updateWith() can be used only when mSpec has not been destroyed.
+        assert !mSpec.isDestroyed();
+
+        if (!PaymentValidator.validatePaymentDetails(details)
+                || !mBrowserPaymentRequest.parseAndValidateDetailsFurtherIfNeeded(details)) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.INVALID_PAYMENT_DETAILS, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+
+        if (!TextUtils.isEmpty(details.error)) {
+            mJourneyLogger.setNotShown(NotShownReason.OTHER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.INVALID_STATE, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+
+        mSpec.updateWith(details);
+
+        mIsShowWaitingForUpdatedDetails = false;
+        mBrowserPaymentRequest.continueShow();
     }
 
     /**
@@ -935,7 +975,49 @@ public class PaymentRequestService
      */
     /* package */ void updateWith(PaymentDetails details) {
         if (mBrowserPaymentRequest == null) return;
-        mBrowserPaymentRequest.updateWith(details);
+        if (mIsShowWaitingForUpdatedDetails) {
+            // Under this condition, updateWith() is called in response to the resolution of
+            // show()'s PaymentDetailsUpdate promise.
+            continueShow(details);
+            return;
+        }
+
+        if (!mIsCurrentPaymentRequestShowing) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+
+        if (!PaymentOptionsUtils.requestAnyInformation(mPaymentOptions)
+                && (mInvokedPaymentApp == null
+                        || !mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate())) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.INVALID_STATE, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+
+        if (!PaymentValidator.validatePaymentDetails(details)
+                || !mBrowserPaymentRequest.parseAndValidateDetailsFurtherIfNeeded(details)) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.INVALID_PAYMENT_DETAILS, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+        mSpec.updateWith(details);
+
+        boolean hasNotifiedInvokedPaymentApp =
+                mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate();
+        if (hasNotifiedInvokedPaymentApp) {
+            // After a payment app has been invoked, all of the merchant's calls to update the price
+            // via updateWith() should be forwarded to the invoked app, so it can reflect the
+            // updated price in its UI.
+            mInvokedPaymentApp.updateWith(
+                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(details,
+                            /*methodChecker=*/this, mInvokedPaymentApp));
+        }
+        mBrowserPaymentRequest.onPaymentDetailsUpdated(details, hasNotifiedInvokedPaymentApp);
     }
 
     /**
@@ -943,7 +1025,18 @@ public class PaymentRequestService
      */
     /* package */ void onPaymentDetailsNotUpdated() {
         if (mBrowserPaymentRequest == null) return;
-        mBrowserPaymentRequest.onPaymentDetailsNotUpdated();
+        if (!mIsCurrentPaymentRequestShowing) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW, PaymentErrorReason.USER_CANCEL);
+            return;
+        }
+        mSpec.recomputeSpecForDetails();
+        if (mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
+            mInvokedPaymentApp.onPaymentDetailsNotUpdated();
+            return;
+        }
+        mBrowserPaymentRequest.onPaymentDetailsNotUpdated(mSpec.selectedShippingOptionError());
     }
 
     /** The component part of the {@link PaymentRequest#abort} implementation. */

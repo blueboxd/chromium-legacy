@@ -11,24 +11,6 @@ GEN_INCLUDE(['../testing/mock_feedback.js']);
  */
 ChromeVoxTutorialTest = class extends ChromeVoxNextE2ETest {
   /** @override */
-  testGenCppIncludes() {
-    super.testGenCppIncludes();
-    GEN(`
-  #include "base/command_line.h"
-  #include "ui/accessibility/accessibility_switches.h"
-      `);
-  }
-
-  /** @override */
-  testGenPreamble() {
-    GEN(`
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalAccessibilityChromeVoxTutorial);
-      `);
-    super.testGenPreamble();
-  }
-
-  /** @override */
   setUp() {
     window.doCmd = this.doCmd;
   }
@@ -56,7 +38,6 @@ ChromeVoxTutorialTest = class extends ChromeVoxNextE2ETest {
   }
 
   async launchAndWaitForTutorial() {
-    assertTrue(this.getPanel().iTutorialEnabled_);
     new PanelCommand(PanelCommandType.TUTORIAL).send();
     await this.waitForTutorial();
     return new Promise(resolve => {
@@ -621,6 +602,41 @@ TEST_F('ChromeVoxTutorialTest', 'ResourcesTest', function() {
         .call(doCmd('forceClickOnCurrentItem'))
         .expectSpeech('tab created')
         .expectSpeech('www.chromevox.com')
+        .replay();
+  });
+});
+
+// Tests that choosing a curriculum with only 1 lesson automatically opens the
+// lesson.
+TEST_F('ChromeVoxTutorialTest', 'OnlyLessonTest', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.simpleDoc, async function(root) {
+    await this.launchAndWaitForTutorial();
+    const tutorial = this.getPanel().iTutorial;
+    mockFeedback.expectSpeech('ChromeVox tutorial')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Quick orientation')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Essential keys')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Navigation')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Command references')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Sounds and settings')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Resources')
+        .call(doCmd('forceClickOnCurrentItem'))
+        .expectSpeech('Learn More', 'Heading 1')
+        .expectSpeech(
+            ' Press Search + Right Arrow, or Search + Left Arrow to' +
+            ' navigate this lesson ')
+        // The 'All lessons' button should be hidden since this is the only
+        // lesson for the curriculum.
+        .call(doCmd('nextButton'))
+        .expectSpeech('Main menu')
+        .call(doCmd('nextButton'))
+        .expectSpeech('Exit tutorial')
         .replay();
   });
 });

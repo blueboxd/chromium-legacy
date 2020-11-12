@@ -48,12 +48,18 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   SetVisible(false);
 
   // Context menu.
-  if (features::IsTemporaryHoldingSpaceContentForwardEntryPointEnabled())
+  if (features::IsTemporaryHoldingSpacePreviewsEnabled())
     set_context_menu_controller(this);
 
   // Icon.
   icon_ = tray_container()->AddChildView(
       std::make_unique<HoldingSpaceTrayIcon>(shelf));
+
+  // It's possible that this holding space tray was created after login, such as
+  // would occur if the user connects an external display. In such situations
+  // the holding space model will already have been attached.
+  if (HoldingSpaceController::Get()->model())
+    OnHoldingSpaceModelAttached(HoldingSpaceController::Get()->model());
 }
 
 HoldingSpaceTray::~HoldingSpaceTray() = default;
@@ -145,7 +151,7 @@ const char* HoldingSpaceTray::GetClassName() const {
 void HoldingSpaceTray::UpdateVisibility() {
   HoldingSpaceModel* model = HoldingSpaceController::Get()->model();
 
-  bool logged_in =
+  const bool logged_in =
       shelf()->GetStatusAreaWidget()->login_status() == LoginStatus::USER;
 
   if (!model || !logged_in) {
@@ -153,15 +159,20 @@ void HoldingSpaceTray::UpdateVisibility() {
     return;
   }
 
-  PrefService* active_pref_service =
+  PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
-  bool has_ever_pinned_item =
-      active_pref_service
-          ? holding_space_prefs::GetTimeOfFirstPin(active_pref_service)
-                .has_value()
-          : false;
+  const bool has_ever_added_item =
+      prefs ? holding_space_prefs::GetTimeOfFirstAdd(prefs).has_value() : false;
+  const bool has_ever_pinned_item =
+      prefs ? holding_space_prefs::GetTimeOfFirstPin(prefs).has_value() : false;
 
-  SetVisiblePreferred(!has_ever_pinned_item ||
+  // The holding space tray should not be visible in the shelf until the user
+  // has added their first item to holding space. Once an item has been added,
+  // the holding space tray will continue to be visible until the user has
+  // pinned their first file. After the user has pinned their first file, the
+  // holding space tray will only be visible in the shelf if their holding space
+  // contains finalized items.
+  SetVisiblePreferred((has_ever_added_item && !has_ever_pinned_item) ||
                       ModelContainsFinalizedItems(model));
 }
 
@@ -201,13 +212,19 @@ void HoldingSpaceTray::OnHoldingSpaceItemFinalized(
 }
 
 void HoldingSpaceTray::ExecuteCommand(int command_id, int event_flags) {
-  DCHECK(features::IsTemporaryHoldingSpaceContentForwardEntryPointEnabled());
+  DCHECK(features::IsTemporaryHoldingSpacePreviewsEnabled());
   switch (command_id) {
     case HoldingSpaceCommandId::kHidePreviews:
+      holding_space_metrics::RecordPodAction(
+          holding_space_metrics::PodAction::kHidePreviews);
+
       holding_space_prefs::SetPreviewsEnabled(
           Shell::Get()->session_controller()->GetActivePrefService(), false);
       break;
     case HoldingSpaceCommandId::kShowPreviews:
+      holding_space_metrics::RecordPodAction(
+          holding_space_metrics::PodAction::kShowPreviews);
+
       holding_space_prefs::SetPreviewsEnabled(
           Shell::Get()->session_controller()->GetActivePrefService(), true);
       break;
@@ -221,7 +238,10 @@ void HoldingSpaceTray::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  DCHECK(features::IsTemporaryHoldingSpaceContentForwardEntryPointEnabled());
+  DCHECK(features::IsTemporaryHoldingSpacePreviewsEnabled());
+
+  holding_space_metrics::RecordPodAction(
+      holding_space_metrics::PodAction::kShowContextMenu);
 
   context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
 

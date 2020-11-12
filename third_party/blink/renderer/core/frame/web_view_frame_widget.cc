@@ -92,39 +92,6 @@ void WebViewFrameWidget::Resize(const gfx::Size& size) {
   web_view_->Resize(size);
 }
 
-void WebViewFrameWidget::DidBeginMainFrame() {
-  WebFrameWidgetBase::DidBeginMainFrame();
-
-  auto* main_frame = web_view_->MainFrameImpl();
-  PageWidgetDelegate::DidBeginFrame(*main_frame->GetFrame());
-}
-
-void WebViewFrameWidget::BeginCommitCompositorFrame() {
-  commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
-}
-
-void WebViewFrameWidget::EndCommitCompositorFrame(
-    base::TimeTicks commit_start_time) {
-  DCHECK(commit_compositor_frame_start_time_.has_value());
-
-  web_view_->Client()->DidCommitCompositorFrameForLocalMainFrame(
-      commit_start_time);
-  web_view_->UpdatePreferredSize();
-
-  // TODO(https://crbug.com/1139104): Remove these CHECKS.
-  CHECK(web_view_);
-  CHECK(web_view_->MainFrameImpl());
-  CHECK(web_view_->MainFrameImpl()->GetFrame());
-  CHECK(web_view_->MainFrameImpl()->GetFrame()->View());
-  web_view_->MainFrameImpl()
-      ->GetFrame()
-      ->View()
-      ->EnsureUkmAggregator()
-      .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
-                                  commit_start_time, base::TimeTicks::Now());
-  commit_compositor_frame_start_time_.reset();
-}
-
 void WebViewFrameWidget::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                          DocumentUpdateReason reason) {
   web_view_->UpdateLifecycle(requested_update, reason);
@@ -224,10 +191,6 @@ void WebViewFrameWidget::DisableDeviceEmulation() {
   device_emulator_ = nullptr;
 }
 
-void WebViewFrameWidget::DidDetachLocalFrameTree() {
-  web_view_->DidDetachLocalMainFrame();
-}
-
 bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
 }
@@ -240,15 +203,6 @@ void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   cc::LayerTreeHost* layer_tree_host = widget_base_->LayerTreeHost();
   layer_tree_host->SetRootLayer(root_layer);
   web_view_->DidChangeRootLayer(!!root_layer);
-}
-
-WebHitTestResult WebViewFrameWidget::HitTestResultAt(const gfx::PointF& point) {
-  return web_view_->HitTestResultAt(point);
-}
-
-HitTestResult WebViewFrameWidget::CoreHitTestResultAt(
-    const gfx::PointF& point) {
-  return web_view_->CoreHitTestResultAt(point);
 }
 
 void WebViewFrameWidget::ZoomToFindInPageRect(
@@ -669,13 +623,6 @@ bool WebViewFrameWidget::UpdateScreenRects(
 void WebViewFrameWidget::RunPaintBenchmark(int repeat_count,
                                            cc::PaintBenchmarkResult& result) {
   web_view_->RunPaintBenchmark(repeat_count, result);
-}
-
-void WebViewFrameWidget::DidCompletePageScaleAnimation() {
-  if (auto* focused_frame = View()->FocusedFrame()) {
-    if (focused_frame->AutofillClient())
-      focused_frame->AutofillClient()->DidCompleteFocusChangeInFrame();
-  }
 }
 
 const ScreenInfo& WebViewFrameWidget::GetOriginalScreenInfo() {

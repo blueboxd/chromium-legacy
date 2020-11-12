@@ -400,6 +400,7 @@
         'RemoteAccessHostDebugOverridePolicies',
         'RemoteAccessHostAllowUiAccessForRemoteAssistance',
         'RemoteAccessHostAllowFileTransfer',
+        'RemoteAccessHostEnableUserInterface',
       ],
     },
     {
@@ -2263,6 +2264,28 @@
 
           If this setting is disabled, file transfer will not be allowed. If this setting is enabled or not set, file transfer will be allowed.''',
     },
+    {
+      'name': 'RemoteAccessHostEnableUserInterface',
+      'owners': ['file://remoting/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:88-'],
+      'features': {
+        'dynamic_refresh': True,
+        'internal_only': True,  # Not available outside of Google.
+        'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
+      },
+      'default': True,
+      'example_value': False,
+      'id': 803,
+      'caption': '''Enable or disable the display of connection related UI on the host desktop when a connection is active.''',
+      'tags': [],
+      'desc': '''If this policy is disabled, connection related UI (e.g. the disconnect window) will not be shown for non-curtained remote access connections. Curtained remote access sessions and remote support sessions are not affected by this policy.
+
+          This policy has no effect if it is set to true, left empty, or is not set.''',
+    },
+
     {
       'name': 'PrintingEnabled',
       'owners': ['file://components/policy/resources/OWNERS'],
@@ -4987,11 +5010,26 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Block 3rd party cookies',
+        },
+        {
+          'value': False,
+          'caption': 'Allow 3rd party cookies',
+        },
+        {
+          'value': None,
+          'caption': 'Allow 3rd party cookes, but allow the user to change this setting',
+        },
+      ],
       'example_value': False,
+      'default': None,
       'id': 39,
       'caption': '''Block third party cookies''',
       'tags': [],
-      'desc': '''Setting the policy to True prevents webpage elements that aren't from the domain that's in the browser's address bar from setting cookies. Setting the policy to False lets those elements set cookies and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled prevents webpage elements that aren't from the domain that's in the browser's address bar from setting cookies. Setting the policy to Disabled lets those elements set cookies and prevents users from changing this setting.
 
       Leaving it unset turns third-party cookies on, but users can change this setting.''',
     },
@@ -23215,6 +23253,16 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       },
       'example_value': True,
       'default': True,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show media recommendations to the user',
+        },
+        {
+          'value': False,
+          'caption': 'Hide media recommendations from the user',
+        },
+      ],
       'id': 788,
       'caption': 'Enable Media Recommendations',
       'tags': [],
@@ -23820,6 +23868,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'RemoteAccessHostDebugOverridePolicies',
         'RemoteAccessHostAllowUiAccessForRemoteAssistance',
         'RemoteAccessHostAllowFileTransfer',
+        'RemoteAccessHostEnableUserInterface',
       ],
     },
     {
@@ -24266,6 +24315,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 802,
+  'highest_id_currently_used': 803,
   'highest_atomic_group_id_currently_used': 40
 }

@@ -77,6 +77,7 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
+          'enable_resultdb',
         ],
       },
       'content_browsertests': {
@@ -128,6 +129,7 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
+          'enable_resultdb',
         ],
       },
       'webview_instrumentation_test_apk': {
@@ -201,6 +203,7 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
+          'enable_resultdb',
         ],
       },
       'chrome_public_test_vr_apk': {
@@ -311,6 +314,7 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
+          'enable_resultdb',
         ],
         'test': 'chrome_public_test_apk',
       },
@@ -485,6 +489,9 @@
           'idempotent': False,  # https://crbug.com/549140
           'shards': 6,
         },
+        'resultdb': {
+          'enable': True,
+        },
       },
       'telemetry_unittests': {
         'args': [
@@ -495,6 +502,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 24,
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
     },
@@ -510,6 +520,9 @@
           'idempotent': False,  # https://crbug.com/549140
           'shards': 2,
         },
+        'resultdb': {
+          'enable': True,
+        },
       },
       'telemetry_unittests': {
         'args': [
@@ -520,6 +533,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 10,
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
     },
@@ -1083,6 +1099,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
         },
+        'resultdb': {
+          'enable': True,
+        },
       },
       'telemetry_perf_unittests': {
         'args': [
@@ -1093,6 +1112,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 12,
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
       'telemetry_unittests': {
@@ -1105,6 +1127,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 4,
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
     },
@@ -1183,7 +1208,11 @@
     },
 
     'desktop_chromium_isolated_scripts': {
-      'blink_python_tests': {},
+      'blink_python_tests': {
+        'resultdb': {
+          'enable': True,
+        }
+      },
       'blink_web_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
         # passed, but 0 times when '--test-list' is passed. We want to always
@@ -1212,18 +1241,33 @@
           'result_format': 'single'
         }
       },
-      'extension_docserver_python_unittests': {},
+      'extension_docserver_python_unittests': {
+        'resultdb': {
+          'enable': True,
+        },
+      },
       'flatbuffers_unittests': {
         'resultdb': {
           'enable': True,
           'result_format': 'single'
         }
       },
-      'grit_python_unittests': {},
-      'metrics_python_tests': {},
+      'grit_python_unittests': {
+        'resultdb': {
+          'enable': True,
+        },
+      },
+      'metrics_python_tests': {
+        'resultdb': {
+          'enable': True,
+        },
+      },
       'telemetry_gpu_unittests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
       'telemetry_unittests': {
@@ -1236,6 +1280,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 4,
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
       'views_perftests': {
@@ -1839,7 +1886,7 @@
           '--shard-timeout=500',
         ],
         'android_swarming': {
-          'shards': 10,
+          'shards': 20,
         },
         'desktop_args': [
           '--bot-mode',
@@ -3763,7 +3810,11 @@
     },
 
     'mojo_python_unittests_isolated_scripts': {
-      'mojo_python_unittests': {},
+      'mojo_python_unittests': {
+        'resultdb': {
+          'enable': True,
+        },
+      },
     },
 
     'mojo_windows_specific_gtests': {
@@ -3786,6 +3837,7 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
+          'enable_resultdb',
         ],
         'test': 'chrome_public_test_apk',
       },
@@ -4127,6 +4179,7 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
+          'enable_resultdb',
         ],
         'test': 'chrome_public_test_apk',
       },
@@ -4387,6 +4440,9 @@
           '--retry-limit=2',
         ],
         'isolate_name': 'telemetry_perf_unittests',
+        'resultdb': {
+          'enable': True,
+        },
       },
       'telemetry_monochrome_minidump_unittests': {
         'args': [
@@ -4397,6 +4453,9 @@
           '--retry-limit=2',
         ],
         'isolate_name': 'telemetry_perf_unittests',
+        'resultdb': {
+          'enable': True,
+        },
       },
     },
 
@@ -4410,6 +4469,9 @@
           '--retry-limit=2',
         ],
         'isolate_name': 'telemetry_perf_unittests',
+        'resultdb': {
+          'enable': True,
+        },
       },
     },
 
@@ -4422,6 +4484,9 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 12,
+        },
+        'resultdb': {
+          'enable': True,
         },
       },
     },

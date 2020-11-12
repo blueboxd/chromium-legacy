@@ -539,14 +539,10 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     /**
      * Initializes the payment UI service.
      * @param details The PaymentDetails provided by the merchant.
-     * @param rawTotal The raw total amount being charged.
-     * @param rawLineItems The raw items in the shopping cart, as they were received from the
-     *         merchant page.
      */
-    public void initialize(
-            PaymentDetails details, PaymentItem rawTotal, List<PaymentItem> rawLineItems) {
+    public void initialize(PaymentDetails details) {
         assert !mParams.hasClosed();
-        updateDetailsOnPaymentRequestUI(details, rawTotal, rawLineItems);
+        updateDetailsOnPaymentRequestUI(details);
         for (PaymentMethodData method : mParams.getMethodData().values()) {
             mCardEditor.addAcceptedPaymentMethodIfRecognized(method);
         }
@@ -1079,13 +1075,13 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
      * Build the PaymentRequest UI.
      * @param activity The ChromeActivity for the payment request, cannot be null.
      * @param isWebContentsActive Whether the merchant's WebContents is active.
-     * @param waitForUpdatedDetails Whether to wait for updated details. See {@link
-     *         BrowserPaymentRequest#show}'s waitForUpdatedDetails.
+     * @param isShowWaitingForUpdatedDetails Whether showing payment app or the app selector is
+     *         blocked on the updated payment details.
      * @return The error message if built unsuccessfully; null otherwise.
      */
     @Nullable
-    public String buildPaymentRequestUI(
-            ChromeActivity activity, boolean isWebContentsActive, boolean waitForUpdatedDetails) {
+    public String buildPaymentRequestUI(ChromeActivity activity, boolean isWebContentsActive,
+            boolean isShowWaitingForUpdatedDetails) {
         // Payment methods section must be ready before building the rest of the UI. This is because
         // shipping and contact sections (when requested by merchant) are populated depending on
         // whether or not the selected payment app (if such exists) can provide the required
@@ -1125,7 +1121,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
 
-        if (shouldShowShippingSection() && !waitForUpdatedDetails) {
+        if (shouldShowShippingSection() && !isShowWaitingForUpdatedDetails) {
             createShippingSectionForPaymentRequestUI(activity);
         }
 
@@ -1417,18 +1413,18 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     /**
      * Update the details related fields on the PaymentRequest UI.
      * @param details The details whose information is used for the update.
-     * @param rawTotal The raw total parsed from the details to be used for the update.
-     * @param rawLineItems The raw line items parsed from the details to be used for the update.
      */
-    public void updateDetailsOnPaymentRequestUI(
-            PaymentDetails details, PaymentItem rawTotal, List<PaymentItem> rawLineItems) {
+    public void updateDetailsOnPaymentRequestUI(PaymentDetails details) {
         loadCurrencyFormattersForPaymentDetails(details);
         // Total is never pending.
-        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(rawTotal.amount);
-        LineItem uiTotal = new LineItem(rawTotal.label, formatter.getFormattedCurrencyCode(),
-                formatter.format(rawTotal.amount.value), /*isPending=*/false);
+        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(details.total.amount);
+        LineItem uiTotal = new LineItem(details.total.label, formatter.getFormattedCurrencyCode(),
+                formatter.format(details.total.amount.value), /*isPending=*/false);
 
-        List<LineItem> uiLineItems = getLineItems(rawLineItems);
+        List<PaymentItem> itemList = details.displayItems == null
+                ? new ArrayList<>()
+                : Arrays.asList(details.displayItems);
+        List<LineItem> uiLineItems = getLineItems(itemList);
 
         mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
 
@@ -1493,10 +1489,10 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     // Implements PaymentRequestUI.Client:
     @Override
     public void getDefaultPaymentInformation(
-            boolean waitForUpdatedDetails, Callback<PaymentInformation> callback) {
+            boolean isShowWaitingForUpdatedDetails, Callback<PaymentInformation> callback) {
         mPaymentInformationCallback = callback;
 
-        if (waitForUpdatedDetails) return;
+        if (isShowWaitingForUpdatedDetails) return;
 
         mHandler.post(() -> {
             if (mPaymentRequestUI != null) {

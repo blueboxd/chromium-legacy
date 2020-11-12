@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -16,7 +17,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -30,8 +33,8 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/notification_service.h"
@@ -54,6 +57,34 @@ void WaitUntilReady(WebAppProvider* provider) {
   provider->on_registry_ready().Post(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
 }
+
+// Waits for |browser| to be removed from BrowserList and then calls |callback|.
+class BrowserRemovedWaiter final : public BrowserListObserver {
+ public:
+  explicit BrowserRemovedWaiter(Browser* browser) : browser_(browser) {}
+  ~BrowserRemovedWaiter() override = default;
+
+  void Wait() {
+    BrowserList::AddObserver(this);
+    run_loop_.Run();
+  }
+
+  // BrowserListObserver
+  void OnBrowserRemoved(Browser* browser) override {
+    if (browser != browser_)
+      return;
+
+    BrowserList::RemoveObserver(this);
+    // Post a task to ensure the Remove event has been dispatched to all
+    // observers.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop_.QuitClosure());
+  }
+
+ private:
+  Browser* browser_;
+  base::RunLoop run_loop_;
+};
 
 }  // namespace
 
@@ -252,6 +283,12 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
     return kNotPresent;
   }
   return model->IsEnabledAt(index) ? kEnabled : kDisabled;
+}
+
+void CloseAndWait(Browser* browser) {
+  BrowserRemovedWaiter waiter(browser);
+  browser->window()->Close();
+  waiter.Wait();
 }
 
 bool IsBrowserOpen(const Browser* test_browser) {

@@ -93,7 +93,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   void Resize(const gfx::Size&) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
-  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
 
   void MouseCaptureLost() override;
@@ -109,7 +108,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
       mojom::blink::ViewportIntersectionStatePtr intersection_state) override;
 
   // WebFrameWidget implementation.
-  void DidDetachLocalFrameTree() override;
   bool ScrollFocusedEditableElementIntoView() override;
   void SetZoomLevelForTesting(double zoom_level) override;
   void ResetZoomLevelForTesting() override;
@@ -126,7 +124,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   void IntrinsicSizingInfoChanged(
       mojom::blink::IntrinsicSizingInfoPtr) override;
   void DidCreateLocalRootView() override;
-  HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
   void SetAutoResizeMode(bool auto_resize,
                          const gfx::Size& min_size_before_dsf,
@@ -141,12 +138,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   bool ShouldHandleImeEvents() override;
 
   // WidgetBaseClient overrides:
-  void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
-  void DidBeginMainFrame() override;
   void FocusChanged(bool enable) override;
   gfx::Rect ViewportVisibleRect() override;
-  void DidCompletePageScaleAnimation() override;
 
   // blink::mojom::FrameWidget
   void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
@@ -181,7 +174,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
 
   // Metrics gathering timing information
   base::Optional<base::TimeTicks> update_layers_start_time_;
-  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 
   bool did_suspend_parsing_ = false;
 

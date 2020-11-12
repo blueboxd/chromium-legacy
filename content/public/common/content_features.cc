@@ -449,7 +449,7 @@ const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
 
 // Enable permission policy for configuring and restricting feature behavior.
 const base::Feature kPermissionsPolicyHeader{"PermissionsPolicyHeader",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -643,16 +643,6 @@ const base::Feature kSiteIsolationEnforcementForFileSystemApi{
 // This feature is only consulted in site-per-process mode.
 const base::Feature kSpareRendererForSitePerProcess{
     "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables Storage Pressure notifications and settings pages.
-const base::Feature kStoragePressureUI {
-  "StoragePressureUI",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
 
 // Enables the out-of-process Storage Service.
 const base::Feature kStorageServiceOutOfProcess{

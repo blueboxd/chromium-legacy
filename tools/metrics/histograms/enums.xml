@@ -22508,6 +22508,7 @@ Called by update_document_policy_enum.py.-->
   <int value="800" label="SecurityTokenSessionNotificationSeconds"/>
   <int value="801" label="TosDialogBehavior"/>
   <int value="802" label="TargetBlankImpliesNoOpener"/>
+  <int value="803" label="RemoteAccessHostEnableUserInterface"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25329,6 +25330,7 @@ Called by update_extension_histograms.py.-->
   <int value="1529" label="TAB_GROUPS_UPDATE"/>
   <int value="1530" label="ACCESSIBILITY_PRIVATE_UPDATESELECTTOSPEAKPANEL"/>
   <int value="1531" label="TAB_GROUPS_MOVE"/>
+  <int value="1532" label="SCRIPTING_EXECUTESCRIPT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25931,6 +25933,7 @@ Called by update_extension_permission.py.-->
   <int value="227" label="kEnterpriseNetworkingAttributes"/>
   <int value="228" label="kSearch"/>
   <int value="229" label="kTabGroups"/>
+  <int value="230" label="kScripting"/>
 </enum>
 
 <enum name="ExtensionPolicyReinstallReason">
@@ -30231,6 +30234,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3726" label="V8HTMLDialogElement_ShowModal_Method"/>
   <int value="3727" label="AdFrameDetected"/>
   <int value="3728" label="MediaStreamTrackGenerator"/>
+  <int value="3729" label="MediaStreamTrackProcessor"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36276,6 +36280,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="kClick (Deprecated)"/>
   <int value="1" label="kShow"/>
   <int value="2" label="kClose"/>
+  <int value="3" label="kShowContextMenu"/>
+  <int value="4" label="kShowPreviews"/>
+  <int value="5" label="kHidePreviews"/>
 </enum>
 
 <enum name="HomeButtonPreferenceStateType">
@@ -38777,6 +38784,100 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Https scheme"/>
   <int value="4" label="File scheme"/>
   <int value="5" label="Data scheme"/>
+</enum>
+
+<enum name="InterestingCookiePorts">
+  <int value="0" label="Other Port"/>
+  <int value="1" label="Port 80"/>
+  <int value="2" label="Port 81"/>
+  <int value="3" label="Port 82"/>
+  <int value="4" label="Port 83"/>
+  <int value="5" label="Port 84"/>
+  <int value="6" label="Port 85"/>
+  <int value="7" label="Port 443"/>
+  <int value="8" label="Port 444"/>
+  <int value="9" label="Port 445"/>
+  <int value="10" label="Port 446"/>
+  <int value="11" label="Port 447"/>
+  <int value="12" label="Port 448"/>
+  <int value="13" label="Port 3000"/>
+  <int value="14" label="Port 3001"/>
+  <int value="15" label="Port 3002"/>
+  <int value="16" label="Port 3003"/>
+  <int value="17" label="Port 3004"/>
+  <int value="18" label="Port 3005"/>
+  <int value="19" label="Port 4200"/>
+  <int value="20" label="Port 4201"/>
+  <int value="21" label="Port 4202"/>
+  <int value="22" label="Port 4203"/>
+  <int value="23" label="Port 4204"/>
+  <int value="24" label="Port 4205"/>
+  <int value="25" label="Port 5000"/>
+  <int value="26" label="Port 5001"/>
+  <int value="27" label="Port 5002"/>
+  <int value="28" label="Port 5003"/>
+  <int value="29" label="Port 5004"/>
+  <int value="30" label="Port 5005"/>
+  <int value="31" label="Port 7000"/>
+  <int value="32" label="Port 7001"/>
+  <int value="33" label="Port 7002"/>
+  <int value="34" label="Port 7003"/>
+  <int value="35" label="Port 7004"/>
+  <int value="36" label="Port 7005"/>
+  <int value="37" label="Port 8000"/>
+  <int value="38" label="Port 8001"/>
+  <int value="39" label="Port 8002"/>
+  <int value="40" label="Port 8003"/>
+  <int value="41" label="Port 8004"/>
+  <int value="42" label="Port 8005"/>
+  <int value="43" label="Port 8080"/>
+  <int value="44" label="Port 8081"/>
+  <int value="45" label="Port 8082"/>
+  <int value="46" label="Port 8083"/>
+  <int value="47" label="Port 8084"/>
+  <int value="48" label="Port 8085"/>
+  <int value="49" label="Port 8090"/>
+  <int value="50" label="Port 8091"/>
+  <int value="51" label="Port 8092"/>
+  <int value="52" label="Port 8093"/>
+  <int value="53" label="Port 8094"/>
+  <int value="54" label="Port 8095"/>
+  <int value="55" label="Port 8100"/>
+  <int value="56" label="Port 8101"/>
+  <int value="57" label="Port 8102"/>
+  <int value="58" label="Port 8103"/>
+  <int value="59" label="Port 8104"/>
+  <int value="60" label="Port 8105"/>
+  <int value="61" label="Port 8200"/>
+  <int value="62" label="Port 8201"/>
+  <int value="63" label="Port 8202"/>
+  <int value="64" label="Port 8203"/>
+  <int value="65" label="Port 8204"/>
+  <int value="66" label="Port 8205"/>
+  <int value="67" label="Port 8443"/>
+  <int value="68" label="Port 8444"/>
+  <int value="69" label="Port 8445"/>
+  <int value="70" label="Port 8446"/>
+  <int value="71" label="Port 8447"/>
+  <int value="72" label="Port 8448"/>
+  <int value="73" label="Port 8888"/>
+  <int value="74" label="Port 8889"/>
+  <int value="75" label="Port 8890"/>
+  <int value="76" label="Port 8891"/>
+  <int value="77" label="Port 8892"/>
+  <int value="78" label="Port 8893"/>
+  <int value="79" label="Port 9000"/>
+  <int value="80" label="Port 9001"/>
+  <int value="81" label="Port 9002"/>
+  <int value="82" label="Port 9003"/>
+  <int value="83" label="Port 9004"/>
+  <int value="84" label="Port 9005"/>
+  <int value="85" label="Port 9090"/>
+  <int value="86" label="Port 9091"/>
+  <int value="87" label="Port 9092"/>
+  <int value="88" label="Port 9093"/>
+  <int value="89" label="Port 9094"/>
+  <int value="90" label="Port 9095"/>
 </enum>
 
 <enum name="InternalErrorLoadEvent">
@@ -42962,6 +43063,7 @@ from previous Chrome versions.
   <int value="-994044484" label="TemporaryUnexpireFlagsM76:disabled"/>
   <int value="-993476089" label="AutoScreenBrightness:disabled"/>
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
+  <int value="-992554993" label="TemporaryHoldingSpacePreviews:disabled"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
   <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
@@ -43292,6 +43394,8 @@ from previous Chrome versions.
   <int value="-665514294" label="FontAccess:disabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
   <int value="-662720891" label="PreviewsCoinFlipHoldback_UKMOnly:enabled"/>
+  <int value="-662314979"
+      label="AutofillEnableSaveCardInfoBarAccountIndicationFooter:disabled"/>
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
@@ -43447,8 +43551,6 @@ from previous Chrome versions.
       label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
   <int value="-498740735" label="ArcUsbHost:disabled"/>
   <int value="-498463128" label="MacSystemShareMenu:enabled"/>
-  <int value="-497366418"
-      label="enable-experimental-accessibility-chromevox-tutorial"/>
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
@@ -43561,6 +43663,8 @@ from previous Chrome versions.
   <int value="-385337473" label="enable-fast-unload"/>
   <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-381181808" label="DragAppsInTabletMode:enabled"/>
+  <int value="-380992110"
+      label="AutofillEnableSaveCardInfoBarAccountIndicationFooter:enabled"/>
   <int value="-379809954"
       label="AutofillDoNotMigrateUnsupportedLocalCards:disabled"/>
   <int value="-378218969" label="VaapiJpegImageDecodeAcceleration:disabled"/>
@@ -44473,6 +44577,7 @@ from previous Chrome versions.
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
   <int value="533064367" label="WebRtcHideLocalIpsWithMdns:disabled"/>
   <int value="535131384" label="OmniboxTailSuggestions:enabled"/>
+  <int value="535194142" label="TemporaryHoldingSpacePreviews:enabled"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
   <int value="537857256" label="PipRoundedCorners:enabled"/>
   <int value="538468149" label="OfflinePagesCT:enabled"/>
@@ -50275,6 +50380,18 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Out-of-order API call"/>
   <int value="3" label="Already stopped"/>
   <int value="4" label="Transfer already in progress"/>
+</enum>
+
+<enum name="NearbyShareTransferNotCompletedReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Awaiting remote acceptance failed"/>
+  <int value="2" label="Failed"/>
+  <int value="3" label="Rejected"/>
+  <int value="4" label="Cancelled"/>
+  <int value="5" label="Timed out"/>
+  <int value="6" label="Media unavailable"/>
+  <int value="7" label="Not enough space"/>
+  <int value="8" label="Unsupported attachment type"/>
 </enum>
 
 <enum name="NearOomDetectionEndReason">
@@ -64120,7 +64237,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="CanvasCaptureStream"/>
   <int value="7" label="VideoCaptureStream"/>
   <int value="8" label="GetDisplayMedia"/>
-  <int value="9" label="kGetCurrentBrowsingContextMedia"/>
+  <int value="9" label="GetCurrentBrowsingContextMedia"/>
 </enum>
 
 <enum name="RTCQuicStreamReadIntoResult">
@@ -68361,7 +68478,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Update">Update an existing entry</int>
   <int value="4" label="Create">Create a new entry</int>
   <int value="5" label="Error">
-    Errror in handling the request because either opening backend failed or URL
+    Error in handling the request because either opening backend failed or URL
     should not be cached
   </int>
   <int value="6" label="IncompleteEntry">
@@ -68382,7 +68499,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Update">Update an existing entry</int>
   <int value="4" label="Create">Create a new entry</int>
   <int value="5" label="Error">
-    Errror in handling the request because either opening backend failed or URL
+    Error in handling the request because either opening backend failed or URL
     should not be cached
   </int>
   <int value="6" label="IncompleteEntry">
@@ -73224,7 +73341,7 @@ Full version information for the fingerprint enum values:
   <int value="16" label="Decision made to create infobar on Android"/>
   <int value="17" label="Show omnibar icon to the user"/>
   <int value="18" label="Suppress infobar but show omnibar icon"/>
-  <int value="19" label="Aborted by CLD and HTML/content language conflict"/>
+  <int value="19" label="Show infobar for predefined target language"/>
   <int value="20" label="Disabled because network unavailable"/>
   <int value="21" label="Page state doesn't require translation"/>
   <int value="22"
@@ -73265,6 +73382,22 @@ Full version information for the fingerprint enum values:
   <int value="0" label="http"/>
   <int value="1" label="https"/>
   <int value="2" label="unexpected other schemes"/>
+</enum>
+
+<enum name="TranslateState">
+  <int value="0" label="Uninitialized"/>
+  <int value="1"
+      label="The page is not translated, and no translate UI is shown"/>
+  <int value="2"
+      label="The page is not translated, and only the translate omnibox icon
+             is shown"/>
+  <int value="3"
+      label="The page is not translated, and the translate UI is shown"/>
+  <int value="4" label="The page is translated, and no translate UI is shown"/>
+  <int value="5"
+      label="The page is translated, and only the translate omnibox icon is
+             shown"/>
+  <int value="6" label="The page is translated, and the translate UI is shown"/>
 </enum>
 
 <enum name="TranslateTabIntentResult">

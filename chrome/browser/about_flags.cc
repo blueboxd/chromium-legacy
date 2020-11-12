@@ -2247,6 +2247,8 @@ const FeatureEntry::Choice kWebOtpBackendChoices[] = {
      switches::kWebOtpBackendSmsVerification},
     {flag_descriptions::kWebOtpBackendUserConsent, switches::kWebOtpBackend,
      switches::kWebOtpBackendUserConsent},
+    {flag_descriptions::kWebOtpBackendAuto, switches::kWebOtpBackend,
+     switches::kWebOtpBackendAuto},
 };
 
 const FeatureEntry::Choice kQueryTilesCountryChoices[] = {
@@ -3625,12 +3627,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kKernelnextVMs)},
-    {"enable-experimental-accessibility-chromevox-tutorial",
-     flag_descriptions::kExperimentalAccessibilityChromeVoxTutorialName,
-     flag_descriptions::kExperimentalAccessibilityChromeVoxTutorialDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilityChromeVoxTutorial)},
     {"enable-magnifier-new-focus-following",
      flag_descriptions::kMagnifierNewFocusFollowingName,
      flag_descriptions::kMagnifierNewFocusFollowingDescription, kOsCrOS,
@@ -3863,10 +3859,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSearchReadyIncognitoName,
      flag_descriptions::kOmniboxSearchReadyIncognitoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxSearchReadyIncognito)},
-    {"omnibox-suggestions-wrap-around",
-     flag_descriptions::kOmniboxSuggestionsWrapAroundName,
-     flag_descriptions::kOmniboxSuggestionsWrapAroundDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionsWrapAround)},
     {"omnibox-tab-switch-suggestions",
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsAndroid,
@@ -4444,10 +4436,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStoragePressureEventName,
      flag_descriptions::kStoragePressureEventDescription, kOsAll,
      FEATURE_VALUE_TYPE(storage::features::kStoragePressureEvent)},
-
-    {"enable-storage-pressure-ui", flag_descriptions::kStoragePressureUIName,
-     flag_descriptions::kStoragePressureUIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kStoragePressureUI)},
 
     {"installed-apps-in-cbd", flag_descriptions::kInstalledAppsInCbdName,
      flag_descriptions::kInstalledAppsInCbdDescription, kOsDesktop,
@@ -6539,6 +6527,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHoldingSpaceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpace)},
 
+    {"enable-holding-space-previews",
+     flag_descriptions::kHoldingSpacePreviewsName,
+     flag_descriptions::kHoldingSpacePreviewsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpacePreviews)},
+
     {"enhanced-desk-animations", flag_descriptions::kEnhancedDeskAnimationsName,
      flag_descriptions::kEnhancedDeskAnimationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnhancedDeskAnimations)},
@@ -6670,6 +6663,17 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kCheckOfflineCapability,
                                     kCheckOfflineCapabilityVariations,
                                     "CheckOfflineCapability")},
+#if defined(OS_ANDROID)
+    {"enable-autofill-save-card-info-bar-account-indication-footer",
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
+#endif
     {"detect-form-submission-on-form-clear",
      flag_descriptions::kDetectFormSubmissionOnFormClearName,
      flag_descriptions::kDetectFormSubmissionOnFormClearDescription, kOsAll,

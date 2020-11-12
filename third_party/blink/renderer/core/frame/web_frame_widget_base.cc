@@ -24,6 +24,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -154,7 +155,7 @@ viz::FrameSinkId GetRemoteFrameSinkId(const HitTestResult& result) {
     return viz::FrameSinkId();
 
   IntPoint local_point = RoundedIntPoint(result.LocalPoint());
-  if (!ToLayoutBox(object)->ComputedCSSContentBoxRect().Contains(local_point))
+  if (!To<LayoutBox>(object)->ComputedCSSContentBoxRect().Contains(local_point))
     return viz::FrameSinkId();
 
   return remote_frame->GetFrameSinkId();
@@ -460,10 +461,8 @@ viz::FrameSinkId WebFrameWidgetBase::GetFrameSinkIdAtPoint(
   if (remote_frame_sink_id.is_valid()) {
     FloatPoint local_point = FloatPoint(result.LocalPoint());
     LayoutObject* object = result.GetLayoutObject();
-    if (object->IsBox()) {
-      LayoutBox* box = ToLayoutBox(object);
+    if (auto* box = DynamicTo<LayoutBox>(object))
       local_point.MoveBy(-FloatPoint(box->PhysicalContentBoxOffset()));
-    }
 
     *local_point_in_dips =
         widget_base_->BlinkSpaceToDIPs(gfx::PointF(local_point));
@@ -545,6 +544,9 @@ void WebFrameWidgetBase::HandleMouseDown(LocalFrame& main_frame,
   }
 
   PageWidgetEventHandler::HandleMouseDown(main_frame, event);
+  // PageWidgetEventHandler may have detached the frame.
+  if (!LocalRootImpl())
+    return;
 
   if (view_impl->GetPagePopup() && page_popup &&
       view_impl->GetPagePopup()->HasSamePopupClient(page_popup.get())) {
@@ -605,6 +607,9 @@ WebInputEventResult WebFrameWidgetBase::HandleMouseUp(
     const WebMouseEvent& event) {
   WebInputEventResult result =
       PageWidgetEventHandler::HandleMouseUp(main_frame, event);
+  // PageWidgetEventHandler may have detached the frame.
+  if (!LocalRootImpl())
+    return result;
 
   if (GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
     // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -620,6 +625,7 @@ WebInputEventResult WebFrameWidgetBase::HandleMouseWheel(
     const WebMouseWheelEvent& event) {
   View()->CancelPagePopup();
   return PageWidgetEventHandler::HandleMouseWheel(frame, event);
+  // PageWidgetEventHandler may have detached the frame.
 }
 
 WebInputEventResult WebFrameWidgetBase::HandleCharEvent(
@@ -878,10 +884,21 @@ WebFrameWidgetBase::AllocateNewLayerTreeFrameSink() {
 
 void WebFrameWidgetBase::DidBeginMainFrame() {
   Client()->DidBeginMainFrame();
+  DCHECK(LocalRootImpl()->GetFrame());
+  PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
 }
 
 void WebFrameWidgetBase::WillBeginMainFrame() {
   Client()->WillBeginMainFrame();
+}
+
+void WebFrameWidgetBase::DidCompletePageScaleAnimation() {
+  // Page scale animations only happen on the main frame.
+  DCHECK(ForMainFrame());
+  if (auto* focused_frame = View()->FocusedFrame()) {
+    if (focused_frame->AutofillClient())
+      focused_frame->AutofillClient()->DidCompleteFocusChangeInFrame();
+  }
 }
 
 void WebFrameWidgetBase::ScheduleAnimation() {
@@ -1094,7 +1111,7 @@ void WebFrameWidgetBase::SetLayerTreeDebugState(
 
 void WebFrameWidgetBase::SynchronouslyCompositeForTesting(
     base::TimeTicks frame_time) {
-  widget_base_->LayerTreeHost()->Composite(frame_time, false);
+  widget_base_->LayerTreeHost()->CompositeForTest(frame_time, false);
 }
 
 // TODO(665924): Remove direct dispatches of mouse events from
@@ -1260,6 +1277,32 @@ void WebFrameWidgetBase::BeginMainFrame(base::TimeTicks last_frame_time) {
     return;
 
   GetPage()->GetValidationMessageClient().LayoutOverlay();
+}
+
+void WebFrameWidgetBase::BeginCommitCompositorFrame() {
+  commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
+}
+
+void WebFrameWidgetBase::EndCommitCompositorFrame(
+    base::TimeTicks commit_start_time) {
+  DCHECK(commit_compositor_frame_start_time_.has_value());
+  CHECK(LocalRootImpl());
+  CHECK(LocalRootImpl()->GetFrame());
+  CHECK(LocalRootImpl()->GetFrame()->View());
+
+  if (ForMainFrame()) {
+    View()->Client()->DidCommitCompositorFrameForLocalMainFrame(
+        commit_start_time);
+    View()->UpdatePreferredSize();
+  }
+
+  LocalRootImpl()
+      ->GetFrame()
+      ->View()
+      ->EnsureUkmAggregator()
+      .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
+                                  commit_start_time, base::TimeTicks::Now());
+  commit_compositor_frame_start_time_.reset();
 }
 
 void WebFrameWidgetBase::RecordDispatchRafAlignedInputTime(
@@ -1791,6 +1834,14 @@ WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
   return mutator_dispatcher_;
+}
+
+HitTestResult WebFrameWidgetBase::CoreHitTestResultAt(
+    const gfx::PointF& point_in_viewport) {
+  LocalFrameView* view = LocalRootImpl()->GetFrameView();
+  FloatPoint point_in_root_frame(
+      view->ViewportToFrame(FloatPoint(point_in_viewport)));
+  return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
 cc::AnimationHost* WebFrameWidgetBase::AnimationHost() const {
@@ -2799,7 +2850,7 @@ HitTestResult WebFrameWidgetBase::HitTestResultForRootFramePos(
           pos_in_root_frame);
   HitTestLocation location(doc_point);
   HitTestResult result =
-      LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
+      LocalRootImpl()->GetFrame()->View()->HitTestWithThrottlingAllowed(
           location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
@@ -2822,6 +2873,10 @@ const viz::FrameSinkId& WebFrameWidgetBase::GetFrameSinkId() {
   // printing and placeholders. But if we go to use it, it should be valid.
   DCHECK(frame_sink_id_.is_valid());
   return frame_sink_id_;
+}
+
+WebHitTestResult WebFrameWidgetBase::HitTestResultAt(const gfx::PointF& point) {
+  return CoreHitTestResultAt(point);
 }
 
 WebPlugin* WebFrameWidgetBase::GetFocusedPluginContainer() {

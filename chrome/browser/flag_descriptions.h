@@ -332,6 +332,10 @@ extern const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[];
 extern const char
     kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[];
 
+extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
+extern const char
+    kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
+
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
 
@@ -913,9 +917,6 @@ extern const char kOmniboxSearchReadyIncognitoDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
-extern const char kOmniboxSuggestionsWrapAroundName[];
-extern const char kOmniboxSuggestionsWrapAroundDescription[];
-
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
@@ -1238,9 +1239,6 @@ extern const char kStopNonTimersInBackgroundDescription[];
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
 
-extern const char kStoragePressureUIName[];
-extern const char kStoragePressureUIDescription[];
-
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 
@@ -1389,6 +1387,7 @@ extern const char kWebOtpBackendName[];
 extern const char kWebOtpBackendDescription[];
 extern const char kWebOtpBackendSmsVerification[];
 extern const char kWebOtpBackendUserConsent[];
+extern const char kWebOtpBackendAuto[];
 
 extern const char kWebglDraftExtensionsName[];
 extern const char kWebglDraftExtensionsDescription[];
@@ -2445,6 +2444,9 @@ extern const char kHideArcMediaNotificationsDescription[];
 
 extern const char kHoldingSpaceName[];
 extern const char kHoldingSpaceDescription[];
+
+extern const char kHoldingSpacePreviewsName[];
+extern const char kHoldingSpacePreviewsDescription[];
 
 extern const char kImeAssistAutocorrectName[];
 extern const char kImeAssistAutocorrectDescription[];

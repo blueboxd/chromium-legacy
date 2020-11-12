@@ -30,7 +30,6 @@ import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppService;
 import org.chromium.components.payments.PaymentAppType;
-import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
@@ -68,7 +67,6 @@ import java.util.Set;
  * living in {@link PaymentRequestService}.
  */
 public class ChromePaymentRequestService implements BrowserPaymentRequest,
-                                                    PaymentDetailsConverter.MethodChecker,
                                                     PaymentUiService.Delegate, PaymentUIsObserver {
 
     // Null-check is necessary because retainers of ChromePaymentRequestService could still
@@ -164,8 +162,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
     @Override
     public void onSpecValidated(PaymentRequestSpec spec) {
         mSpec = spec;
-        mPaymentUiService.initialize(
-                mSpec.getPaymentDetails(), mSpec.getRawTotal(), mSpec.getRawLineItems());
+        mPaymentUiService.initialize(mSpec.getPaymentDetails());
 
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
@@ -214,7 +211,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
             mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
         }
 
-        if (!parseAndValidateDetailsForSkipToGPayHelper(details)) {
+        if (!parseAndValidateDetailsFurtherIfNeeded(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return true;
@@ -259,11 +256,11 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
     }
 
     /** @return Whether the UI was built. */
-    private boolean buildUI(ChromeActivity activity, boolean waitForUpdatedDetails) {
+    private boolean buildUI(ChromeActivity activity, boolean isShowWaitingForUpdatedDetails) {
         String error = mPaymentUiService.buildPaymentRequestUI(activity,
                 /*isWebContentsActive=*/
                 PaymentRequestServiceUtil.isWebContentsActive(mRenderFrameHost),
-                /*waitForUpdatedDetails=*/waitForUpdatedDetails);
+                /*isShowWaitingForUpdatedDetails=*/isShowWaitingForUpdatedDetails);
         if (error != null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(error);
@@ -282,7 +279,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
 
     // Implements BrowserPaymentRequest:
     @Override
-    public boolean showAppSelector(boolean waitForUpdatedDetails) {
+    public boolean showAppSelector(boolean isShowWaitingForUpdatedDetails) {
         // Send AppListReady signal when all apps are created and request.show() is called.
         if (PaymentRequestService.getNativeObserverForTest() != null) {
             PaymentRequestService.getNativeObserverForTest().onAppListReady(
@@ -295,11 +292,11 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
                 mDelegate.skipUiForBasicCard(), mPaymentOptions);
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (quitShowIfActivityNotFound(chromeActivity)
-                || !buildUI(chromeActivity, waitForUpdatedDetails)) {
+                || !buildUI(chromeActivity, isShowWaitingForUpdatedDetails)) {
             return false;
         }
         if (!mPaymentUiService.shouldSkipShowingPaymentRequestUi() && mSkipToGPayHelper == null) {
-            mPaymentUiService.getPaymentRequestUI().show(waitForUpdatedDetails);
+            mPaymentUiService.getPaymentRequestUI().show(isShowWaitingForUpdatedDetails);
         }
         return true;
     }
@@ -341,7 +338,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
         if ((mPaymentUiService.shouldSkipShowingPaymentRequestUi() || mSkipToGPayHelper != null)
                 && mPaymentRequestService.isFinishedQueryingPaymentApps()
                 && mPaymentRequestService.isCurrentPaymentRequestShowing()
-                && !mPaymentRequestService.waitForUpdatedDetails()) {
+                && !mPaymentRequestService.isShowWaitingForUpdatedDetails()) {
             assert !mPaymentUiService.getPaymentMethodsSection().isEmpty();
             assert mPaymentUiService.getPaymentRequestUI() != null;
 
@@ -371,7 +368,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
             assert mSpec.getRawTotal() != null;
             // The total amount in details should be finalized at this point. So it is safe to
             // record the triggered transaction amount.
-            assert !mPaymentRequestService.waitForUpdatedDetails();
+            assert !mPaymentRequestService.isShowWaitingForUpdatedDetails();
             mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
                     mSpec.getRawTotal().amount.value, false /*completed*/);
             invokePaymentApp(null /* selectedShippingAddress */, null /* selectedShippingOption */,
@@ -476,63 +473,17 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
         return paymentHandlerWebContents;
     }
 
-    @Override
-    public boolean isInvokedInstrumentValidForPaymentMethodIdentifier(
-            String methodName, PaymentApp invokedPaymentApp) {
-        return invokedPaymentApp != null
-                && invokedPaymentApp.isValidForPaymentMethodData(methodName, null);
-    }
-
     // Implement BrowserPaymentRequest:
-    /**
-     * Called by merchant to update the shipping options and line items after the user has selected
-     * their shipping address or shipping option.
-     */
     @Override
-    public void updateWith(PaymentDetails details) {
+    public void onPaymentDetailsUpdated(
+            PaymentDetails details, boolean hasNotifiedInvokedPaymentApp) {
         if (mPaymentRequestService == null) return;
         // mSpec.updateWith() can be used only when mSpec has not been destroyed.
         assert !mSpec.isDestroyed();
 
-        if (mPaymentRequestService.waitForUpdatedDetails()) {
-            initializeWithUpdatedDetails(details);
-            return;
-        }
+        mPaymentUiService.updateDetailsOnPaymentRequestUI(mSpec.getPaymentDetails());
 
-        if (mPaymentUiService.getPaymentRequestUI() == null) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW);
-            return;
-        }
-
-        PaymentApp invokedPaymentApp = mPaymentRequestService.getInvokedPaymentApp();
-        if (!PaymentOptionsUtils.requestAnyInformation(mPaymentOptions)
-                && (invokedPaymentApp == null
-                        || !invokedPaymentApp.isWaitingForPaymentDetailsUpdate())) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
-            return;
-        }
-
-        if (!PaymentValidator.validatePaymentDetails(details)
-                || !parseAndValidateDetailsForSkipToGPayHelper(details)) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
-            return;
-        }
-        mSpec.updateWith(details);
-        mPaymentUiService.updateDetailsOnPaymentRequestUI(
-                mSpec.getPaymentDetails(), mSpec.getRawTotal(), mSpec.getRawLineItems());
-
-        if (invokedPaymentApp != null && invokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
-            // After a payment app has been invoked, all of the merchant's calls to update the price
-            // via updateWith() should be forwarded to the invoked app, so it can reflect the
-            // updated price in its UI.
-            invokedPaymentApp.updateWith(
-                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(details,
-                            /*methodChecker=*/this, invokedPaymentApp));
-            return;
-        }
+        if (hasNotifiedInvokedPaymentApp) return;
 
         if (mPaymentUiService.shouldShowShippingSection()
                 && (mPaymentUiService.getUiShippingOptions().isEmpty()
@@ -549,11 +500,9 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
         if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
     }
 
-    private void initializeWithUpdatedDetails(PaymentDetails details) {
-        assert mPaymentRequestService.waitForUpdatedDetails();
-        // mSpec.updateWith() can be used only when mSpec has not been destroyed.
-        assert !mSpec.isDestroyed();
-
+    // Implements BrowserPaymentRequest:
+    @Override
+    public void continueShow() {
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
@@ -561,21 +510,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
             return;
         }
 
-        if (!PaymentValidator.validatePaymentDetails(details)
-                || !parseAndValidateDetailsForSkipToGPayHelper(details)) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
-            return;
-        }
-        mSpec.updateWith(details);
-        mPaymentUiService.updateDetailsOnPaymentRequestUI(
-                mSpec.getPaymentDetails(), mSpec.getRawTotal(), mSpec.getRawLineItems());
-
-        if (!TextUtils.isEmpty(details.error)) {
-            mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
-            return;
-        }
+        mPaymentUiService.updateDetailsOnPaymentRequestUI(mSpec.getPaymentDetails());
 
         // Do not create shipping section When UI is not built yet. This happens when the show
         // promise gets resolved before all apps are ready.
@@ -584,13 +519,12 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
             mPaymentUiService.createShippingSectionForPaymentRequestUI(chromeActivity);
         }
 
-        mPaymentRequestService.resetWaitForUpdatedDetails();
         // Triggered transaction amount gets recorded when both of the following conditions are met:
         // 1- Either Event.Shown or Event.SKIPPED_SHOW bits are set showing that transaction is
         // triggered (mDidRecordShowEvent == true). 2- The total amount in details won't change
-        // (mWaitForUpdatedDetails == false). Record the transaction amount only when the triggered
-        // condition is already met. Otherwise it will get recorded when triggered condition becomes
-        // true.
+        // (mPaymentRequestService.isShowWaitingForUpdatedDetails() == false). Record the
+        // transaction amount only when the triggered condition is already met. Otherwise it will
+        // get recorded when triggered condition becomes true.
         if (mDidRecordShowEvent) {
             assert mSpec.getRawTotal() != null;
             mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
@@ -608,30 +542,10 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
     }
 
     // Implement BrowserPaymentRequest:
-    /**
-     * Called when the merchant received a new shipping address, shipping option, or payment method
-     * info, but did not update the payment details in response.
-     */
     @Override
-    public void onPaymentDetailsNotUpdated() {
-        if (mPaymentRequestService == null) return;
-        // mSpec.recomputeSpecForDetails(), mSpec.selectedShippingOptionError() can be used only
-        // when mSpec has not been destroyed.
-        assert !mSpec.isDestroyed();
-
-        if (mPaymentUiService.getPaymentRequestUI() == null) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW);
-            return;
-        }
-
-        mSpec.recomputeSpecForDetails();
-
-        PaymentApp invokedPaymentApp = mPaymentRequestService.getInvokedPaymentApp();
-        if (invokedPaymentApp != null && invokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
-            invokedPaymentApp.onPaymentDetailsNotUpdated();
-            return;
-        }
+    public void onPaymentDetailsNotUpdated(@Nullable String selectedShippingOptionError) {
+        // This method is only supposed to be called by mPaymentRequestService.
+        assert mPaymentRequestService != null;
 
         if (mPaymentUiService.shouldShowShippingSection()
                 && (mPaymentUiService.getUiShippingOptions().isEmpty()
@@ -641,7 +555,7 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
             mPaymentUiService.getShippingAddressesSection().setSelectedItemIndex(
                     SectionInformation.INVALID_SELECTION);
             mPaymentUiService.getShippingAddressesSection().setErrorMessage(
-                    mSpec.selectedShippingOptionError());
+                    selectedShippingOptionError);
         }
 
         boolean providedInformationToPaymentRequestUI =
@@ -649,13 +563,9 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
         if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
     }
 
-    /**
-     * If executing on the skip-to-gpay flow, do the flow's specific validation for details. If
-     * valid, set shipping options for SkipToGPayHelper.
-     * @param details The details specified by the merchant.
-     * @return True if skip-to-gpay parameters are valid or when skip-to-gpay does not apply.
-     */
-    private boolean parseAndValidateDetailsForSkipToGPayHelper(PaymentDetails details) {
+    // Implements BrowserPaymentRequest:
+    @Override
+    public boolean parseAndValidateDetailsFurtherIfNeeded(PaymentDetails details) {
         return mSkipToGPayHelper == null || mSkipToGPayHelper.setShippingOptionIfValid(details);
     }
 
@@ -666,9 +576,9 @@ public class ChromePaymentRequestService implements BrowserPaymentRequest,
         mDidRecordShowEvent = true;
         mJourneyLogger.setEventOccurred(Event.SHOWN);
         // Record the triggered transaction amount only when the total amount in details is
-        // finalized (i.e. mWaitForUpdatedDetails == false). Otherwise it will get recorded when
-        // the updated details become available.
-        if (!mPaymentRequestService.waitForUpdatedDetails()) {
+        // finalized (i.e. mPaymentRequestService.isShowWaitingForUpdatedDetails() == false).
+        // Otherwise it will get recorded when the updated details become available.
+        if (!mPaymentRequestService.isShowWaitingForUpdatedDetails()) {
             assert mSpec.getRawTotal() != null;
             mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
                     mSpec.getRawTotal().amount.value, false /*completed*/);

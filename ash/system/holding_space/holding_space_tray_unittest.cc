@@ -38,16 +38,22 @@ std::unique_ptr<HoldingSpaceImage> CreateStubHoldingSpaceImage() {
 
 }  // namespace
 
-// Parameterized by whether the content forward entry point is enabled.
+// Parameterized by whether the previews feature is enabled.
 class HoldingSpaceTrayTest : public AshTestBase,
                              public testing::WithParamInterface<bool> {
  public:
   HoldingSpaceTrayTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kTemporaryHoldingSpace,
-        /*field_trial_params=*/{
-            {"content-forward-entry-point-enabled",
-             IsContentForwardEntryPointEnabled() ? "true" : "false"}});
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    enabled_features.push_back(features::kTemporaryHoldingSpace);
+
+    if (IsPreviewsFeatureEnabled())
+      enabled_features.push_back(features::kTemporaryHoldingSpacePreviews);
+    else
+      disabled_features.push_back(features::kTemporaryHoldingSpacePreviews);
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   // AshTestBase:
@@ -104,9 +110,22 @@ class HoldingSpaceTrayTest : public AshTestBase,
     return deserialized_item_ptr;
   }
 
-  void StartSession() {
+  // The holding space tray is only visible in the shelf after the first holding
+  // space item has been added. Most tests do not care about this so, as a
+  // convenience, the time of first add will be marked prior to starting the
+  // session when `pre_mark_time_of_first_add` is true.
+  void StartSession(bool pre_mark_time_of_first_add = true) {
+    if (pre_mark_time_of_first_add)
+      MarkTimeOfFirstAdd();
+
     AccountId user_account = AccountId::FromUserEmail(kTestUser);
     GetSessionControllerClient()->SwitchActiveUser(user_account);
+  }
+
+  void MarkTimeOfFirstAdd() {
+    AccountId user_account = AccountId::FromUserEmail(kTestUser);
+    holding_space_prefs::MarkTimeOfFirstAdd(
+        GetSessionControllerClient()->GetUserPrefService(user_account));
   }
 
   void MarkTimeOfFirstPin() {
@@ -115,7 +134,7 @@ class HoldingSpaceTrayTest : public AshTestBase,
         GetSessionControllerClient()->GetUserPrefService(user_account));
   }
 
-  bool IsContentForwardEntryPointEnabled() const { return GetParam(); }
+  bool IsPreviewsFeatureEnabled() const { return GetParam(); }
 
   HoldingSpaceTestApi* test_api() { return test_api_.get(); }
 
@@ -128,24 +147,27 @@ class HoldingSpaceTrayTest : public AshTestBase,
 };
 
 TEST_P(HoldingSpaceTrayTest, ShowTrayButtonOnFirstUse) {
-  StartSession();
+  StartSession(/*pre_mark_time_of_first_add=*/false);
 
-  // Tray item should be shown for users that have never added anything to the
-  // holding space.
-  EXPECT_TRUE(test_api()->IsShowingInShelf());
+  // The tray button should *not* be shown for users that have never added
+  // anything to the holding space.
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
 
-  // Show the bubble - only pinned container should be shown.
-  test_api()->Show();
-  EXPECT_TRUE(test_api()->PinnedFilesContainerShown());
-  EXPECT_FALSE(test_api()->RecentFilesContainerShown());
-
-  // Add and remove a download item.
+  // Add a download item. This should cause the tray button to show.
   HoldingSpaceItem* item =
       AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake"));
-  EXPECT_TRUE(test_api()->RecentFilesContainerShown());
-  model()->RemoveItem(item->id());
+  MarkTimeOfFirstAdd();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
 
-  // Verify the pinned files container, and the tray button are still shown.
+  // Show the bubble - both the pinned container and recent files container
+  // should be shown.
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->PinnedFilesContainerShown());
+  EXPECT_TRUE(test_api()->RecentFilesContainerShown());
+
+  // Remove the download item and verify the pinned files container, and the
+  // tray button are still shown.
+  model()->RemoveItem(item->id());
   EXPECT_TRUE(test_api()->PinnedFilesContainerShown());
   EXPECT_FALSE(test_api()->RecentFilesContainerShown());
 
@@ -1057,7 +1079,7 @@ TEST_P(HoldingSpaceTrayTest, PartialDownloadItemWithExistingNearbyShareItems) {
 }
 
 // Right clicking the holding space tray should show a context menu if the
-// content forward entry point is enabled. Otherwise it should do nothing.
+// previews feature is enabled. Otherwise it should do nothing.
 TEST_P(HoldingSpaceTrayTest, ShouldMaybeShowContextMenuOnRightClick) {
   StartSession();
 
@@ -1073,7 +1095,7 @@ TEST_P(HoldingSpaceTrayTest, ShouldMaybeShowContextMenuOnRightClick) {
   event_generator.ClickRightButton();
 
   EXPECT_EQ(!!views::MenuController::GetActiveInstance(),
-            IsContentForwardEntryPointEnabled());
+            IsPreviewsFeatureEnabled());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, HoldingSpaceTrayTest, testing::Bool());

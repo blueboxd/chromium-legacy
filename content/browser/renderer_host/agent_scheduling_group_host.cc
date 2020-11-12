@@ -7,12 +7,12 @@
 
 #include "base/feature_list.h"
 #include "base/supports_user_data.h"
-#include "base/util/type_safety/pass_key.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
+#include "ipc/ipc_message.h"
 
 namespace content {
 
@@ -28,8 +28,6 @@ using ::mojo::PendingReceiver;
 using ::mojo::PendingRemote;
 using ::mojo::Receiver;
 using ::mojo::Remote;
-
-using PassKey = ::util::PassKey<AgentSchedulingGroupHost>;
 
 static constexpr char kAgentGroupHostDataKey[] =
     "AgentSchedulingGroupHostUserDataKey";
@@ -232,10 +230,14 @@ bool AgentSchedulingGroupHost::Send(IPC::Message* message) {
 
 void AgentSchedulingGroupHost::AddRoute(int32_t routing_id,
                                         Listener* listener) {
+  DCHECK(!listener_map_.Lookup(routing_id));
+  listener_map_.AddWithID(listener, routing_id);
   process_.AddRoute(routing_id, listener);
 }
 
 void AgentSchedulingGroupHost::RemoveRoute(int32_t routing_id) {
+  DCHECK(listener_map_.Lookup(routing_id));
+  listener_map_.Remove(routing_id);
   process_.RemoveRoute(routing_id);
 }
 
@@ -292,10 +294,8 @@ void AgentSchedulingGroupHost::GetAssociatedInterface(
         receiver) {
   int32_t routing_id =
       associated_interface_provider_receivers_.current_context();
-  IPC::Listener* listener =
-      static_cast<RenderProcessHostImpl&>(process_).GetListener(PassKey(),
-                                                                routing_id);
-  if (listener)
+
+  if (auto* listener = GetListener(routing_id))
     listener->OnAssociatedInterfaceRequest(name, receiver.PassHandle());
 }
 
@@ -340,6 +340,12 @@ void AgentSchedulingGroupHost::SetUpMojoIfNeeded() {
   mojo_remote_.get()->BindAssociatedRouteProvider(
       route_provider_receiver_.BindNewEndpointAndPassRemote(),
       remote_route_provider_.BindNewEndpointAndPassReceiver());
+}
+
+Listener* AgentSchedulingGroupHost::GetListener(int32_t routing_id) {
+  DCHECK_NE(routing_id, MSG_ROUTING_CONTROL);
+
+  return listener_map_.Lookup(routing_id);
 }
 
 }  // namespace content

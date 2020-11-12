@@ -134,7 +134,7 @@ class CORE_EXPORT WebFrameWidgetBase
   base::WeakPtr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner);
 
-  virtual HitTestResult CoreHitTestResultAt(const gfx::PointF&) = 0;
+  HitTestResult CoreHitTestResultAt(const gfx::PointF&);
 
   // FrameWidget implementation.
   WebWidgetClient* Client() const final { return client_; }
@@ -299,6 +299,7 @@ class CORE_EXPORT WebFrameWidgetBase
   bool HandlingSelectRange() override;
   void ReleaseMouseLockAndPointerCaptureForTesting() override;
   const viz::FrameSinkId& GetFrameSinkId() override;
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(const WebDragData&,
@@ -349,6 +350,8 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // WidgetBaseClient methods.
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
+  void BeginCommitCompositorFrame() override;
+  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void RecordDispatchRafAlignedInputTime(
       base::TimeTicks raf_aligned_input_start_time) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
@@ -368,6 +371,7 @@ class CORE_EXPORT WebFrameWidgetBase
       base::TimeTicks first_scroll_timestamp) override;
   void DidBeginMainFrame() override;
   void WillBeginMainFrame() override;
+  void DidCompletePageScaleAnimation() override;
   void FocusChangeComplete() override;
   bool WillHandleGestureEvent(const WebGestureEvent& event) override;
   void WillHandleMouseEvent(const WebMouseEvent& event) override;
@@ -799,6 +803,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Set when a measurement begins, reset when the measurement is taken.
   base::Optional<base::TimeTicks> update_layers_start_time_;
+
+  // Metrics for gathering time for commit of compositor frame.
+  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

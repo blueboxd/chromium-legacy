@@ -331,6 +331,43 @@ class ResourceSnapshotForWebBundleImpl
   const Deque<SerializedResource> resources_;
 };
 
+class ActiveURLMessageFilter : public mojo::MessageFilter {
+ public:
+  explicit ActiveURLMessageFilter(LocalFrame* local_frame)
+      : local_frame_(local_frame) {}
+
+  ~ActiveURLMessageFilter() override {
+    if (debug_url_set_) {
+      Platform::Current()->SetActiveURL(WebURL(), WebString());
+    }
+  }
+
+  // mojo::MessageFilter overrides.
+  bool WillDispatch(mojo::Message* message) override {
+    // We expect local_frame_ always to be set because this MessageFilter
+    // is owned by the LocalFrame. We do not want to introduce a Persistent
+    // reference so we don't cause a cycle. If you hit this CHECK then you
+    // likely didn't reset your mojo receiver in Detach.
+    CHECK(local_frame_);
+    debug_url_set_ = true;
+    Platform::Current()->SetActiveURL(local_frame_->GetDocument()->Url(),
+                                      local_frame_->Top()
+                                          ->GetSecurityContext()
+                                          ->GetSecurityOrigin()
+                                          ->ToString());
+    return true;
+  }
+
+  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {
+    Platform::Current()->SetActiveURL(WebURL(), WebString());
+    debug_url_set_ = false;
+  }
+
+ private:
+  WeakPersistent<LocalFrame> local_frame_;
+  bool debug_url_set_ = false;
+};
+
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -523,6 +560,19 @@ void LocalFrame::Navigate(FrameLoadRequest& request,
 }
 
 void LocalFrame::DetachImpl(FrameDetachType type) {
+  if (IsProvisional()) {
+    Frame* provisional_owner = nullptr;
+    if (Owner()) {
+      provisional_owner = Owner()->ContentFrame();
+    } else {
+      provisional_owner = GetPage()->MainFrame();
+    }
+    // Having multiple provisional frames somehow associated with the same frame
+    // to potentially replace is a logic error.
+    DCHECK_EQ(provisional_owner->ProvisionalFrame(), this);
+    provisional_owner->SetProvisionalFrame(nullptr);
+  }
+
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // BEGIN RE-ENTRANCY SAFE BLOCK
   // Starting here, the code must be safe against re-entrancy. Dispatching
@@ -2254,7 +2304,8 @@ void LocalFrame::ForciblyPurgeV8Memory() {
 
 void LocalFrame::OnPageLifecycleStateUpdated() {
   if (frozen_ != GetPage()->Frozen()) {
-    if (GetPage()->Frozen()) {
+    frozen_ = GetPage()->Frozen();
+    if (frozen_) {
       DidFreeze();
     } else {
       DidResume();
@@ -2262,10 +2313,7 @@ void LocalFrame::OnPageLifecycleStateUpdated() {
     // The event handlers might have detached the frame.
     if (!IsAttached())
       return;
-
-    frozen_ = GetPage()->Frozen();
   }
-
   SetContextPaused(GetPage()->Paused());
 
   mojom::blink::FrameLifecycleState frame_lifecycle_state =
@@ -3226,6 +3274,7 @@ void LocalFrame::BindToReceiver(
   frame->receiver_.Bind(
       std::move(receiver),
       frame->GetTaskRunner(blink::TaskType::kInternalDefault));
+  frame->receiver_.SetFilter(std::make_unique<ActiveURLMessageFilter>(frame));
 }
 
 void LocalFrame::BindToMainFrameReceiver(
@@ -3238,6 +3287,8 @@ void LocalFrame::BindToMainFrameReceiver(
   frame->main_frame_receiver_.Bind(
       std::move(receiver),
       frame->GetTaskRunner(blink::TaskType::kInternalDefault));
+  frame->main_frame_receiver_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(frame));
 }
 
 void LocalFrame::BindToHighPriorityReceiver(
@@ -3248,6 +3299,8 @@ void LocalFrame::BindToHighPriorityReceiver(
   high_priority_frame_receiver_.Bind(
       std::move(receiver),
       GetTaskRunner(blink::TaskType::kInternalHighPriorityLocalFrame));
+  high_priority_frame_receiver_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void LocalFrame::BindTextFragmentSelectorProducer(

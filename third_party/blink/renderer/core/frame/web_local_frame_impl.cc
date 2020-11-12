@@ -1874,6 +1874,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
       sandbox_flags, feature_state);
 
   LocalFrame* new_frame = web_frame->GetFrame();
+  previous_frame->SetProvisionalFrame(new_frame);
+
   new_frame->SetOwner(previous_frame->Owner());
   if (auto* remote_frame_owner =
           DynamicTo<RemoteFrameOwner>(new_frame->Owner())) {
@@ -2390,9 +2392,8 @@ WebNode WebLocalFrameImpl::ContextMenuNode() const {
 }
 
 void WebLocalFrameImpl::WillBeDetached() {
-  // The |frame_widget_| can be null for frames in non-composited WebViews.
-  if (frame_->IsLocalRoot() && frame_widget_)
-    frame_widget_->DidDetachLocalFrameTree();
+  if (frame_->IsMainFrame())
+    ViewImpl()->DidDetachLocalMainFrame();
   if (dev_tools_agent_)
     dev_tools_agent_->WillBeDestroyed();
   if (find_in_page_)

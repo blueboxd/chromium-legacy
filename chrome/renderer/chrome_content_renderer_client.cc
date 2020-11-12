@@ -36,7 +36,6 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/privacy_budget/privacy_budget_settings_provider.h"
 #include "chrome/common/profiler/thread_profiler.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -60,6 +59,8 @@
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/previews/resource_loading_hints_agent.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/sync_encryption_keys_extension.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
@@ -601,8 +602,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (lite_video::IsLiteVideoEnabled())
     new lite_video::LiteVideoHintAgent(render_frame);
 
-  new previews::ResourceLoadingHintsAgent(
-      render_frame_observer->associated_interfaces(), render_frame);
+  new previews::ResourceLoadingHintsAgent(associated_interfaces, render_frame);
+
+  if (subresource_redirect::IsPublicImageHintsBasedCompressionEnabled())
+    new subresource_redirect::SubresourceRedirectHintsAgent(render_frame);
 
   if (translate::IsSubFrameTranslationEnabled()) {
     new translate::PerFrameTranslateAgent(
@@ -784,9 +787,20 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   // OverrideCreatePlugin.
   if (status == chrome::mojom::PluginStatus::kNotFound ||
       orig_mime_type == content::kBrowserPluginMimeType) {
-    PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
-    placeholder = ChromePluginPlaceholder::CreateLoadableMissingPlugin(
-        render_frame, original_params);
+    // Flash has been thoroughly removed in M88+, so we need to have a special
+    // case here to display a deprecated message instead of a generic
+    // plugin-missing message.
+    if (orig_mime_type == "application/x-shockwave-flash" ||
+        orig_mime_type == "application/futuresplash") {
+      return NonLoadablePluginPlaceholder::CreateFlashDeprecatedPlaceholder(
+                 render_frame, original_params)
+          ->plugin();
+    } else {
+      PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type,
+                                                            url);
+      placeholder = ChromePluginPlaceholder::CreateLoadableMissingPlugin(
+          render_frame, original_params);
+    }
   } else {
     // TODO(bauerb): This should be in content/.
     WebPluginParams params(original_params);

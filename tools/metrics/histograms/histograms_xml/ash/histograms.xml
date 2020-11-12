@@ -199,6 +199,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram
+    name="Ash.CaptureModeController.CaptureRegionAdjusted.{TabletOrClamshell}"
+    units="adjustments" expires_after="2021-11-06">
+  <owner>chinsenj@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Recorded whenever a user is in a region capture session in
+    {TabletOrClamshell} and performs a capture or they switch the capture
+    source. The recorded count indicates the number of times the user adjusts
+    the region. This counts each time they move the region or resize it. It is
+    reset whenever a user creates a new region or the count is recorded.
+  </summary>
+  <token key="TabletOrClamshell">
+    <variant name="ClamshellMode" summary="Clamshell mode"/>
+    <variant name="TabletMode" summary="Tablet mode"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.CaptureModeController.EntryPoint.{TabletOrClamshell}"
     enum="CaptureModeEntryType" expires_after="2021-09-29">
   <owner>chinsenj@chromium.org</owner>
@@ -456,6 +474,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Emitted when a virtual desk is created to specify the source of this action,
     i.e. whether from the new-desk button, keyboard shortcut, or due to desks
     restore. It is not emitted for the first-ever created default desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfDeskTraversals" units="units"
+    expires_after="2021-11-10">
+  <owner>afakhry@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <owner>tclaiborne@chromium.org</owner>
+  <summary>
+    Tracks the number of times a desk (virtual workspace) has visibly changed in
+    a time span of five seconds. This counts the number of total traversals; for
+    example if the user has moved from desk 1 to 2 to 1 to 2 to 3, the number
+    recorded is 4. This only gets recorded if a traversal starts. A traversal
+    means that the desk has changed onscreen.
   </summary>
 </histogram>
 

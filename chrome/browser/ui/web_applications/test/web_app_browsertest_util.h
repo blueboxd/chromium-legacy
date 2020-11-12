@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -62,6 +62,8 @@ enum AppMenuCommandState {
 
 // For a non-app browser, determines if the command is enabled/disabled/absent.
 AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser);
+
+void CloseAndWait(Browser* browser);
 
 bool IsBrowserOpen(const Browser* test_browser);
 

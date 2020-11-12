@@ -1522,16 +1522,6 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     return;
   }
 
-  if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_ACTIVE_DIRECTORY) {
-    // Call FinalizePrepareProfile directly and skip RestoreAuthSessionImpl
-    // because there is no need to merge session for Active Directory users.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UserSessionManager::PrepareTpmDeviceAndFinalizeProfile,
-                       AsWeakPtr(), profile));
-    return;
-  }
-
   PrepareTpmDeviceAndFinalizeProfile(profile);
 }
 
@@ -1544,7 +1534,7 @@ void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
 void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-Start", false);
 
-  if (!tpm_util::TpmIsEnabled() || tpm_util::TpmIsBeingOwned()) {
+  if (!tpm_util::TpmIsEnabled()) {
     FinalizePrepareProfile(profile);
     return;
   }

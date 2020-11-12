@@ -218,6 +218,7 @@ interface AnimationPlaybackEvent : Event
 interface AnimationTimeline
     attribute @@toStringTag
     getter currentTime
+    getter duration
     getter phase
     method constructor
 interface Attr : Node
@@ -5181,6 +5182,10 @@ interface MediaStreamTrackEvent : Event
 interface MediaStreamTrackGenerator : MediaStreamTrack
     attribute @@toStringTag
     getter writable
+    method constructor
+interface MediaStreamTrackProcessor
+    attribute @@toStringTag
+    getter readable
     method constructor
 interface MerchantValidationEvent : Event
     attribute @@toStringTag

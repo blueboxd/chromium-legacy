@@ -152,7 +152,6 @@ component("base") {
     "big_endian.cc",
     "big_endian.h",
     "bind.h",
-    "bind_helpers.h",
     "bind_internal.h",
     "bit_cast.h",
     "bits.h",
@@ -3044,11 +3043,6 @@ test("base_unittests") {
   ]
 
   if (is_win) {
-    # base_unittests need to test CFG is working, so turn it on for
-    # this test binary.
-    # Overrides the globals set in testing/test.gni to disable CFG.
-    win_test_enable_cfi_linker = true
-
     deps += [ "//base/win:base_win_buildflags" ]
 
     sources += [

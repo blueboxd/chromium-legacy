@@ -686,7 +686,7 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     }
   }
 
-  ToLayoutBox(root).LayoutSubtreeRoot();
+  To<LayoutBox>(root).LayoutSubtreeRoot();
   return true;
 }
 
@@ -1117,7 +1117,7 @@ void LocalFrameView::RunIntersectionObserverSteps() {
     // Report the main frame's document intersection with itself.
     LayoutObject* layout_object = GetLayoutView();
     IntRect main_frame_dimensions =
-        ToLayoutBox(layout_object)->PixelSnappedLayoutOverflowRect();
+        To<LayoutBox>(layout_object)->PixelSnappedLayoutOverflowRect();
     GetFrame().Client()->OnMainFrameIntersectionChanged(WebRect(
         0, 0, main_frame_dimensions.Width(), main_frame_dimensions.Height()));
   }
@@ -1284,7 +1284,7 @@ bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
     return true;
 
   const auto* object =
-      ToLayoutBoxModelObject(*background_attachment_fixed_objects_.begin());
+      To<LayoutBoxModelObject>(*background_attachment_fixed_objects_.begin());
   // We should not add such object in the set.
   DCHECK(!object->BackgroundTransfersToView());
   // If the background is viewport background and it paints onto the main
@@ -1435,7 +1435,7 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     DCHECK(layout_object->StyleRef().HasViewportConstrainedPosition() ||
            layout_object->StyleRef().HasStickyConstrainedPosition());
     DCHECK(layout_object->HasLayer());
-    PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
+    PaintLayer* layer = To<LayoutBoxModelObject>(layout_object)->Layer();
 
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       DisableCompositingQueryAsserts disabler;
@@ -1628,10 +1628,10 @@ static inline void RemoveFloatingObjectsForSubtreeRoot(LayoutObject& root) {
 }
 
 static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
-  DCHECK(root.IsBox() && ToLayoutBox(root).IsOrthogonalWritingModeRoot());
+  DCHECK(To<LayoutBox>(root).IsOrthogonalWritingModeRoot());
   if (!root.NeedsLayout() || root.IsOutOfFlowPositioned() ||
       root.IsColumnSpanAll() || root.StyleRef().LogicalHeight().IsSpecified() ||
-      ToLayoutBox(root).IsGridItem() || root.IsTablePart())
+      To<LayoutBox>(root).IsGridItem() || root.IsTablePart())
     return false;
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
@@ -1646,7 +1646,7 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
     // which called |RunLegacyLayout()|. This parent not only needs to run
     // pre-layout, but also clearing |NeedsLayout()| without updating
     // |CachedLayoutResult| is harmful.
-    if (const auto* box = ToLayoutBoxOrNull(&root)) {
+    if (const auto* box = DynamicTo<LayoutBox>(root)) {
       if (box->GetCachedLayoutResult())
         return false;
     }
@@ -2577,11 +2577,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 #if DCHECK_IS_ON()
   DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
 #endif
-  // Now that we have run the lifecycle up to paint, we can reset
-  // |need_paint_phase_after_throttling_| so that the paint phase will
-  // properly see us as being throttled (if that was the only reason we remained
-  // unthrottled), and clear the painted output.
-  need_paint_phase_after_throttling_ = false;
 
   DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
   RunPaintLifecyclePhase();
@@ -4329,14 +4324,15 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     SetPaintArtifactCompositorNeedsUpdate();
 
-  if (!CanThrottleRendering())
+  if (!CanThrottleRendering()) {
     InvalidateForThrottlingChange();
-
-  // If we have become unthrottled, this is essentially a no-op since we're
-  // going to paint anyway. If we have become throttled, then this will force
-  // one lifecycle update to clear the painted output.
-  if (GetFrame().IsLocalRoot())
-    need_paint_phase_after_throttling_ = true;
+  } else if (GetFrame().IsLocalRoot()) {
+    // By this point, every frame in the local frame tree has become throttled,
+    // so painting the tree should just clear the previous painted output.
+    DCHECK(!in_lifecycle_update_);
+    AllowThrottlingScope allow_throtting(*this);
+    RunPaintLifecyclePhase();
+  }
 
 #if DCHECK_IS_ON()
   // Make sure we never have an unthrottled frame inside a throttled one.
@@ -4438,10 +4434,8 @@ bool LocalFrameView::ShouldThrottleRendering() const {
   bool throttled_for_global_reasons = LocalFrameTreeAllowsThrottling() &&
                                       CanThrottleRendering() &&
                                       frame_->GetDocument();
-  if (!throttled_for_global_reasons || needs_forced_compositing_update_ ||
-      need_paint_phase_after_throttling_) {
+  if (!throttled_for_global_reasons || needs_forced_compositing_update_)
     return false;
-  }
 
   if (intersection_observation_state_ == kRequired) {
     auto* local_frame_root_view = GetFrame().LocalFrameRoot().View();
@@ -4556,10 +4550,11 @@ bool LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects() const {
   if (!ViewportConstrainedObjects())
     return false;
   for (const LayoutObject* layout_object : *ViewportConstrainedObjects()) {
-    DCHECK(layout_object->IsBoxModelObject() && layout_object->HasLayer());
+    DCHECK(layout_object->HasLayer());
     DCHECK(layout_object->StyleRef().GetPosition() == EPosition::kFixed ||
            layout_object->StyleRef().GetPosition() == EPosition::kSticky);
-    if (ToLayoutBoxModelObject(layout_object)->IsSlowRepaintConstrainedObject())
+    if (To<LayoutBoxModelObject>(layout_object)
+            ->IsSlowRepaintConstrainedObject())
       return true;
   }
   return false;

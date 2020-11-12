@@ -74,9 +74,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void DisableDeviceEmulation() override;
 
   // WebFrameWidget overrides:
-  void DidDetachLocalFrameTree() override;
   bool ScrollFocusedEditableElementIntoView() override;
-  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   void SetZoomLevelForTesting(double zoom_level) override;
   void ResetZoomLevelForTesting() override;
   void SetDeviceScaleFactorForTesting(float factor) override;
@@ -84,7 +82,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }
   bool ForTopLevelFrame() const override { return !is_for_nested_main_frame_; }
-  HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
   void SetZoomLevel(double zoom_level) override;
   void SetAutoResizeMode(bool auto_resize,
@@ -107,11 +104,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   float GetEmulatorScale() override;
 
   // WidgetBaseClient overrides:
-  void DidBeginMainFrame() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
   void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
-  void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void FocusChanged(bool enabled) override;
   float GetDeviceScaleFactorForTesting() override;
   gfx::Rect ViewportVisibleRect() override;
@@ -119,7 +113,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
                          const gfx::Rect& window_screen_rect) override;
   void RunPaintBenchmark(int repeat_count,
                          cc::PaintBenchmarkResult& result) override;
-  void DidCompletePageScaleAnimation() override;
 
   void SetScreenMetricsEmulationParameters(
       bool enabled,
@@ -152,7 +145,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
 
   scoped_refptr<WebViewImpl> web_view_;
-  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 
   // Web tests override the zoom factor in the renderer with this. We store it
   // to keep the override if the browser passes along VisualProperties with the

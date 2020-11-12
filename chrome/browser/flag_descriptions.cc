@@ -524,6 +524,12 @@ const char kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[] =
     "When enabled, a footer indicating user's e-mail address will appear at "
     "the bottom of corresponding password InfoBars.";
 
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[] =
+    "Display SaveCardInfoBar footer with account indication information";
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
+    "When enabled, a footer indicating user's e-mail address will appear at "
+    "the bottom of SaveCardInfoBar.";
+
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
     "Enable Google Pay branding on CVC prompt on Android";
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[] =
@@ -1562,11 +1568,6 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
-const char kOmniboxSuggestionsWrapAroundName[] =
-    "Omnibox Suggestions Wrap-Around";
-const char kOmniboxSuggestionsWrapAroundDescription[] =
-    "Allow long search suggestions to wrap around to reveal their content";
-
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox switch to tab suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
@@ -2141,11 +2142,6 @@ const char kStoragePressureEventDescription[] =
     "If enabled, Chrome will dispatch a DOM event, informing applications "
     "about storage pressure (low disk space)";
 
-const char kStoragePressureUIName[] = "Enable storage pressure UI";
-const char kStoragePressureUIDescription[] =
-    "If enabled, Chrome will trigger system notifications to warn about "
-    "storage pressure.";
-
 const char kSuggestedContentToggleName[] = "Enable Suggested Content toggle";
 const char kSuggestedContentToggleDescription[] =
     "Enables a settings UI toggle that controls Suggested Content status. Also"
@@ -2395,6 +2391,7 @@ const char kWebOtpBackendDescription[] =
 const char kWebOtpBackendSmsVerification[] =
     "SMS Verification API (requires app-hash)";
 const char kWebOtpBackendUserConsent[] = "User Consent API";
+const char kWebOtpBackendAuto[] = "Automatically select the backend";
 
 const char kWebglDraftExtensionsName[] = "WebGL Draft Extensions";
 const char kWebglDraftExtensionsDescription[] =
@@ -4053,11 +4050,6 @@ const char kExperimentalAccessibilityChromeVoxAnnotationsName[] =
 const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[] =
     "Allows users to create custom annotations for elements using ChromeVox.";
 
-const char kExperimentalAccessibilityChromeVoxTutorialName[] =
-    "Enable experimental ChromeVox interactive tutorial.";
-const char kExperimentalAccessibilityChromeVoxTutorialDescription[] =
-    "A comprehensive and interactive tutorial for the ChromeVox screen reader.";
-
 const char kExperimentalAccessibilitySwitchAccessTextName[] =
     "Enable enhanced Switch Access text input.";
 const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
@@ -4182,12 +4174,20 @@ const char kHideArcMediaNotificationsDescription[] =
     "#enable-media-session-notifications to be enabled.";
 
 const char kHoldingSpaceName[] =
-    "Quick access to screenshots, downloads, and files test";
+    "Quick access to screenshots, downloads, and files";
 const char kHoldingSpaceDescription[] =
     "Enables quick access to screenshots, downloads, and important files which "
     "aims to increase productivity by saving time. When enabled, access recent "
     "screenshots and downloads from the shelf. Pin important files with the "
     "Files App context menu to keep them one click away.";
+
+const char kHoldingSpacePreviewsName[] =
+    "Support showing previews of quick access screenshots, downloads, and "
+    "files";
+const char kHoldingSpacePreviewsDescription[] =
+    "Enables support for showing previews of quick access screenshots, "
+    "downloads, and imporant files in the shelf. Note that this has no effect "
+    "unless #enable-holding-space is also enabled.";
 
 const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
 const char kImeAssistAutocorrectDescription[] =

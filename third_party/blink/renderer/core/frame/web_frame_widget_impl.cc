@@ -308,15 +308,6 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   view->SetLayoutSize(WebSize(layout_size));
 }
 
-void WebFrameWidgetImpl::DidBeginMainFrame() {
-  DCHECK(LocalRootImpl()->GetFrame());
-  WebFrameWidgetBase::DidBeginMainFrame();
-  // TODO(szager): Investigate why WebViewFrameWidget::DidBeginMainFrame
-  // instantiates AllowThrottlingScope before calling
-  // PageWidgetDeleget::DidBeginFrame, but this method doesn't.
-  PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
-}
-
 bool WebFrameWidgetImpl::ShouldHandleImeEvents() {
   // TODO(ekaramad): WebViewWidgetImpl returns true only if it has focus.
   // We track page focus in all RenderViews on the page but
@@ -328,25 +319,6 @@ bool WebFrameWidgetImpl::ShouldHandleImeEvents() {
   return LocalRootImpl();
 }
 
-void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
-  if (LocalRootImpl()) {
-    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
-  }
-}
-
-void WebFrameWidgetImpl::EndCommitCompositorFrame(
-    base::TimeTicks commit_start_time) {
-  if (LocalRootImpl()) {
-    LocalRootImpl()
-        ->GetFrame()
-        ->View()
-        ->EnsureUkmAggregator()
-        .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
-                                    commit_start_time, base::TimeTicks::Now());
-  }
-  commit_compositor_frame_start_time_.reset();
-}
-
 void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                          DocumentUpdateReason reason) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
@@ -356,10 +328,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
                                       requested_update, reason);
   View()->UpdatePagePopup();
-}
-
-WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const gfx::PointF& point) {
-  return CoreHitTestResultAt(point);
 }
 
 WebInputEventResult WebFrameWidgetImpl::DispatchBufferedTouchEvents() {
@@ -381,8 +349,6 @@ WebInputEventResult WebFrameWidgetImpl::DispatchBufferedTouchEvents() {
       ->GetEventHandler()
       .DispatchBufferedTouchEvents();
 }
-
-void WebFrameWidgetImpl::DidDetachLocalFrameTree() {}
 
 bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   Element* element = FocusedElement();
@@ -729,14 +695,6 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   widget_base_->LayerTreeHost()->SetRootLayer(layer);
 }
 
-HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
-    const gfx::PointF& point_in_viewport) {
-  LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  FloatPoint point_in_root_frame(
-      view->ViewportToFrame(FloatPoint(point_in_viewport)));
-  return HitTestResultForRootFramePos(point_in_root_frame);
-}
-
 void WebFrameWidgetImpl::ZoomToFindInPageRect(
     const WebRect& rect_in_root_frame) {
   GetAssociatedFrameWidgetHost()->ZoomToFindInPageRectInMainFrame(
@@ -816,10 +774,6 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
 
 gfx::Rect WebFrameWidgetImpl::ViewportVisibleRect() {
   return compositor_visible_rect_;
-}
-
-void WebFrameWidgetImpl::DidCompletePageScaleAnimation() {
-  // Page scale animations only happen on the main frame.
 }
 
 void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(

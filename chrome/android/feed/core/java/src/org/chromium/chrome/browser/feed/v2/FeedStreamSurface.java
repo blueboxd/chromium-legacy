@@ -28,10 +28,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.base.SplitCompatUtils;
 import org.chromium.chrome.browser.feed.shared.ScrollTracker;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
@@ -58,6 +60,8 @@ import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.share.ShareHelper;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.feed.proto.FeedUiProto.SharedState;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
@@ -130,6 +134,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final int mLoadMoreTriggerLookahead;
     private boolean mIsLoadingMoreContent;
     private boolean mIsPlaceholderShown;
+    // TabSupplier for the current tab to share.
+    private final ShareHelperWrapper mShareHelper;
 
     private static ProcessScope sXSurfaceProcessScope;
 
@@ -208,6 +214,29 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         for (FeedStreamSurface surface : openSurfaces) {
             surface.updateSurfaceOpenState();
+        }
+    }
+
+    /**
+     * Provides a wrapper around sharing methods.
+     *
+     * Makes it easier to test.
+     */
+    public static class ShareHelperWrapper {
+        private Supplier<Tab> mTabSupplier;
+        public ShareHelperWrapper(Supplier<Tab> tabSupplier) {
+            mTabSupplier = tabSupplier;
+        }
+
+        /**
+         * Shares a url and title from Chrome to another app.
+         * Brings up the share sheet.
+         */
+        public void share(String url, String title) {
+            ShareParams params =
+                    new ShareParams.Builder(mTabSupplier.get().getWindowAndroid(), url, title)
+                            .build();
+            ShareHelper.shareWithUi(params);
         }
     }
 
@@ -394,7 +423,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public FeedStreamSurface(Activity activity, boolean isBackgroundDark,
             SnackbarManager snackbarManager, NativePageNavigationDelegate pageNavigationDelegate,
             BottomSheetController bottomSheetController,
-            HelpAndFeedbackLauncher helpAndFeedbackLauncher, boolean isPlaceholderShown) {
+            HelpAndFeedbackLauncher helpAndFeedbackLauncher, boolean isPlaceholderShown,
+            ShareHelperWrapper shareHelper) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mSnackbarManager = snackbarManager;
         mActivity = activity;
@@ -407,6 +437,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         mContentManager = new FeedListContentManager(this, this);
 
         mIsPlaceholderShown = isPlaceholderShown;
+        mShareHelper = shareHelper;
 
         Context context = new ContextThemeWrapper(
                 activity, (isBackgroundDark ? R.style.Dark : R.style.Light));
@@ -929,6 +960,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                         .setDuration(durationMs));
     }
 
+    @Override
+    public void share(String url, String title) {
+        mShareHelper.share(url, title);
+    }
+
     /**
      * Informs whether or not feed content should be shown.
      */
@@ -1062,10 +1098,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     private static Context createFeedContext(Context context) {
-        if (!BundleUtils.isIsolatedSplitInstalled(context, FEED_SPLIT_NAME)) {
-            return context;
-        }
-        return BundleUtils.createIsolatedSplitContext(context, FEED_SPLIT_NAME);
+        return SplitCompatUtils.createContextForInflation(context, FEED_SPLIT_NAME);
     }
 
     // Detects animation finishes in RecyclerView.

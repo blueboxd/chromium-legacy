@@ -1262,6 +1262,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-autofill-save-card-info-bar-account-indication-footer",
+    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "expiry_milestone": 95
+  },
+  {
     "name": "enable-autofill-upi-vpa",
     "owners": [ "cfroussios" ],
     "expiry_milestone": 88
@@ -1482,11 +1487,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "enable-experimental-accessibility-chromevox-tutorial",
-    "owners": [ "akihiroota" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "enable-experimental-accessibility-cursor-colors",
     "owners": [ "katie" ],
     "expiry_milestone": 87
@@ -1644,6 +1644,11 @@
   },
   {
     "name": "enable-holding-space",
+    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-holding-space-previews",
     "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
     "expiry_milestone": 90
   },
@@ -2695,7 +2700,7 @@
   {
     "name": "form-controls-dark-mode",
     "owners": [ "sasebree@microsoft.com", "masonfreed", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "form-controls-refresh",
@@ -3567,11 +3572,6 @@
     "name": "omnibox-suggestion-button-row",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "omnibox-suggestions-wrap-around",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 90
   },
   {
     "name": "omnibox-tab-switch-suggestions",

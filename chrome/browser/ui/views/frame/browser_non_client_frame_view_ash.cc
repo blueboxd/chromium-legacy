@@ -6,13 +6,12 @@
 
 #include <algorithm>
 
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -39,6 +38,7 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/default_frame_header.h"
 #include "chromeos/ui/frame/frame_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -64,6 +64,10 @@
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/public/cpp/app_types.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -123,10 +127,14 @@ void BrowserNonClientFrameViewAsh::Init() {
   UpdateProfileIcons();
 
   aura::Window* window = frame()->GetNativeWindow();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This is only needed for ash. For lacros, Exo tags the associated
+  // ShellSurface as being of AppType::LACROS.
   window->SetProperty(
       aura::client::kAppType,
       static_cast<int>(browser->deprecated_is_app() ? ash::AppType::CHROME_APP
                                                     : ash::AppType::BROWSER));
+#endif
 
   window_observer_.Add(GetFrameWindow());
 
@@ -197,7 +205,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
-  return BrowserFrameHeaderAsh::GetThemeBackgroundXInset();
+  return BrowserFrameHeaderChromeOS::GetThemeBackgroundXInset();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
@@ -627,10 +635,10 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   std::unique_ptr<chromeos::FrameHeader> header;
   Browser* browser = browser_view()->browser();
   if (!UsePackagedAppHeaderStyle(browser)) {
-    header = std::make_unique<BrowserFrameHeaderAsh>(frame(), this, this,
-                                                     caption_button_container_);
+    header = std::make_unique<BrowserFrameHeaderChromeOS>(
+        frame(), this, this, caption_button_container_);
   } else {
-    header = std::make_unique<ash::DefaultFrameHeader>(
+    header = std::make_unique<chromeos::DefaultFrameHeader>(
         frame(), this, caption_button_container_);
   }
 

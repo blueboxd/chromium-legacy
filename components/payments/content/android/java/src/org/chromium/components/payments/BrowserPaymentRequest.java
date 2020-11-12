@@ -36,13 +36,19 @@ public interface BrowserPaymentRequest {
     }
 
     /**
-     * The browser part of the {@link PaymentRequest#updateWith} implementation.
+     * The client of the interface calls this when it has received the payment details update
+     * from the merchant and has updated the PaymentRequestSpec.
      * @param details The details that the merchant provides to update the payment request.
+     * @param hasNotifiedInvokedPaymentApp Whether the client has notified the invoked
+     *      payment app of the updated details.
      */
-    void updateWith(PaymentDetails details);
+    void onPaymentDetailsUpdated(PaymentDetails details, boolean hasNotifiedInvokedPaymentApp);
 
-    /** The browser part of the {@link PaymentRequest#onPaymentDetailsNotUpdated} implementation. */
-    void onPaymentDetailsNotUpdated();
+    /**
+     * The browser part of the {@link PaymentRequest#onPaymentDetailsNotUpdated} implementation.
+     * @param selectedShippingOptionError The selected shipping option error, can be null.
+     */
+    void onPaymentDetailsNotUpdated(@Nullable String selectedShippingOptionError);
 
     /** The browser part of the {@link PaymentRequest#complete} implementation. */
     void complete(int result);
@@ -113,9 +119,10 @@ public interface BrowserPaymentRequest {
     /**
      * Shows the payment apps selector.
      * @return Whether the showing is successful.
-     * @param waitForUpdatedDetails Whether to wait for updated details.
+     * @param isShowWaitingForUpdatedDetails Whether {@link PaymentRequest#show} is waiting for the
+     *         updated details.
      */
-    default boolean showAppSelector(boolean waitForUpdatedDetails) {
+    default boolean showAppSelector(boolean isShowWaitingForUpdatedDetails) {
         return false;
     }
 
@@ -185,5 +192,20 @@ public interface BrowserPaymentRequest {
     /** @return Whether any payment UI is being shown. */
     default boolean isShowingUi() {
         return false;
+    }
+
+    /**
+     * Continues the unfinished part of show() that was blocked for the payment details that was
+     * pending to be updated.
+     */
+    default void continueShow() {}
+
+    /**
+     * If needed, do extra parsing and validation for details.
+     * @param details The details specified by the merchant.
+     * @return True if the validation pass.
+     */
+    default boolean parseAndValidateDetailsFurtherIfNeeded(PaymentDetails details) {
+        return true;
     }
 }

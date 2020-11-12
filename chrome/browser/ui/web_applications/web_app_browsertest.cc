@@ -39,9 +39,9 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/common/content_features.h"
@@ -124,9 +124,10 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
 
     base::HistogramTester tester;
     const std::string base_url = "https://example.com/path";
+    const GURL app_url(base_url + base::NumberToString(index++));
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->start_url = GURL(base_url + base::NumberToString(index++));
-    web_app_info->scope = web_app_info->start_url;
+    web_app_info->start_url = app_url;
+    web_app_info->scope = app_url;
     web_app_info->display_mode = display_mode;
     web_app_info->open_as_window = open_as_window;
     if (display_override_mode)
@@ -139,6 +140,8 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
         kLaunchWebAppDisplayModeHistogram,
         display_override_mode ? *display_override_mode : display_mode, 1);
 
+    NavigateToURLAndWait(app_browser, app_url);
+
     bool matches;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
         app_browser->tab_strip_model()->GetActiveWebContents(),
@@ -146,6 +149,7 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
         "minimal-ui)').matches)",
         &matches));
     EXPECT_EQ(app_browser->app_controller()->HasMinimalUiButtons(), matches);
+    CloseAndWait(app_browser);
 
     return matches;
   }

@@ -995,6 +995,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-004.
 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-003.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/hit-test-transformed-child.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/relpos-inline-hit-testing.html [ Pass ]
@@ -2568,6 +2569,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-stop.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-clone.any.sharedworker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.serviceworker.html [ Failure Timeout ]
@@ -3216,6 +3218,7 @@ crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-002.ht
 crbug.com/829028 external/wpt/css/css-multicol/baseline-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/baseline-007.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/baseline-008.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/hit-test-transformed-child.html [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-001.html [ Failure ]
 crbug.com/481431 external/wpt/css/css-multicol/multicol-breaking-004.html [ Failure ]
@@ -6198,6 +6201,8 @@ crbug.com/1139052 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/rtp-dem
 
 crbug.com/1137228 [ Mac ] external/wpt/infrastructure/testdriver/click_iframe_crossorigin.sub.html [ Pass Failure ]
 
+crbug.com/825892 external/wpt/client-hints/viewport-width-window-different-dimensions.https.html [ Failure ]
+
 # Rename document.featurePolicy to document.permissionsPolicy
 crbug.com/1123116 external/wpt/permissions-policy/payment-supported-by-permissions-policy.tentative.html [ Failure ]
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-all.https.sub.html [ Failure ]
@@ -6268,3 +6273,6 @@ crbug.com/1127115 inspector-protocol/runtime/runtime-console-log-node-document-t
 
 # Sheriff 2020-11-06
 crbug.com/1146560 [ Win ] fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Failure Pass ]
+
+# Sheriff 2020-11-12
+crbug.com/1148259 [ Mac ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling-dynamic.html [ Failure ]

@@ -27,6 +27,8 @@ extern const base::Feature kExtensionSettingsOverriddenDialogs;
 
 extern const base::Feature kExtensionsToolbarMenu;
 
+extern const base::Feature kForceEnablePrivetPrinting;
+
 extern const base::Feature kNewProfilePicker;
 
 extern const base::Feature kNewTabstripAnimation;
@@ -42,8 +44,6 @@ extern const base::Feature kScrollableTabStripButtons;
 extern const base::Feature kSidePanel;
 
 extern const base::Feature kProfilesUIRevamp;
-
-extern const base::Feature kTabGroups;
 
 extern const base::Feature kTabGroupsAutoCreate;
 

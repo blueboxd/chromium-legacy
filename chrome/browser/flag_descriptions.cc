@@ -1830,6 +1830,11 @@ const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "
     "and easier to use.";
 
+const char kForceEnablePrivetPrintingName[] = "Force enable Privet Printing";
+const char kForceEnablePrivetPrintingDescription[] =
+    "Override to force enabling printing to existing registered Privet "
+    "printers in Print Preview. Will be removed in M90.";
+
 const char kSafetyCheckAndroidName[] = "Safety Check on Android";
 const char kSafetyCheckAndroidDescription[] =
     "A settings component for checking multiple areas of browser safety. "
@@ -2198,11 +2203,6 @@ const char kTabToGTSAnimationAndroidName[] = "Enable Tab-to-GTS Animation";
 const char kTabToGTSAnimationAndroidDescription[] =
     "Allows users to see an animation when entering or leaving the "
     "Grid Tab Switcher on phones.";
-
-const char kTabGroupsName[] = "Tab Groups";
-const char kTabGroupsDescription[] =
-    "Allows users to organize tabs into visually distinct groups, e.g. to "
-    "separate tabs associated with different tasks.";
 
 const char kTabGroupsAutoCreateName[] = "Tab Groups Auto Create";
 const char kTabGroupsAutoCreateDescription[] =

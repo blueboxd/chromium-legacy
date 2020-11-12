@@ -114,9 +114,7 @@ AXLayoutObject::~AXLayoutObject() {
 }
 
 LayoutBoxModelObject* AXLayoutObject::GetLayoutBoxModelObject() const {
-  if (!layout_object_ || !layout_object_->IsBoxModelObject())
-    return nullptr;
-  return ToLayoutBoxModelObject(layout_object_);
+  return DynamicTo<LayoutBoxModelObject>(layout_object_);
 }
 
 bool IsProgrammaticallyScrollable(LayoutBox* box) {
@@ -135,7 +133,7 @@ ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
   if (!layout_object_ || !layout_object_->IsBox())
     return nullptr;
 
-  LayoutBox* box = ToLayoutBox(layout_object_);
+  auto* box = To<LayoutBox>(layout_object_);
 
   // This should possibly use box->CanBeScrolledAndHasScrollableArea() as it
   // used to; however, accessibility must consider any kind of non-visible
@@ -1120,7 +1118,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
   } else {
     InlineBox* inline_box = nullptr;
     if (GetLayoutObject()->IsBox()) {
-      inline_box = ToLayoutBox(GetLayoutObject())->InlineBoxWrapper();
+      inline_box = To<LayoutBox>(GetLayoutObject())->InlineBoxWrapper();
     } else if (GetLayoutObject()->IsLayoutInline()) {
       // For performance and memory consumption, LayoutInline may ignore some
       // inline-boxes during line layout because they don't actually impact
@@ -1237,7 +1235,7 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
   } else {
     InlineBox* inline_box = nullptr;
     if (GetLayoutObject()->IsBox()) {
-      inline_box = ToLayoutBox(GetLayoutObject())->InlineBoxWrapper();
+      inline_box = To<LayoutBox>(GetLayoutObject())->InlineBoxWrapper();
     } else if (GetLayoutObject()->IsLayoutInline()) {
       // For performance and memory consumption, LayoutInline may ignore some
       // inline-boxes during line layout because they don't actually impact
@@ -1457,7 +1455,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
             DocumentLifecycle::kPrePaintClean);
 #endif
 
-  PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
+  PaintLayer* layer = To<LayoutBox>(layout_object_)->Layer();
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kRetargetForInert);
@@ -1891,7 +1889,7 @@ bool AXLayoutObject::OnNativeSetValueAction(const String& string) {
   if (!layout_object_ || !layout_object_->IsBoxModelObject())
     return false;
 
-  LayoutBoxModelObject* layout_object = ToLayoutBoxModelObject(layout_object_);
+  auto* layout_object = To<LayoutBoxModelObject>(layout_object_);
   auto* html_input_element = DynamicTo<HTMLInputElement>(*GetNode());
   if (html_input_element && layout_object->IsTextFieldIncludingNG()) {
     html_input_element->setValue(
@@ -2163,7 +2161,7 @@ bool AXLayoutObject::IsDataTable() const {
       if (row < 5 && row == alternating_row_color_count) {
         LayoutObject* layout_row = cell_layout_block->Parent();
         if (!layout_row || !layout_row->IsBoxModelObject() ||
-            !ToLayoutBoxModelObject(layout_row)->IsTableRow())
+            !To<LayoutBoxModelObject>(layout_row)->IsTableRow())
           continue;
         const ComputedStyle* row_computed_style = layout_row->Style();
         if (!row_computed_style)

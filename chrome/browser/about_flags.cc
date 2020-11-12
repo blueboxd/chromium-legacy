@@ -2940,6 +2940,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeviceDiscoveryNotificationsName,
      flag_descriptions::kDeviceDiscoveryNotificationsDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications)},
+    {"force-enable-privet-printing",
+     flag_descriptions::kForceEnablePrivetPrintingName,
+     flag_descriptions::kForceEnablePrivetPrintingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kForceEnablePrivetPrinting)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"enable-webgl-draft-extensions",
      flag_descriptions::kWebglDraftExtensionsName,
@@ -4223,10 +4227,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"read-later", flag_descriptions::kReadLaterName,
      flag_descriptions::kReadLaterDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(reading_list::switches::kReadLater)},
-
-    {"tab-groups", flag_descriptions::kTabGroupsName,
-     flag_descriptions::kTabGroupsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabGroups)},
 
     {"tab-groups-auto-create", flag_descriptions::kTabGroupsAutoCreateName,
      flag_descriptions::kTabGroupsAutoCreateDescription, kOsDesktop,

@@ -1070,6 +1070,9 @@ extern const char kPrivacyReorderedAndroidDescription[];
 extern const char kPrivacySettingsRedesignName[];
 extern const char kPrivacySettingsRedesignDescription[];
 
+extern const char kForceEnablePrivetPrintingName[];
+extern const char kForceEnablePrivetPrintingDescription[];
+
 extern const char kSafetyCheckAndroidName[];
 extern const char kSafetyCheckAndroidDescription[];
 
@@ -1277,9 +1280,6 @@ extern const char kTabGroupsUiImprovementsAndroidDescription[];
 
 extern const char kTabToGTSAnimationAndroidName[];
 extern const char kTabToGTSAnimationAndroidDescription[];
-
-extern const char kTabGroupsName[];
-extern const char kTabGroupsDescription[];
 
 extern const char kTabGroupsAutoCreateName[];
 extern const char kTabGroupsAutoCreateDescription[];

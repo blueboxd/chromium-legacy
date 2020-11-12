@@ -4589,6 +4589,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Ui shown"/>
   <int value="2" label="User chose 'not now'"/>
   <int value="3" label="Ui hidden due to trigger condition no longer true"/>
+  <int value="4" label="User swipe-dismissed the bottom sheet"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptStarted">
@@ -16894,6 +16895,14 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="105" label="layers.right"/>
 </enum>
 
+<enum name="DevToolsOpenedByAction">
+  <int value="1" label="Main menu or main shortcut"/>
+  <int value="2" label="Console tab shortcut"/>
+  <int value="3" label="Context menu inspect"/>
+  <int value="4" label="Inspect mode shortcut"/>
+  <int value="5" label="Toggle shortcut"/>
+</enum>
+
 <enum name="DevToolsPanel">
   <int value="1" label="Elements"/>
   <int value="2" label="Resources"/>
@@ -17724,6 +17733,18 @@ Called by update_document_policy_enum.py.-->
   <int value="92" label="Umax1220U"/>
   <int value="93" label="UmaxPp"/>
   <int value="94" label="XeroxMfp"/>
+  <int value="95" label="IppUsbBrother"/>
+  <int value="96" label="IppUsbCanon"/>
+  <int value="97" label="IppUsbEpson"/>
+  <int value="98" label="IppUsbHp"/>
+  <int value="99" label="IppUsbKodak"/>
+  <int value="100" label="IppUsbKonicaMinolta"/>
+  <int value="101" label="IppUsbKyocera"/>
+  <int value="102" label="IppUsbLexmark"/>
+  <int value="103" label="IppUsbOther"/>
+  <int value="104" label="IppUsbRicoh"/>
+  <int value="105" label="IppUsbSamsung"/>
+  <int value="106" label="IppUsbXerox"/>
 </enum>
 
 <enum name="DocumentStateForDeferredLoading">
@@ -30235,6 +30256,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3727" label="AdFrameDetected"/>
   <int value="3728" label="MediaStreamTrackGenerator"/>
   <int value="3729" label="MediaStreamTrackProcessor"/>
+  <int value="3730" label="AddEventListenerWithAbortSignal"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32314,6 +32336,14 @@ Called by update_feature_policy_enum.py.-->
   <int value="253" label="Seccomp violation">
     MINIJAIL_ERR_JAIL from libminijail
   </int>
+</enum>
+
+<enum name="GaiaPasswordChangedScreenUserAction">
+  <summary>Actions which happen on the screen.</summary>
+  <int value="0" label="Resync user data"/>
+  <int value="1" label="Migrate user data"/>
+  <int value="2" label="Cancel dialog"/>
+  <int value="3" label="Incorrect old password"/>
 </enum>
 
 <enum name="GaiaPasswordHashChange">
@@ -43101,6 +43131,7 @@ from previous Chrome versions.
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-964620377" label="CSSOMViewScrollCoordinates:enabled"/>
   <int value="-963683462" label="EnablePalmSuppression:enabled"/>
+  <int value="-962956513" label="ForceEnablePrivetPrinting:enabled"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
@@ -43775,6 +43806,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
   <int value="-275619817"
       label="disable-proximity-auth-bluetooth-low-energy-discovery"/>
+  <int value="-275480964" label="ForceEnablePrivetPrinting:disabled"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-273821346"
       label="MaintainShelfStateWhenEnteringOverview:disabled"/>
@@ -61731,6 +61763,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="188" label="QUIC_QPACK_DECODER_STREAM_INCREMENT_OVERFLOW"/>
   <int value="189" label="QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT"/>
   <int value="190" label="QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT"/>
+  <int value="191" label="QUIC_MAX_AGE_TIMEOUT"/>
 </enum>
 
 <enum name="QuicFailToSerializePacketLocation">
@@ -62187,6 +62220,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="Rar2fsError">
   <int value="0" label="Success">Hardcoded in rar2fs</int>
   <int value="1" label="Missing primary volume">Hardcoded in rar2fs</int>
+  <int value="12" label="Bad data">ERAR_BAD_DATA from libunrar</int>
   <int value="13" label="Bad archive">ERAR_BAD_ARCHIVE from libunrar</int>
   <int value="14" label="Unknown format">ERAR_UNKNOWN_FORMAT from libunrar</int>
   <int value="15" label="Cannot open">ERAR_EOPEN from libunrar</int>
@@ -70660,6 +70694,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9" label="FailedCreatingSentinelFile"/>
   <int value="10" label="FailedDeletingSentinelFile"/>
   <int value="11" label="AbortedBecauseSentinelFileWasPresent"/>
+</enum>
+
+<enum name="SubresourceRedirectRobotsRulesReceiveResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Parse error"/>
 </enum>
 
 <enum name="SuccessTimeoutStarted">

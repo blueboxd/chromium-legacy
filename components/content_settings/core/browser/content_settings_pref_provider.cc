@@ -50,6 +50,8 @@ const char kObsoleteMouseLockExceptionsPref[] =
     "profile.content_settings.exceptions.mouselock";
 const char kObsoletePluginsExceptionsPref[] =
     "profile.content_settings.exceptions.plugins";
+const char kObsoletePluginsDataExceptionsPref[] =
+    "profile.content_settings.exceptions.flash_data";
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
@@ -95,6 +97,7 @@ void PrefProvider::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       kObsoleteMouseLockExceptionsPref,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kObsoletePluginsDataExceptionsPref);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
@@ -168,20 +171,17 @@ PrefProvider::~PrefProvider() {
 
 std::unique_ptr<RuleIterator> PrefProvider::GetRuleIterator(
     ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
     bool off_the_record) const {
   if (!supports_type(content_type))
     return nullptr;
 
-  return GetPref(content_type)
-      ->GetRuleIterator(resource_identifier, off_the_record);
+  return GetPref(content_type)->GetRuleIterator(off_the_record);
 }
 
 bool PrefProvider::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
     std::unique_ptr<base::Value>&& in_value,
     const ContentSettingConstraints& constraints) {
   DCHECK(CalledOnValidThread());
@@ -196,8 +196,7 @@ bool PrefProvider::SetWebsiteSetting(
   // sites/origins defined by the |primary_pattern| and the |secondary_pattern|.
   // Default settings are handled by the |DefaultProvider|.
   if (primary_pattern == ContentSettingsPattern::Wildcard() &&
-      secondary_pattern == ContentSettingsPattern::Wildcard() &&
-      resource_identifier.empty()) {
+      secondary_pattern == ContentSettingsPattern::Wildcard()) {
     return false;
   }
 
@@ -205,16 +204,14 @@ bool PrefProvider::SetWebsiteSetting(
       store_last_modified_ ? clock_->Now() : base::Time();
 
   return GetPref(content_type)
-      ->SetWebsiteSetting(primary_pattern, secondary_pattern,
-                          resource_identifier, modified_time,
+      ->SetWebsiteSetting(primary_pattern, secondary_pattern, modified_time,
                           std::move(in_value), constraints);
 }
 
 base::Time PrefProvider::GetWebsiteSettingLastModified(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) {
+    ContentSettingsType content_type) {
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 
@@ -222,8 +219,7 @@ base::Time PrefProvider::GetWebsiteSettingLastModified(
     return base::Time();
 
   return GetPref(content_type)
-      ->GetWebsiteSettingLastModified(primary_pattern, secondary_pattern,
-                                      resource_identifier);
+      ->GetWebsiteSettingLastModified(primary_pattern, secondary_pattern);
 }
 
 void PrefProvider::ClearAllContentSettingsRules(
@@ -258,15 +254,10 @@ ContentSettingsPref* PrefProvider::GetPref(ContentSettingsType type) const {
   return it->second.get();
 }
 
-void PrefProvider::Notify(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
-  NotifyObservers(primary_pattern,
-                  secondary_pattern,
-                  content_type,
-                  resource_identifier);
+void PrefProvider::Notify(const ContentSettingsPattern& primary_pattern,
+                          const ContentSettingsPattern& secondary_pattern,
+                          ContentSettingsType content_type) {
+  NotifyObservers(primary_pattern, secondary_pattern, content_type);
 }
 
 void PrefProvider::DiscardOrMigrateObsoletePreferences() {
@@ -282,6 +273,7 @@ void PrefProvider::DiscardOrMigrateObsoletePreferences() {
 #if !defined(OS_ANDROID)
   prefs_->ClearPref(kObsoleteMouseLockExceptionsPref);
   prefs_->ClearPref(kObsoletePluginsExceptionsPref);
+  prefs_->ClearPref(kObsoletePluginsDataExceptionsPref);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 

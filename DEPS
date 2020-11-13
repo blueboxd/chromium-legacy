@@ -213,7 +213,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'fd0d0441ca1e60bfe197b976662fa6342202ac25',
+  'swiftshader_revision': 'e4c1a25cc6797a47043fc415c53b8edcd7b3e37e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -264,7 +264,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '420f7362d68aec3bb885db27e79f0636a1d111a9',
+  'catapult_revision': '2a9b38f2dacd20ce6bab626732ce304b5dfb9561',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -907,7 +907,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5157fbfbae860c529184113657697e5c6b4c868d',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e61ccc59a2405db5dfe76b3499e18b933d620c21',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1246,7 +1246,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '90bf4ba461d154b76ea69c8dff56dfd3e75b08fa',
+    Var('chromium_git') + '/openscreen' + '@' + '052885405c6c9b71666031281c83b5234dd7120f',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1341,7 +1341,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'F0EKpWdiLAqJzq0dh6psRmgvyNI65ezZmuUTuiyMIDkC'
+              'version': 'odgqq5Ioufje8VJPdI6hwUYcIRY72Hn4Cv5WeX6OdV4C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

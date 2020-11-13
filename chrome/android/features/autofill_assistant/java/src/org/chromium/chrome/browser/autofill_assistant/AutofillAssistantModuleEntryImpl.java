@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 
 import java.util.Map;
 
@@ -41,7 +42,8 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
     @Override
     public void start(BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            Context context, @NonNull WebContents webContents, boolean skipOnboarding,
+            Context context, @NonNull WebContents webContents,
+            ActivityKeyboardVisibilityDelegate keyboardVisibilityDelegate, boolean skipOnboarding,
             boolean isChromeCustomTab, @NonNull String initialUrl, Map<String, String> parameters,
             String experimentIds, @Nullable String callerAccount, @Nullable String userName) {
         if (shouldStartTriggerScript(parameters)) {
@@ -51,12 +53,19 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                 return;
             }
 
+            boolean isFirstTimeUser =
+                    AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser();
+            AutofillAssistantMetrics.recordLiteScriptStarted(webContents,
+                    isFirstTimeUser ? LiteScriptStarted.LITE_SCRIPT_FIRST_TIME_USER
+                                    : LiteScriptStarted.LITE_SCRIPT_RETURNING_USER);
+
             // Start trigger script and transition to regular flow on success.
             if (TextUtils.equals(parameters.get(PARAMETER_REQUEST_TRIGGER_SCRIPT), "true")) {
                 AssistantTriggerScriptBridge triggerScriptBridge =
                         new AssistantTriggerScriptBridge();
-                triggerScriptBridge.start(bottomSheetController, context, webContents, initialUrl,
-                        parameters, experimentIds, new AssistantTriggerScriptBridge.Delegate() {
+                triggerScriptBridge.start(bottomSheetController, context,
+                        keyboardVisibilityDelegate, webContents, initialUrl, parameters,
+                        experimentIds, new AssistantTriggerScriptBridge.Delegate() {
                             @Override
                             public void onTriggerScriptFinished(
                                     @LiteScriptFinishedState int finishedState) {
@@ -75,13 +84,8 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             }
 
             // Legacy lite scripts, remove as soon as possible.
-            boolean isFirstTimeUser =
-                    AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser();
             String firstTimeUserScriptPath = parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER);
             String returningUserScriptPath = parameters.get(PARAMETER_TRIGGER_RETURNING_TIME_USER);
-            AutofillAssistantMetrics.recordLiteScriptStarted(webContents,
-                    isFirstTimeUser ? LiteScriptStarted.LITE_SCRIPT_FIRST_TIME_USER
-                                    : LiteScriptStarted.LITE_SCRIPT_RETURNING_USER);
             startAutofillAssistantLite(bottomSheetController, browserControls, compositorViewHolder,
                     webContents, firstTimeUserScriptPath, returningUserScriptPath, result -> {
                         if (result) {

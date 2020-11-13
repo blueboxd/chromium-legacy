@@ -8,6 +8,7 @@ import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
@@ -34,8 +36,8 @@ import java.lang.ref.WeakReference;
 /**
  * A fragment that provides a UI for scanning caBLE v2 QR codes.
  */
-public class CableAuthenticatorUI extends Fragment
-        implements OnClickListener, QRScanDialog.Callback, CableAuthenticator.Callback {
+public class CableAuthenticatorUI
+        extends Fragment implements OnClickListener, QRScanDialog.Callback {
     private enum Mode {
         QR, // Triggered from Settings; can scan QR code to start handshake.
         FCM, // Triggered by user selecting notification; handshake already running.
@@ -45,6 +47,7 @@ public class CableAuthenticatorUI extends Fragment
     private AndroidPermissionDelegate mPermissionDelegate;
     private CableAuthenticator mAuthenticator;
     private LinearLayout mQRButton;
+    private LinearLayout mUnlinkButton;
     private ImageView mHeader;
 
     @Override
@@ -102,6 +105,9 @@ public class CableAuthenticatorUI extends Fragment
                 mHeader = v.findViewById(R.id.qr_image);
                 setHeader(R.style.idle);
 
+                mUnlinkButton = v.findViewById(R.id.unlink);
+                mUnlinkButton.setOnClickListener(this);
+
                 return v;
         }
 
@@ -125,7 +131,30 @@ public class CableAuthenticatorUI extends Fragment
      * Called when the button to scan a QR code is pressed.
      */
     @Override
+    @SuppressLint("SetTextI18n")
     public void onClick(View v) {
+        if (v == mUnlinkButton) {
+            // TODO: localise strings.
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Unlink all devices")
+                    .setMessage("Do you want to unlink all previously connected devices?"
+                            + " You will need to scan a QR code from a given device in"
+                            + " order to use it again."
+                            + " No credentials will be deleted.")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(android.R.string.ok,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    mAuthenticator.unlinkAllDevices();
+                                }
+                            })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+            return;
+        }
+
+        assert (v == mQRButton);
         // If camera permission is already available, show the scanning
         // dialog.
         final Context context = getContext();
@@ -159,8 +188,7 @@ public class CableAuthenticatorUI extends Fragment
         mAuthenticator.onQRCode(value);
     }
 
-    @Override
-    public void onStatus(int code) {
+    void onStatus(int code) {
         if (mMode != Mode.QR) {
             // In FCM mode, the handshake is done before the UI appears. For
             // USB everything should happen immediately.
@@ -201,12 +229,10 @@ public class CableAuthenticatorUI extends Fragment
         mAuthenticator.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
     @SuppressLint("SetTextI18n")
-    public void onAuthenticatorConnected() {}
+    void onAuthenticatorConnected() {}
 
-    @Override
-    public void onAuthenticatorResult(CableAuthenticator.Result result) {
+    void onAuthenticatorResult(CableAuthenticator.Result result) {
         getActivity().runOnUiThread(() -> {
             // TODO: Temporary UI, needs i18n.
             String toast = "An error occured. Please try again.";
@@ -230,8 +256,7 @@ public class CableAuthenticatorUI extends Fragment
         });
     }
 
-    @Override
-    public void onComplete() {
+    void onComplete() {
         getActivity().runOnUiThread(() -> { getActivity().finish(); });
     }
 

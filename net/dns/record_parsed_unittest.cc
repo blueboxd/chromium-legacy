@@ -97,6 +97,59 @@ TEST(RecordParsedTest, ParseUnknownRdata) {
   EXPECT_FALSE(record->rdata_for_testing());
 }
 
+TEST(RecordParsedTest, EqualityHandlesUnknownRdata) {
+  static constexpr char kData[] =
+      // NAME="foo.test"
+      "\003foo\004test\000"
+      // TYPE=MD (an obsolete type that will likely never be recognized by
+      // Chrome)
+      "\000\003"
+      // CLASS=IN
+      "\000\001"
+      // TTL=30 seconds
+      "\000\000\000\036"
+      // RDLENGTH=12 bytes
+      "\000\014"
+      // RDATA="garbage data"
+      "garbage data"
+      // NAME="foo.test"
+      "\003foo\004test\000"
+      // TYPE=A
+      "\000\001"
+      // CLASS=IN
+      "\000\001"
+      // TTL=30 seconds
+      "\000\000\000\036"
+      // RDLENGTH=4 bytes
+      "\000\004"
+      // RDATA=8.8.8.8
+      "\010\010\010\010";
+  DnsRecordParser parser(kData, sizeof(kData) - 1, 0 /* offset */);
+
+  std::unique_ptr<const RecordParsed> unknown_record =
+      RecordParsed::CreateFrom(&parser, base::Time());
+  ASSERT_TRUE(unknown_record);
+  ASSERT_FALSE(unknown_record->rdata_for_testing());
+
+  std::unique_ptr<const RecordParsed> known_record =
+      RecordParsed::CreateFrom(&parser, base::Time());
+  ASSERT_TRUE(known_record);
+  ASSERT_TRUE(known_record->rdata_for_testing());
+
+  EXPECT_TRUE(
+      unknown_record->IsEqual(unknown_record.get(), false /* is_mdns */));
+  EXPECT_TRUE(
+      unknown_record->IsEqual(unknown_record.get(), true /* is_mdns */));
+  EXPECT_TRUE(known_record->IsEqual(known_record.get(), false /* is_mdns */));
+  EXPECT_TRUE(known_record->IsEqual(known_record.get(), true /* is_mdns */));
+  EXPECT_FALSE(
+      unknown_record->IsEqual(known_record.get(), false /* is_mdns */));
+  EXPECT_FALSE(unknown_record->IsEqual(known_record.get(), true /* is_mdns */));
+  EXPECT_FALSE(
+      known_record->IsEqual(unknown_record.get(), false /* is_mdns */));
+  EXPECT_FALSE(known_record->IsEqual(unknown_record.get(), true /* is_mdns */));
+}
+
 TEST(RecordParsedTest, RejectMalformedRdata) {
   static const char kRecordData[] =
       // NAME="foo.test"

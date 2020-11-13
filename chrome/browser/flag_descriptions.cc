@@ -518,6 +518,25 @@ const char kEnableAutofillCreditCardAuthenticationDescription[] =
     "authenticator (if available) to verify card ownership when retrieving "
     "credit cards from Google Payments.";
 
+const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersName[] =
+        "Display InfoBar footers with account indication information for "
+        "single account users";
+const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersDescription
+        [] = "When enabled and user has single account, a footer indicating "
+             "user's e-mail address  will appear at the bottom of InfoBars "
+             "which has corresponding account indication footer flags on.";
+
+const char kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersName[] =
+    "Display InfoBar footers with account indication information for "
+    "sync users";
+const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersDescription[] =
+        "When enabled and user is signed in, a footer indicating user's e-mail "
+        "address  will appear at the bottom of InfoBars which has "
+        "corresponding account indication footer flags on.";
+
 const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[] =
     "Display password InfoBar footers with account indication information";
 const char kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[] =
@@ -1790,6 +1809,14 @@ const char kPermissionChipName[] = "Permissions Chip Experiment";
 const char kPermissionChipDescription[] =
     "Enables an experimental permission prompt that uses a chip in the location"
     " bar.";
+
+const char kPermissionPredictionsName[] = "Permission Predictions";
+const char kPermissionPredictionsDescription[] =
+    "Use the Permission Predictions Service to surface permission requests "
+    "using a quieter UI when the likelihood of the user granting the "
+    "permission is predicted to be low. Requires "
+    "chrome://flags/#quiet-notification-prompts and `Safe Browsing Enhanced "
+    "Protection` to be enabled.";
 
 const char kPointerLockOptionsName[] = "Enables pointer lock options";
 const char kPointerLockOptionsDescription[] =

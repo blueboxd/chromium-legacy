@@ -56,6 +56,7 @@
 #include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/security_state/core/security_state.h"
+#include "components/version_info/version_info.h"
 #include "url/origin.h"
 
 namespace autofill {
@@ -64,8 +65,6 @@ using mojom::SubmissionIndicatorEvent;
 
 namespace {
 
-// Version of the client sent to the server.
-constexpr char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 constexpr char kBillingMode[] = "billing";
 constexpr char kShippingMode[] = "shipping";
 
@@ -705,7 +704,8 @@ bool FormStructure::EncodeUploadRequest(
   encoded_signatures->clear();
 
   upload->set_submission(observed_submission);
-  upload->set_client_version(kClientVersion);
+  upload->set_client_version(
+      version_info::GetProductNameAndVersionForUserAgent());
   upload->set_form_signature(form_signature().value());
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
@@ -763,7 +763,8 @@ bool FormStructure::EncodeQueryRequest(
   queried_form_signatures->clear();
   queried_form_signatures->reserve(forms.size());
 
-  query->set_client_version(kClientVersion);
+  query->set_client_version(
+      version_info::GetProductNameAndVersionForUserAgent());
 
   // If a page contains repeated forms, detect that and encode only one form as
   // the returned data would be the same for all the repeated forms.
@@ -1062,29 +1063,16 @@ void FormStructure::RetrieveFromCache(
     const FormStructure& cached_form,
     const bool should_keep_cached_value,
     const bool only_server_and_autofill_state) {
-  // TODO(crbug/1101631) Clean up once the experiment is over.
-  const bool kUseRendererIds = base::FeatureList::IsEnabled(
-      features::kAutofillRetrieveFromCacheWithRendererIds);
-  std::map<base::string16, const AutofillField*> cached_fields_by_name;
   std::map<FieldRendererId, const AutofillField*> cached_fields_by_id;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
     auto* const field = cached_form.field(i);
-    if (kUseRendererIds)
-      cached_fields_by_id[field->unique_renderer_id] = field;
-    else
-      cached_fields_by_name[field->unique_name()] = field;
+    cached_fields_by_id[field->unique_renderer_id] = field;
   }
   for (auto& field : *this) {
     const AutofillField* cached_field = nullptr;
-    if (kUseRendererIds) {
-      const auto& it = cached_fields_by_id.find(field->unique_renderer_id);
-      if (it != cached_fields_by_id.end())
-        cached_field = it->second;
-    } else {
-      const auto& it = cached_fields_by_name.find(field->unique_name());
-      if (it != cached_fields_by_name.end())
-        cached_field = it->second;
-    }
+    const auto& it = cached_fields_by_id.find(field->unique_renderer_id);
+    if (it != cached_fields_by_id.end())
+      cached_field = it->second;
 
     // If the unique renderer id (or the name) is not stable due to some Java
     // Script magic in the website, use the field signature as a fallback

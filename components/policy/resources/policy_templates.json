@@ -7710,6 +7710,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow file selection dialogs',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent file selection dialogs',
+        },
+      ],
       'example_value': True,
       'default': True,
       'id': 84,
@@ -10926,6 +10936,39 @@
       'arc_support': 'This policy has no effect on the Android apps. They will be able to enter fullscreen mode even if this policy is set to <ph name="FALSE">False</ph>.',
     },
     {
+      'id': 804,
+      'name': 'FullscreenAlertEnabled',
+      'caption': '''Enable fullscreen alert''',
+      'owners': ['zxdan@chromium.org'],
+      'type': 'main',
+      'schema': {'type': 'boolean'},
+      'supported_on': ['chrome_os:88-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable fullscreen alert',
+        },
+        {
+          'value': False,
+          'caption': 'Disable show fullscreen alert',
+        },
+        {
+          'value': None,
+          'caption': 'Enable fullscreen alert',
+        },
+      ],
+      'default': None,
+      'example_value': False,
+      'tags': [],
+      'desc': '''Specifies whether the fullscreen alert should be shown when the device returns from sleep or dark screen.
+
+      When the policy is unset or set to True, an alert will be shown to remind the users to exit fullscreen before entering password. When the policy is set to False, no alert would be shown.''',
+    },
+    {
       'name': 'ScreenDimDelayAC',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'int',
@@ -11513,6 +11556,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow wake locks for power management',
+        },
+        {
+          'value': False,
+          'caption': 'Ignore requests for wake locks for power management',
+        },
+      ],
       'example_value': False,
       'default': True,
       'id': 491,
@@ -11532,6 +11585,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow screen wake locks for power management',
+        },
+        {
+          'value': False,
+          'caption': 'Demote screen wake lock requests to system wake lock requests',
+        },
+      ],
       'example_value': False,
       'default': True,
       'id': 203,
@@ -12485,17 +12548,20 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 256,
       'caption': '''Set default state of the on-screen keyboard on the login screen''',
       'tags': [],
-      'desc': '''Setting the policy to True turns the on-screen keyboard on at sign-in. Setting the policy to False turns the on-screen keyboard off at sign-in.
+      'desc': '''This policy is deprecated, please use the <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME">DeviceLoginScreenVirtualKeyboardEnabled</ph> policy instead.
+
+      Setting the policy to True turns the on-screen keyboard on at sign-in. Setting the policy to False turns the on-screen keyboard off at sign-in.
 
       If you set the policy, users can temporarily turn the on-screen keyboard on or off. When the sign-in screen reloads or stays idle for a minute, it reverts to its original state.
 
       If not set, the on-screen keyboard is off at the sign-in screen. Users can turn it on any time, and its status on the sign-in screen persists across users.
 
-          Note: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME">DeviceLoginScreenVirtualKeyboardEnabled</ph> overrides this policy if the former is specified.''',
+      Note: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME">DeviceLoginScreenVirtualKeyboardEnabled</ph> overrides this policy if the former is specified.''',
     },
     {
       'name': 'DeviceLoginScreenVirtualKeyboardEnabled',
@@ -13969,6 +14035,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to use Touch to Search',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent users from using Touch to Search',
+        },
+      ],
       'example_value': True,
       'default': True,
       'id': 281,
@@ -15013,6 +15089,45 @@
       '''If the policy is set to false, the New Tab page won't allow users to customize the background. Any existing custom background will be permanently removed even if the policy is set to true later.
 
       If the policy is set to true or unset, users can customize the background on the New Tab page.''',
+    },
+    {
+      'name': 'NTPCardsVisible',
+      'owners': ['danielms@chromium.org', 'tiborg@chromium.org', 'yyushkina@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:88-', 'chrome_os:88-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'New Tab Page will show cards if content is available',
+        },
+        {
+          'value': False,
+          'caption': 'New Tab Page will not show cards',
+        },
+        {
+          'value': None,
+          'caption': 'New Tab Page will show cards if content is available, but allow the user to change this setting',
+        },
+      ],
+      'example_value': True,
+      'default': None,
+      'id': 805,
+      'caption': '''Show cards on the New Tab Page''',
+      'tags': [],
+      'desc':
+      '''This policy controls the visibility of cards on the New Tab Page. Cards surface entry points to launch common user journeys based on the user's browsing behavior.
+
+      If the policy is set to Enabled, the New Tab Page will show cards if content is available.
+
+      If the policy is set to Disabled, the New Tab Page won't show cards.
+
+      If the policy is not set, the user can control the card visibility. The default is visible.
+      ''',
     },
     {
       'name': 'WebRtcUdpPortRange',
@@ -16427,6 +16542,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow queries to a Google server to retrieve an accurate timestamp',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow queries to Google servers to retrieve timestamps',
+        },
+      ],
       'example_value': True,
       'default': True,
       'id': 370,
@@ -17194,6 +17319,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Prevent sites with abusive experiences from opening new windows or tabs',
+        },
+        {
+          'value': False,
+          'caption': 'Allow sites with abusive experiences to open new windows or tabs',
+        },
+      ],
       'example_value': True,
       'default': True,
       'id': 404,
@@ -20753,6 +20888,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show security warnings when potentially dangerous command-line flags are used',
+        },
+        {
+          'value': False,
+          'caption': 'Hide security warnings when potentially dangerous command-line flags are used',
+        },
+      ],
       'example_value': True,
       'default': True,
       'id': 566,
@@ -22698,6 +22843,20 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Use an anonymous Google service to provide automatic descriptions for unlabeled images',
+        },
+        {
+          'value': False,
+          'caption': 'Do not use Google services to provide automatic image descriptions',
+        },
+        {
+          'value': None,
+          'caption': 'Let users choose to use an anonymous Google service to provide automatic descriptions for unlabeled images',
+        },
+      ],
       'example_value': False,
       'default': None,
       'id': 703,
@@ -22770,6 +22929,16 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'per_profile': False,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow the back-forward cache to be used',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow the back-forward cache to be used',
+        },
+      ],
       'example_value': True,
       'default': True,
       'id': 758,
@@ -23027,6 +23196,16 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Hide <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> deprecation warnings',
+        },
+        {
+          'value': False,
+          'caption': 'Show <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> deprecation warnings',
+        },
+      ],
       'example_value': True,
       'default': False,
       'id': 781,
@@ -24315,6 +24494,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 803,
+  'highest_id_currently_used': 805,
   'highest_atomic_group_id_currently_used': 40
 }

@@ -395,6 +395,7 @@ crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orienta
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-aspect-ratio.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-background-position.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-background-properties.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-background-properties-border-radius.html [ Failure ]
 crbug.com/997202 external/wpt/density-size-correction/density-corrected-image-svg-aspect-ratio.html [ Failure ]
 
 # These have filtering antialiasing artifacts on one side only, but otherwise are passing. The tests
@@ -1124,7 +1125,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/overflowing-columns-
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/positioned-outside-of-columns.html [ Crash Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/positioned-split.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure Timeout ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/inside-block-with-fixed-height.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/span/invalid-spanner-in-transform.html [ Failure Crash ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-and-float.html [ Failure ]
@@ -2459,7 +2459,6 @@ crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-054.html 
 crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failure ]
 crbug.com/1078474 external/wpt/css/css-pseudo/active-selection-012.html [ Failure ]
 crbug.com/932343 external/wpt/css/css-pseudo/active-selection-014.html [ Failure ]
-crbug.com/1078474 external/wpt/css/css-pseudo/active-selection-018.html [ Failure ]
 crbug.com/1110495 external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]
 crbug.com/1110495 external/wpt/css/css-pseudo/selection-textarea-011.html [ Failure ]
 crbug.com/1078474 external/wpt/css/css-pseudo/selection-intercharacter-011.html [ Failure ]
@@ -3317,6 +3316,12 @@ crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-creden
 
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection.html [ Skip ]
+
+# [composite-bgcolor-animation]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-left-radius-010.xht [ Failure ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-right-radius-010.xht [ Failure ]
 
 # [css-grid]
 crbug.com/921722 external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
@@ -6201,8 +6206,6 @@ crbug.com/1139052 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/rtp-dem
 
 crbug.com/1137228 [ Mac ] external/wpt/infrastructure/testdriver/click_iframe_crossorigin.sub.html [ Pass Failure ]
 
-crbug.com/825892 external/wpt/client-hints/viewport-width-window-different-dimensions.https.html [ Failure ]
-
 # Rename document.featurePolicy to document.permissionsPolicy
 crbug.com/1123116 external/wpt/permissions-policy/payment-supported-by-permissions-policy.tentative.html [ Failure ]
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-all.https.sub.html [ Failure ]
@@ -6276,3 +6279,7 @@ crbug.com/1146560 [ Win ] fast/canvas/color-space/canvas-createImageBitmap-e_srg
 
 # Sheriff 2020-11-12
 crbug.com/1148259 [ Mac ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling-dynamic.html [ Failure ]
+
+# Disable flaky tests when scroll unification is enabled
+crbug.com/1130020 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
+crbug.com/1130020 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]

@@ -5,12 +5,20 @@
 #include "chrome/browser/nearby_sharing/nearby_share_metrics_logger.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
+
+const char kStartAdvertisingResultMetricPrefix[] =
+    "Nearby.Share.StartAdvertising.Result";
+const char kStartAdvertisingResultFailureReasonMetricPrefix[] =
+    "Nearby.Share.StartAdvertising.Result.FailureReason";
+const char kTransferMetricPrefix[] = "Nearby.Share.Transfer";
+const size_t kBytesPerKilobyte = 1024;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If entries are added, kMaxValue should
@@ -38,6 +46,21 @@ enum class TransferNotCompletedReason {
   kNotEnoughSpace = 7,
   kUnsupportedAttachmentType = 8,
   kMaxValue = kUnsupportedAttachmentType
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. If entries are added, kMaxValue should
+// be updated.
+enum class StartAdvertisingFailureReason {
+  kUnknown = 0,
+  kError = 1,
+  kOutOfOrderApiCall = 2,
+  kAlreadyHaveActiveStrategy = 3,
+  kAlreadyAdvertising = 4,
+  kBluetoothError = 5,
+  kBleError = 6,
+  kWifiLanError = 7,
+  kMaxValue = kWifiLanError
 };
 
 TransferNotCompletedReason TransferMetadataStatusToTransferNotCompletedReason(
@@ -72,6 +95,73 @@ TransferNotCompletedReason TransferMetadataStatusToTransferNotCompletedReason(
   }
 }
 
+StartAdvertisingFailureReason
+NearbyConnectionsStatusToStartAdvertisingFailureReason(
+    location::nearby::connections::mojom::Status status) {
+  switch (status) {
+    case location::nearby::connections::mojom::Status::kError:
+      return StartAdvertisingFailureReason::kError;
+    case location::nearby::connections::mojom::Status::kOutOfOrderApiCall:
+      return StartAdvertisingFailureReason::kOutOfOrderApiCall;
+    case location::nearby::connections::mojom::Status::
+        kAlreadyHaveActiveStrategy:
+      return StartAdvertisingFailureReason::kAlreadyHaveActiveStrategy;
+    case location::nearby::connections::mojom::Status::kAlreadyAdvertising:
+      return StartAdvertisingFailureReason::kAlreadyAdvertising;
+    case location::nearby::connections::mojom::Status::kBluetoothError:
+      return StartAdvertisingFailureReason::kBluetoothError;
+    case location::nearby::connections::mojom::Status::kBleError:
+      return StartAdvertisingFailureReason::kBleError;
+    case location::nearby::connections::mojom::Status::kWifiLanError:
+      return StartAdvertisingFailureReason::kWifiLanError;
+    case location::nearby::connections::mojom::Status::kSuccess:
+      NOTREACHED();
+      FALLTHROUGH;
+    case location::nearby::connections::mojom::Status::kAlreadyDiscovering:
+    case location::nearby::connections::mojom::Status::kEndpointIOError:
+    case location::nearby::connections::mojom::Status::kEndpointUnknown:
+    case location::nearby::connections::mojom::Status::kConnectionRejected:
+    case location::nearby::connections::mojom::Status::
+        kAlreadyConnectedToEndpoint:
+    case location::nearby::connections::mojom::Status::kNotConnectedToEndpoint:
+    case location::nearby::connections::mojom::Status::kPayloadUnknown:
+      return StartAdvertisingFailureReason::kUnknown;
+  }
+}
+
+std::string GetDirectionSubcategoryName(bool is_incoming) {
+  return is_incoming ? ".Receive" : ".Send";
+}
+
+std::string GetShareTargetTypeSubcategoryName(
+    nearby_share::mojom::ShareTargetType type) {
+  switch (type) {
+    case nearby_share::mojom::ShareTargetType::kUnknown:
+      return ".Unknown";
+    case nearby_share::mojom::ShareTargetType::kPhone:
+      return ".Phone";
+    case nearby_share::mojom::ShareTargetType::kTablet:
+      return ".Tablet";
+    case nearby_share::mojom::ShareTargetType::kLaptop:
+      return ".Laptop";
+  }
+}
+
+std::string GetPayloadStatusSubcategoryName(
+    location::nearby::connections::mojom::PayloadStatus status) {
+  switch (status) {
+    case location::nearby::connections::mojom::PayloadStatus::kSuccess:
+      return ".Succeeded";
+    case location::nearby::connections::mojom::PayloadStatus::kFailure:
+      return ".Failed";
+    case location::nearby::connections::mojom::PayloadStatus::kCanceled:
+      return ".Cancelled";
+    case location::nearby::connections::mojom::PayloadStatus::kInProgress:
+      NOTREACHED();
+      return ".Cancelled";
+  }
+}
+
 }  // namespace
 
 void RecordNearbyShareEnabledMetric(const PrefService* pref_service) {
@@ -103,23 +193,10 @@ void RecordNearbyShareTransferCompletionStatusMetric(
     TransferMetadata::Status status) {
   DCHECK(TransferMetadata::IsFinalStatus(status));
 
-  const std::string kPrefix = "Nearby.Share.Transfer.CompletionStatus";
-  std::string send_or_receive = is_incoming ? ".Receive" : ".Send";
-  std::string share_target_type;
-  switch (type) {
-    case nearby_share::mojom::ShareTargetType::kUnknown:
-      share_target_type = ".Unknown";
-      break;
-    case nearby_share::mojom::ShareTargetType::kPhone:
-      share_target_type = ".Phone";
-      break;
-    case nearby_share::mojom::ShareTargetType::kTablet:
-      share_target_type = ".Tablet";
-      break;
-    case nearby_share::mojom::ShareTargetType::kLaptop:
-      share_target_type = ".Laptop";
-      break;
-  }
+  const std::string kPrefix =
+      kTransferMetricPrefix + std::string(".CompletionStatus");
+  std::string send_or_receive = GetDirectionSubcategoryName(is_incoming);
+  std::string share_target_type = GetShareTargetTypeSubcategoryName(type);
 
   bool is_complete = status == TransferMetadata::Status::kComplete;
   base::UmaHistogramBoolean(kPrefix, is_complete);
@@ -138,5 +215,90 @@ void RecordNearbyShareTransferCompletionStatusMetric(
                                   reason);
     base::UmaHistogramEnumeration(
         kPrefix + kReasonInfix + send_or_receive + share_target_type, reason);
+  }
+}
+
+void RecordNearbyShareTransferSizeMetric(
+    bool is_incoming,
+    nearby_share::mojom::ShareTargetType type,
+    location::nearby::connections::mojom::PayloadStatus status,
+    uint64_t payload_size_bytes) {
+  DCHECK_NE(status,
+            location::nearby::connections::mojom::PayloadStatus::kInProgress);
+
+  int kilobytes =
+      base::saturated_cast<int>(payload_size_bytes / kBytesPerKilobyte);
+  for (const std::string& direction_name :
+       {std::string(), GetDirectionSubcategoryName(is_incoming)}) {
+    for (const std::string& share_target_type_name :
+         {std::string(), GetShareTargetTypeSubcategoryName(type)}) {
+      for (const std::string& payload_status_name :
+           {std::string(), GetPayloadStatusSubcategoryName(status)}) {
+        base::UmaHistogramCounts1M(
+            kTransferMetricPrefix + std::string(".TotalSize") + direction_name +
+                share_target_type_name + payload_status_name,
+            kilobytes);
+      }
+    }
+  }
+}
+
+void RecordNearbyShareTransferRateMetric(
+    bool is_incoming,
+    nearby_share::mojom::ShareTargetType type,
+    location::nearby::connections::mojom::PayloadStatus status,
+    uint64_t transferred_payload_bytes,
+    base::TimeDelta time_elapsed) {
+  DCHECK_NE(status,
+            location::nearby::connections::mojom::PayloadStatus::kInProgress);
+
+  int kilobytes_per_second = base::saturated_cast<int>(base::ClampDiv(
+      base::ClampDiv(transferred_payload_bytes, time_elapsed.InSecondsF()),
+      kBytesPerKilobyte));
+  for (const std::string& direction_name :
+       {std::string(), GetDirectionSubcategoryName(is_incoming)}) {
+    for (const std::string& share_target_type_name :
+         {std::string(), GetShareTargetTypeSubcategoryName(type)}) {
+      for (const std::string& payload_status_name :
+           {std::string(), GetPayloadStatusSubcategoryName(status)}) {
+        base::UmaHistogramCounts100000(
+            kTransferMetricPrefix + std::string(".Rate") + direction_name +
+                share_target_type_name + payload_status_name,
+            kilobytes_per_second);
+      }
+    }
+  }
+}
+
+void RecordNearbyShareTransferNumAttachmentsMetric(
+    size_t num_text_attachments,
+    size_t num_file_attachments) {
+  const std::string kAttachmentInfix = ".NumAttachments";
+  base::UmaHistogramCounts100(kTransferMetricPrefix + kAttachmentInfix,
+                              num_text_attachments + num_file_attachments);
+  base::UmaHistogramCounts100(
+      kTransferMetricPrefix + kAttachmentInfix + ".Text", num_text_attachments);
+  base::UmaHistogramCounts100(
+      kTransferMetricPrefix + kAttachmentInfix + ".File", num_file_attachments);
+}
+
+void RecordNearbyShareStartAdvertisingResultMetric(
+    bool is_high_visibility,
+    location::nearby::connections::mojom::Status status) {
+  const std::string mode_suffix =
+      is_high_visibility ? ".HighVisibility" : ".BLE";
+  const bool success =
+      status == location::nearby::connections::mojom::Status::kSuccess;
+
+  base::UmaHistogramBoolean(kStartAdvertisingResultMetricPrefix, success);
+  base::UmaHistogramBoolean(kStartAdvertisingResultMetricPrefix + mode_suffix,
+                            success);
+  if (!success) {
+    StartAdvertisingFailureReason reason =
+        NearbyConnectionsStatusToStartAdvertisingFailureReason(status);
+    base::UmaHistogramEnumeration(
+        kStartAdvertisingResultFailureReasonMetricPrefix, reason);
+    base::UmaHistogramEnumeration(
+        kStartAdvertisingResultFailureReasonMetricPrefix + mode_suffix, reason);
   }
 }

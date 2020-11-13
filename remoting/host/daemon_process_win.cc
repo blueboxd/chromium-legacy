@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -40,6 +41,7 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/win/etw_trace_consumer.h"
+#include "remoting/host/win/host_event_file_logger.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
@@ -59,6 +61,15 @@ IPC::PlatformFileForTransit GetRegistryKeyForTransit(
       reinterpret_cast<base::PlatformFile>(key.Handle());
   return IPC::GetPlatformFileForTransit(handle, false);
 }
+
+#if defined(OFFICIAL_BUILD)
+constexpr wchar_t kLoggingRegistryKeyName[] =
+    L"SOFTWARE\\Google\\Chrome Remote Desktop\\logging";
+#else
+constexpr wchar_t kLoggingRegistryKeyName[] = L"SOFTWARE\\Chromoting\\logging";
+#endif
+
+constexpr wchar_t kLogToFileRegistryValue[] = L"LogToFile";
 
 }  // namespace
 
@@ -92,9 +103,11 @@ class DaemonProcessWin : public DaemonProcess {
       int session_id,
       const IPC::ChannelHandle& desktop_pipe) override;
 
-  // Creates an ETW trace consumer which listens for logged events from our
-  // host processes.  Tracing stops when |etw_trace_consumer_| is destroyed.
-  void StartEtwLogging();
+  // If event logging has been configured, creates an ETW trace consumer which
+  // listens for logged events from our host processes.  Tracing stops when
+  // |etw_trace_consumer_| is destroyed.  Logging destinations are configured
+  // via the registry.
+  void ConfigureHostLogging();
 
  protected:
   // DaemonProcess implementation.
@@ -244,9 +257,8 @@ std::unique_ptr<DaemonProcess> DaemonProcess::Create(
   auto daemon_process = std::make_unique<DaemonProcessWin>(
       caller_task_runner, io_task_runner, std::move(stopped_callback));
 
-  // Initialize our ETW logger first so we can capture any subsequent events.
-  // TODO(joedow): Re-enable after we can control logging via the registry.
-  // daemon_process->StartEtwLogging();
+  // Configure host logging first so we can capture subsequent events.
+  daemon_process->ConfigureHostLogging();
 
   daemon_process->Initialize();
 
@@ -395,15 +407,47 @@ bool DaemonProcessWin::OpenPairingRegistry() {
   return true;
 }
 
-void DaemonProcessWin::StartEtwLogging() {
+void DaemonProcessWin::ConfigureHostLogging() {
   DCHECK(!etw_trace_consumer_);
 
-  // TODO(joedow): Add some registry keys to control the behavior here.
-  // This will most likely include trace levels and output files/locations.
-  etw_trace_consumer_ = EtwTraceConsumer::Create(AutoThread::CreateWithType(
-      kEtwTracingThreadName, caller_task_runner(), base::MessagePumpType::IO));
+  base::win::RegKey logging_reg_key;
+  LONG result = logging_reg_key.Open(HKEY_LOCAL_MACHINE,
+                                     kLoggingRegistryKeyName, KEY_READ);
+  if (result != ERROR_SUCCESS) {
+    ::SetLastError(result);
+    PLOG(ERROR) << "Failed to open HKLM\\" << kLoggingRegistryKeyName;
+    return;
+  }
 
-  LOG_IF(ERROR, !etw_trace_consumer_) << "Failed to create EtwTraceConsumer.";
+  std::vector<std::unique_ptr<HostEventLogger>> loggers;
+
+  // Check to see if file logging has been enabled.
+  if (logging_reg_key.HasValue(kLogToFileRegistryValue)) {
+    DWORD enabled = 0;
+    result = logging_reg_key.ReadValueDW(kLogToFileRegistryValue, &enabled);
+    if (result == ERROR_SUCCESS) {
+      auto file_logger = HostEventFileLogger::Create();
+      if (file_logger) {
+        loggers.push_back(std::move(file_logger));
+      }
+    } else {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to read HKLM\\" << kLoggingRegistryKeyName << "\\"
+                  << kLogToFileRegistryValue;
+    }
+  }
+
+  // TODO(joedow): Hook up a Windows Event Logger here.
+
+  if (loggers.empty()) {
+    VLOG(1) << "No host event loggers have been configured.";
+    return;
+  }
+
+  etw_trace_consumer_ = EtwTraceConsumer::Create(
+      AutoThread::CreateWithType(kEtwTracingThreadName, caller_task_runner(),
+                                 base::MessagePumpType::IO),
+      std::move(loggers));
 }
 
 }  // namespace remoting

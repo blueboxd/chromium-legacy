@@ -34,6 +34,10 @@ extern const base::Feature kAutofillEnableAccountWalletStorage;
 extern const base::Feature kAutofillEnableAugmentedPhoneCountryCode;
 extern const base::Feature kAutofillEnableHideSuggestionsUI;
 extern const base::Feature
+    kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers;
+extern const base::Feature
+    kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers;
+extern const base::Feature
     kAutofillEnablePasswordInfoBarAccountIndicationFooter;
 extern const base::Feature kAutofillEnableSupportForMoreStructureInNames;
 extern const base::Feature kAutofillEnableSupportForMoreStructureInAddresses;
@@ -42,7 +46,6 @@ extern const base::Feature kAutofillEnableUIForHonorificPrefixesInSettings;
 extern const base::Feature kAutofillExtractAllDatalists;
 extern const base::Feature kAutofillFixFillableFieldTypes;
 extern const base::Feature kAutofillRefillWithRendererIds;
-extern const base::Feature kAutofillRetrieveFromCacheWithRendererIds;
 extern const base::Feature kAutofillNameSectionsWithRendererIds;
 extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillLabelAffixRemoval;

@@ -1390,7 +1390,6 @@ bool WebFrameWidgetBase::WillHandleGestureEvent(const WebGestureEvent& event) {
     }
     case WebInputEvent::Type::kGestureScrollEnd: {
       if (swipe_to_move_cursor_activated_) {
-        move_cursor = true;
         swipe_to_move_cursor_activated_ = false;
       }
       break;
@@ -1503,6 +1502,18 @@ void WebFrameWidgetBase::ProcessInputEventSynchronouslyForTesting(
     HandledEventCallback callback) {
   widget_base_->input_handler().HandleInputEvent(event, nullptr,
                                                  std::move(callback));
+}
+
+WebInputEventResult WebFrameWidgetBase::DispatchBufferedTouchEvents() {
+  CHECK(LocalRootImpl());
+
+  if (WebDevToolsAgentImpl* devtools = LocalRootImpl()->DevToolsAgentImpl())
+    devtools->DispatchBufferedTouchEvents();
+
+  return LocalRootImpl()
+      ->GetFrame()
+      ->GetEventHandler()
+      .DispatchBufferedTouchEvents();
 }
 
 WebInputEventResult WebFrameWidgetBase::HandleInputEvent(

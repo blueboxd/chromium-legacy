@@ -610,6 +610,7 @@ extern const char kNtpCollapsedSyncPromo[];
 #else
 extern const char kNtpCustomBackgroundDict[];
 extern const char kNtpCustomBackgroundLocalToDevice[];
+extern const char kNtpModulesVisible[];
 extern const char kNtpPromoBlocklist[];
 extern const char kNtpSearchSuggestionsBlocklist[];
 extern const char kNtpSearchSuggestionsImpressions[];
@@ -750,6 +751,7 @@ extern const char
     kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount[];
 extern const char kKnownUserParentAccessCodeConfig[];
 extern const char kLastRsuDeviceIdUploaded[];
+extern const char kDeviceName[];
 
 #endif  // defined(OS_CHROMEOS)
 

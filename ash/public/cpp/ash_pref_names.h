@@ -57,6 +57,7 @@ ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 ASH_PUBLIC_EXPORT extern const char kContextualTooltips[];
 
 ASH_PUBLIC_EXPORT extern const char kDesksNamesList[];
+ASH_PUBLIC_EXPORT extern const char kDesksActiveDesk[];
 
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierScale[];
@@ -82,6 +83,8 @@ ASH_PUBLIC_EXPORT extern const char kDisplayTouchAssociations[];
 ASH_PUBLIC_EXPORT extern const char kDisplayTouchPortAssociations[];
 ASH_PUBLIC_EXPORT extern const char kExternalDisplayMirrorInfo[];
 ASH_PUBLIC_EXPORT extern const char kSecondaryDisplays[];
+
+ASH_PUBLIC_EXPORT extern const char kFullscreenAlertEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kGestureEducationNotificationShown[];
 

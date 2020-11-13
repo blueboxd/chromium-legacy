@@ -328,6 +328,17 @@ extern const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[];
 extern const char kEnableAutofillCreditCardUploadFeedbackName[];
 extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
+extern const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersName[];
+extern const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersDescription
+        [];
+
+extern const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersName[];
+extern const char
+    kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersDescription[];
+
 extern const char kEnableAutofillPasswordInfoBarAccountIndicationFooterName[];
 extern const char
     kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription[];
@@ -1045,6 +1056,9 @@ extern const char kPercentBasedScrollingDescription[];
 
 extern const char kPermissionChipName[];
 extern const char kPermissionChipDescription[];
+
+extern const char kPermissionPredictionsName[];
+extern const char kPermissionPredictionsDescription[];
 
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];

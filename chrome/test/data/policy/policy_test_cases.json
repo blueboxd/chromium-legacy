@@ -3505,6 +3505,18 @@
     ]
   },
 
+  "NTPCardsVisible": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "NTPCardsVisible": false
+        },
+        "prefs": { "NewTabPage.ModulesVisible": {} }
+      }
+    ]
+  },
+
   "NTPContentSuggestionsEnabled": {
     "os": [
       "android"
@@ -3731,6 +3743,16 @@
             "value": false
           }
         }
+      }
+    ]
+  },
+
+  "FullscreenAlertEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"FullscreenAlertEnabled": false},
+        "prefs": {"ash.fullscreen_alert_enabled": {}}
       }
     ]
   },

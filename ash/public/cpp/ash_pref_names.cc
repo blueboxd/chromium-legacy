@@ -151,6 +151,8 @@ const char kContextualTooltips[] = "settings.contextual_tooltip.shown_info";
 // name will appear in this list as an empty string. The desk names are stored
 // as UTF8 strings.
 const char kDesksNamesList[] = "ash.desks.desks_names_list";
+// An integer index of a user's active desk.
+const char kDesksActiveDesk[] = "ash.desks.active_desk";
 
 // A boolean pref storing the enabled status of the Docked Magnifier feature.
 const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
@@ -205,6 +207,10 @@ const char kExternalDisplayMirrorInfo[] =
 // Its key is the ID of the display and its value is a dictionary for the
 // layout/offset information.
 const char kSecondaryDisplays[] = "settings.display.secondary_displays";
+
+// A boolean pref that enable fullscreen alert bubble.
+// TODO(zxdan): Change to an allowlist in M89.
+const char kFullscreenAlertEnabled[] = "ash.fullscreen_alert_enabled";
 
 // A boolean pref storing whether the gesture education notification has ever
 // been shown to the user, which we use to stop showing it again.

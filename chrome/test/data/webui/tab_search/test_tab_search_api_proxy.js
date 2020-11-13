@@ -30,8 +30,8 @@ export class TestTabSearchApiProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  closeTab(tabId) {
-    this.methodCalled('closeTab', tabId);
+  closeTab(tabId, withSearch, closedTabIndex) {
+    this.methodCalled('closeTab', [tabId, withSearch, closedTabIndex]);
   }
 
   /** @override */
@@ -46,8 +46,8 @@ export class TestTabSearchApiProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  switchToTab(tabInfo, withSearch) {
-    this.methodCalled('switchToTab', [ tabInfo, withSearch ]);
+  switchToTab(tabInfo, withSearch, switchedTabIndex) {
+    this.methodCalled('switchToTab', [tabInfo, withSearch, switchedTabIndex]);
   }
 
   /** @override */

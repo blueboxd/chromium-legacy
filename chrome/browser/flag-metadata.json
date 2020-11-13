@@ -373,12 +373,12 @@
   {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "autofill-use-mobile-label-disambiguation",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "autofill-use-renderer-ids",
@@ -1240,6 +1240,16 @@
     "name": "enable-autofill-credit-card-upload-feedback",
     "owners": [ "siyua@chromium.org, payments-autofill-team@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "enable-autofill-infobar-account-indication-footer-for-single-account-users",
+    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "enable-autofill-infobar-account-indication-footer-for-sync-users",
+    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-manual-fallback",
@@ -2140,7 +2150,7 @@
   {
     "name": "enable-suggestions-with-substring-match",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "enable-surface-control",
@@ -3748,6 +3758,11 @@
     "name": "permission-chip",
     "owners": [ "bsep", "engedy", "olesiamarukhno" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "permission-predictions",
+    "owners": [ "andypaicu", "engedy", "ravjit", "mkwst", "hkamila", "elklm" ],
+    "expiry_milestone": 93
   },
   {
     "name": "photo-picker-video-support",

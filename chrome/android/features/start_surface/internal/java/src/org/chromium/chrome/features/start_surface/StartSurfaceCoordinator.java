@@ -125,7 +125,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                                                         : null,
                 mSurfaceMode, mActivity.getNightModeStateProvider(),
                 mActivity.getBrowserControlsManager(), this::isActivityFinishingOrDestroyed,
-                mParentTabSupplier, excludeMVTiles,
+                excludeMVTiles,
                 StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue(),
                 startSurfaceOneshotSupplier);
 
@@ -156,6 +156,13 @@ public class StartSurfaceCoordinator implements StartSurface {
         mIsInitPending = false;
         if (mTasksSurface != null) {
             mTasksSurface.initialize();
+        }
+    }
+
+    @Override
+    public void destroy() {
+        if (mTasksSurface != null) {
+            mTasksSurface.removeFakeSearchBoxShrinkAnimation();
         }
     }
 
@@ -351,6 +358,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mScrimCoordinator, mPropertyModel, tabSwitcherType, mParentTabSupplier,
                 !excludeMVTiles, hasTrendyTerms);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
+        mTasksSurface.addFakeSearchBoxShrinkAnimation();
 
         mTasksSurfacePropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 mPropertyModel,

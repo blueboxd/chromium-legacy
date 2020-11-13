@@ -16693,6 +16693,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="36" label="cssFlexboxFeatures"/>
   <int value="37" label="showWebVitalsInPerformancePanel"/>
   <int value="38" label="recorder"/>
+  <int value="39" label="APCA"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -22530,6 +22531,8 @@ Called by update_document_policy_enum.py.-->
   <int value="801" label="TosDialogBehavior"/>
   <int value="802" label="TargetBlankImpliesNoOpener"/>
   <int value="803" label="RemoteAccessHostEnableUserInterface"/>
+  <int value="804" label="FullscreenAlertEnabled"/>
+  <int value="805" label="NTPCardsVisible"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31899,6 +31902,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="2" label="Enabled, not at First Run"/>
   <int value="3" label="Disabled, Conversion Window expired"/>
   <int value="4" label="Disabled, Legacy User upgraded"/>
+  <int value="5" label="Disabled, First Open already recorded"/>
 </enum>
 
 <enum name="FirstMeaningfulPaintOrdering">
@@ -37681,6 +37685,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="100" label="LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID"/>
   <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC"/>
   <int value="102" label="EXPERIMENTAL_INFOBAR_DELEGATE_LACROS"/>
+  <int value="103" label="ROSETTA_REQUIRED_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
@@ -42766,6 +42771,8 @@ from previous Chrome versions.
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
+  <int value="-1301804101"
+      label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
@@ -44047,6 +44054,7 @@ from previous Chrome versions.
   <int value="-45067971" label="NewPrintPreview:disabled"/>
   <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
+  <int value="-37966026" label="PermissionPredictions:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
   <int value="-36234530" label="PluginVmShowMicrophonePermissions:enabled"/>
   <int value="-35745997" label="TabSearch:enabled"/>
@@ -45388,6 +45396,7 @@ from previous Chrome versions.
   <int value="1292091029" label="OmniboxOneClickUnelide:disabled"/>
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
   <int value="1294131571" label="disable-winrt-midi-api"/>
+  <int value="1296878388" label="PermissionPredictions:disabled"/>
   <int value="1296958520" label="hide-active-apps-from-shelf"/>
   <int value="1298927156" label="TouchpadOverscrollHistoryNavigation:enabled"/>
   <int value="1298981651" label="disable-new-task-manager"/>
@@ -45883,6 +45892,8 @@ from previous Chrome versions.
   <int value="1793023585"
       label="ClickToCallContextMenuForSelectedText:disabled"/>
   <int value="1794057460" label="AutofillProfileClientValidation:enabled"/>
+  <int value="1794586887"
+      label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:enabled"/>
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
   <int value="1796592669" label="InstalledAppsInCbd:disabled"/>
   <int value="1798347197"
@@ -46113,6 +46124,8 @@ from previous Chrome versions.
   <int value="1997931863" label="OmniboxContextMenuShowFullUrls:enabled"/>
   <int value="1998917160" label="AppServiceAdaptiveIcon:enabled"/>
   <int value="2000091128" label="enable-touch-hover"/>
+  <int value="2000291475"
+      label="AutofillEnableInfoBarAccountIndicationFooterForSyncUsers:enabled"/>
   <int value="2001505416" label="CorbAllowlistAlsoAppliesToOorCors:enabled"/>
   <int value="2001562962"
       label="enable-manual-fallback-for-password-saving:enabled"/>
@@ -46142,6 +46155,8 @@ from previous Chrome versions.
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2022294878" label="WifiSyncAndroid:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
+  <int value="2024298022"
+      label="AutofillEnableInfoBarAccountIndicationFooterForSyncUsers:disabled"/>
   <int value="2027793952" label="EditPasswordsInSettings:disabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
@@ -50412,6 +50427,17 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Out-of-order API call"/>
   <int value="3" label="Already stopped"/>
   <int value="4" label="Transfer already in progress"/>
+</enum>
+
+<enum name="NearbyShareStartAdvertisingFailureReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Error"/>
+  <int value="2" label="Out-of-order API call"/>
+  <int value="3" label="Already have active strategy"/>
+  <int value="4" label="Already advertising"/>
+  <int value="5" label="Bluetooth error"/>
+  <int value="6" label="BLE error"/>
+  <int value="7" label="WiFiLAN error"/>
 </enum>
 
 <enum name="NearbyShareTransferNotCompletedReason">
@@ -58645,7 +58671,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="16" label="NativeMessaging"/>
   <int value="17" label="Drive"/>
   <int value="18" label="Attestation"/>
-  <int value="19" label="ContentPack"/>
   <int value="20" label="SupervisedUsers"/>
   <int value="21" label="GoogleCast"/>
   <int value="22" label="QuickUnlock"/>

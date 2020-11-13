@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
+#include "content/public/common/content_paths.h"
 #include "crypto/sha2.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -57,6 +59,8 @@ using content::CdmRegistry;
 namespace component_updater {
 
 namespace {
+
+static bool g_was_widevine_cdm_component_rejected_due_to_no_rosetta;
 
 // CRX hash. The extension id is: oimompecagnajdejgnnjijobebaeigek.
 const uint8_t kWidevineSha2Hash[] = {
@@ -152,9 +156,10 @@ base::FilePath GetCdmPathFromInstallDir(const base::FilePath& install_dir) {
   // separate base::GetMachOArchitectures call must be made to determine the
   // actual architecture.
   //
-  // Since the x86_64 location can only store an x86_64 library, only attempt to
-  // use it if Rosetta is available. It’s not installed by default.
-  if (!base::PathExists(cdm_path) && base::mac::IsRosettaInstalled() &&
+  // If there is no file at all in the native arm64 location, fall back to the
+  // x86_64 location. VerifyInstallation() and UpdateCdmPath() will do Rosetta
+  // checks before actually using it.
+  if (!base::PathExists(cdm_path) &&
       base::EndsWith(cdm_platform_dir.value(), kWidevineCdmArch)) {
     cdm_platform_dir = base::FilePath(
         cdm_platform_dir.value().substr(
@@ -256,8 +261,10 @@ bool WidevineCdmComponentInstallerPolicy::VerifyInstallation(
                         base::MachOArchitectures::kARM64)) ==
       base::MachOArchitectures::kX86_64;
   if (launch_x86_64 && !base::mac::IsRosettaInstalled()) {
+    g_was_widevine_cdm_component_rejected_due_to_no_rosetta = true;
     return false;
   }
+  g_was_widevine_cdm_component_rejected_due_to_no_rosetta = false;
 #endif  // OS_MAC && ARCH_CPU_ARM64
 
   content::CdmCapability capability;
@@ -332,6 +339,38 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
   // be guaranteed by VerifyInstallation succeeding.
   if (launch_x86_64) {
     DCHECK(base::mac::IsRosettaInstalled());
+
+    // To avoid a long delay (15 seconds observed is typical) when first loading
+    // the Widevine CDM under Rosetta, submit required modules for ahead-of-time
+    // translation. The necessary modules are:
+    //  - the helper executable to launch,
+    //  - the framework that contains the vast majority of the code, and
+    //  - the Widevine CDM library itself.
+    // If Rosetta’s translation cache for these modules is already current, they
+    // will not be re-translated. If anything requires translation, it will
+    // still be time-consuming, but it’ll happen on a background thread without
+    // bothering the user, hopefully before the user needs to use them. If these
+    // modules are needed before the translation is complete, translation will
+    // at least have had a head start.
+
+    std::vector<base::FilePath> rosetta_translate_paths;
+    base::FilePath helper_path;
+    if (base::PathService::Get(content::CHILD_PROCESS_EXE, &helper_path)) {
+      rosetta_translate_paths.push_back(helper_path);
+    }
+
+    base::FilePath framework_path;
+    if (base::PathService::Get(base::FILE_MODULE, &framework_path)) {
+      rosetta_translate_paths.push_back(framework_path);
+    }
+
+    rosetta_translate_paths.push_back(cdm_path);
+
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(base::IgnoreResult(
+                           &base::mac::RequestRosettaAheadOfTimeTranslation),
+                       std::move(rosetta_translate_paths)));
   }
 #endif  // OS_MAC && ARCH_CPU_ARM64
 
@@ -349,6 +388,10 @@ void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<WidevineCdmComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
+}
+
+bool WasWidevineCdmComponentRejectedDueToNoRosetta() {
+  return g_was_widevine_cdm_component_rejected_due_to_no_rosetta;
 }
 
 }  // namespace component_updater

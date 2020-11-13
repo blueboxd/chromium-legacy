@@ -1573,7 +1573,7 @@ chrome_common_shared_library("libchromefortest") {
     "//base/test:test_support",
     "//chrome:chrome_android_core",
     "//chrome/browser/password_manager/android_test_helpers:android_wrappers",
-    "//chrome/browser/subresource_filter:test_support",
+    "//chrome/browser/subresource_filter:android_test_support",
     "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
     "//components/minidump_uploader",
@@ -2120,7 +2120,6 @@ android_library("base_module_java") {
     "java/src/org/chromium/chrome/browser/incognito/IncognitoNotificationService.java",
     "java/src/org/chromium/chrome/browser/invalidation/ChromeBrowserSyncAdapterService.java",
     "java/src/org/chromium/chrome/browser/media/MediaCaptureNotificationService.java",
-    "java/src/org/chromium/chrome/browser/media/router/CastOptionsProvider.java",
     "java/src/org/chromium/chrome/browser/media/ui/ChromeMediaNotificationControllerServices.java",
     "java/src/org/chromium/chrome/browser/notifications/NotificationJobService.java",
     "java/src/org/chromium/chrome/browser/notifications/NotificationService.java",
@@ -2134,10 +2133,10 @@ android_library("base_module_java") {
   ]
   deps = [
     ":chrome_base_module_resources",
-    "$google_play_services_package:google_play_services_cast_java",
     "$google_play_services_package:google_play_services_gcm_java",
     "//base:base_java",
     "//components/embedder_support/android:application_java",
+    "//components/media_router/browser/android:cast_options_provider_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/module_installer/android:module_installer_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
@@ -2929,7 +2928,9 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "include_32_bit_webview",
                              "include_64_bit_webview",
                              "is_64_bit_browser",
+                             "lint_baseline_file",
                              "lint_min_sdk_version",
+                             "lint_suppressions_file",
                              "static_library_provider",
                              "static_library_synchronized_proguard",
                              "expected_libs_and_assets",
@@ -2971,6 +2972,8 @@ monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
   # lowest shipping minSdkVersion to catch all potential NewApi errors.
   lint_min_sdk_version = default_min_sdk_version
   enable_lint = true
+  lint_baseline_file = "expectations/lint-baseline.xml"
+  lint_suppressions_file = "expectations/lint-suppressions.xml"
 
   bundle_suffix = ""
   if (android_64bit_target_cpu) {

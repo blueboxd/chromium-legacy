@@ -276,6 +276,10 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     std::unique_ptr<RenderWidgetHostImpl> widget_host;
     std::unique_ptr<TestRenderWidgetHostViewChildFrame> view;
     std::unique_ptr<MockFrameConnector> frame_connector;
+
+    ChildViewState() = default;
+    ChildViewState(ChildViewState&&) = default;
+    ~ChildViewState() { process_host->Cleanup(); }
   };
 
   ChildViewState MakeChildView(RenderWidgetHostViewBase* parent_view) {
@@ -304,6 +308,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   void TearDown() override {
     view_root_.reset();
     widget_host_root_.reset();
+    process_host_root_->Cleanup();
+    agent_scheduling_group_host_root_.reset();
     process_host_root_.reset();
     base::RunLoop().RunUntilIdle();
 

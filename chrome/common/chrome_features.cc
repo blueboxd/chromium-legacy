@@ -373,7 +373,7 @@ const base::Feature kEventBasedStatusReporting{
 #if !defined(OS_ANDROID)
 // Enables real-time reporting for extension request
 const base::Feature kEnterpriseRealtimeExtensionRequest{
-    "EnterpriseRealtimeExtensionRequest", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnterpriseRealtimeExtensionRequest", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
@@ -639,6 +639,10 @@ const base::Feature kParentAccessCodeForOnlineLogin{
 const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+// Enables using the prediction service for permission prompts.
+const base::Feature kPermissionPredictions{"PermissionPredictions",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enable support for "Plugin VMs" on Chrome OS.

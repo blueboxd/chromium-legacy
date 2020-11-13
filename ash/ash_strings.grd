@@ -524,16 +524,16 @@ This file contains the strings for ash.
         Use gestures to quickly switch between apps and interact with your Chromebook in tablet mode.
       </message>
       <message name="IDS_CHANGE_ENTER_OVERVIEW_REVERSE_GESTURE" desc="The toast of changing enter overview gesture">
-        Swipe up with three fingers to enter Overview.
+        Swipe up with three fingers to enter Overview
       </message>
       <message name="IDS_CHANGE_EXIT_OVERVIEW_REVERSE_GESTURE" desc="The toast of changing exit overview gesture">
-        Swipe down with three fingers to exit Overview.
+        Swipe down with three fingers to exit Overview
       </message>
       <message name="IDS_CHANGE_NEXT_DESK_REVERSE_GESTURE" desc="The toast of changing reverse gesture to switch to the next desk.">
-        Swipe right with four fingers to switch to the next desk.
+        Swipe right with four fingers to switch to the next desk
       </message>
       <message name="IDS_CHANGE_LAST_DESK_REVERSE_GESTURE" desc="The toast of changing reverse gesture to switch to the previous desk.">
-        Swipe left with four fingers to switch to the previous desk.
+        Swipe left with four fingers to switch to the previous desk
       </message>
       <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_LEARN_MORE" desc="The body of the notification to notify that the user should restart to get system updates. This notification body links to the info page on the update.">
         Learn more about the latest <ph name="SYSTEM_APP_NAME">$1<ex>Chromium OS</ex></ph> update
@@ -1158,9 +1158,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_PHONE_HUB_BLUETOOTH_DISABLED_DIALOG_LEARN_MORE_BUTTON" desc="Learn more button on the bluetooth disabled dialog to show more related information.">
         Learn more
-      </message>
-      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_FROM_PHONE_TITLE" desc="The title at the header of PhoneHub notification, indicating that this notification was coming from the connected phone.">
-        From Phone
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_INLINE_REPLY_BUTTON" desc="Label for the inline reply button inside a PhoneHub notification.">
         Reply
@@ -3086,13 +3083,13 @@ Here are some things you can try to get started.
         Screen recording stopped
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_DISABLED_MESSAGE" desc="The text of the notification when capture mode is disabled.">
-        The ability to take a screen capture of the content on your screen is blocked by your administrator.
+        Screen capture was blocked by your administrator due to content on your screen.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_FAILURE_MESSAGE" desc="The text of the notification when capture mode fails.">
         Failed to capture screen
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_STOPPED_MESSAGE" desc="The text of the notification when video capture is stopped.">
-        Screen recording has been stopped by your administrator due to content on your screen.
+        Screen recording was stopped by your administrator due to content on your screen.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_DISPLAY_SOURCE" desc="The name that is the display source of the screen capture notification.">
         Screen capture

@@ -1483,7 +1483,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 mTabModelProfileSupplier, mBookmarkBridgeSupplier,
                 getOverviewModeBehaviorSupplier(), this::getContextualSearchManager,
                 mTabModelSelectorSupplier, mStartSurfaceSupplier,
-                mLayoutStateProviderOneshotSupplier);
+                mLayoutStateProviderOneshotSupplier, mStartSurfaceParentTabSupplier);
     }
 
     @Override
@@ -2139,6 +2139,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (mAppIndexingUtil != null) {
             mAppIndexingUtil.destroy();
             mAppIndexingUtil = null;
+        }
+
+        if (mStartSurfaceSupplier.get() != null) {
+            mStartSurfaceSupplier.get().destroy();
         }
 
         IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);

@@ -4,15 +4,14 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.action.ViewActions.replaceText;
-import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
@@ -53,17 +52,23 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.GeneralSwipeAction;
 import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.ScrollToAction;
 import androidx.test.espresso.action.Swipe;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -99,6 +104,7 @@ import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
+import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -110,7 +116,6 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
-import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -1246,6 +1251,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface", "TabGroup"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @DisabledTest(message = "crbug.com/1148365")
     public void testCreateTabWithinTabGroup() throws Exception {
         // Create tab state files for a group with two tabs.
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
@@ -1323,11 +1329,8 @@ public class StartSurfaceTest {
                 .perform(click());
         onViewWaiting(withId(R.id.search_box_text))
                 .check(matches(isCompletelyDisplayed()))
-                .perform(typeText("wfh tips"));
-        KeyboardVisibilityDelegate delegate = KeyboardVisibilityDelegate.getInstance();
-        CriteriaHelper.pollUiThread(
-                () -> delegate.isKeyboardShowing(cta, cta.getCompositorViewHolder()));
-        onView(withId(R.id.url_bar)).check(matches(isDisplayed())).perform(pressImeActionButton());
+                .perform(replaceText("wfh tips"));
+        onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
 
         // Verify a tab is created within the group by checking the tab strip and tab model.
         onView(withId(org.chromium.chrome.tab_ui.R.id.toolbar_container_view))
@@ -1344,8 +1347,10 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
+    @DisableIf.Build(sdk_is_less_than = N, message = "crbug.com/1148352")
     @CommandLineFlags.Add({BASE_PARAMS + "/single/exclude_mv_tiles/true"
             + "/show_last_active_tab_only/true/show_stack_tab_switcher/true"})
+    @DisabledTest(message = "crbug.com/1148365")
     public void testShow_SingleAsHomepageV2_VoiceSearchButtonShown() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -1365,6 +1370,7 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @DisableIf.Build(sdk_is_less_than = N, message = "crbug.com/1148352")
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testShow_SingleAsHomepage_VoiceSearchButtonShown() {
         if (!mImmediateReturn) {
@@ -1379,6 +1385,85 @@ public class StartSurfaceTest {
         onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onView(withId(R.id.voice_search_button)).check(matches(isDisplayed()));
+    }
+
+    private static Matcher<View> isView(final View targetView) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("is the targetView: ");
+                description.appendValue(targetView);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                return view == targetView;
+            }
+        };
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_stack_tab_switcher/true"
+            + "/open_ntp_instead_of_start/true"})
+    public void testScrollToolbar() {
+        // clang-format on
+
+        // We need to check toolbar background color with open_ntp_instead_of_start on. This flag
+        // requires mImmediateReturn to be true.
+        assumeTrue(mImmediateReturn);
+
+        onViewWaiting(allOf(withId(R.id.feed_stream_recycler_view), isDisplayed()));
+
+        // Default scrollTo() cannot be used for RecyclerView. Add a customized scrollTo for
+        // scrolling to the last item of Feed.
+        ViewAction customizedScrollTo = new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return Matchers.allOf(
+                        ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE),
+                        ViewMatchers.isDescendantOfA(
+                                ViewMatchers.isAssignableFrom(RecyclerView.class)));
+            }
+
+            @Override
+            public String getDescription() {
+                return "scroll to";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                new ScrollToAction().perform(uiController, view);
+            }
+        };
+
+        RecyclerView feedView =
+                mActivityTestRule.getActivity().findViewById(R.id.feed_stream_recycler_view);
+        View lastChild = feedView.getLayoutManager().findViewByPosition(
+                feedView.getAdapter().getItemCount() - 1);
+
+        // Scroll to the last item of Feed. Somehow RecyclerViewActions#scrollToPosition couldn't be
+        // performed.
+        onView(isView(lastChild)).perform(customizedScrollTo, click());
+
+        // The start surface toolbar should be scrolled up and not be displayed.
+        assertTrue(mActivityTestRule.getActivity()
+                           .findViewById(R.id.tab_switcher_toolbar)
+                           .getTranslationY()
+                < -mActivityTestRule.getActivity().getResources().getDimensionPixelOffset(
+                        R.dimen.toolbar_height_no_shadow));
+        onView(withId(R.id.tab_switcher_toolbar)).check(matches(not(isDisplayed())));
+
+        // Toolbar container view should show.
+        onView(withId(R.id.toolbar_container)).check(matches(isDisplayed()));
+
+        // Check the toolbar's background color.
+        ToolbarPhone toolbar =
+                mActivityTestRule.getActivity().findViewById(org.chromium.chrome.R.id.toolbar);
+        Assert.assertEquals(toolbar.getToolbarDataProvider().getPrimaryColor(),
+                toolbar.getBackgroundDrawable().getColor());
     }
 }
 

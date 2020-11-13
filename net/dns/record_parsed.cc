@@ -97,10 +97,9 @@ bool RecordParsed::IsEqual(const RecordParsed* other, bool is_mdns) const {
     other_klass &= dns_protocol::kMDnsClassMask;
   }
 
-  return name_ == other->name_ &&
-      klass == other_klass &&
-      type_ == other->type_ &&
-      rdata_->IsEqual(other->rdata_.get());
+  return name_ == other->name_ && klass == other_klass &&
+         type_ == other->type_ && !!rdata_ == !!other->rdata_ &&
+         (!rdata_ || rdata_->IsEqual(other->rdata_.get()));
 }
 
 }  // namespace net

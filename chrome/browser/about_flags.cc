@@ -107,6 +107,7 @@
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/permissions/features.h"
 #include "components/policy/core/common/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -6258,7 +6259,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"permission-chip", flag_descriptions::kPermissionChipName,
      flag_descriptions::kPermissionChipDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPermissionChip)},
+     FEATURE_VALUE_TYPE(permissions::features::kPermissionChip)},
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"dice-web-signin-interception",
@@ -6686,6 +6687,32 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShutdownSupportForKeepaliveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kShutdownSupportForKeepalive)},
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"enable-autofill-infobar-account-indication-footer-for-single-account-"
+     "users",
+     flag_descriptions::
+         kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersName,
+     flag_descriptions::
+         kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers)},
+    {"enable-autofill-infobar-account-indication-footer-for-sync-users",
+     flag_descriptions::
+         kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersName,
+     flag_descriptions::
+         kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers)},
+#endif
+
+    {"permission-predictions", flag_descriptions::kPermissionPredictionsName,
+     flag_descriptions::kPermissionPredictionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPermissionPredictions)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

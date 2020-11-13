@@ -97,10 +97,6 @@ void WebViewFrameWidget::UpdateLifecycle(WebLifecycleUpdate requested_update,
   web_view_->UpdateLifecycle(requested_update, reason);
 }
 
-WebInputEventResult WebViewFrameWidget::DispatchBufferedTouchEvents() {
-  return web_view_->DispatchBufferedTouchEvents();
-}
-
 void WebViewFrameWidget::ApplyViewportChanges(
     const ApplyViewportChangesArgs& args) {
   web_view_->ApplyViewportChanges(args);
@@ -312,6 +308,12 @@ WebInputEventResult WebViewFrameWidget::HandleGestureEvent(
   if (!web_view_->Client() || !web_view_->Client()->CanHandleGestureEvent()) {
     return WebInputEventResult::kNotHandled;
   }
+
+  // TODO(https://crbug.com/1148346): We need to figure out why MainFrameImpl is
+  // null but LocalRootImpl isn't.
+  CHECK(LocalRootImpl());
+  if (!web_view_->MainFrameImpl())
+    return WebInputEventResult::kNotHandled;
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   bool event_cancelled = false;  // for disambiguation

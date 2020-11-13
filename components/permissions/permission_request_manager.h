@@ -136,6 +136,7 @@ class PermissionRequestManager
   GURL GetRequestingOrigin() const override;
   GURL GetEmbeddingOrigin() const override;
   void Accept() override;
+  void AcceptThisTime() override;
   void Deny() override;
   void Closing() override;
   bool WasCurrentRequestAlreadyDisplayed() override;
@@ -197,9 +198,12 @@ class PermissionRequestManager
   // Delete the view object
   void DeleteBubble();
 
+  // Finalize request.
+  void ResetViewStateForCurrentRequest();
+
   // Delete the view object, finalize requests, asynchronously show a queued
   // request if present.
-  void FinalizeBubble(PermissionAction permission_action);
+  void FinalizeCurrentRequests(PermissionAction permission_action);
 
   // Cancel all pending or active requests and destroy the PermissionPrompt if
   // one exists. This is called if the WebContents is destroyed or navigates its
@@ -213,7 +217,8 @@ class PermissionRequestManager
   PermissionRequest* GetExistingRequest(PermissionRequest* request);
 
   // Calls PermissionGranted on a request and all its duplicates.
-  void PermissionGrantedIncludingDuplicates(PermissionRequest* request);
+  void PermissionGrantedIncludingDuplicates(PermissionRequest* request,
+                                            bool is_one_time);
   // Calls PermissionDenied on a request and all its duplicates.
   void PermissionDeniedIncludingDuplicates(PermissionRequest* request);
   // Calls Cancelled on a request and all its duplicates.
@@ -233,8 +238,6 @@ class PermissionRequestManager
 
   void DoAutoResponseForTesting();
 
-  int CountQueuedPermissionRequests(PermissionRequest* request);
-
   // Factory to be used to create views when needed.
   PermissionPrompt::Factory view_factory_;
 
@@ -251,19 +254,28 @@ class PermissionRequestManager
   // tab is visible.
   std::vector<PermissionRequest*> requests_;
 
-  struct RequestAndSource {
+  struct PermissionRequestSource {
     int render_process_id;
     int render_frame_id;
-    PermissionRequest* request;
 
     bool IsSourceFrameInactiveAndDisallowReactivation() const;
   };
 
-  base::circular_deque<RequestAndSource> queued_requests_;
+  base::circular_deque<PermissionRequest*> queued_requests_;
+
+  PermissionRequest* PeekNextQueuedRequest();
+
+  PermissionRequest* PopNextQueuedRequest();
+
   // Maps from the first request of a kind to subsequent requests that were
   // duped against it.
   std::unordered_multimap<PermissionRequest*, PermissionRequest*>
       duplicate_requests_;
+
+  // Maps each PermissionRequest currently in |requests_| or |queued_requests_|
+  // to which RenderFrameHost it originated from. Note that no date is stored
+  // for |duplicate_requests_|.
+  std::map<PermissionRequest*, PermissionRequestSource> request_sources_map_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
   AutoResponseType auto_response_for_test_;

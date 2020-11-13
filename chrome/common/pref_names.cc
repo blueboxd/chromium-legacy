@@ -1029,6 +1029,9 @@ const char kLoginExtensionApiLaunchExtensionId[] =
 // String containing last RSU lookup key uploaded. Empty until first upload.
 const char kLastRsuDeviceIdUploaded[] = "rsu.last_rsu_device_id_uploaded";
 
+// A string pref stored in local state containing the name of the device.
+const char kDeviceName[] = "device_name";
+
 // Boolean user profile pref that determines whether to show a banner in browser
 // settings that links to OS settings.
 const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
@@ -1823,6 +1826,7 @@ const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 const char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
+const char kNtpModulesVisible[] = "NewTabPage.ModulesVisible";
 // List of promos that the user has dismissed while on the NTP.
 const char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
 // Data associated with search suggestions that appear on the NTP.

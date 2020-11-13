@@ -9227,6 +9227,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="Nearby.Share.Discovery.Delay.FromStartDiscoveryTo{EndState}"
+    units="ms" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the delay between the start of the discovery session and {EndState}.
+  </summary>
+  <token key="EndState">
+    <variant name="AnyDiscovery" summary="the discovery of any share target"/>
+    <variant name="FirstDiscovery"
+        summary="the discovery of the first share target"/>
+    <variant name="StartSend" summary="the start of a transfer"/>
+  </token>
+</histogram>
+
 <histogram name="Nearby.Share.Discovery.FurthestDiscoveryProgress"
     enum="NearbyShareDiscoveryProgress" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
@@ -9247,6 +9262,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     discovered share targets. Emitted when the user selects a share target from
     the discovery page and tries to proceed to the next step in the UI.
   </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Discovery.NumShareTargets.{Variation}"
+    units="share targets" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the number of share targets {Variation} in a single discovery
+    session. Emitted once during the discovery session.
+  </summary>
+  <token key="Variation">
+    <variant name="Discovered" summary="discovered"/>
+    <variant name="Lost" summary="lost"/>
+    <variant name="PresentWhenSendStarts" summary="present when a send starts"/>
+  </token>
 </histogram>
 
 <histogram name="Nearby.Share.Discovery.{Operation}"
@@ -9290,6 +9320,34 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     server when the device data updater makes a request. Recorded when the async
     callback is invoked or when the call times out.
   </summary>
+</histogram>
+
+<histogram name="Nearby.Share.StartAdvertising.Result.FailureReason{Mode}"
+    enum="NearbyShareStartAdvertisingFailureReason" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the reason Nearby Share advertising failed to start in {Mode} mode.
+  </summary>
+  <token key="Mode">
+    <variant name="" summary="BLE and high-visibility"/>
+    <variant name=".BLE" summary="BLE"/>
+    <variant name=".HighVisibility" summary="high-visibility"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.StartAdvertising.Result{Mode}"
+    enum="BooleanSuccess" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the result of starting Nearby Share advertising in {Mode} mode.
+  </summary>
+  <token key="Mode">
+    <variant name="" summary="BLE and high-visibility"/>
+    <variant name=".BLE" summary="BLE"/>
+    <variant name=".HighVisibility" summary="high-visibility"/>
+  </token>
 </histogram>
 
 <histogram
@@ -9340,6 +9398,81 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Phone" summary="a phone"/>
     <variant name=".Tablet" summary="a tablet"/>
     <variant name=".Unknown" summary="an unknown device type"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Transfer.NumAttachments{Type}"
+    units="attachments" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the number of {Type} attachments intended to be sent in a Nearby
+    Share transfer. Emitted when the transfer concludes, successfully or not.
+  </summary>
+  <token key="Type">
+    <variant name="" summary="text or file"/>
+    <variant name=".File" summary="file"/>
+    <variant name=".Text" summary="text"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Nearby.Share.Transfer.Rate{Direction}{ShareTargetType}{PayloadStatus}"
+    units="KB/s" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the transfer rate of a Nearby Share {Direction} transfer that
+    {PayloadStatus} when sharing with {ShareTargetType}. Emitted when the
+    transfer concludes.
+  </summary>
+  <token key="Direction">
+    <variant name="" summary="outgoing (send) or incoming (receive)"/>
+    <variant name=".Receive" summary="incoming (receive)"/>
+    <variant name=".Send" summary="outgoing (send)"/>
+  </token>
+  <token key="ShareTargetType">
+    <variant name="" summary="any device type"/>
+    <variant name=".Laptop" summary="a laptop"/>
+    <variant name=".Phone" summary="a phone"/>
+    <variant name=".Tablet" summary="a tablet"/>
+    <variant name=".Unknown" summary="an unknown device type"/>
+  </token>
+  <token key="PayloadStatus">
+    <variant name="" summary="succeeded, failed, or was cancelled"/>
+    <variant name=".Cancelled" summary="was cancelled"/>
+    <variant name=".Failed" summary="failed"/>
+    <variant name=".Succeeded" summary="succeeded"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Nearby.Share.Transfer.TotalSize{Direction}{ShareTargetType}{PayloadStatus}"
+    units="KB" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the total payload size of a Nearby Share {Direction} transfer that
+    {PayloadStatus} when sharing with {ShareTargetType}. Emitted when the
+    transfer concludes.
+  </summary>
+  <token key="Direction">
+    <variant name="" summary="outgoing (send) or incoming (receive)"/>
+    <variant name=".Receive" summary="incoming (receive)"/>
+    <variant name=".Send" summary="outgoing (send)"/>
+  </token>
+  <token key="ShareTargetType">
+    <variant name="" summary="any device type"/>
+    <variant name=".Laptop" summary="a laptop"/>
+    <variant name=".Phone" summary="a phone"/>
+    <variant name=".Tablet" summary="a tablet"/>
+    <variant name=".Unknown" summary="an unknown device type"/>
+  </token>
+  <token key="PayloadStatus">
+    <variant name="" summary="succeeded, failed, or was cancelled"/>
+    <variant name=".Cancelled" summary="was cancelled"/>
+    <variant name=".Failed" summary="failed"/>
+    <variant name=".Succeeded" summary="succeeded"/>
   </token>
 </histogram>
 
@@ -14286,7 +14419,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.AppDrag.EndWindowState"
-    enum="AppWindowDragEndWindowState" expires_after="2020-12-20">
+    enum="AppWindowDragEndWindowState" expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14296,7 +14429,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.AppWindowDrag.CountOfPerUserSession" units="times"
-    expires_after="2020-12-20">
+    expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14307,7 +14440,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.AppWindowDrag.InSplitView.CountOfPerUserSession"
-    units="times" expires_after="2020-12-20">
+    units="times" expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14328,7 +14461,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.TabDrag.CountOfPerUserSession" units="times"
-    expires_after="2021-02-28">
+    expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14339,7 +14472,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.TabDrag.DragType" enum="TabDragType"
-    expires_after="2020-12-20">
+    expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14349,7 +14482,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.TabDrag.InSplitView.CountOfPerUserSession"
-    units="times" expires_after="2020-12-20">
+    units="times" expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14360,7 +14493,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.WindowDrag.DragEndEventType"
-    enum="WindowDragEndEventType" expires_after="2020-12-20">
+    enum="WindowDragEndEventType" expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14370,7 +14503,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.WindowDrag.OpenedWindowsNumber" units="numbers"
-    expires_after="2020-12-20">
+    expires_after="2021-06-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -16540,8 +16673,9 @@ regressions. -->
 </histogram>
 
 <histogram name="WebController.BackForwardListOutOfSync" enum="BooleanHit"
-    expires_after="2020-12-25">
+    expires_after="2021-12-25">
   <owner>ajuma@chromium.org</owner>
+  <owner>eugenebut@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
     [iOS] Counts the number of time the backForwardList of the WebView gets out
@@ -16551,8 +16685,9 @@ regressions. -->
 </histogram>
 
 <histogram name="WebController.BackForwardListOutOfSyncInProvisionalNavigation"
-    enum="IOSOutOfSyncURLAction" expires_after="2020-12-25">
+    enum="IOSOutOfSyncURLAction" expires_after="2021-12-25">
   <owner>ajuma@chromium.org</owner>
+  <owner>eugenebut@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
     [iOS] Records the action take when the backForwardList of the WebView is out

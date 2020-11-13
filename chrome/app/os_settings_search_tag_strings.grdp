@@ -959,6 +959,9 @@
   <message name="IDS_OS_SETTINGS_TAG_PRINT_MANAGEMENT_ALT2" desc="text for search result item which, when clicked, naviagets the user to the printing section to open the print jobs app. alternate phrase for: 'Print Management', 'Print Jobs'">
     Print history
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_SCANNING_APP" desc="text for search result item which, when clicked, navigates the user to the printing section to open the scanning app.">
+    Scan
+  </message>
 
   <!-- Accessibility section. -->
   <message name="IDS_OS_SETTINGS_TAG_A11Y" desc="Text for search result item which, when clicked, navigates the user to accessibility (a.k.a. a11y) settings. Alternate phrase for: 'A11y'">
@@ -1132,5 +1135,13 @@
   </message>
   <message name="IDS_OS_SETTINGS_TAG_ABOUT_TERMS_OF_SERVICE" desc="Text for search result item which, when clicked, navigates the user to 'About Chrome OS' settings, with a link to the Terms of Service.">
     Terms of Service
+  </message>
+
+  <!-- On Startup section. -->
+  <message name="IDS_OS_SETTINGS_TAG_ON_STARTUP" desc="Text for search result item which, when clicked, navigates the user to On Startup settings, with a radio group to configure the restore apps and pages options">
+    On Startup
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_RESTORE_APPS_AND_PAGES" desc="Text for search result item which, when clicked, navigates the user to On Startup settings, with a radio group to configure the restore apps and pages options">
+    Restore apps and pages
   </message>
 </grit-part>

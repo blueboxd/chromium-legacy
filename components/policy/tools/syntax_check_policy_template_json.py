@@ -565,7 +565,7 @@ class PolicyTemplateChecker(object):
       # Since the item captions don't appear everywhere the description does,
       # try and ensure the items are still described in the descriptions.
       value_to_names = {
-          None: {'None', 'Unset', 'unset'},
+          None: {'None', 'Unset', 'unset', 'not set', 'not configured'},
           True: {'True', 'Enable', 'enable'},
           False: {'False', 'Disable', 'disable'},
       }
@@ -1559,7 +1559,7 @@ class PolicyTemplateChecker(object):
       # TODO(crbug.com/1139306): This item check should apply to all policies
       # instead of just new ones.
       if self._NeedsItems(new_policy) and new_policy.get('items', None) == None:
-        self._Error(('Missing items field for policy %') % (new_policy_name))
+        self._Error(('Missing items field for policy %s') % (new_policy_name))
 
   def _LeadingWhitespace(self, line):
     match = LEADING_WHITESPACE.match(line)

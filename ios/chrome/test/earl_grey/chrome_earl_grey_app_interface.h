@@ -166,6 +166,12 @@
 // Returns the index of active tab in normal mode.
 + (NSUInteger)indexOfActiveNormalTab;
 
+// Resets Close All Tabs Confirmation feature to its default value.
++ (void)resetCloseAllTabsConfirmation;
+
+// Disables Close All Tabs Confirmation feature.
++ (void)disableCloseAllTabsConfirmation;
+
 #pragma mark - Window utilities (EG2)
 
 // Returns the number of windows, including background and disconnected or
@@ -422,9 +428,6 @@
 
 // Returns YES if kTestFeature is enabled.
 + (BOOL)isTestFeatureEnabled;
-
-// Returns YES if CreditCardScanner feature is enabled.
-+ (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if DemographicMetricsReporting feature is enabled.
 + (BOOL)isDemographicMetricsReportingEnabled WARN_UNUSED_RESULT;

@@ -1794,9 +1794,6 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
-# These are the failing tests because Chrome hasn't implemented according to the spec.
-crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
-
 crbug.com/346473 fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 
 # These tests are skipped as there is no touch support on Mac.
@@ -6283,3 +6280,6 @@ crbug.com/1148259 [ Mac ] external/wpt/html/browsers/browsing-the-web/navigating
 # Disable flaky tests when scroll unification is enabled
 crbug.com/1130020 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
 crbug.com/1130020 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
+
+# DevTools roll
+crbug.com/1011811 http/tests/devtools/console/console-edit-expanded-tree.js [ Skip ]

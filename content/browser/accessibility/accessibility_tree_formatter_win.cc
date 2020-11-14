@@ -14,7 +14,6 @@
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -31,7 +30,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/hwnd_util.h"
 
@@ -42,26 +40,19 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatterBase {
   AccessibilityTreeFormatterWin();
   ~AccessibilityTreeFormatterWin() override;
 
-  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      BrowserAccessibility* start) override;
+  base::Value BuildTree(BrowserAccessibility* start) const override;
   base::Value BuildTreeForWindow(gfx::AcceleratedWidget hwnd) const override;
   base::Value BuildTreeForSelector(
       const AXTreeSelector& selector) const override;
-  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      Microsoft::WRL::ComPtr<IAccessible> start,
-      LONG window_x = 0,
-      LONG window_y = 0);
 
-  static void SetUpCommandLineForTestPass(base::CommandLine* command_line);
   void AddDefaultFilters(
       std::vector<AXPropertyFilter>* property_filters) override;
 
  private:
-  void RecursiveBuildAccessibilityTree(
-      const Microsoft::WRL::ComPtr<IAccessible> node,
-      base::DictionaryValue* dict,
-      LONG root_x,
-      LONG root_y) const;
+  void RecursiveBuildTree(const Microsoft::WRL::ComPtr<IAccessible> node,
+                          base::DictionaryValue* dict,
+                          LONG root_x,
+                          LONG root_y) const;
 
   void AddProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                      base::DictionaryValue* dict,
@@ -89,7 +80,7 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatterBase {
                              base::DictionaryValue* dict) const;
   std::string ProcessTreeForOutput(
       const base::DictionaryValue& node,
-      base::DictionaryValue* filtered_dict_result = nullptr) override;
+      base::DictionaryValue* filtered_dict_result = nullptr) const override;
 };
 
 // static
@@ -104,17 +95,10 @@ AccessibilityTreeFormatter::GetTestPasses() {
   // In addition to the 'Blink' pass, Windows includes two accessibility APIs
   // that need to be tested independently (MSAA & UIA).
   return {
-      {"blink", &AccessibilityTreeFormatterBlink::CreateBlink, nullptr},
-      {"win", &AccessibilityTreeFormatter::Create,
-       &AccessibilityTreeFormatterWin::SetUpCommandLineForTestPass},
-      {"uia", &AccessibilityTreeFormatterUia::CreateUia,
-       &AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass},
+      {"blink", &AccessibilityTreeFormatterBlink::CreateBlink},
+      {"win", &AccessibilityTreeFormatter::Create},
+      {"uia", &AccessibilityTreeFormatterUia::CreateUia},
   };
-}
-
-void AccessibilityTreeFormatterWin::SetUpCommandLineForTestPass(
-    base::CommandLine* command_line) {
-  command_line->RemoveSwitch(::switches::kEnableExperimentalUIAutomation);
 }
 
 void AccessibilityTreeFormatterWin::AddDefaultFilters(
@@ -264,9 +248,8 @@ static HRESULT QueryIAccessibleValue(IAccessible* accessible,
   return service_provider->QueryService(IID_IAccessibleValue, accessibleValue);
 }
 
-std::unique_ptr<base::DictionaryValue>
-AccessibilityTreeFormatterWin::BuildAccessibilityTree(
-    BrowserAccessibility* start_node) {
+base::Value AccessibilityTreeFormatterWin::BuildTree(
+    BrowserAccessibility* start_node) const {
   DCHECK(start_node);
   BrowserAccessibilityManager* root_manager =
       start_node->manager()->GetRootManager();
@@ -282,20 +265,9 @@ AccessibilityTreeFormatterWin::BuildAccessibilityTree(
   Microsoft::WRL::ComPtr<IAccessible> start_ia =
       ToBrowserAccessibilityComWin(start_node);
 
-  return BuildAccessibilityTree(start_ia, root_x, root_y);
-}
-
-std::unique_ptr<base::DictionaryValue>
-AccessibilityTreeFormatterWin::BuildAccessibilityTree(
-    Microsoft::WRL::ComPtr<IAccessible> start,
-    LONG root_x,
-    LONG root_y) {
-  CHECK(start);
-
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  RecursiveBuildAccessibilityTree(start, dict.get(), root_x, root_y);
-
-  return dict;
+  base::DictionaryValue dict;
+  RecursiveBuildTree(start_ia, &dict, root_x, root_y);
+  return std::move(dict);
 }
 
 base::Value AccessibilityTreeFormatterWin::BuildTreeForWindow(
@@ -311,7 +283,7 @@ base::Value AccessibilityTreeFormatterWin::BuildTreeForWindow(
     return base::Value(base::Value::Type::DICTIONARY);
 
   base::DictionaryValue dict;
-  RecursiveBuildAccessibilityTree(start, &dict, 0, 0);
+  RecursiveBuildTree(start, &dict, 0, 0);
   return std::move(dict);
 }
 
@@ -322,7 +294,7 @@ base::Value AccessibilityTreeFormatterWin::BuildTreeForSelector(
   return base::Value(base::Value::Type::DICTIONARY);
 }
 
-void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
+void AccessibilityTreeFormatterWin::RecursiveBuildTree(
     const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict,
     LONG root_x,
@@ -381,8 +353,7 @@ void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
     if (dispatch) {
       Microsoft::WRL::ComPtr<IAccessible> accessible;
       if (SUCCEEDED(dispatch.As(&accessible)))
-        RecursiveBuildAccessibilityTree(accessible, child_dict.get(), root_x,
-                                        root_y);
+        RecursiveBuildTree(accessible, child_dict.get(), root_x, root_y);
     }
     children->Append(std::move(child_dict));
   }
@@ -902,7 +873,7 @@ void AccessibilityTreeFormatterWin::AddIA2ValueProperties(
 
 std::string AccessibilityTreeFormatterWin::ProcessTreeForOutput(
     const base::DictionaryValue& dict,
-    base::DictionaryValue* filtered_dict_result) {
+    base::DictionaryValue* filtered_dict_result) const {
   std::string line;
 
   // Always show role, and show it first.

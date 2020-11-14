@@ -3807,7 +3807,6 @@
 
     'mac_specific_isolated_scripts': {
       'mac_signing_tests': {},
-      'updater_integration_tests': {},
     },
 
     'mojo_chromiumos_specific_gtests': {
@@ -4064,9 +4063,11 @@
       },
     },
 
-
-    'paeverywhere_gtests': {
+    'paeverywhere_common_tests': {
       'base_unittests': {},
+      'blink_platform_unittests': {},
+      'unit_tests': {},
+      'wtf_unittests': {},
     },
 
     'perfetto_gtests': {
@@ -4779,15 +4780,6 @@
       },
       'polymer_tools_python_unittests': {
         'experiment_percentage': 100,
-      },
-      'updater_integration_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ],
-        },
       },
     },
 
@@ -5928,6 +5920,16 @@
     'network_service_extra_gtests': [
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
+    ],
+
+    'paeverywhere_android_gtests': [
+      'android_smoke_tests',
+      'paeverywhere_common_tests'
+    ],
+
+    'paeverywhere_win_gtests': [
+      'paeverywhere_common_tests',
+      'win_specific_chromium_gtests',
     ],
 
     'sandboxed_chromium_memory_linux_gtests': [

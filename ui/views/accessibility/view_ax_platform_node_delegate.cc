@@ -381,6 +381,10 @@ bool ViewAXPlatformNodeDelegate::IsLeaf() const {
   return ViewAccessibility::IsLeaf() || AXPlatformNodeDelegateBase::IsLeaf();
 }
 
+bool ViewAXPlatformNodeDelegate::IsFocused() const {
+  return GetFocus() == GetNativeObject();
+}
+
 bool ViewAXPlatformNodeDelegate::IsToplevelBrowserWindow() {
   // Note: only used on Desktop Linux. Other platforms don't have an application
   // node so this would never return true.
@@ -478,7 +482,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(
                                      : (*i)->GetNativeViewAccessible();
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocus() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocus() const {
   gfx::NativeViewAccessible focus_override =
       ui::AXPlatformNode::GetPopupFocusOverride();
   if (focus_override)
@@ -568,6 +572,24 @@ std::vector<int32_t> ViewAXPlatformNodeDelegate::GetColHeaderNodeIds(
     return {};
   }
   return {columns[col_index]};
+}
+
+base::Optional<int32_t> ViewAXPlatformNodeDelegate::GetCellId(
+    int row_index,
+    int col_index) const {
+  if (virtual_children().empty() || !GetAncestorTableView())
+    return base::nullopt;
+
+  AXVirtualView* ax_cell =
+      GetAncestorTableView()->GetVirtualAccessibilityCell(row_index, col_index);
+  if (!ax_cell)
+    return base::nullopt;
+
+  const ui::AXNodeData& cell_data = ax_cell->GetData();
+  if (cell_data.role == ax::mojom::Role::kCell)
+    return cell_data.id;
+
+  return base::nullopt;
 }
 
 TableView* ViewAXPlatformNodeDelegate::GetAncestorTableView() const {

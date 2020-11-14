@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '67eb26054d84566d477cd05ab0b4dcccc8a8ca48',
+  'angle_revision': 'f46e6201b40bdee3e0b79d5d97660fc302fd76f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4c630d2bddedebf7df38db63e77cb95b2b212e13',
+  'devtools_frontend_revision': 'd347b31c0e2ec5337a08f7bcf3a0a9bf7d83f459',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'b6f4d53126d3f0ad522df5fc77da4ac919ea43f6',
+  'dawn_revision': 'da1f66c8cee18677bf921181613732a9378e9864',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -907,7 +907,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e61ccc59a2405db5dfe76b3499e18b933d620c21',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'fd5c198347e13bdb96f6685fdab451c1183e21ff',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1263,7 +1263,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8bf9368130b89ce1fe75d1b6f527393751447465',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f1f7c370eb0d14edfc79efd71e1420f16ea3b63e',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1341,7 +1341,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '-vqpkVYJ-oCQsp6fcAErO79BCT8MXPx1c4k8b4rUEJgC'
+              'version': 'BisfFk67ojvPEsXt398o1XuIEAeGMM6KsrXCD1gY2RIC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1506,7 +1506,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '180faebe88270254d541b9324f855a50ed46af2c',
+    Var('webrtc_git') + '/src.git' + '@' + 'f42a94a7f50d697bdd1f94b584c94f86c5fff67a',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1578,7 +1578,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d826e462ad737d4056dbd94a4582fd877c45116c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@01909e01660410274727b773dc3387c802e2cb8b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1586,7 +1586,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'q6S1Q6V4_M64y2wv8AI6ZmwjOFY46EgVtPz9XcWJVRsC',
+        'version': 'MixcfTPFsHokR735rFKmvn0Ctjeu1IlipdRyybXfstwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1597,7 +1597,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'zEk7od1CGIAvNadYXhYDI7qpfAAM33azYj-p5y578RUC',
+        'version': 'lncFJYEwVu27fQaQFf8XRHbjYztYJXFXPbFvQaiqj_0C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -3354,6 +3354,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_guava_guava',
               'version': 'version:27.1-jre-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_guava_guava_android': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_guava_guava_android',
+              'version': 'version:25.1-android-cr0',
           },
       ],
       'condition': 'checkout_android',

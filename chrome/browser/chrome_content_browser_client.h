@@ -109,7 +109,8 @@ blink::UserAgentMetadata GetUserAgentMetadata();
 blink::UserAgentBrandList GenerateBrandVersionList(
     int seed,
     base::Optional<std::string> brand,
-    std::string major_version);
+    std::string major_version,
+    base::Optional<std::string> greasey_brand);
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -428,7 +429,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void BindHostReceiverForRenderer(
       content::RenderProcessHost* render_process_host,
       mojo::GenericPendingReceiver receiver) override;
-  void WillStartServiceManager() override;
   void OpenURL(
       content::SiteInstance* site_instance,
       const content::OpenURLParams& params,

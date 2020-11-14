@@ -83,7 +83,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
@@ -420,17 +419,6 @@ void WebFrameWidgetImpl::FocusChanged(bool enable) {
   }
 }
 
-void WebFrameWidgetImpl::EnableDeviceEmulation(
-    const DeviceEmulationParams& parameters) {
-  // This message should only be sent to the top level FrameWidget.
-  NOTREACHED();
-}
-
-void WebFrameWidgetImpl::DisableDeviceEmulation() {
-  // This message should only be sent to the top level FrameWidget.
-  NOTREACHED();
-}
-
 void WebFrameWidgetImpl::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
                                                   gfx::Rect& focus_root_frame) {
   const LocalFrame* local_frame = FocusedLocalFrameInWidget();
@@ -446,26 +434,6 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
   // viewport. crbug.com/459293.
   anchor_root_frame = local_frame->View()->ConvertToRootFrame(anchor);
   focus_root_frame = local_frame->View()->ConvertToRootFrame(focus);
-}
-
-void WebFrameWidgetImpl::SetRemoteViewportIntersection(
-    const mojom::blink::ViewportIntersectionState& intersection_state) {
-  SetViewportIntersection(intersection_state.Clone());
-}
-
-void WebFrameWidgetImpl::SetViewportIntersection(
-    mojom::blink::ViewportIntersectionStatePtr intersection_state) {
-  // Remote viewports are only applicable to local frames with remote ancestors.
-  DCHECK(LocalRootImpl()->Parent() &&
-         LocalRootImpl()->Parent()->IsWebRemoteFrame() &&
-         LocalRootImpl()->GetFrame());
-
-  compositor_visible_rect_ =
-      gfx::Rect(intersection_state->compositor_visible_rect);
-  widget_base_->LayerTreeHost()->SetViewportVisibleRect(
-      compositor_visible_rect_);
-  LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
-      *intersection_state);
 }
 
 void WebFrameWidgetImpl::SetIsInertForSubFrame(bool inert) {
@@ -565,87 +533,6 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
 
 LocalFrameView* WebFrameWidgetImpl::GetLocalFrameViewForAnimationScrolling() {
   return LocalRootImpl()->GetFrame()->View();
-}
-
-WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
-    const WebKeyboardEvent& event) {
-  DCHECK((event.GetType() == WebInputEvent::Type::kRawKeyDown) ||
-         (event.GetType() == WebInputEvent::Type::kKeyDown) ||
-         (event.GetType() == WebInputEvent::Type::kKeyUp));
-
-  // Please refer to the comments explaining the m_suppressNextKeypressEvent
-  // member.
-  // The m_suppressNextKeypressEvent is set if the KeyDown is handled by
-  // Webkit. A keyDown event is typically associated with a keyPress(char)
-  // event and a keyUp event. We reset this flag here as this is a new keyDown
-  // event.
-  suppress_next_keypress_event_ = false;
-
-  // If there is a popup open, it should be the one processing the event,
-  // not the page.
-  scoped_refptr<WebPagePopupImpl> page_popup = View()->GetPagePopup();
-  if (page_popup) {
-    page_popup->HandleKeyEvent(event);
-    if (event.GetType() == WebInputEvent::Type::kRawKeyDown) {
-      suppress_next_keypress_event_ = true;
-    }
-    return WebInputEventResult::kHandledSystem;
-  }
-
-  auto* frame = DynamicTo<LocalFrame>(FocusedCoreFrame());
-  if (!frame)
-    return WebInputEventResult::kNotHandled;
-
-  WebInputEventResult result = frame->GetEventHandler().KeyEvent(event);
-  if (result != WebInputEventResult::kNotHandled) {
-    if (WebInputEvent::Type::kRawKeyDown == event.GetType()) {
-      // Suppress the next keypress event unless the focused node is a plugin
-      // node.  (Flash needs these keypress events to handle non-US keyboards.)
-      Element* element = FocusedElement();
-      if (!element || !element->GetLayoutObject() ||
-          !element->GetLayoutObject()->IsEmbeddedObject())
-        suppress_next_keypress_event_ = true;
-    }
-    return result;
-  }
-
-#if !defined(OS_MAC)
-  const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
-#if defined(OS_WIN)
-      WebInputEvent::Type::kKeyUp;
-#else
-      WebInputEvent::Type::kRawKeyDown;
-#endif
-  const WebInputEvent::Type kShiftF10TriggeringEventType =
-      WebInputEvent::Type::kRawKeyDown;
-
-  bool is_unmodified_menu_key =
-      !(event.GetModifiers() & WebInputEvent::kInputModifiers) &&
-      event.windows_key_code == VKEY_APPS;
-  bool is_shift_f10 = (event.GetModifiers() & WebInputEvent::kInputModifiers) ==
-                          WebInputEvent::kShiftKey &&
-                      event.windows_key_code == VKEY_F10;
-  if ((is_unmodified_menu_key &&
-       event.GetType() == kContextMenuKeyTriggeringEventType) ||
-      (is_shift_f10 && event.GetType() == kShiftF10TriggeringEventType)) {
-    View()->SendContextMenuEvent();
-    return WebInputEventResult::kHandledSystem;
-  }
-#endif  // !defined(OS_MAC)
-
-  return WebInputEventResult::kNotHandled;
-}
-
-Element* WebFrameWidgetImpl::FocusedElement() const {
-  LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
-  if (!frame)
-    return nullptr;
-
-  Document* document = frame->GetDocument();
-  if (!document)
-    return nullptr;
-
-  return document->FocusedElement();
 }
 
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
@@ -750,10 +637,6 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
       Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
   params->behavior = mojom::blink::ScrollBehavior::kInstant;
   rect_to_scroll = PhysicalRect(maximal_rect);
-}
-
-gfx::Rect WebFrameWidgetImpl::ViewportVisibleRect() {
-  return compositor_visible_rect_;
 }
 
 void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(

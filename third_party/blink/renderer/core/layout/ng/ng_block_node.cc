@@ -1569,10 +1569,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
   builder.SetIsPaintedAtomically(true);
   builder.SetUseFirstLineStyle(use_first_line_style);
 
-  builder.SetNeedsBaseline(true);
   builder.SetBaselineAlgorithmType(baseline_algorithm_type);
 
-  builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto());
   builder.SetAvailableSize(parent_constraint_space.AvailableSize());
   builder.SetPercentageResolutionSize(
       parent_constraint_space.PercentageResolutionSize());
@@ -1720,14 +1718,6 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunSimplifiedLayout(
 void NGBlockNode::CopyBaselinesFromLegacyLayout(
     const NGConstraintSpace& constraint_space,
     NGBoxFragmentBuilder* builder) const {
-  // As the calls to query baselines from legacy layout are potentially
-  // expensive we only ask for them if needed.
-  // TODO(layout-dev): Once we have flexbox, and editing switched over to
-  // LayoutNG we should be able to safely remove this flag without a
-  // performance penalty.
-  if (!constraint_space.NeedsBaseline())
-    return;
-
   switch (constraint_space.BaselineAlgorithmType()) {
     case NGBaselineAlgorithmType::kFirstLine: {
       LayoutUnit position = box_->FirstLineBoxBaseline();

@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -120,10 +119,6 @@ float WebViewFrameWidget::GetDeviceScaleFactorForTesting() {
   return device_scale_factor_for_testing_;
 }
 
-gfx::Rect WebViewFrameWidget::ViewportVisibleRect() {
-  return widget_base_->CompositorViewportRect();
-}
-
 bool WebViewFrameWidget::ShouldHandleImeEvents() {
   return HasFocus();
 }
@@ -136,12 +131,6 @@ void WebViewFrameWidget::SetWindowRect(const gfx::Rect& window_rect) {
     return;
   }
   View()->SetWindowRect(window_rect);
-}
-
-float WebViewFrameWidget::GetEmulatorScale() {
-  if (device_emulator_)
-    return device_emulator_->scale();
-  return 1.0f;
 }
 
 void WebViewFrameWidget::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
@@ -167,26 +156,6 @@ void WebViewFrameWidget::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
       frame_view->ConvertToRootFrame(focus));
 }
 
-void WebViewFrameWidget::EnableDeviceEmulation(
-    const DeviceEmulationParams& parameters) {
-  if (!device_emulator_) {
-    gfx::Size size_in_dips = widget_base_->BlinkSpaceToFlooredDIPs(size_);
-
-    device_emulator_ = MakeGarbageCollected<ScreenMetricsEmulator>(
-        this, widget_base_->GetScreenInfo(), size_in_dips,
-        widget_base_->VisibleViewportSizeInDIPs(),
-        widget_base_->WidgetScreenRect(), widget_base_->WindowScreenRect());
-  }
-  device_emulator_->ChangeEmulationParams(parameters);
-}
-
-void WebViewFrameWidget::DisableDeviceEmulation() {
-  if (!device_emulator_)
-    return;
-  device_emulator_->DisableAndApply();
-  device_emulator_ = nullptr;
-}
-
 bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
 }
@@ -204,97 +173,6 @@ void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
 void WebViewFrameWidget::ZoomToFindInPageRect(
     const WebRect& rect_in_root_frame) {
   web_view_->ZoomToFindInPageRect(rect_in_root_frame);
-}
-
-void WebViewFrameWidget::Trace(Visitor* visitor) const {
-  WebFrameWidgetBase::Trace(visitor);
-  visitor->Trace(device_emulator_);
-}
-
-WebInputEventResult WebViewFrameWidget::HandleKeyEvent(
-    const WebKeyboardEvent& event) {
-  DCHECK((event.GetType() == WebInputEvent::Type::kRawKeyDown) ||
-         (event.GetType() == WebInputEvent::Type::kKeyDown) ||
-         (event.GetType() == WebInputEvent::Type::kKeyUp));
-  TRACE_EVENT2("input", "WebViewFrameWidget::HandleKeyEvent", "type",
-               WebInputEvent::GetName(event.GetType()), "text",
-               String(event.text).Utf8());
-
-  // Please refer to the comments explaining |suppress_next_keypress_event_|.
-  //
-  // |suppress_next_keypress_event_| is set if the KeyDown is handled by
-  // Webkit. A keyDown event is typically associated with a keyPress(char)
-  // event and a keyUp event. We reset this flag here as this is a new keyDown
-  // event.
-  suppress_next_keypress_event_ = false;
-
-  // If there is a popup, it should be the one processing the event, not the
-  // page.
-  scoped_refptr<WebPagePopupImpl> page_popup = View()->GetPagePopup();
-  if (page_popup) {
-    page_popup->HandleKeyEvent(event);
-    // We need to ignore the next Char event after this otherwise pressing
-    // enter when selecting an item in the popup will go to the page.
-    if (WebInputEvent::Type::kRawKeyDown == event.GetType())
-      suppress_next_keypress_event_ = true;
-    return WebInputEventResult::kHandledSystem;
-  }
-
-  Frame* focused_frame = web_view_->FocusedCoreFrame();
-  auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame);
-  if (!focused_local_frame)
-    return WebInputEventResult::kNotHandled;
-
-  WebInputEventResult result =
-      focused_local_frame->GetEventHandler().KeyEvent(event);
-  if (result != WebInputEventResult::kNotHandled) {
-    if (WebInputEvent::Type::kRawKeyDown == event.GetType()) {
-      // Suppress the next keypress event unless the focused node is a plugin
-      // node.  (Flash needs these keypress events to handle non-US keyboards.)
-      Element* element = web_view_->FocusedElement();
-      if (element && element->GetLayoutObject() &&
-          element->GetLayoutObject()->IsEmbeddedObject()) {
-        if (event.windows_key_code == VKEY_TAB) {
-          // If the plugin supports keyboard focus then we should not send a tab
-          // keypress event.
-          WebPluginContainerImpl* plugin_view =
-              To<LayoutEmbeddedContent>(element->GetLayoutObject())->Plugin();
-          if (plugin_view && plugin_view->SupportsKeyboardFocus()) {
-            suppress_next_keypress_event_ = true;
-          }
-        }
-      } else {
-        suppress_next_keypress_event_ = true;
-      }
-    }
-    return result;
-  }
-
-#if !defined(OS_MAC)
-  const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
-#if defined(OS_WIN)
-      WebInputEvent::Type::kKeyUp;
-#else
-      WebInputEvent::Type::kRawKeyDown;
-#endif
-  const WebInputEvent::Type kShiftF10TriggeringEventType =
-      WebInputEvent::Type::kRawKeyDown;
-
-  bool is_unmodified_menu_key =
-      !(event.GetModifiers() & WebInputEvent::kInputModifiers) &&
-      event.windows_key_code == VKEY_APPS;
-  bool is_shift_f10 = (event.GetModifiers() & WebInputEvent::kInputModifiers) ==
-                          WebInputEvent::kShiftKey &&
-                      event.windows_key_code == VKEY_F10;
-  if ((is_unmodified_menu_key &&
-       event.GetType() == kContextMenuKeyTriggeringEventType) ||
-      (is_shift_f10 && event.GetType() == kShiftF10TriggeringEventType)) {
-    View()->SendContextMenuEvent();
-    return WebInputEventResult::kHandledSystem;
-  }
-#endif  // !defined(OS_MAC)
-
-  return WebInputEventResult::kNotHandled;
 }
 
 void WebViewFrameWidget::HandleMouseLeave(LocalFrame& main_frame,
@@ -609,53 +487,9 @@ void WebViewFrameWidget::SetDeviceColorSpaceForTesting(
   widget_base_->UpdateScreenInfo(info);
 }
 
-bool WebViewFrameWidget::AutoResizeMode() {
-  return web_view_->AutoResizeMode();
-}
-
-bool WebViewFrameWidget::UpdateScreenRects(
-    const gfx::Rect& widget_screen_rect,
-    const gfx::Rect& window_screen_rect) {
-  if (!device_emulator_)
-    return false;
-  device_emulator_->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
-  return true;
-}
-
 void WebViewFrameWidget::RunPaintBenchmark(int repeat_count,
                                            cc::PaintBenchmarkResult& result) {
   web_view_->RunPaintBenchmark(repeat_count, result);
-}
-
-const ScreenInfo& WebViewFrameWidget::GetOriginalScreenInfo() {
-  if (device_emulator_)
-    return device_emulator_->original_screen_info();
-  return GetScreenInfo();
-}
-
-ScreenMetricsEmulator* WebViewFrameWidget::DeviceEmulator() {
-  return device_emulator_;
-}
-
-void WebViewFrameWidget::SetScreenMetricsEmulationParameters(
-    bool enabled,
-    const DeviceEmulationParams& params) {
-  if (enabled)
-    View()->ActivateDevToolsTransform(params);
-  else
-    View()->DeactivateDevToolsTransform();
-}
-
-void WebViewFrameWidget::SetScreenInfoAndSize(
-    const ScreenInfo& screen_info,
-    const gfx::Size& widget_size_in_dips,
-    const gfx::Size& visible_viewport_size_in_dips) {
-  // Emulation happens on regular main frames which don't use auto-resize mode.
-  DCHECK(!web_view_->AutoResizeMode());
-
-  UpdateScreenInfo(screen_info);
-  widget_base_->SetVisibleViewportSizeInDIPs(visible_viewport_size_in_dips);
-  Resize(widget_base_->DIPsToCeiledBlinkSpace(widget_size_in_dips));
 }
 
 void WebViewFrameWidget::SetWindowRectSynchronouslyForTesting(
@@ -704,8 +538,8 @@ void WebViewFrameWidget::ApplyVisualPropertiesSizing(
     web_view_->CancelPagePopup();
   }
 
-  if (device_emulator_) {
-    device_emulator_->UpdateVisualProperties(visual_properties);
+  if (auto* device_emulator = DeviceEmulator()) {
+    device_emulator->UpdateVisualProperties(visual_properties);
     return;
   }
 

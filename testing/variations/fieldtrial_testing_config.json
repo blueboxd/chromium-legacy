@@ -1981,18 +1981,17 @@
             ]
         }
     ],
-    "D3D11VideoDecoderStable": [
+    "D3D11VideoDecoder": [
         {
             "platforms": [
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "D3D11StableEnabledV2",
+                    "name": "Enabled",
                     "enable_features": [
                         "D3D11VideoDecoder",
-                        "D3D11VideoDecoderCopyPictures",
-                        "D3D11VideoDecoderLimitTo11_0"
+                        "D3D11VideoDecoderCopyPictures"
                     ]
                 }
             ]
@@ -2602,6 +2601,21 @@
             ]
         }
     ],
+    "EnableCloseAllTabsConfirmation": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "CloseAllTabsConfirmationEnabled",
+                    "enable_features": [
+                        "EnableCloseAllTabsConfirmation"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableContextMenuPerformanceHints": [
         {
             "platforms": [
@@ -3179,25 +3193,6 @@
                     },
                     "enable_features": [
                         "HeapProfilerReporting"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HeavyAdIntervention": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "HeavyAdIntervention"
                     ]
                 }
             ]

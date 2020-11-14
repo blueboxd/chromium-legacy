@@ -1070,6 +1070,11 @@
       'win-swangle-try-x86': 'angle_deqp_release_trybot_x86',
     },
 
+    'tryserver.chromium.updater': {
+       'mac-updater-try-builder-rel': 'updater_release_trybot_mac',
+       'win-updater-try-builder-rel': 'updater_release_trybot_win',
+    },
+
     'tryserver.chromium.win': {
       'gpu-fyi-try-win7-amd-dbg-32': 'gpu_fyi_tests_debug_trybot_x86',
       'gpu-fyi-try-win7-amd-dqp-32': 'angle_deqp_release_trybot_x86',
@@ -2302,7 +2307,15 @@
     ],
 
     'updater_release_bot': [
-      'updater_on_win_mac', 'release',
+      'updater_on_win_mac', 'release_bot',
+    ],
+
+    'updater_release_trybot_mac': [
+      'updater_on_win_mac', 'release_trybot',
+    ],
+
+    'updater_release_trybot_win': [
+      'updater_on_win_mac', 'shared_release_trybot',
     ],
 
     'ozone_linux_release_bot': [

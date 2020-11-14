@@ -698,6 +698,7 @@ bool FormStructure::EncodeUploadRequest(
     bool form_was_autofilled,
     const std::string& login_form_signature,
     bool observed_submission,
+    bool is_raw_metadata_uploading_enabled,
     AutofillUploadContents* upload,
     std::vector<FormSignature>* encoded_signatures) const {
   DCHECK(AllTypesCaptured(*this, available_field_types));
@@ -730,7 +731,7 @@ bool FormStructure::EncodeUploadRequest(
                                  upload);
   }
 
-  if (IsAutofillFieldMetadataEnabled()) {
+  if (is_raw_metadata_uploading_enabled) {
     upload->set_action_signature(StrToHash64Bit(target_url_.host()));
     if (!form_name().empty())
       upload->set_form_name(base::UTF16ToUTF8(form_name()));
@@ -750,7 +751,8 @@ bool FormStructure::EncodeUploadRequest(
   if (IsMalformed())
     return false;  // Malformed form, skip it.
 
-  EncodeFormForUpload(upload, encoded_signatures);
+  EncodeFormForUpload(is_raw_metadata_uploading_enabled, upload,
+                      encoded_signatures);
   return true;
 }
 
@@ -890,7 +892,6 @@ void FormStructure::ProcessQueryResponse(
     form->UpdateAutofillCount();
     form->RationalizeRepeatedFields(form_interactions_ukm_logger);
     form->RationalizeFieldTypePredictions();
-    form->OverrideServerPredictionsWithHeuristics();
     form->IdentifySections(false);
   }
 
@@ -934,13 +935,6 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     forms.push_back(form);
   }
   return forms;
-}
-
-// static
-bool FormStructure::IsAutofillFieldMetadataEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillFieldMetadata");
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 std::unique_ptr<FormStructure> FormStructure::CreateForPasswordManagerUpload(
@@ -1862,27 +1856,6 @@ void FormStructure::RationalizeAddressStateCountry(
   }
 }
 
-void FormStructure::OverrideServerPredictionsWithHeuristics() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForMoreStructureInNames) &&
-      !base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForMoreStructureInAddresses)) {
-    return;
-  }
-  for (const auto& field : fields_) {
-    switch (field->heuristic_type()) {
-      case NAME_LAST_SECOND:
-      case NAME_LAST_FIRST:
-      case ADDRESS_HOME_STREET_NAME:
-      case ADDRESS_HOME_HOUSE_NUMBER:
-        field->SetTypeTo(AutofillType(field->heuristic_type()));
-        break;
-      default: {
-      };
-    }
-  }
-}
-
 void FormStructure::RationalizeRepeatedFields(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // The type of every field whose index is in
@@ -1966,17 +1939,11 @@ void FormStructure::EncodeFormForQuery(
     if (is_rich_query_enabled_) {
       EncodeFieldMetadataForQuery(*field, added_field->mutable_metadata());
     }
-
-    if (IsAutofillFieldMetadataEnabled()) {
-      added_field->set_control_type(field->form_control_type);
-
-      if (!field->name.empty())
-        added_field->set_name(base::UTF16ToUTF8(field->name));
-    }
   }
 }
 
 void FormStructure::EncodeFormForUpload(
+    bool is_raw_metadata_uploading_enabled,
     AutofillUploadContents* upload,
     std::vector<FormSignature>* encoded_signatures) const {
   DCHECK(!IsMalformed());
@@ -2039,7 +2006,7 @@ void FormStructure::EncodeFormForUpload(
           added_field->mutable_randomized_field_metadata());
     }
 
-    if (IsAutofillFieldMetadataEnabled()) {
+    if (is_raw_metadata_uploading_enabled) {
       added_field->set_type(field->form_control_type);
 
       if (!field->name.empty())

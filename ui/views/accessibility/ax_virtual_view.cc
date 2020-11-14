@@ -373,7 +373,7 @@ gfx::NativeViewAccessible AXVirtualView::HitTestSync(
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXVirtualView::GetFocus() {
+gfx::NativeViewAccessible AXVirtualView::GetFocus() const {
   View* owner_view = GetOwnerView();
   if (owner_view) {
     if (!(owner_view->HasFocus())) {
@@ -437,6 +437,11 @@ std::vector<int32_t> AXVirtualView::GetColHeaderNodeIds() const {
 
 std::vector<int32_t> AXVirtualView::GetColHeaderNodeIds(int col_index) const {
   return GetDelegate()->GetColHeaderNodeIds(col_index);
+}
+
+base::Optional<int32_t> AXVirtualView::GetCellId(int row_index,
+                                                 int col_index) const {
+  return GetDelegate()->GetCellId(row_index, col_index);
 }
 
 bool AXVirtualView::IsIgnored() const {

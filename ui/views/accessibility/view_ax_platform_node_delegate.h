@@ -65,6 +65,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   gfx::NativeViewAccessible GetParent() override;
   bool IsChildOfLeaf() const override;
   bool IsLeaf() const override;
+  bool IsFocused() const override;
   bool IsToplevelBrowserWindow() override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
@@ -73,7 +74,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   gfx::NativeViewAccessible HitTestSync(
       int screen_physical_pixel_x,
       int screen_physical_pixel_y) const override;
-  gfx::NativeViewAccessible GetFocus() override;
+  gfx::NativeViewAccessible GetFocus() const override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
                                              int32_t id) override;
@@ -87,6 +88,8 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
   std::vector<int32_t> GetColHeaderNodeIds() const override;
   std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
+  base::Optional<int32_t> GetCellId(int row_index,
+                                    int col_index) const override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
   base::Optional<int> GetPosInSet() const override;

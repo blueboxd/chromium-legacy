@@ -42,6 +42,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -52,9 +53,13 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
+import org.chromium.components.omnibox.AutocompleteMatch;
+import org.chromium.components.omnibox.AutocompleteMatchBuilder;
+import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -143,11 +148,17 @@ public class AutocompleteMediatorUnitTest {
     LocationBarDataProvider mLocationBarDataProvider;
 
     @Mock
+    ActivityLifecycleDispatcher mLifecycleDispatcher;
+
+    @Mock
+    ModalDialogManager mModalDialogManager;
+
+    @Mock
     Handler mHandler;
 
     private PropertyModel mListModel;
     private AutocompleteMediator mMediator;
-    private List<OmniboxSuggestion> mSuggestionsList;
+    private List<AutocompleteMatch> mSuggestionsList;
     private ModelList mSuggestionModels;
 
     @Before
@@ -161,8 +172,8 @@ public class AutocompleteMediatorUnitTest {
 
         mMediator = new AutocompleteMediator(ContextUtils.getApplicationContext(),
                 mAutocompleteDelegate, mTextStateProvider, mAutocompleteController, mListModel,
-                mHandler);
-        mMediator.setLocationBarDataProvider(mLocationBarDataProvider);
+                mHandler, mLifecycleDispatcher,
+                () -> mModalDialogManager, null, null, mLocationBarDataProvider);
         mMediator.getDropdownItemViewInfoListBuilderForTest().registerSuggestionProcessor(
                 mMockProcessor);
         mMediator.getDropdownItemViewInfoListBuilderForTest().setHeaderProcessorForTest(
@@ -201,11 +212,10 @@ public class AutocompleteMediatorUnitTest {
      *
      * @return List of suggestions.
      */
-    private List<OmniboxSuggestion> buildDummySuggestionsList(int count, String prefix) {
-        List<OmniboxSuggestion> list = new ArrayList<>();
+    private List<AutocompleteMatch> buildDummySuggestionsList(int count, String prefix) {
+        List<AutocompleteMatch> list = new ArrayList<>();
         for (int index = 0; index < count; ++index) {
-            list.add(OmniboxSuggestionBuilderForTest
-                             .searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+            list.add(AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
                              .setDisplayText(prefix + (index + 1))
                              .build());
         }
@@ -344,7 +354,7 @@ public class AutocompleteMediatorUnitTest {
         // We want to follow the same restrictions as the original list (specifically: have a
         // resulting list of suggestions taller than the space in dropdown view), so make sure
         // the list sizes are same.
-        List<OmniboxSuggestion> newList =
+        List<AutocompleteMatch> newList =
                 buildDummySuggestionsList(mSuggestionsList.size(), "SuggestionB");
         mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
         mMediator.onSuggestionsReceived(new AutocompleteResult(newList, null), "");

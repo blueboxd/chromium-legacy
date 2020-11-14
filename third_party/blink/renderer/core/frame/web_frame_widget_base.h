@@ -348,6 +348,7 @@ class CORE_EXPORT WebFrameWidgetBase
   gfx::Size VisibleViewportSizeInDIPs() override;
   bool IsHidden() const override;
   WebString GetLastToolTipTextForTesting() const override;
+  float GetEmulatorScale() override;
 
   // WidgetBaseClient methods.
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
@@ -391,9 +392,12 @@ class CORE_EXPORT WebFrameWidgetBase
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override;
   void ScheduleAnimationForWebTests() override;
+  bool UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                         const gfx::Rect& window_screen_rect) override;
   void OrientationChanged() override;
   void DidUpdateSurfaceAndScreen(
       const ScreenInfo& previous_original_screen_info) override;
+  gfx::Rect ViewportVisibleRect() override;
   const ScreenInfo& GetOriginalScreenInfo() override;
   base::Optional<blink::mojom::ScreenOrientation> ScreenOrientationOverride()
       override;
@@ -441,8 +445,9 @@ class CORE_EXPORT WebFrameWidgetBase
   void ShowContextMenu(ui::mojom::MenuSourceType source_type,
                        const gfx::Point& location) override;
   void SetViewportIntersection(
-      mojom::blink::ViewportIntersectionStatePtr intersection_state) override {}
-
+      mojom::blink::ViewportIntersectionStatePtr intersection_state) override;
+  void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
+  void DisableDeviceEmulation() override;
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   void SetIsInertForSubFrame(bool inert) override {}
@@ -589,7 +594,7 @@ class CORE_EXPORT WebFrameWidgetBase
   const viz::LocalSurfaceId& LocalSurfaceIdFromParent();
   cc::LayerTreeHost* LayerTreeHost();
 
-  virtual ScreenMetricsEmulator* DeviceEmulator() { return nullptr; }
+  ScreenMetricsEmulator* DeviceEmulator();
 
   // Called during |UpdateVisualProperties| to apply the new size to the widget.
   virtual void ApplyVisualPropertiesSizing(
@@ -599,6 +604,16 @@ class CORE_EXPORT WebFrameWidgetBase
   // when there is no focused frame or no selection.
   virtual void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
                                         gfx::Rect& focus_in_root_frame) = 0;
+
+  // Returns if auto resize mode is enabled.
+  bool AutoResizeMode();
+
+  void SetScreenMetricsEmulationParameters(
+      bool enabled,
+      const blink::DeviceEmulationParams& params);
+  void SetScreenInfoAndSize(const blink::ScreenInfo& screen_info,
+                            const gfx::Size& widget_size,
+                            const gfx::Size& visible_viewport_size);
 
   // Update the surface allocation information, compositor viewport rect and
   // screen info on the widget.
@@ -625,13 +640,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // Clear a previously set pending window rect. For every SetPendingWindowRect
   // call there must be an AckPendingWindowRect call.
   void AckPendingWindowRect();
-
-  // Constrains the viewport intersection for use by IntersectionObserver,
-  // and indicates whether the frame may be painted over or obscured in the
-  // parent. This is needed for out-of-process iframes to know if they are
-  // clipped or obscured by ancestor frames in another process.
-  virtual void SetRemoteViewportIntersection(
-      const mojom::blink::ViewportIntersectionState& intersection_state) {}
 
   // Return the focused WebPlugin if there is one.
   WebPlugin* GetFocusedPluginContainer();
@@ -680,6 +688,10 @@ class CORE_EXPORT WebFrameWidgetBase
 
   Frame* FocusedCoreFrame() const;
 
+  // Returns the currently focused `Element` in any `LocalFrame` owned by the
+  // associated `WebView`.
+  Element* FocusedElement() const;
+
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
       const FloatPoint& pos_in_root_frame);
@@ -717,14 +729,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // base class.
   Member<HTMLPlugInElement> mouse_capture_element_;
 
-  // keyPress events to be suppressed if the associated keyDown event was
-  // handled.
-  // TODO(dtapuska): Move to private once all input handling is moved to
-  // base class.
-  bool suppress_next_keypress_event_ = false;
-
  private:
   // PageWidgetEventHandler methods:
+  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
   void HandleMouseDown(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleMouseUp(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleMouseWheel(LocalFrame&,
@@ -807,6 +814,26 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Metrics for gathering time for commit of compositor frame.
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
+
+  // Present when emulation is enabled, only on a main frame's WebFrameWidget.
+  // Used to override values given from the browser such as ScreenInfo,
+  // WidgetScreenRect, WindowScreenRect, and the widget's size.
+  Member<ScreenMetricsEmulator> device_emulator_;
+
+  // keyPress events to be suppressed if the associated keyDown event was
+  // handled.
+  bool suppress_next_keypress_event_ = false;
+
+  // This struct contains data that is only valid for child local root widgets.
+  // You should use `child_data()` to access it.
+  struct ChildLocalRootData {
+    gfx::Rect compositor_visible_rect;
+  } child_local_root_data_;
+
+  ChildLocalRootData& child_data() {
+    DCHECK(ForSubframe());
+    return child_local_root_data_;
+  }
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

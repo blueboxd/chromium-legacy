@@ -2156,10 +2156,10 @@ public class CustomTabActivityTest {
 
         final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
 
-        Assert.assertNotNull(cctActivity.getNightModeStateProvider());
+        Assert.assertNotNull(cctActivity.getNightModeStateProviderForTesting());
 
         Assert.assertTrue("Night mode should be enabled on K+ with dark color scheme set.",
-                cctActivity.getNightModeStateProvider().isInNightMode());
+                cctActivity.getNightModeStateProviderForTesting().isInNightMode());
 
         MenuButton menuButtonView = cctActivity.findViewById(R.id.menu_button_wrapper);
         assertTrue(menuButtonView.getUseLightDrawablesForTesting());
@@ -2175,8 +2175,8 @@ public class CustomTabActivityTest {
 
         final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
 
-        Assert.assertNotNull(cctActivity.getNightModeStateProvider());
-        Assert.assertFalse(cctActivity.getNightModeStateProvider().isInNightMode());
+        Assert.assertNotNull(cctActivity.getNightModeStateProviderForTesting());
+        Assert.assertFalse(cctActivity.getNightModeStateProviderForTesting().isInNightMode());
 
         MenuButton menuButtonView = cctActivity.findViewById(R.id.menu_button_wrapper);
         assertFalse(menuButtonView.getUseLightDrawablesForTesting());
@@ -2348,6 +2348,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.OMNIBOX_HIDE_VISITS_FROM_CCT})
+    @DisabledTest(message = "https://crbug.com/1148855")
     public void testOmniboxHideVisitsFromCctTransitionRemovedWhenOpenInBrowser() throws Exception {
         // Augment the CustomTabsSession to catch open in browser.
         CallbackHelper callbackTriggered = new CallbackHelper();

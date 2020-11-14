@@ -358,25 +358,21 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
   NGBoxStrut margins = physical_margins.ConvertToLogical(
       ConstraintSpace().GetWritingDirection());
   LogicalSize child_available_size = ChildAvailableSize();
-  if (ShouldItemShrinkToFit(flex_item)) {
-    space_builder.SetIsShrinkToFit(true);
-  } else if (cross_axis_min_max.min_size != kIndefiniteSize &&
-             WillChildCrossSizeBeContainerCrossSize(flex_item)) {
-    LayoutUnit cross_size =
-        CalculateFixedCrossSize(cross_axis_min_max, margins);
-    if (is_column_) {
-      space_builder.SetIsFixedInlineSize(true);
-      child_available_size.inline_size = cross_size;
-    } else {
-      space_builder.SetIsFixedBlockSize(true);
-      child_available_size.block_size = cross_size;
+  if (!ShouldItemShrinkToFit(flex_item)) {
+    space_builder.SetStretchInlineSizeIfAuto(true);
+    if (cross_axis_min_max.min_size != kIndefiniteSize &&
+        WillChildCrossSizeBeContainerCrossSize(flex_item)) {
+      LayoutUnit cross_size =
+          CalculateFixedCrossSize(cross_axis_min_max, margins);
+      if (is_column_) {
+        space_builder.SetIsFixedInlineSize(true);
+        child_available_size.inline_size = cross_size;
+      } else {
+        space_builder.SetIsFixedBlockSize(true);
+        child_available_size.block_size = cross_size;
+      }
     }
   }
-
-  space_builder.SetNeedsBaseline(
-      ConstraintSpace().NeedsBaseline() ||
-      FlexLayoutAlgorithm::AlignmentForChild(Style(), child_style) ==
-          ItemPosition::kBaseline);
 
   // For determining the intrinsic block-size we make %-block-sizes resolve
   // against an indefinite size.
@@ -1026,9 +1022,6 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 scoped_refptr<const NGLayoutResult>
 NGFlexLayoutAlgorithm::RelayoutIgnoringChildScrollbarChanges() {
   DCHECK(!ignore_child_scrollbar_changes_);
-  // Freezing the scrollbars for the sub-tree shouldn't be strictly necessary,
-  // but we do this just in case we trigger an unstable layout.
-  PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
   NGLayoutAlgorithmParams params(
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), /* early_break */ nullptr);
@@ -1038,6 +1031,13 @@ NGFlexLayoutAlgorithm::RelayoutIgnoringChildScrollbarChanges() {
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
+  // Freezing the scrollbars for the sub-tree shouldn't be strictly necessary,
+  // but we do this just in case we trigger an unstable layout.
+  base::Optional<PaintLayerScrollableArea::FreezeScrollbarsScope>
+      freeze_scrollbars;
+  if (ignore_child_scrollbar_changes_)
+    freeze_scrollbars.emplace();
+
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
   ConstructAndAppendFlexItems();
 
@@ -1155,11 +1155,6 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
         }
       }
 
-      space_builder.SetNeedsBaseline(
-          ConstraintSpace().NeedsBaseline() ||
-          FlexLayoutAlgorithm::AlignmentForChild(Style(), child_style) ==
-              ItemPosition::kBaseline);
-
       space_builder.SetAvailableSize(available_size);
       space_builder.SetPercentageResolutionSize(child_percentage_size_);
       space_builder.SetReplacedPercentageResolutionSize(child_percentage_size_);
@@ -1168,8 +1163,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
       // Determine the hypothetical cross size of each item by performing layout
       // with the used main size and the available space, treating auto as
       // fit-content.
-      if (ShouldItemShrinkToFit(flex_item.ng_input_node_))
-        space_builder.SetIsShrinkToFit(true);
+      if (!ShouldItemShrinkToFit(flex_item.ng_input_node_))
+        space_builder.SetStretchInlineSizeIfAuto(true);
 
       // For a button child, we need the baseline type same as the container's
       // baseline type for UseCounter. For example, if the container's display
@@ -1220,6 +1215,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
   if (!success)
     return nullptr;
 
+  // Un-freeze descendant scrollbars before we run the OOF layout part.
+  freeze_scrollbars.reset();
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
@@ -1244,11 +1241,6 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
       space_builder.SetIsFixedBlockSizeIndefinite(true);
     }
   }
-
-  space_builder.SetNeedsBaseline(
-      ConstraintSpace().NeedsBaseline() ||
-      FlexLayoutAlgorithm::AlignmentForChild(Style(), child_style) ==
-          ItemPosition::kBaseline);
 
   space_builder.SetAvailableSize(available_size);
   space_builder.SetPercentageResolutionSize(child_percentage_size_);

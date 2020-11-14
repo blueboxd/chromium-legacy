@@ -2148,7 +2148,7 @@
       },
       'android-paeverywhere-arm-fyi-dbg': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_android_gtests',
         },
         'mixins': [
           'walleye',
@@ -2156,7 +2156,7 @@
       },
       'android-paeverywhere-arm-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_android_gtests',
         },
         'mixins': [
           'walleye',
@@ -2164,7 +2164,7 @@
       },
       'android-paeverywhere-arm64-fyi-dbg': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_android_gtests',
         },
         'mixins': [
           'walleye',
@@ -2172,7 +2172,7 @@
       },
       'android-paeverywhere-arm64-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_android_gtests',
         },
         'mixins': [
           'walleye',
@@ -2318,6 +2318,7 @@
       },
       'ios-simulator-multi-window': {
         'mixins': [
+          'enable_resultdb',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
@@ -2363,6 +2364,7 @@
           'all',
         ],
         'mixins': [
+          'enable_resultdb',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
@@ -2380,6 +2382,7 @@
           'all',
         ],
         'mixins': [
+          'enable_resultdb',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
@@ -2699,7 +2702,7 @@
       },
       'win-paeverywhere-x64-fyi-dbg': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_win_gtests',
         },
         'mixins': [
           'win10',
@@ -2708,7 +2711,7 @@
       },
       'win-paeverywhere-x64-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_win_gtests',
         },
         'mixins': [
           'win10',
@@ -2717,7 +2720,7 @@
       },
       'win-paeverywhere-x86-fyi-dbg': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_win_gtests',
         },
         'mixins': [
           'win10',
@@ -2726,7 +2729,7 @@
       },
       'win-paeverywhere-x86-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'paeverywhere_gtests',
+          'gtest_tests': 'paeverywhere_win_gtests',
         },
         'mixins': [
           'win10',
@@ -5188,6 +5191,15 @@
       'mac10.15-updater-tester-rel': {
         'mixins': [
             'mac_10.15',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+      },
+      'mac11.0-updater-tester-rel': {
+        'mixins': [
+            'mac_11.0_beta',
         ],
         'test_suites': {
           'gtest_tests': 'updater_gtests',

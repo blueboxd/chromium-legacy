@@ -445,6 +445,7 @@
     {
       // https://drafts.csswg.org/css-counter-styles-3
       name: "CSSAtRuleCounterStyle",
+      status: "test",
     },
     {
       name: "CSSCalcAsInt",
@@ -1043,7 +1044,7 @@
       // provides a convenient way for testing legacy layout code path in blink
       // unit tests.
       name: "LayoutNG",
-      implied_by: ["LayoutNGGrid", "BidiCaretAffinity", "LayoutNGTable"],
+      implied_by: ["LayoutNGGrid", "BidiCaretAffinity"],
       status: "stable",
     },
     {
@@ -1084,6 +1085,7 @@
     },
     {
       name: "LayoutNGTable",
+      depends_on: ["LayoutNG"]
     },
     {
       name: "LayoutNGTextControl",
@@ -2250,6 +2252,9 @@
       name: "WebXRViewportScale",
       depends_on: ["WebXRARModule"],
       status: "experimental",
+    },
+    {
+      name: "WheelEventRegions",
     },
     // Extends window placement functionality for multi-screen devices. Also
     // exposes requisite information about displays connected to the device.

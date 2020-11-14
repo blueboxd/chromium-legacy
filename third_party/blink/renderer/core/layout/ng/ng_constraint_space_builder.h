@@ -140,7 +140,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.bitfields_.is_fixed_block_size_indefinite = b;
   }
 
-  void SetIsShrinkToFit(bool b) { space_.bitfields_.is_shrink_to_fit = b; }
+  void SetStretchInlineSizeIfAuto(bool b) {
+    space_.bitfields_.stretch_inline_size_if_auto = b;
+  }
 
   void SetIsPaintedAtomically(bool b) {
     space_.bitfields_.is_painted_atomically = b;
@@ -204,8 +206,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   void SetAncestorHasClearancePastAdjoiningFloats() {
     space_.bitfields_.ancestor_has_clearance_past_adjoining_floats = true;
   }
-
-  void SetNeedsBaseline(bool b) { space_.bitfields_.needs_baseline = b; }
 
   void SetBaselineAlgorithmType(NGBaselineAlgorithmType type) {
     space_.bitfields_.baseline_algorithm_type = static_cast<unsigned>(type);

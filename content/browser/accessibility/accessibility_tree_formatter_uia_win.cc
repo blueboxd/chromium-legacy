@@ -16,7 +16,6 @@
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -30,7 +29,6 @@
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/gfx/win/hwnd_util.h"
 
 namespace {
@@ -325,15 +323,8 @@ void AccessibilityTreeFormatterUia::AddDefaultFilters(
   AddPropertyFilter(property_filters, "Window.IsModal=*");
 }
 
-// static
-void AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass(
-    base::CommandLine* command_line) {
-  command_line->AppendSwitch(::switches::kEnableExperimentalUIAutomation);
-}
-
-std::unique_ptr<base::DictionaryValue>
-AccessibilityTreeFormatterUia::BuildAccessibilityTree(
-    BrowserAccessibility* start) {
+base::Value AccessibilityTreeFormatterUia::BuildTree(
+    BrowserAccessibility* start) const {
   // We use the UI Automation client API to produce the tree dump, but
   // BrowserAccessibility has a pointer to a provider API implementation, and
   // we can't directly relate the two -- the OS manages the relationship.
@@ -392,13 +383,12 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
   Microsoft::WRL::ComPtr<IUIAutomationElement> start_element;
 
   root->FindFirst(TreeScope_Subtree, condition.Get(), &start_element);
-  std::unique_ptr<base::DictionaryValue> tree =
-      std::make_unique<base::DictionaryValue>();
 
+  base::DictionaryValue tree;
   if (start_element.Get()) {
     // Build an accessibility tree starting from that element.
-    RecursiveBuildAccessibilityTree(start_element.Get(), root_bounds.left,
-                                    root_bounds.top, tree.get());
+    RecursiveBuildTree(start_element.Get(), root_bounds.left, root_bounds.top,
+                       &tree);
   } else {
     // If the search failed, start dumping with the first thing that isn't a
     // Pane.
@@ -416,10 +406,10 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
                     &non_pane_descendant);
 
     DCHECK(non_pane_descendant.Get());
-    RecursiveBuildAccessibilityTree(non_pane_descendant.Get(), root_bounds.left,
-                                    root_bounds.top, tree.get());
+    RecursiveBuildTree(non_pane_descendant.Get(), root_bounds.left,
+                       root_bounds.top, &tree);
   }
-  return tree;
+  return std::move(tree);
 }
 
 base::Value AccessibilityTreeFormatterUia::BuildTreeForWindow(
@@ -434,8 +424,7 @@ base::Value AccessibilityTreeFormatterUia::BuildTreeForWindow(
   root->get_CurrentBoundingRectangle(&root_bounds);
 
   base::DictionaryValue tree;
-  RecursiveBuildAccessibilityTree(root.Get(), root_bounds.left, root_bounds.top,
-                                  &tree);
+  RecursiveBuildTree(root.Get(), root_bounds.left, root_bounds.top, &tree);
   return std::move(tree);
 }
 
@@ -446,7 +435,7 @@ base::Value AccessibilityTreeFormatterUia::BuildTreeForSelector(
   return base::Value(base::Value::Type::DICTIONARY);
 }
 
-void AccessibilityTreeFormatterUia::RecursiveBuildAccessibilityTree(
+void AccessibilityTreeFormatterUia::RecursiveBuildTree(
     IUIAutomationElement* uncached_node,
     int root_x,
     int root_y,
@@ -470,8 +459,7 @@ void AccessibilityTreeFormatterUia::RecursiveBuildAccessibilityTree(
     std::unique_ptr<base::DictionaryValue> child_dict =
         std::make_unique<base::DictionaryValue>();
     if (SUCCEEDED(children->GetElement(i, &child))) {
-      RecursiveBuildAccessibilityTree(child.Get(), root_x, root_y,
-                                      child_dict.get());
+      RecursiveBuildTree(child.Get(), root_x, root_y, child_dict.get());
     } else {
       child_dict->SetString("error", L"[Error retrieving child]");
     }
@@ -1009,7 +997,7 @@ void AccessibilityTreeFormatterUia::BuildCacheRequests() {
 
 std::string AccessibilityTreeFormatterUia::ProcessTreeForOutput(
     const base::DictionaryValue& dict,
-    base::DictionaryValue* filtered_result) {
+    base::DictionaryValue* filtered_result) const {
   std::unique_ptr<base::DictionaryValue> tree;
   std::string line;
 
@@ -1072,7 +1060,7 @@ void AccessibilityTreeFormatterUia::ProcessPropertyForOutput(
     const std::string& property_name,
     const base::DictionaryValue& dict,
     std::string& line,
-    base::DictionaryValue* filtered_result) {
+    base::DictionaryValue* filtered_result) const {
   //
   const base::Value* value;
   if (dict.Get(property_name, &value))
@@ -1083,7 +1071,7 @@ void AccessibilityTreeFormatterUia::ProcessValueForOutput(
     const std::string& name,
     const base::Value* value,
     std::string& line,
-    base::DictionaryValue* filtered_result) {
+    base::DictionaryValue* filtered_result) const {
   switch (value->type()) {
     case base::Value::Type::STRING: {
       std::string string_value;

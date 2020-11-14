@@ -291,6 +291,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-uneditable.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaCurrentChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-current-changed.html"));
+}
+
 #if defined(OS_WIN)
 #define MAYBE_AccessibilityEventsAriaDisabledChanged \
   DISABLED_AccessibilityEventsAriaDisabledChanged
@@ -391,9 +396,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-treeitem-focus.html"));
 }
 
-// crbug.com/1141579: disabled due to missing invalidation causing flakiness.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       DISABLED_AccessibilityEventsAriaComboBoxFocus) {
+                       AccessibilityEventsAriaComboBoxFocus) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
@@ -509,6 +513,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsCaretMove) {
   RunEventTest(FILE_PATH_LITERAL("caret-move.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCaretMoveHiddenInput) {
+  RunEventTest(FILE_PATH_LITERAL("caret-move-hidden-input.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

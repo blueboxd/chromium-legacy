@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -69,6 +70,7 @@
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
@@ -508,6 +510,86 @@ void WebFrameWidgetBase::SetActive(bool active) {
   View()->SetIsActive(active);
 }
 
+WebInputEventResult WebFrameWidgetBase::HandleKeyEvent(
+    const WebKeyboardEvent& event) {
+  DCHECK((event.GetType() == WebInputEvent::Type::kRawKeyDown) ||
+         (event.GetType() == WebInputEvent::Type::kKeyDown) ||
+         (event.GetType() == WebInputEvent::Type::kKeyUp));
+
+  // Please refer to the comments explaining the m_suppressNextKeypressEvent
+  // member.
+  // The m_suppressNextKeypressEvent is set if the KeyDown is handled by
+  // Webkit. A keyDown event is typically associated with a keyPress(char)
+  // event and a keyUp event. We reset this flag here as this is a new keyDown
+  // event.
+  suppress_next_keypress_event_ = false;
+
+  // If there is a popup open, it should be the one processing the event,
+  // not the page.
+  scoped_refptr<WebPagePopupImpl> page_popup = View()->GetPagePopup();
+  if (page_popup) {
+    page_popup->HandleKeyEvent(event);
+    if (event.GetType() == WebInputEvent::Type::kRawKeyDown) {
+      suppress_next_keypress_event_ = true;
+    }
+    return WebInputEventResult::kHandledSystem;
+  }
+
+  auto* frame = DynamicTo<LocalFrame>(FocusedCoreFrame());
+  if (!frame)
+    return WebInputEventResult::kNotHandled;
+
+  WebInputEventResult result = frame->GetEventHandler().KeyEvent(event);
+  if (result != WebInputEventResult::kNotHandled) {
+    if (WebInputEvent::Type::kRawKeyDown == event.GetType()) {
+      // Suppress the next keypress event unless the focused node is a plugin
+      // node.  (Flash needs these keypress events to handle non-US keyboards.)
+      Element* element = FocusedElement();
+      if (element && element->GetLayoutObject() &&
+          element->GetLayoutObject()->IsEmbeddedObject()) {
+        if (event.windows_key_code == VKEY_TAB) {
+          // If the plugin supports keyboard focus then we should not send a tab
+          // keypress event.
+          WebPluginContainerImpl* plugin_view =
+              To<LayoutEmbeddedContent>(element->GetLayoutObject())->Plugin();
+          if (plugin_view && plugin_view->SupportsKeyboardFocus()) {
+            suppress_next_keypress_event_ = true;
+          }
+        }
+      } else {
+        suppress_next_keypress_event_ = true;
+      }
+    }
+    return result;
+  }
+
+#if !defined(OS_MAC)
+  const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
+#if defined(OS_WIN)
+      WebInputEvent::Type::kKeyUp;
+#else
+      WebInputEvent::Type::kRawKeyDown;
+#endif
+  const WebInputEvent::Type kShiftF10TriggeringEventType =
+      WebInputEvent::Type::kRawKeyDown;
+
+  bool is_unmodified_menu_key =
+      !(event.GetModifiers() & WebInputEvent::kInputModifiers) &&
+      event.windows_key_code == VKEY_APPS;
+  bool is_shift_f10 = (event.GetModifiers() & WebInputEvent::kInputModifiers) ==
+                          WebInputEvent::kShiftKey &&
+                      event.windows_key_code == VKEY_F10;
+  if ((is_unmodified_menu_key &&
+       event.GetType() == kContextMenuKeyTriggeringEventType) ||
+      (is_shift_f10 && event.GetType() == kShiftF10TriggeringEventType)) {
+    View()->SendContextMenuEvent();
+    return WebInputEventResult::kHandledSystem;
+  }
+#endif  // !defined(OS_MAC)
+
+  return WebInputEventResult::kNotHandled;
+}
+
 void WebFrameWidgetBase::HandleMouseDown(LocalFrame& main_frame,
                                          const WebMouseEvent& event) {
   WebViewImpl* view_impl = View();
@@ -812,6 +894,7 @@ void WebFrameWidgetBase::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(input_target_receiver_);
   visitor->Trace(mouse_capture_element_);
+  visitor->Trace(device_emulator_);
 }
 
 void WebFrameWidgetBase::SetNeedsRecalculateRasterScales() {
@@ -1184,6 +1267,42 @@ void WebFrameWidgetBase::ShowContextMenu(
     }
   }
   host_context_menu_location_.reset();
+}
+
+void WebFrameWidgetBase::SetViewportIntersection(
+    mojom::blink::ViewportIntersectionStatePtr intersection_state) {
+  // Remote viewports are only applicable to local frames with remote ancestors.
+  // TODO(https://crbug.com/1148960): Should this deal with portals?
+  DCHECK(ForSubframe());
+
+  child_data().compositor_visible_rect =
+      intersection_state->compositor_visible_rect;
+  widget_base_->LayerTreeHost()->SetViewportVisibleRect(
+      intersection_state->compositor_visible_rect);
+  LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
+      *intersection_state);
+}
+
+void WebFrameWidgetBase::EnableDeviceEmulation(
+    const DeviceEmulationParams& parameters) {
+  // Device Emaulation is only supported for the main frame.
+  DCHECK(ForMainFrame());
+  if (!device_emulator_) {
+    gfx::Size size_in_dips = widget_base_->BlinkSpaceToFlooredDIPs(Size());
+
+    device_emulator_ = MakeGarbageCollected<ScreenMetricsEmulator>(
+        this, widget_base_->GetScreenInfo(), size_in_dips,
+        widget_base_->VisibleViewportSizeInDIPs(),
+        widget_base_->WidgetScreenRect(), widget_base_->WindowScreenRect());
+  }
+  device_emulator_->ChangeEmulationParams(parameters);
+}
+
+void WebFrameWidgetBase::DisableDeviceEmulation() {
+  if (!device_emulator_)
+    return;
+  device_emulator_->DisableAndApply();
+  device_emulator_ = nullptr;
 }
 
 base::Optional<gfx::Point>
@@ -1779,6 +1898,12 @@ bool WebFrameWidgetBase::IsHidden() const {
 
 WebString WebFrameWidgetBase::GetLastToolTipTextForTesting() const {
   return GetPage()->GetChromeClient().GetLastToolTipTextForTesting();
+}
+
+float WebFrameWidgetBase::GetEmulatorScale() {
+  if (device_emulator_)
+    return device_emulator_->scale();
+  return 1.0f;
 }
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
@@ -2725,6 +2850,35 @@ cc::LayerTreeHost* WebFrameWidgetBase::LayerTreeHost() {
   return widget_base_->LayerTreeHost();
 }
 
+ScreenMetricsEmulator* WebFrameWidgetBase::DeviceEmulator() {
+  return device_emulator_;
+}
+
+bool WebFrameWidgetBase::AutoResizeMode() {
+  return View()->AutoResizeMode();
+}
+
+void WebFrameWidgetBase::SetScreenMetricsEmulationParameters(
+    bool enabled,
+    const DeviceEmulationParams& params) {
+  if (enabled)
+    View()->ActivateDevToolsTransform(params);
+  else
+    View()->DeactivateDevToolsTransform();
+}
+
+void WebFrameWidgetBase::SetScreenInfoAndSize(
+    const ScreenInfo& screen_info,
+    const gfx::Size& widget_size_in_dips,
+    const gfx::Size& visible_viewport_size_in_dips) {
+  // Emulation happens on regular main frames which don't use auto-resize mode.
+  DCHECK(!AutoResizeMode());
+
+  UpdateScreenInfo(screen_info);
+  widget_base_->SetVisibleViewportSizeInDIPs(visible_viewport_size_in_dips);
+  Resize(widget_base_->DIPsToCeiledBlinkSpace(widget_size_in_dips));
+}
+
 void WebFrameWidgetBase::NotifyPageScaleFactorChanged(
     float page_scale_factor,
     bool is_pinch_gesture_active) {
@@ -2755,6 +2909,15 @@ void WebFrameWidgetBase::SetPageScaleStateAndLimits(
     float maximum) {
   widget_base_->LayerTreeHost()->SetPageScaleFactorAndLimits(page_scale_factor,
                                                              minimum, maximum);
+}
+
+bool WebFrameWidgetBase::UpdateScreenRects(
+    const gfx::Rect& widget_screen_rect,
+    const gfx::Rect& window_screen_rect) {
+  if (!device_emulator_)
+    return false;
+  device_emulator_->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
+  return true;
 }
 
 void WebFrameWidgetBase::OrientationChanged() {
@@ -2801,7 +2964,17 @@ void WebFrameWidgetBase::DidUpdateSurfaceAndScreen(
   }
 }
 
+gfx::Rect WebFrameWidgetBase::ViewportVisibleRect() {
+  if (ForMainFrame()) {
+    return widget_base_->CompositorViewportRect();
+  } else {
+    return child_data().compositor_visible_rect;
+  }
+}
+
 const ScreenInfo& WebFrameWidgetBase::GetOriginalScreenInfo() {
+  if (device_emulator_)
+    return device_emulator_->original_screen_info();
   return widget_base_->GetScreenInfo();
 }
 
@@ -2852,6 +3025,18 @@ void WebFrameWidgetBase::NotifyInputObservers(
 Frame* WebFrameWidgetBase::FocusedCoreFrame() const {
   return GetPage() ? GetPage()->GetFocusController().FocusedOrMainFrame()
                    : nullptr;
+}
+
+Element* WebFrameWidgetBase::FocusedElement() const {
+  LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
+  if (!frame)
+    return nullptr;
+
+  Document* document = frame->GetDocument();
+  if (!document)
+    return nullptr;
+
+  return document->FocusedElement();
 }
 
 HitTestResult WebFrameWidgetBase::HitTestResultForRootFramePos(

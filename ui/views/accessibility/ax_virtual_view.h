@@ -149,7 +149,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   gfx::NativeViewAccessible HitTestSync(
       int screen_physical_pixel_x,
       int screen_physical_pixel_y) const override;
-  gfx::NativeViewAccessible GetFocus() override;
+  gfx::NativeViewAccessible GetFocus() const override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
@@ -159,6 +159,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
   std::vector<int32_t> GetColHeaderNodeIds() const override;
   std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
+  base::Optional<int32_t> GetCellId(int row_index,
+                                    int col_index) const override;
 
   // Gets the real View that owns our shallowest virtual ancestor,, if any.
   View* GetOwnerView() const;

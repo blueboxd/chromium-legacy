@@ -283,6 +283,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_visibility_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/ambient_mode_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/bluetooth_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cellular_networks_list_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cellular_setup_dialog_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/date_time_page_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/fake_bluetooth_private.m.js",
@@ -354,7 +355,6 @@ if (include_js_tests) {
 
     sources = [
       "bluetooth_internals_browsertest.js",
-      "cr_components/cr_components_mojo_browsertest.js",
       "interventions_internals_browsertest.js",
       "media/media_engagement_browsertest.js",
       "media/media_feeds_webui_browsertest.js",
@@ -386,6 +386,7 @@ if (include_js_tests) {
   js2gtest("browser_tests_js_mojo_webui") {
     test_type = "mojo_webui"
     sources = [
+      "cr_components/cr_components_mojo_browsertest.js",
       "downloads/downloads_browsertest.js",
       "engagement/site_engagement_browsertest.js",
       "usb_internals_browsertest.js",

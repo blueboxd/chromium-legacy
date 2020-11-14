@@ -111,10 +111,6 @@ class ASH_EXPORT CaptureModeController
   // Called back when the mojo pipe to the recording service gets disconnected.
   void OnRecordingServiceDisconnected();
 
-  // Returns true if doing a screen capture is currently allowed, false
-  // otherwise.
-  bool IsCaptureAllowed() const;
-
   // Called to terminate |is_recording_in_progress_|, the stop-recording shelf
   // pod button, and the |video_recording_watcher_| when recording ends.
   void TerminateRecordingUiElements();
@@ -133,12 +129,16 @@ class ASH_EXPORT CaptureModeController
   };
   base::Optional<CaptureParams> GetCaptureParams() const;
 
+  // Returns true if doing a screen capture is currently allowed, false
+  // otherwise.
+  bool IsCaptureAllowed(const CaptureParams& capture_params) const;
+
   // The below functions start the actual image/video capture. They expect that
   // the capture session is still active when called, so they can retrieve the
   // capture parameters they need. They will end the sessions themselves.
   // They should never be called if IsCaptureAllowed() returns false.
-  void CaptureImage();
-  void CaptureVideo();
+  void CaptureImage(const CaptureParams& capture_params);
+  void CaptureVideo(const CaptureParams& capture_params);
 
   // Called back when an image has been captured to trigger an attempt to save
   // the image as a file. |timestamp| is the time at which the capture was
@@ -185,8 +185,12 @@ class ASH_EXPORT CaptureModeController
                            base::Time timestamp) const;
 
   // Records the number of screenshots taken.
-  void RecordNumberOfScreenshotsTakenInLastDay();
-  void RecordNumberOfScreenshotsTakenInLastWeek();
+  void RecordAndResetScreenshotsTakenInLastDay();
+  void RecordAndResetScreenshotsTakenInLastWeek();
+
+  // Records the number of consecutive screenshots taken within 5s of each
+  // other.
+  void RecordAndResetConsecutiveScreenshots();
 
   // Called when the video record 3-seconds count down finishes.
   void OnVideoRecordCountDownFinished();
@@ -250,9 +254,15 @@ class ASH_EXPORT CaptureModeController
   base::RepeatingTimer num_screenshots_taken_in_last_day_scheduler_;
   base::RepeatingTimer num_screenshots_taken_in_last_week_scheduler_;
 
-  // Counters used to track the number of screenshots taken.
+  // Counters used to track the number of screenshots taken. These values are
+  // not persisted across crashes, restarts or sessions so they only provide a
+  // rough approximation.
   int num_screenshots_taken_in_last_day_ = 0;
   int num_screenshots_taken_in_last_week_ = 0;
+
+  // Counter used to track the number of consecutive screenshots taken.
+  int num_consecutive_screenshots_ = 0;
+  base::DelayTimer num_consecutive_screenshots_scheduler_;
 
   // The time when OnVideoRecordCountDownFinished is called and video has
   // started recording. It is used when video has finished recording for metrics

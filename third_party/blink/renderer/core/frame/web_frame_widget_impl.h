@@ -95,25 +95,16 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
                        DocumentUpdateReason reason) override;
 
   void MouseCaptureLost() override;
-  void SetRemoteViewportIntersection(
-      const mojom::blink::ViewportIntersectionState& intersection_state)
-      override;
   void SetIsInertForSubFrame(bool) override;
   void SetInheritedEffectiveTouchActionForSubFrame(TouchAction) override;
   void UpdateRenderThrottlingStatusForSubFrame(bool is_throttled,
                                                bool subtree_throttled) override;
-
-  void SetViewportIntersection(
-      mojom::blink::ViewportIntersectionStatePtr intersection_state) override;
 
   // WebFrameWidget implementation.
   bool ScrollFocusedEditableElementIntoView() override;
   void SetZoomLevelForTesting(double zoom_level) override;
   void ResetZoomLevelForTesting() override;
   void SetDeviceScaleFactorForTesting(float factor) override;
-
-  // Returns the currently focused Element or null if no element has focus.
-  Element* FocusedElement() const;
 
   PaintLayerCompositor* Compositor() const;
 
@@ -138,11 +129,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
 
   // WidgetBaseClient overrides:
   void FocusChanged(bool enable) override;
-  gfx::Rect ViewportVisibleRect() override;
-
-  // blink::mojom::FrameWidget
-  void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
-  void DisableDeviceEmulation() override;
 
   void UpdateMainFrameLayoutSize();
 
@@ -154,7 +140,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   // PageWidgetEventHandler functions
   void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
-  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
 
   LocalFrameView* GetLocalFrameViewForAnimationScrolling() override;
 
@@ -180,8 +165,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_ = true;
-
-  gfx::Rect compositor_visible_rect_;
 
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };

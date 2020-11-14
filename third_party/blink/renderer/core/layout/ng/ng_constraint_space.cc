@@ -79,7 +79,6 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   if (!block.IsWritingModeRoot() || block.IsGridItem()) {
     // We don't know if the parent layout will require our baseline, so always
     // request it.
-    builder.SetNeedsBaseline(true);
     builder.SetBaselineAlgorithmType(block.IsInline() &&
                                              block.IsAtomicInlineLevel()
                                          ? NGBaselineAlgorithmType::kInlineBlock
@@ -125,9 +124,8 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   builder.SetIsFixedInlineSize(fixed_inline);
   builder.SetIsFixedBlockSize(fixed_block);
   builder.SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite);
-  builder.SetIsShrinkToFit(
-      style.LogicalWidth().IsAuto() &&
-      block.SizesLogicalWidthToFitContent(style.LogicalWidth()));
+  builder.SetStretchInlineSizeIfAuto(
+      !block.SizesLogicalWidthToFitContent(style.LogicalWidth()));
   return builder.ToConstraintSpace();
 }
 

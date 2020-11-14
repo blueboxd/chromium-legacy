@@ -32,28 +32,11 @@ template <bool thread_safe>
 ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
 PartitionDirectMap(PartitionRoot<thread_safe>* root, int flags, size_t raw_size)
     EXCLUSIVE_LOCKS_REQUIRED(root->lock_) {
-  size_t slot_size =
-      PartitionBucket<thread_safe>::get_direct_map_size(raw_size);
-
-  // Because we need to fake looking like a super page, we need to allocate
-  // a bunch of system pages more than |slot_size|:
-  // - The first few system pages are the partition page in which the super
-  // page metadata is stored. We commit just one system page out of a partition
-  // page sized clump.
-  // - We add a trailing guard page on 32-bit (on 64-bit we rely on the
-  // massive address space plus randomization instead; additionally GigaCage
-  // guarantees that the region is in the company of regions that have leading
-  // guard pages).
-  size_t reserved_size = slot_size + PartitionPageSize();
-#if !defined(ARCH_CPU_64_BITS)
-  reserved_size += SystemPageSize();
-#endif
-  // Round up to the allocation granularity.
-  reserved_size = bits::Align(reserved_size, PageAllocationGranularity());
-  size_t map_size = reserved_size - PartitionPageSize();
-#if !defined(ARCH_CPU_64_BITS)
-  map_size -= SystemPageSize();
-#endif
+  size_t slot_size = PartitionRoot<thread_safe>::GetDirectMapSlotSize(raw_size);
+  size_t reserved_size = root->GetDirectMapReservedSize(raw_size);
+  size_t map_size =
+      reserved_size -
+      PartitionRoot<thread_safe>::GetDirectMapMetadataAndGuardPagesSize();
   PA_DCHECK(slot_size <= map_size);
 
   char* ptr = nullptr;
@@ -71,22 +54,24 @@ PartitionDirectMap(PartitionRoot<thread_safe>* root, int flags, size_t raw_size)
   if (UNLIKELY(!ptr))
     return nullptr;
 
-  size_t committed_page_size = slot_size + SystemPageSize();
-  root->total_size_of_direct_mapped_pages.fetch_add(committed_page_size,
+  root->total_size_of_direct_mapped_pages.fetch_add(reserved_size,
                                                     std::memory_order_relaxed);
-  root->IncreaseCommittedPages(committed_page_size);
+  root->IncreaseCommittedPages(slot_size);
 
-  char* slot = ptr + PartitionPageSize();
+  // Decommit everything in the initial partition page, except one system page
+  // for metadata.
   SetSystemPagesAccess(ptr, SystemPageSize(), PageInaccessible);
   SetSystemPagesAccess(ptr + (SystemPageSize() * 2),
                        PartitionPageSize() - (SystemPageSize() * 2),
                        PageInaccessible);
-#if !defined(ARCH_CPU_64_BITS)
-  // TODO(bartekn): Uncommit all the way up to reserved_size, or in case of
-  // GigaCage, all the way up to 2MB boundary.
-  PA_DCHECK(slot + slot_size + SystemPageSize() <= ptr + reserved_size);
-  SetSystemPagesAccess(slot + slot_size, SystemPageSize(), PageInaccessible);
-#endif
+  char* slot = ptr + PartitionPageSize();
+  // Decommit everything past the slot, until the end of the reserved region.
+  PA_DCHECK(slot + slot_size <= ptr + reserved_size);
+  if (slot + slot_size < ptr + reserved_size) {
+    SetSystemPagesAccess(slot + slot_size,
+                         (ptr + reserved_size) - (slot + slot_size),
+                         PageInaccessible);
+  }
 
   auto* metadata = reinterpret_cast<PartitionDirectMapMetadata<thread_safe>*>(
       PartitionSuperPageToMetadataArea(ptr));
@@ -676,9 +661,12 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
     PA_DCHECK(new_slot_span);
   } else {
     // Third. If we get here, we need a brand new slot span.
+    // TODO(bartekn): For single-slot slot spans, we can use rounded raw_size
+    // as slot_span_committed_size.
     uint16_t num_partition_pages = get_pages_per_slot_span();
-    void* raw_memory = AllocNewSlotSpan(root, flags, num_partition_pages,
-                                        get_bytes_per_span());
+    void* raw_memory =
+        AllocNewSlotSpan(root, flags, num_partition_pages,
+                         /* slot_span_committed_size= */ get_bytes_per_span());
     if (LIKELY(raw_memory != nullptr)) {
       new_slot_span =
           SlotSpanMetadata<thread_safe>::FromPointerNoAlignmentCheck(

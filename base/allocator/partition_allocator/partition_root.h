@@ -33,6 +33,7 @@
 #include <atomic>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc-inl.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -47,6 +48,7 @@
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/pcscan.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
+#include "base/bits.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 
@@ -148,7 +150,14 @@ struct BASE_EXPORT PartitionRoot {
 #endif
 
   // Bookkeeping.
-  // Invariant: total_size_of_committed_pages <=
+  // - total_size_of_super_pages - total virtual address space for normal bucket
+  //     super pages
+  // - total_size_of_direct_mapped_pages - total virtual address space for
+  //     direct-map regions
+  // - total_size_of_committed_pages - total committed pages for slots (doesn't
+  //     include metadata, bitmaps (if any), or any data outside or regions
+  //     described in #1 and #2)
+  // Invariant: total_size_of_committed_pages <
   //                total_size_of_super_pages +
   //                total_size_of_direct_mapped_pages.
   // Since all operations on these atomic variables have relaxed semantics, we
@@ -315,6 +324,49 @@ struct BASE_EXPORT PartitionRoot {
 
       pcscan.emplace(this);
     }
+  }
+
+  static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
+  GetDirectMapMetadataAndGuardPagesSize() {
+    // Because we need to fake a direct-map region to look like a super page, we
+    // need to allocate a bunch of system pages more around the payload:
+    // - The first few system pages are the partition page in which the super
+    // page metadata is stored.
+    // - We add a trailing guard page on 32-bit (on 64-bit we rely on the
+    // massive address space plus randomization instead; additionally GigaCage
+    // guarantees that the region is followed by region with a preceding guard
+    // page or inaccessible in the direct map-pool).
+    size_t ret = PartitionPageSize();
+#if !defined(PA_HAS_64_BITS_POINTERS)
+    ret += SystemPageSize();
+#endif
+    return ret;
+  }
+
+  static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
+  GetDirectMapSlotSize(size_t raw_size) {
+    // Caller must check that the size is not above the MaxDirectMapped()
+    // limit before calling. This also guards against integer overflow in the
+    // calculation here.
+    PA_DCHECK(raw_size <= MaxDirectMapped());
+    return bits::Align(raw_size, SystemPageSize());
+  }
+
+  ALWAYS_INLINE size_t GetDirectMapReservedSize(size_t raw_size) {
+    // Caller must check that the size is not above the MaxDirectMapped()
+    // limit before calling. This also guards against integer overflow in the
+    // calculation here.
+    PA_DCHECK(raw_size <= MaxDirectMapped());
+    // Align to allocation granularity. However, when 64-bit GigaCage is used,
+    // the granularity is super page size.
+    size_t alignment = PageAllocationGranularity();
+#if defined(PA_HAS_64_BITS_POINTERS)
+    if (UsesGigaCage()) {
+      alignment = kSuperPageSize;
+    }
+#endif
+    return bits::Align(raw_size + GetDirectMapMetadataAndGuardPagesSize(),
+                       alignment);
   }
 
  private:
@@ -1060,7 +1112,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   } else if (size > MaxDirectMapped()) {
     // Too large to allocate => return the size unchanged.
   } else {
-    size = Bucket::get_direct_map_size(size);
+    size = GetDirectMapSlotSize(size);
   }
   size = internal::PartitionSizeAdjustSubtract(allow_extras, size);
   return size;

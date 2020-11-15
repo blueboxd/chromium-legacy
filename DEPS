@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c82766bd799c42e4883ba93bd5f91e4fea21dc29',
+  'devtools_frontend_revision': 'ac304ad8419213baecacc6d8b3fdf74784fb3079',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '464aaeb55864832f338717e216324123438b8508',
+  'dawn_revision': 'aabde6c88f91f450b5845c8a720356bc4382ed01',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1341,7 +1341,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'NZcWyIyONpZ4Tdm_zmWgSBEWd15zhCNYWLuyJj8_IUcC'
+              'version': '2_kHlztQ5lFU-IhCP021uv4v5Ms-aBhhsqtZ1V02tbIC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1578,7 +1578,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0958085d644d05f8c74b0f6f56dd342d6d3bf05f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@785beb334821efa4a774ed7c168d39eab39e5949',
     'condition': 'checkout_src_internal',
   },
 
@@ -1597,7 +1597,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'lncFJYEwVu27fQaQFf8XRHbjYztYJXFXPbFvQaiqj_0C',
+        'version': 'rTSxyOBRhg8Kuak4SK_kmsuxt14L_08GfLdW4Vm5OFMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -14511,6 +14511,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="24" label="User Cancelled While Configuring Container"/>
   <int value="25" label="Error Creating Container"/>
   <int value="26" label="Bug - Failed without capturing error code"/>
+  <int value="27" label="User Cancelled While Starting LXD"/>
+  <int value="28" label="Error Starting LXD"/>
 </enum>
 
 <enum name="CrostiniTerminalSetting">
@@ -16638,6 +16640,7 @@ metrics consent we also won't be able to send UMA metrics. -->
 <enum name="DevToolsColorPickerFixedColor">
   <int value="0" label="AA"/>
   <int value="1" label="AAA"/>
+  <int value="2" label="APCA"/>
 </enum>
 
 <enum name="DevToolsComputedStyleGrouping">
@@ -38295,8 +38298,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1772226972" label="ur-t-i0-und_old">
     Urdu transliteration (obsolete)
   </int>
-  <int value="1783807851" label="nacl_mozc_us_old">
-    Google Japanese Input (for US keyboard) (obsolete)
+  <int value="1783807851" label="nacl_mozc_us">
+    Google Japanese Input (for US keyboard)
   </int>
   <int value="1842376130" label="vkd_ta_typewriter">
     Tamil keyboard (Typewriter)
@@ -43000,6 +43003,7 @@ from previous Chrome versions.
       label="SupervisedUserCommittedInterstitials:enabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
+  <int value="-1092211161" label="BluetoothWbsDogfood:disabled"/>
   <int value="-1088804127" label="DuetTabStripIntegrationAndroid:disabled"/>
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1086656172"
@@ -45193,6 +45197,7 @@ from previous Chrome versions.
   <int value="1097981222" label="OneGoogleBarModalOverlays:disabled"/>
   <int value="1098610349" label="UseHDRTransferFunction:disabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
+  <int value="1100048827" label="BluetoothWbsDogfood:enabled"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
   <int value="1101062411" label="Rar2Fs:disabled"/>
   <int value="1101421005" label="DownloadLater:disabled"/>

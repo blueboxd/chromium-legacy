@@ -217,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'a15da341200e10f12262331da42fc81b3c4389ef',
+  'pdfium_revision': 'b8a27ae001c2300051b94ba31408c676b61786c7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ac304ad8419213baecacc6d8b3fdf74784fb3079',
+  'devtools_frontend_revision': '97868bd80a1fe53a9f75794ea083d45a98f1eef1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -308,7 +308,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '1cda495274bb3cb67b50ecd5de3ea9caf971e7c7',
+  'spv_tools_revision': '1f2fcddd3963b9c29bf360daf7656c5977c2aadd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'aabde6c88f91f450b5845c8a720356bc4382ed01',
+  'dawn_revision': '575729e8dd25e0ac4631c9739a82118ea3545c6b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1506,7 +1506,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '99df1af2aed6a8d10bc62dc348f63d6c084c1949',
+    Var('webrtc_git') + '/src.git' + '@' + '62a9a329373a8dfe201cfce7e1278916e9ed9637',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1578,7 +1578,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bf281d84688d4fe6e916a0fcd0edf43448e920f2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1c231bde8eaaa2cfc4afe2d03a2d1393a70f37b9',
     'condition': 'checkout_src_internal',
   },
 

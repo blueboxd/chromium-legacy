@@ -2126,6 +2126,9 @@ extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 extern const char kBluetoothFixA2dpPacketSizeName[];
 extern const char kBluetoothFixA2dpPacketSizeDescription[];
 
+extern const char kBluetoothWbsDogfoodName[];
+extern const char kBluetoothWbsDogfoodDescription[];
+
 extern const char kCameraSystemWebAppName[];
 extern const char kCameraSystemWebAppDescription[];
 
@@ -2479,9 +2482,6 @@ extern const char kImeMozcProtoDescription[];
 
 extern const char kImeServiceDecoderName[];
 extern const char kImeServiceDecoderDescription[];
-
-extern const char kImeServiceSandboxName[];
-extern const char kImeServiceSandboxDescription[];
 
 extern const char kIntentHandlingSharingName[];
 extern const char kIntentHandlingSharingDescription[];

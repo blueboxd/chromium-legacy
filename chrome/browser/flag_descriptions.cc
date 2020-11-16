@@ -3669,6 +3669,14 @@ const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
     "audio quality and may fix audio stutter.";
 
+const char kBluetoothWbsDogfoodName[] = "Bluetooth WBS dogfood";
+const char kBluetoothWbsDogfoodDescription[] =
+    "Enables Bluetooth wideband speech mic as default audio option. "
+    "Note that flipping this flag makes no difference on most of the "
+    "Chrome OS models, because Bluetooth WBS is either unsupported "
+    "or fully launched. Only on the few models that Bluetooth WBS is "
+    "still stablizing this flag will take effect.";
+
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";
@@ -4244,10 +4252,6 @@ const char kImeServiceDecoderName[] = "ChromeOS IME Service Decoder";
 const char kImeServiceDecoderDescription[] =
     "Controls whether ChromeOS system IME works with the NaCl decoders or "
     "the decoders loaded in the IME service.";
-
-const char kImeServiceSandboxName[] = "Use CrOS 'ime' sandbox";
-const char kImeServiceSandboxDescription[] =
-    "Controls whether the IME service on CrOS uses the 'ime' sandbox.";
 
 const char kIntentHandlingSharingName[] = "Intent handling for sharing";
 const char kIntentHandlingSharingDescription[] =

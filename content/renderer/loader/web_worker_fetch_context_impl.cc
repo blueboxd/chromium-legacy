@@ -92,14 +92,12 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           freezable_task_runner_handle,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          unfreezable_task_runner_handle) override {
+          unfreezable_task_runner_handle,
+      blink::CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>
+          keep_alive_handle) override {
     DCHECK(freezable_task_runner_handle);
     DCHECK(unfreezable_task_runner_handle);
     DCHECK(resource_dispatcher_);
-
-    // KeepAlive is not yet supported in web workers.
-    mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle =
-        mojo::NullRemote();
 
     if (CanCreateServiceWorkerURLLoader(request)) {
       // Create our own URLLoader to route the request to the controller service
@@ -141,7 +139,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
     if (!service_worker_loader_factory_)
       return false;
 
-    // If the URL is not http(s) or otherwise whitelisted, do not intercept the
+    // If the URL is not http(s) or otherwise allowed, do not intercept the
     // request. Schemes like 'blob' and 'file' are not eligible to be
     // intercepted by service workers.
     // TODO(falken): Let ServiceWorkerSubresourceLoaderFactory handle the

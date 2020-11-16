@@ -136,6 +136,11 @@ const base::Feature kBetterUpdateScreen{"BetterUpdateScreen",
 const base::Feature kBluetoothAggressiveAppearanceFilter{
     "BluetoothAggressiveAppearanceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Bluetooth WBS microphone be selected as default
+// audio input option.
+const base::Feature kBluetoothWbsDogfood{"BluetoothWbsDogfood",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
 const base::Feature kBluetoothFixA2dpPacketSize{
@@ -336,10 +341,6 @@ const base::Feature kClipboardHistorySimpleRender{
 // different surfaces
 const base::Feature kEnableFilesAppCopyImage{"EnableFilesAppCopyImage",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to launch IME service with an 'ime' sandbox.
-const base::Feature kEnableImeSandbox{"EnableImeSandbox",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable restriction of symlink traversal on user-supplied filesystems.
 const base::Feature kFsNosymfollow{"FsNosymfollow",
@@ -688,10 +689,6 @@ bool IsHostnameSettingEnabled() {
 
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
   return base::FeatureList::IsEnabled(kFamilyLinkOnSchoolDevice);
-}
-
-bool IsImeSandboxEnabled() {
-  return base::FeatureList::IsEnabled(kEnableImeSandbox);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

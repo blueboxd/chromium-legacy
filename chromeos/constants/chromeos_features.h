@@ -76,6 +76,8 @@ extern const base::Feature kBetterUpdateScreen;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothAggressiveAppearanceFilter;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kBluetoothWbsDogfood;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothFixA2dpPacketSize;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothPhoneFilter;
@@ -154,8 +156,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kClipboardHistorySimpleRender;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFilesAppCopyImage;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kEnableImeSandbox;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kHandwritingGestureEditing;

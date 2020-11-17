@@ -1620,9 +1620,6 @@ extern const char kGamesHubDescription[];
 extern const char kHomepagePromoCardName[];
 extern const char kHomepagePromoCardDescription[];
 
-extern const char kHomepageSettingsUIConversionName[];
-extern const char kHomepageSettingsUIConversionDescription[];
-
 extern const char kInstantStartName[];
 extern const char kInstantStartDescription[];
 
@@ -1869,8 +1866,8 @@ extern const char kWalletRequiresFirstSyncSetupCompleteDescription[];
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
 
-extern const char kEnableAccessibilityLiveCaptionsName[];
-extern const char kEnableAccessibilityLiveCaptionsDescription[];
+extern const char kEnableAccessibilityLiveCaptionName[];
+extern const char kEnableAccessibilityLiveCaptionDescription[];
 
 extern const char kCastMediaRouteProviderName[];
 extern const char kCastMediaRouteProviderDescription[];

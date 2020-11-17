@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.components.autofill.Completable;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.BasicCardUtils;
 import org.chromium.components.payments.CurrencyFormatter;
@@ -63,7 +64,6 @@ import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestParams;
-import org.chromium.components.payments.PaymentUIsObserver;
 import org.chromium.components.payments.PaymentUiServiceTestInterface;
 import org.chromium.components.payments.Section;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -131,10 +131,8 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     private final PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
     private final PaymentRequestParams mParams;
     private final JourneyLogger mJourneyLogger;
-    private final PaymentUIsObserver mObserver;
 
     private PaymentRequestUI mPaymentRequestUI;
-
     private ShoppingCart mUiShoppingCart;
     private boolean mMerchantSupportsAutofillCards;
     private boolean mHasInitialized;
@@ -191,6 +189,36 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
          * @param debugMessage The debug message for the aborting.
          */
         void onUiAborted(@AbortReason int reason, String debugMessage);
+
+        /** Called when favicon not available for payment request UI. */
+        void onPaymentRequestUIFaviconNotAvailable();
+
+        /**
+         * Called when the user is leaving the current tab (e.g., tab switched or tab overview mode
+         * is shown), upon which the PaymentRequest service should be closed.
+         * @param reason The reason of leaving the current tab, to be used as debug message for the
+         *         developers.
+         */
+        void onLeavingCurrentTab(String reason);
+
+        /**
+         * Called when the user's selected shipping option has changed.
+         * @param optionId The option id of the selected shipping option.
+         */
+        void onShippingOptionChange(String optionId);
+
+        /**
+         * Called when the shipping address has changed by the user.
+         * @param address The changed shipping address.
+         */
+        void onShippingAddressChange(org.chromium.payments.mojom.PaymentAddress address);
+
+        /**
+         * Called when the Payment UI service quits with an error. The observer should stop
+         * referencing the Payment UI service.
+         * @param error The diagnostic message that's exposed to developers.
+         */
+        void onUiServiceError(String error);
     }
 
     /**
@@ -246,7 +274,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
             boolean isSuccess =
                     mPaymentRequestUI.setVisible(!mShowingBottomSheet && mShouldShowDialog);
             if (!isSuccess) {
-                mObserver.onUiServiceError(ErrorStrings.FAIL_TO_SHOW_PAYMENT_REQUEST_UI);
+                mDelegate.onUiServiceError(ErrorStrings.FAIL_TO_SHOW_PAYMENT_REQUEST_UI);
             }
         }
     }
@@ -258,11 +286,9 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
      * @param isOffTheRecord Whether merchant page is in an isOffTheRecord tab.
      * @param journeyLogger The logger of the user journey.
      * @param topLevelOrigin The last committed url of webContents.
-     * @param observer The payment UIs observer.
      */
     public PaymentUiService(Delegate delegate, PaymentRequestParams params, WebContents webContents,
-            boolean isOffTheRecord, JourneyLogger journeyLogger, String topLevelOrigin,
-            PaymentUIsObserver observer) {
+            boolean isOffTheRecord, JourneyLogger journeyLogger, String topLevelOrigin) {
         assert !params.hasClosed();
         mDelegate = delegate;
         mParams = params;
@@ -282,25 +308,24 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         mCurrencyFormatterMap = new HashMap<>();
         mIsOffTheRecord = isOffTheRecord;
         mPaymentAppComparator = new PaymentAppComparator(/*params=*/mParams);
-        mObserver = observer;
         mSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                mObserver.onLeavingCurrentTab(ErrorStrings.TAB_SWITCH);
+                mDelegate.onLeavingCurrentTab(ErrorStrings.TAB_SWITCH);
             }
         };
         mTabModelObserver = new TabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 if (tab == null || tab.getId() != lastId) {
-                    mObserver.onLeavingCurrentTab(ErrorStrings.TAB_SWITCH);
+                    mDelegate.onLeavingCurrentTab(ErrorStrings.TAB_SWITCH);
                 }
             }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
-                mObserver.onLeavingCurrentTab(ErrorStrings.TAB_OVERVIEW_MODE);
+                mDelegate.onLeavingCurrentTab(ErrorStrings.TAB_OVERVIEW_MODE);
             }
         };
     }
@@ -1147,7 +1172,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                 activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
                 (bitmap, iconUrl) -> {
                     if (bitmap == null) {
-                        mObserver.onPaymentRequestUIFaviconNotAvailable();
+                        mDelegate.onPaymentRequestUIFaviconNotAvailable();
                     }
                     if (mPaymentRequestUI != null && bitmap != null) {
                         mPaymentRequestUI.setTitleBitmap(bitmap);
@@ -1438,19 +1463,36 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
 
     /**
+     * @param methods The payment methods supported by the payment request.
+     * @return True when at least one url payment method identifier is specified in payment
+     *         request.
+     */
+    private static boolean isUrlPaymentMethodIdentifiersSupported(Set<String> methods) {
+        for (String methodName : methods) {
+            if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)
+                    || methodName.startsWith(UrlConstants.HTTP_URL_PREFIX)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Calculate whether the browser payment sheet should be skipped directly into the payment app.
      * @param isUserGestureShow Whether the PaymentRequest.show() is triggered by user gesture.
-     * @param urlPaymentMethodIdentifiersSupported True when at least one url payment method
-     *         identifier is specified in payment request.
      * @param skipUiForNonUrlPaymentMethodIdentifiers True when skip UI is available for non-url
      *         based payment method identifiers (e.g., basic-card).
      * @param options The payment options specified in the payment request.
+     * @param paymentMethods The payment methods supported by this request.
      */
     public void calculateWhetherShouldSkipShowingPaymentRequestUi(boolean isUserGestureShow,
-            boolean urlPaymentMethodIdentifiersSupported,
-            boolean skipUiForNonUrlPaymentMethodIdentifiers, PaymentOptions options) {
+            boolean skipUiForNonUrlPaymentMethodIdentifiers, PaymentOptions options,
+            Set<String> paymentMethods) {
         assert mPaymentMethodsSection != null;
         PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+
+        boolean urlPaymentMethodIdentifiersSupported =
+                isUrlPaymentMethodIdentifiersSupported(paymentMethods);
 
         // If there is only a single payment app which can provide all merchant requested
         // information, we can safely go directly to the payment app instead of showing Payment
@@ -1530,7 +1572,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         } else if (optionType == PaymentRequestUI.DataType.SHIPPING_OPTIONS) {
             // This may update the line items.
             mUiShippingOptions.setSelectedItem(option);
-            mObserver.onShippingOptionChange(option.getIdentifier());
+            mDelegate.onShippingOptionChange(option.getIdentifier());
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.CONTACT_DETAILS) {
@@ -1601,13 +1643,13 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
 
         // Can happen if the tab is closed during the normalization process.
         if (chromeActivity == null) {
-            mObserver.onUiServiceError(ErrorStrings.ACTIVITY_NOT_FOUND);
+            mDelegate.onUiServiceError(ErrorStrings.ACTIVITY_NOT_FOUND);
             return;
         }
 
         // Don't reuse the selected address because it is formatted for display.
         AutofillAddress shippingAddress = new AutofillAddress(chromeActivity, profile);
-        mObserver.onShippingAddressChange(shippingAddress.toPaymentAddress());
+        mDelegate.onShippingAddressChange(shippingAddress.toPaymentAddress());
     }
 
     // Implements PersonalDataManager.NormalizedAddressRequestDelegate:

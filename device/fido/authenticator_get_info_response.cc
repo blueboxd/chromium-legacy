@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/ranges/algorithm.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -121,10 +122,28 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     device_info_map.emplace(0x0a, std::move(algorithms_cbor));
   }
 
+  if (response.force_pin_change) {
+    device_info_map.emplace(0x0c, cbor::Value(*response.force_pin_change));
+  }
+
+  if (response.min_pin_length) {
+    device_info_map.emplace(
+        0x0d,
+        cbor::Value(base::strict_cast<int64_t>(*response.min_pin_length)));
+  }
+
   auto encoded_bytes =
       cbor::Writer::Write(cbor::Value(std::move(device_info_map)));
   DCHECK(encoded_bytes);
   return *encoded_bytes;
+}
+
+bool AuthenticatorGetInfoResponse::SupportsAtLeast(
+    Ctap2Version ctap2_version) const {
+  return base::ranges::any_of(ctap2_versions,
+                              [ctap2_version](const Ctap2Version& version) {
+                                return version >= ctap2_version;
+                              });
 }
 
 }  // namespace device

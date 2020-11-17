@@ -1079,7 +1079,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-accessibility-live-captions",
+    "name": "enable-accessibility-live-caption",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 90
   },
@@ -2870,11 +2870,6 @@
     "name": "homepage-promo-card",
     "owners": [ "wenyufu", "clank-app-team@google.com" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "homepage-settings-ui-conversion",
-    "owners": [ "wenyufu", "clank-app-team@google.com" ],
-    "expiry_milestone": 86
   },
   {
     "name": "ignore-gpu-blocklist",

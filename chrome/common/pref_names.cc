@@ -1602,7 +1602,13 @@ const char kNotificationPermissionActions[] =
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";
 
-// List of directories of the profiles last active.
+// List of directories of the profiles last active in browser windows. It does
+// not include profiles active in app windows. When a browser window is opened,
+// if it's the only browser window open in the profile, its profile is added to
+// this list. When a browser window is closed, and there are no other browser
+// windows open in the profile, its profile is removed from this list. When
+// Chrome is launched with --session-restore, each of the profiles in this list
+// have their sessions restored.
 const char kProfilesLastActive[] = "profile.last_active_profiles";
 
 // Total number of profiles created for this Chrome build. Used to tag profile
@@ -3104,6 +3110,17 @@ const char kSecurityTokenSessionBehavior[] = "security_token_session_behavior";
 // this pref is set to 0, the action happens immediately.
 const char kSecurityTokenSessionNotificationSeconds[] =
     "security_token_session_notification_seconds";
+// In addition to the notification described directly above, another
+// notification will be displayed after the action happened. This only happens
+// once for a user. This boolean pref saves whether this notification was
+// already displayed for a user.
+const char kSecurityTokenSessionNotificationDisplayed[] =
+    "security_token_session_notification_displayed";
+// This string pref is set when the notification after the action mentioned
+// above is about to be displayed. It contains the domain that manages the user
+// who was logged out, to be used as part of the notification message.
+const char kSecurityTokenSessionNotificationScheduledDomain[] =
+    "security_token_session_notification_scheduled";
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace prefs

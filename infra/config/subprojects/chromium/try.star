@@ -346,6 +346,7 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
@@ -847,7 +848,11 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "fuchsia-compile-x64-dbg",
     tryjob = try_.job(
-        experiment_percentage = 50,
+        location_regexp = [
+            ".+/[+]/base/fuchsia/.+",
+            ".+/[+]/fuchsia/.+",
+            ".+/[+]/media/fuchsia/.+",
+        ],
     ),
 )
 
@@ -1318,10 +1323,6 @@ try_.chromium_mac_ios_builder(
     coverage_test_types = ["unit"],
     os = os.MAC_10_15,
     tryjob = try_.job(experiment_percentage = 3),
-)
-
-try_.chromium_mac_ios_builder(
-    name = "ios-simulator-cr-recipe",
 )
 
 try_.chromium_mac_ios_builder(

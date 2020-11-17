@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_types.h"
 
 namespace device {
 
@@ -35,6 +36,10 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   static std::vector<uint8_t> EncodeToCBOR(
       const AuthenticatorGetInfoResponse& response);
 
+  // Returns true if there is a Ctap2Version in |ctap2_versions| greater or
+  // equal to |ctap2_version|.
+  bool SupportsAtLeast(Ctap2Version ctap2_version) const;
+
   base::flat_set<ProtocolVersion> versions;
   base::flat_set<Ctap2Version> ctap2_versions;
   std::array<uint8_t, kAaguidLength> aaguid;
@@ -47,6 +52,8 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
       static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256),
   };
   base::Optional<uint32_t> remaining_discoverable_credentials;
+  base::Optional<bool> force_pin_change;
+  base::Optional<uint32_t> min_pin_length;
   AuthenticatorSupportedOptions options;
 
  private:

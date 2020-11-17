@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
+#include "components/autofill/core/common/language_code.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "url/gurl.h"
@@ -78,7 +79,6 @@ class FormStructure {
       bool form_was_autofilled,
       const std::string& login_form_signature,
       bool observed_submission,
-      bool is_raw_metadata_uploading_enabled,
       autofill::AutofillUploadContents* upload,
       std::vector<FormSignature>* encoded_signatures) const;
 
@@ -366,9 +366,9 @@ class FormStructure {
 
   void set_is_rich_query_enabled(bool v) { is_rich_query_enabled_ = v; }
 
-  const std::string& page_language() const { return page_language_; }
+  const LanguageCode& page_language() const { return page_language_; }
 
-  void set_page_language(std::string language) {
+  void set_page_language(LanguageCode language) {
     page_language_ = std::move(language);
   }
 
@@ -532,7 +532,6 @@ class FormStructure {
       std::vector<FormSignature>* queried_form_signatures) const;
 
   void EncodeFormForUpload(
-      bool is_raw_metadata_uploading_enabled,
       autofill::AutofillUploadContents* upload,
       std::vector<FormSignature>* encoded_signatures) const;
 
@@ -587,7 +586,7 @@ class FormStructure {
 
   // The language detected for this form's page, prior to any translations
   // performed by Chrome.
-  std::string page_language_;
+  LanguageCode page_language_;
 
   // The id attribute of the form.
   base::string16 id_attribute_;

@@ -777,6 +777,26 @@
             ]
         }
     ],
+    "AutofillEnableSupportForMoreStructureInNames": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableSupportForMoreStructureInNames",
+                    "enable_features": [
+                        "AutofillEnableSupportForMoreStructureInNames"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
@@ -2847,6 +2867,22 @@
             ]
         }
     ],
+    "FeedPrivacyNoticeCardAtSecondPosition": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InterestFeedV1ClickAndViewActionsConditionalUpload",
+                        "InterestFeedV2ClickAndViewActionsConditionalUpload"
+                    ]
+                }
+            ]
+        }
+    ],
     "FindInPageBestEffortPriority": [
         {
             "platforms": [
@@ -3117,6 +3153,24 @@
                         "GwpAsanMalloc",
                         "GwpAsanPartitionAlloc"
                     ]
+                }
+            ]
+        }
+    ],
+    "HTTP2": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DisablePush2"
                 }
             ]
         }

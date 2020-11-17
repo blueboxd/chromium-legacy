@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
@@ -620,6 +623,7 @@ void WebFrameWidgetBase::HandleMouseDown(LocalFrame& main_frame,
         hit_node->GetLayoutObject()->IsEmbeddedObject() && html_element &&
         html_element->IsPluginElement()) {
       mouse_capture_element_ = To<HTMLPlugInElement>(hit_node);
+      SetMouseCapture(true);
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("input", "capturing mouse",
                                         TRACE_ID_LOCAL(this));
     }
@@ -1409,14 +1413,19 @@ void WebFrameWidgetBase::BeginCommitCompositorFrame() {
 void WebFrameWidgetBase::EndCommitCompositorFrame(
     base::TimeTicks commit_start_time) {
   DCHECK(commit_compositor_frame_start_time_.has_value());
-  CHECK(LocalRootImpl());
-  CHECK(LocalRootImpl()->GetFrame());
-  CHECK(LocalRootImpl()->GetFrame()->View());
-
   if (ForMainFrame()) {
     View()->Client()->DidCommitCompositorFrameForLocalMainFrame(
         commit_start_time);
     View()->UpdatePreferredSize();
+    if (!View()->MainFrameImpl()) {
+      // Trying to track down why the view's idea of the main frame varies
+      // from LocalRootImpl's.
+      // TODO(https://crbug.com/1139104): Remove this.
+      std::string reason = View()->GetNullFrameReasonForBug1139104();
+      DCHECK(false) << reason;
+      SCOPED_CRASH_KEY_STRING32(Crbug1139104, NullFrameReason, reason);
+      base::debug::DumpWithoutCrashing();
+    }
   }
 
   LocalRootImpl()
@@ -1739,8 +1748,10 @@ WebInputEventResult WebFrameWidgetBase::HandleCapturedMouseEvent(
   HTMLPlugInElement* element = mouse_capture_element_;
 
   // Not all platforms call mouseCaptureLost() directly.
-  if (input_event.GetType() == WebInputEvent::Type::kMouseUp)
+  if (input_event.GetType() == WebInputEvent::Type::kMouseUp) {
+    SetMouseCapture(false);
     MouseCaptureLost();
+  }
 
   AtomicString event_type;
   switch (input_event.GetType()) {
@@ -1908,6 +1919,13 @@ float WebFrameWidgetBase::GetEmulatorScale() {
   if (device_emulator_)
     return device_emulator_->scale();
   return 1.0f;
+}
+
+void WebFrameWidgetBase::IntrinsicSizingInfoChanged(
+    mojom::blink::IntrinsicSizingInfoPtr sizing_info) {
+  DCHECK(ForSubframe());
+  GetAssociatedFrameWidgetHost()->IntrinsicSizingInfoChanged(
+      std::move(sizing_info));
 }
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
@@ -2839,6 +2857,27 @@ void WebFrameWidgetBase::ForEachRemoteFrameControlledByWidget(
     const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
   ForEachRemoteFrameChildrenControlledByWidget(local_root_->GetFrame(),
                                                callback);
+}
+
+void WebFrameWidgetBase::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
+                                                  gfx::Rect& focus_root_frame) {
+  auto* local_frame = DynamicTo<LocalFrame>(FocusedCoreFrame());
+  if (!local_frame)
+    return;
+
+  IntRect anchor;
+  IntRect focus;
+  if (!local_frame->Selection().ComputeAbsoluteBounds(anchor, focus))
+    return;
+
+  // Apply the visual viewport for main frames this will apply the page scale.
+  // For subframes it will just be a 1:1 transformation and the browser
+  // will then apply later transformations to these rects.
+  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
+  anchor_root_frame = visual_viewport.RootFrameToViewport(
+      local_frame->View()->ConvertToRootFrame(anchor));
+  focus_root_frame = visual_viewport.RootFrameToViewport(
+      local_frame->View()->ConvertToRootFrame(focus));
 }
 
 void WebFrameWidgetBase::BatterySavingsChanged(WebBatterySavingsFlags savings) {

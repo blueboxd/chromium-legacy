@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 
+#include "base/debug/crash_logging.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -127,29 +128,6 @@ void WebViewFrameWidget::SetWindowRect(const gfx::Rect& window_rect) {
     return;
   }
   View()->SetWindowRect(window_rect);
-}
-
-void WebViewFrameWidget::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
-                                                  gfx::Rect& focus_root_frame) {
-  const Frame* frame = View()->FocusedCoreFrame();
-  const auto* local_frame = DynamicTo<LocalFrame>(frame);
-  if (!local_frame)
-    return;
-
-  LocalFrameView* frame_view = local_frame->View();
-  if (!frame_view)
-    return;
-
-  IntRect anchor;
-  IntRect focus;
-  if (!local_frame->Selection().ComputeAbsoluteBounds(anchor, focus))
-    return;
-
-  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-  anchor_root_frame = visual_viewport.RootFrameToViewport(
-      frame_view->ConvertToRootFrame(anchor));
-  focus_root_frame = visual_viewport.RootFrameToViewport(
-      frame_view->ConvertToRootFrame(focus));
 }
 
 bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {

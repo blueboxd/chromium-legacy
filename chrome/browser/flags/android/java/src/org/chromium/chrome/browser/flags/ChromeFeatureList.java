@@ -292,6 +292,7 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
     public static final String DOWNLOAD_LATER = "DownloadLater";
     public static final String EDIT_PASSWORDS_IN_SETTINGS = "EditPasswordsInSettings";
+    public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
     public static final String ENHANCED_PROTECTION_PROMO_CARD = "EnhancedProtectionPromoCard";
     public static final String EPHEMERAL_TAB_USING_BOTTOM_SHEET = "EphemeralTabUsingBottomSheet";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
@@ -308,7 +309,6 @@ public abstract class ChromeFeatureList {
             "HomepagePromoSyntheticPromoSeenEnabled";
     public static final String HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_TRACKING =
             "HomepagePromoSyntheticPromoSeenTracking";
-    public static final String HOMEPAGE_SETTINGS_UI_CONVERSION = "HomepageSettingsUIConversion";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";
     public static final String INCOGNITO_SCREENSHOT = "IncognitoScreenshot";

@@ -313,6 +313,11 @@ public final class LocationBarCoordinator implements LocationBar, FakeboxDelegat
         mLocationBarLayout.setUrl(mLocationbarDataProvider.getCurrentUrl());
     }
 
+    @Override
+    public void onIncognitoStateChanged() {
+        mLocationBarLayout.updateMicButtonState();
+    }
+
     // OmniboxSuggestionsDropdownEmbedder implementation
     @Override
     public boolean isTablet() {
@@ -332,11 +337,6 @@ public final class LocationBarCoordinator implements LocationBar, FakeboxDelegat
     @Override
     public View getAlignmentView() {
         return isTablet() ? mLocationBarLayout : null;
-    }
-
-    @Override
-    public void onIncognitoStateChanged() {
-        mLocationBarLayout.updateMicButtonState();
     }
 
     /**

@@ -2938,14 +2938,6 @@ ci.fyi_ios_builder(
 )
 
 ci.fyi_ios_builder(
-    name = "ios-simulator-cr-recipe",
-    console_view_entry = ci.console_view_entry(
-        category = "iOS",
-        short_name = "chr",
-    ),
-)
-
-ci.fyi_ios_builder(
     name = "ios-simulator-cronet",
     branch_selector = branches.STANDARD_MILESTONE,
     caches = [xcode_cache.x11e146],
@@ -3357,14 +3349,6 @@ ci.gpu_fyi_linux_builder(
     console_view_entry = ci.console_view_entry(
         category = "Android|L32",
         short_name = "N6",
-    ),
-)
-
-ci.gpu_fyi_linux_builder(
-    name = "Android FYI Release (Nexus 6P)",
-    console_view_entry = ci.console_view_entry(
-        category = "Android|M64|QCOM",
-        short_name = "N6P",
     ),
 )
 

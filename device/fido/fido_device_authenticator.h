@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                     CtapGetAssertionOptions options,
                     GetAssertionCallback callback) override;
   void GetNextAssertion(GetAssertionCallback callback) override;
-  void GetTouch(base::OnceCallback<void()> callback) override;
+  void GetTouch(base::OnceClosure callback) override;
   void GetPinRetries(GetRetriesCallback callback) override;
   void GetPINToken(std::string pin,
                    std::vector<pin::Permissions> permissions,
@@ -60,6 +60,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetUvToken(std::vector<pin::Permissions> permissions,
                   base::Optional<std::string> rp_id,
                   GetTokenCallback callback) override;
+  uint32_t MinPINLength() override;
+  bool ForcePINChange() override;
   void SetPIN(const std::string& pin, SetPINCallback callback) override;
   void ChangePIN(const std::string& old_pin,
                  const std::string& new_pin,

@@ -46,6 +46,7 @@ if (optimize_webui) {
       # TODO(calamity): Update optimize_webui to handle generated files.
       "chrome://resources/chromeos/colors/cros_colors.generated.css",
       "chrome://resources/mojo/chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.html",
+      "chrome://resources/mojo/chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.html",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html",
       "chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js",
       "chrome://os-settings/app-management/app_management.mojom-lite.js",
@@ -93,8 +94,11 @@ if (optimize_webui) {
     ]
     excludes = [
       "chrome://resources/mojo/chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom-lite.js",
+      "chrome://resources/mojo/chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-lite.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-lite.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js",
       "chrome://resources/mojo/services/network/public/mojom/ip_address.mojom-lite.js",
       "chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js",
@@ -346,6 +350,7 @@ preprocess_grit("preprocess_gen_v3") {
     "chromeos/on_startup_page/on_startup_page.m.js",
     "chromeos/os_about_page/channel_switcher_dialog.m.js",
     "chromeos/os_about_page/detailed_build_info.m.js",
+    "chromeos/os_about_page/device_name_browser_proxy.m.js",
     "chromeos/os_about_page/edit_hostname_dialog.m.js",
     "chromeos/os_about_page/os_about_page.m.js",
     "chromeos/os_about_page/update_warning_dialog.m.js",
@@ -679,6 +684,8 @@ preprocess_grit("preprocess_v2") {
     "chromeos/os_about_page/channel_switcher_dialog.js",
     "chromeos/os_about_page/detailed_build_info.html",
     "chromeos/os_about_page/detailed_build_info.js",
+    "chromeos/os_about_page/device_name_browser_proxy.html",
+    "chromeos/os_about_page/device_name_browser_proxy.js",
     "chromeos/os_about_page/edit_hostname_dialog.html",
     "chromeos/os_about_page/edit_hostname_dialog.js",
     "chromeos/os_about_page/os_about_page.html",

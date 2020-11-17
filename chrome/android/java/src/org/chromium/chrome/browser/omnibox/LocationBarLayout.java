@@ -1152,7 +1152,8 @@ public class LocationBarLayout extends FrameLayout
      */
     protected boolean shouldShowDeleteButton() {
         // Show the delete button at the end when the bar has focus and has some text.
-        boolean hasText = !TextUtils.isEmpty(mUrlCoordinator.getTextWithAutocomplete());
+        boolean hasText = mUrlCoordinator != null
+                && !TextUtils.isEmpty(mUrlCoordinator.getTextWithAutocomplete());
         return hasText && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
     }
 

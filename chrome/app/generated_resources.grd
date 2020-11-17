@@ -8107,9 +8107,6 @@ the Bookmarks menu.">
       <message name="IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT" desc="Infobar message to notify that we couldn't load a plugin">
         Could not load <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
       </message>
-      <message name="IDS_PLUGIN_FLASH_DEPRECATION_PROMPT" desc="Infobar message to notify users that Flash player will be deprecated soon.">
-        Flash Player will no longer be supported after December 2020.
-      </message>
 
       <!-- External Protocol Dialog -->
       <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
@@ -9142,6 +9139,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_GEOLOCATION" desc="Description text next to the location icon inside the pop-up bubble which describes that the location permission is blocked on an OS level.">
           Location
+      </message>
+      <message name="IDS_GEOLOCATION_WILL_ASK_AGAIN" desc="Info message that tells user that the website will prompt for geolocation permission again next time">
+          This site will ask again next time.
       </message>
       <if expr="is_macosx">
         <message name="IDS_GEOLOCATION_TURNED_OFF_IN_MACOS" desc="Title for the geolocation bubble that is used when a site requests geolocation, but geolocation is blocked on an OS level in macOS.">
@@ -10649,7 +10649,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         PIN contains invalid characters
       </message>
       <message name="IDS_WEBAUTHN_PIN_ENTRY_ERROR_TOO_SHORT" desc="Error message. Displayed when the user attempts to set a PIN code for their security key (an external physical device for user authentication), and the PIN chosen by them is too short.">
-        PIN must be at least 4 characters
+        {NUM_CHARACTERS, plural,
+          =1 {PIN must be at least one character}
+          other {PIN must be at least # characters}}
       </message>
       <message name="IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED_RETRIES" desc="Error message. Displayed when the user enters the wrong PIN code for their security key (an external physical device for user authentication)">
         {NUM_ATTEMPTS, plural,

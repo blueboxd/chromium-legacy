@@ -500,7 +500,7 @@ public class PaymentRequestService
         methodData = Collections.unmodifiableMap(methodData);
 
         mQueryForQuota = new HashMap<>(methodData);
-        mBrowserPaymentRequest.onQueryForQuotaCreated(mQueryForQuota);
+        mBrowserPaymentRequest.onQueryForQuotaCreated(mQueryForQuota, mPaymentOptions);
 
         if (!PaymentValidator.validatePaymentDetails(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -524,7 +524,37 @@ public class PaymentRequestService
         }
         mSpec = spec;
         mBrowserPaymentRequest.onSpecValidated(mSpec);
+        logMethodTypes(mSpec.getMethodData());
         return true;
+    }
+
+    private void logMethodTypes(Map<String, PaymentMethodData> methodDataMap) {
+        // Log the various types of payment methods that were requested by the merchant.
+        boolean requestedMethodGoogle = false;
+        // Not to record requestedMethodBasicCard because JourneyLogger ignore the case where the
+        // specified networks are unsupported. mPaymentUiService.merchantSupportsAutofillCards()
+        // better captures this group of interest than requestedMethodBasicCard.
+        boolean requestedMethodOther = false;
+        for (String methodName : mSpec.getMethodData().keySet()) {
+            switch (methodName) {
+                case MethodStrings.ANDROID_PAY:
+                case MethodStrings.GOOGLE_PAY:
+                    requestedMethodGoogle = true;
+                    break;
+                case MethodStrings.BASIC_CARD:
+                    // Do not record requestedMethodBasicCard because
+                    // BasicCardUtils.merchantSupportsBasicCard() is used instead.
+                    break;
+                default:
+                    // "Other" includes https url, http url(when certificate check is bypassed) and
+                    // the unlisted methods defined in {@link MethodStrings}.
+                    requestedMethodOther = true;
+            }
+        }
+        boolean requestedBasicCard = BasicCardUtils.merchantSupportsBasicCard(methodDataMap);
+        mJourneyLogger.setRequestedPaymentMethodTypes(
+                /*requestedBasicCard=*/requestedBasicCard, requestedMethodGoogle,
+                requestedMethodOther);
     }
 
     // Implements PaymentResponseHelper.PaymentResponseResultCallback:
@@ -614,6 +644,9 @@ public class PaymentRequestService
     @Override
     public void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory /* Unused */) {
         if (mBrowserPaymentRequest == null) return;
+        assert mSpec != null;
+        assert !mSpec.isDestroyed() : "mSpec is destroyed only after close()";
+
         mIsFinishedQueryingPaymentApps = true;
 
         if (disconnectIfNoPaymentMethodsSupported(mBrowserPaymentRequest.hasAvailableApps())) {
@@ -633,9 +666,15 @@ public class PaymentRequestService
 
         mBrowserPaymentRequest.notifyPaymentUiOfPendingApps(mPendingApps);
         mPendingApps.clear();
-        if (isCurrentPaymentRequestShowing()
-                && !mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails)) {
-            return;
+        if (isCurrentPaymentRequestShowing()) {
+            String error = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
+                    mSpec.getRawTotal(), mSpec.getPaymentOptions());
+            if (error != null) {
+                mJourneyLogger.setNotShown(NotShownReason.OTHER);
+                disconnectFromClientWithDebugMessage(error, PaymentErrorReason.USER_CANCEL);
+                if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+                return;
+            }
         }
 
         mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
@@ -868,6 +907,9 @@ public class PaymentRequestService
      */
     /* package */ void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
         if (mBrowserPaymentRequest == null) return;
+        assert mSpec != null;
+        assert !mSpec.isDestroyed() : "mSpec is destroyed only after close().";
+
         if (mBrowserPaymentRequest.isShowingUi()) {
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
@@ -899,9 +941,15 @@ public class PaymentRequestService
         if (disconnectIfNoPaymentMethodsSupported(mBrowserPaymentRequest.hasAvailableApps())) {
             return;
         }
-        if (isFinishedQueryingPaymentApps()
-                && !mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails)) {
-            return;
+        if (isFinishedQueryingPaymentApps()) {
+            String error = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
+                    mSpec.getRawTotal(), mSpec.getPaymentOptions());
+            if (error != null) {
+                mJourneyLogger.setNotShown(NotShownReason.OTHER);
+                disconnectFromClientWithDebugMessage(error, PaymentErrorReason.USER_CANCEL);
+                if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+                return;
+            }
         }
 
         mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();

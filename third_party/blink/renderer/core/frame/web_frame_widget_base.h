@@ -109,8 +109,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // Opposite of |ForSubframe|. If this widget is for the local main frame.
   bool ForMainFrame() const { return !ForSubframe(); }
 
-  virtual void IntrinsicSizingInfoChanged(
-      mojom::blink::IntrinsicSizingInfoPtr) {}
+  // Called when the intrinsic size of the owning container is changing its
+  // size. This should only be called when `ForSubframe` is true.
+  void IntrinsicSizingInfoChanged(mojom::blink::IntrinsicSizingInfoPtr);
 
   void AutoscrollStart(const gfx::PointF& position);
   void AutoscrollFling(const gfx::Vector2dF& position);
@@ -606,8 +607,8 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Calculates the selection bounds in the root frame. Returns bounds unchanged
   // when there is no focused frame or no selection.
-  virtual void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
-                                        gfx::Rect& focus_in_root_frame) = 0;
+  void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
+                                gfx::Rect& focus_in_root_frame);
 
   // Returns if auto resize mode is enabled.
   bool AutoResizeMode();

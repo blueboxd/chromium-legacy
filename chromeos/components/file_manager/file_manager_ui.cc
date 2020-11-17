@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ FileManagerUI::FileManagerUI(content::WebUI* web_ui,
 
   // The resources requested by chrome://file-manager HTML.
   // TOD(majewski): Rename main.* to main_swa.*
-  source->AddResourcePath("main.css", IDR_FILE_MANAGER_SWA_MAIN_CSS);
   source->AddResourcePath("main.js", IDR_FILE_MANAGER_SWA_MAIN_JS);
   source->AddResourcePath("file_manager.mojom-lite.js",
                           IDR_FILE_MANAGER_SWA_MOJO_LITE_JS);

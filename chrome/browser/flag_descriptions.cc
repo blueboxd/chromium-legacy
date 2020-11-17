@@ -2780,13 +2780,6 @@ const char kHomepagePromoCardDescription[] =
     "Enable homepage promo card that will be shown to users with partner "
     "configured homepage.";
 
-const char kHomepageSettingsUIConversionName[] =
-    "Enable new homepage setting UI";
-const char kHomepageSettingsUIConversionDescription[] =
-    "Enable new homepage setting UI, which allows user set up customized "
-    "homepage URL through a radio button group, and add promo box on NTP "
-    "if homepage is not enabled.";
-
 const char kInstantStartName[] = "Instant start";
 const char kInstantStartDescription[] =
     "Show start surface before native library is loaded.";
@@ -3240,9 +3233,9 @@ extern const char kAllowAllSitesToInitiateMirroringDescription[] =
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
 
-const char kEnableAccessibilityLiveCaptionsName[] = "Live Captions";
-const char kEnableAccessibilityLiveCaptionsDescription[] =
-    "Enables the live captions feature which generates captions for "
+const char kEnableAccessibilityLiveCaptionName[] = "Live Caption";
+const char kEnableAccessibilityLiveCaptionDescription[] =
+    "Enables the live caption feature which generates captions for "
     "media playing in Chrome. Turn the feature on in "
     "chrome://settings/accessibility.";
 

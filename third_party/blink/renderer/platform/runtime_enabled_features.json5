@@ -338,6 +338,9 @@
       status: "experimental",
     },
     {
+      name: "ClickPointerEventIntegerCoordinates",
+    },
+    {
       name: "ClickRetargetting",
       status: "experimental",
     },
@@ -1862,6 +1865,10 @@
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
       status: "test",
+    },
+    {
+      name: "StorageBuckets",
+      status: "experimental",
     },
     {
       name: "StrictMimeTypesForWorkers",

@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2f5d646c928eb989467cf53ed17e2e8d7e7ad357',
+  'angle_revision': 'd8e982264ce54653ce4915381ac6ed3f0d2ac90b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c4b2f38f23960ea7bf792a1163634b836c7e8ad6',
+  'devtools_frontend_revision': 'f69ec827f69b9a272b7c76d9cb92065adb25b5fa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'f2bc3b3edd6f3a8424b230b17f844f59768d53b8',
+  'dawn_revision': 'd98e8b70bbb198ebd665a570880ccc7b20e56198',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -887,7 +887,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'a44dddc97acb88359ec82285f522e967329f4051',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd7af84645b98df9fbaf25a763233031d6474cbf3',
       'condition': 'checkout_chromeos',
   },
 
@@ -1163,7 +1163,7 @@ deps = {
   },
 
   'src/third_party/libvpx/source/libvpx':
-    Var('chromium_git') + '/webm/libvpx.git' + '@' +  '94384b5c685ad3baac8989f19ee587eb72093a7f',
+    Var('chromium_git') + '/webm/libvpx.git' + '@' +  'b5d77a48d740e211a130c8e45d9353ef8c154a47',
 
   'src/third_party/libwebm/source':
     Var('chromium_git') + '/webm/libwebm.git' + '@' + '51ca718c3adf0ddedacd7df25fe45f67dc5a9ce1',
@@ -1377,7 +1377,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'jIJhJ4I22Dx5V-URd7bp-x1RILv5vrLEJdjjt77MRPcC',
+              'version': 'GXNupZ4wd3_EsDohjcNOss3iuVb5gcv0rAeHUiH05JkC',
           },
       ],
       'condition': 'checkout_android',
@@ -1578,7 +1578,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2e8c7015c00a5ba3ff188f02a19ca4b7b3b312b6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@384b05891b9b2271c93dd5e7780c348f6e83dd95',
     'condition': 'checkout_src_internal',
   },
 
@@ -1586,7 +1586,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'MixcfTPFsHokR735rFKmvn0Ctjeu1IlipdRyybXfstwC',
+        'version': 'FB_bifMNysoEImRPjxxeBSyH7DJ-w_mTig1qaRVVxMgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1597,7 +1597,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'uHyo1y211uBoRAYnFrxKwssxhVztzRHATK4g98mNbS0C',
+        'version': 'Y3c3XYAxp6W90cFgZUmorQTsJHW-F5HsqrxoPlvxAxkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

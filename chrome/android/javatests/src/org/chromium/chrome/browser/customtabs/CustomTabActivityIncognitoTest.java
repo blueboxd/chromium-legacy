@@ -32,6 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RemoteViews;
+import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -72,13 +73,15 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING})
 public class CustomTabActivityIncognitoTest {
-    private String mTestPage;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
     private static int sIdToIncrement = 1;
 
+    private String mTestPage;
+
     @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    public IncognitoCustomTabActivityTestRule mCustomTabActivityTestRule =
+            new IncognitoCustomTabActivityTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
@@ -89,7 +92,6 @@ public class CustomTabActivityIncognitoTest {
     @Before
     public void setUp() throws TimeoutException {
         mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
-
         // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
         IncognitoDataTestUtils.fireAndWaitForCctWarmup();
     }
@@ -121,6 +123,15 @@ public class CustomTabActivityIncognitoTest {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
             CustomTabToolbar toolbar = activity.findViewById(R.id.toolbar);
             return toolbar.getBackground().getColor();
+        });
+    }
+
+    private static boolean getTitleBarVisibility(CustomTabActivity activity)
+            throws ExecutionException {
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            CustomTabToolbar toolbar = activity.findViewById(R.id.toolbar);
+            TextView titleBar = toolbar.findViewById(R.id.title_bar);
+            return titleBar.getVisibility() == View.VISIBLE;
         });
     }
 
@@ -389,4 +400,15 @@ public class CustomTabActivityIncognitoTest {
         View bottomBarView = mCustomTabActivityTestRule.getActivity().findViewById(R.id.bottom_bar);
         assertTrue(bottomBarView == null);
     }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
+    public void ensureTitleBarIsVisibile() throws Exception {
+        Intent intent = createMinimalIncognitoCustomTabIntent();
+        intent.putExtra(
+                CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE, CustomTabsIntent.SHOW_PAGE_TITLE);
+        CustomTabActivity activity = launchIncognitoCustomTab(intent);
+        Assert.assertTrue(getTitleBarVisibility(activity));
     }
+}

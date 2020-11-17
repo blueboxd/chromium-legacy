@@ -45,6 +45,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "account-management-flows-v2",
+    "owners": [ "anastasiian", "sinhak" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "add-web-content-drop-interaction",
     "owners": [ "edchin", "bling-flags@google.com" ],
     "expiry_milestone": 90
@@ -474,7 +479,7 @@
   {
     "name": "chrome-share-highlights-android",
     "owners": [ "gayane" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "chrome-share-long-screenshot",
@@ -650,15 +655,6 @@
     "name": "cookie-deprecation-messages",
     "owners": [ "bingler", "chlily", "aarontag" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "cookies-page-redesign",
-    "owners": [
-      "harrisonsean",
-      "sauski",
-      "msramek",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 92
   },
   {
     "name": "cookies-without-same-site-must-be-secure",
@@ -3677,12 +3673,12 @@
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "paint-preview-startup",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "passive-listener-default",
@@ -3836,6 +3832,15 @@
       "chrome-safebrowsing-core@google.com"
     ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "privacy-sandbox-settings",
+    "owners": [
+      "harrisonsean",
+      "sauski",
+      "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 92
   },
   {
     "name": "privacy-settings-redesign",

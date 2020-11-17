@@ -6625,6 +6625,8 @@ Called by update_bad_message_reasons.py.-->
   <int value="233" label="RWH_CLOSE_PORTAL"/>
   <int value="234" label="MSDH_INVALID_STREAM_TYPE"/>
   <int value="235" label="RFH_CREATE_CHILD_FRAME_TOKENS_NOT_FOUND"/>
+  <int value="236" label="ASGH_ASSOCIATED_INTERFACE_REQUEST"/>
+  <int value="237" label="ASGH_RECEIVED_CONTROL_MESSAGE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -8739,6 +8741,7 @@ Called by update_bad_message_reasons.py.-->
              Borealis DLC"/>
   <int value="8" label="Device needs more space to use Borealis DLC"/>
   <int value="9" label="DLC faced an unknown error"/>
+  <int value="10" label="Device is offline"/>
 </enum>
 
 <enum name="BorealisStartupResult">
@@ -25360,6 +25363,8 @@ Called by update_extension_histograms.py.-->
   <int value="1530" label="ACCESSIBILITY_PRIVATE_UPDATESELECTTOSPEAKPANEL"/>
   <int value="1531" label="TAB_GROUPS_MOVE"/>
   <int value="1532" label="SCRIPTING_EXECUTESCRIPT"/>
+  <int value="1533" label="DECLARATIVENETREQUEST_UPDATESESSIONRULES"/>
+  <int value="1534" label="DECLARATIVENETREQUEST_GETSESSIONRULES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -60646,6 +60651,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Signed Out: Default avatar (Grey silhouette)"/>
   <int value="4" label="Signed Out: Modern avatar"/>
   <int value="5" label="Signed Out: Old avatar"/>
+</enum>
+
+<enum name="ProfileColorsUniqueness">
+  <int value="0" label="Single profile"/>
+  <int value="1" label="Unique colors (with default theme at most once)"/>
+  <int value="2" label="Unique colors (with default theme repeated)"/>
+  <int value="3" label="Repeated colors"/>
 </enum>
 
 <enum name="ProfileCreateResult">

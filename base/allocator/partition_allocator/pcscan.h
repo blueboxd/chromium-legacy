@@ -8,6 +8,7 @@
 #include <atomic>
 
 #include "base/allocator/partition_allocator/object_bitmap.h"
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_page.h"
@@ -38,7 +39,12 @@ class BASE_EXPORT PCScan final {
   using Root = PartitionRoot<thread_safe>;
   using SlotSpan = SlotSpanMetadata<thread_safe>;
 
-  explicit PCScan(Root* root) : root_(root) {}
+  enum class InvocationMode {
+    kBlocking,
+    kNonBlocking,
+  };
+
+  explicit PCScan(Root* root);
 
   PCScan(const PCScan&) = delete;
   PCScan& operator=(const PCScan&) = delete;
@@ -46,6 +52,8 @@ class BASE_EXPORT PCScan final {
   ~PCScan();
 
   ALWAYS_INLINE void MoveToQuarantine(void* ptr, SlotSpan* slot_span);
+
+  void PerformScan(InvocationMode invocation_mode);
 
  private:
   class PCScanTask;
@@ -73,9 +81,6 @@ class BASE_EXPORT PCScan final {
     std::atomic<size_t> epoch_{0u};
     size_t last_size_ = 0;
   };
-
-  enum class TaskType { kNonBlocking, kBlockingForTesting };
-  void ScheduleTask(TaskType);
 
   Root* root_;
   QuarantineData quarantine_data_;
@@ -120,8 +125,8 @@ ALWAYS_INLINE void PCScan<thread_safe>::MoveToQuarantine(void* ptr,
   const bool is_limit_reached =
       quarantine_data_.Account(slot_span->bucket->slot_size);
   if (is_limit_reached) {
-    // Post a background task to not block the current thread.
-    ScheduleTask(TaskType::kNonBlocking);
+    // Avoid blocking the current thread for regular scans.
+    PerformScan(InvocationMode::kNonBlocking);
   }
 }
 

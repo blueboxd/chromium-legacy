@@ -201,7 +201,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '89e3ceea54f63df2a3249732ca38597731342514',
+  'v8_revision': '15247228bbf879eab29da6c7a0b1a608fccbc1fa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c669bf5296197840ab86ee8ca1a2832b69849097',
+  'angle_revision': '2f5d646c928eb989467cf53ed17e2e8d7e7ad357',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -217,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'b8a27ae001c2300051b94ba31408c676b61786c7',
+  'pdfium_revision': '6823afb28ceb5aee566d007670180643653e85b6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b7e7aba113f5d75686d1580b796632aa1c300877',
+  'devtools_frontend_revision': 'c4b2f38f23960ea7bf792a1163634b836c7e8ad6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2c5b040b5c2aa9482c7dc6a8dcbc730db21d5222',
+  'dawn_revision': 'f2bc3b3edd6f3a8424b230b17f844f59768d53b8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -352,7 +352,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': '7df0f96a015af09bb7b9b0b42b2b3637d428f012',
+  'nearby_revision': '2097279b66bfec0f36970973d2b69357d2ff49b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -907,7 +907,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd4e6fb6573e0955110a2c69be29557f6626d9ae6',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9abde8c3f3a2c0cfb2b78f772655352e094e612e',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1341,7 +1341,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'FwzgY9X10eGIOA-l6ukRroKmBYo1As7yOiPDRfc6PxAC'
+              'version': 'ZJSAA8Pwi2mDf7nU7eRK7e3lmUHyrNUgCmzdRwsMbnMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1578,7 +1578,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bde2c3c32a2bbe15dfffe1e03db42efa5c23419b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2e8c7015c00a5ba3ff188f02a19ca4b7b3b312b6',
     'condition': 'checkout_src_internal',
   },
 

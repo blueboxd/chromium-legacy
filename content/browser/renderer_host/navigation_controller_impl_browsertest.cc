@@ -7207,10 +7207,10 @@ class HistoryNavigationBeforeCommitInjector
   bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
       NavigationRequest* navigation_request,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
-    if (!render_frame_host->GetParent() && params->url == url_) {
+    if (!render_frame_host->GetParent() && (**params).url == url_) {
       did_trigger_history_navigation_ = true;
       web_contents()->GetController().GoBack();
     }
@@ -7443,9 +7443,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Verify the Origin and Referer headers.
   EXPECT_THAT(headers, ::testing::HasSubstr("Origin: null"));
-  EXPECT_THAT(headers,
-              ::testing::ContainsRegex(
-                  "Referer: http://a.com:.*/form_that_posts_cross_site.html"));
+  EXPECT_THAT(headers, ::testing::ContainsRegex("Referer: http://a.com:.*/"));
 }
 
 // Test that verifies that Content-Type http header is correctly sent
@@ -8710,11 +8708,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // Try to fake an error page navigation by doing a DidCommitProvisionalLoad
   // call. The browser doesn't know about the navigation at all previously.
   GURL bad_url(embedded_test_server()->GetURL("/title2.html"));
-  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
-      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
+  auto params = mojom::DidCommitProvisionalLoadParams::New();
   params->nav_entry_id = 0;
   params->did_create_new_entry = true;
   params->url = bad_url;
+  params->referrer = blink::mojom::Referrer::New();
   params->transition = ui::PAGE_TRANSITION_LINK;
   params->gesture = NavigationGestureUser;
   params->page_state = blink::PageState::CreateFromURL(bad_url);
@@ -10659,7 +10657,7 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
   bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
       NavigationRequest* navigation_request,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     std::move(callback_).Run();
@@ -11611,8 +11609,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
   NavigationRequest* navigation_1 =
       main_frame->child_at(0)->navigation_request();
   ASSERT_TRUE(navigation_1);
-  EXPECT_EQ(main_url, navigation_1->GetReferrer().url);
-  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+  EXPECT_EQ(main_url.GetOrigin(), navigation_1->GetReferrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
             navigation_1->GetReferrer().policy);
   EXPECT_TRUE(navigation_1->IsRendererInitiated());
   EXPECT_TRUE(navigation_1->IsPost());
@@ -11629,8 +11627,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
   EXPECT_EQ(url::Origin::Create(main_url),
             frame_entry_1->initiator_origin().value());
   content::Referrer referrer_1 = frame_entry_1->referrer();
-  EXPECT_EQ(main_url, frame_entry_1->referrer().url);
-  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+  EXPECT_EQ(main_url.GetOrigin(), frame_entry_1->referrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
             frame_entry_1->referrer().policy);
   int item_sequence_number_1 = frame_entry_1->item_sequence_number();
   int document_sequence_number_1 = frame_entry_1->document_sequence_number();
@@ -11644,8 +11642,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
   NavigationRequest* navigation_2 =
       main_frame->child_at(0)->navigation_request();
   ASSERT_TRUE(navigation_2);
-  EXPECT_EQ(main_url, navigation_2->GetReferrer().url);
-  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+  EXPECT_EQ(main_url.GetOrigin(), navigation_2->GetReferrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
             navigation_2->GetReferrer().policy);
   EXPECT_FALSE(navigation_2->IsRendererInitiated());
   EXPECT_TRUE(navigation_2->IsPost());
@@ -11662,8 +11660,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
   EXPECT_EQ(url::Origin::Create(main_url),
             frame_entry_2->initiator_origin().value());
   content::Referrer referrer_2 = frame_entry_1->referrer();
-  EXPECT_EQ(main_url, frame_entry_2->referrer().url);
-  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+  EXPECT_EQ(main_url.GetOrigin(), frame_entry_2->referrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
             frame_entry_2->referrer().policy);
 
   // TODO(http://crbug.com/1068965): Remove this when test passes.

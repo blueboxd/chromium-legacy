@@ -3418,8 +3418,8 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ILLUSTRATION_TITLE" desc="Accessible title of the enterprise enrollment screen illustration depicting successful enrollment.">
     Successful enrollment illustration
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_DOMAIN" desc="Success message to be shown once enterprise enrollment completes.">
-    This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be managed by <ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph>.
+  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_DOMAIN" desc="Success message to be shown once enterprise enrollment completes. MANAGER can be a domain or an email address.">
+    This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be managed by <ph name="MANAGER">$2<ex>acmecorp.com</ex></ph>.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL" desc="Label for asset id text box on the device naming screen in the enterprise enrollment dialog.">
     Asset Identifier
@@ -5587,6 +5587,9 @@
   </message>
   <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_MESSAGE" desc="" translateable="false">
     <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> isn't allowed on this device. Contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_OFFLINE_MESSAGE" desc="" translateable="false">
+    Your device is offline, please connect to the internet and try again.
   </message>
   <message name="IDS_BOREALIS_DLC_INTERNAL_FAILED_MESSAGE" desc="" translateable="false">
     Your device needs to be updated before you can use <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>.

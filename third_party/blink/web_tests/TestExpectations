@@ -81,6 +81,7 @@ crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/i
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-css.js [ Timeout ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-iframe.js [ Timeout ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js.js [ Timeout ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/page/iframe-src-write-delay.js [ Pass Failure Timeout ]
 # Minor issues, need rebaselining
 crbug.com/901056 virtual/synchronous_html_parser/fast/css/focus-display-block-inline.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/fast/css/fontfaceset-multiple-families.html [ Failure ]
@@ -5669,6 +5670,9 @@ crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-stroke-box
 
 # Temporarily disable test to allow devtools-frontend changes
 crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Skip ]
+crbug.com/1144127 http/tests/devtools/modules-load-elements.js [ Pass Failure ]
+crbug.com/1144127 http/tests/devtools/modules-load-network.js [ Pass Failure ]
+crbug.com/1144127 http/tests/devtools/console/console-xpath.js [ Pass Failure ]
 
 # Sheriff 2020-06-17
 crbug.com/1095969 [ Mac ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
@@ -5978,10 +5982,6 @@ crbug.com/997202 [ Mac ] virtual/transform-interop/external/wpt/css/css-transfor
 # Sheriff 2020-11-04
 crbug.com/1144273 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure Timeout ]
 crbug.com/1145742 [ Fuchsia ] virtual/stable/http/tests/navigation/location-assign-adds-history-item.html [ Pass Crash Timeout ]
-
-# Disabled until CL with fix gets merged https://chromium-review.googlesource.com/c/chromium/src/+/2504259
-crbug.com/1127115 inspector-protocol/runtime/runtime-console-log-node-letter-case.js [ Failure ]
-crbug.com/1127115 inspector-protocol/runtime/runtime-console-log-node-document-type.js [ Failure ]
 
 # Sheriff 2020-11-06
 crbug.com/1146560 [ Win ] fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Failure Pass ]

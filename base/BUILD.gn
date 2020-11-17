@@ -2194,6 +2194,7 @@ component("base") {
 
     deps += [
       "//base/tracing/protos:chrome_track_event",
+      "//base/tracing/protos:chrome_track_event_zero",
       "//third_party/perfetto/include/perfetto/protozero",
     ]
 
@@ -3475,6 +3476,7 @@ if (enable_nocompile_tests) {
   nocompile_test("base_nocompile_tests") {
     sources = [
       "bind_post_task_unittest.nc",
+      "bind_unittest.nc",
       "callback_list_unittest.nc",
       "callback_unittest.nc",
       "containers/buffer_iterator_unittest.nc",
@@ -3494,11 +3496,6 @@ if (enable_nocompile_tests) {
       "thread_annotations_unittest.nc",
       "traits_bag_unittest.nc",
     ]
-
-    if (!llvm_force_head_revision) {
-      # TODO(crbug.com/1148761): Update test expectations in next Clang roll.
-      sources += [ "bind_unittest.nc" ]
-    }
 
     deps = [
       ":base",

@@ -1215,6 +1215,9 @@ extern const char kShowAutofillSignaturesDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
+extern const char kShowPerformanceMetricsHudName[];
+extern const char kShowPerformanceMetricsHudDescription[];
+
 extern const char kShowOverdrawFeedbackName[];
 extern const char kShowOverdrawFeedbackDescription[];
 
@@ -1521,6 +1524,9 @@ extern const char kBentoOfflineDescription[];
 
 extern const char kCCTIncognitoName[];
 extern const char kCCTIncognitoDescription[];
+
+extern const char kCCTIncognitoAvailableToThirdPartyName[];
+extern const char kCCTIncognitoAvailableToThirdPartyDescription[];
 
 extern const char kCCTTargetTranslateLanguageName[];
 extern const char kCCTTargetTranslateLanguageDescription[];

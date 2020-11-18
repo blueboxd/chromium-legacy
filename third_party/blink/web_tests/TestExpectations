@@ -88,9 +88,6 @@ crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/i
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/network/initiator-minified.js [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/signed-exchange/subresource/sxg-subresource.tentative.html [ Failure Timeout ]
 
-# Temporarily disable until linear memory inspector module is landed
-crbug.com/1110202 http/tests/devtools/modules-load-source.js [ Pass Failure ]
-
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -5252,8 +5249,6 @@ crbug.com/907125 external/wpt/lifecycle/worker-dispay-none.tentative.html [ Time
 # Updated by Sheriff on 2020-05-29: flaky on all platforms.
 crbug.com/1084441 media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 
-crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [ Failure ]
-
 # Sheriff 2019-11-15
 crbug.com/1025123 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Pass Failure ]
 crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
@@ -6017,3 +6012,6 @@ crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.h
 crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]
+
+# Sheriff 2020-11-18
+crbug.com/915903 http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Timeout ]

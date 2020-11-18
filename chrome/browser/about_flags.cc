@@ -4727,6 +4727,14 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_ANDROID)
+    {"cct-incognito-available-to-third-party",
+     flag_descriptions::kCCTIncognitoAvailableToThirdPartyName,
+     flag_descriptions::kCCTIncognitoAvailableToThirdPartyDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTIncognitoAvailableToThirdParty)},
+#endif
+
+#if defined(OS_ANDROID)
     {"background-task-component-update",
      flag_descriptions::kBackgroundTaskComponentUpdateName,
      flag_descriptions::kBackgroundTaskComponentUpdateDescription, kOsAndroid,
@@ -6716,6 +6724,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"permission-predictions", flag_descriptions::kPermissionPredictionsName,
      flag_descriptions::kPermissionPredictionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPermissionPredictions)},
+
+    {"show-performance-metrics-hud",
+     flag_descriptions::kShowPerformanceMetricsHudName,
+     flag_descriptions::kShowPerformanceMetricsHudDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHudDisplayForPerformanceMetrics)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

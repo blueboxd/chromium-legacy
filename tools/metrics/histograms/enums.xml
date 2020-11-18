@@ -40148,6 +40148,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Migration stopped"/>
 </enum>
 
+<enum name="KeyPermissionsManagerArcUsageUpdateStatus">
+  <int value="0" label="kStarted"/>
+  <int value="1" label="kSucceeded"/>
+  <int value="2" label="kFailed"/>
+</enum>
+
 <enum name="KeyPermissionsManagerMigrationStatus">
   <int value="0" label="kStarted"/>
   <int value="1" label="kSucceeded"/>
@@ -42658,6 +42664,7 @@ from previous Chrome versions.
   <int value="-1431563697" label="WebPaymentsMethodSectionOrderV2:enabled"/>
   <int value="-1430090822" label="EnableSharedImageForWebview:disabled"/>
   <int value="-1428589407" label="WebRTCPipeWireCapturer:disabled"/>
+  <int value="-1426911497" label="CCTIncognitoAvailableToThirdParty:enabled"/>
   <int value="-1426817842" label="BlockTabUnders:enabled"/>
   <int value="-1426150007" label="ignore-previews-blacklist"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
@@ -43123,6 +43130,7 @@ from previous Chrome versions.
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1007961880" label="PrivacySandboxSettings:enabled"/>
   <int value="-1005164075" label="ContextualSearchTranslations:enabled"/>
+  <int value="-1002537430" label="HudDisplayForPerformanceMetrics:disabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
   <int value="-1000671573" label="TemporaryUnexpireFlagsM80:enabled"/>
   <int value="-998731974" label="WinUseBrowserSpellChecker:enabled"/>
@@ -44574,6 +44582,7 @@ from previous Chrome versions.
   <int value="453017472"
       label="IntentBlockExternalFormRedirectsNoGesture:disabled"/>
   <int value="453102772" label="OfflinePagesLoadSignalCollecting:disabled"/>
+  <int value="455140116" label="CCTIncognitoAvailableToThirdParty:disabled"/>
   <int value="455698038"
       label="disable-gesture-requirement-for-media-playback"/>
   <int value="455754036" label="MirroringService:disabled"/>
@@ -46193,6 +46202,7 @@ from previous Chrome versions.
   <int value="2015547864" label="NetworkServiceInProcess:enabled"/>
   <int value="2018956925" label="UseAAudioDriver:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
+  <int value="2020898714" label="HudDisplayForPerformanceMetrics:enabled"/>
   <int value="2022294878" label="WifiSyncAndroid:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
   <int value="2024298022"

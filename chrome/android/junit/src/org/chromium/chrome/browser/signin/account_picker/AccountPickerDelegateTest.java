@@ -32,6 +32,7 @@ import org.robolectric.Robolectric;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -50,7 +51,7 @@ import org.chromium.ui.base.WindowAndroid;
 import java.lang.ref.WeakReference;
 
 /**
- * This class tests the {@link AccountPickerDelegate}.
+ * This class tests the {@link AccountPickerDelegateImpl}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class AccountPickerDelegateTest {
@@ -89,7 +90,7 @@ public class AccountPickerDelegateTest {
 
     private FragmentActivity mActivity;
 
-    private AccountPickerDelegate mDelegate;
+    private AccountPickerDelegateImpl mDelegate;
 
     private CoreAccountInfo mCoreAccountInfo;
 
@@ -108,7 +109,7 @@ public class AccountPickerDelegateTest {
         mCoreAccountInfo =
                 mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
 
-        mDelegate = new AccountPickerDelegate(
+        mDelegate = new AccountPickerDelegateImpl(
                 mWindowAndroidMock, mTabMock, mWebSigninBridgeFactoryMock, CONTINUE_URL);
         when(mWebSigninBridgeFactoryMock.create(eq(mProfileMock), any(), eq(mDelegate)))
                 .thenReturn(mWebSigninBridgeMock);
@@ -116,6 +117,7 @@ public class AccountPickerDelegateTest {
 
     @After
     public void tearDown() {
+        IncognitoUtils.setEnabledForTesting(null);
         mDelegate.onDismiss();
     }
 
@@ -183,5 +185,13 @@ public class AccountPickerDelegateTest {
                 .updateCredentials(AccountUtils.createAccountFromName(
                                            AccountManagerTestRule.TEST_ACCOUNT_EMAIL),
                         mActivity, callback);
+    }
+
+    @Test
+    public void testIsIncognitoModeEnabled() {
+        IncognitoUtils.setEnabledForTesting(true);
+        Assert.assertTrue(mDelegate.isIncognitoModeEnabled());
+        IncognitoUtils.setEnabledForTesting(false);
+        Assert.assertFalse(mDelegate.isIncognitoModeEnabled());
     }
 }

@@ -54,7 +54,6 @@ class CoreOobeView {
                                const std::string& error_text,
                                const std::string& help_link_text,
                                HelpAppLauncher::HelpTopic help_topic_id) = 0;
-  virtual void ShowSignInUI(const std::string& email) = 0;
   virtual void ResetSignInUI(bool force_online) = 0;
   virtual void ClearUserPodPassword() = 0;
   virtual void RefocusCurrentPod() = 0;
@@ -66,7 +65,6 @@ class CoreOobeView {
   virtual void SetShelfHeight(int height) = 0;
   virtual void SetDialogPaddingMode(DialogPaddingMode mode) = 0;
   virtual void ShowDeviceResetScreen() = 0;
-  virtual void ShowEnableAdbSideloadingScreen() = 0;
   virtual void UpdateKeyboardState() = 0;
 };
 
@@ -127,7 +125,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
                        const std::string& error_text,
                        const std::string& help_link_text,
                        HelpAppLauncher::HelpTopic help_topic_id) override;
-  void ShowSignInUI(const std::string& email) override;
   void ResetSignInUI(bool force_online) override;
   void ClearUserPodPassword() override;
   void RefocusCurrentPod() override;
@@ -139,7 +136,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void SetShelfHeight(int height) override;
   void SetDialogPaddingMode(CoreOobeView::DialogPaddingMode mode) override;
   void ShowDeviceResetScreen() override;
-  void ShowEnableAdbSideloadingScreen() override;
 
   void UpdateKeyboardState() override;
 

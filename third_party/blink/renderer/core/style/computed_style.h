@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/border_value.h"
 #include "third_party/blink/renderer/core/style/computed_style_base.h"
@@ -243,13 +242,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleCascade;
   friend class css_longhand::Appearance;
   // Editing has to only reveal unvisited info.
-  friend class ApplyStyleCommand;
-  // Editing has to only reveal unvisited info.
   friend class EditingStyle;
-  // Needs to be able to see visited and unvisited colors for devtools.
-  friend class ComputedStyleCSSValueMapping;
-  // Sets color styles
-  friend class StyleBuilderFunctions;
   // Saves Border/Background information for later comparison.
   friend class CachedUAStyle;
   // Accesses visited and unvisited colors.
@@ -258,13 +251,10 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleAdjuster;
   // Access to private SetFontInternal().
   friend class FontBuilder;
-
-  // FIXME: When we stop resolving currentColor at style time, these can be
-  // removed.
-  friend class CSSToStyleMap;
+  // Access to GetCurrentColor(). (drop-shadow() does not resolve 'currentcolor'
+  // at use-time.)
   friend class FilterOperationResolver;
-  friend class StyleBuilderConverter;
-  friend class StyleResolverState;
+  // Access to SetInitialData() and GetCurrentColor().
   friend class StyleResolver;
 
  protected:
@@ -698,16 +688,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // outline-offset
   int16_t OutlineOffsetInt() const { return OutlineOffset().ToInt(); }
-
-  // For history and compatibility reasons, we draw outline:auto (for focus
-  // rings) and normal style outline differently.
-  // Focus rings enclose block visual overflows (of line boxes and descendants),
-  // while normal outlines don't.
-  NGOutlineType OutlineRectsShouldIncludeBlockVisualOverflow() const {
-    return OutlineStyleIsAuto()
-               ? NGOutlineType::kIncludeBlockVisualOverflow
-               : NGOutlineType::kDontIncludeBlockVisualOverflow;
-  }
 
   // -webkit-perspective-origin-x
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }

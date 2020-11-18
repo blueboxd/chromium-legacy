@@ -461,6 +461,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "cct-incognito-available-to-third-party",
+    "owners": [ "rhalavati", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "cdm-factory-daemon",
     "owners": [ "jkardatzke", "xhwang", "chromeos-gfx-video@google.com" ],
     "expiry_milestone": 91
@@ -569,12 +574,11 @@
   {
     "name": "content-settings-redesign",
     "owners": [
-      "tchudakov",
       "harrisonsean",
       "msramek",
       "chrome-friendly-settings@google.com"
     ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "context-menu-google-lens-chip",
@@ -2136,7 +2140,7 @@
   {
     "name": "enable-suggested-files",
     "owners": [ "edimitriadis", "tby" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "enable-suggestions-with-substring-match",
@@ -4278,6 +4282,12 @@
     "name": "show-overdraw-feedback",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "show-performance-metrics-hud",
+    "owners": [ "weiliangc", "sadrul", "chrome-gpu-metrics@google.com" ],
+    // This is a debug flag to show performance metrics in a heads up display.
+    "expiry_milestone": -1
   },
   {
     "name": "show-taps",

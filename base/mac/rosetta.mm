@@ -42,14 +42,14 @@ bool ProcessIsTranslated() {
 #if defined(ARCH_CPU_ARM64)
 
 bool IsRosettaInstalled() {
-  // Chromium currently requires the 10.15 SDK, but code compiled for Arm must
-  // be compiled against at least the 11.0 SDK and will run on at least macOS
-  // 11.0, so this is safe. __builtin_available doesn't work for 11.0 yet;
-  // https://crbug.com/1115294
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
-  return CFBundleIsArchitectureLoadable(CPU_TYPE_X86_64);
-#pragma clang diagnostic pop
+  if (@available(macOS 11.0, *)) {
+    return CFBundleIsArchitectureLoadable(CPU_TYPE_X86_64);
+  } else {
+    // Arm Macs require at least 11.0 to run, so this branch will never be
+    // taken.
+    NOTREACHED();
+    return false;
+  }
 }
 
 void RequestRosettaInstallation(
@@ -138,11 +138,19 @@ void RequestRosettaInstallation(
     __block OnceCallback<void(RosettaInstallationResult)> block_callback =
         std::move(callback);
     auto completion = ^(BOOL success) {
-      [current_rosetta_installation release];
-      current_rosetta_installation = nil;
-      std::move(block_callback)
-          .Run(success ? RosettaInstallationResult::kInstallationSuccess
-                       : RosettaInstallationResult::kInstallationFailure);
+      // There _should_ be a valid callback and current_rosetta_installation
+      // here. However, crashes indicate that sometimes
+      // OAHSoftwareUpdateController performs a double-callback of the block.
+      // Therefore, be paranoid.
+      if (current_rosetta_installation) {
+        [current_rosetta_installation release];
+        current_rosetta_installation = nil;
+      }
+      if (block_callback) {
+        std::move(block_callback)
+            .Run(success ? RosettaInstallationResult::kInstallationSuccess
+                         : RosettaInstallationResult::kInstallationFailure);
+      }
     };
 
     [invocation setArgument:&completion atIndex:4];

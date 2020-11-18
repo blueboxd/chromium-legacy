@@ -273,13 +273,15 @@ try_.chromium_android_builder(
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
-                "//chrome/android:validate_expectations",
                 "//chrome/android:monochrome_public_minimal_apks",
+                "//chrome/android:trichrome_minimal_apks",
+                "//chrome/android:validate_expectations",
                 "//tools/binary_size:binary_size_trybot_py",
             ],
             "compile_targets": [
                 "monochrome_public_minimal_apks",
                 "monochrome_static_initializers",
+                "trichrome_minimal_apks",
                 "validate_expectations",
             ],
         },
@@ -689,6 +691,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "linux-lacros-rel",
+    builderless = not settings.is_master,
     cores = 16,
     ssd = True,
     goma_jobs = goma.jobs.J300,
@@ -1399,7 +1402,27 @@ try_.chromium_mac_ios_builder(
 )
 
 try_.chromium_updater_mac_builder(
+    name = "mac-updater-try-builder-dbg",
+    main_list_view = "try",
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/chrome/updater/.+",
+        ],
+    ),
+)
+
+try_.chromium_updater_mac_builder(
     name = "mac-updater-try-builder-rel",
+    main_list_view = "try",
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/chrome/updater/.+",
+        ],
+    ),
+)
+
+try_.chromium_updater_win_builder(
+    name = "win-updater-try-builder-dbg",
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

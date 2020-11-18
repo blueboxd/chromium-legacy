@@ -11918,6 +11918,16 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="TLS-1.2">An SSL connection that uses TLS 1.2</int>
 </enum>
 
+<enum name="ConnectivityDetectorConnectionState">
+  <int value="0" label="Initial state or connection state can't be evaluated"/>
+  <int value="1" label="The network is disconnected"/>
+  <int value="2"
+      label="The network is connected, but it can't reach the Internet"/>
+  <int value="3"
+      label="The network is connected, but capitive portal is detected"/>
+  <int value="4" label="The network is validated"/>
+</enum>
+
 <enum name="ConnectivityDiagnosticsTestVerdict">
   <int value="0" label="NO_PROBLEM"/>
   <int value="1" label="POTENTIAL_PROBLEM"/>
@@ -19858,6 +19868,15 @@ Called by update_document_policy_enum.py.-->
   <int value="5" label="Flow Completed"/>
 </enum>
 
+<enum name="EduCoexistenceFlowV2Result">
+  <int value="0" label="Flow Launched"/>
+  <int value="1" label="Consent Valid Received"/>
+  <int value="2" label="Edu Account Authorized"/>
+  <int value="3" label="Consent Logged Recived"/>
+  <int value="4" label="Account Succesfully Added"/>
+  <int value="5" label="Error"/>
+</enum>
+
 <enum name="EffectiveResolution">
   <summary>
     The enum index of each resolution is the product of its dimensions. A
@@ -25365,6 +25384,7 @@ Called by update_extension_histograms.py.-->
   <int value="1532" label="SCRIPTING_EXECUTESCRIPT"/>
   <int value="1533" label="DECLARATIVENETREQUEST_UPDATESESSIONRULES"/>
   <int value="1534" label="DECLARATIVENETREQUEST_GETSESSIONRULES"/>
+  <int value="1535" label="SCRIPTING_INSERTCSS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35758,8 +35778,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Kill"/>
   <int value="2" label="MoreThreadTime"/>
   <int value="3" label="ProgressAfterMoreThreadTime"/>
-  <int value="4" label="TimeoutWait"/>
-  <int value="5" label="ProgressAfterWait"/>
+  <int value="4" label="TimeoutWait (deprecated)"/>
+  <int value="5" label="ProgressAfterWait (deprecated)"/>
   <int value="6" label="ContinueOnNonHostServerTty"/>
   <int value="7" label="LessThanFullThreadTimeAfterCapped"/>
   <int value="8" label="KillOnLessThreadTime"/>

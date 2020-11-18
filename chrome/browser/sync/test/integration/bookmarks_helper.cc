@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/containers/stack.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -901,7 +902,7 @@ size_t CountFoldersWithTitlesMatching(int profile, const std::string& title) {
                                       base::UTF8ToUTF16(title));
 }
 
-bool ContainsBookmarkNodeWithGUID(int profile, const std::string& guid) {
+bool ContainsBookmarkNodeWithGUID(int profile, const base::GUID& guid) {
   for (const BookmarkNode* node :
        GetAllBookmarkNodes(GetBookmarkModel(profile))) {
     if (node->guid() == guid) {
@@ -1332,7 +1333,7 @@ bool BookmarksUrlChecker::IsExitConditionSatisfied(std::ostream* os) {
   return expected_count_ == actual_count;
 }
 
-BookmarksGUIDChecker::BookmarksGUIDChecker(int profile, const std::string& guid)
+BookmarksGUIDChecker::BookmarksGUIDChecker(int profile, const base::GUID& guid)
     : SingleBookmarksModelMatcherChecker(profile,
                                          testing::Contains(HasGuid(guid))) {}
 

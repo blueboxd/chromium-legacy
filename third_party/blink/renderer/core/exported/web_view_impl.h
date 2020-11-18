@@ -479,8 +479,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Called when keyboard focus switches to an anchor with the given URL.
   void SetKeyboardFocusURL(const KURL&);
 
-  void RunPaintBenchmark(int repeat_count, cc::PaintBenchmarkResult& result);
-
   // Asks the browser process to activate this web view.
   void Focus();
 
@@ -495,6 +493,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
             bool opened_by_user_gesture);
 
   void SetWindowRect(const gfx::Rect& bounds);
+
+  // TODO(crbug.com/1149992): This is called from the associated widget and this
+  // code should eventually move out of WebView into somewhere else.
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args);
 
   // This method is used for testing.
   // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
@@ -526,11 +528,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // These are temporary methods to allow WebViewFrameWidget to delegate to
   // WebViewImpl. We expect to eventually move these out.
-  void UpdateLifecycle(WebLifecycleUpdate requested_update,
-                       DocumentUpdateReason reason);
   void ThemeChanged();
-  void ApplyViewportChanges(const ApplyViewportChangesArgs& args);
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info);
   void MouseCaptureLost();
   void SetFocus(bool enable) override;
 
@@ -602,7 +600,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidChangeRootLayer(bool root_layer_exists);
 
   LocalFrame* FocusedLocalFrameInWidget() const;
-  LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
   // Clear focus and text input state of the page. If there was a focused
   // element, this will trigger updates to observers and send focus, selection,
@@ -717,11 +714,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float compositor_device_scale_factor_override_ = 0.f;
   TransformationMatrix device_emulation_transform_;
 
-  // TODO(ekaramad): Can we remove this and make sure IME events are not called
-  // when there is no page focus?
-  // Represents whether or not this object should process incoming IME events.
-  bool ime_accept_events_ = true;
-
   // The popup associated with an input/select element. The popup is owned via
   // closership (self-owned-but-deleted-via-close) by RenderWidget. We also hold
   // a reference here because we can extend the lifetime of the popup while
@@ -756,12 +748,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   SkColor base_background_color_override_ = Color::kTransparent;
   bool background_color_override_enabled_ = false;
   SkColor background_color_override_ = Color::kTransparent;
-  base::Optional<SkColor> last_background_color_;
   float zoom_factor_override_ = 0.f;
-
-  bool should_dispatch_first_visually_non_empty_layout_ = false;
-  bool should_dispatch_first_layout_after_finished_parsing_ = false;
-  bool should_dispatch_first_layout_after_finished_loading_ = false;
 
   FloatSize elastic_overscroll_;
 

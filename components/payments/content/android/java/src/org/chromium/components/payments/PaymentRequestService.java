@@ -356,7 +356,7 @@ public class PaymentRequestService
 
     private void startPaymentAppService() {
         PaymentAppService service = PaymentAppService.getInstance();
-        mBrowserPaymentRequest.addPaymentAppFactories(service);
+        mBrowserPaymentRequest.addPaymentAppFactories(service, /*delegate=*/this);
         service.create(/*delegate=*/this);
     }
 
@@ -377,7 +377,11 @@ public class PaymentRequestService
     @Nullable
     public static WebContents openPaymentHandlerWindow(GURL url) {
         if (sShowingPaymentRequest == null) return null;
-        return sShowingPaymentRequest.mBrowserPaymentRequest.openPaymentHandlerWindow(url);
+        PaymentApp invokedPaymentApp = sShowingPaymentRequest.mInvokedPaymentApp;
+        assert invokedPaymentApp != null;
+        assert invokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
+        return sShowingPaymentRequest.mBrowserPaymentRequest.openPaymentHandlerWindow(
+                url, sShowingPaymentRequest.mIsOffTheRecord, invokedPaymentApp.getUkmSourceId());
     }
 
     /**
@@ -668,18 +672,14 @@ public class PaymentRequestService
         mPendingApps.clear();
         if (isCurrentPaymentRequestShowing()) {
             String error = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
-                    mSpec.getRawTotal(), mSpec.getPaymentOptions());
+                    mSpec.getRawTotal(), mSpec.getPaymentOptions(), mIsUserGestureShow);
             if (error != null) {
                 onShowFailed(error);
                 return;
             }
         }
 
-        String error = mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
-        if (error != null) {
-            onShowFailed(error);
-            return;
-        }
+        triggerPaymentAppUiSkipIfApplicable();
     }
 
     private void onShowFailed(String error) {
@@ -948,18 +948,30 @@ public class PaymentRequestService
         }
         if (isFinishedQueryingPaymentApps()) {
             String error = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
-                    mSpec.getRawTotal(), mSpec.getPaymentOptions());
+                    mSpec.getRawTotal(), mSpec.getPaymentOptions(), mIsUserGestureShow);
             if (error != null) {
                 onShowFailed(error);
                 return;
             }
         }
 
-        String error = mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable();
+        triggerPaymentAppUiSkipIfApplicable();
+    }
+
+    // Return the error if failed, null if success.
+    @Nullable
+    private String triggerPaymentAppUiSkipIfApplicable() {
+        if (!mIsFinishedQueryingPaymentApps || !mIsCurrentPaymentRequestShowing
+                || mIsShowWaitingForUpdatedDetails) {
+            return null;
+        }
+        String error =
+                mBrowserPaymentRequest.triggerPaymentAppUiSkipIfApplicable(mIsUserGestureShow);
         if (error != null) {
             onShowFailed(error);
-            return;
+            return error;
         }
+        return null;
     }
 
     // Implements PaymentDetailsConverter.MethodChecker:
@@ -986,9 +998,10 @@ public class PaymentRequestService
         mSpec.updateWith(details);
 
         mIsShowWaitingForUpdatedDetails = false;
-        String error = mBrowserPaymentRequest.continueShow();
+        String error = mBrowserPaymentRequest.continueShow(
+                mIsFinishedQueryingPaymentApps, mIsUserGestureShow);
         if (error != null) return error;
-        return null;
+        return triggerPaymentAppUiSkipIfApplicable();
     }
 
     /**

@@ -26,6 +26,7 @@ import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppFactoryDelegate;
 import org.chromium.components.payments.PaymentAppService;
 import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
@@ -118,16 +119,15 @@ public class ChromePaymentRequestService
         mPaymentRequestService = paymentRequestService;
         mRenderFrameHost = paymentRequestService.getRenderFrameHost();
         assert mRenderFrameHost != null;
-        String topLevelOrigin = paymentRequestService.getTopLevelOrigin();
-        assert topLevelOrigin != null;
         mDelegate = delegate;
         mWebContents = paymentRequestService.getWebContents();
         mJourneyLogger = paymentRequestService.getJourneyLogger();
-
-        mPaymentRequestService = paymentRequestService;
+        String topLevelOrigin = paymentRequestService.getTopLevelOrigin();
+        assert topLevelOrigin != null;
         mPaymentUiService = new PaymentUiService(/*delegate=*/this,
-                /*params=*/mPaymentRequestService, mWebContents,
+                /*params=*/paymentRequestService, mWebContents,
                 paymentRequestService.isOffTheRecord(), mJourneyLogger, topLevelOrigin);
+        mPaymentRequestService = paymentRequestService;
         if (PaymentRequestService.getNativeObserverForTest() != null) {
             PaymentRequestService.getNativeObserverForTest().onPaymentUiServiceCreated(
                     mPaymentUiService);
@@ -154,7 +154,6 @@ public class ChromePaymentRequestService
     public boolean disconnectIfExtraValidationFails(WebContents webContents,
             Map<String, PaymentMethodData> methodData, PaymentDetails details,
             PaymentOptions options) {
-        assert mPaymentRequestService != null;
         assert methodData != null;
         assert details != null;
 
@@ -187,7 +186,8 @@ public class ChromePaymentRequestService
 
     // Implements BrowserPaymentRequest:
     @Override
-    public void addPaymentAppFactories(PaymentAppService service) {
+    public void addPaymentAppFactories(
+            PaymentAppService service, PaymentAppFactoryDelegate delegate) {
         String androidFactoryId = AndroidPaymentAppFactory.class.getName();
         if (!service.containsFactory(androidFactoryId)) {
             service.addUniqueFactory(new AndroidPaymentAppFactory(), androidFactoryId);
@@ -204,7 +204,7 @@ public class ChromePaymentRequestService
         if (AutofillPaymentAppFactory.canMakePayments(mSpec.getMethodData())) {
             mPaymentUiService.setAutofillPaymentAppCreator(
                     AutofillPaymentAppFactory.createAppCreator(
-                            /*delegate=*/mPaymentRequestService));
+                            /*delegate=*/delegate));
         }
     }
 
@@ -216,9 +216,7 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public String showAppSelector(boolean isShowWaitingForUpdatedDetails, PaymentItem total,
-            PaymentOptions paymentOptions) {
-        assert mPaymentRequestService
-                != null : "This method is only supposed to be called by mPaymentRequestService.";
+            PaymentOptions paymentOptions, boolean isUserGestureShow) {
         // Send AppListReady signal when all apps are created and request.show() is called.
         if (PaymentRequestService.getNativeObserverForTest() != null) {
             PaymentRequestService.getNativeObserverForTest().onAppListReady(
@@ -226,9 +224,9 @@ public class ChromePaymentRequestService
         }
         // Calculate skip ui and build ui only after all payment apps are ready and
         // request.show() is called.
-        mPaymentUiService.calculateWhetherShouldSkipShowingPaymentRequestUi(
-                mPaymentRequestService.isUserGestureShow(), mDelegate.skipUiForBasicCard(),
-                mSpec.getPaymentOptions(), mSpec.getMethodData().keySet());
+        mPaymentUiService.calculateWhetherShouldSkipShowingPaymentRequestUi(isUserGestureShow,
+                mDelegate.skipUiForBasicCard(), mSpec.getPaymentOptions(),
+                mSpec.getMethodData().keySet());
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return ErrorStrings.ACTIVITY_NOT_FOUND;
         String error = mPaymentUiService.buildPaymentRequestUI(chromeActivity,
@@ -260,17 +258,14 @@ public class ChromePaymentRequestService
 
     // Implements BrowserPaymentRequest:
     @Override
-    public String triggerPaymentAppUiSkipIfApplicable() {
+    public String triggerPaymentAppUiSkipIfApplicable(boolean isUserGestureShow) {
         // If we are skipping showing the Payment Request UI, we should call into the payment app
         // immediately after we determine the apps are ready and UI is shown.
-        if ((mPaymentUiService.shouldSkipShowingPaymentRequestUi() || mSkipToGPayHelper != null)
-                && mPaymentRequestService.isFinishedQueryingPaymentApps()
-                && mPaymentRequestService.isCurrentPaymentRequestShowing()
-                && !mPaymentRequestService.isShowWaitingForUpdatedDetails()) {
+        if ((mPaymentUiService.shouldSkipShowingPaymentRequestUi() || mSkipToGPayHelper != null)) {
             assert !mPaymentUiService.getPaymentMethodsSection().isEmpty();
             assert mPaymentUiService.getPaymentRequestUI() != null;
 
-            if (isMinimalUiApplicable()) {
+            if (isMinimalUiApplicable(isUserGestureShow)) {
                 ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
                 if (chromeActivity == null) return ErrorStrings.ACTIVITY_NOT_FOUND;
                 if (mPaymentUiService.triggerMinimalUI(chromeActivity, mSpec.getRawTotal(),
@@ -296,7 +291,6 @@ public class ChromePaymentRequestService
             assert mSpec.getRawTotal() != null;
             // The total amount in details should be finalized at this point. So it is safe to
             // record the triggered transaction amount.
-            assert !mPaymentRequestService.isShowWaitingForUpdatedDetails();
             mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
                     mSpec.getRawTotal().amount.value, false /*completed*/);
             invokePaymentApp(null /* selectedShippingAddress */, null /* selectedShippingOption */,
@@ -305,10 +299,12 @@ public class ChromePaymentRequestService
         return null;
     }
 
-    /** @return Whether the minimal UI should be shown. */
-    private boolean isMinimalUiApplicable() {
-        if (!mPaymentRequestService.isUserGestureShow()
-                || mPaymentUiService.getPaymentMethodsSection() == null
+    /**
+     * @param isUserGestureShow Whether PaymentRequest.show() was invoked with a user gesture.
+     * @return Whether the minimal UI should be shown.
+     */
+    private boolean isMinimalUiApplicable(boolean isUserGestureShow) {
+        if (!isUserGestureShow || mPaymentUiService.getPaymentMethodsSection() == null
                 || mPaymentUiService.getPaymentMethodsSection().getSize() != 1) {
             return false;
         }
@@ -361,15 +357,11 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     @Nullable
-    public WebContents openPaymentHandlerWindow(GURL url) {
-        if (mPaymentRequestService == null) return null;
-        PaymentApp invokedPaymentApp = mPaymentRequestService.getInvokedPaymentApp();
-        assert invokedPaymentApp != null;
-        assert invokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
-
+    public WebContents openPaymentHandlerWindow(
+            GURL url, boolean isOffTheRecord, long ukmSourceId) {
         @Nullable
-        WebContents paymentHandlerWebContents = mPaymentUiService.showPaymentHandlerUI(
-                url, mPaymentRequestService.isOffTheRecord());
+        WebContents paymentHandlerWebContents =
+                mPaymentUiService.showPaymentHandlerUI(url, isOffTheRecord);
         if (paymentHandlerWebContents != null) {
             ServiceWorkerPaymentAppBridge.onOpeningPaymentAppWindow(
                     /*paymentRequestWebContents=*/mWebContents,
@@ -377,18 +369,15 @@ public class ChromePaymentRequestService
 
             // UKM for payment app origin should get recorded only when the origin of the invoked
             // payment app is shown to the user.
-            mJourneyLogger.setPaymentAppUkmSourceId(invokedPaymentApp.getUkmSourceId());
+            mJourneyLogger.setPaymentAppUkmSourceId(ukmSourceId);
         }
         return paymentHandlerWebContents;
     }
 
-    // Implement BrowserPaymentRequest:
+    // Implements BrowserPaymentRequest:
     @Override
     public void onPaymentDetailsUpdated(
             PaymentDetails details, boolean hasNotifiedInvokedPaymentApp) {
-        // This method is only called from mPaymentRequestService.
-        assert mPaymentRequestService != null;
-
         mPaymentUiService.updateDetailsOnPaymentRequestUI(details);
 
         if (hasNotifiedInvokedPaymentApp) return;
@@ -410,7 +399,7 @@ public class ChromePaymentRequestService
 
     // Implements BrowserPaymentRequest:
     @Override
-    public String continueShow() {
+    public String continueShow(boolean isFinishedQueryingPaymentApps, boolean isUserGestureShow) {
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return ErrorStrings.ACTIVITY_NOT_FOUND;
 
@@ -435,10 +424,7 @@ public class ChromePaymentRequestService
                     mSpec.getRawTotal().amount.value, false /*completed*/);
         }
 
-        String error = triggerPaymentAppUiSkipIfApplicable();
-        if (error != null) return error;
-
-        if (mPaymentRequestService.isFinishedQueryingPaymentApps()
+        if (isFinishedQueryingPaymentApps
                 && !mPaymentUiService.shouldSkipShowingPaymentRequestUi()) {
             boolean providedInformationToPaymentRequestUI =
                     mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
@@ -447,12 +433,9 @@ public class ChromePaymentRequestService
         return null;
     }
 
-    // Implement BrowserPaymentRequest:
+    // Implements BrowserPaymentRequest:
     @Override
     public void onPaymentDetailsNotUpdated(@Nullable String selectedShippingOptionError) {
-        // This method is only supposed to be called by mPaymentRequestService.
-        assert mPaymentRequestService != null;
-
         if (mPaymentUiService.shouldShowShippingSection()
                 && (mPaymentUiService.getUiShippingOptions().isEmpty()
                         || !TextUtils.isEmpty(mSpec.selectedShippingOptionError()))
@@ -484,7 +467,8 @@ public class ChromePaymentRequestService
         // Record the triggered transaction amount only when the total amount in details is
         // finalized (i.e. mPaymentRequestService.isShowWaitingForUpdatedDetails() == false).
         // Otherwise it will get recorded when the updated details become available.
-        if (!mPaymentRequestService.isShowWaitingForUpdatedDetails()) {
+        if (mPaymentRequestService != null
+                && !mPaymentRequestService.isShowWaitingForUpdatedDetails()) {
             assert mSpec.getRawTotal() != null;
             mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
                     mSpec.getRawTotal().amount.value, false /*completed*/);
@@ -507,7 +491,7 @@ public class ChromePaymentRequestService
     @Override
     public boolean invokePaymentApp(EditableOption selectedShippingAddress,
             EditableOption selectedShippingOption, PaymentApp selectedPaymentApp) {
-        if (mSpec == null || mSpec.isDestroyed()) return false;
+        if (mPaymentRequestService == null || mSpec == null || mSpec.isDestroyed()) return false;
         EditableOption selectedContact = mPaymentUiService.getContactSection() != null
                 ? mPaymentUiService.getContactSection().getSelectedItem()
                 : null;
@@ -547,23 +531,16 @@ public class ChromePaymentRequestService
     }
 
     private void disconnectFromClientWithDebugMessage(String debugMessage) {
-        disconnectFromClientWithDebugMessage(debugMessage, PaymentErrorReason.USER_CANCEL);
-    }
-
-    private void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         if (mPaymentRequestService != null) {
-            mPaymentRequestService.disconnectFromClientWithDebugMessage(debugMessage, reason);
+            mPaymentRequestService.disconnectFromClientWithDebugMessage(
+                    debugMessage, PaymentErrorReason.USER_CANCEL);
         }
-        // Either closed before this method or closed by mPaymentRequestService.
-        assert mHasClosed;
+        close();
     }
 
-    // Implement BrowserPaymentRequest:
+    // Implements BrowserPaymentRequest:
     @Override
     public void complete(int result, Runnable onCompleteHandled) {
-        // This method is only supposed to be called by mPaymentRequestService.
-        assert mPaymentRequestService != null;
-
         if (result != PaymentComplete.FAIL && !PaymentPreferencesUtil.isPaymentCompleteOnce()) {
             PaymentPreferencesUtil.setPaymentCompleteOnce();
         }
@@ -572,22 +549,23 @@ public class ChromePaymentRequestService
                 /*onMinimalUiErroredAndClosed=*/this::close, onCompleteHandled);
     }
 
-    // Implement BrowserPaymentRequest:
+    // Implements BrowserPaymentRequest:
     @Override
     public void retry(PaymentValidationErrors errors) {
         mWasRetryCalled = true;
         mPaymentUiService.onRetry(errors);
     }
 
-    // Implement BrowserPaymentRequest:
+    // Implements BrowserPaymentRequest:
     @Override
     public void close() {
         if (mHasClosed) return;
         mHasClosed = true;
 
-        assert mPaymentRequestService != null;
-        mPaymentRequestService.close();
-        mPaymentRequestService = null;
+        if (mPaymentRequestService != null) {
+            mPaymentRequestService.close();
+            mPaymentRequestService = null;
+        }
 
         mPaymentUiService.close();
         SettingsAutofillAndPaymentsObserver.getInstance().unregisterObserver(mPaymentUiService);
@@ -755,7 +733,6 @@ public class ChromePaymentRequestService
     // Implement PaymentUiService.Delegate:
     @Override
     public void onLeavingCurrentTab(String reason) {
-        if (mPaymentRequestService == null) return;
         mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
         disconnectFromClientWithDebugMessage(reason);
     }

@@ -219,7 +219,8 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(
                          frame_sink_id,
                          hidden,
                          never_composited,
-                         /*is_for_child_local_root=*/true),
+                         /*is_for_child_local_root=*/true,
+                         /*is_for_nested_main_frame=*/false),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;
@@ -317,17 +318,6 @@ bool WebFrameWidgetImpl::ShouldHandleImeEvents() {
   return LocalRootImpl();
 }
 
-void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
-                                         DocumentUpdateReason reason) {
-  TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
-  if (!LocalRootImpl())
-    return;
-
-  PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
-                                      requested_update, reason);
-  View()->UpdatePagePopup();
-}
-
 bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   Element* element = FocusedElement();
   if (!element || !WebElement(element).IsEditable())
@@ -378,7 +368,6 @@ void WebFrameWidgetImpl::FocusChanged(bool enable) {
         }
       }
     }
-    ime_accept_events_ = true;
   } else {
     LocalFrame* focused_frame = FocusedLocalFrameInWidget();
     if (focused_frame) {
@@ -393,31 +382,8 @@ void WebFrameWidgetImpl::FocusChanged(bool enable) {
         focused_frame->GetInputMethodController().FinishComposingText(
             InputMethodController::kKeepSelection);
       }
-      ime_accept_events_ = false;
     }
   }
-}
-
-void WebFrameWidgetImpl::SetIsInertForSubFrame(bool inert) {
-  DCHECK(LocalRootImpl()->Parent());
-  DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
-  LocalRootImpl()->GetFrame()->SetIsInert(inert);
-}
-
-void WebFrameWidgetImpl::SetInheritedEffectiveTouchActionForSubFrame(
-    TouchAction touch_action) {
-  DCHECK(LocalRootImpl()->Parent());
-  DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
-  LocalRootImpl()->GetFrame()->SetInheritedEffectiveTouchAction(touch_action);
-}
-
-void WebFrameWidgetImpl::UpdateRenderThrottlingStatusForSubFrame(
-    bool is_throttled,
-    bool subtree_throttled) {
-  DCHECK(LocalRootImpl()->Parent());
-  DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
-  LocalRootImpl()->GetFrameView()->UpdateRenderThrottlingStatus(
-      is_throttled, subtree_throttled, true);
 }
 
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
@@ -493,10 +459,6 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
   return event_result;
 }
 
-LocalFrameView* WebFrameWidgetImpl::GetLocalFrameViewForAnimationScrolling() {
-  return LocalRootImpl()->GetFrame()->View();
-}
-
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
   LocalFrame* frame = LocalRootImpl()->GetFrame();
   if (!frame || !frame->GetDocument() || !frame->GetDocument()->GetLayoutView())
@@ -524,23 +486,11 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   widget_base_->LayerTreeHost()->SetRootLayer(layer);
 }
 
-void WebFrameWidgetImpl::ZoomToFindInPageRect(
-    const WebRect& rect_in_root_frame) {
-  GetAssociatedFrameWidgetHost()->ZoomToFindInPageRectInMainFrame(
-      gfx::Rect(rect_in_root_frame));
-}
-
 void WebFrameWidgetImpl::SetAutoResizeMode(bool auto_resize,
                                            const gfx::Size& min_size_before_dsf,
                                            const gfx::Size& max_size_before_dsf,
                                            float device_scale_factor) {
   // Auto resize mode only exists on the top level widget.
-}
-
-LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameAvailableForIme() const {
-  if (!ime_accept_events_)
-    return nullptr;
-  return FocusedLocalFrameInWidget();
 }
 
 void WebFrameWidgetImpl::DidCreateLocalRootView() {

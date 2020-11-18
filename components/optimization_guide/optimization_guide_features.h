@@ -24,7 +24,6 @@ extern const base::Feature kOptimizationHintsFieldTrials;
 extern const base::Feature kRemoteOptimizationGuideFetching;
 extern const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent;
 extern const base::Feature kOptimizationTargetPrediction;
-extern const base::Feature kOptimizationTargetPredictionUsingMLService;
 extern const base::Feature kOptimizationGuideModelDownloading;
 
 // The maximum number of hosts that can be stored in the
@@ -156,11 +155,12 @@ base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
 // specified field trials.
 base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch();
 
-// Whether out-of-process model evaluation via the ML Service is enabled.
-bool ShouldUseMLServiceForPrediction();
-
 // Whether the ability to download models is enabled.
 bool IsModelDownloadingEnabled();
+
+// Returns whether unrestricted model downloading is enabled. If true, the
+// client should download models using highest priority.
+bool IsUnrestrictedModelDownloadingEnabled();
 
 }  // namespace features
 }  // namespace optimization_guide

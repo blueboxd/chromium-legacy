@@ -25,7 +25,9 @@ struct CrasDevice {
                       DeviceType type);
   DeviceType type;
   uint64_t id;
+  int32_t active;
   std::string name;
+  std::string dev_name;
 };
 
 // Enumerates all devices of |type|.

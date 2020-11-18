@@ -69,7 +69,6 @@
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
@@ -988,7 +987,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 #if defined(OS_ANDROID)
     if (start_service_manager_only) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+          FROM_HERE, base::BindOnce(&MinimalBrowserStartupComplete));
     }
 #endif
   }

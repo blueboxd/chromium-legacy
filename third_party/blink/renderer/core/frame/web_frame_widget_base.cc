@@ -184,7 +184,8 @@ WebFrameWidgetBase::WebFrameWidgetBase(
     const viz::FrameSinkId& frame_sink_id,
     bool hidden,
     bool never_composited,
-    bool is_for_child_local_root)
+    bool is_for_child_local_root,
+    bool is_for_nested_main_frame)
     : widget_base_(std::make_unique<WidgetBase>(this,
                                                 std::move(widget_host),
                                                 std::move(widget),
@@ -193,8 +194,11 @@ WebFrameWidgetBase::WebFrameWidgetBase(
                                                 never_composited,
                                                 is_for_child_local_root)),
       client_(&client),
-      frame_sink_id_(frame_sink_id) {
+      frame_sink_id_(frame_sink_id),
+      is_for_child_local_root_(is_for_child_local_root) {
   DCHECK(task_runner);
+  if (is_for_nested_main_frame)
+    main_data().is_for_nested_main_frame = is_for_nested_main_frame;
   frame_widget_host_.Bind(std::move(frame_widget_host), task_runner);
   receiver_.Bind(std::move(frame_widget), task_runner);
 }
@@ -214,6 +218,14 @@ void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
       new TaskRunnerTimer<WebFrameWidgetBase>(
           local_root.GetTaskRunner(TaskType::kInternalDefault), this,
           &WebFrameWidgetBase::RequestAnimationAfterDelayTimerFired));
+}
+
+bool WebFrameWidgetBase::ForTopMostMainFrame() const {
+  return ForMainFrame() && !main_data().is_for_nested_main_frame;
+}
+
+void WebFrameWidgetBase::SetIsNestedMainFrameWidget(bool is_nested) {
+  main_data().is_for_nested_main_frame = is_nested;
 }
 
 void WebFrameWidgetBase::Close(
@@ -403,6 +415,20 @@ void WebFrameWidgetBase::SetTextDirection(base::i18n::TextDirection direction) {
   LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
   if (focusedFrame)
     focusedFrame->SetTextDirection(direction);
+}
+
+void WebFrameWidgetBase::SetInheritedEffectiveTouchActionForSubFrame(
+    TouchAction touch_action) {
+  DCHECK(ForSubframe());
+  LocalRootImpl()->GetFrame()->SetInheritedEffectiveTouchAction(touch_action);
+}
+
+void WebFrameWidgetBase::UpdateRenderThrottlingStatusForSubFrame(
+    bool is_throttled,
+    bool subtree_throttled) {
+  DCHECK(ForSubframe());
+  LocalRootImpl()->GetFrameView()->UpdateRenderThrottlingStatus(
+      is_throttled, subtree_throttled, true);
 }
 
 #if defined(OS_MAC)
@@ -975,6 +1001,61 @@ void WebFrameWidgetBase::DidBeginMainFrame() {
   PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
 }
 
+void WebFrameWidgetBase::UpdateLifecycle(WebLifecycleUpdate requested_update,
+                                         DocumentUpdateReason reason) {
+  TRACE_EVENT0("blink", "WebFrameWidgetBase::UpdateLifecycle");
+  if (!LocalRootImpl())
+    return;
+
+  PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
+                                      requested_update, reason);
+  if (requested_update != WebLifecycleUpdate::kAll)
+    return;
+
+  View()->UpdatePagePopup();
+
+  // Meaningful layout events and background colors only apply to main frames.
+  if (ForMainFrame()) {
+    MainFrameData& data = main_data();
+
+    // There is no background color for non-composited WebViews (eg
+    // printing).
+    if (View()->does_composite()) {
+      SkColor background_color = View()->BackgroundColor();
+      SetBackgroundColor(background_color);
+      if (background_color != data.last_background_color) {
+        LocalRootImpl()->GetFrame()->DidChangeBackgroundColor(
+            background_color, false /* color_adjust */);
+        data.last_background_color = background_color;
+      }
+    }
+
+    if (LocalFrameView* view = LocalRootImpl()->GetFrameView()) {
+      LocalFrame* frame = LocalRootImpl()->GetFrame();
+
+      if (data.should_dispatch_first_visually_non_empty_layout &&
+          view->IsVisuallyNonEmpty()) {
+        data.should_dispatch_first_visually_non_empty_layout = false;
+        // TODO(esprehn): Move users of this callback to something
+        // better, the heuristic for "visually non-empty" is bad.
+        DidMeaningfulLayout(WebMeaningfulLayout::kVisuallyNonEmpty);
+      }
+
+      if (data.should_dispatch_first_layout_after_finished_parsing &&
+          frame->GetDocument()->HasFinishedParsing()) {
+        data.should_dispatch_first_layout_after_finished_parsing = false;
+        DidMeaningfulLayout(WebMeaningfulLayout::kFinishedParsing);
+      }
+
+      if (data.should_dispatch_first_layout_after_finished_loading &&
+          frame->GetDocument()->IsLoadCompleted()) {
+        data.should_dispatch_first_layout_after_finished_loading = false;
+        DidMeaningfulLayout(WebMeaningfulLayout::kFinishedLoading);
+      }
+    }
+  }
+}
+
 void WebFrameWidgetBase::WillBeginMainFrame() {
   Client()->WillBeginMainFrame();
 }
@@ -1069,7 +1150,7 @@ void WebFrameWidgetBase::UpdateVisualProperties(
   // All non-top-level Widgets (child local-root frames, Portals, GuestViews,
   // etc.) propagate and consume the page scale factor as "external", meaning
   // that it comes from the top level widget's page scale.
-  if (!ForTopLevelFrame()) {
+  if (!ForTopMostMainFrame()) {
     // The main frame controls the page scale factor, from blink. For other
     // frame widgets, the page scale is received from its parent as part of
     // the visual properties here. While blink doesn't need to know this
@@ -1309,6 +1390,11 @@ void WebFrameWidgetBase::DisableDeviceEmulation() {
   device_emulator_ = nullptr;
 }
 
+void WebFrameWidgetBase::SetIsInertForSubFrame(bool inert) {
+  DCHECK(ForSubframe());
+  LocalRootImpl()->GetFrame()->SetIsInert(inert);
+}
+
 base::Optional<gfx::Point>
 WebFrameWidgetBase::GetAndResetContextMenuLocation() {
   return std::move(host_context_menu_location_);
@@ -1349,18 +1435,35 @@ WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
 }
 
+void WebFrameWidgetBase::ResetMeaningfulLayoutStateForMainFrame() {
+  MainFrameData& data = main_data();
+  data.should_dispatch_first_visually_non_empty_layout = true;
+  data.should_dispatch_first_layout_after_finished_parsing = true;
+  data.should_dispatch_first_layout_after_finished_loading = true;
+}
+
 cc::LayerTreeHost* WebFrameWidgetBase::InitializeCompositing(
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
-    bool for_child_local_root_frame,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
     const cc::LayerTreeSettings* settings) {
   widget_base_->InitializeCompositing(
-      main_thread_scheduler, task_graph_runner, for_child_local_root_frame,
+      main_thread_scheduler, task_graph_runner, is_for_child_local_root_,
       screen_info, std::move(ukm_recorder_factory), settings);
-  GetPage()->AnimationHostInitialized(*AnimationHost(),
-                                      GetLocalFrameViewForAnimationScrolling());
+
+  LocalFrameView* frame_view;
+  if (is_for_child_local_root_) {
+    frame_view = LocalRootImpl()->GetFrame()->View();
+  } else {
+    // Scrolling for the root frame is special we need to pass null indicating
+    // we are at the top of the tree when setting up the Animation. Which will
+    // cause ownership of the timeline and animation host.
+    // See ScrollingCoordinator::AnimationHostInitialized.
+    frame_view = nullptr;
+  }
+
+  GetPage()->AnimationHostInitialized(*AnimationHost(), frame_view);
   return widget_base_->LayerTreeHost();
 }
 
@@ -1435,6 +1538,38 @@ void WebFrameWidgetBase::EndCommitCompositorFrame(
       .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
                                   commit_start_time, base::TimeTicks::Now());
   commit_compositor_frame_start_time_.reset();
+}
+
+void WebFrameWidgetBase::ApplyViewportChanges(
+    const ApplyViewportChangesArgs& args) {
+  // Viewport changes only change the main frame.
+  if (!ForMainFrame())
+    return;
+  View()->ApplyViewportChanges(args);
+}
+
+void WebFrameWidgetBase::RecordManipulationTypeCounts(
+    cc::ManipulationInfo info) {
+  // Manipulation counts are only recorded for the main frame.
+  if (!ForMainFrame())
+    return;
+  if ((info & cc::kManipulationInfoWheel) == cc::kManipulationInfoWheel) {
+    UseCounter::Count(LocalRootImpl()->GetDocument(),
+                      WebFeature::kScrollByWheel);
+  }
+  if ((info & cc::kManipulationInfoTouch) == cc::kManipulationInfoTouch) {
+    UseCounter::Count(LocalRootImpl()->GetDocument(),
+                      WebFeature::kScrollByTouch);
+  }
+  if ((info & cc::kManipulationInfoPinchZoom) ==
+      cc::kManipulationInfoPinchZoom) {
+    UseCounter::Count(LocalRootImpl()->GetDocument(), WebFeature::kPinchZoom);
+  }
+  if ((info & cc::kManipulationInfoPrecisionTouchPad) ==
+      cc::kManipulationInfoPrecisionTouchPad) {
+    UseCounter::Count(LocalRootImpl()->GetDocument(),
+                      WebFeature::kScrollByPrecisionTouchPad);
+  }
 }
 
 void WebFrameWidgetBase::RecordDispatchRafAlignedInputTime(
@@ -2818,6 +2953,16 @@ void WebFrameWidgetBase::ScrollFocusedEditableNodeIntoRect(
   local_frame->Client()->ScrollFocusedEditableElementIntoRect(rect_in_dips);
 }
 
+void WebFrameWidgetBase::ZoomToFindInPageRect(
+    const WebRect& rect_in_root_frame) {
+  if (ForMainFrame()) {
+    View()->ZoomToFindInPageRect(rect_in_root_frame);
+  } else {
+    GetAssociatedFrameWidgetHost()->ZoomToFindInPageRectInMainFrame(
+        gfx::Rect(rect_in_root_frame));
+  }
+}
+
 void WebFrameWidgetBase::MoveCaret(const gfx::Point& point_in_dips) {
   WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame)
@@ -3046,6 +3191,14 @@ void WebFrameWidgetBase::WasShown(bool was_evicted) {
           remote_frame->Client()->WasEvicted();
         }));
   }
+}
+
+void WebFrameWidgetBase::RunPaintBenchmark(int repeat_count,
+                                           cc::PaintBenchmarkResult& result) {
+  if (!ForMainFrame())
+    return;
+  if (auto* frame_view = LocalRootImpl()->GetFrameView())
+    frame_view->RunPaintBenchmark(repeat_count, result);
 }
 
 void WebFrameWidgetBase::NotifyInputObservers(

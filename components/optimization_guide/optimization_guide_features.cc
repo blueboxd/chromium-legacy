@@ -54,11 +54,6 @@ const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
 const base::Feature kOptimizationTargetPrediction{
     "OptimizationTargetPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables out-of-service evaluation of prediction models via the ML Service.
-const base::Feature kOptimizationTargetPredictionUsingMLService{
-    "OptimizationGuidePredictionUsingMLService",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the downloading of models.
 const base::Feature kOptimizationGuideModelDownloading{
     "OptimizationGuideModelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -306,13 +301,14 @@ base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {
   return allowed_field_trial_name_hashes;
 }
 
-bool ShouldUseMLServiceForPrediction() {
-  return base::FeatureList::IsEnabled(
-      kOptimizationTargetPredictionUsingMLService);
-}
-
 bool IsModelDownloadingEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationGuideModelDownloading);
+}
+
+bool IsUnrestrictedModelDownloadingEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kOptimizationGuideModelDownloading, "unrestricted_model_downloading",
+      false);
 }
 
 }  // namespace features

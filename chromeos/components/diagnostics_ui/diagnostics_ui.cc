@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/diagnostics_ui/backend/diagnostics_manager.h"
 #include "chromeos/components/diagnostics_ui/backend/system_data_provider.h"
+#include "chromeos/components/diagnostics_ui/backend/system_routine_controller.h"
 #include "chromeos/components/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "chromeos/components/diagnostics_ui/url_constants.h"
 #include "chromeos/grit/chromeos_diagnostics_app_resources.h"
@@ -34,17 +35,23 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"adapterStatus", IDS_DIAGNOSTICS_POWER_LABEL},
       {"batteryChipText", IDS_DIAGNOSTICS_BATTERY_CHIP_TEXT},
+      {"batteryHealthLabel", IDS_DIAGNOSTICS_BATTERY_HEALTH_LABEL},
+      {"batteryHealthText", IDS_DIAGNOSTICS_BATTERY_HEALTH_TEXT},
       {"batteryTitle", IDS_DIAGNOSTICS_BATTERY_TITLE},
       {"chargeFullDesign", IDS_DIAGNOSTICS_DESIGNED_FULL_CHARGE_LABEL},
       {"chargeFullNow", IDS_DIAGNOSTICS_NOW_FULL_CHARGE_LABEL},
       {"chargeNow", IDS_DIAGNOSTICS_CHARGE_NOW_LABEL},
       {"cpuChipText", IDS_DIAGNOSTICS_CPU_CHIP_TEXT},
-      {"cpuTemp", IDS_DIAGNOSTICS_CPU_TEMPERATURE_LABEL},
+      {"cpuSpeedLabel", IDS_DIAGNOSTICS_CPU_SPEED_LABEL},
+      {"cpuTempLabel", IDS_DIAGNOSTICS_CPU_TEMPERATURE_LABEL},
+      {"cpuTempText", IDS_DIAGNOSTICS_CPU_TEMPERATURE_TEXT},
       {"cpuTitle", IDS_DIAGNOSTICS_CPU_TITLE},
-      {"cpuUsage", IDS_DIAGNOSTICS_CPU_USAGE_LABEL},
+      {"cpuUsageLabel", IDS_DIAGNOSTICS_CPU_USAGE_LABEL},
+      {"cpuUsageText", IDS_DIAGNOSTICS_CPU_USAGE_TEXT},
       {"cpuUsageSystem", IDS_DIAGNOSTICS_CPU_USAGE_SYSTEM_LABEL},
       {"cpuUsageUser", IDS_DIAGNOSTICS_CPU_USAGE_USER_LABEL},
-      {"currentNow", IDS_DIAGNOSTICS_CURRENT_NOW_LABEL},
+      {"currentNowLabel", IDS_DIAGNOSTICS_CURRENT_NOW_LABEL},
+      {"currentNowText", IDS_DIAGNOSTICS_CURRENT_NOW_TEXT},
       {"cycleCount", IDS_DIAGNOSTICS_CYCLE_COUNT_LABEL},
       {"diagnosticsTitle", IDS_DIAGNOSTICS_TITLE},
       {"memoryAvailable", IDS_DIAGNOSTICS_MEMORY_AVAILABLE_LABEL},
@@ -119,6 +126,16 @@ void DiagnosticsUI::BindInterface(
       diagnostics_manager_->GetSystemDataProvider();
   if (system_data_provider) {
     system_data_provider->BindInterface(std::move(receiver));
+  }
+}
+
+void DiagnosticsUI::BindInterface(
+    mojo::PendingReceiver<diagnostics::mojom::SystemRoutineController>
+        receiver) {
+  diagnostics::SystemRoutineController* system_routine_controller =
+      diagnostics_manager_->GetSystemRoutineController();
+  if (system_routine_controller) {
+    system_routine_controller->BindInterface(std::move(receiver));
   }
 }
 

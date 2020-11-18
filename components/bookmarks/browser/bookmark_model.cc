@@ -579,20 +579,18 @@ const BookmarkNode* BookmarkModel::AddFolder(
     size_t index,
     const base::string16& title,
     const BookmarkNode::MetaInfoMap* meta_info,
-    base::Optional<std::string> guid) {
+    base::Optional<base::GUID> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(parent);
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
+  DCHECK(!guid || guid->is_valid());
 
-  base::GUID parsed_guid =
-      guid ? base::GUID::ParseLowercase(*guid) : base::GUID::GenerateRandomV4();
-  DCHECK(parsed_guid.is_valid());
-
-  auto new_node = std::make_unique<BookmarkNode>(generate_next_node_id(),
-                                                 parsed_guid, GURL());
+  auto new_node = std::make_unique<BookmarkNode>(
+      generate_next_node_id(), guid ? *guid : base::GUID::GenerateRandomV4(),
+      GURL());
   new_node->set_date_folder_modified(Time::Now());
   // Folders shouldn't have line breaks in their titles.
   new_node->SetTitle(title);
@@ -609,7 +607,7 @@ const BookmarkNode* BookmarkModel::AddURL(
     const GURL& url,
     const BookmarkNode::MetaInfoMap* meta_info,
     base::Optional<base::Time> creation_time,
-    base::Optional<std::string> guid) {
+    base::Optional<base::GUID> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(url.is_valid());
@@ -617,10 +615,7 @@ const BookmarkNode* BookmarkModel::AddURL(
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
-
-  base::GUID parsed_guid =
-      guid ? base::GUID::ParseLowercase(*guid) : base::GUID::GenerateRandomV4();
-  DCHECK(parsed_guid.is_valid());
+  DCHECK(!guid || guid->is_valid());
 
   if (!creation_time)
     creation_time = Time::Now();
@@ -629,8 +624,9 @@ const BookmarkNode* BookmarkModel::AddURL(
   if (*creation_time > parent->date_folder_modified())
     SetDateFolderModified(parent, *creation_time);
 
-  auto new_node =
-      std::make_unique<BookmarkNode>(generate_next_node_id(), parsed_guid, url);
+  auto new_node = std::make_unique<BookmarkNode>(
+      generate_next_node_id(), guid ? *guid : base::GUID::GenerateRandomV4(),
+      url);
   new_node->SetTitle(title);
   new_node->set_date_added(*creation_time);
   if (meta_info)

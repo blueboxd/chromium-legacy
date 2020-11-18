@@ -91,14 +91,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
       scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   gfx::Size Size() override;
   void Resize(const gfx::Size&) override;
-  void UpdateLifecycle(WebLifecycleUpdate requested_update,
-                       DocumentUpdateReason reason) override;
 
   void MouseCaptureLost() override;
-  void SetIsInertForSubFrame(bool) override;
-  void SetInheritedEffectiveTouchActionForSubFrame(TouchAction) override;
-  void UpdateRenderThrottlingStatusForSubFrame(bool is_throttled,
-                                               bool subtree_throttled) override;
 
   // WebFrameWidget implementation.
   bool ScrollFocusedEditableElementIntoView() override;
@@ -106,10 +100,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   PaintLayerCompositor* Compositor() const;
 
   // WebFrameWidgetBase overrides:
-  bool ForSubframe() const override { return true; }
-  bool ForTopLevelFrame() const override { return false; }
   void DidCreateLocalRootView() override;
-  void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
   void SetAutoResizeMode(bool auto_resize,
                          const gfx::Size& min_size_before_dsf,
                          const gfx::Size& max_size_before_dsf,
@@ -129,15 +120,9 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.
 
-  void UpdateLayerTreeViewport();
-
   // PageWidgetEventHandler functions
   void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
-
-  LocalFrameView* GetLocalFrameViewForAnimationScrolling() override;
-
-  LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
   // Finds the parameters required for scrolling the focused editable |element|
   // into view. |rect_to_scroll| is used for recursive scrolling of the element
@@ -150,15 +135,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
 
   base::Optional<gfx::Size> size_;
 
-  // Metrics gathering timing information
-  base::Optional<base::TimeTicks> update_layers_start_time_;
-
   bool did_suspend_parsing_ = false;
-
-  // TODO(ekaramad): Can we remove this and make sure IME events are not called
-  // when there is no page focus?
-  // Represents whether or not this object should process incoming IME events.
-  bool ime_accept_events_ = true;
 
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };

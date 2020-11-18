@@ -1922,6 +1922,9 @@ const char kWebAppsDailyMetricsDate[] = "web_apps.daily_metrics_date";
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 
+// Dictionary that stores IPH state not scoped to a particular app.
+const char kWebAppsAppAgnosticIphState[] = "web_apps.app_agnostic_iph_state";
+
 // A string representing the last version of Chrome preinstalled web apps were
 // synchronised for.
 const char kWebAppsLastPreinstallSynchronizeVersion[] =
@@ -2007,7 +2010,7 @@ const char kEnableAuthNegotiatePort[] = "auth.enable_negotiate_port";
 // Allowlist containing servers for which Integrated Authentication is enabled.
 // Note that this used to be `kAuthServerWhitelist`, hence the difference
 // between the variable name and the string value.
-const char kAuthServerAllowlist[] = "auth.server_whitelist";
+const char kAuthServerAllowlist[] = "auth.server_allowlist";
 
 // Allowlist containing servers Chrome is allowed to do Kerberos delegation
 // with. Note that this used to be `kAuthNegotiateDelegateWhitelist`, hence the

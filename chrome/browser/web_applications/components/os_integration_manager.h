@@ -30,6 +30,7 @@ class WebContents;
 namespace web_app {
 
 class AppIconManager;
+class TestOsIntegrationManager;
 class WebAppUiManager;
 
 // OsHooksResults contains the result of all Os hook deployments
@@ -134,6 +135,8 @@ class OsIntegrationManager {
   // Suppress calling individual OS managers for testing.
   void SuppressOsManagersForTesting();
 
+  virtual TestOsIntegrationManager* AsTestOsIntegrationManager();
+
  protected:
   AppShortcutManager* shortcut_manager() { return shortcut_manager_.get(); }
   FileHandlerManager* file_handler_manager() {
@@ -170,10 +173,12 @@ class OsIntegrationManager {
   virtual void AddAppToQuickLaunchBar(const AppId& app_id);
 
  private:
+  class OsHooksBarrier;
+
   void OnShortcutsCreated(const AppId& app_id,
                           std::unique_ptr<WebApplicationInfo> web_app_info,
                           InstallOsHooksOptions options,
-                          BarrierCallback barrier,
+                          scoped_refptr<OsHooksBarrier> barrier,
                           bool shortcuts_created);
 
   void OnShortcutsDeleted(const AppId& app_id,

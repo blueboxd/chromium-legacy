@@ -377,13 +377,13 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
   switch (cached_resource->GetType()) {
     case blink::ResourceType::kCSSStyleSheet:
       MaybeEncodeTextContent(
-          ToCSSStyleSheetResource(cached_resource)
+          To<CSSStyleSheetResource>(cached_resource)
               ->SheetText(nullptr, CSSStyleSheetResource::MIMETypeCheck::kLax),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     case blink::ResourceType::kScript:
       MaybeEncodeTextContent(
-          ToScriptResource(cached_resource)->TextForInspector(),
+          To<ScriptResource>(cached_resource)->TextForInspector(),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     default:
@@ -945,13 +945,6 @@ void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
     pending_script_to_evaluate_on_load_once_ = String();
   }
   GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()));
-}
-
-void InspectorPageAgent::DidOpenDocument(LocalFrame* frame,
-                                         DocumentLoader* loader) {
-  GetFrontend()->documentOpened(BuildObjectForFrame(loader->GetFrame()));
-  LifecycleEvent(frame, loader, "init",
-                 base::TimeTicks::Now().since_origin().InSecondsF());
 }
 
 void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {

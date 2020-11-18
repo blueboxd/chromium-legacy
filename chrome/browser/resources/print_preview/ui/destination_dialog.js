@@ -12,6 +12,7 @@ import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../print_preview_utils.js';
+import './destination_dialog_css.js';
 import './destination_list.js';
 import './invitation_promo.js';
 import './print_preview_search_box.js';
@@ -80,17 +81,6 @@ Polymer({
       type: Object,
       value: null,
     },
-
-    // <if expr="chromeos">
-    /** @private */
-    saveToDriveFlagEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('printSaveToDrive');
-      },
-      readOnly: true,
-    },
-    // </if>
   },
 
   listeners: {
@@ -99,11 +89,6 @@ Polymer({
 
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
-
-  // <if expr="chromeos">
-  /** @private {?Destination} */
-  destinationInConfiguring_: null,
-  // </if>
 
   /** @private {boolean} */
   initialized_: false,
@@ -169,16 +154,6 @@ Polymer({
    */
   getDestinationList_() {
     const destinations = this.destinationStore.destinations(this.activeUser);
-    // <if expr="chromeos">
-    // When |saveToDriveFlagEnabled_| is true, we don't want to show a
-    // 'Save to Drive' option in the destination dialog.
-    if (this.saveToDriveFlagEnabled_) {
-      return destinations.filter(
-          destination => destination.id !== Destination.GooglePromotedId.DOCS &&
-              destination.id !==
-                  Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS);
-    }
-    // </if>
 
     return destinations;
   },
@@ -236,40 +211,6 @@ Polymer({
           });
       return;
     }
-
-    // <if expr="chromeos">
-    // Destination must be a CrOS local destination that needs to be set up.
-    // The user is only allowed to set up printer at one time.
-    if (this.destinationInConfiguring_) {
-      return;
-    }
-
-    // Show the configuring status to the user and resolve the destination.
-    listItem.onConfigureRequestAccepted();
-    this.destinationInConfiguring_ = destination;
-    this.destinationStore.resolveCrosDestination(destination)
-        .then(
-            response => {
-              this.destinationInConfiguring_ = null;
-              listItem.onConfigureComplete(response.success);
-              if (response.success) {
-                destination.capabilities = response.capabilities;
-                if (response.policies) {
-                  destination.policies = response.policies;
-                }
-                this.selectDestination_(destination);
-                // <if expr="chromeos">
-                // After destination is selected, start fetching for the EULA
-                // URL.
-                this.destinationStore.fetchEulaUrl(destination.id);
-                // </if>
-              }
-            },
-            () => {
-              this.destinationInConfiguring_ = null;
-              listItem.onConfigureComplete(false);
-            });
-    // </if>
   },
 
   /**

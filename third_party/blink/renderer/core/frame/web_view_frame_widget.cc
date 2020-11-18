@@ -63,9 +63,9 @@ WebViewFrameWidget::WebViewFrameWidget(
                          frame_sink_id,
                          hidden,
                          never_composited,
-                         /*is_for_child_local_root=*/false),
+                         /*is_for_child_local_root=*/false,
+                         is_for_nested_main_frame),
       web_view_(&web_view),
-      is_for_nested_main_frame_(is_for_nested_main_frame),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   web_view_->SetMainFrameViewWidget(this);
 }
@@ -90,21 +90,6 @@ gfx::Size WebViewFrameWidget::Size() {
 void WebViewFrameWidget::Resize(const gfx::Size& size) {
   size_ = size;
   web_view_->Resize(size);
-}
-
-void WebViewFrameWidget::UpdateLifecycle(WebLifecycleUpdate requested_update,
-                                         DocumentUpdateReason reason) {
-  web_view_->UpdateLifecycle(requested_update, reason);
-}
-
-void WebViewFrameWidget::ApplyViewportChanges(
-    const ApplyViewportChangesArgs& args) {
-  web_view_->ApplyViewportChanges(args);
-}
-
-void WebViewFrameWidget::RecordManipulationTypeCounts(
-    cc::ManipulationInfo info) {
-  web_view_->RecordManipulationTypeCounts(info);
 }
 
 void WebViewFrameWidget::MouseCaptureLost() {
@@ -142,11 +127,6 @@ void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   cc::LayerTreeHost* layer_tree_host = widget_base_->LayerTreeHost();
   layer_tree_host->SetRootLayer(root_layer);
   web_view_->DidChangeRootLayer(!!root_layer);
-}
-
-void WebViewFrameWidget::ZoomToFindInPageRect(
-    const WebRect& rect_in_root_frame) {
-  web_view_->ZoomToFindInPageRect(rect_in_root_frame);
 }
 
 void WebViewFrameWidget::HandleMouseLeave(LocalFrame& main_frame,
@@ -339,14 +319,6 @@ WebInputEventResult WebViewFrameWidget::HandleGestureEvent(
   return event_result;
 }
 
-LocalFrameView* WebViewFrameWidget::GetLocalFrameViewForAnimationScrolling() {
-  // Scrolling for the root frame is special we need to pass null indicating
-  // we are at the top of the tree when setting up the Animation. Which will
-  // cause ownership of the timeline and animation host.
-  // See ScrollingCoordinator::AnimationHostInitialized.
-  return nullptr;
-}
-
 void WebViewFrameWidget::SetAutoResizeMode(bool auto_resize,
                                            const gfx::Size& min_window_size,
                                            const gfx::Size& max_window_size,
@@ -360,10 +332,6 @@ void WebViewFrameWidget::SetAutoResizeMode(bool auto_resize,
   } else if (web_view_->AutoResizeMode()) {
     web_view_->DisableAutoResizeMode();
   }
-}
-
-void WebViewFrameWidget::SetIsNestedMainFrameWidget(bool is_nested) {
-  is_for_nested_main_frame_ = is_nested;
 }
 
 void WebViewFrameWidget::SetPageScaleStateAndLimits(
@@ -412,11 +380,6 @@ void WebViewFrameWidget::SetDeviceColorSpaceForTesting(
   blink::ScreenInfo info = widget_base_->GetScreenInfo();
   info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
   widget_base_->UpdateScreenInfo(info);
-}
-
-void WebViewFrameWidget::RunPaintBenchmark(int repeat_count,
-                                           cc::PaintBenchmarkResult& result) {
-  web_view_->RunPaintBenchmark(repeat_count, result);
 }
 
 void WebViewFrameWidget::SetWindowRectSynchronouslyForTesting(

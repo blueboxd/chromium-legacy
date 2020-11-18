@@ -129,6 +129,26 @@ std::string AudioManagerCras::GetDefaultOutputDeviceID() {
   return base::NumberToString(GetPrimaryActiveOutputNode());
 }
 
+std::string AudioManagerCras::GetGroupIDInput(const std::string& device_id) {
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kInput)) {
+    if (base::NumberToString(device.id) == device_id ||
+        (AudioDeviceDescription::IsDefaultDevice(device_id) && device.active)) {
+      return device.dev_name;
+    }
+  }
+  return "";
+}
+
+std::string AudioManagerCras::GetGroupIDOutput(const std::string& device_id) {
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kOutput)) {
+    if (base::NumberToString(device.id) == device_id ||
+        (AudioDeviceDescription::IsDefaultDevice(device_id) && device.active)) {
+      return device.dev_name;
+    }
+  }
+  return "";
+}
+
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
@@ -157,17 +177,23 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
 }
 
 uint64_t AudioManagerCras::GetPrimaryActiveInputNode() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kInput)) {
+    if (device.active)
+      return device.id;
+  }
   return 0;
 }
 
 uint64_t AudioManagerCras::GetPrimaryActiveOutputNode() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kOutput)) {
+    if (device.active)
+      return device.id;
+  }
   return 0;
 }
 
 bool AudioManagerCras::IsDefault(const std::string& device_id, bool is_input) {
-  return device_id == AudioDeviceDescription::kDefaultDeviceId;
+  return AudioDeviceDescription::IsDefaultDevice(device_id);
 }
 
 enum CRAS_CLIENT_TYPE AudioManagerCras::GetClientType() {

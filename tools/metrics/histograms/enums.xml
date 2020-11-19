@@ -6627,6 +6627,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="235" label="RFH_CREATE_CHILD_FRAME_TOKENS_NOT_FOUND"/>
   <int value="236" label="ASGH_ASSOCIATED_INTERFACE_REQUEST"/>
   <int value="237" label="ASGH_RECEIVED_CONTROL_MESSAGE"/>
+  <int value="238" label="CSDH_BAD_OWNER"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -9271,6 +9272,15 @@ Called by update_bad_message_reasons.py.-->
   <int value="3" label="Region Button"/>
   <int value="4" label="Window Button"/>
   <int value="5" label="Exit Button"/>
+</enum>
+
+<enum name="CaptureModeConfiguration">
+  <int value="0" label="Fullscreen screenshot"/>
+  <int value="1" label="Region screenshot"/>
+  <int value="2" label="Window screenshot"/>
+  <int value="3" label="Fullscreen recording"/>
+  <int value="4" label="Region recording"/>
+  <int value="5" label="Window recording"/>
 </enum>
 
 <enum name="CaptureModeEntryType">
@@ -22560,6 +22570,7 @@ Called by update_document_policy_enum.py.-->
   <int value="804" label="FullscreenAlertEnabled"/>
   <int value="805" label="NTPCardsVisible"/>
   <int value="806" label="BasicAuthOverHttpEnabled"/>
+  <int value="807" label="SystemFeaturesDisableMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -30584,6 +30595,14 @@ Called by update_feature_policy_enum.py.-->
   <int value="15" label="Turn off"/>
   <int value="16" label="Tapped Manage Activity"/>
   <int value="17" label="Added to Read Later"/>
+  <int value="18" label="Close context menu"/>
+  <int value="19"
+      label="Ephemeral change committed, likely due to dismissing the 'undo'
+             snackbar"/>
+  <int value="20" label="Open Dialog e.g. Report Content Dialog"/>
+  <int value="21" label="Close Dialog e.g. Report Content Dialog"/>
+  <int value="22" label="Show Snackbar"/>
+  <int value="23" label="Opened native context menu. (iOS Only)"/>
 </enum>
 
 <enum name="FeedZeroStateShowReason">
@@ -37392,6 +37411,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Url or App not allowed"/>
 </enum>
 
+<enum name="IMEAutocorrectActions">
+  <int value="0" label="WINDOW_SHOWN"/>
+  <int value="1" label="UNDERLINED"/>
+</enum>
+
 <enum name="IMECommitType">
   <obsolete>
     Deprecated 03/2015, and replaced by IMECommitType2.
@@ -42579,6 +42603,8 @@ from previous Chrome versions.
       label="TurnOffStreamingMediaCachingOnBattery:disabled"/>
   <int value="-1492589689" label="ContentSuggestionsCategories:enabled"/>
   <int value="-1492211482" label="EnableWindowsGamingInputDataFetcher:enabled"/>
+  <int value="-1491705891"
+      label="EnableBluetoothVerboseLogsForGooglers:disabled"/>
   <int value="-1491417046" label="enable-fullscreen-toolbar-reveal"/>
   <int value="-1491304576" label="ProgressBarThrottle:disabled"/>
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
@@ -44543,6 +44569,7 @@ from previous Chrome versions.
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
   <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
   <int value="409566604" label="IntentPickerPWAPersistence:enabled"/>
+  <int value="409622437" label="disable-buffer-bw-compression"/>
   <int value="411250226" label="AutoplayMutedVideos:disabled"/>
   <int value="412957264" label="tab-close-buttons-hidden-with-touch"/>
   <int value="413062443" label="MessagesForAndroidInfrastructure:disabled"/>
@@ -44653,6 +44680,7 @@ from previous Chrome versions.
   <int value="513728926" label="OsSettingsPolymer3:enabled"/>
   <int value="514406112" label="WebUIOmniboxPopup:disabled"/>
   <int value="514569020" label="RemoteCopyImageNotification:enabled"/>
+  <int value="516143995" label="EnableAriaElementReflection:enabled"/>
   <int value="516603570" label="QuickAnswersRichUi:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
@@ -45922,6 +45950,7 @@ from previous Chrome versions.
   <int value="1775730290" label="OmniboxKeywordSearchButton:enabled"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1777059507" label="trust-autofill-server-name-types"/>
+  <int value="1777241671" label="EnableAriaElementReflection:disabled"/>
   <int value="1777695562" label="SendTabToSelfShowSendingUI:disabled"/>
   <int value="1777806335" label="UsePasswordSeparatedSigninFlow:disabled"/>
   <int value="1779530254"
@@ -46087,6 +46116,8 @@ from previous Chrome versions.
   <int value="1927374573" label="EnterpriseRealtimeExtensionRequest:enabled"/>
   <int value="1928407249" label="NewPhotoPicker:enabled"/>
   <int value="1929603041" label="HideShelfControlsInTabletMode:disabled"/>
+  <int value="1930185502"
+      label="EnableBluetoothVerboseLogsForGooglers:enabled"/>
   <int value="1930901873" label="disable-sync-app-list"/>
   <int value="1931309368" label="fill-on-account-select:disabled"/>
   <int value="1932204471" label="SyncPseudoUSSThemes:disabled"/>
@@ -46328,6 +46359,7 @@ from previous Chrome versions.
   <int value="8" label="Commit transaction error"/>
   <int value="9" label="Initialization of compromised credentials error"/>
   <int value="10" label="Init field info table error"/>
+  <int value="11" label="Foreign key init error"/>
 </enum>
 
 <enum name="LoginFailureReason">
@@ -54825,6 +54857,39 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Store is unvailable and model availability is unknown">
     The store is not yet initialized and it is unknown if it contains a model
     for the optimization target or not.
+  </int>
+</enum>
+
+<enum name="OptimizationGuidePredictionModelDownloadStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success">
+    The download was successfully verified and processed.
+  </int>
+  <int value="2" label="Failed to verify download">
+    The download failed verification.
+  </int>
+  <int value="3" label="Failed to create unzip directory">
+    The download was successfully verified but a directory to unzip the file to
+    could not be created.
+  </int>
+  <int value="4" label="Failed to unzip file">
+    The download was successfully verified but it failed to be unzipped.
+  </int>
+  <int value="5" label="Failed to read model info file">
+    The download was successfully verified, but the expected model info file
+    could not be read.
+  </int>
+  <int value="6" label="Failed to parse model info file">
+    The download was successfully verified, but the expected model info file
+    could not be parsed.
+  </int>
+  <int value="7" label="Failed to find expected model file">
+    The download and model info files were successfully verified and processed,
+    but the expected model file was not found.
+  </int>
+  <int value="8" label="Failed to process expected model file">
+    The download and model info files were successfully verified and processed,
+    but the expected model file failed to be processed.
   </int>
 </enum>
 
@@ -70560,6 +70625,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="StayVsLeave">
+  <obsolete>
+    Removed 2020 November.
+  </obsolete>
   <int value="0" label="Stay on the current page"/>
   <int value="1" label="Leave the current page"/>
 </enum>
@@ -74941,7 +75009,12 @@ Full version information for the fingerprint enum values:
   <int value="22" label="vaSyncSurface()"/>
   <int value="23" label="vaTerminate()"/>
   <int value="24" label="vaUnmapBuffer()"/>
-  <int value="25" label="Other VA functions"/>
+  <int value="25" label="vaCreateProtectedSession()"/>
+  <int value="26" label="vaDestroyProtectedSession()"/>
+  <int value="27" label="vaAttachProtectedSession()"/>
+  <int value="28" label="vaDetachProtectedSession()"/>
+  <int value="29" label="vaProtectedSessionHwUpdate()"/>
+  <int value="30" label="Other VA functions"/>
 </enum>
 
 <enum name="VAIPFailure">

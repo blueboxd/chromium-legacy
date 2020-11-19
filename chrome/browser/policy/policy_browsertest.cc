@@ -71,7 +71,6 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -84,7 +83,6 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -202,7 +200,6 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -307,31 +304,6 @@ bool IsNetworkPredictionEnabled(PrefService* prefs) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(prefs) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
 }
-
-#if defined(OS_CHROMEOS)
-class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
- public:
-  TestAudioObserver() : output_mute_changed_count_(0) {
-  }
-
-  int output_mute_changed_count() const {
-    return output_mute_changed_count_;
-  }
-
-  ~TestAudioObserver() override {}
-
- protected:
-  // chromeos::CrasAudioHandler::AudioObserver overrides.
-  void OnOutputMuteChanged(bool /* mute_on */) override {
-    ++output_mute_changed_count_;
-  }
-
- private:
-  int output_mute_changed_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAudioObserver);
-};
-#endif
 
 }  // namespace
 
@@ -896,45 +868,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableScreenshotsFile) {
   ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
-  // Set up the mock observer.
-  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
-  std::unique_ptr<TestAudioObserver> test_observer(new TestAudioObserver);
-  audio_handler->AddAudioObserver(test_observer.get());
-
-  bool prior_state = audio_handler->IsOutputMuted();
-  // Make sure the audio is not muted and then toggle the policy and observe
-  // if the output mute changed event is fired.
-  audio_handler->SetOutputMute(false);
-  EXPECT_FALSE(audio_handler->IsOutputMuted());
-  EXPECT_EQ(1, test_observer->output_mute_changed_count());
-  PolicyMap policies;
-  policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(audio_handler->IsOutputMuted());
-  // This should not change the state now and should not trigger output mute
-  // changed event.
-  audio_handler->SetOutputMute(false);
-  EXPECT_TRUE(audio_handler->IsOutputMuted());
-  EXPECT_EQ(1, test_observer->output_mute_changed_count());
-
-  // Toggle back and observe if the output mute changed event is fired.
-  policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(audio_handler->IsOutputMuted());
-  EXPECT_EQ(1, test_observer->output_mute_changed_count());
-  audio_handler->SetOutputMute(true);
-  EXPECT_TRUE(audio_handler->IsOutputMuted());
-  EXPECT_EQ(2, test_observer->output_mute_changed_count());
-  // Revert the prior state.
-  audio_handler->SetOutputMute(prior_state);
-  audio_handler->RemoveAudioObserver(test_observer.get());
-}
-
 IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
@@ -1328,180 +1261,12 @@ IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest,
   EXPECT_EQ(1u, num_requests());
 }
 
-// Handler for embedded http-server, returns a small page with javascript
-// variable and a link to increment it. It's for JavascriptBlacklistable test.
-std::unique_ptr<net::test_server::HttpResponse> JSIncrementerPageHandler(
-    const net::test_server::HttpRequest& request) {
-  if (request.relative_url != "/test.html") {
-    return std::unique_ptr<net::test_server::HttpResponse>();
-  }
-
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse());
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(
-      "<head><script type=\"text/javascript\">\n"
-      "<!--\n"
-      "var value = 1;"
-      "var increment = function() {"
-      "  value = value + 1;"
-      "};\n"
-      "//-->\n"
-      "</script></head><body>"
-      "<a id='link' href=\"javascript:increment();\">click</a>"
-      "</body>");
-  http_response->set_content_type("text/html");
-  return http_response;
-}
-
-// Fetch value from page generated by JSIncrementerPageHandler.
-int JSIncrementerFetch(content::WebContents* contents) {
-  int result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      contents, "domAutomationController.send(value);", &result));
-  return result;
-}
-
-// Tests that javascript-links are handled properly according to blacklist
-// settings, bug 913334.
-IN_PROC_BROWSER_TEST_F(PolicyTest, JavascriptBlacklistable) {
-  embedded_test_server()->RegisterRequestHandler(
-      base::BindRepeating(&JSIncrementerPageHandler));
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/test.html"));
-
-  EXPECT_EQ(JSIncrementerFetch(contents), 1);
-
-  // Without blacklist policy value is incremented properly.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("javascript:increment()"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-
-  EXPECT_EQ(JSIncrementerFetch(contents), 2);
-
-  // Create and apply a policy.
-  base::ListValue blacklist;
-  blacklist.AppendString("javascript://*");
-  PolicyMap policies;
-  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
-  UpdateProviderPolicy(policies);
-  FlushBlacklistPolicy();
-
-  // After applying policy javascript url's don't work any more, value leaves
-  // unchanged.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("javascript:increment()"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-  EXPECT_EQ(JSIncrementerFetch(contents), 2);
-
-  // But in-page links still work even if they are javascript-links.
-  EXPECT_TRUE(content::ExecuteScript(
-      contents, "document.getElementById('link').click();"));
-  EXPECT_EQ(JSIncrementerFetch(contents), 3);
-}
-
-#if !defined(OS_ANDROID)
-
-// The possibilities for a boolean policy.
-enum class BooleanPolicy {
-  kNotConfigured,
-  kFalse,
-  kTrue,
-};
-
-#endif  // !defined(OS_ANDROID)
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-
-// Tests that the PromotionalTabsEnabled policy properly suppresses the welcome
-// page for browser first-runs.
-class PromotionalTabsEnabledPolicyTest
-    : public PolicyTest,
-      public testing::WithParamInterface<BooleanPolicy> {
- protected:
-  PromotionalTabsEnabledPolicyTest() {
-    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
-  }
-  ~PromotionalTabsEnabledPolicyTest() = default;
-
-  void SetUp() override {
-    // Ordinarily, browser tests include chrome://blank on the command line to
-    // suppress any onboarding or promotional tabs. This test, on the other
-    // hand, must evaluate startup with nothing on the command line so that a
-    // default launch takes place.
-    set_open_about_blank_on_browser_launch(false);
-    PolicyTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kForceFirstRun);
-  }
-
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override {
-    // Set policies before the browser starts up.
-    PolicyMap policies;
-
-    // Suppress the first-run dialog by disabling metrics reporting.
-    policies.Set(key::kMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(false),
-                 nullptr);
-
-    // Apply the policy setting under test.
-    if (GetParam() != BooleanPolicy::kNotConfigured) {
-      policies.Set(key::kPromotionalTabsEnabled, POLICY_LEVEL_MANDATORY,
-                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                   base::Value(GetParam() == BooleanPolicy::kTrue), nullptr);
-    }
-
-    UpdateProviderPolicy(policies);
-    PolicyTest::CreatedBrowserMainParts(browser_main_parts);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PromotionalTabsEnabledPolicyTest);
-};
-
-IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  ASSERT_GE(tab_strip->count(), 1);
-  const auto& url = tab_strip->GetWebContentsAt(0)->GetURL();
-  switch (GetParam()) {
-    case BooleanPolicy::kFalse:
-      // Only the NTP should show.
-      EXPECT_EQ(tab_strip->count(), 1);
-      if (url.possibly_invalid_spec() != chrome::kChromeUINewTabURL)
-        EXPECT_TRUE(search::IsNTPOrRelatedURL(url, browser()->profile()))
-            << url;
-      break;
-    case BooleanPolicy::kNotConfigured:
-    case BooleanPolicy::kTrue:
-      // One or more onboarding tabs should show.
-      EXPECT_NE(url.possibly_invalid_spec(), chrome::kChromeUINewTabURL);
-      EXPECT_FALSE(search::IsNTPOrRelatedURL(url, browser()->profile())) << url;
-      break;
-  }
-}
 #undef MAYBE_RunTest
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         PromotionalTabsEnabledPolicyTest,
-                         ::testing::Values(BooleanPolicy::kNotConfigured,
-                                           BooleanPolicy::kFalse,
-                                           BooleanPolicy::kTrue));
-
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
 class WebRtcEventLogCollectionAllowedPolicyTest
     : public PolicyTest,
-      public testing::WithParamInterface<BooleanPolicy> {
+      public testing::WithParamInterface<PolicyTest::BooleanPolicy> {
  public:
   ~WebRtcEventLogCollectionAllowedPolicyTest() override = default;
 
@@ -1600,11 +1365,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         WebRtcEventLogCollectionAllowedPolicyTest,
-                         ::testing::Values(BooleanPolicy::kNotConfigured,
-                                           BooleanPolicy::kFalse,
-                                           BooleanPolicy::kTrue));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebRtcEventLogCollectionAllowedPolicyTest,
+    ::testing::Values(PolicyTest::BooleanPolicy::kNotConfigured,
+                      PolicyTest::BooleanPolicy::kFalse,
+                      PolicyTest::BooleanPolicy::kTrue));
 #endif  // !defined(OS_ANDROID)
 
 class PolicyTestSyncXHR : public PolicyTest {

@@ -46,6 +46,10 @@ namespace WTF {
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
 
+// Runs PCScan on WTF partitions.
+const base::Feature kPCScanBlinkPartitions{"PCScanBlinkPartitions",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool Partitions::initialized_ = false;
 
 // These statics are inlined, so cannot be LazyInstances. We create the values,
@@ -92,17 +96,17 @@ bool Partitions::InitializeOnce() {
                          base::PartitionOptions::PCScan::kDisabledByDefault});
   layout_allocator.init({base::PartitionOptions::Alignment::kRegular,
                          base::PartitionOptions::ThreadCache::kDisabled,
-                         base::PartitionOptions::PCScan::kDisabledByDefault});
+                         base::PartitionOptions::PCScan::kAlwaysDisabled});
 
   fast_malloc_root_ = fast_malloc_allocator.root();
   array_buffer_root_ = array_buffer_allocator.root();
   buffer_root_ = buffer_allocator.root();
   layout_root_ = layout_allocator.root();
 
-  if (base::features::IsPartitionAllocPCScanEnabled()) {
+  if (base::features::IsPartitionAllocPCScanEnabled() ||
+      base::FeatureList::IsEnabled(kPCScanBlinkPartitions)) {
     fast_malloc_root_->EnablePCScan();
     buffer_root_->EnablePCScan();
-    layout_root_->EnablePCScan();
   }
 
   initialized_ = true;

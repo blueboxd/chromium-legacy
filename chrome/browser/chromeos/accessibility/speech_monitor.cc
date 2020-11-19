@@ -11,6 +11,7 @@
 #include "content/public/browser/tts_controller.h"
 
 namespace chromeos {
+namespace test {
 
 namespace {
 
@@ -43,6 +44,12 @@ void SpeechMonitor::Speak(int utterance_id,
                           const content::VoiceData& voice,
                           const content::UtteranceContinuousParameters& params,
                           base::OnceCallback<void(bool)> on_speak_finished) {
+  CHECK(!utterance.empty())
+      << "If you're deliberately speaking the "
+         "empty string in a test, that's probably not the correct way to "
+         "achieve stopping speech. If it is unintended, it indicates a deeper "
+         "underlying issue.";
+
   content::TtsController::GetInstance()->OnTtsEvent(
       utterance_id, content::TTS_EVENT_END, static_cast<int>(utterance.size()),
       0, std::string());
@@ -260,4 +267,5 @@ void SpeechMonitor::MaybePrintExpectations() {
              << base::JoinString(replayed_queue_, "\n");
 }
 
+}  // namespace test
 }  // namespace chromeos

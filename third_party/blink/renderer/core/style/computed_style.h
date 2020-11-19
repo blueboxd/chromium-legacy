@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_H_
 
 #include <memory>
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/border_value.h"
 #include "third_party/blink/renderer/core/style/computed_style_base.h"
@@ -291,7 +292,7 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT static ComputedStyle& MutableInitialStyle();
 
  public:
-  using PassKey = util::PassKey<ComputedStyle>;
+  using PassKey = base::PassKey<ComputedStyle>;
 
   ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle&);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
@@ -689,6 +690,16 @@ class ComputedStyle : public ComputedStyleBase,
   // outline-offset
   int16_t OutlineOffsetInt() const { return OutlineOffset().ToInt(); }
 
+  // For history and compatibility reasons, we draw outline:auto (for focus
+  // rings) and normal style outline differently.
+  // Focus rings enclose block visual overflows (of line boxes and descendants),
+  // while normal outlines don't.
+  NGOutlineType OutlineRectsShouldIncludeBlockVisualOverflow() const {
+    return OutlineStyleIsAuto()
+               ? NGOutlineType::kIncludeBlockVisualOverflow
+               : NGOutlineType::kDontIncludeBlockVisualOverflow;
+  }
+
   // -webkit-perspective-origin-x
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }
   void SetPerspectiveOriginX(const Length& v) {
@@ -943,6 +954,10 @@ class ComputedStyle : public ComputedStyleBase,
   // TODO(crbug.com/687225): Get rid of the deprecated functions above so that
   // the getter can also be auto-generated.
   ListStyleTypeData* GetListStyleType() const;
+  bool ListStyleTypeDataEquivalent(const ComputedStyle& other) const {
+    return DataEquivalent(ListStyleTypeInternal(),
+                          other.ListStyleTypeInternal());
+  }
 
   // quotes
   bool QuotesDataEquivalent(const ComputedStyle&) const;

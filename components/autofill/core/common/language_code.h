@@ -9,18 +9,18 @@
 #include <string>
 #include <utility>
 
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/ranges/algorithm.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 
 namespace autofill {
 
 // A LanguageCode is a two-letter lowercase abbreviation according to ISO 639-1
 // or "und", which is the ISO 639-2 code for "undetermined".
 class LanguageCode
-    : public util::StrongAlias<class LanguageCodeTag, std::string> {
+    : public base::StrongAlias<class LanguageCodeTag, std::string> {
  private:
-  using BaseClass = util::StrongAlias<LanguageCodeTag, std::string>;
+  using BaseClass = base::StrongAlias<LanguageCodeTag, std::string>;
 
  public:
   LanguageCode() = default;
@@ -33,10 +33,11 @@ class LanguageCode
 
  private:
   void Check() {
-    DCHECK(empty() || length() == 2 || value() == "und")
-        << "Invalid language code '" << value() << "'";
-    DCHECK(base::ranges::all_of(value(), &islower))
-        << "Invalid language code '" << value() << "'";
+    LOG_IF(ERROR,
+           !(empty() ||
+             (base::ranges::all_of(value(), &islower) && length() == 2) ||
+             value() == "und" || value() == "zh-CN" || value() == "zh-TW"))
+        << "Unexpected language code '" << value() << "'";
   }
 };
 

@@ -98,7 +98,7 @@ std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
   DCHECK(display_controller->skia_dependency());
   DCHECK(display_controller->gpu_task_scheduler());
   auto output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-      util::PassKey<SkiaOutputSurfaceImpl>(), display_controller,
+      base::PassKey<SkiaOutputSurfaceImpl>(), display_controller,
       renderer_settings, debug_settings);
   if (!output_surface->Initialize())
     output_surface = nullptr;
@@ -106,7 +106,7 @@ std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
 }
 
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
-    util::PassKey<SkiaOutputSurfaceImpl> /* pass_key */,
+    base::PassKey<SkiaOutputSurfaceImpl> /* pass_key */,
     DisplayCompositorMemoryAndTaskController* display_controller,
     const RendererSettings& renderer_settings,
     const DebugRendererSettings* debug_settings)
@@ -891,6 +891,7 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
     const gfx::Size& pixel_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
+  last_swapped_mailbox_ = params.primary_plane_mailbox;
 
   // Reset |damage_of_buffers_|, if buffers are new created.
   if (params.swap_response.result ==
@@ -1056,6 +1057,11 @@ bool SkiaOutputSurfaceImpl::IsDisplayedAsOverlayPlane() const {
 unsigned SkiaOutputSurfaceImpl::GetOverlayTextureId() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return 0;
+}
+
+gpu::Mailbox SkiaOutputSurfaceImpl::GetOverlayMailbox() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return last_swapped_mailbox_;
 }
 
 bool SkiaOutputSurfaceImpl::HasExternalStencilTest() const {

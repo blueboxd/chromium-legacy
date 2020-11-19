@@ -37,7 +37,6 @@
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -197,11 +196,13 @@ bool BrowserManager::IsRunning() const {
 }
 
 void BrowserManager::SetLoadCompleteCallback(LoadCompleteCallback callback) {
+  // We only support one client waiting.
+  DCHECK(!load_complete_callback_);
   load_complete_callback_ = std::move(callback);
 }
 
 void BrowserManager::NewWindow() {
-  if (!browser_util::IsLacrosAllowed())
+  if (!browser_util::IsLacrosEnabled())
     return;
 
   if (!IsReady()) {
@@ -436,17 +437,15 @@ void BrowserManager::OnSessionStateChanged() {
   // Ensure this isn't run multiple times.
   session_manager::SessionManager::Get()->RemoveObserver(this);
 
-  // Must be checked after user session start because it depends on user type.
-  if (!browser_util::IsLacrosAllowed())
-    return;
-
   // May be null in tests.
   if (!component_manager_)
     return;
 
   DCHECK(!browser_loader_);
   browser_loader_ = std::make_unique<BrowserLoader>(component_manager_);
-  if (chromeos::features::IsLacrosSupportEnabled()) {
+
+  // Must be checked after user session start because it depends on user type.
+  if (browser_util::IsLacrosEnabled()) {
     state_ = State::LOADING;
     browser_loader_->Load(base::BindOnce(&BrowserManager::OnLoadComplete,
                                          weak_factory_.GetWeakPtr()));

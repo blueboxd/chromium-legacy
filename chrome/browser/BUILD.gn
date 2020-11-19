@@ -1970,6 +1970,7 @@ static_library("browser") {
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/browser/updates/announcement_notification",
     "//chrome/browser/video_tutorials",
+    "//chrome/browser/web_share_target",
     "//chrome/common:channel_info",
     "//chrome/common:version_header",
     "//chrome/common/net",
@@ -2776,7 +2777,7 @@ static_library("browser") {
       "android/preferences/cookie_controls_service_bridge.h",
       "android/preferences/pref_change_registrar_android.cc",
       "android/preferences/pref_change_registrar_android.h",
-      "android/preferences/privacy_preferences_manager.cc",
+      "android/preferences/privacy_preferences_manager_impl.cc",
       "android/profile_key_startup_accessor.cc",
       "android/profile_key_startup_accessor.h",
       "android/profile_key_util.cc",
@@ -3259,7 +3260,7 @@ static_library("browser") {
       "//components/reading_list/features:flags",
       "//components/resources:android_resources",
       "//components/resources:components_resources",
-      "//components/safe_browsing/content/password_protection:password_protection_metrics_util",
+      "//components/safe_browsing/core/password_protection:password_protection_metrics_util",
       "//components/security_state/content/android",
       "//components/send_tab_to_self",
       "//components/signin/internal/identity_manager",  # cf android / signin /
@@ -4501,6 +4502,8 @@ static_library("browser") {
   if (is_lacros) {
     assert(enable_native_notifications)
     sources += [
+      "chrome_browser_main_parts_lacros.cc",
+      "chrome_browser_main_parts_lacros.h",
       "feedback/show_feedback_page_lacros.cc",
       "first_run/first_run_internal_lacros.cc",
       "lacros/account_manager_facade_factory_lacros.cc",
@@ -4514,6 +4517,8 @@ static_library("browser") {
       "lacros/immersive_context_lacros.h",
       "lacros/lacros_chrome_service_delegate_impl.cc",
       "lacros/lacros_chrome_service_delegate_impl.h",
+      "lacros/snap_controller_lacros.cc",
+      "lacros/snap_controller_lacros.h",
       "lacros/system_logs/lacros_system_log_fetcher.cc",
       "lacros/system_logs/lacros_system_log_fetcher.h",
       "metrics/enrollment_status.h",
@@ -5170,13 +5175,6 @@ static_library("browser") {
       "//components/crash/content/browser",
       "//components/crash/core/app",
       "//components/version_info:generate_version_info",
-    ]
-  }
-
-  if (is_win || is_mac || (is_linux && !is_chromeos)) {
-    sources += [
-      "password_manager/password_store_signin_notifier_impl.cc",
-      "password_manager/password_store_signin_notifier_impl.h",
     ]
   }
 

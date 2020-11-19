@@ -142,7 +142,7 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(
   WebViewFrameWidget* widget = nullptr;
   if (g_create_web_view_frame_widget) {
     widget = g_create_web_view_frame_widget(
-        util::PassKey<WebFrameWidget>(), *client, web_view_impl,
+        base::PassKey<WebFrameWidget>(), *client, web_view_impl,
         std::move(mojo_frame_widget_host), std::move(mojo_frame_widget),
         std::move(mojo_widget_host), std::move(mojo_widget),
         main_frame->Scheduler()->GetAgentGroupScheduler()->DefaultTaskRunner(),
@@ -152,7 +152,7 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(
     // caller needs to release by calling Close().
     // TODO(dcheng): Remove the special bridge class for main frame widgets.
     widget = MakeGarbageCollected<WebViewFrameWidget>(
-        util::PassKey<WebFrameWidget>(), *client, web_view_impl,
+        base::PassKey<WebFrameWidget>(), *client, web_view_impl,
         std::move(mojo_frame_widget_host), std::move(mojo_frame_widget),
         std::move(mojo_widget_host), std::move(mojo_widget),
         main_frame->Scheduler()->GetAgentGroupScheduler()->DefaultTaskRunner(),
@@ -186,7 +186,7 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
   auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(
-      util::PassKey<WebFrameWidget>(), *client,
+      base::PassKey<WebFrameWidget>(), *client,
       std::move(mojo_frame_widget_host), std::move(mojo_frame_widget),
       std::move(mojo_widget_host), std::move(mojo_widget),
       local_root->Scheduler()->GetAgentGroupScheduler()->DefaultTaskRunner(),
@@ -196,7 +196,7 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 }
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(
-    util::PassKey<WebFrameWidget>,
+    base::PassKey<WebFrameWidget>,
     WebWidgetClient& client,
     CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase>
         frame_widget_host,
@@ -334,12 +334,6 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   return true;
 }
 
-void WebFrameWidgetImpl::MouseCaptureLost() {
-  TRACE_EVENT_NESTABLE_ASYNC_END0("input", "capturing mouse",
-                                  TRACE_ID_LOCAL(this));
-  mouse_capture_element_ = nullptr;
-}
-
 void WebFrameWidgetImpl::FocusChanged(bool enable) {
   if (enable)
     GetPage()->GetFocusController().SetActive(true);
@@ -384,13 +378,6 @@ void WebFrameWidgetImpl::FocusChanged(bool enable) {
       }
     }
   }
-}
-
-void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
-                                          const WebMouseEvent& event) {
-  // FIXME: WebWidget doesn't have the method below.
-  // m_client->setMouseOverURL(WebURL());
-  PageWidgetEventHandler::HandleMouseLeave(main_frame, event);
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
@@ -465,25 +452,6 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
     return nullptr;
 
   return frame->GetDocument()->GetLayoutView()->Compositor();
-}
-
-void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  if (!layer) {
-    // This notifies the WebFrameWidgetImpl that its LocalFrame tree is being
-    // detached.
-    return;
-  }
-
-  // WebFrameWidgetImpl is used for child frames, which always have a
-  // transparent background color.
-  widget_base_->LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
-  // Pass the limits even though this is for subframes, as the limits will
-  // be needed in setting the raster scale.
-  SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
-                             View()->MinimumPageScaleFactor(),
-                             View()->MaximumPageScaleFactor());
-
-  widget_base_->LayerTreeHost()->SetRootLayer(layer);
 }
 
 void WebFrameWidgetImpl::DidCreateLocalRootView() {

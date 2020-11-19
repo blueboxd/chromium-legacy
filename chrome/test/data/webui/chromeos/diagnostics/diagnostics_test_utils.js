@@ -96,6 +96,19 @@ export function getToggleTestReportButtonFromSection(element) {
 }
 
 /**
+ * Helper function for getting the Show/Hide Tests Report button from a
+ * routine-section.
+ * @param {?RoutineSectionElement} element
+ * @return {!CrButtonElement}
+ */
+export function getLearnMoreButtonFromSection(element) {
+  const button =
+      /** @type {!CrButtonElement} */ (element.$$('#learnMoreButton'));
+  assertTrue(!!button);
+  return button;
+}
+
+/**
  * Helper function to check if a substring exists in an element.
  * @param {?Element} element
  * @param {string} text substring to check
@@ -113,4 +126,14 @@ export function assertElementContainsText(element, text) {
  */
 export function assertTextContains(text, subStr) {
   assertTrue(text.trim().indexOf(subStr) !== -1);
+}
+
+/**
+ * Helper function for getting the diagnostics-card from an element.
+ * @param {?Element} element
+ * @return {!DiagnosticsCardElement}
+ */
+export function getDiagnosticsCard(element) {
+  return /** @type {!DiagnosticsCardElement} */ (
+      element.shadowRoot.querySelector('diagnostics-card'));
 }

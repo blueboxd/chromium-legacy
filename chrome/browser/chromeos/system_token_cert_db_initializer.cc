@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -79,6 +80,9 @@ SystemTokenCertDBInitializer* g_system_token_cert_db_initializer = nullptr;
 
 }  // namespace
 
+constexpr base::TimeDelta
+    SystemTokenCertDBInitializer::kMaxCertDbRetrievalDelay;
+
 SystemTokenCertDBInitializer::SystemTokenCertDBInitializer() {
   // Only start loading the system token once cryptohome is available and only
   // if the TPM is ready (available && owned && not being owned).
@@ -141,8 +145,16 @@ void SystemTokenCertDBInitializer::GetSystemTokenCertDb(
 
   if (system_token_cert_database_) {
     std::move(callback).Run(system_token_cert_database_.get());
+  } else if (system_token_cert_db_retrieval_failed_) {
+    std::move(callback).Run(/*nss_cert_database=*/nullptr);
   } else {
     get_system_token_cert_db_callback_list_.AddUnsafe(std::move(callback));
+
+    if (!system_token_cert_db_retrieval_timer_.IsRunning()) {
+      system_token_cert_db_retrieval_timer_.Start(
+          FROM_HERE, kMaxCertDbRetrievalDelay, /*receiver=*/this,
+          &SystemTokenCertDBInitializer::OnSystemTokenDbRetrievalTimeout);
+    }
   }
 }
 
@@ -228,12 +240,21 @@ void SystemTokenCertDBInitializer::InitializeDatabase(
   database->SetSystemSlot(std::move(system_slot_copy));
 
   system_token_cert_database_ = std::move(database);
+  system_token_cert_db_retrieval_timer_.Stop();
   get_system_token_cert_db_callback_list_.Notify(
       system_token_cert_database_.get());
 
   VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
              "database to NetworkCertLoader.";
   NetworkCertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
+}
+
+void SystemTokenCertDBInitializer::OnSystemTokenDbRetrievalTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  system_token_cert_db_retrieval_failed_ = true;
+  get_system_token_cert_db_callback_list_.Notify(
+      /*nss_cert_database=*/nullptr);
 }
 
 }  // namespace chromeos

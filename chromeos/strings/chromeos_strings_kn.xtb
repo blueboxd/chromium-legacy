@@ -151,6 +151,7 @@
 <translation id="7936303884198020182">ಹೆಸರು ಇಲ್ಲದ ಸರ್ವರ್‌ಗಳು ಕಂಡುಬಂದಿವೆ.</translation>
 <translation id="8041089156583427627">ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿ</translation>
 <translation id="808894953321890993">ಪಾಸ್‌ವರ್ಡ್ ಬದಲಿಸಿ</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8160445423316272678">ನಿಮ್ಮ ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಸ್ಕ್ಯಾನರ್‌ನಲ್ಲಿ ಇರಿಸಿ ಮತ್ತು ಸ್ಕ್ಯಾನಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು <ph name="SPAN_BEGIN" />ಸ್ಕ್ಯಾನ್ ಮಾಡಿ<ph name="SPAN_END" /> ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="8208861521865154048">ಪರ್ಕ್‌ಗಳು</translation>
 <translation id="8230672074305416752">ಡೀಫಾಲ್ಟ್ ನೆಟ್‌ವರ್ಕ್ ಗೇಟ್‌ವೇಗೆ ಪಿಂಗ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
@@ -172,6 +173,6 @@
 <translation id="8919837981463578619">ವಿಫಲವಾಗಿದೆ - ಟ್ರೇ ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="8928727111548978589">ವಿಫಲವಾಗಿದೆ - ಕಾಗದ ಖಾಲಿಯಾಗಿದೆ</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> ಗಾಗಿ ಟಿಕೆಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
-<translation id="9106415115617144481">ಸ್ಕ್ಯಾನಿಂಗ್ ಪುಟ <ph name="PAGE_NUMBER" /></translation>
+<translation id="9106415115617144481">ಪುಟ <ph name="PAGE_NUMBER" /> ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="9111102763498581341">ಅನ್‌ಲಾಕ್</translation>
 </translationbundle>

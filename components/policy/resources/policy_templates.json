@@ -1235,7 +1235,7 @@
 
       Leaving both <ph name="HOMEPAGE_LOCATION_POLICY_NAME">HomepageLocation</ph> and <ph name="HOMEPAGE_IS_NEW_TAB_PAGE_POLICY_NAME">HomepageIsNewTabPage</ph> unset lets users choose their homepage.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'label': '''Home page URL''',
     },
     {
@@ -1257,7 +1257,7 @@
 
       If you set the policy, users can't change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If not set, the user decides whether or not the New Tab page is their homepage.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'NewTabPageLocation',
@@ -1284,7 +1284,7 @@
 
       Leaving the policy unset or empty puts the default New Tab page in use.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'label': '''New Tab page URL''',
     },
     {
@@ -3111,7 +3111,7 @@
 
       If the policy <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME">SafeBrowsingProtectionLevel</ph> is set, the value of the policy <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> is ignored.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'SafeBrowsingProtectionLevel',
@@ -3913,7 +3913,7 @@
 
       These restrictions apply to downloads triggered from webpage content, as well as the Download link menu option. These restrictions don't apply to the save or download of the currently displayed page or to saving as PDF from the printing options.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'label': '''Safe Browsing enable state for trusted sources''',
     },
     {
@@ -5044,7 +5044,7 @@
 
       Setting this policy to <ph name="POLICY_ENUM_RESTOREONSTARTUP_RESTOREONSTARTUPISLASTSESSION">RestoreOnStartupIsLastSession</ph> turns off some settings that rely on sessions or that perform actions on exit, such as clearing browsing data on exit or session-only cookies.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'RestoreOnStartupURLs',
@@ -5068,7 +5068,7 @@
 
       If not set, the New Tab page opens on start up.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'BlockThirdPartyCookies',
@@ -6227,7 +6227,7 @@
         'per_profile': True,
       },
       'example_value': 2,
-      'default': 3,
+      'default': None,
       'id': 774,
       'caption': '''Control use of the File System API for writing''',
       'tags': ['website-sharing'],
@@ -8111,7 +8111,7 @@
 
       Leaving the policy unset allows no exceptions.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -8173,7 +8173,7 @@
 
       Leaving the policy unset allows no exceptions to <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -10966,11 +10966,53 @@
       'tags': [],
       'desc': '''Allows you to set a list of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features to be disabled.
 
-      Disabling any of these features means that the user can't access it from the UI and will see it as "disabled by admin".
+      Disabling any of these features means that the user can't access it from the UI and will see it as "disabled by admin". The user experience of disabled features is decided by <ph name="SYSTEM_FEATURES_DISABLE_MODE">SystemFeaturesDisableMode</ph>
 
       If the policy is left not set, all <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features will be enabled by default and the user can use any of them.
 
       Note: The scanning feature is currently disabled by default via a feature flag. If the user enables the feature via the feature flag, the feature can still be disabled by this policy.''',
+    },
+    {
+      'name': 'SystemFeaturesDisableMode',
+      'owners': ['anqing@chromium.org'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'blocked',
+          'hidden',
+        ],
+      },
+      'items': [
+        {
+          'name': 'blocked',
+          'value': 'blocked',
+          'caption': '''Block the disabled features''',
+        },
+        {
+          'name': 'hidden',
+          'value': 'hidden',
+          'caption': '''Hide and block the disabled features''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'blocked',
+      'default': 'blocked',
+      'id': 807,
+      'caption': '''Set the user experience of disabled features''',
+      'tags': [],
+      'desc': '''Controls the user experience of disabled features listed in <ph name="SYSTEM_FEATURES_DISABLE_LIST">SystemFeaturesDisableList</ph>.
+
+      If this policy is set to "blocked", the disabled features will become unusable but still visible to users.
+
+      If this policy is set to "hidden", the disabled features will become unusable and invisible to users.
+
+      If this policy is left unset or has an invalid value, the disable mode of system features will be "blocked".''',
     },
     {
       'name': 'FloatingAccessibilityMenuEnabled',
@@ -18093,7 +18135,7 @@
 
       Setting the policy to Disabled or leaving it unset means default Safe Browsing protection applies to all resources.
 
-       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'SafeBrowsingAllowlistDomains',
@@ -18116,7 +18158,7 @@
 
       Setting the policy to Disabled or leaving it unset means default Safe Browsing protection applies to all resources.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'PasswordProtectionLoginURLs',
@@ -18139,7 +18181,7 @@
 
       Turning this setting off or leaving it unset means the password protection service only captures the password salted hashes on https://accounts.google.com.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'PasswordProtectionChangePasswordURL',
@@ -18159,7 +18201,7 @@
 
       Turning the policy off or leaving it unset means the service sends users to https://myaccount.google.com to change their password.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'SafeBrowsingExtendedReportingEnabled',
@@ -18220,7 +18262,7 @@
       'id': 510,
       'caption': '''The enrollment token of cloud policy on desktop''',
       'tags': [],
-      'desc': '''Setting the policy means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> tries to register itself with <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. The value of this policy is an enrollment token you can retrieve from the <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME">Google Admin console</ph>.
+      'desc': '''Setting the policy means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> tries to register itself with <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. The value of this policy is an enrollment token you can retrieve from the <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME">Google Admin console</ph>.
 
       See https://support.google.com/chrome/a/answer/9301891?ref_topic=9301744 for details.''',
     },
@@ -18239,9 +18281,9 @@
       'id': 505,
       'caption': '''Enable mandatory cloud management enrollment''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled mandates <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> enrollment and blocks <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> launch process if failed.
+      'desc': '''Setting the policy to Enabled mandates <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> enrollment and blocks <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> launch process if failed.
 
-      Setting the policy to Disabled or leaving it unset renders <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> optional and doesn't block <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> launch process if failed.
+      Setting the policy to Disabled or leaving it unset renders <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> optional and doesn't block <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> launch process if failed.
 
       Machine scope cloud policy enrollment on desktop uses this policy. See https://support.google.com/chrome/a/answer/9301891?ref_topic=9301744 for details.''',
     },
@@ -24745,6 +24787,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 806,
+  'highest_id_currently_used': 807,
   'highest_atomic_group_id_currently_used': 40
 }

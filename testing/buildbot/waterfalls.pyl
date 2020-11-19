@@ -13,7 +13,27 @@
     'name': 'chrome',
     'mixins': ['chrome-tester-service-account'],
     'machines': {
+      'chromeos-arm-generic-beta': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-arm-generic-cfi-thin-lto-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-arm-generic-ltc': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-arm-generic-lts': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-arm-generic-stable': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -297,6 +317,28 @@
           'isolated_scripts': 'chrome_sizes',
         },
       },
+      'linux-chromeos-beta': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
       'linux-chromeos-chrome': {
         'additional_compile_targets': [
           'chrome',
@@ -318,6 +360,72 @@
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
           'isolated_scripts': 'chrome_sizes',
+        },
+      },
+      'linux-chromeos-ltc': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
+      'linux-chromeos-lts': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
+      'linux-chromeos-stable': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'mac-chrome': {
@@ -2569,6 +2677,14 @@
           'isolated_scripts': 'wpt_web_tests_identity',
         },
       },
+      'linux-wpt-input-fyi-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_input',
+        },
+      },
       'linux-wpt-payments-fyi-rel': {
         'mixins': [
           'linux-xenial',
@@ -4454,6 +4570,17 @@
           'sync_integration_tests'
         ]
       },
+      'Linux Builder Robocrop': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        }
+      },
       'Linux Ozone Tester (Headless)': {
         'mixins': [
           'linux-xenial',
@@ -4520,6 +4647,18 @@
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
+        },
+      },
+      'Linux Tests Robocrop': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-xenial',
+          'robocrop-swarming-pool',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
         },
       },
       # For documentation, see //services/network/README.md.

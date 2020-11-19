@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/exported/web_page_popup_impl.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -41,7 +41,7 @@ class WebWidgetClient;
 class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  public:
   WebViewFrameWidget(
-      util::PassKey<WebFrameWidget>,
+      base::PassKey<WebFrameWidget>,
       WebWidgetClient&,
       WebViewImpl&,
       CrossVariantMojoAssociatedRemote<
@@ -64,7 +64,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
       scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   gfx::Size Size() override;
   void Resize(const gfx::Size& size_with_dsf) override;
-  void MouseCaptureLost() override;
 
   // WebFrameWidget overrides:
   bool ScrollFocusedEditableElementIntoView() override;
@@ -74,22 +73,14 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
       const VisualProperties& visual_properties) override;
 
   // FrameWidget overrides:
-  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   bool ShouldHandleImeEvents() override;
 
   // WidgetBaseClient overrides:
   void FocusChanged(bool enabled) override;
 
-  void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
-  void SetWindowRect(const gfx::Rect& window_rect);
-  void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
-
  private:
   // PageWidgetEventHandler overrides:
-  void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
-
-  void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
 
   scoped_refptr<WebViewImpl> web_view_;
 
@@ -107,7 +98,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 // InstallCreateWebViewFrameWidgetHook(). The method signature matches the
 // WebViewFrameWidget constructor.
 using CreateWebViewFrameWidgetFunction =
-    WebViewFrameWidget* (*)(util::PassKey<WebFrameWidget>,
+    WebViewFrameWidget* (*)(base::PassKey<WebFrameWidget>,
                             WebWidgetClient&,
                             WebViewImpl&,
                             CrossVariantMojoAssociatedRemote<

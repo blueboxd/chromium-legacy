@@ -6,8 +6,6 @@
 
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/clipboard/clipboard_nudge_controller.h"
-#include "ash/session/session_controller_impl.h"
-#include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -15,15 +13,6 @@
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
 namespace ash {
-
-ClipboardHistory::ScopedPause::ScopedPause(ClipboardHistory* clipboard_history)
-    : clipboard_history_(clipboard_history) {
-  clipboard_history_->Pause();
-}
-
-ClipboardHistory::ScopedPause::~ScopedPause() {
-  clipboard_history_->Resume();
-}
 
 ClipboardHistory::ClipboardHistory() {
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
@@ -71,7 +60,7 @@ void ClipboardHistory::RemoveItemForId(const base::UnguessableToken& id) {
 }
 
 void ClipboardHistory::OnClipboardDataChanged() {
-  if (!IsEnabledInCurrentMode())
+  if (!ClipboardHistoryUtil::IsEnabledInCurrentMode())
     return;
 
   // TODO(newcomer): Prevent Clipboard from recording metrics when pausing
@@ -108,18 +97,8 @@ void ClipboardHistory::OnClipboardDataChanged() {
                      commit_data_weak_factory_.GetWeakPtr(), *clipboard_data));
 }
 
-bool ClipboardHistory::IsEnabledInCurrentMode() const {
-  switch (Shell::Get()->session_controller()->login_status()) {
-    case LoginStatus::NOT_LOGGED_IN:
-    case LoginStatus::LOCKED:
-    case LoginStatus::KIOSK_APP:
-    case LoginStatus::PUBLIC:
-      return false;
-    case LoginStatus::USER:
-    case LoginStatus::GUEST:
-    case LoginStatus::SUPERVISED:
-      return true;
-  }
+base::WeakPtr<ClipboardHistory> ClipboardHistory::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void ClipboardHistory::MaybeCommitData(ui::ClipboardData data) {

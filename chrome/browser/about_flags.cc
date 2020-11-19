@@ -2812,6 +2812,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShowBluetoothDebugLogToggle)},
+    {"enable-bluetooth-verbose-logs-for-googlers",
+     flag_descriptions::kEnableBluetoothVerboseLogsForGooglersName,
+     flag_descriptions::kEnableBluetoothVerboseLogsForGooglersDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kEnableBluetoothVerboseLogsForGooglers)},
     {"show-bluetooth-device-battery",
      flag_descriptions::kShowBluetoothDeviceBatteryName,
      flag_descriptions::kShowBluetoothDeviceBatteryDescription, kOsCrOS,
@@ -3576,6 +3582,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic)},
+    {"enable-aria-element-reflection",
+     flag_descriptions::kAriaElementReflectionName,
+     flag_descriptions::kAriaElementReflectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAriaElementReflection)},
 #if defined(OS_CHROMEOS)
     {"enable-encryption-migration",
      flag_descriptions::kEnableEncryptionMigrationName,
@@ -4492,11 +4502,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
-
-    {"pdf-honor-js-content-settings",
-     flag_descriptions::kPdfHonorJsContentSettingsName,
-     flag_descriptions::kPdfHonorJsContentSettingsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfHonorJsContentSettings)},
 
     {"pdf-viewer-update", flag_descriptions::kPdfViewerUpdateName,
      flag_descriptions::kPdfViewerUpdateDescription, kOsDesktop,
@@ -6729,6 +6734,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowPerformanceMetricsHudName,
      flag_descriptions::kShowPerformanceMetricsHudDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kHudDisplayForPerformanceMetrics)},
+
+#if defined(OS_CHROMEOS)
+    {"disable-buffer-bw-compression",
+     flag_descriptions::kDisableBufferBWCompressionName,
+     flag_descriptions::kDisableBufferBWCompressionDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kDisableBufferBWCompression)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

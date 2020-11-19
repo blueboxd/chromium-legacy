@@ -74,20 +74,12 @@ external/wpt/css/compositing/root-element-background-transparency.html [ Failure
 # ====== Synchronous, budgeted HTML parser tests from here ======
 
 ### virtual/synchronous_html_parser/http/tests/preload/
+# An extra line ("linear_memory_inspector") appears in the output in some cases.
+crbug.com/901056 http/tests/devtools/modules-load-source.js [ Failure Pass ]
+# Extra line info appears in the output in some cases.
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/content-security-policy-issue-creation-img.js [ Failure Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-csp.html [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewport-device-width-link-headers.html [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Timeout Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-css.js [ Timeout ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-iframe.js [ Timeout ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js.js [ Timeout ]
-# Minor issues, need rebaselining
-crbug.com/901056 virtual/synchronous_html_parser/fast/css/focus-display-block-inline.html [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/fast/css/fontfaceset-multiple-families.html [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/content-security-policy-issue-creation-img.js [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/network/initiator-minified.js [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/external/wpt/signed-exchange/subresource/sxg-subresource.tentative.html [ Failure Timeout ]
-
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -671,6 +663,7 @@ crbug.com/764031 external/wpt/css/css-tables/toggle-row-display-property-001.htm
 crbug.com/613753 external/wpt/css/css-tables/border-spacing-included-in-sizes-001.html [ Failure ]
 crbug.com/353580 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children-005.html [ Failure ]
 crbug.com/1108224 external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
+crbug.com/958381 external/wpt/css/css-tables/tentative/position-sticky-container.html [ Failure ]
 
 # [css-contain]
 
@@ -1682,6 +1675,17 @@ crbug.com/747751 [ Mac ] http/tests/devtools/application-panel/storage-view-repo
 crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1018064 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
+crbug.com/1105957 [ Linux Debug ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
+crbug.com/915903 http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Timeout ]
+crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]
+crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
+crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
+crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
+crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
+crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
+crbug.com/666993 [ Debug ] external/wpt/requestidlecallback/callback-idle-periods.html [ Pass Timeout ]
+
 
 # crbug.com/1095379: These three time out 100% of the time across all platforms:
 crbug.com/919789 images/image-click-scale-restore-zoomed-image.html [ Timeout ]
@@ -5074,7 +5078,7 @@ crbug.com/979593 [ Linux ] external/wpt/service-workers/service-worker/registrat
 crbug.com/979593 [ Win ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
-crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
+crbug.com/981267 http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
 
@@ -5409,7 +5413,6 @@ crbug.com/995663 [ Linux ] http/tests/media/autoplay/document-user-activation-cr
 crbug.com/1047164 [ Mac ] fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Failure ]
 crbug.com/1047208 http/tests/serviceworker/update-served-from-cache.html [ Pass Failure ]
 crbug.com/1047293 [ Mac ] editing/pasteboard/pasteboard_with_unfocused_selection.html [ Pass Failure ]
-crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 
 crbug.com/1008483 external/wpt/css/css-transforms/3d-rendering-context-behavior.tentative.html [ Failure ]
 crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-004.tentative.html [ Failure ]
@@ -5841,9 +5844,6 @@ crbug.com/1057060 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/
 crbug.com/1057060 virtual/scroll-unification/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
 crbug.com/1045599 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Failure Timeout ]
 
-# TODO(robertphillips) - Remove after Skia roll and rebaseline
-crbug.com/1149931 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Pass Failure ]
-
 # TODO(michaelludwig) - Remove after Skia roll and rebaseline
 crbug.com/1135225 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Failure ]
 # TODO(michaelludwig) - Remove after Skia roll and rebaseline
@@ -6003,15 +6003,5 @@ crbug.com/1149734 http/tests/devtools/sources/debugger-ui/debugger-inline-values
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Failure Timeout ]
 crbug.com/1149987 external/wpt/websockets/Create-blocked-port.any.html [ Pass Timeout ]
 crbug.com/1149987 external/wpt/websockets/Create-blocked-port.any.worker.html [ Pass Timeout ]
-
-crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
-crbug.com/666993 [ Debug ] external/wpt/requestidlecallback/callback-idle-periods.html [ Pass Timeout ]
-crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
-crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
-crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
-crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
-crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
-crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]
-
-# Sheriff 2020-11-18
-crbug.com/915903 http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Timeout ]
+crbug.com/1150518 [ Win ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Timeout ]
+crbug.com/1150475 fast/dom/open-and-close-by-DOM.html [ Pass Failure ]

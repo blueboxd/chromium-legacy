@@ -36,7 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -50,16 +50,10 @@
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
-namespace cc {
-class Layer;
-}
-
 namespace blink {
 class Element;
-class LocalFrame;
 class PaintLayerCompositor;
 class WebFrameWidget;
-class WebMouseEvent;
 class WebFrameWidgetImpl;
 
 // Implements WebFrameWidget for a child local root frame (OOPIF). This object
@@ -70,7 +64,7 @@ class WebFrameWidgetImpl;
 class WebFrameWidgetImpl final : public WebFrameWidgetBase {
  public:
   WebFrameWidgetImpl(
-      util::PassKey<WebFrameWidget>,
+      base::PassKey<WebFrameWidget>,
       WebWidgetClient&,
       CrossVariantMojoAssociatedRemote<
           mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
@@ -92,8 +86,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   gfx::Size Size() override;
   void Resize(const gfx::Size&) override;
 
-  void MouseCaptureLost() override;
-
   // WebFrameWidget implementation.
   bool ScrollFocusedEditableElementIntoView() override;
 
@@ -105,7 +97,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
       const VisualProperties& visual_properties) override;
 
   // FrameWidget overrides:
-  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   bool ShouldHandleImeEvents() override;
 
   // WidgetBaseClient overrides:
@@ -117,7 +108,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
   friend class WebFrameWidget;  // For WebFrameWidget::create.
 
   // PageWidgetEventHandler functions
-  void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
 
   // Finds the parameters required for scrolling the focused editable |element|

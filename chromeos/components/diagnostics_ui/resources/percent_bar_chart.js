@@ -23,20 +23,24 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
+    /** @type {string} */
     header: {
       type: String,
     },
 
+    /** @type {string} */
     headerIcon: {
       type: String,
       value: '',
     },
 
+    /** @type {number} */
     value: {
       type: Number,
       value: 0,
     },
 
+    /** @type {number} */
     max: {
       type: Number,
       value: 100,
@@ -54,5 +58,15 @@ Polymer({
   computePercentage_(currentValue, maxValue) {
     return loadTimeData.getStringF(
         'percentageLabel', Math.round(100 * currentValue / maxValue));
+  },
+
+  /**
+   * Get adjusted value clamped to max value. paper-progress breaks for a while
+   * when value is set higher than max in certain cases (e.g. due to fetching of
+   * max being resolved later).
+   * @protected
+   */
+  getAdjustedValue_() {
+    return this.value <= this.max ? this.value : this.max;
   }
 });

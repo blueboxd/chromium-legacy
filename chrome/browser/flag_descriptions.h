@@ -72,6 +72,9 @@ extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 extern const char kAllowSyncXHRInPageDismissalName[];
 extern const char kAllowSyncXHRInPageDismissalDescription[];
 
+extern const char kAriaElementReflectionName[];
+extern const char kAriaElementReflectionDescription[];
+
 extern const char kConversionMeasurementApiName[];
 extern const char kConversionMeasurementApiDescription[];
 
@@ -2191,6 +2194,9 @@ extern const char kCryptAuthV2DeviceSyncDescription[];
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
 
+extern const char kDisableBufferBWCompressionName[];
+extern const char kDisableBufferBWCompressionDescription[];
+
 extern const char kDisableCameraFrameRotationAtSourceName[];
 extern const char kDisableCameraFrameRotationAtSourceDescription[];
 
@@ -2578,6 +2584,9 @@ extern const char kSharesheetDescription[];
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];
 
+extern const char kEnableBluetoothVerboseLogsForGooglersName[];
+extern const char kEnableBluetoothVerboseLogsForGooglersDescription[];
+
 extern const char kShowBluetoothDeviceBatteryName[];
 extern const char kShowBluetoothDeviceBatteryDescription[];
 
@@ -2782,9 +2791,6 @@ extern const char kPaintPreviewStartupDescription[];
 #if BUILDFLAG(ENABLE_PLUGINS)
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
-
-extern const char kPdfHonorJsContentSettingsName[];
-extern const char kPdfHonorJsContentSettingsDescription[];
 
 extern const char kPdfViewerUpdateName[];
 extern const char kPdfViewerUpdateDescription[];

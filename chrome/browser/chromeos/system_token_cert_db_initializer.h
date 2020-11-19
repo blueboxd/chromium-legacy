@@ -16,6 +16,8 @@
 #include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "crypto/scoped_nss_types.h"
 
@@ -45,6 +47,12 @@ class SystemTokenCertDBObserver : public base::CheckedObserver {
 // All of the methods must be called on the UI thread.
 class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
  public:
+  // It is stated in cryptohome implementation that 5 minutes is enough time to
+  // wait for any TPM operations. For more information, please refer to:
+  // https://chromium.googlesource.com/chromiumos/platform2/+/master/cryptohome/cryptohome.cc
+  static constexpr base::TimeDelta kMaxCertDbRetrievalDelay =
+      base::TimeDelta::FromMinutes(5);
+
   SystemTokenCertDBInitializer();
   ~SystemTokenCertDBInitializer() override;
 
@@ -66,7 +74,7 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // To be notified when the returned NSSCertDatabase becomes invalid, callers
   // should register as SystemTokenCertDBObserver.
   using GetSystemTokenCertDbCallback =
-      base::OnceCallback<void(net::NSSCertDatabase*)>;
+      base::OnceCallback<void(net::NSSCertDatabase* nss_cert_database)>;
   void GetSystemTokenCertDb(GetSystemTokenCertDbCallback callback);
 
   // Adds |observer| as SystemTokenCertDBObserver.
@@ -91,6 +99,12 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot);
 
+  // Called after a delay if the system token certificate database was still not
+  // initialized when |GetSystemTokenCertDb| was called. This function notifies
+  // |get_system_token_cert_db_callback_list_| with nullptrs as a way of
+  // informing callers that the database initialization failed.
+  void OnSystemTokenDbRetrievalTimeout();
+
   // Whether the database initialization was started.
   bool started_initializing_ = false;
 
@@ -105,6 +119,10 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // List of observers that will be notified when the global system token
   // NSSCertDatabase is destroyed.
   base::ObserverList<SystemTokenCertDBObserver> observers_;
+
+  bool system_token_cert_db_retrieval_failed_ = false;
+
+  base::OneShotTimer system_token_cert_db_retrieval_timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

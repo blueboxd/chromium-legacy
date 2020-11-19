@@ -117,7 +117,7 @@ void ForEachLocalFrameControlledByWidget(
 }
 
 // Iterate the remote children that will be controlled by the widget. Skip over
-// any RemoteFrames have have another LocalFrame as their parent.
+// any RemoteFrames have have another LocalFrame root as their parent.
 void ForEachRemoteFrameChildrenControlledByWidget(
     Frame* frame,
     const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
@@ -126,13 +126,16 @@ void ForEachRemoteFrameChildrenControlledByWidget(
     if (auto* remote_frame = DynamicTo<RemoteFrame>(child)) {
       callback.Run(remote_frame);
       ForEachRemoteFrameChildrenControlledByWidget(remote_frame, callback);
+    } else if (auto* local_frame = DynamicTo<LocalFrame>(child)) {
+      // If iteration arrives at a local root then don't descend as it will be
+      // controlled by another widget.
+      if (!local_frame->IsLocalRoot()) {
+        ForEachRemoteFrameChildrenControlledByWidget(local_frame, callback);
+      }
     }
   }
 
-  // The first call to ForEachRemoteFrameChildrenControlledByWidget will be
-  // with a LocalFrame. Iterate on any portals owned by that frame. Portals
-  // on descendant LocalFrame will be owned by that widget so we don't need
-  // to descend into LocalFrames.
+  // Iterate on any portals owned by a local frame.
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     if (Document* document = local_frame->GetDocument()) {
       for (PortalContents* portal :
@@ -623,7 +626,7 @@ WebInputEventResult WebFrameWidgetBase::HandleKeyEvent(
   return WebInputEventResult::kNotHandled;
 }
 
-void WebFrameWidgetBase::HandleMouseDown(LocalFrame& main_frame,
+void WebFrameWidgetBase::HandleMouseDown(LocalFrame& local_root,
                                          const WebMouseEvent& event) {
   WebViewImpl* view_impl = View();
   // If there is a popup open, close it as the user is clicking on the page
@@ -659,7 +662,7 @@ void WebFrameWidgetBase::HandleMouseDown(LocalFrame& main_frame,
     }
   }
 
-  PageWidgetEventHandler::HandleMouseDown(main_frame, event);
+  PageWidgetEventHandler::HandleMouseDown(local_root, event);
   // PageWidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return;
@@ -683,6 +686,13 @@ void WebFrameWidgetBase::HandleMouseDown(LocalFrame& main_frame,
       MouseContextMenu(event);
 #endif
   }
+}
+
+void WebFrameWidgetBase::HandleMouseLeave(LocalFrame& local_root,
+                                          const WebMouseEvent& event) {
+  View()->SetMouseOverURL(WebURL());
+  PageWidgetEventHandler::HandleMouseLeave(local_root, event);
+  // PageWidgetEventHandler may have detached the frame.
 }
 
 void WebFrameWidgetBase::MouseContextMenu(const WebMouseEvent& event) {
@@ -719,10 +729,10 @@ void WebFrameWidgetBase::MouseContextMenu(const WebMouseEvent& event) {
 }
 
 WebInputEventResult WebFrameWidgetBase::HandleMouseUp(
-    LocalFrame& main_frame,
+    LocalFrame& local_root,
     const WebMouseEvent& event) {
   WebInputEventResult result =
-      PageWidgetEventHandler::HandleMouseUp(main_frame, event);
+      PageWidgetEventHandler::HandleMouseUp(local_root, event);
   // PageWidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return result;
@@ -1290,6 +1300,18 @@ void WebFrameWidgetBase::SynchronouslyCompositeForTesting(
 
 void WebFrameWidgetBase::UseSynchronousResizeModeForTesting(bool enable) {
   main_data().synchronous_resize_mode_for_testing = enable;
+}
+
+void WebFrameWidgetBase::SetDeviceColorSpaceForTesting(
+    const gfx::ColorSpace& color_space) {
+  DCHECK(ForMainFrame());
+  // We are changing the device color space from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
+
+  blink::ScreenInfo info = widget_base_->GetScreenInfo();
+  info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
+  widget_base_->UpdateScreenInfo(info);
 }
 
 // TODO(665924): Remove direct dispatches of mouse events from
@@ -2019,6 +2041,12 @@ void WebFrameWidgetBase::RequestMouseLock(
   }
 }
 
+void WebFrameWidgetBase::MouseCaptureLost() {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("input", "capturing mouse",
+                                  TRACE_ID_LOCAL(this));
+  mouse_capture_element_ = nullptr;
+}
+
 void WebFrameWidgetBase::ApplyVisualProperties(
     const VisualProperties& visual_properties) {
   widget_base_->UpdateVisualProperties(visual_properties);
@@ -2155,6 +2183,33 @@ void WebFrameWidgetBase::RequestAnimationAfterDelay(
   }
   if (!request_animation_after_delay_timer_->IsActive()) {
     request_animation_after_delay_timer_->StartOneShot(delay, FROM_HERE);
+  }
+}
+
+void WebFrameWidgetBase::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+  if (!View()->does_composite()) {
+    DCHECK(ForMainFrame());
+    DCHECK(!layer);
+    return;
+  }
+
+  // Set up some initial state before we are setting the layer.
+  if (ForSubframe() && layer) {
+    // Child local roots will always have a transparent background color.
+    widget_base_->LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
+    // Pass the limits even though this is for subframes, as the limits will
+    // be needed in setting the raster scale.
+    SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
+                               View()->MinimumPageScaleFactor(),
+                               View()->MaximumPageScaleFactor());
+  }
+
+  bool root_layer_exists = !!layer;
+  widget_base_->LayerTreeHost()->SetRootLayer(std::move(layer));
+
+  // Notify the WebView that we did set a layer.
+  if (ForMainFrame()) {
+    View()->DidChangeRootLayer(root_layer_exists);
   }
 }
 
@@ -3435,6 +3490,52 @@ void WebFrameWidgetBase::ImeCommitTextForPlugin(
 void WebFrameWidgetBase::ImeFinishComposingTextForPlugin(bool keep_selection) {
   if (auto* plugin = GetFocusedPluginContainer())
     plugin->ImeFinishComposingTextForPlugin(keep_selection);
+}
+
+void WebFrameWidgetBase::SetWindowRect(const gfx::Rect& window_rect) {
+  DCHECK(ForMainFrame());
+  if (SynchronousResizeModeForTestingEnabled()) {
+    // This is a web-test-only path. At one point, it was planned to be
+    // removed. See https://crbug.com/309760.
+    SetWindowRectSynchronously(window_rect);
+    return;
+  }
+
+  SetPendingWindowRect(window_rect);
+  View()->SendWindowRectToMainFrameHost(
+      window_rect, WTF::Bind(&WebFrameWidgetBase::AckPendingWindowRect,
+                             WrapWeakPersistent(this)));
+}
+
+void WebFrameWidgetBase::SetWindowRectSynchronouslyForTesting(
+    const gfx::Rect& new_window_rect) {
+  DCHECK(ForMainFrame());
+  SetWindowRectSynchronously(new_window_rect);
+}
+
+void WebFrameWidgetBase::SetWindowRectSynchronously(
+    const gfx::Rect& new_window_rect) {
+  // This method is only call in tests, and it applies the |new_window_rect| to
+  // all three of:
+  // a) widget size (in |size_|)
+  // b) blink viewport (in |visible_viewport_size_|)
+  // c) compositor viewport (in cc::LayerTreeHost)
+  // Normally the browser controls these three things independently, but this is
+  // used in tests to control the size from the renderer.
+
+  // We are resizing the window from the renderer, so allocate a new
+  // viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
+
+  gfx::Rect compositor_viewport_pixel_rect(gfx::ScaleToCeiledSize(
+      new_window_rect.size(),
+      widget_base_->GetScreenInfo().device_scale_factor));
+  widget_base_->UpdateSurfaceAndScreenInfo(
+      widget_base_->local_surface_id_from_parent(),
+      compositor_viewport_pixel_rect, widget_base_->GetScreenInfo());
+
+  Resize(new_window_rect.size());
+  widget_base_->SetScreenRects(new_window_rect, new_window_rect);
 }
 
 }  // namespace blink

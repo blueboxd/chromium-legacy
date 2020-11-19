@@ -13,6 +13,7 @@
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/video_file_handler.h"
 #include "ash/public/cpp/capture_mode_delegate.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted_memory.h"
@@ -21,6 +22,7 @@
 #include "base/optional.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
@@ -42,7 +44,9 @@ class VideoRecordingWatcher;
 
 // Controls starting and ending a Capture Mode session and its behavior.
 class ASH_EXPORT CaptureModeController
-    : public recording::mojom::RecordingServiceClient {
+    : public recording::mojom::RecordingServiceClient,
+      public SessionObserver,
+      public chromeos::PowerManagerClient::Observer {
  public:
   explicit CaptureModeController(std::unique_ptr<CaptureModeDelegate> delegate);
   CaptureModeController(const CaptureModeController&) = delete;
@@ -90,13 +94,16 @@ class ASH_EXPORT CaptureModeController
   void OpenFeedbackDialog();
 
   // recording::mojom::RecordingServiceClient:
-  void BindVideoCapturer(
-      mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver)
-      override;
-  void BindAudioStreamFactory(
-      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) override;
   void OnMuxerOutput(const std::string& chunk) override;
   void OnRecordingEnded(bool success) override;
+
+  // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+  void OnChromeTerminating() override;
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
   // Skips the 3-second count down, and IsCaptureAllowed() checks, and starts
   // video recording right away for testing purposes.
@@ -105,15 +112,11 @@ class ASH_EXPORT CaptureModeController
  private:
   friend class CaptureModeTestApi;
 
-  // Launches the mojo service that handles audio and video recording.
-  void LaunchRecordingService();
-
-  // Called back when the mojo pipe to the recording service gets disconnected.
-  void OnRecordingServiceDisconnected();
-
-  // Called to terminate |is_recording_in_progress_|, the stop-recording shelf
-  // pod button, and the |video_recording_watcher_| when recording ends.
-  void TerminateRecordingUiElements();
+  // Used by user session change, and suspend events to end the capture mode
+  // session if it's active, or stop the video recording if one is in progress.
+  // |for_suspend| is true when this is called from |SuspendImminent()|, which
+  // leads to ending the video recording immediately as if it's a failure.
+  void EndSessionOrRecording(bool for_suspend);
 
   // Returns the capture parameters for the capture operation that is about to
   // be performed (i.e. the window to be captured, and the capture bounds). If
@@ -129,9 +132,21 @@ class ASH_EXPORT CaptureModeController
   };
   base::Optional<CaptureParams> GetCaptureParams() const;
 
+  // Launches the mojo service that handles audio and video recording, and
+  // begins recording according to the given |capture_params|.
+  void LaunchRecordingServiceAndStartRecording(
+      const CaptureParams& capture_params);
+
+  // Called back when the mojo pipe to the recording service gets disconnected.
+  void OnRecordingServiceDisconnected();
+
   // Returns true if doing a screen capture is currently allowed, false
   // otherwise.
   bool IsCaptureAllowed(const CaptureParams& capture_params) const;
+
+  // Called to terminate |is_recording_in_progress_|, the stop-recording shelf
+  // pod button, and the |video_recording_watcher_| when recording ends.
+  void TerminateRecordingUiElements();
 
   // The below functions start the actual image/video capture. They expect that
   // the capture session is still active when called, so they can retrieve the

@@ -25,37 +25,42 @@ void AccessibilityInfoDataWrapper::Serialize(ui::AXNodeData* out_data) const {
 
 void AccessibilityInfoDataWrapper::PopulateBounds(
     ui::AXNodeData* out_data) const {
+  aura::Window* window = tree_source_->GetWindow();
   AccessibilityInfoDataWrapper* root = tree_source_->GetRoot();
   gfx::Rect info_data_bounds = GetBounds();
   gfx::RectF& out_bounds = out_data->relative_bounds.bounds;
 
-  if (root && exo::WMHelper::HasInstance()) {
+  if (window && root && exo::WMHelper::HasInstance()) {
     if (tree_source_->is_notification() ||
         tree_source_->is_input_method_window() || root->GetId() != GetId()) {
       // By default, populate the bounds relative to the tree root.
       const gfx::Rect& root_bounds = root->GetBounds();
-
       info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
-      out_bounds = ToChromeScale(info_data_bounds);
+
+      out_bounds = ScaleAndroidPxToChromePx(info_data_bounds, window);
       out_data->relative_bounds.offset_container_id = root->GetId();
     } else {
       // For the root node of application tree, populate the bounds to be
       // relative to its container View.
-      views::Widget* widget = views::Widget::GetWidgetForNativeView(
-          exo::WMHelper::GetInstance()->GetActiveWindow());
+      views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
       DCHECK(widget);
       DCHECK(widget->widget_delegate());
       DCHECK(widget->widget_delegate()->GetContentsView());
-      const gfx::Rect& root_bounds =
-          widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
+      gfx::PointF root_origin = gfx::PointF(widget->widget_delegate()
+                                                ->GetContentsView()
+                                                ->GetBoundsInScreen()
+                                                .origin());
 
-      out_bounds = ToChromeBounds(info_data_bounds, widget);
-      out_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
+      // Adjust the origin because a maximized window has an offset in Android.
+      root_origin.Offset(0, -1 * GetChromeWindowHeightOffsetInDip(window));
+
+      // Scale to Chrome pixels.
+      root_origin.Scale(
+          window->GetToplevelWindow()->layer()->device_scale_factor());
+
+      out_bounds = ScaleAndroidPxToChromePx(info_data_bounds, window);
+      out_bounds.Offset(-1 * root_origin.x(), -1 * root_origin.y());
     }
-
-    // |out_bounds| is in Chrome DPI here. As ARC is considered the same as web
-    // in Chrome automation, scale the bounds by device scale factor.
-    out_bounds.Scale(tree_source_->device_scale_factor());
   } else {
     // We cannot compute global bounds, so use the raw bounds.
     out_bounds.SetRect(info_data_bounds.x(), info_data_bounds.y(),

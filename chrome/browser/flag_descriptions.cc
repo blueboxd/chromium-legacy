@@ -59,6 +59,11 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kAriaElementReflectionName[] = "Enable ARIA element reflection";
+const char kAriaElementReflectionDescription[] =
+    "Enable setting ARIA relationship attributes that reference other elements "
+    "directly without an IDREF";
+
 const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
 const char kConditionalTabStripAndroidDescription[] =
     "Allows users to access conditional tab strip.";
@@ -2422,8 +2427,7 @@ const char kWebBundlesDescription[] =
 const char kWebOtpBackendName[] = "Web OTP";
 const char kWebOtpBackendDescription[] =
     "Enables Web OTP API that uses the specified backend.";
-const char kWebOtpBackendSmsVerification[] =
-    "SMS Verification API (requires app-hash)";
+const char kWebOtpBackendSmsVerification[] = "Code Browser API";
 const char kWebOtpBackendUserConsent[] = "User Consent API";
 const char kWebOtpBackendAuto[] = "Automatically select the backend";
 
@@ -3775,6 +3779,11 @@ const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
 
+const char kDisableBufferBWCompressionName[] =
+    "Disable buffer bandwidth compression";
+const char kDisableBufferBWCompressionDescription[] =
+    "Disable bandwidth compression when allocating buffers";
+
 const char kDisableCameraFrameRotationAtSourceName[] =
     "Disable camera frame rotation at source";
 const char kDisableCameraFrameRotationAtSourceDescription[] =
@@ -4406,6 +4415,11 @@ const char kShowBluetoothDebugLogToggleDescription[] =
     "Enables a toggle which can enable debug (i.e., verbose) logs for "
     "Bluetooth";
 
+const char kEnableBluetoothVerboseLogsForGooglersName[] =
+    "Enable Bluetooth verbose logs for Googlers";
+const char kEnableBluetoothVerboseLogsForGooglersDescription[] =
+    "Enables Bluetooth verbose logs for Googlers in feedback reports.";
+
 const char kShowBluetoothDeviceBatteryName[] = "Show Bluetooth device battery";
 const char kShowBluetoothDeviceBatteryDescription[] =
     "Enables showing the battery level of connected and supported Bluetooth "
@@ -4741,12 +4755,6 @@ const char kPaintPreviewStartupDescription[] =
 const char kPdfFormSaveName[] = "Save PDF Forms";
 const char kPdfFormSaveDescription[] =
     "Enable saving PDFs with filled form data.";
-
-const char kPdfHonorJsContentSettingsName[] =
-    "Honor JavaScript content settings in PDFs";
-const char kPdfHonorJsContentSettingsDescription[] =
-    "Enable whether an origin's JavaScript content settings are honored in "
-    "PDFs opened from that origin.";
 
 const char kPdfViewerUpdateName[] = "PDF Viewer Update";
 const char kPdfViewerUpdateDescription[] =

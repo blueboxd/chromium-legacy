@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
@@ -159,9 +160,10 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
             url_);
 
     if (!change.cookie
-             .IncludeForRequestURL(url_, options_,
-                                   change.access_result.access_semantics,
-                                   delegate_treats_url_as_trustworthy)
+             .IncludeForRequestURL(
+                 url_, options_,
+                 net::CookieAccessParams{change.access_result.access_semantics,
+                                         delegate_treats_url_as_trustworthy})
              .status.IsInclude()) {
       return;
     }
@@ -400,8 +402,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
   auto sanitized_cookie = net::CanonicalCookie::FromStorage(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
       cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
-      cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(),
-      source_scheme);
+      cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(), source_scheme,
+      origin_.port());
   DCHECK(sanitized_cookie);
   net::CanonicalCookie cookie_copy = *sanitized_cookie;
 

@@ -372,6 +372,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
           ax::mojom::blink::Role::kDialog,
           ax::mojom::blink::Role::kFigcaption,
           ax::mojom::blink::Role::kFigure,
+          ax::mojom::blink::Role::kList,
           ax::mojom::blink::Role::kListItem,
           ax::mojom::blink::Role::kMark,
           ax::mojom::blink::Role::kMath,
@@ -531,10 +532,6 @@ static bool IsRequiredOwnedElement(AXObject* parent,
     return IsListElement(parent_node);
   if (current_role == ax::mojom::blink::Role::kListMarker)
     return IsA<HTMLLIElement>(*parent_node);
-  if (current_role == ax::mojom::blink::Role::kMenuItemCheckBox ||
-      current_role == ax::mojom::blink::Role::kMenuItem ||
-      current_role == ax::mojom::blink::Role::kMenuItemRadio)
-    return IsA<HTMLMenuElement>(*parent_node);
 
   if (!current_element)
     return false;
@@ -788,22 +785,10 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     const AtomicString& type = input->type();
     if (input->DataList() && type != input_type_names::kColor)
       return ax::mojom::blink::Role::kTextFieldWithComboBox;
-    if (type == input_type_names::kButton) {
-      if ((GetNode()->parentNode() &&
-           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
-          (ParentObject() &&
-           ParentObject()->RoleValue() == ax::mojom::blink::Role::kMenu))
-        return ax::mojom::blink::Role::kMenuItem;
+    if (type == input_type_names::kButton)
       return ButtonRoleType();
-    }
-    if (type == input_type_names::kCheckbox) {
-      if ((GetNode()->parentNode() &&
-           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
-          (ParentObject() &&
-           ParentObject()->RoleValue() == ax::mojom::blink::Role::kMenu))
-        return ax::mojom::blink::Role::kMenuItemCheckBox;
+    if (type == input_type_names::kCheckbox)
       return ax::mojom::blink::Role::kCheckBox;
-    }
     if (type == input_type_names::kDate)
       return ax::mojom::blink::Role::kDate;
     if (type == input_type_names::kDatetime ||
@@ -812,14 +797,8 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::blink::Role::kDateTime;
     if (type == input_type_names::kFile)
       return ax::mojom::blink::Role::kButton;
-    if (type == input_type_names::kRadio) {
-      if ((GetNode()->parentNode() &&
-           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
-          (ParentObject() &&
-           ParentObject()->RoleValue() == ax::mojom::blink::Role::kMenu))
-        return ax::mojom::blink::Role::kMenuItemRadio;
+    if (type == input_type_names::kRadio)
       return ax::mojom::blink::Role::kRadioButton;
-    }
     if (type == input_type_names::kNumber)
       return ax::mojom::blink::Role::kSpinButton;
     if (input->IsTextButton())
@@ -862,6 +841,15 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (IsA<HTMLDivElement>(*GetNode()))
     return RoleFromLayoutObject(ax::mojom::blink::Role::kGenericContainer);
+
+  if (IsA<HTMLMenuElement>(*GetNode())) {
+    // <menu> is a deprecated feature of HTML 5, but is included for semantic
+    // compatibility with HTML3, and may contain list items. Exposing it as an
+    // unordered list works better than the current HTML-AAM recommendaton of
+    // exposing as a role=menu, because if it's just used semantically, it won't
+    // be interactive. If used as a widget, the author must provide role=menu.
+    return ax::mojom::blink::Role::kList;
+  }
 
   if (IsA<HTMLMeterElement>(*GetNode()))
     return ax::mojom::blink::Role::kMeter;
@@ -1294,14 +1282,6 @@ bool AXNodeObject::IsMultiSelectable() const {
 
   auto* html_select_element = DynamicTo<HTMLSelectElement>(GetNode());
   return html_select_element && html_select_element->IsMultiple();
-}
-
-bool AXNodeObject::IsNativeCheckboxOrRadio() const {
-  if (const auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
-    return input->type() == input_type_names::kCheckbox ||
-           input->type() == input_type_names::kRadio;
-  }
-  return false;
 }
 
 bool AXNodeObject::IsNativeImage() const {
@@ -3233,59 +3213,6 @@ void AXNodeObject::AddValidationMessageChild() {
     children_.push_back(ax_object);
 }
 
-// Hidden children are those that are not laid out or visible, but are
-// specifically marked as aria-hidden=false,
-// meaning that they should be exposed to the AX hierarchy.
-void AXNodeObject::AddHiddenChildren() {
-  Node* node = this->GetNode();
-  if (!node)
-    return;
-
-  // First do a quick run through to determine if we have any hidden nodes (most
-  // often we will not).  If we do have hidden nodes, we need to determine where
-  // to insert them so they match DOM order as close as possible.
-  bool should_insert_hidden_nodes = false;
-  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
-    if (!child.GetLayoutObject() && IsNodeAriaVisible(&child)) {
-      should_insert_hidden_nodes = true;
-      break;
-    }
-  }
-
-  if (!should_insert_hidden_nodes)
-    return;
-
-  // Iterate through all of the children, including those that may have already
-  // been added, and try to insert hidden nodes in the correct place in the DOM
-  // order.
-  unsigned insertion_index = 0;
-  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
-    if (child.GetLayoutObject()) {
-      // Find out where the last layout sibling is located within children_.
-      if (AXObject* child_object =
-              AXObjectCache().Get(child.GetLayoutObject())) {
-        if (!child_object->AccessibilityIsIncludedInTree()) {
-          const auto& children = child_object->ChildrenIncludingIgnored();
-          child_object = children.size() ? children.back().Get() : nullptr;
-        }
-        if (child_object)
-          insertion_index = children_.Find(child_object) + 1;
-        continue;
-      }
-    }
-
-    if (!IsNodeAriaVisible(&child))
-      continue;
-
-    unsigned previous_size = children_.size();
-    if (insertion_index > previous_size)
-      insertion_index = previous_size;
-
-    InsertChild(AXObjectCache().GetOrCreate(&child), insertion_index);
-    insertion_index += (children_.size() - previous_size);
-  }
-}
-
 void AXNodeObject::AddImageMapChildren() {
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
   if (!css_box || !css_box->IsLayoutImage())
@@ -3419,7 +3346,6 @@ void AXNodeObject::AddChildren() {
     }
   }
 
-  AddHiddenChildren();
   AddPopupChildren();
   AddRemoteSVGChildren();
   AddImageMapChildren();

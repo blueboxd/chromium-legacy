@@ -492,11 +492,17 @@ class CORE_EXPORT WebViewImpl final : public WebView,
             const gfx::Rect& rect,
             bool opened_by_user_gesture);
 
-  void SetWindowRect(const gfx::Rect& bounds);
+  // Send the window rect to the browser and call `ack_callback` when the
+  // browser has processed it.
+  void SendWindowRectToMainFrameHost(const gfx::Rect& bounds,
+                                     base::OnceClosure ack_callback);
 
   // TODO(crbug.com/1149992): This is called from the associated widget and this
   // code should eventually move out of WebView into somewhere else.
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args);
+
+  // Indication that the root layer for the main frame widget has changed.
+  void DidChangeRootLayer(bool root_layer_exists);
 
   // This method is used for testing.
   // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
@@ -529,7 +535,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // These are temporary methods to allow WebViewFrameWidget to delegate to
   // WebViewImpl. We expect to eventually move these out.
   void ThemeChanged();
-  void MouseCaptureLost();
   void SetFocus(bool enable) override;
 
   // Update the target url locally and tell the browser that the target URL has
@@ -597,8 +602,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   float DeviceScaleFactor() const;
 
-  void DidChangeRootLayer(bool root_layer_exists);
-
   LocalFrame* FocusedLocalFrameInWidget() const;
 
   // Clear focus and text input state of the page. If there was a focused
@@ -628,10 +631,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Callback when this widget window has been displayed by the browser.
   // Corresponds to a Show method call.
   void DidShowCreatedWindow();
-
-  // Callback when the window rect has been adjusted by the browser.
-  // Corresponds to a SetWindowRect method call.
-  void DidSetWindowRect();
 
   // Can be null (e.g. unittests, shared workers, etc).
   WebViewClient* web_view_client_;

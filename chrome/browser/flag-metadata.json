@@ -499,7 +499,7 @@
   {
     "name": "chrome-share-screenshot",
     "owners": [ "jeffreycohen", "kristipark" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "chrome-sharing-hub",
@@ -894,6 +894,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "disable-buffer-bw-compression",
+    "owners": [ "chromeos-gfx@google.com" ],
+    // This flag is used for QA & debugging on ChromeOS, which has no way to
+    // customize switches.
+    "expiry_milestone": -1
+  },
+  {
     "name": "disable-camera-frame-rotation-at-source",
     "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 88
@@ -1144,6 +1151,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-aria-element-reflection",
+    "owners": [ "aboxhall", "chrishall", "dmazzoni", "meredithl" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-assistant-aec",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 88
@@ -1299,6 +1311,11 @@
   {
     "name": "enable-bluetooth-spp-in-serial-api",
     "owners": [ "mattreynolds", "odejesush", "vickymin@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-bluetooth-verbose-logs-for-googlers",
+    "owners": [ "sonnysasaka" ],
     "expiry_milestone": 90
   },
   {
@@ -4782,8 +4799,8 @@
   },
   {
     "name": "web-otp-backend",
-    "owners": [ "ayui", "goto" ],
-    "expiry_milestone": 86
+    "owners": [ "yigu", "majidvp" ],
+    "expiry_milestone": 90
   },
   {
     "name": "web-share",

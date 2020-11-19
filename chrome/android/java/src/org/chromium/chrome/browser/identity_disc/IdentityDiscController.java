@@ -236,6 +236,13 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         assert mProfileDataCache[mState] != null;
 
         if (accountEmail.equals(CoreAccountInfo.getEmailFrom(getSignedInAccountInfo()))) {
+            /**
+             * We need to call {@link notifyObservers(false)} before caling
+             * {@link notifyObservers(true)}. This is because {@link notifyObservers(true)} has been
+             * called in {@link setProfile()}, and without calling {@link notifyObservers(false)},
+             * the ObservableSupplierImpl doesn't propagate the call. See https://cubug.com/1137535.
+             */
+            notifyObservers(false);
             notifyObservers(true);
         }
     }
@@ -324,14 +331,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         } else {
             mIdentityManager = IdentityServicesProvider.get().getIdentityManager(profile);
             mIdentityManager.addObserver(this);
-            /**
-             * This isn't the correct solution, but we have to call {@link notifyObservers(false)}.
-             * This is because if we call {@link notifyObservers(true)} here, the
-             * ObservableSupplierImpl doesn't propagate the call when
-             * {@link onProfileDataUpdated()} calls {@link notifyObservers(true)} again.
-             * See https://cubug.com/1137535.
-             */
-            notifyObservers(false);
+            notifyObservers(true);
         }
     }
 }

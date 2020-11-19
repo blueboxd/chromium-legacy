@@ -282,6 +282,7 @@ static const char* const kSwitchNames[] = {
     switches::kOzonePlatform,
     switches::kDisableExplicitDmaFences,
     switches::kOzoneDumpFile,
+    switches::kDisableBufferBWCompression,
 #endif
 #if defined(USE_X11)
     switches::kX11Display,
@@ -624,12 +625,6 @@ void GpuProcessHost::BindInterface(
   }
   process_->child_process()->BindReceiver(
       mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
-}
-
-void GpuProcessHost::RunService(
-    const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  process_->GetHost()->RunService(service_name, std::move(receiver));
 }
 
 #if defined(USE_OZONE)

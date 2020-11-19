@@ -823,7 +823,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Media.AudioCodecProfile.AAC" enum="AudioCodecProfile"
-    expires_after="2020-12-01">
+    expires_after="2021-03-01">
   <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>Audio codec profile used in HTML5 media for AAC playback.</summary>
@@ -2180,6 +2180,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Recorded each time the Kaleidoscope module is loaded on the New Tab Page
     with the time it takes to fetch the data from the server.
+  </summary>
+</histogram>
+
+<histogram name="Media.Kaleidoscope.TimeTakenToStartWatch" units="ms"
+    expires_after="2021-08-19">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded the first time in a Kaleidoscope session a user selects a watch
+    action in Kaleidoscope with the time taken from loading the page to the user
+    clicking on the watch action.
   </summary>
 </histogram>
 

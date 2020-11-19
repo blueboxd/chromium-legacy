@@ -15,7 +15,7 @@
   paper-progress {
     border-radius: 5px;
     display: inline-block;
-    width: 300px;
+    width: 85%;
     --paper-progress-active-color: var(--google-blue-500);
     --paper-progress-container-color: var(--google-blue-100);
     --paper-progress-height: 8px;
@@ -37,7 +37,9 @@
     [[header]]
   </label>
   <div class="body">
-    <paper-progress id="barChart" value="[[value]]" max="[[max]]"></paper-progress>
+    <paper-progress id="barChart"
+      value="[[getAdjustedValue_(value, max)]]" max="[[max]]">
+    </paper-progress>
     <label id="percentageLabel">[[computePercentage_(value, max)]]</label>
   </div>
 </div>

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/autocorrect_manager.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
@@ -12,12 +13,31 @@
 #include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Needs to match ImeAutocorrectActions
+// in enums.xml.
+enum class AutocorrectActions {
+  kWindowShown = 0,
+  kUnderlined = 1,
+  kMaxValue = kUnderlined,
+};
+
+void LogAssistiveAutocorrectAction(AutocorrectActions action) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Actions",
+                                action);
+}
+
+}  // namespace
+
 namespace chromeos {
 
 constexpr int kKeysUntilAutocorrectWindowHides = 4;
 
-AutocorrectManager::AutocorrectManager(InputMethodEngine* engine)
-    : engine_(engine) {}
+AutocorrectManager::AutocorrectManager(
+    SuggestionHandlerInterface* suggestion_handler)
+    : suggestion_handler_(suggestion_handler) {}
 
 void AutocorrectManager::MarkAutocorrectRange(const std::string& corrected_word,
                                               const std::string& typed_word,
@@ -29,9 +49,13 @@ void AutocorrectManager::MarkAutocorrectRange(const std::string& corrected_word,
   key_presses_until_underline_hide_ = kKeysUntilAutocorrectWindowHides;
   ClearUnderline();
 
-  if (context_id_ != -1) {
-    engine_->SetAutocorrectRange(base::UTF8ToUTF16(corrected_word), start_index,
-                                 start_index + corrected_word.length());
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context) {
+    input_context->SetAutocorrectRange(base::UTF8ToUTF16(corrected_word),
+                                       start_index,
+                                       start_index + corrected_word.length());
+    LogAssistiveAutocorrectAction(AutocorrectActions::kUnderlined);
   }
 }
 
@@ -48,7 +72,8 @@ bool AutocorrectManager::OnKeyEvent(
     button.announce_string =
         l10n_util::GetStringFUTF8(IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON,
                                   base::UTF8ToUTF16(last_typed_word_));
-    engine_->SetButtonHighlighted(context_id_, button, true, &error);
+    suggestion_handler_->SetButtonHighlighted(context_id_, button, true,
+                                              &error);
     button_highlighted = true;
     return true;
   }
@@ -66,14 +91,20 @@ bool AutocorrectManager::OnKeyEvent(
 }
 
 void AutocorrectManager::ClearUnderline() {
-  engine_->ClearAutocorrectRange();
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context) {
+    input_context->ClearAutocorrectRange();
+  }
 }
 
 void AutocorrectManager::OnSurroundingTextChanged(const base::string16& text,
                                                   const int cursor_pos,
                                                   const int anchpr_pos) {
   std::string error;
-  const gfx::Range range = engine_->GetAutocorrectRange();
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  const gfx::Range range = input_context->GetAutocorrectRange();
   if (!range.is_empty() && cursor_pos >= range.start() &&
       cursor_pos <= range.end()) {
     if (!window_visible) {
@@ -86,7 +117,9 @@ void AutocorrectManager::OnSurroundingTextChanged(const base::string16& text,
           base::UTF8ToUTF16(last_corrected_word_));
       window_visible = true;
       button_highlighted = false;
-      engine_->SetAssistiveWindowProperties(context_id_, properties, &error);
+      suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
+                                                        &error);
+      LogAssistiveAutocorrectAction(AutocorrectActions::kWindowShown);
     }
     key_presses_until_underline_hide_ = kKeysUntilAutocorrectWindowHides;
   } else if (window_visible) {
@@ -95,7 +128,8 @@ void AutocorrectManager::OnSurroundingTextChanged(const base::string16& text,
     properties.visible = false;
     window_visible = false;
     button_highlighted = false;
-    engine_->SetAssistiveWindowProperties(context_id_, properties, &error);
+    suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
+                                                      &error);
   }
 }
 
@@ -112,36 +146,38 @@ void AutocorrectManager::UndoAutocorrect() {
   window_visible = false;
   button_highlighted = false;
   window_visible = false;
-  engine_->SetAssistiveWindowProperties(context_id_, properties, &error);
+  suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
+                                                    &error);
 
-  const gfx::Range range = engine_->GetAutocorrectRange();
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  const gfx::Range range = input_context->GetAutocorrectRange();
   const ui::SurroundingTextInfo surrounding_text =
-      ui::IMEBridge::Get()->GetInputContextHandler()->GetSurroundingTextInfo();
+      input_context->GetSurroundingTextInfo();
+
   // TODO(crbug/1111135): Can we get away with deleting less text?
   // This will not quite work properly if there is text actually highlighted,
   // and cursor is at end of the highlight block, but no easy way around it.
   // First delete everything before cursor.
-  engine_->DeleteSurroundingText(
-      context_id_, -static_cast<int>(surrounding_text.selection_range.start()),
-      surrounding_text.surrounding_text.length(), &error);
+  input_context->DeleteSurroundingText(
+      -static_cast<int>(surrounding_text.selection_range.start()),
+      surrounding_text.surrounding_text.length());
+
   // Submit the text after the cursor in composition mode to leave the cursor at
   // the start
-  engine_->SetComposition(
-      context_id_,
-      base::UTF16ToUTF8(surrounding_text.surrounding_text.substr(range.end()))
-          .c_str(),
-      /*selection_start=*/0, /*selection_end=*/0, /*cursor=*/0, /*segments=*/{},
-      &error);
-  engine_->FinishComposingText(context_id_, &error);
+  ui::CompositionText composition_text;
+  composition_text.text = surrounding_text.surrounding_text.substr(range.end());
+  input_context->UpdateCompositionText(composition_text,
+                                       /*cursor_pos=*/0, /*visible=*/true);
+  input_context->ConfirmCompositionText(/*reset_engine=*/false,
+                                        /*keep_selection=*/true);
+
   // Insert the text before the cursor - now there should be the correct text
   // and the cursor position will not have changed.
-  engine_->CommitText(
-      context_id_,
+  input_context->CommitText(
       (base::UTF16ToUTF8(
            surrounding_text.surrounding_text.substr(0, range.start())) +
-       last_typed_word_)
-          .c_str(),
-      &error);
+       last_typed_word_));
 }
 
 }  // namespace chromeos

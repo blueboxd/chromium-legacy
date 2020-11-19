@@ -257,13 +257,7 @@ void ApplySameSiteCookieWarningToStatus(
 
 }  // namespace
 
-// Keep defaults here in sync with content/public/common/cookie_manager.mojom.
-CanonicalCookie::CanonicalCookie()
-    : secure_(false),
-      httponly_(false),
-      same_site_(CookieSameSite::NO_RESTRICTION),
-      priority_(COOKIE_PRIORITY_MEDIUM),
-      source_scheme_(CookieSourceScheme::kUnset) {}
+CanonicalCookie::CanonicalCookie() = default;
 
 CanonicalCookie::CanonicalCookie(const CanonicalCookie& other) = default;
 
@@ -279,7 +273,8 @@ CanonicalCookie::CanonicalCookie(const std::string& name,
                                  CookieSameSite same_site,
                                  CookiePriority priority,
                                  bool same_party,
-                                 CookieSourceScheme source_scheme)
+                                 CookieSourceScheme source_scheme,
+                                 int source_port)
     : name_(name),
       value_(value),
       domain_(domain),
@@ -292,7 +287,9 @@ CanonicalCookie::CanonicalCookie(const std::string& name,
       same_site_(same_site),
       priority_(priority),
       same_party_(same_party),
-      source_scheme_(source_scheme) {}
+      source_scheme_(source_scheme) {
+  SetSourcePort(source_port);
+}
 
 CanonicalCookie::~CanonicalCookie() = default;
 
@@ -433,12 +430,14 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   CookieSourceScheme source_scheme = url.SchemeIsCryptographic()
                                          ? CookieSourceScheme::kSecure
                                          : CookieSourceScheme::kNonSecure;
+  // Get the port, this will get a default value if a port isn't provided.
+  int source_port = url.EffectiveIntPort();
 
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
       creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
       parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority(),
-      parsed_cookie.IsSameParty(), source_scheme));
+      parsed_cookie.IsSameParty(), source_scheme, source_port));
 
   DCHECK(cc->IsCanonical());
 
@@ -488,6 +487,9 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
                                          ? CookieSourceScheme::kSecure
                                          : CookieSourceScheme::kNonSecure;
 
+  // Get the port, this will get a default value if a port isn't provided.
+  int source_port = url.EffectiveIntPort();
+
   std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
   if (!path.empty() && cookie_path != path)
     return nullptr;
@@ -515,7 +517,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       name, value, cookie_domain, cookie_path, creation_time, expiration_time,
       last_access_time, secure, http_only, same_site, priority, same_party,
-      source_scheme));
+      source_scheme, source_port));
   DCHECK(cc->IsCanonical());
 
   return cc;
@@ -535,10 +537,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
     CookieSameSite same_site,
     CookiePriority priority,
     bool same_party,
-    CookieSourceScheme source_scheme) {
+    CookieSourceScheme source_scheme,
+    int source_port) {
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       name, value, domain, path, creation, expiration, last_access, secure,
-      httponly, same_site, priority, same_party, source_scheme));
+      httponly, same_site, priority, same_party, source_scheme, source_port));
   if (!cc->IsCanonical())
     return nullptr;
   return cc;
@@ -546,6 +549,16 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
 
 std::string CanonicalCookie::DomainWithoutDot() const {
   return cookie_util::CookieDomainAsHost(domain_);
+}
+
+void CanonicalCookie::SetSourcePort(int port) {
+  if ((port >= 0 && port <= 65535) || port == url::PORT_UNSPECIFIED) {
+    // 0 would be really weird as it has a special meaning, but it's still
+    // technically a valid tcp/ip port so we're going to accept it here.
+    source_port_ = port;
+  } else {
+    source_port_ = url::PORT_INVALID;
+  }
 }
 
 bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
@@ -613,8 +626,7 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
 CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     const GURL& url,
     const CookieOptions& options,
-    CookieAccessSemantics access_semantics,
-    bool delegate_treats_url_as_trustworthy) const {
+    const CookieAccessParams& params) const {
   CookieInclusionStatus status;
   // Filter out HttpOnly cookies, per options.
   if (options.exclude_httponly() && IsHttpOnly())
@@ -627,7 +639,7 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     CookieAccessScheme cookie_access_scheme =
         cookie_util::ProvisionalAccessScheme(url);
     if (cookie_access_scheme == CookieAccessScheme::kNonCryptographic &&
-        delegate_treats_url_as_trustworthy) {
+        params.delegate_treats_url_as_trustworthy) {
       cookie_access_scheme = CookieAccessScheme::kTrustworthy;
     }
     if (cookie_access_scheme == CookieAccessScheme::kNonCryptographic) {
@@ -648,13 +660,13 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
   // For LEGACY cookies we should always return the schemeless context,
   // otherwise let GetContextForCookieInclusion() decide.
   CookieOptions::SameSiteCookieContext::ContextType cookie_inclusion_context =
-      access_semantics == CookieAccessSemantics::LEGACY
+      params.access_semantics == CookieAccessSemantics::LEGACY
           ? options.same_site_cookie_context().context()
           : options.same_site_cookie_context().GetContextForCookieInclusion();
 
   // Don't include same-site cookies for cross-site requests.
   CookieEffectiveSameSite effective_same_site =
-      GetEffectiveSameSite(access_semantics);
+      GetEffectiveSameSite(params.access_semantics);
   DCHECK(effective_same_site != CookieEffectiveSameSite::UNDEFINED);
   // Log the effective SameSite mode that is applied to the cookie on this
   // request, if its SameSite was not specified.
@@ -705,7 +717,7 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
   // ignored. This can apply to cookies which were created before the
   // experimental options were enabled (as non-SameSite, insecure cookies cannot
   // be set while the options are on).
-  if (access_semantics != CookieAccessSemantics::LEGACY &&
+  if (params.access_semantics != CookieAccessSemantics::LEGACY &&
       cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
       SameSite() == CookieSameSite::NO_RESTRICTION && !IsSecure()) {
     status.AddExclusionReason(
@@ -713,7 +725,7 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
   }
 
   // TODO(chlily): Apply warning if SameSite-by-default is enabled but
-  // access_semantics is LEGACY?
+  // params.access_semantics is LEGACY?
   ApplySameSiteCookieWarningToStatus(SameSite(), effective_same_site,
                                      IsSecure(),
                                      options.same_site_cookie_context(),
@@ -731,7 +743,8 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
   }
 
   // TODO(chlily): Log metrics.
-  return CookieAccessResult(effective_same_site, status, access_semantics);
+  return CookieAccessResult(effective_same_site, status,
+                            params.access_semantics);
 }
 
 CookieAccessResult CanonicalCookie::IsSetPermittedInContext(

@@ -147,6 +147,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetOverscrollBehavior(
       const cc::OverscrollBehavior& overscroll_behavior) final;
   void RequestAnimationAfterDelay(const base::TimeDelta&) final;
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   void RegisterSelection(cc::LayerSelection selection) final;
   void RequestDecode(const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) final;
@@ -265,6 +266,7 @@ class CORE_EXPORT WebFrameWidgetBase
       bool request_unadjusted_movement,
       mojom::blink::WidgetInputHandlerHost::RequestMouseLockCallback callback)
       override;
+  void MouseCaptureLost() override;
   bool CanComposeInline() override;
   bool ShouldDispatchImeEventsToPlugin() override;
   void ImeSetCompositionForPlugin(const String& text,
@@ -579,9 +581,15 @@ class CORE_EXPORT WebFrameWidgetBase
   // still need the resize to happen in a synchronous fashion.
   void UseSynchronousResizeModeForTesting(bool enable);
 
+  // Sets the device color space for testing.
+  void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
+
   // Converts from DIPs to Blink coordinate space (ie. Viewport/Physical
   // pixels).
   gfx::Size DIPsToCeiledBlinkSpace(const gfx::Size& size);
+
+  void SetWindowRect(const gfx::Rect& window_rect);
+  void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
 
@@ -767,6 +775,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // PageWidgetEventHandler methods:
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
   void HandleMouseDown(LocalFrame&, const WebMouseEvent&) override;
+  void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleMouseUp(LocalFrame&, const WebMouseEvent&) override;
   WebInputEventResult HandleMouseWheel(LocalFrame&,
                                        const WebMouseWheelEvent&) override;
@@ -781,6 +790,8 @@ class CORE_EXPORT WebFrameWidgetBase
 
   void ForEachRemoteFrameControlledByWidget(
       const base::RepeatingCallback<void(RemoteFrame*)>& callback);
+
+  void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
 
   static bool ignore_input_events_;
 

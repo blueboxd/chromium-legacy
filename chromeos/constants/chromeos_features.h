@@ -252,6 +252,8 @@ extern const base::Feature kSessionManagerLongKillTimeout;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowBluetoothDebugLogToggle;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kEnableBluetoothVerboseLogsForGooglers;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowBluetoothDeviceBattery;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
@@ -316,7 +318,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeSandboxEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsKerberosSettingsSectionEnabled();
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsLacrosSupportEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsLoginDeviceManagementDisclosureEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsLoginDisplayPasswordButtonEnabled();

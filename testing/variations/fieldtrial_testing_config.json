@@ -1354,6 +1354,27 @@
             ]
         }
     ],
+    "ChangeExtensionEventPageSuspendDelay": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "ChangeExtensionEventPageSuspendDelay",
+                    "params": {
+                        "event-page-suspend-delay-ms": "61000"
+                    },
+                    "enable_features": [
+                        "ChangeExtensionEventPageSuspendDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "CheckOfflineCapability": [
         {
             "platforms": [
@@ -2863,6 +2884,21 @@
                     "enable_features": [
                         "InterestFeedV1ClickAndViewActionsConditionalUpload",
                         "InterestFeedV2ClickAndViewActionsConditionalUpload"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FillingPasswordsFromAnyOrigin": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FillingPasswordsFromAnyOrigin"
                     ]
                 }
             ]
@@ -5244,24 +5280,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PaymentRequestSkipToGPayIfNoCard"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PdfHonorJsContentSettings": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PdfHonorJsContentSettings"
                     ]
                 }
             ]
@@ -7670,6 +7688,24 @@
         }
     ],
     "WebRTC-SendSideBwe-WithOverhead": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-TaskQueuePacer": [
         {
             "platforms": [
                 "windows",

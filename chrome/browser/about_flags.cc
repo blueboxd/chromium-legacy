@@ -2392,6 +2392,13 @@ const FeatureEntry::FeatureVariation kCheckOfflineCapabilityVariations[] = {
      base::size(kCheckOfflineCapabilityEnforce), nullptr},
 };
 
+const FeatureEntry::FeatureParam kPrerender2DisableActivation[]{
+    {"activation", "disabled"}};
+const FeatureEntry::FeatureVariation kPrerender2Variations[] = {
+    {"without activation", kPrerender2DisableActivation,
+     base::size(kPrerender2DisableActivation), nullptr},
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2751,6 +2758,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableCryptAuthV1DeviceSyncName,
      flag_descriptions::kDisableCryptAuthV1DeviceSyncDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableCryptAuthV1DeviceSync)},
+    {"disable-idle-sockets-close-on-memory-pressure",
+     flag_descriptions::kDisableIdleSocketsCloseOnMemoryPressureName,
+     flag_descriptions::kDisableIdleSocketsCloseOnMemoryPressureDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kDisableIdleSocketsCloseOnMemoryPressure)},
     {"disable-office-editing-component-app",
      flag_descriptions::kDisableOfficeEditingComponentAppName,
      flag_descriptions::kDisableOfficeEditingComponentAppDescription, kOsCrOS,
@@ -6741,6 +6754,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableBufferBWCompressionDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableBufferBWCompression)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-prerender2", flag_descriptions::kPrerender2Name,
+     flag_descriptions::kPrerender2Description, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kPrerender2,
+                                    kPrerender2Variations,
+                                    "Prerender2")}
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

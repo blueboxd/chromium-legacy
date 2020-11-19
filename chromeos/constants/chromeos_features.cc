@@ -157,7 +157,7 @@ const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
 
 // Enable or disables running the Camera App as a System Web App.
 const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, will use the CDM in the Chrome OS daemon rather than loading the
 // CDM using the library CDM interface.
@@ -206,6 +206,15 @@ const base::Feature kCrostiniEnableDlc{"CrostiniEnableDlc",
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{
     "CryptAuthV2DeviceActivityStatus", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Disable idle sockets closing on memory pressure for NetworkContexts that
+// belong to Profiles. It only applies to Profiles because the goal is to
+// improve perceived performance of web browsing within the Chrome OS user
+// session by avoiding re-estabshing TLS connections that require client
+// certificates.
+const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
+    "disable_idle_sockets_close_on_memory_pressure",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the CryptAuth v2 DeviceSync flow. Regardless of this
 // flag, v1 DeviceSync will continue to operate until it is disabled via the

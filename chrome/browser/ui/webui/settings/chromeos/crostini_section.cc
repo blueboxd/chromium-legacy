@@ -41,7 +41,8 @@ const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
        mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCrostiniDetails},
-       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, IDS_OS_SETTINGS_TAG_CROSTINI_ALT2,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES,
        mojom::kCrostiniUsbPreferencesSubpagePath,
        mojom::SearchResultIcon::kPenguin,
@@ -93,7 +94,8 @@ const std::vector<SearchConcept>& GetCrostiniOptedOutSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSection,
        {.section = mojom::Section::kCrostini},
-       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, IDS_OS_SETTINGS_TAG_CROSTINI_ALT2,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP,
        mojom::kCrostiniSectionPath,
        mojom::SearchResultIcon::kPenguin,
@@ -367,6 +369,7 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"crostiniMicDialogLabel", IDS_SETTINGS_CROSTINI_MIC_DIALOG_LABEL},
       {"crostiniMicDialogShutdownButton",
        IDS_SETTINGS_CROSTINI_MIC_DIALOG_SHUTDOWN_BUTTON},
+      {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -389,9 +392,6 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL,
           base::ASCIIToUTF16(chrome::kArcAdbSideloadingLearnMoreURL)));
-  html_source->AddString("crostiniRemove", l10n_util::GetStringFUTF16(
-                                               IDS_SETTINGS_CROSTINI_REMOVE,
-                                               ui::GetChromeOSDeviceName()));
   html_source->AddString(
       "crostiniArcAdbConfirmationMessageEnable",
       l10n_util::GetStringFUTF16(

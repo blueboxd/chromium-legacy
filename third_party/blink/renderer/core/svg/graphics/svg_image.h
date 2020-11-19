@@ -41,10 +41,13 @@
 namespace blink {
 
 class Document;
+class LayoutSVGRoot;
+class LocalFrame;
 class Page;
 class PaintController;
 class SVGImageChromeClient;
 class SVGImageForContainer;
+class SVGSVGElement;
 struct IntrinsicSizingInfo;
 
 // SVGImage does not use Skia to draw images (as BitmapImage does) but instead
@@ -143,8 +146,8 @@ class CORE_EXPORT SVGImage final : public Image {
 
   void Draw(cc::PaintCanvas*,
             const cc::PaintFlags&,
-            const FloatRect& from_rect,
-            const FloatRect& to_rect,
+            const FloatRect& dst_rect,
+            const FloatRect& src_rect,
             RespectImageOrientationEnum,
             ImageClampingMode,
             ImageDecodingMode) override;
@@ -176,10 +179,8 @@ class CORE_EXPORT SVGImage final : public Image {
 
   void DrawInternal(cc::PaintCanvas*,
                     const cc::PaintFlags&,
-                    const FloatRect& from_rect,
-                    const FloatRect& to_rect,
-                    RespectImageOrientationEnum,
-                    ImageClampingMode,
+                    const FloatRect& dst_rect,
+                    const FloatRect& src_rect,
                     const KURL&);
 
   template <typename Func>
@@ -202,6 +203,10 @@ class CORE_EXPORT SVGImage final : public Image {
   Page* GetPageForTesting() { return page_; }
   void LoadCompleted();
   void NotifyAsyncLoadCompleted();
+
+  LocalFrame* GetFrame() const;
+  SVGSVGElement* RootElement() const;
+  LayoutSVGRoot* LayoutRoot() const;
 
   class SVGImageLocalFrameClient;
 

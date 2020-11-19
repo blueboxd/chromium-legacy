@@ -930,6 +930,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "disable-idle-sockets-close-on-memory-pressure",
+    "owners": [ "pmarko" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "disable-javascript-harmony-shipping",
     "owners": [ "adamk", "hablich" ],
     // This flag is used for field debugging along with
@@ -1999,6 +2004,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-prerender2",
+    "owners": [ "//content/browser/prerender/OWNERS" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "enable-previews-coin-flip",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 90
@@ -2569,7 +2579,7 @@
   {
     "name": "files-ng",
     "owners": [ "adanilo", "noel" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "files-single-partition-format",

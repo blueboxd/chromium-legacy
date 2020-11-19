@@ -1063,6 +1063,9 @@ extern const char kPermissionPredictionsDescription[];
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];
 
+extern const char kPrerender2Name[];
+extern const char kPrerender2Description[];
+
 extern const char kPreviewsAllowedName[];
 extern const char kPreviewsAllowedDescription[];
 
@@ -2208,6 +2211,9 @@ extern const char kDisableCancelAllTouchesDescription[];
 
 extern const char kDisableCryptAuthV1DeviceSyncName[];
 extern const char kDisableCryptAuthV1DeviceSyncDescription[];
+
+extern const char kDisableIdleSocketsCloseOnMemoryPressureName[];
+extern const char kDisableIdleSocketsCloseOnMemoryPressureDescription[];
 
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];

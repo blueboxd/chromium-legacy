@@ -34,7 +34,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -51,8 +50,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_file_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -65,20 +62,17 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -87,7 +81,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -100,12 +93,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/download/public/common/download_item.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_view.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -115,21 +104,17 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/update_client/update_client_errors.h"
-#include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/download_manager.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
@@ -150,13 +135,11 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/network_service_test_helper.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
@@ -193,7 +176,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -219,18 +201,11 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-#include "media/webrtc/webrtc_switches.h"
-#include "sandbox/policy/features.h"
-#endif
-
 using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::Mock;
 using testing::Return;
-using webrtc_event_logging::WebRtcEventLogManager;
 
 namespace policy {
 
@@ -240,39 +215,6 @@ namespace {
 const int kOneHourInMs = 60 * 60 * 1000;
 const int kThreeHoursInMs = 180 * 60 * 1000;
 #endif
-
-// Arbitrary port range for testing the WebRTC UDP port policy.
-const char kTestWebRtcUdpPortRange[] = "10000-10100";
-
-constexpr size_t kWebAppId = 42;
-
-// Downloads a file named |file| and expects it to be saved to |dir|, which
-// must be empty.
-void DownloadAndVerifyFile(Browser* browser,
-                           const base::FilePath& dir,
-                           const base::FilePath& file) {
-  net::EmbeddedTestServer embedded_test_server;
-  base::FilePath test_data_directory;
-  GetTestDataDirectory(&test_data_directory);
-  embedded_test_server.ServeFilesFromDirectory(test_data_directory);
-  ASSERT_TRUE(embedded_test_server.Start());
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser->profile());
-  content::DownloadTestObserverTerminal observer(
-      download_manager, 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-  GURL url(embedded_test_server.GetURL("/" + file.MaybeAsASCII()));
-  base::FilePath downloaded = dir.Append(file);
-  EXPECT_FALSE(base::PathExists(downloaded));
-  ui_test_utils::NavigateToURL(browser, url);
-  observer.WaitForFinished();
-  EXPECT_EQ(1u,
-            observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
-  EXPECT_TRUE(base::PathExists(downloaded));
-  base::FileEnumerator enumerator(dir, false, base::FileEnumerator::FILES);
-  EXPECT_EQ(file, enumerator.Next().BaseName());
-  EXPECT_EQ(base::FilePath(), enumerator.Next());
-}
 
 #if defined(OS_CHROMEOS)
 int CountScreenshots() {
@@ -368,97 +310,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
-  // Verifies that a default search is made using the provider configured via
-  // policy. Also checks that default search can be completely disabled.
-  const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
-  const std::string kSearchURL("http://search.example/search?q={searchTerms}");
-  const std::string kAlternateURL0(
-      "http://search.example/search#q={searchTerms}");
-  const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
-  const std::string kImageURL("http://test.com/searchbyimage/upload");
-  const std::string kImageURLPostParams(
-      "image_content=content,image_url=http://test.com/test.png");
-  const std::string kNewTabURL("http://search.example/newtab");
-
-  TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
-      browser()->profile());
-  search_test_utils::WaitForTemplateURLServiceToLoad(service);
-  const TemplateURL* default_search = service->GetDefaultSearchProvider();
-  ASSERT_TRUE(default_search);
-  EXPECT_NE(kKeyword, default_search->keyword());
-  EXPECT_NE(kSearchURL, default_search->url());
-  EXPECT_FALSE(
-    default_search->alternate_urls().size() == 2 &&
-    default_search->alternate_urls()[0] == kAlternateURL0 &&
-    default_search->alternate_urls()[1] == kAlternateURL1 &&
-    default_search->image_url() == kImageURL &&
-    default_search->image_url_post_params() == kImageURLPostParams &&
-    default_search->new_tab_url() == kNewTabURL);
-
-  // Override the default search provider using policies.
-  PolicyMap policies;
-  policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
-               nullptr);
-  policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kKeyword),
-               nullptr);
-  policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kSearchURL),
-               nullptr);
-  base::Value alternate_urls(base::Value::Type::LIST);
-  alternate_urls.Append(kAlternateURL0);
-  alternate_urls.Append(kAlternateURL1);
-  policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::move(alternate_urls), nullptr);
-  policies.Set(key::kDefaultSearchProviderImageURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kImageURL),
-               nullptr);
-  policies.Set(key::kDefaultSearchProviderImageURLPostParams,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value(kImageURLPostParams), nullptr);
-  policies.Set(key::kDefaultSearchProviderNewTabURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kNewTabURL),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  default_search = service->GetDefaultSearchProvider();
-  ASSERT_TRUE(default_search);
-  EXPECT_EQ(kKeyword, default_search->keyword());
-  EXPECT_EQ(kSearchURL, default_search->url());
-  EXPECT_EQ(2U, default_search->alternate_urls().size());
-  EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
-  EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
-  EXPECT_EQ(kImageURL, default_search->image_url());
-  EXPECT_EQ(kImageURLPostParams, default_search->image_url_post_params());
-  EXPECT_EQ(kNewTabURL, default_search->new_tab_url());
-
-  // Verify that searching from the omnibox uses kSearchURL.
-  chrome::FocusLocationBar(browser());
-  ui_test_utils::SendToOmniboxAndSubmit(browser(), "stuff to search for");
-  OmniboxEditModel* model =
-      browser()->window()->GetLocationBar()->GetOmniboxView()->model();
-  EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL expected("http://search.example/search?q=stuff+to+search+for");
-  EXPECT_EQ(expected, web_contents->GetURL());
-
-  // Verify that searching from the omnibox can be disabled.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
-               nullptr);
-  EXPECT_TRUE(service->GetDefaultSearchProvider());
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(service->GetDefaultSearchProvider());
-  ui_test_utils::SendToOmniboxAndSubmit(browser(), "should not work");
-  // This means that submitting won't trigger any action.
-  EXPECT_FALSE(model->CurrentMatch(NULL).destination_url.is_valid());
-  EXPECT_EQ(GURL(url::kAboutBlankURL), web_contents->GetURL());
-}
-
 IN_PROC_BROWSER_TEST_F(PolicyTest, SeparateProxyPoliciesMerging) {
   // Add an individual proxy policy value.
   PolicyMap policies;
@@ -490,153 +341,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SeparateProxyPoliciesMerging) {
           ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(expected.Equals(actual_from_profile));
 }
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, LegacySafeSearch) {
-  static_assert(safe_search_util::YOUTUBE_RESTRICT_OFF      == 0 &&
-                safe_search_util::YOUTUBE_RESTRICT_MODERATE == 1 &&
-                safe_search_util::YOUTUBE_RESTRICT_STRICT   == 2 &&
-                safe_search_util::YOUTUBE_RESTRICT_COUNT    == 3,
-                "This test relies on mapping ints to enum values.");
-
-  // Go over all combinations of (undefined, true, false) for the policies
-  // ForceSafeSearch, ForceGoogleSafeSearch and ForceYouTubeSafetyMode as well
-  // as (undefined, off, moderate, strict) for ForceYouTubeRestrict and make
-  // sure the prefs are set as expected.
-  const int num_restrict_modes = 1 + safe_search_util::YOUTUBE_RESTRICT_COUNT;
-  for (int i = 0; i < 3 * 3 * 3 * num_restrict_modes; i++) {
-    int val = i;
-    int legacy_safe_search = val % 3; val /= 3;
-    int google_safe_search = val % 3; val /= 3;
-    int legacy_youtube     = val % 3; val /= 3;
-    int youtube_restrict   = val % num_restrict_modes;
-
-    // Override the default SafeSearch setting using policies.
-    ApplySafeSearchPolicy(
-        legacy_safe_search == 0
-            ? base::nullopt
-            : base::make_optional<base::Value>(legacy_safe_search == 1),
-        google_safe_search == 0
-            ? base::nullopt
-            : base::make_optional<base::Value>(google_safe_search == 1),
-        legacy_youtube == 0
-            ? base::nullopt
-            : base::make_optional<base::Value>(legacy_youtube == 1),
-        youtube_restrict == 0
-            ? base::nullopt  // subtracting 1 gives
-                             // 0,1,2, see above
-            : base::make_optional<base::Value>(youtube_restrict - 1));
-
-    // The legacy ForceSafeSearch policy should only have an effect if none of
-    // the other 3 policies are defined.
-    bool legacy_safe_search_in_effect =
-        google_safe_search == 0 && legacy_youtube == 0 &&
-        youtube_restrict == 0 && legacy_safe_search != 0;
-    bool legacy_safe_search_enabled =
-        legacy_safe_search_in_effect && legacy_safe_search == 1;
-
-    // Likewise, ForceYouTubeSafetyMode should only have an effect if
-    // ForceYouTubeRestrict is not set.
-    bool legacy_youtube_in_effect =
-        youtube_restrict == 0 && legacy_youtube != 0;
-    bool legacy_youtube_enabled =
-        legacy_youtube_in_effect && legacy_youtube == 1;
-
-    // Consistency check, can't have both legacy modes at the same time.
-    EXPECT_FALSE(legacy_youtube_in_effect && legacy_safe_search_in_effect);
-
-    // Google safe search can be triggered by the ForceGoogleSafeSearch policy
-    // or the legacy safe search mode.
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    EXPECT_EQ(google_safe_search != 0 || legacy_safe_search_in_effect,
-              prefs->IsManagedPreference(prefs::kForceGoogleSafeSearch));
-    EXPECT_EQ(google_safe_search == 1 || legacy_safe_search_enabled,
-              prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
-
-    // YouTube restrict mode can be triggered by the ForceYouTubeRestrict policy
-    // or any of the legacy modes.
-    EXPECT_EQ(youtube_restrict != 0 || legacy_safe_search_in_effect ||
-              legacy_youtube_in_effect,
-              prefs->IsManagedPreference(prefs::kForceYouTubeRestrict));
-
-    if (youtube_restrict != 0) {
-      // The ForceYouTubeRestrict policy should map directly to the pref.
-      EXPECT_EQ(youtube_restrict - 1,
-          prefs->GetInteger(prefs::kForceYouTubeRestrict));
-    } else {
-      // The legacy modes should result in MODERATE strictness, if enabled.
-      safe_search_util::YouTubeRestrictMode expected_mode =
-          legacy_safe_search_enabled || legacy_youtube_enabled
-            ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-            : safe_search_util::YOUTUBE_RESTRICT_OFF;
-      EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict), expected_mode);
-    }
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
-  base::Lock lock;
-  std::set<GURL> google_urls_requested;
-  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
-      [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
-        if (params->url_request.url.host() != "google.com")
-          return false;
-        base::AutoLock auto_lock(lock);
-        google_urls_requested.insert(params->url_request.url);
-        std::string relative_path("chrome/test/data/simple.html");
-        content::URLLoaderInterceptor::WriteResponse(relative_path,
-                                                     params->client.get());
-        return true;
-      }));
-
-  // Verifies that requests to Google Search engine with the SafeSearch
-  // enabled set the safe=active&ssui=on parameters at the end of the query.
-  // First check that nothing happens.
-  CheckSafeSearch(browser(), false);
-
-  // Go over all combinations of (undefined, true, false) for the
-  // ForceGoogleSafeSearch policy.
-  for (int safe_search = 0; safe_search < 3; safe_search++) {
-    // Override the Google safe search policy.
-    ApplySafeSearchPolicy(
-        base::nullopt,    // ForceSafeSearch
-        safe_search == 0  // ForceGoogleSafeSearch
-            ? base::nullopt
-            : base::make_optional<base::Value>(safe_search == 1),
-        base::nullopt,   // ForceYouTubeSafetyMode
-        base::nullopt);  // ForceYouTubeRestrict
-    // Verify that the safe search pref behaves the way we expect.
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    EXPECT_EQ(safe_search != 0,
-              prefs->IsManagedPreference(prefs::kForceGoogleSafeSearch));
-    EXPECT_EQ(safe_search == 1,
-              prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
-
-    // Verify that safe search actually works.
-    CheckSafeSearch(browser(), safe_search == 1);
-
-    GURL google_url(GetExpectedSearchURL(safe_search == 1));
-
-    {
-      // Verify that the network request is what we expect.
-      base::AutoLock auto_lock(lock);
-      ASSERT_TRUE(google_urls_requested.find(google_url) !=
-                  google_urls_requested.end());
-      google_urls_requested.clear();
-    }
-
-    {
-      // Now check subresource loads.
-      FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
-                       GURL("http://google.com/"));
-
-      base::AutoLock auto_lock(lock);
-      ASSERT_TRUE(google_urls_requested.find(google_url) !=
-                  google_urls_requested.end());
-    }
-  }
-}
-
-
 
 // This test is flaky on Windows 10: https://crbug.com/1069558
 #if defined(OS_WIN)
@@ -675,71 +379,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_Disable3DAPIs) {
     EXPECT_TRUE(content::WaitForLoadStop(contents));
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
-  // Verifies that the download directory can be forced by policy.
-
-  // Don't prompt for the download location during this test.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kPromptForDownload, false);
-
-  base::FilePath initial_dir =
-      DownloadPrefs(browser()->profile()).DownloadPath();
-
-  // Verify that downloads end up on the default directory.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  DownloadAndVerifyFile(browser(), initial_dir, file);
-  base::DieFileDie(initial_dir.Append(file), false);
-
-  // Override the download directory with the policy and verify a download.
-  base::FilePath forced_dir = initial_dir.AppendASCII("forced");
-
-  PolicyMap policies;
-  policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value(forced_dir.value()), nullptr);
-  UpdateProviderPolicy(policies);
-  DownloadAndVerifyFile(browser(), forced_dir, file);
-  // Verify that the first download location wasn't affected.
-  EXPECT_FALSE(base::PathExists(initial_dir.Append(file)));
-}
-
-#if defined(OS_CHROMEOS)
-// Verifies that the download directory can be forced to Google Drive by policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory_Drive) {
-  // Override the download directory with the policy.
-  {
-    PolicyMap policies;
-    policies.Set(key::kDownloadDirectory, POLICY_LEVEL_RECOMMENDED,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::Value("${google_drive}/"), nullptr);
-    UpdateProviderPolicy(policies);
-
-    EXPECT_EQ(drive::DriveIntegrationServiceFactory::FindForProfile(
-                  browser()->profile())
-                  ->GetMountPointPath()
-                  .AppendASCII("root"),
-              DownloadPrefs(browser()->profile())
-                  .DownloadPath()
-                  .StripTrailingSeparators());
-  }
-
-  PolicyMap policies;
-  policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value("${google_drive}/Downloads"), nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_EQ(drive::DriveIntegrationServiceFactory::FindForProfile(
-                browser()->profile())
-                ->GetMountPointPath()
-                .AppendASCII("root/Downloads"),
-            DownloadPrefs(browser()->profile())
-                .DownloadPath()
-                .StripTrailingSeparators());
-}
-#endif  // !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   // Verifies that the homepage can be configured with policies.
@@ -1014,92 +653,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   EXPECT_TRUE(task_manager::TaskManagerInterface::IsEndProcessEnabled());
 }
 
-// Sets the proper policy before the browser is started.
-template <bool enable>
-class WebRtcUdpPortRangePolicyTest : public PolicyTest {
- public:
-  WebRtcUdpPortRangePolicyTest() = default;
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    if (enable) {
-      policies.Set(key::kWebRtcUdpPortRange, POLICY_LEVEL_MANDATORY,
-                   POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                   base::Value(kTestWebRtcUdpPortRange), nullptr);
-    }
-    provider_.UpdateChromePolicy(policies);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebRtcUdpPortRangePolicyTest<enable>);
-};
-
-using WebRtcUdpPortRangeEnabledPolicyTest = WebRtcUdpPortRangePolicyTest<true>;
-using WebRtcUdpPortRangeDisabledPolicyTest =
-    WebRtcUdpPortRangePolicyTest<false>;
-
-IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeEnabledPolicyTest,
-                       WebRtcUdpPortRangeEnabled) {
-  std::string port_range;
-  const PrefService::Preference* pref =
-      user_prefs::UserPrefs::Get(browser()->profile())
-          ->FindPreference(prefs::kWebRTCUDPPortRange);
-  pref->GetValue()->GetAsString(&port_range);
-  EXPECT_EQ(kTestWebRtcUdpPortRange, port_range);
-}
-
-IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeDisabledPolicyTest,
-                       WebRtcUdpPortRangeDisabled) {
-  std::string port_range;
-  const PrefService::Preference* pref =
-      user_prefs::UserPrefs::Get(browser()->profile())
-          ->FindPreference(prefs::kWebRTCUDPPortRange);
-  pref->GetValue()->GetAsString(&port_range);
-  EXPECT_TRUE(port_range.empty());
-}
-
-// Sets the proper policy before the browser is started.
-class WebRtcLocalIpsAllowedUrlsTest : public PolicyTest,
-                                      public testing::WithParamInterface<int> {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    policies.Set(key::kWebRtcLocalIpsAllowedUrls, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::Value(GenerateUrlList()), nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-
-  base::Value::ListStorage GenerateUrlList() {
-    int num_urls = GetParam();
-    base::Value::ListStorage ret;
-    for (int i = 0; i < num_urls; ++i)
-      ret.push_back(base::Value(base::NumberToString(i) + ".example.com"));
-
-    return ret;
-  }
-};
-
-IN_PROC_BROWSER_TEST_P(WebRtcLocalIpsAllowedUrlsTest, RunTest) {
-  const PrefService::Preference* pref =
-      user_prefs::UserPrefs::Get(browser()->profile())
-          ->FindPreference(prefs::kWebRtcLocalIpsAllowedUrls);
-  EXPECT_TRUE(pref->IsManaged());
-  base::Value::ConstListView allowed_urls = pref->GetValue()->GetList();
-  const auto& expected_urls = GenerateUrlList();
-  EXPECT_EQ(expected_urls.size(), allowed_urls.size());
-  for (const auto& allowed_url : allowed_urls) {
-    auto it =
-        std::find(expected_urls.begin(), expected_urls.end(), allowed_url);
-    EXPECT_TRUE(it != expected_urls.end());
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         WebRtcLocalIpsAllowedUrlsTest,
-                         ::testing::Range(0, 3));
-
 #if !defined(OS_CHROMEOS)
 // Similar to PolicyTest but sets the proper policy before the browser is
 // started.
@@ -1262,116 +815,6 @@ IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest,
 }
 
 #undef MAYBE_RunTest
-
-#if !defined(OS_ANDROID)
-class WebRtcEventLogCollectionAllowedPolicyTest
-    : public PolicyTest,
-      public testing::WithParamInterface<PolicyTest::BooleanPolicy> {
- public:
-  ~WebRtcEventLogCollectionAllowedPolicyTest() override = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-
-    const BooleanPolicy policy = GetParam();
-    if (policy == BooleanPolicy::kFalse || policy == BooleanPolicy::kTrue) {
-      const bool policy_bool = (policy == BooleanPolicy::kTrue);
-      policies.Set(policy::key::kWebRtcEventLogCollectionAllowed,
-                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                   base::Value(policy_bool), nullptr);
-    }
-
-    provider_.UpdateChromePolicy(policies);
-  }
-
-  const PrefService::Preference* GetPreference() const {
-    auto* service = user_prefs::UserPrefs::Get(browser()->profile());
-    return service->FindPreference(prefs::kWebRtcEventLogCollectionAllowed);
-  }
-
-  base::OnceCallback<void(bool)> BlockingBoolExpectingReply(
-      base::RunLoop* run_loop,
-      bool expected_value) {
-    return base::BindOnce(
-        [](base::RunLoop* run_loop, bool expected_value, bool value) {
-          EXPECT_EQ(expected_value, value);
-          run_loop->Quit();
-        },
-        run_loop, expected_value);
-  }
-
-  // The "extras" in question are the ID and error (only one of which may
-  // be non-null), which this test ignores (tested elsewhere).
-  base::OnceCallback<void(bool, const std::string&, const std::string&)>
-  BlockingBoolExpectingReplyWithExtras(base::RunLoop* run_loop,
-                                       bool expected_value) {
-    return base::BindOnce(
-        [](base::RunLoop* run_loop, bool expected_value, bool value,
-           const std::string& ignored_log_id,
-           const std::string& ignored_error) {
-          EXPECT_EQ(expected_value, value);
-          run_loop->Quit();
-        },
-        run_loop, expected_value);
-  }
-};
-
-IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
-  const PrefService::Preference* const pref = GetPreference();
-  const bool remote_logging_allowed = (GetParam() == BooleanPolicy::kTrue);
-  ASSERT_EQ(pref->GetValue()->GetBool(), remote_logging_allowed);
-
-  auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
-  ASSERT_TRUE(webrtc_event_log_manager);
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  int render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
-
-  constexpr int kLid = 123;
-  const std::string kSessionId = "id";
-
-  {
-    base::RunLoop run_loop;
-    webrtc_event_log_manager->PeerConnectionAdded(
-        render_process_id, kLid, BlockingBoolExpectingReply(&run_loop, true));
-    run_loop.Run();
-  }
-
-  {
-    base::RunLoop run_loop;
-    webrtc_event_log_manager->PeerConnectionSessionIdSet(
-        render_process_id, kLid, kSessionId,
-        BlockingBoolExpectingReply(&run_loop, true));
-    run_loop.Run();
-  }
-
-  {
-    constexpr size_t kMaxFileSizeBytes = 1000 * 1000;
-    constexpr int kOutputPeriodMs = 1000;
-
-    base::RunLoop run_loop;
-
-    // Test focus - remote-bound logging allowed if and only if the policy
-    // is configured to allow it.
-    webrtc_event_log_manager->StartRemoteLogging(
-        render_process_id, kSessionId, kMaxFileSizeBytes, kOutputPeriodMs,
-        kWebAppId,
-        BlockingBoolExpectingReplyWithExtras(&run_loop,
-                                             remote_logging_allowed));
-    run_loop.Run();
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebRtcEventLogCollectionAllowedPolicyTest,
-    ::testing::Values(PolicyTest::BooleanPolicy::kNotConfigured,
-                      PolicyTest::BooleanPolicy::kFalse,
-                      PolicyTest::BooleanPolicy::kTrue));
-#endif  // !defined(OS_ANDROID)
 
 class PolicyTestSyncXHR : public PolicyTest {
   void SetUpInProcessBrowserTestFixture() override {

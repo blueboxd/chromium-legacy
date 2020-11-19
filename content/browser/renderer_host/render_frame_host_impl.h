@@ -2281,7 +2281,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates a NavigationRequest to use for commit. This should only be used
   // when no appropriate NavigationRequest has been found.
   std::unique_ptr<NavigationRequest> CreateNavigationRequestForCommit(
-      const mojom::DidCommitProvisionalLoadParams& params,
+      const GURL& url,
+      const url::Origin& origin,
+      blink::mojom::ReferrerPtr referrer,
+      const ui::PageTransition& transition,
+      bool should_replace_current_entry,
+      const NavigationGesture& gesture,
+      const std::vector<GURL>& redirects,
+      const blink::PageState& page_state,
       bool is_same_document);
 
   // Helper to process the beforeunload completion callback. |proceed| indicates
@@ -2755,11 +2762,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This is nonzero if we sent an accessibility reset to the renderer and
   // we're waiting for an IPC containing this reset token (sequentially
   // assigned) and a complete replacement accessibility tree.
-  int accessibility_reset_token_;
+  int accessibility_reset_token_ = 0;
 
   // A count of the number of times we needed to reset accessibility, so
   // we don't keep trying to reset forever.
-  int accessibility_reset_count_;
+  int accessibility_reset_count_ = 0;
 
   // The last AXTreeData for this frame received from the RenderFrame.
   ui::AXTreeData ax_tree_data_;

@@ -4577,6 +4577,7 @@ Unknown properties are collapsed to zero. -->
   <int value="19" label="Tab was closed while prompt was visible"/>
   <int value="20" label="Tab was closed while prompt was invisible"/>
   <int value="21" label="No trigger script available"/>
+  <int value="22" label="Failed to show"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptOnboarding">
@@ -30302,6 +30303,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3729" label="MediaStreamTrackProcessor"/>
   <int value="3730" label="AddEventListenerWithAbortSignal"/>
   <int value="3731" label="XRSessionRequestLightProbe"/>
+  <int value="3732" label="BeforematchRevealedHiddenMatchable"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43311,6 +43313,8 @@ from previous Chrome versions.
   <int value="-860534647" label="SiteDetails:enabled"/>
   <int value="-858280894" label="DelayCompetingLowPriorityRequests:disabled"/>
   <int value="-856915246" label="enable-new-audio-rendering-mixing-strategy"/>
+  <int value="-856146376"
+      label="disable_idle_sockets_close_on_memory_pressure:disabled"/>
   <int value="-856016114" label="NTPOfflinePages:disabled"/>
   <int value="-855513281" label="SyncRequiresPoliciesLoaded:disabled"/>
   <int value="-855277252" label="CookiesWithoutSameSiteMustBeSecure:disabled"/>
@@ -43933,6 +43937,8 @@ from previous Chrome versions.
   <int value="-225505731" label="CCTModule:enabled"/>
   <int value="-225228149" label="ContentSettingsRedesign:enabled"/>
   <int value="-222296540" label="VirtualKeyboardBorderedKey:disabled"/>
+  <int value="-222282965"
+      label="disable_idle_sockets_close_on_memory_pressure:enabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-217885320" label="CdmFactoryDaemon:disabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
@@ -44398,6 +44404,7 @@ from previous Chrome versions.
   <int value="259633436" label="AutofillDropdownLayout:disabled"/>
   <int value="259812169" label="OmniboxSuggestionsWrapAround:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
+  <int value="265140282" label="Prerender2:disabled"/>
   <int value="265830810" label="BackgroundTaskComponentUpdate:enabled"/>
   <int value="266322815" label="ChromeModernDesign:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
@@ -44758,6 +44765,7 @@ from previous Chrome versions.
   <int value="602117675" label="NTPBookmarkSuggestions:enabled"/>
   <int value="603326800" label="UsePasswordSeparatedSigninFlow:enabled"/>
   <int value="603988014" label="NetworkService:enabled"/>
+  <int value="604334859" label="Prerender2:enabled"/>
   <int value="605150752" label="WebUSB:disabled"/>
   <int value="606061406"
       label="UpdateNotificationSchedulingIntegration:disabled"/>
@@ -70745,6 +70753,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="(obsolete) Filled form on start provisional load"/>
   <int value="9"
       label="(obsolete) Filled input elements on start provisional load"/>
+  <int value="10" label="Probable form submission"/>
+  <int value="11" label="Change password form cleared"/>
 </enum>
 
 <enum name="SubmittedPasswordFormFrame">
@@ -74711,6 +74721,20 @@ Full version information for the fingerprint enum values:
     Downgrade with snapshot restoration detected
   </int>
   <int value="4" label="Minor Downgrade">Minor version downgrade</int>
+</enum>
+
+<enum name="UserDataMoveResult">
+  <int value="0" label="CreateTargetFailure">
+    Failed to create a temporary directory within User Data into which the
+    contents are to be moved for subsequent deletion.
+  </int>
+  <int value="1" label="Success">
+    The contents of User Data were moved as expected.
+  </int>
+  <int value="2" label="PartialSuccess">
+    Some items in User Data could not be moved; see
+    Downgrade.UserDataDirMove.FailureCount.
+  </int>
 </enum>
 
 <enum name="UserDemographicsStatus">

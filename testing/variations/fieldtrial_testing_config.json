@@ -2530,7 +2530,7 @@
                     "name": "Enabled",
                     "params": {
                         "BlockExtensionList": "",
-                        "SilentBlockExtensionList": "png,gif,jpg,jpeg,tif,tiff,bmp,svg,webp,ico,mp3,wav,wma,m3u,ogg,oga,aiff,m4a,aac,flac,m4b,webm,mp4,mov,wmv,avi,txt",
+                        "SilentBlockExtensionList": "",
                         "TreatBlockListAsAllowlist": "false",
                         "TreatSilentBlockListAsAllowlist": "true",
                         "TreatWarnListAsAllowlist": "false",
@@ -2553,11 +2553,11 @@
                     "name": "Enabled",
                     "params": {
                         "BlockExtensionList": "",
-                        "SilentBlockExtensionList": "exe,scr,msi,vb,dmg,pkg,crx,zip,iso,rar,7z,tar,gz,bz2",
+                        "SilentBlockExtensionList": "",
                         "TreatBlockListAsAllowlist": "false",
-                        "TreatSilentBlockListAsAllowlist": "false",
-                        "TreatWarnListAsAllowlist": "true",
-                        "WarnExtensionList": "png,gif,jpg,jpeg,tif,tiff,bmp,svg,webp,ico,mp3,wav,wma,m3u,ogg,oga,aiff,m4a,aac,flac,m4b,webm,mp4,mov,wmv,avi,txt"
+                        "TreatSilentBlockListAsAllowlist": "true",
+                        "TreatWarnListAsAllowlist": "false",
+                        "WarnExtensionList": ""
                     },
                     "enable_features": [
                         "TreatUnsafeDownloadsAsActive"
@@ -2698,6 +2698,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableCsrssLockdown"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnablePasswordGenerationForClearTextFields": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnablePasswordGenerationForClearTextFields"
                     ]
                 }
             ]
@@ -4698,6 +4719,7 @@
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxLocalZeroSuggestAgeThreshold",
+                        "OmniboxLocalZeroSuggestForAuthenticatedUsers",
                         "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
@@ -4709,6 +4731,7 @@
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
+                        "OmniboxZeroSuggestCaching",
                         "QueryInOmnibox",
                         "SearchSuggestChips"
                     ]
@@ -5183,21 +5206,6 @@
             ]
         }
     ],
-    "PasswordCheckIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PasswordCheck"
-                    ]
-                }
-            ]
-        }
-    ],
     "PasswordEditingInSettings": [
         {
             "platforms": [
@@ -5205,6 +5213,21 @@
                 "linux",
                 "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EditPasswordsInSettings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PasswordEditingInSettingsIOS": [
+        {
+            "platforms": [
+                "ios"
             ],
             "experiments": [
                 {
@@ -5322,6 +5345,24 @@
                     },
                     "enable_features": [
                         "TrimOnMemoryPressure"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PermissionChip": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PermissionChip"
                     ]
                 }
             ]
@@ -6549,6 +6590,27 @@
                     },
                     "enable_features": [
                         "PulseInterval"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncSendInterestedDataTypes": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncSendInterestedDataTypes"
                     ]
                 }
             ]

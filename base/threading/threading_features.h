@@ -14,12 +14,6 @@ struct Feature;
 
 #if defined(OS_APPLE)
 extern const BASE_EXPORT Feature kOptimizedRealtimeThreadingMac;
-extern const BASE_EXPORT FeatureParam<bool>
-    kOptimizedRealtimeThreadingMacPreemptible;
-extern const BASE_EXPORT FeatureParam<double>
-    kOptimizedRealtimeThreadingMacBusy;
-extern const BASE_EXPORT FeatureParam<double>
-    kOptimizedRealtimeThreadingMacBusyLimit;
 #endif
 
 }  // namespace base

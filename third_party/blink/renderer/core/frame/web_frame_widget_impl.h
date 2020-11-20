@@ -38,7 +38,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/types/pass_key.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
-#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -51,8 +50,6 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
-class Element;
-class PaintLayerCompositor;
 class WebFrameWidget;
 class WebFrameWidgetImpl;
 
@@ -80,40 +77,12 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase {
       bool never_composited);
   ~WebFrameWidgetImpl() override;
 
-  // WebWidget functions:
-  void Close(
-      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
-  gfx::Size Size() override;
-  void Resize(const gfx::Size&) override;
-
-  // WebFrameWidget implementation.
-  bool ScrollFocusedEditableElementIntoView() override;
-
-  PaintLayerCompositor* Compositor() const;
-
-  // WebFrameWidgetBase overrides:
-  void DidCreateLocalRootView() override;
-
-  void UpdateMainFrameLayoutSize();
-
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
 
-  // Finds the parameters required for scrolling the focused editable |element|
-  // into view. |rect_to_scroll| is used for recursive scrolling of the element
-  // into view and contains all or part of element's bounding box and always
-  // includes the caret and is with respect to absolute coordinates.
-  void GetScrollParamsForFocusedEditableElement(
-      const Element& element,
-      PhysicalRect& rect_to_scroll,
-      mojom::blink::ScrollIntoViewParamsPtr& params);
-
-  bool did_suspend_parsing_ = false;
-
-  SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };
 
 }  // namespace blink

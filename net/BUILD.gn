@@ -858,7 +858,6 @@ component("net") {
       "quic/crypto/proof_verifier_chromium.h",
       "quic/network_connection.cc",
       "quic/network_connection.h",
-      "quic/platform/impl/quic_aligned_impl.h",
       "quic/platform/impl/quic_bug_tracker_impl.h",
       "quic/platform/impl/quic_cert_utils_impl.h",
       "quic/platform/impl/quic_chromium_clock.cc",
@@ -868,7 +867,6 @@ component("net") {
       "quic/platform/impl/quic_error_code_wrappers_impl.h",
       "quic/platform/impl/quic_estimate_memory_usage_impl.h",
       "quic/platform/impl/quic_export_impl.h",
-      "quic/platform/impl/quic_fallthrough_impl.h",
       "quic/platform/impl/quic_file_utils_impl.h",
       "quic/platform/impl/quic_flag_utils_impl.h",
       "quic/platform/impl/quic_flags_impl.cc",
@@ -876,7 +874,6 @@ component("net") {
       "quic/platform/impl/quic_hostname_utils_impl.cc",
       "quic/platform/impl/quic_hostname_utils_impl.h",
       "quic/platform/impl/quic_iovec_impl.h",
-      "quic/platform/impl/quic_macros_impl.h",
       "quic/platform/impl/quic_map_util_impl.h",
       "quic/platform/impl/quic_mem_slice_impl.cc",
       "quic/platform/impl/quic_mem_slice_impl.h",
@@ -1458,8 +1455,7 @@ component("net") {
 
     if (is_fuchsia) {
       deps += [ "//third_party/fuchsia-sdk/sdk/pkg/async-loop-cpp" ]
-      public_deps +=
-          [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.interfaces" ]
+      public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.netstack" ]
       sources += [
         "base/network_change_notifier_fuchsia.cc",
         "base/network_change_notifier_fuchsia.h",
@@ -1711,8 +1707,8 @@ source_set("net_deps") {
 
     if (is_fuchsia) {
       public_deps += [
-        "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hardware.network",
-        "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.interfaces",
+        "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hardware.ethernet",
+        "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.netstack",
         "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       ]
     }
@@ -4630,7 +4626,7 @@ test("net_unittests") {
   if (is_fuchsia) {
     use_test_server = true
     deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.interfaces",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.netstack",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
     ]
     sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]

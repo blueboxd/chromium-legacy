@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_actions.h"
@@ -102,6 +103,19 @@ struct CrossThreadCopier<blink::WebReportTimeCallback>
 namespace blink {
 
 namespace {
+
+const int kCaretPadding = 10;
+const float kIdealPaddingRatio = 0.3f;
+
+// Returns a rect which is offset and scaled accordingly to |base_rect|'s
+// location and size.
+FloatRect NormalizeRect(const IntRect& to_normalize, const IntRect& base_rect) {
+  FloatRect result(to_normalize);
+  result.SetLocation(
+      FloatPoint(to_normalize.Location() + (-base_rect.Location())));
+  result.Scale(1.0 / base_rect.Width(), 1.0 / base_rect.Height());
+  return result;
+}
 
 void ForEachLocalFrameControlledByWidget(
     LocalFrame* frame,
@@ -198,7 +212,8 @@ WebFrameWidgetBase::WebFrameWidgetBase(
                                                 is_for_child_local_root)),
       client_(&client),
       frame_sink_id_(frame_sink_id),
-      is_for_child_local_root_(is_for_child_local_root) {
+      is_for_child_local_root_(is_for_child_local_root),
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(task_runner);
   if (is_for_nested_main_frame)
     main_data().is_for_nested_main_frame = is_for_nested_main_frame;
@@ -233,6 +248,24 @@ void WebFrameWidgetBase::SetIsNestedMainFrameWidget(bool is_nested) {
 
 void WebFrameWidgetBase::Close(
     scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) {
+  LocalFrameView* frame_view;
+  if (is_for_child_local_root_) {
+    frame_view = LocalRootImpl()->GetFrame()->View();
+  } else {
+    // Scrolling for the root frame is special we need to pass null indicating
+    // we are at the top of the tree when setting up the Animation. Which will
+    // cause ownership of the timeline and animation host.
+    // See ScrollingCoordinator::AnimationHostInitialized.
+    frame_view = nullptr;
+  }
+  GetPage()->WillCloseAnimationHost(frame_view);
+
+  if (ForMainFrame()) {
+    // Closing the WebFrameWidgetBase happens in response to the local main
+    // frame being detached from the Page/WebViewImpl.
+    View()->SetMainFrameViewWidget(nullptr);
+  }
+
   mutator_dispatcher_ = nullptr;
   local_root_->SetFrameWidget(nullptr);
   local_root_ = nullptr;
@@ -242,6 +275,7 @@ void WebFrameWidgetBase::Close(
   widget_base_.reset();
   receiver_.reset();
   input_target_receiver_.reset();
+  self_keep_alive_.Clear();
 }
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
@@ -1575,6 +1609,42 @@ WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
 }
 
+bool WebFrameWidgetBase::ScrollFocusedEditableElementIntoView() {
+  Element* element = FocusedElement();
+  if (!element || !WebElement(element).IsEditable())
+    return false;
+
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+
+  if (!element->GetLayoutObject())
+    return false;
+
+  PhysicalRect rect_to_scroll;
+  auto params =
+      GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll);
+  element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll,
+                                                  std::move(params));
+
+  // Second phase for main frames is to schedule a zoom animation.
+  if (ForMainFrame()) {
+    LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
+
+    View()->ZoomAndScrollToFocusedEditableElementRect(
+        main_frame_view->RootFrameToDocument(
+            element->GetDocument().View()->ConvertToRootFrame(
+                element->GetLayoutObject()->AbsoluteBoundingBoxRect())),
+        main_frame_view->RootFrameToDocument(
+            element->GetDocument().View()->ConvertToRootFrame(
+                element->GetDocument()
+                    .GetFrame()
+                    ->Selection()
+                    .ComputeRectToScroll(kDoNotRevealExtent))),
+        View()->ShouldZoomToLegibleScale(*element));
+  }
+
+  return true;
+}
+
 void WebFrameWidgetBase::ResetMeaningfulLayoutStateForMainFrame() {
   MainFrameData& data = main_data();
   data.should_dispatch_first_visually_non_empty_layout = true;
@@ -1609,6 +1679,65 @@ cc::LayerTreeHost* WebFrameWidgetBase::InitializeCompositing(
 
 void WebFrameWidgetBase::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
+}
+
+gfx::Size WebFrameWidgetBase::Size() {
+  return size_.value_or(gfx::Size());
+}
+
+void WebFrameWidgetBase::Resize(const gfx::Size& new_size) {
+  if (size_ && *size_ == new_size)
+    return;
+
+  if (ForMainFrame()) {
+    size_ = new_size;
+    View()->Resize(new_size);
+    return;
+  }
+
+  if (child_data().did_suspend_parsing) {
+    child_data().did_suspend_parsing = false;
+    LocalRootImpl()->GetFrame()->Loader().GetDocumentLoader()->ResumeParser();
+  }
+
+  LocalFrameView* view = LocalRootImpl()->GetFrameView();
+  DCHECK(view);
+
+  size_ = new_size;
+
+  view->SetLayoutSize(IntSize(*size_));
+  view->Resize(IntSize(*size_));
+
+  // FIXME: In WebViewImpl this layout was a precursor to setting the minimum
+  // scale limit.  It is not clear if this is necessary for frame-level widget
+  // resize.
+  if (view->NeedsLayout())
+    view->UpdateLayout();
+
+  // FIXME: Investigate whether this is needed; comment from eseidel suggests
+  // that this function is flawed.
+  // TODO(kenrb): It would probably make more sense to check whether lifecycle
+  // updates are throttled in the root's LocalFrameView, but for OOPIFs that
+  // doesn't happen. Need to investigate if OOPIFs can be throttled during
+  // load.
+  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted()) {
+    // FIXME: This is wrong. The LocalFrameView is responsible sending a
+    // resizeEvent as part of layout. Layout is also responsible for sending
+    // invalidations to the embedder. This method and all callers may be wrong.
+    // -- eseidel.
+    LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
+
+    // Pass the limits even though this is for subframes, as the limits will
+    // be needed in setting the raster scale. We set this value when setting
+    // up the compositor, but need to update it when the limits of the
+    // WebViewImpl have changed.
+    // TODO(wjmaclean): This is updating when the size of the *child frame*
+    // have changed which are completely independent of the WebView, and in an
+    // OOPIF where the main frame is remote, are these limits even useful?
+    SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
+                               View()->MinimumPageScaleFactor(),
+                               View()->MaximumPageScaleFactor());
+  }
 }
 
 void WebFrameWidgetBase::BeginMainFrame(base::TimeTicks last_frame_time) {
@@ -3621,6 +3750,86 @@ void WebFrameWidgetBase::SetWindowRectSynchronously(
 
   Resize(new_window_rect.size());
   widget_base_->SetScreenRects(new_window_rect, new_window_rect);
+}
+
+void WebFrameWidgetBase::DidCreateLocalRootView() {
+  // If this WebWidget still hasn't received its size from the embedder, block
+  // the parser. This is necessary, because the parser can cause layout to
+  // happen, which needs to be done with the correct size.
+  if (ForSubframe() && !size_) {
+    child_data().did_suspend_parsing = true;
+    LocalRootImpl()->GetFrame()->Loader().GetDocumentLoader()->BlockParser();
+  }
+}
+
+mojom::blink::ScrollIntoViewParamsPtr
+WebFrameWidgetBase::GetScrollParamsForFocusedEditableElement(
+    const Element& element,
+    PhysicalRect& out_rect_to_scroll) {
+  // For main frames, scrolling takes place in two phases.
+  if (ForMainFrame()) {
+    // Since the page has been resized, the layout may have changed. The page
+    // scale animation started by ZoomAndScrollToFocusedEditableRect will scroll
+    // only the visual and layout viewports. We'll call ScrollRectToVisible with
+    // the stop_at_main_frame_layout_viewport param to ensure the element is
+    // actually visible in the page.
+    mojom::blink::ScrollIntoViewParamsPtr params =
+        ScrollAlignment::CreateScrollIntoViewParams(
+            ScrollAlignment::CenterIfNeeded(),
+            ScrollAlignment::CenterIfNeeded(),
+            mojom::blink::ScrollType::kProgrammatic, false,
+            mojom::blink::ScrollBehavior::kInstant);
+    params->stop_at_main_frame_layout_viewport = true;
+    out_rect_to_scroll =
+        PhysicalRect(element.GetLayoutObject()->AbsoluteBoundingBoxRect());
+    return params;
+  }
+
+  LocalFrameView& frame_view = *element.GetDocument().View();
+  IntRect absolute_element_bounds =
+      element.GetLayoutObject()->AbsoluteBoundingBoxRect();
+  IntRect absolute_caret_bounds =
+      element.GetDocument().GetFrame()->Selection().AbsoluteCaretBounds();
+  // Ideally, the chosen rectangle includes the element box and caret bounds
+  // plus some margin on the left. If this does not work (i.e., does not fit
+  // inside the frame view), then choose a subrect which includes the caret
+  // bounds. It is preferable to also include element bounds' location and left
+  // align the scroll. If this cant be satisfied, the scroll will be right
+  // aligned.
+  IntRect maximal_rect =
+      UnionRect(absolute_element_bounds, absolute_caret_bounds);
+
+  // Set the ideal margin.
+  maximal_rect.ShiftXEdgeTo(
+      maximal_rect.X() -
+      static_cast<int>(kIdealPaddingRatio * absolute_element_bounds.Width()));
+
+  bool maximal_rect_fits_in_frame =
+      !(frame_view.Size() - maximal_rect.Size()).IsEmpty();
+
+  if (!maximal_rect_fits_in_frame) {
+    IntRect frame_rect(maximal_rect.Location(), frame_view.Size());
+    maximal_rect.Intersect(frame_rect);
+    IntPoint point_forced_to_be_visible =
+        absolute_caret_bounds.MaxXMaxYCorner() +
+        IntSize(kCaretPadding, kCaretPadding);
+    if (!maximal_rect.Contains(point_forced_to_be_visible)) {
+      // Move the rect towards the point until the point is barely contained.
+      maximal_rect.Move(point_forced_to_be_visible -
+                        maximal_rect.MaxXMaxYCorner());
+    }
+  }
+
+  mojom::blink::ScrollIntoViewParamsPtr params =
+      ScrollAlignment::CreateScrollIntoViewParams();
+  params->zoom_into_rect = View()->ShouldZoomToLegibleScale(element);
+  params->relative_element_bounds = NormalizeRect(
+      Intersection(absolute_element_bounds, maximal_rect), maximal_rect);
+  params->relative_caret_bounds = NormalizeRect(
+      Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
+  params->behavior = mojom::blink::ScrollBehavior::kInstant;
+  out_rect_to_scroll = PhysicalRect(maximal_rect);
+  return params;
 }
 
 }  // namespace blink

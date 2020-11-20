@@ -178,7 +178,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:1a022d3a4c50be4207ee93451255d71896416596',
+  'luci_go': 'git_revision:6cbe3f56e9f00b8f65eae21f01838a8b58191a47',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -197,7 +197,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9496fe5bcec9438958073ed8959627d20eaf8532',
+  'skia_revision': '9dce4d081f8a993b52513c8e82aaac3bd7493a06',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '46107d3ece07f5cd1946b1013f69c110c0229a93',
+  'angle_revision': '777749aafaac268b3468b551050f5bf4b28cf9b6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -264,7 +264,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '2ed6fc040fdce14fa59d3ac4be168b05bcc6b179',
+  'catapult_revision': '6743d1edbf356c3c9c648353e68fc266c1f18819',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd0b25f6e314a3a91b43c98898afca90826863442',
+  'devtools_frontend_revision': 'cc8c82e4bcb7996a7d4963491dd24741f0c86660',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1a14e7e0244114fe737caf46e3a2690355aceafe',
+  'dawn_revision': '75a1f5234e4b544b4d16eddb995d39685da21361',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -551,7 +551,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a4d253d6717ce4e055f3fb5d06473992f229d79d',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a539853e3ca9603dfc10f9e6680114970a295879',
       'condition': 'checkout_ios',
   },
 
@@ -907,7 +907,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2f8e0fa49d955d9c8f5addaf8ff1b88def004e2e',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '26ced490899d7c3ee7f9ed282e3352c222d87846',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1611,7 +1611,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7d9c32d374ba3a4f760a3820fedc96ac5b5e6be1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@68553be736437669379566f390b87dd066f8561d',
     'condition': 'checkout_src_internal',
   },
 

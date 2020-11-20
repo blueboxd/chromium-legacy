@@ -11,15 +11,14 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service_sandbox_type.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/prefs/pref_service.h"
@@ -30,8 +29,6 @@
 
 namespace {
 
-ChromeCaptureModeDelegate* g_instance = nullptr;
-
 ScreenshotArea ConvertToScreenshotArea(const aura::Window* window,
                                        const gfx::Rect& bounds) {
   return window->IsRootWindow()
@@ -39,39 +36,11 @@ ScreenshotArea ConvertToScreenshotArea(const aura::Window* window,
              : ScreenshotArea::CreateForWindow(window);
 }
 
-bool IsScreenCaptureDisabledByPolicy() {
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kDisableScreenshots);
-}
-
 }  // namespace
 
-ChromeCaptureModeDelegate::ChromeCaptureModeDelegate() {
-  DCHECK_EQ(g_instance, nullptr);
-  g_instance = this;
-}
+ChromeCaptureModeDelegate::ChromeCaptureModeDelegate() = default;
 
-ChromeCaptureModeDelegate::~ChromeCaptureModeDelegate() {
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
-}
-
-// static
-ChromeCaptureModeDelegate* ChromeCaptureModeDelegate::Get() {
-  DCHECK(g_instance);
-  return g_instance;
-}
-
-void ChromeCaptureModeDelegate::SetIsScreenCaptureLocked(bool locked) {
-  is_screen_capture_locked_ = locked;
-  if (is_screen_capture_locked_)
-    InterruptVideoRecordingIfAny();
-}
-
-void ChromeCaptureModeDelegate::InterruptVideoRecordingIfAny() {
-  if (interrupt_video_recording_callback_)
-    std::move(interrupt_video_recording_callback_).Run();
-}
+ChromeCaptureModeDelegate::~ChromeCaptureModeDelegate() = default;
 
 base::FilePath ChromeCaptureModeDelegate::GetActiveUserDownloadsDir() const {
   DCHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
@@ -99,7 +68,7 @@ void ChromeCaptureModeDelegate::OpenScreenshotInImageEditor(
 
   // open the image with Essential App: Backlight.
   proxy->LaunchAppWithFiles(
-      chromeos::default_web_apps::kMediaAppId,
+      web_app::kMediaAppId,
       apps::mojom::LaunchContainer::kLaunchContainerWindow,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
                           WindowOpenDisposition::NEW_WINDOW,
@@ -117,19 +86,12 @@ bool ChromeCaptureModeDelegate::Uses24HourFormat() const {
 }
 
 bool ChromeCaptureModeDelegate::IsCaptureModeInitRestricted() const {
-  return is_screen_capture_locked_ || IsScreenCaptureDisabledByPolicy() ||
-         policy::DlpContentManager::Get()->IsCaptureModeInitRestricted();
+  return policy::DlpContentManager::Get()->IsCaptureModeInitRestricted();
 }
 
 bool ChromeCaptureModeDelegate::IsCaptureAllowed(const aura::Window* window,
                                                  const gfx::Rect& bounds,
                                                  bool for_video) const {
-  if (is_screen_capture_locked_)
-    return false;
-
-  if (IsScreenCaptureDisabledByPolicy())
-    return false;
-
   policy::DlpContentManager* dlp_content_manager =
       policy::DlpContentManager::Get();
   const ScreenshotArea area = ConvertToScreenshotArea(window, bounds);
@@ -141,16 +103,11 @@ void ChromeCaptureModeDelegate::StartObservingRestrictedContent(
     const aura::Window* window,
     const gfx::Rect& bounds,
     base::OnceClosure stop_callback) {
-  // The order here matters, since DlpContentManager::OnVideoCaptureStarted()
-  // may call InterruptVideoRecordingIfAny() right away, so the callback must be
-  // set first.
-  interrupt_video_recording_callback_ = std::move(stop_callback);
   policy::DlpContentManager::Get()->OnVideoCaptureStarted(
-      ConvertToScreenshotArea(window, bounds));
+      ConvertToScreenshotArea(window, bounds), std::move(stop_callback));
 }
 
 void ChromeCaptureModeDelegate::StopObservingRestrictedContent() {
-  interrupt_video_recording_callback_.Reset();
   policy::DlpContentManager::Get()->OnVideoCaptureStopped();
 }
 

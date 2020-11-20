@@ -32,6 +32,7 @@
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
+#include "pdf/accessibility_structs.h"
 #include "pdf/document_attachment_info.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
@@ -476,6 +477,17 @@ PDFiumFormFiller::ScriptOption DefaultScriptOption() {
 #endif  // defined(PDF_ENABLE_XFA)
 }
 
+PP_PrivateAccessibilityPageInfo
+PrivateAccessibilityPageInfoFromAccessibilityPageInfo(
+    const AccessibilityPageInfo& page_info) {
+  PP_PrivateAccessibilityPageInfo pp_page_info;
+  pp_page_info.page_index = page_info.page_index;
+  pp_page_info.bounds = PPRectFromRect(page_info.bounds);
+  pp_page_info.text_run_count = page_info.text_run_count;
+  pp_page_info.char_count = page_info.char_count;
+  return pp_page_info;
+}
+
 }  // namespace
 
 OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
@@ -702,10 +714,12 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
   pp::Size view_device_size(view_rect.width() * device_scale,
                             view_rect.height() * device_scale);
 
-  if (view_device_size != plugin_size_ || device_scale != device_scale_) {
+  if (view_device_size != plugin_size_ || device_scale != device_scale_ ||
+      view_rect.point() != plugin_offset_) {
     device_scale_ = device_scale;
     plugin_dip_size_ = view_rect.size();
     plugin_size_ = view_device_size;
+    plugin_offset_ = view_rect.point();
 
     paint_manager_.SetSize(SizeFromPPSize(view_device_size), device_scale_);
 
@@ -812,18 +826,20 @@ void OutOfProcessInstance::LoadAccessibility() {
 }
 
 void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
-  PP_PrivateAccessibilityPageInfo page_info;
+  AccessibilityPageInfo page_info;
   std::vector<pp::PDF::PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
   pp::PDF::PrivateAccessibilityPageObjects page_objects;
 
-  if (!GetAccessibilityInfo(engine(), page_index, &page_info, &text_runs,
-                            &chars, &page_objects)) {
+  if (!GetAccessibilityInfo(engine(), page_index, page_info, &text_runs, &chars,
+                            &page_objects)) {
     return;
   }
 
-  pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &page_info, text_runs,
-                                    chars, page_objects);
+  PP_PrivateAccessibilityPageInfo pp_page_info =
+      PrivateAccessibilityPageInfoFromAccessibilityPageInfo(page_info);
+  pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &pp_page_info,
+                                    text_runs, chars, page_objects);
 
   // Schedule loading the next page.
   pp::Module::Get()->core()->CallOnMainThread(
@@ -836,8 +852,9 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
 
 void OutOfProcessInstance::SendAccessibilityViewportInfo() {
   PP_PrivateAccessibilityViewportInfo viewport_info;
-  viewport_info.scroll.x = 0;
-  viewport_info.scroll.y = -top_toolbar_height_in_viewport_coords_;
+  viewport_info.scroll.x = -plugin_offset_.x();
+  viewport_info.scroll.y =
+      -top_toolbar_height_in_viewport_coords_ - plugin_offset_.y();
   viewport_info.offset.x =
       available_area_.point().x() / (device_scale_ * zoom_);
   viewport_info.offset.y =

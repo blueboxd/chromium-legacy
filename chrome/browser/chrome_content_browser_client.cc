@@ -657,6 +657,7 @@
 #endif
 
 using base::FileDescriptor;
+using blink::mojom::EffectiveConnectionType;
 using blink::web_pref::WebPreferences;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -2226,10 +2227,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                  kDinosaurEasterEggSwitches,
                                  base::size(kDinosaurEasterEggSwitches));
 
-  if (blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy())
-    command_line->AppendSwitch(
-        blink::switches::kForceLegacyDefaultReferrerPolicy);
-
 #if defined(OS_CHROMEOS)
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
   base::FilePath homedir;
@@ -3420,8 +3417,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
           net::GetEffectiveConnectionTypeForName(pair.first);
       int value = 0;
       if (effective_connection_type && base::StringToInt(pair.second, &value)) {
-        web_prefs->lazy_frame_loading_distance_thresholds_px
-            [effective_connection_type.value()] = value;
+        web_prefs->lazy_frame_loading_distance_thresholds_px[static_cast<
+            EffectiveConnectionType>(effective_connection_type.value())] =
+            value;
       }
     }
   }
@@ -3444,8 +3442,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
           net::GetEffectiveConnectionTypeForName(pair.first);
       int value = 0;
       if (effective_connection_type && base::StringToInt(pair.second, &value)) {
-        web_prefs->lazy_image_loading_distance_thresholds_px
-            [effective_connection_type.value()] = value;
+        web_prefs->lazy_image_loading_distance_thresholds_px[static_cast<
+            EffectiveConnectionType>(effective_connection_type.value())] =
+            value;
       }
     }
 
@@ -3460,8 +3459,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
           net::GetEffectiveConnectionTypeForName(pair.first);
       int value = 0;
       if (effective_connection_type && base::StringToInt(pair.second, &value)) {
-        web_prefs
-            ->lazy_image_first_k_fully_load[effective_connection_type.value()] =
+        web_prefs->lazy_image_first_k_fully_load[static_cast<
+            EffectiveConnectionType>(effective_connection_type.value())] =
             value;
       }
     }
@@ -3482,7 +3481,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
                 effective_connection_type.value());
       web_prefs->network_quality_estimator_web_holdback =
-          effective_connection_type.value();
+          static_cast<EffectiveConnectionType>(
+              effective_connection_type.value());
     }
   }
 

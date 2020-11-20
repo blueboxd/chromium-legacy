@@ -220,6 +220,8 @@ static const int caretPadding = 10;
 
 namespace blink {
 
+using mojom::blink::EffectiveConnectionType;
+
 // Historically, these values came from Webkit in
 // WebKitLegacy/mac/WebView/WebView.mm (named MinimumZoomMultiplier and
 // MaximumZoomMultiplier there).
@@ -1646,31 +1648,31 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   for (const auto& ect_distance_pair :
        prefs.lazy_frame_loading_distance_thresholds_px) {
     switch (ect_distance_pair.first) {
-      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      case EffectiveConnectionType::kEffectiveConnectionUnknownType:
         settings->SetLazyFrameLoadingDistanceThresholdPxUnknown(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      case EffectiveConnectionType::kEffectiveConnectionOfflineType:
         settings->SetLazyFrameLoadingDistanceThresholdPxOffline(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      case EffectiveConnectionType::kEffectiveConnectionSlow2GType:
         settings->SetLazyFrameLoadingDistanceThresholdPxSlow2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      case EffectiveConnectionType::kEffectiveConnection2GType:
         settings->SetLazyFrameLoadingDistanceThresholdPx2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      case EffectiveConnectionType::kEffectiveConnection3GType:
         settings->SetLazyFrameLoadingDistanceThresholdPx3G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      case EffectiveConnectionType::kEffectiveConnection4GType:
         settings->SetLazyFrameLoadingDistanceThresholdPx4G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      case EffectiveConnectionType::kEffectiveConnectionTypeLast:
         continue;
     }
     NOTREACHED();
@@ -1679,31 +1681,31 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   for (const auto& ect_distance_pair :
        prefs.lazy_image_loading_distance_thresholds_px) {
     switch (ect_distance_pair.first) {
-      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      case EffectiveConnectionType::kEffectiveConnectionUnknownType:
         settings->SetLazyImageLoadingDistanceThresholdPxUnknown(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      case EffectiveConnectionType::kEffectiveConnectionOfflineType:
         settings->SetLazyImageLoadingDistanceThresholdPxOffline(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      case EffectiveConnectionType::kEffectiveConnectionSlow2GType:
         settings->SetLazyImageLoadingDistanceThresholdPxSlow2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      case EffectiveConnectionType::kEffectiveConnection2GType:
         settings->SetLazyImageLoadingDistanceThresholdPx2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      case EffectiveConnectionType::kEffectiveConnection3GType:
         settings->SetLazyImageLoadingDistanceThresholdPx3G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      case EffectiveConnectionType::kEffectiveConnection4GType:
         settings->SetLazyImageLoadingDistanceThresholdPx4G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      case EffectiveConnectionType::kEffectiveConnectionTypeLast:
         continue;
     }
     NOTREACHED();
@@ -1711,24 +1713,24 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   for (const auto& fully_load_k_pair : prefs.lazy_image_first_k_fully_load) {
     switch (fully_load_k_pair.first) {
-      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      case EffectiveConnectionType::kEffectiveConnectionOfflineType:
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      case EffectiveConnectionType::kEffectiveConnectionUnknownType:
         settings->SetLazyImageFirstKFullyLoadUnknown(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      case EffectiveConnectionType::kEffectiveConnectionSlow2GType:
         settings->SetLazyImageFirstKFullyLoadSlow2G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      case EffectiveConnectionType::kEffectiveConnection2GType:
         settings->SetLazyImageFirstKFullyLoad2G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      case EffectiveConnectionType::kEffectiveConnection3GType:
         settings->SetLazyImageFirstKFullyLoad3G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      case EffectiveConnectionType::kEffectiveConnection4GType:
         settings->SetLazyImageFirstKFullyLoad4G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      case EffectiveConnectionType::kEffectiveConnectionTypeLast:
         continue;
     }
     NOTREACHED();
@@ -1959,67 +1961,6 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
   }
   LocalFrame* core_frame = To<WebLocalFrameImpl>(frame)->GetFrame();
   core_frame->GetPage()->GetFocusController().SetFocusedFrame(core_frame);
-}
-
-// TODO(dglazkov): Remove and replace with Node:hasEditableStyle.
-// http://crbug.com/612560
-static bool IsElementEditable(const Element* element) {
-  element->GetDocument().UpdateStyleAndLayoutTree();
-  if (HasEditableStyle(*element))
-    return true;
-
-  if (auto* text_control = ToTextControlOrNull(element)) {
-    if (!text_control->IsDisabledOrReadOnly())
-      return true;
-  }
-
-  return EqualIgnoringASCIICase(
-      element->FastGetAttribute(html_names::kRoleAttr), "textbox");
-}
-
-bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
-  DCHECK(MainFrameImpl());
-  LocalFrameView* main_frame_view = MainFrameImpl()->GetFrame()->View();
-  if (!main_frame_view)
-    return false;
-
-  Element* element = FocusedElement();
-  if (!element || !IsElementEditable(element))
-    return false;
-
-  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
-
-  LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object)
-    return false;
-
-  // Since the page has been resized, the layout may have changed. The page
-  // scale animation started by ZoomAndScrollToFocusedEditableRect will scroll
-  // only the visual and layout viewports. We'll call ScrollRectToVisible with
-  // the stop_at_main_frame_layout_viewport param to ensure the element is
-  // actually visible in the page.
-  auto params = ScrollAlignment::CreateScrollIntoViewParams(
-      ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
-      mojom::blink::ScrollType::kProgrammatic, false,
-      mojom::blink::ScrollBehavior::kInstant);
-  params->stop_at_main_frame_layout_viewport = true;
-  layout_object->ScrollRectToVisible(
-      PhysicalRect(layout_object->AbsoluteBoundingBoxRect()),
-      std::move(params));
-
-  ZoomAndScrollToFocusedEditableElementRect(
-      main_frame_view->RootFrameToDocument(
-          element->GetDocument().View()->ConvertToRootFrame(
-              layout_object->AbsoluteBoundingBoxRect())),
-      main_frame_view->RootFrameToDocument(
-          element->GetDocument().View()->ConvertToRootFrame(
-              element->GetDocument()
-                  .GetFrame()
-                  ->Selection()
-                  .ComputeRectToScroll(kDoNotRevealExtent))),
-      ShouldZoomToLegibleScale(*element));
-
-  return true;
 }
 
 bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {

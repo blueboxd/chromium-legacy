@@ -43,6 +43,7 @@ import("//ui/base/ui_features.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")
   import("//chrome/android/features/dev_ui/dev_ui_module.gni")
+  import("//chrome/android/modules/buildflags.gni")
 }
 
 if (is_win) {
@@ -89,6 +90,10 @@ buildflag_header("buildflags") {
     flags += [ "USE_PARTITION_ALLOC_EVERYWHERE=1" ]
   } else {
     flags += [ "USE_PARTITION_ALLOC_EVERYWHERE=0" ]
+  }
+
+  if (is_android) {
+    flags += [ "ENABLE_ISOLATED_SPLITS=$enable_chrome_module" ]
   }
 }
 
@@ -1222,6 +1227,7 @@ static_library("browser") {
     "policy/messaging_layer/public/report_queue_configuration.h",
     "policy/messaging_layer/storage/storage.cc",
     "policy/messaging_layer/storage/storage.h",
+    "policy/messaging_layer/storage/storage_configuration.h",
     "policy/messaging_layer/storage/storage_module.cc",
     "policy/messaging_layer/storage/storage_module.h",
     "policy/messaging_layer/storage/storage_queue.cc",
@@ -1346,8 +1352,12 @@ static_library("browser") {
     "prefetch/prefetch_proxy/prefetch_proxy_url_loader_interceptor.h",
     "prefetch/prefetch_proxy/prefetched_mainframe_response_container.cc",
     "prefetch/prefetch_proxy/prefetched_mainframe_response_container.h",
+    "prefetch/search_prefetch/base_search_prefetch_request.cc",
+    "prefetch/search_prefetch/base_search_prefetch_request.h",
     "prefetch/search_prefetch/field_trial_settings.cc",
     "prefetch/search_prefetch/field_trial_settings.h",
+    "prefetch/search_prefetch/full_body_search_prefetch_request.cc",
+    "prefetch/search_prefetch/full_body_search_prefetch_request.h",
     "prefetch/search_prefetch/prefetched_response_container.cc",
     "prefetch/search_prefetch/prefetched_response_container.h",
     "prefetch/search_prefetch/search_prefetch_from_string_url_loader.cc",
@@ -1356,8 +1366,13 @@ static_library("browser") {
     "prefetch/search_prefetch/search_prefetch_service.h",
     "prefetch/search_prefetch/search_prefetch_service_factory.cc",
     "prefetch/search_prefetch/search_prefetch_service_factory.h",
+    "prefetch/search_prefetch/search_prefetch_url_loader.h",
     "prefetch/search_prefetch/search_prefetch_url_loader_interceptor.cc",
     "prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h",
+    "prefetch/search_prefetch/streaming_search_prefetch_request.cc",
+    "prefetch/search_prefetch/streaming_search_prefetch_request.h",
+    "prefetch/search_prefetch/streaming_search_prefetch_url_loader.cc",
+    "prefetch/search_prefetch/streaming_search_prefetch_url_loader.h",
     "prefs/browser_prefs.cc",
     "prefs/browser_prefs.h",
     "prefs/chrome_command_line_pref_store.cc",
@@ -2803,6 +2818,8 @@ static_library("browser") {
       "android/rappor/rappor_service_bridge.cc",
       "android/reading_list/reading_list_manager_factory.cc",
       "android/reading_list/reading_list_manager_factory.h",
+      "android/reading_list/reading_list_notification_service_factory.cc",
+      "android/reading_list/reading_list_notification_service_factory.h",
       "android/recently_closed_tabs_bridge.cc",
       "android/recently_closed_tabs_bridge.h",
       "android/reparenting_task.cc",
@@ -3090,6 +3107,8 @@ static_library("browser") {
       "password_manager/android/password_scripts_fetcher_android.cc",
       "password_manager/android/save_password_infobar_delegate_android.cc",
       "password_manager/android/save_password_infobar_delegate_android.h",
+      "password_manager/android/save_password_message_delegate.cc",
+      "password_manager/android/save_password_message_delegate.h",
       "password_manager/android/update_password_infobar_delegate_android.cc",
       "password_manager/android/update_password_infobar_delegate_android.h",
       "password_manager/biometric_authenticator_android.cc",

@@ -1507,6 +1507,9 @@ extern const char kAndroidSurfaceControlDescription[];
 extern const char kAppNotificationStatusMessagingName[];
 extern const char kAppNotificationStatusMessagingDescription[];
 
+extern const char kAssistantIntentPageUrlName[];
+extern const char kAssistantIntentPageUrlDescription[];
+
 extern const char kAsyncDnsName[];
 extern const char kAsyncDnsDescription[];
 
@@ -2533,6 +2536,9 @@ extern const char kMediaAppDescription[];
 
 extern const char kMediaAppAnnotationName[];
 extern const char kMediaAppAnnotationDescription[];
+
+extern const char kMediaAppPdfInInkName[];
+extern const char kMediaAppPdfInInkDescription[];
 
 extern const char kMediaNotificationsCounterName[];
 extern const char kMediaNotificationsCounterDescription[];

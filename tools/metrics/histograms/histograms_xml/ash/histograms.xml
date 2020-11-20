@@ -1169,24 +1169,48 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PhoneHub.InterstitialScreenEvent.{Screen}"
     enum="PhoneHubInterstitialScreenEvent" expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
-  <summary>Events for the given PhoneHub interstitial screen.</summary>
+  <summary>
+    Events logged when the given PhoneHub interstitial screen is shown.
+  </summary>
 <!-- The entries below should be a subset of the PhoneHubScreen enum -->
 
   <token key="Screen">
     <variant name="BluetoothOrWifiDisabled"/>
-    <variant name="ConnectionError"/>
-    <variant name="InitialConnecting"/>
+    <variant name="ConnectionError">
+      <obsolete>
+        Renamed to PhoneDisconnected on Nov 2020.
+      </obsolete>
+    </variant>
+    <variant name="InitialConnecting">
+      <obsolete>
+        Combined into PhoneConnecting on Nov 2020.
+      </obsolete>
+    </variant>
     <variant name="Onboarding.ExistingMultideviceUser"/>
     <variant name="Onboarding.NewMultideviceUser"/>
     <variant name="OnboardingDismissPrompt"/>
-    <variant name="Reconnecting"/>
+    <variant name="PhoneConnecting"/>
+    <variant name="PhoneDisconnected"/>
+    <variant name="Reconnecting">
+      <obsolete>
+        Combined into PhoneConnecting on Nov 2020.
+      </obsolete>
+    </variant>
   </token>
 </histogram>
 
 <histogram name="Ash.PhoneHub.NotificationCount" units="notifications"
     expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <summary>
@@ -1197,6 +1221,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PhoneHub.NotificationOptInEvents"
     enum="PhoneHubInterstitialScreenEvent" expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <summary>Events for the given notification opt-in prompt.</summary>
@@ -1204,6 +1232,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PhoneHub.QuickActionClicked" enum="PhoneHubQuickAction"
     expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <summary>Event logged after the user clicks on a quick action.</summary>
@@ -1211,6 +1243,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PhoneHub.ScreenOnSettingsButtonClicked"
     enum="PhoneHubScreen" expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <summary>
@@ -1221,6 +1257,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PhoneHub.ScreenOn{BubbleEvent}" enum="PhoneHubScreen"
     expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <summary>
@@ -1235,6 +1275,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PhoneHub.TabContinuationChipClicked" units="tab index"
     expires_after="2021-10-31">
+  <obsolete>
+    Moved to tools/metrics/histograms/histograms_xml/phonehub/histograms.xml.
+    Removed 11/2020 in M89.
+  </obsolete>
   <owner>tengs@chromium.org</owner>
   <owner>khorimoto@chromium.org</owner>
   <summary>

@@ -42,10 +42,6 @@
 #import "third_party/blink/renderer/platform/wtf/hash_set.h"
 #import "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
-@interface NSFont (YosemiteAdditions)
-+ (NSFont*)systemFontOfSize:(CGFloat)size weight:(CGFloat)weight;
-@end
-
 namespace {
 
 static CGFloat toFontWeight(blink::FontSelectionValue font_weight) {
@@ -185,6 +181,9 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
     font = [NSFont systemFontOfSize:size];
 #pragma clang diagnostic pop
 
+    if (@available(macOS 10.11, *)) {
+      font = [NSFont systemFontOfSize:size weight:toFontWeight(desired_weight)];
+    }
     if (desired_traits & IMPORTANT_FONT_TRAITS)
       font = [[NSFontManager sharedFontManager] convertFont:font
                                                 toHaveTrait:desired_traits];

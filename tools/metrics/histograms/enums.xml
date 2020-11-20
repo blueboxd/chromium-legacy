@@ -1280,6 +1280,7 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AdsViolations">
   <int value="0" label="kMobileAdDensityByHeightAbove30"/>
+  <int value="1" label="kHeavyAdsInterventionAtHostLimit"/>
 </enum>
 
 <enum name="AdUserActivationStatus">
@@ -1386,7 +1387,11 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AmbientModePhotoSource">
-  <int value="0" label="Default"/>
+  <int value="0" label="Default">
+    This is when user clicked on the top level Screen Saver toggle but did not
+    click on any of photo source categories. The system will default show Art
+    Gallery with a default list of art sub categories.
+  </int>
   <int value="1" label="Art Gallery"/>
   <int value="2" label="Google Photos Recent Highlights Only"/>
   <int value="3" label="Google Photos Personal Albums Only"/>
@@ -3689,6 +3694,16 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Top right"/>
   <int value="7" label="Bottom left"/>
   <int value="8" label="Bottom right"/>
+</enum>
+
+<enum name="AssistantActionPerformed">
+<!-- This must be kept in sync with VoiceInteraction.QueryDuration.Android in
+others/histograms.xml -->
+
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Transcription"/>
+  <int value="2" label="Translate"/>
+  <int value="3" label="Readout"/>
 </enum>
 
 <enum name="AssistantBetterOnboardingMode">
@@ -34929,147 +34944,147 @@ Called by update_feature_policy_enum.py.-->
   <int value="2" label="Disabled Force"/>
 </enum>
 
-<enum name="GPUBlacklistFeatureTestResults">
+<enum name="GPUBlocklistFeatureTestResults">
   <summary>
-    Results of testing against a GPU feature being allowed/blacklisted/disabled.
+    Results of testing against a GPU feature being allowed/blocklisted/disabled.
   </summary>
   <int value="0" label="Allowed"/>
-  <int value="1" label="Blacklisted"/>
+  <int value="1" label="Blocklisted"/>
   <int value="2" label="User-disabled"/>
 </enum>
 
-<enum name="GPUBlacklistFeatureTestResultsWin">
+<enum name="GPUBlocklistFeatureTestResultsWin">
   <summary>
-    Results of testing against a GPU feature being blacklisted or not in various
+    Results of testing against a GPU feature being blocklisted or not in various
     Windows sub-versions.
   </summary>
   <int value="0" label="Allowed Others"/>
-  <int value="1" label="Blacklisted Others"/>
+  <int value="1" label="Blocklisted Others"/>
   <int value="2" label="Allowed XP"/>
-  <int value="3" label="Blacklisted XP"/>
+  <int value="3" label="Blocklisted XP"/>
   <int value="4" label="Allowed Vista"/>
-  <int value="5" label="Blacklisted Vista"/>
+  <int value="5" label="Blocklisted Vista"/>
   <int value="6" label="Allowed Win7"/>
-  <int value="7" label="Blacklisted Win7"/>
+  <int value="7" label="Blocklisted Win7"/>
 </enum>
 
-<enum name="GPUBlacklistFeatureTestResultsWindows">
+<enum name="GPUBlocklistFeatureTestResultsWindows">
   <obsolete>
-    Replaced by GPUBlacklistFeatureTestResultsWindows2 in M67.
+    Replaced by GPUBlocklistFeatureTestResultsWindows2 in M67.
   </obsolete>
   <summary>
-    Results of testing against a GPU feature being allowed/blacklisted/disabled
+    Results of testing against a GPU feature being allowed/blocklisted/disabled
     in various Windows sub-versions.
   </summary>
   <int value="0" label="Allowed Others"/>
-  <int value="1" label="Blacklisted Others"/>
+  <int value="1" label="Blocklisted Others"/>
   <int value="2" label="User-disabled Others"/>
   <int value="3" label="Allowed XP"/>
-  <int value="4" label="Blacklisted XP"/>
+  <int value="4" label="Blocklisted XP"/>
   <int value="5" label="User-disabled XP"/>
   <int value="6" label="Allowed Vista"/>
-  <int value="7" label="Blacklisted Vista"/>
+  <int value="7" label="Blocklisted Vista"/>
   <int value="8" label="User-disabled Vista"/>
   <int value="9" label="Allowed Win7"/>
-  <int value="10" label="Blacklisted Win7"/>
+  <int value="10" label="Blocklisted Win7"/>
   <int value="11" label="User-disabled Win7"/>
   <int value="12" label="Allowed Win8"/>
-  <int value="13" label="Blacklisted Win8"/>
+  <int value="13" label="Blocklisted Win8"/>
   <int value="14" label="User-disabled Win8"/>
 </enum>
 
-<enum name="GPUBlacklistFeatureTestResultsWindows2">
+<enum name="GPUBlocklistFeatureTestResultsWindows2">
   <obsolete>
     Removed in Oct 2020.
   </obsolete>
   <summary>
-    Results of testing against a GPU feature being allowed, blacklisted,
+    Results of testing against a GPU feature being allowed, blocklisted,
     disabled, fallback to software, or undefined in various Windows
     sub-versions.
   </summary>
   <int value="0" label="Enabled PRE_XP"/>
-  <int value="1" label="Blacklisted PRE_XP"/>
+  <int value="1" label="Blocklisted PRE_XP"/>
   <int value="2" label="User Disabled PRE_XP"/>
   <int value="3" label="Fallback to Software PRE_XP"/>
   <int value="4" label="Status Unknown PRE_XP"/>
   <int value="5" label="Enabled XP"/>
-  <int value="6" label="Blacklisted XP"/>
+  <int value="6" label="Blocklisted XP"/>
   <int value="7" label="User Disabled XP"/>
   <int value="8" label="Fallback to Software XP"/>
   <int value="9" label="Status Unknown XP"/>
   <int value="10" label="Enabled SERVER_2003"/>
-  <int value="11" label="Blacklisted SERVER_2003"/>
+  <int value="11" label="Blocklisted SERVER_2003"/>
   <int value="12" label="User Disabled SERVER_2003"/>
   <int value="13" label="Fallback to Software SERVER_2003"/>
   <int value="14" label="Status Unknown SERVER_2003"/>
   <int value="15" label="Enabled VISTA"/>
-  <int value="16" label="Blacklisted VISTA"/>
+  <int value="16" label="Blocklisted VISTA"/>
   <int value="17" label="User Disabled VISTA"/>
   <int value="18" label="Fallback to Software VISTA"/>
   <int value="19" label="Status Unknown VISTA"/>
   <int value="20" label="Enabled WIN7"/>
-  <int value="21" label="Blacklisted WIN7"/>
+  <int value="21" label="Blocklisted WIN7"/>
   <int value="22" label="User Disabled WIN7"/>
   <int value="23" label="Fallback to Software WIN7"/>
   <int value="24" label="Status Unknown WIN7"/>
   <int value="25" label="Enabled WIN8"/>
-  <int value="26" label="Blacklisted WIN8"/>
+  <int value="26" label="Blocklisted WIN8"/>
   <int value="27" label="User Disabled WIN8"/>
   <int value="28" label="Fallback to Software WIN8"/>
   <int value="29" label="Status Unknown WIN8"/>
   <int value="30" label="Enabled WIN8_1"/>
-  <int value="31" label="Blacklisted WIN8_1"/>
+  <int value="31" label="Blocklisted WIN8_1"/>
   <int value="32" label="User Disabled WIN8_1"/>
   <int value="33" label="Fallback to Software WIN8_1"/>
   <int value="34" label="Status Unknown WIN8_1"/>
   <int value="35" label="Enabled WIN10"/>
-  <int value="36" label="Blacklisted WIN10"/>
+  <int value="36" label="Blocklisted WIN10"/>
   <int value="37" label="User Disabled WIN10"/>
   <int value="38" label="Fallback to Software WIN10"/>
   <int value="39" label="Status Unknown WIN10"/>
   <int value="40" label="Enabled WIN10_TH2"/>
-  <int value="41" label="Blacklisted WIN10_TH2"/>
+  <int value="41" label="Blocklisted WIN10_TH2"/>
   <int value="42" label="User Disabled WIN10_TH2"/>
   <int value="43" label="Fallback to Software WIN10_TH2"/>
   <int value="44" label="Status Unknown WIN10_TH2"/>
   <int value="45" label="Enabled WIN10_RS1"/>
-  <int value="46" label="Blacklisted WIN10_RS1"/>
+  <int value="46" label="Blocklisted WIN10_RS1"/>
   <int value="47" label="User Disabled WIN10_RS1"/>
   <int value="48" label="Fallback to Software WIN10_RS1"/>
   <int value="49" label="Status Unknown WIN10_RS1"/>
   <int value="50" label="Enabled WIN10_RS2"/>
-  <int value="51" label="Blacklisted WIN10_RS2"/>
+  <int value="51" label="Blocklisted WIN10_RS2"/>
   <int value="52" label="User Disabled WIN10_RS2"/>
   <int value="53" label="Fallback to Software WIN10_RS2"/>
   <int value="54" label="Status Unknown WIN10_RS2"/>
   <int value="55" label="Enabled WIN10_RS3"/>
-  <int value="56" label="Blacklisted WIN10_RS3"/>
+  <int value="56" label="Blocklisted WIN10_RS3"/>
   <int value="57" label="User Disabled WIN10_RS3"/>
   <int value="58" label="Fallback to Software WIN10_RS3"/>
   <int value="59" label="Status Unknown WIN10_RS3"/>
   <int value="60" label="Enabled WIN10_RS4"/>
-  <int value="61" label="Blacklisted WIN10_RS4"/>
+  <int value="61" label="Blocklisted WIN10_RS4"/>
   <int value="62" label="User Disabled WIN10_RS4"/>
   <int value="63" label="Fallback to Software WIN10_RS4"/>
   <int value="64" label="Status Unknown WIN10_RS4"/>
   <int value="65" label="Enabled WIN10_RS5"/>
-  <int value="66" label="Blacklisted WIN10_RS5"/>
+  <int value="66" label="Blocklisted WIN10_RS5"/>
   <int value="67" label="User Disabled WIN10_RS5"/>
   <int value="68" label="Fallback to Software WIN10_RS5"/>
   <int value="69" label="Status Unknown WIN10_RS5"/>
   <int value="70" label="Enabled WIN10_19H1"/>
-  <int value="71" label="Blacklisted WIN10_19H1"/>
+  <int value="71" label="Blocklisted WIN10_19H1"/>
   <int value="72" label="User Disabled WIN10_19H1"/>
   <int value="73" label="Fallback to Software WIN10_19H1"/>
   <int value="74" label="Status Unknown WIN10_19H1"/>
   <int value="75" label="Enabled WIN10_20H1"/>
-  <int value="76" label="Blacklisted WIN10_20H1"/>
+  <int value="76" label="Blocklisted WIN10_20H1"/>
   <int value="77" label="User Disabled WIN10_20H1"/>
   <int value="78" label="Fallback to Software WIN10_20H1"/>
   <int value="79" label="Status Unknown WIN10_20H1"/>
 </enum>
 
-<enum name="GPUBlacklistTestResultPerEntry">
+<enum name="GPUBlocklistTestResultPerEntry">
   <summary>Results of testing against the GPU blacklist entries.</summary>
   <int value="0" label="TotalCount"/>
   <int value="1" label="Mac/ATI/Radeon X1900"/>
@@ -39399,6 +39414,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Dino game widget"/>
   <int value="1" label="Search widget"/>
   <int value="2" label="Quick actions widget"/>
+  <int value="3" label="A widget that has become obsolete"/>
 </enum>
 
 <enum name="IOSWKWebViewLinkPreviewAction">
@@ -41613,6 +41629,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Throttled but stopped due to rebuffer"/>
 </enum>
 
+<enum name="LiveCaptionExpandBubbleEvent">
+  <int value="0" label="Bubble collapsed"/>
+  <int value="1" label="Bubble expanded"/>
+</enum>
+
 <enum name="LiveCaptionSessionEvent">
   <int value="0" label="Stream started"/>
   <int value="1" label="Stream finished"/>
@@ -42479,6 +42500,7 @@ from previous Chrome versions.
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1613583483" label="UseNewAcceptLanguageHeader:enabled"/>
   <int value="-1611758030" label="AndroidWebContentsDarkMode:disabled"/>
+  <int value="-1611357520" label="MediaAppPdfInInk:enabled"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
   <int value="-1607953813"
       label="AndroidPartnerCustomizationPhenotype:enabled"/>
@@ -42621,6 +42643,7 @@ from previous Chrome versions.
   <int value="-1481918315" label="SmsReceiverCrossDevice:enabled"/>
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
+  <int value="-1480606359" label="AssistantIntentPageUrl:enabled"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
   <int value="-1478137998" label="lite-video-default-downlink-bandwidth-kbps"/>
   <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
@@ -44583,6 +44606,7 @@ from previous Chrome versions.
   <int value="413081240" label="enable-new-md-input-view"/>
   <int value="413695227" label="NTPSuggestionsStandaloneUI:enabled"/>
   <int value="414114078" label="LitePageServerPreviews:disabled"/>
+  <int value="414342153" label="AssistantIntentPageUrl:disabled"/>
   <int value="414937629" label="MediaNotificationsCounter:enabled"/>
   <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="415395210" label="TrimOnMemoryPressure:enabled"/>
@@ -45388,6 +45412,7 @@ from previous Chrome versions.
   <int value="1211284676" label="V8NoTurbo:enabled"/>
   <int value="1211756417"
       label="SessionRestorePrioritizesBackgroundUseCases:disabled"/>
+  <int value="1212526465" label="MediaAppPdfInInk:disabled"/>
   <int value="1214219155" label="gamepad-polling-interval"/>
   <int value="1214455758" label="VideoRotateToFullscreen:disabled"/>
   <int value="1215531732" label="OmniboxUIExperiments:disabled"/>
@@ -55662,6 +55687,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="SingleOnTop"/>
   <int value="4" label="Underlay"/>
   <int value="5" label="Underlay Cast"/>
+  <int value="6" label="All overlays failed"/>
 </enum>
 
 <enum name="OverlaySupportFlag">
@@ -58311,14 +58337,15 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="PhoneHubScreen">
   <int value="0" label="BluetoothOrWifiDisabled"/>
-  <int value="1" label="ConnectionError"/>
-  <int value="2" label="InitialConnecting"/>
-  <int value="3" label="Reconnecting"/>
+  <int value="1" label="PhoneDisconnected"/>
+  <int value="2" label="InitialConnecting (Deprecated)"/>
+  <int value="3" label="Reconnecting (Deprecated)"/>
   <int value="4" label="Onboarding.ExistingMultideviceUser"/>
   <int value="5" label="Onboarding.NewMultideviceUser"/>
   <int value="6" label="PhoneConnected"/>
   <int value="7" label="OnboardingDismissPrompt"/>
   <int value="8" label="Invalid"/>
+  <int value="9" label="PhoneConnecting"/>
 </enum>
 
 <enum name="PhoneNumberRegexVariantResult">
@@ -67816,6 +67843,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="Abort: no browser window"/>
   <int value="12" label="Abort: password update"/>
   <int value="13" label="Abort: password update pending"/>
+  <int value="14" label="Abort: user declined new profile for this account"/>
 </enum>
 
 <enum name="SigninInterceptResult">
@@ -76038,6 +76066,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VoiceInteractionEventSource">
+<!-- This must be kept in sync with VoiceInteraction.AssistantActionPerformed in
+others/histograms.xml -->
+
   <int value="0" label="Omnibox"/>
   <int value="1" label="NTP"/>
   <int value="2" label="Search widget"/>

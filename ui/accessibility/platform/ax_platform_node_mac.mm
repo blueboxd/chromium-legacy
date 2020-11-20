@@ -195,7 +195,6 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kSearchBox, NSAccessibilityTextFieldRole},
       {ax::mojom::Role::kSection, NSAccessibilityGroupRole},
       {ax::mojom::Role::kSlider, NSAccessibilitySliderRole},
-      {ax::mojom::Role::kSliderThumb, NSAccessibilityValueIndicatorRole},
       {ax::mojom::Role::kSpinButton, NSAccessibilityIncrementorRole},
       {ax::mojom::Role::kSplitter, NSAccessibilitySplitterRole},
       {ax::mojom::Role::kStaticText, NSAccessibilityStaticTextRole},
@@ -619,7 +618,6 @@ bool IsAXSetter(SEL selector) {
     case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kSearchBox:
     case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSliderThumb:
     case ax::mojom::Role::kToggleButton:
       [axAttributes addObjectsFromArray:kValueAttributes];
       break;
@@ -627,12 +625,14 @@ bool IsAXSetter(SEL selector) {
     default:
       break;
   }
-  if (_node->GetData().HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
-    [axAttributes addObjectsFromArray:@[ NSAccessibilitySelectedAttribute ]];
-  }
-  if (ui::IsMenuItem(_node->GetData().role)) {
-    [axAttributes addObjectsFromArray:@[ @"AXMenuItemMarkChar" ]];
-  }
+  if (_node->GetData().HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+    [axAttributes addObject:NSAccessibilitySelectedAttribute];
+  if (ui::IsMenuItem(_node->GetData().role))
+    [axAttributes addObject:@"AXMenuItemMarkChar"];
+  if (ui::IsItemLike(_node->GetData().role))
+    [axAttributes addObjectsFromArray:@[ @"AXARIAPosInSet", @"AXARIASetSize" ]];
+  if (ui::IsSetLike(_node->GetData().role))
+    [axAttributes addObject:@"AXARIASetSize"];
   return axAttributes.autorelease();
 }
 
@@ -830,6 +830,20 @@ bool IsAXSetter(SEL selector) {
   }
 
   return @"";
+}
+
+- (NSNumber*)AXARIAPosInSet {
+  base::Optional<int> posInSet = _node->GetPosInSet();
+  if (!posInSet)
+    return nil;
+  return @(*posInSet);
+}
+
+- (NSNumber*)AXARIASetSize {
+  base::Optional<int> setSize = _node->GetSetSize();
+  if (!setSize)
+    return nil;
+  return @(*setSize);
 }
 
 // Text-specific attributes.

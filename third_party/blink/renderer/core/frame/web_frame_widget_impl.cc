@@ -307,17 +307,6 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   view->SetLayoutSize(WebSize(layout_size));
 }
 
-bool WebFrameWidgetImpl::ShouldHandleImeEvents() {
-  // TODO(ekaramad): WebViewWidgetImpl returns true only if it has focus.
-  // We track page focus in all RenderViews on the page but
-  // the RenderWidgets corresponding to child local roots do not get the
-  // update. For now, this method returns true when the RenderWidget is for a
-  // child local frame, i.e., IME events will be processed regardless of page
-  // focus. We should revisit this after page focus for OOPIFs has been fully
-  // resolved (https://crbug.com/689777).
-  return LocalRootImpl();
-}
-
 bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   Element* element = FocusedElement();
   if (!element || !WebElement(element).IsEditable())
@@ -332,52 +321,6 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll,
                                                   std::move(params));
   return true;
-}
-
-void WebFrameWidgetImpl::FocusChanged(bool enable) {
-  if (enable)
-    GetPage()->GetFocusController().SetActive(true);
-  GetPage()->GetFocusController().SetFocused(enable);
-  if (enable) {
-    LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
-    if (focused_frame) {
-      Element* element = focused_frame->GetDocument()->FocusedElement();
-      if (element && focused_frame->Selection()
-                         .ComputeVisibleSelectionInDOMTreeDeprecated()
-                         .IsNone()) {
-        // If the selection was cleared while the WebView was not
-        // focused, then the focus element shows with a focus ring but
-        // no caret and does respond to keyboard inputs.
-        focused_frame->GetDocument()->UpdateStyleAndLayoutTree();
-        if (element->IsTextControl()) {
-          element->UpdateFocusAppearance(SelectionBehaviorOnFocus::kRestore);
-        } else if (HasEditableStyle(*element)) {
-          // updateFocusAppearance() selects all the text of
-          // contentseditable DIVs. So we set the selection explicitly
-          // instead. Note that this has the side effect of moving the
-          // caret back to the beginning of the text.
-          Position position(element, 0);
-          focused_frame->Selection().SetSelectionAndEndTyping(
-              SelectionInDOMTree::Builder().Collapse(position).Build());
-        }
-      }
-    }
-  } else {
-    LocalFrame* focused_frame = FocusedLocalFrameInWidget();
-    if (focused_frame) {
-      // Finish an ongoing composition to delete the composition node.
-      if (focused_frame->GetInputMethodController().HasComposition()) {
-        // TODO(editing-dev): The use of
-        // UpdateStyleAndLayout needs to be audited.
-        // See http://crbug.com/590369 for more details.
-        focused_frame->GetDocument()->UpdateStyleAndLayout(
-            DocumentUpdateReason::kFocus);
-
-        focused_frame->GetInputMethodController().FinishComposingText(
-            InputMethodController::kKeepSelection);
-      }
-    }
-  }
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
@@ -510,35 +453,6 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
       Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
   params->behavior = mojom::blink::ScrollBehavior::kInstant;
   rect_to_scroll = PhysicalRect(maximal_rect);
-}
-
-void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
-    const VisualProperties& visual_properties) {
-  SetWindowSegments(visual_properties.root_widget_window_segments);
-  widget_base_->UpdateSurfaceAndScreenInfo(
-      visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
-      visual_properties.compositor_viewport_pixel_rect,
-      visual_properties.screen_info);
-
-  // Store this even when auto-resizing, it is the size of the full viewport
-  // used for clipping, and this value is propagated down the Widget
-  // hierarchy via the VisualProperties waterfall.
-  widget_base_->SetVisibleViewportSizeInDIPs(
-      visual_properties.visible_viewport_size);
-
-  // Widgets in a WebView's frame tree without a local main frame
-  // set the size of the WebView to be the |visible_viewport_size|, in order
-  // to limit compositing in (out of process) child frames to what is visible.
-  //
-  // Note that child frames in the same process/WebView frame tree as the
-  // main frame do not do this in order to not clobber the source of truth in
-  // the main frame.
-  if (!View()->MainFrameImpl()) {
-    View()->Resize(widget_base_->DIPsToCeiledBlinkSpace(
-        widget_base_->VisibleViewportSizeInDIPs()));
-  }
-
-  Resize(widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size));
 }
 
 }  // namespace blink

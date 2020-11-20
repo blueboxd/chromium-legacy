@@ -315,8 +315,7 @@ class AppMenuView : public views::View {
     DCHECK(menu_);
     InMenuButton* button = new InMenuButton(
         std::move(callback),
-        gfx::RemoveAcceleratorChar(l10n_util::GetStringUTF16(string_id), '&',
-                                   nullptr, nullptr));
+        gfx::RemoveAccelerator(l10n_util::GetStringUTF16(string_id)));
     button->Init(type);
     button->SetAccessibleName(GetAccessibleNameForAppMenuItem(
         menu_model_, index, acc_string_id, add_accelerator_text));
@@ -474,7 +473,17 @@ class AppMenu::ZoomView : public AppMenuView {
         InMenuButtonBackground::LEADING_BORDER));
     fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
         menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN,
-        /*add_accelerator_text*/ true));
+#if defined(OS_CHROMEOS)
+        // ChromeOS uses a dedicated "fullscreen" media key for fullscreen
+        // mode on most ChromeOS devices which cannot be specified in the
+        // standard way here, so omit the accelerator to avoid providing
+        // misleading or confusing information to screen reader users.
+        // See crbug.com/1110468 for more context.
+        /*add_accelerator_text*/ false
+#else
+        /*add_accelerator_text*/ true
+#endif
+        ));
     AddChildView(fullscreen_button_);
 
     // Need to set a font list for the zoom label width calculations.
@@ -719,7 +728,7 @@ AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
     : browser_(browser),
       run_types_(run_types),
       alert_reopen_tab_items_(alert_reopen_tab_items) {
-  global_error_observer_.Add(
+  global_error_observation_.Observe(
       GlobalErrorServiceFactory::GetForProfile(browser->profile()));
 }
 

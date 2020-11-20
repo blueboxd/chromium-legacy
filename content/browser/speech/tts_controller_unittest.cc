@@ -232,12 +232,12 @@ class TtsControllerTest : public testing::Test {
 
 TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
   std::unique_ptr<TtsUtterance> utterance1 = TtsUtterance::Create();
-  utterance1->SetCanEnqueue(true);
+  utterance1->SetShouldClearQueue(false);
   utterance1->SetSrcId(1);
   controller()->SpeakOrEnqueue(std::move(utterance1));
 
   std::unique_ptr<TtsUtterance> utterance2 = TtsUtterance::Create();
-  utterance2->SetCanEnqueue(true);
+  utterance2->SetShouldClearQueue(false);
   utterance2->SetSrcId(2);
   controller()->SpeakOrEnqueue(std::move(utterance2));
 
@@ -259,7 +259,7 @@ TEST_F(TtsControllerTest, TestBrowserContextRemoved) {
   std::unique_ptr<TtsUtterance> utterance1 =
       TtsUtterance::Create(browser_context());
   utterance1->SetEngineId("x");
-  utterance1->SetCanEnqueue(true);
+  utterance1->SetShouldClearQueue(false);
   utterance1->SetSrcId(1);
   controller()->SpeakOrEnqueue(std::move(utterance1));
 
@@ -271,7 +271,7 @@ TEST_F(TtsControllerTest, TestBrowserContextRemoved) {
   std::unique_ptr<TtsUtterance> utterance2 =
       TtsUtterance::Create(browser_context());
   utterance2->SetEngineId("x");
-  utterance2->SetCanEnqueue(true);
+  utterance2->SetShouldClearQueue(false);
   utterance2->SetSrcId(2);
   controller()->SpeakOrEnqueue(std::move(utterance2));
 
@@ -487,7 +487,7 @@ TEST_F(TtsControllerTest, StartsQueuedUtteranceWhenWebContentsDestroyed) {
   void* raw_utterance1 = utterance1.get();
   std::unique_ptr<TtsUtteranceImpl> utterance2 =
       CreateUtteranceImpl(web_contents2.get());
-  utterance2->SetCanEnqueue(true);
+  utterance2->SetShouldClearQueue(false);
   void* raw_utterance2 = utterance2.get();
 
   controller()->SpeakOrEnqueue(std::move(utterance1));
@@ -514,8 +514,8 @@ TEST_F(TtsControllerTest, StartsQueuedUtteranceWhenWebContentsDestroyed2) {
   std::unique_ptr<TtsUtteranceImpl> utterance3 =
       CreateUtteranceImpl(web_contents2.get());
   void* raw_utterance3 = utterance3.get();
-  utterance2->SetCanEnqueue(true);
-  utterance3->SetCanEnqueue(true);
+  utterance2->SetShouldClearQueue(false);
+  utterance3->SetShouldClearQueue(false);
 
   controller()->SpeakOrEnqueue(std::move(utterance1));
   controller()->SpeakOrEnqueue(std::move(utterance2));
@@ -566,7 +566,7 @@ TEST_F(TtsControllerTest, SkipsQueuedUtteranceFromHiddenWebContents) {
   const int utterance1_id = utterance1->GetId();
   std::unique_ptr<TtsUtteranceImpl> utterance2 =
       CreateUtteranceImpl(web_contents2.get());
-  utterance2->SetCanEnqueue(true);
+  utterance2->SetShouldClearQueue(false);
 
   controller()->SpeakOrEnqueue(std::move(utterance1));
   EXPECT_TRUE(TtsControllerCurrentUtterance());
@@ -600,7 +600,7 @@ TEST_F(TtsControllerTest, SpeakPauseResume) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance =
       CreateUtteranceImpl(web_contents.get());
-  utterance->SetCanEnqueue(true);
+  utterance->SetShouldClearQueue(false);
 
   // Start speaking an utterance.
   controller()->SpeakOrEnqueue(std::move(utterance));
@@ -640,7 +640,7 @@ TEST_F(TtsControllerTest, SpeakWhenPaused) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance =
       CreateUtteranceImpl(web_contents.get());
-  utterance->SetCanEnqueue(true);
+  utterance->SetShouldClearQueue(false);
 
   // Pause the controller.
   controller()->Pause();
@@ -676,37 +676,41 @@ TEST_F(TtsControllerTest, SpeakWhenPausedAndCannotEnqueueUtterance) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance1 =
       CreateUtteranceImpl(web_contents.get());
-  utterance1->SetCanEnqueue(false);
+  utterance1->SetShouldClearQueue(true);
 
   // Pause the controller.
   controller()->Pause();
   EXPECT_TRUE(controller()->IsPausedForTesting());
 
-  // Speak an utterance while controller is paused. The utterance cannot be
-  // queued and should be dropped.
+  // Speak an utterance while controller is paused. The utterance clears the
+  // queue and is enqueued itself.
   controller()->SpeakOrEnqueue(std::move(utterance1));
-  EXPECT_TRUE(IsUtteranceListEmpty());
+  EXPECT_FALSE(IsUtteranceListEmpty());
+  EXPECT_EQ(1, controller()->QueueSize());
   EXPECT_FALSE(TtsControllerCurrentUtterance());
 
   // Speak an utterance that can be queued. The controller should stay paused
-  // and the second utterance must be queued.
+  // and the second utterance must be queued with the first also queued.
   std::unique_ptr<TtsUtteranceImpl> utterance2 =
       CreateUtteranceImpl(web_contents.get());
-  utterance2->SetCanEnqueue(true);
+  utterance2->SetShouldClearQueue(false);
 
   controller()->SpeakOrEnqueue(std::move(utterance2));
   EXPECT_TRUE(controller()->IsPausedForTesting());
+  EXPECT_EQ(2, controller()->QueueSize());
   EXPECT_FALSE(IsUtteranceListEmpty());
   EXPECT_FALSE(TtsControllerCurrentUtterance());
 
-  // Speak an utterance that cannot be queued should clear the queue.
+  // Speak an utterance that cannot be queued should clear the queue, then
+  // enqueue the new utterance.
   std::unique_ptr<TtsUtteranceImpl> utterance3 =
       CreateUtteranceImpl(web_contents.get());
-  utterance3->SetCanEnqueue(false);
+  utterance3->SetShouldClearQueue(true);
 
   controller()->SpeakOrEnqueue(std::move(utterance3));
   EXPECT_TRUE(controller()->IsPausedForTesting());
-  EXPECT_TRUE(IsUtteranceListEmpty());
+  EXPECT_FALSE(IsUtteranceListEmpty());
+  EXPECT_EQ(1, controller()->QueueSize());
   EXPECT_FALSE(TtsControllerCurrentUtterance());
 
   // Resume the controller.
@@ -718,7 +722,7 @@ TEST_F(TtsControllerTest, StopMustResumeController) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance =
       CreateUtteranceImpl(web_contents.get());
-  utterance->SetCanEnqueue(true);
+  utterance->SetShouldClearQueue(false);
 
   // Speak an utterance while controller is paused. The utterance is queued.
   controller()->SpeakOrEnqueue(std::move(utterance));
@@ -743,7 +747,7 @@ TEST_F(TtsControllerTest, PauseAndStopMustResumeController) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance =
       CreateUtteranceImpl(web_contents.get());
-  utterance->SetCanEnqueue(true);
+  utterance->SetShouldClearQueue(false);
 
   // Pause the controller.
   controller()->Pause();
@@ -792,7 +796,7 @@ TEST_F(TtsControllerTest, SpeakWhenLoading) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance =
       CreateUtteranceImpl(web_contents.get());
-  utterance->SetCanEnqueue(true);
+  utterance->SetShouldClearQueue(false);
 
   // Speak an utterance while platform is loading, the utterance should be
   // queued.

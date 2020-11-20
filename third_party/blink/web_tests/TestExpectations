@@ -80,6 +80,10 @@ crbug.com/901056 http/tests/devtools/modules-load-source.js [ Failure Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/content-security-policy-issue-creation-img.js [ Failure Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-csp.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout ]
+
+crbug.com/901056 virtual/synchronous_html_parser/fast/css/focus-display-block-inline.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/fast/css/fontfaceset-multiple-families.html [ Failure Pass ]
+
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -1671,7 +1675,7 @@ crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pa
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002-manual.html [ Pass Timeout ]
 crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Timeout ]
 crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Pass Timeout ]
-crbug.com/747751 [ Mac ] http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
+crbug.com/1150992 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1018064 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
@@ -5808,6 +5812,9 @@ crbug.com/1120330 virtual/threaded/external/wpt/permissions-policy/experimental-
 
 crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-navigate.https.html [ Pass Failure ]
 
+# Sheriff 2020-11-20
+crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
+
 # Sheriff 2020-09-08
 crbug.com/1124978 [ Mac ] virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass Failure ]
 
@@ -6006,3 +6013,6 @@ crbug.com/1149987 external/wpt/websockets/Create-blocked-port.any.html [ Pass Ti
 crbug.com/1149987 external/wpt/websockets/Create-blocked-port.any.worker.html [ Pass Timeout ]
 crbug.com/1150518 [ Win ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Timeout ]
 crbug.com/1150475 fast/dom/open-and-close-by-DOM.html [ Pass Failure ]
+
+# Skip to land change in frontend (https://crrev.com/c/2550061) before this layout test can be updated
+crbug.com/1150854 http/tests/devtools/unit/soft-context-menu.js [ Skip ]

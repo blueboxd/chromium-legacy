@@ -130,7 +130,7 @@ try_.list_view(
 
 try_.list_view(
     name = "tryserver.chromium.linux",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.ALL_BRANCHES,
 )
 
 try_.list_view(
@@ -337,7 +337,8 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android-marshmallow-arm64-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    cores = 16,
+    builderless = not settings.is_master,
+    cores = 32,
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
     ssd = True,
@@ -352,9 +353,7 @@ try_.chromium_android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
-    tryjob = try_.job(
-        experiment_percentage = 100,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_android_builder(
@@ -820,7 +819,7 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "chromium_presubmit",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.ALL_BRANCHES,
     executable = "recipe:presubmit",
     goma_backend = None,
     main_list_view = "try",

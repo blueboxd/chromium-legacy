@@ -244,6 +244,7 @@ Polymer({
         chromeos.settings.mojom.Setting.kSelectToSpeak,
         chromeos.settings.mojom.Setting.kHighContrastMode,
         chromeos.settings.mojom.Setting.kFullscreenMagnifier,
+        chromeos.settings.mojom.Setting.kFullscreenMagnifierFocusFollowing,
         chromeos.settings.mojom.Setting.kDockedMagnifier,
         chromeos.settings.mojom.Setting.kStickyKeys,
         chromeos.settings.mojom.Setting.kOnScreenKeyboard,
@@ -496,7 +497,7 @@ Polymer({
       return;
     }
 
-    const enabled = this.$.shelfNavigationButtonsEnabledControl.checked;
+    const enabled = this.$$('#shelfNavigationButtonsEnabledControl').checked;
     this.set(
         'prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value',
         enabled);

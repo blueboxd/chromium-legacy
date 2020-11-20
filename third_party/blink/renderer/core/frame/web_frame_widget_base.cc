@@ -1087,6 +1087,14 @@ void WebFrameWidgetBase::ScheduleAnimation() {
   Client()->ScheduleAnimation();
 }
 
+void WebFrameWidgetBase::FocusChanged(bool enable) {
+  // TODO(crbug.com/689777): FocusChange events are only sent to the MainFrame
+  // these maybe should goto the local root so that the rest of input messages
+  // sent to those are preserved in order.
+  DCHECK(ForMainFrame());
+  View()->SetPageFocus(enable);
+}
+
 bool WebFrameWidgetBase::ShouldAckSyntheticInputImmediately() {
   // TODO(bokan): The RequestPresentation API appears not to function in VR. As
   // a short term workaround for https://crbug.com/940063, ACK input
@@ -1193,6 +1201,68 @@ void WebFrameWidgetBase::UpdateVisualProperties(
   // 939118 tracks fixing webviews to not use scroll_focused_node_into_view.
   if (visual_properties.scroll_focused_node_into_view)
     ScrollFocusedEditableElementIntoView();
+}
+
+void WebFrameWidgetBase::ApplyVisualPropertiesSizing(
+    const VisualProperties& visual_properties) {
+  gfx::Rect new_compositor_viewport_pixel_rect =
+      visual_properties.compositor_viewport_pixel_rect;
+  if (ForMainFrame()) {
+    if (size_ !=
+        widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size)) {
+      // Only hide popups when the size changes. Eg https://crbug.com/761908.
+      View()->CancelPagePopup();
+    }
+
+    if (auto* device_emulator = DeviceEmulator()) {
+      device_emulator->UpdateVisualProperties(visual_properties);
+      return;
+    }
+
+    if (AutoResizeMode()) {
+      new_compositor_viewport_pixel_rect = gfx::Rect(gfx::ScaleToCeiledSize(
+          widget_base_->BlinkSpaceToFlooredDIPs(size_.value_or(gfx::Size())),
+          visual_properties.screen_info.device_scale_factor));
+    }
+  }
+
+  SetWindowSegments(visual_properties.root_widget_window_segments);
+
+  widget_base_->UpdateSurfaceAndScreenInfo(
+      visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
+      new_compositor_viewport_pixel_rect, visual_properties.screen_info);
+
+  // Store this even when auto-resizing, it is the size of the full viewport
+  // used for clipping, and this value is propagated down the Widget
+  // hierarchy via the VisualProperties waterfall.
+  widget_base_->SetVisibleViewportSizeInDIPs(
+      visual_properties.visible_viewport_size);
+
+  if (ForMainFrame()) {
+    if (!AutoResizeMode()) {
+      size_ = widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size);
+
+      View()->ResizeWithBrowserControls(
+          size_.value(),
+          widget_base_->DIPsToCeiledBlinkSpace(
+              widget_base_->VisibleViewportSizeInDIPs()),
+          visual_properties.browser_controls_params);
+    }
+  } else {
+    // Widgets in a WebView's frame tree without a local main frame
+    // set the size of the WebView to be the |visible_viewport_size|, in order
+    // to limit compositing in (out of process) child frames to what is visible.
+    //
+    // Note that child frames in the same process/WebView frame tree as the
+    // main frame do not do this in order to not clobber the source of truth in
+    // the main frame.
+    if (!View()->MainFrameImpl()) {
+      View()->Resize(widget_base_->DIPsToCeiledBlinkSpace(
+          widget_base_->VisibleViewportSizeInDIPs()));
+    }
+
+    Resize(widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size));
+  }
 }
 
 void WebFrameWidgetBase::ScheduleAnimationForWebTests() {
@@ -2697,6 +2767,21 @@ uint64_t WebFrameWidgetBase::GetScrollableContainerIdAt(
     const gfx::PointF& point_in_dips) {
   gfx::PointF point = widget_base_->DIPsToBlinkSpace(point_in_dips);
   return HitTestResultAt(point).GetScrollableContainerId();
+}
+
+bool WebFrameWidgetBase::ShouldHandleImeEvents() {
+  if (ForMainFrame()) {
+    return HasFocus();
+  } else {
+    // TODO(ekaramad): main frame widget returns true only if it has focus.
+    // We track page focus in all WebViews on the page but the WebFrameWidgets
+    // corresponding to child local roots do not get the update. For now, this
+    // method returns true when the WebFrameWidget is for a child local frame,
+    // i.e., IME events will be processed regardless of page focus. We should
+    // revisit this after page focus for OOPIFs has been fully resolved
+    // (https://crbug.com/689777).
+    return LocalRootImpl();
+  }
 }
 
 void WebFrameWidgetBase::SetEditCommandsForNextKeyEvent(

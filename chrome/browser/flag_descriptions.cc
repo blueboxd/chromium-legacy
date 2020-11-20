@@ -2586,6 +2586,12 @@ const char kAppNotificationStatusMessagingDescription[] =
     "Enables messaging in site permissions UI informing user when "
     "notifications are disabled for the entire app.";
 
+const char kAssistantIntentPageUrlName[] =
+    "Include page URL in Assistant intent";
+const char kAssistantIntentPageUrlDescription[] =
+    "Include the current page's URL in the Assistant voice transcription "
+    "intent.";
+
 const char kAsyncDnsName[] = "Async DNS resolver";
 const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
 
@@ -4335,6 +4341,10 @@ const char kMediaAppDescription[] =
 const char kMediaAppAnnotationName[] = "Media App Annotation";
 const char kMediaAppAnnotationDescription[] =
     "Enables image annotation in chrome://media-app";
+
+const char kMediaAppPdfInInkName[] = "Media App Pdf in Ink";
+const char kMediaAppPdfInInkDescription[] =
+    "Enables loading PDFs into Ink in chrome://media-app";
 
 const char kMediaNotificationsCounterName[] = "Media Notifications Counter";
 const char kMediaNotificationsCounterDescription[] =

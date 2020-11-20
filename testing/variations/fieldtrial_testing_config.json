@@ -720,6 +720,26 @@
             ]
         }
     ],
+    "AutofillEnableAugmentedPhoneCountryCode": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "AutofillEnableAugmentedPhoneCountryCode",
+                    "enable_features": [
+                        "AutofillEnableAugmentedPhoneCountryCode"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableCardNicknameManagementAndUpstream": [
         {
             "platforms": [
@@ -1953,6 +1973,21 @@
                     },
                     "enable_features": [
                         "CrOSSystemAECDeactivatedGroups"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CriticalPersistedTabData": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CriticalPersistedTabData"
                     ]
                 }
             ]
@@ -5345,24 +5380,6 @@
                     },
                     "enable_features": [
                         "TrimOnMemoryPressure"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PermissionChip": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PermissionChip"
                     ]
                 }
             ]

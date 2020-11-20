@@ -206,6 +206,7 @@ class CORE_EXPORT WebFrameWidgetBase
   bool IsProvisional() override;
   uint64_t GetScrollableContainerIdAt(
       const gfx::PointF& point_in_dips) override;
+  bool ShouldHandleImeEvents() override;
   void SetEditCommandsForNextKeyEvent(
       Vector<mojom::blink::EditCommandPtr> edit_commands) override;
 
@@ -408,6 +409,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetCursorVisibilityState(bool is_visible) override;
   blink::FrameWidget* FrameWidget() override { return this; }
   void ScheduleAnimation() override;
+  void FocusChanged(bool enable) override;
   bool ShouldAckSyntheticInputImmediately() override;
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override;
@@ -636,10 +638,6 @@ class CORE_EXPORT WebFrameWidgetBase
 
   ScreenMetricsEmulator* DeviceEmulator();
 
-  // Called during |UpdateVisualProperties| to apply the new size to the widget.
-  virtual void ApplyVisualPropertiesSizing(
-      const VisualProperties& visual_properties) = 0;
-
   // Calculates the selection bounds in the root frame. Returns bounds unchanged
   // when there is no focused frame or no selection.
   void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
@@ -730,6 +728,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
       const FloatPoint& pos_in_root_frame);
+
+  // Called during |UpdateVisualProperties| to apply the new size to the widget.
+  void ApplyVisualPropertiesSizing(const VisualProperties& visual_properties);
 
   // Returns the current state of synchronous resize mode for testing.
   bool SynchronousResizeModeForTestingEnabled();

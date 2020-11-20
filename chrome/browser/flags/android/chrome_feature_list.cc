@@ -118,8 +118,8 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidMultipleDisplay,
     &kAndroidNightModeTabReparenting,
     &kAndroidPartnerCustomizationPhenotype,
-    &kAndroidPayIntegrationV2,
     &kAndroidSearchEngineChoiceNotification,
+    &kAssistantIntentPageUrl,
     &kBentoOffline,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
@@ -182,7 +182,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNotificationSuspender,
     &kOfflineIndicatorV2,
     &kOmniboxSpareRenderer,
-    &kPayWithGoogleV1,
     &kPhotoPickerVideoSupport,
     &kPhotoPickerZoom,
     &kProbabilisticCryptidRenderer,
@@ -319,13 +318,11 @@ const base::Feature kAllowRemoteContextForNotifications{
 const base::Feature kAndroidPartnerCustomizationPhenotype{
     "AndroidPartnerCustomizationPhenotype", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// TODO(rouslan): Remove this. (Currently used in
-// GooglePayPaymentAppFactory.java)
-const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAssistantIntentPageUrl{"AssistantIntentPageUrl",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -528,11 +525,6 @@ const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// TODO(rouslan): Remove this. (Currently used in
-// GooglePayPaymentAppFactory.java)
-const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

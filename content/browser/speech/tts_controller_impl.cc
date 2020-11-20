@@ -133,23 +133,23 @@ void TtsControllerImpl::SpeakOrEnqueue(
   // engine implementation. Every utterances are postponed until the platform
   // specific implementation is loaded to avoid racy behaviors.
   if (TtsPlatformLoading()) {
-    bool can_enqueue = utterance->GetCanEnqueue();
-    utterance_list_.emplace_back(std::move(utterance));
-    if (!can_enqueue)
+    if (utterance->GetShouldClearQueue())
       ClearUtteranceQueue(true);
+
+    utterance_list_.emplace_back(std::move(utterance));
     return;
   }
 
   // If we're paused and we get an utterance that can't be queued,
   // flush the queue but stay in the paused state.
-  if (paused_ && !utterance->GetCanEnqueue()) {
-    utterance_list_.emplace_back(std::move(utterance));
+  if (paused_ && utterance->GetShouldClearQueue()) {
     Stop();
+    utterance_list_.emplace_back(std::move(utterance));
     paused_ = true;
     return;
   }
 
-  if (paused_ || (IsSpeaking() && utterance->GetCanEnqueue())) {
+  if (paused_ || (IsSpeaking() && !utterance->GetShouldClearQueue())) {
     utterance_list_.emplace_back(std::move(utterance));
   } else {
     Stop();
@@ -539,12 +539,15 @@ void TtsControllerImpl::ClearUtteranceQueue(bool send_events) {
 }
 
 void TtsControllerImpl::FinishCurrentUtterance() {
-  if (current_utterance_) {
-    if (!current_utterance_->IsFinished())
-      current_utterance_->OnTtsEvent(TTS_EVENT_INTERRUPTED, kInvalidCharIndex,
-                                     kInvalidLength, std::string());
-    SetCurrentUtterance(nullptr);
+  if (!current_utterance_)
+    return;
+
+  if (!current_utterance_->IsFinished()) {
+    current_utterance_->OnTtsEvent(TTS_EVENT_INTERRUPTED, kInvalidCharIndex,
+                                   kInvalidLength, std::string());
   }
+
+  SetCurrentUtterance(nullptr);
 }
 
 void TtsControllerImpl::SpeakNextUtterance() {

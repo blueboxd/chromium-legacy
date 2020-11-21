@@ -574,33 +574,9 @@ void StyleCascade::ForceColors() {
       style->ForcedColorAdjust() == EForcedColorAdjust::kNone)
     return;
 
-  const SVGComputedStyle& svg_style = style->SvgStyle();
-
   MaybeForceColor(GetCSSPropertyColor(), style->GetColor());
-  MaybeForceColor(GetCSSPropertyFill(), svg_style.FillPaint().GetColor());
-  MaybeForceColor(GetCSSPropertyOutlineColor(), style->OutlineColor());
-  MaybeForceColor(GetCSSPropertyStroke(), svg_style.StrokePaint().GetColor());
-  MaybeForceColor(GetCSSPropertyTextDecorationColor(),
-                  style->TextDecorationColor());
-  MaybeForceColor(GetCSSPropertyColumnRuleColor(), style->ColumnRuleColor());
-  MaybeForceColor(GetCSSPropertyWebkitTapHighlightColor(),
-                  style->TapHighlightColor());
-  MaybeForceColor(GetCSSPropertyWebkitTextEmphasisColor(),
-                  style->TextEmphasisColor());
   MaybeForceColor(GetCSSPropertyInternalVisitedColor(),
                   style->InternalVisitedColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedFill(),
-                  svg_style.InternalVisitedFillPaint().GetColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedOutlineColor(),
-                  style->InternalVisitedOutlineColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedStroke(),
-                  svg_style.InternalVisitedStrokePaint().GetColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedTextDecorationColor(),
-                  style->InternalVisitedTextDecorationColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedColumnRuleColor(),
-                  style->InternalVisitedColumnRuleColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedTextEmphasisColor(),
-                  style->InternalVisitedTextEmphasisColor());
 
   ScopedCSSValue scoped_none(*CSSIdentifierValue::Create(CSSValueID::kNone),
                              nullptr);

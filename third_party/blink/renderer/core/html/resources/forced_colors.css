@@ -17,11 +17,10 @@
 @media ua-forced-colors {
   html {
     color: CanvasText;
-    fill: currentColor;
   }
 
   :focus {
-    outline-color: Highlight;
+    -internal-forced-outline-color: Highlight;
   }
 
   a:link,

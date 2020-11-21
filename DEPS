@@ -200,7 +200,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd90024d4982937c249bbbff8f02f46bfce71bb97',
+  'skia_revision': 'ee40ec6dd6791a053bd7cb47d51ccdab03155296',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -1369,7 +1369,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'XF2EE8yaR8BB2gKWbGt1VaQYsdZ57CVGOdgEPj2CcaQC'
+              'version': 'nv6wFuL5e4oM14o83fKYTaYGvYpeIY0g-cCj2yzejZwC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1623,7 +1623,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@446db4b07be8024533cc48da45e830677fc22654',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ff55951b0714edb80310926553587bd408f85d9e',
     'condition': 'checkout_src_internal',
   },
 

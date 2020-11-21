@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/partition.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
@@ -72,6 +73,7 @@ class BackgroundFetchContext;
 class BlobRegistryWrapper;
 class ConversionManagerImpl;
 class CookieStoreContext;
+class FontAccessContext;
 class GeneratedCodeCacheContext;
 class IndexedDBContextImpl;
 class NativeFileSystemEntryFactory;
@@ -138,6 +140,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   ChromeAppCacheService* GetAppCacheService() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
   storage::FileSystemContext* GetFileSystemContext() override;
+  FontAccessContext* GetFontAccessContext() override;
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
   LockManager* GetLockManager();  // override; TODO: Add to interface
@@ -277,7 +280,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnTrustAnchorUsed() override;
 #endif
   void OnTrustTokenIssuanceDivertedToSystem(

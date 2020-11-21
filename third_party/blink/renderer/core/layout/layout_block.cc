@@ -546,8 +546,6 @@ void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
       }
     }
   }
-
-  ApplyOverflowClipToLayoutOverflowRect();
 }
 
 void LayoutBlock::AddVisualOverflowFromBlockChildren() {
@@ -595,9 +593,6 @@ void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
 
 void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
   NOT_DESTROYED();
-  if (IsLayoutNGBlockFlow())
-    return;
-
   if (ChildLayoutBlockedByDisplayLock())
     return;
 

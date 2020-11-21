@@ -32,10 +32,10 @@ class H264AnnexBToAvcBitstreamConverter;
 // - keeping track of the state machine. Forbiding encodes during flush etc.
 class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
     : public VideoEncoder,
-      public media::VideoEncodeAccelerator::Client {
+      public VideoEncodeAccelerator::Client {
  public:
   VideoEncodeAcceleratorAdapter(
-      media::GpuVideoAcceleratorFactories* gpu_factories,
+      GpuVideoAcceleratorFactories* gpu_factories,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
   ~VideoEncodeAcceleratorAdapter() override;
 
@@ -47,7 +47,9 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   void Encode(scoped_refptr<VideoFrame> frame,
               bool key_frame,
               StatusCB done_cb) override;
-  void ChangeOptions(const Options& options, StatusCB done_cb) override;
+  void ChangeOptions(const Options& options,
+                     OutputCB output_cb,
+                     StatusCB done_cb) override;
   void Flush(StatusCB done_cb) override;
 
   // VideoEncodeAccelerator::Client implementation
@@ -58,7 +60,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   void BitstreamBufferReady(int32_t buffer_id,
                             const BitstreamBufferMetadata& metadata) override;
 
-  void NotifyError(media::VideoEncodeAccelerator::Error error) override;
+  void NotifyError(VideoEncodeAccelerator::Error error) override;
 
   void NotifyEncoderInfoChange(const VideoEncoderInfo& info) override;
 
@@ -69,6 +71,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   class SharedMemoryPool;
   enum class State {
     kNotInitialized,
+    kWaitingForFirstFrame,
     kInitializing,
     kReadyToEncode,
     kFlushing
@@ -87,10 +90,14 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
                                      const Options& options,
                                      OutputCB output_cb,
                                      StatusCB done_cb);
+  void InitializeInternalOnAcceleratorThread();
   void EncodeOnAcceleratorThread(scoped_refptr<VideoFrame> frame,
                                  bool key_frame,
                                  StatusCB done_cb);
   void FlushOnAcceleratorThread(StatusCB done_cb);
+  void ChangeOptionsOnAcceleratorThread(const Options options,
+                                        OutputCB output_cb,
+                                        StatusCB done_cb);
 
   template <class T>
   T WrapCallback(T cb);
@@ -98,15 +105,17 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   scoped_refptr<SharedMemoryPool> output_pool_;
   scoped_refptr<SharedMemoryPool> input_pool_;
   std::unique_ptr<VideoEncodeAccelerator> accelerator_;
-  media::GpuVideoAcceleratorFactories* gpu_factories_;
+  GpuVideoAcceleratorFactories* gpu_factories_;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   std::unique_ptr<H264AnnexBToAvcBitstreamConverter> h264_converter_;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-  base::circular_deque<std::unique_ptr<PendingOp>> pending_encodes_;
+  // These are encodes that have been sent to the accelerator but have not yet
+  // had their encoded data returned via BitstreamBufferReady().
+  base::circular_deque<std::unique_ptr<PendingOp>> active_encodes_;
+
   std::unique_ptr<PendingOp> pending_flush_;
-  std::unique_ptr<PendingOp> pending_init_;
 
   // For calling accelerator_ methods
   scoped_refptr<base::SequencedTaskRunner> accelerator_task_runner_;
@@ -118,6 +127,22 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   State state_ = State::kNotInitialized;
   bool flush_support_ = false;
 
+  struct PendingEncode {
+    PendingEncode();
+    ~PendingEncode();
+    StatusCB done_callback;
+    scoped_refptr<VideoFrame> frame;
+    bool key_frame;
+  };
+
+  // These are encodes that have not been sent to the accelerator.
+  std::vector<std::unique_ptr<PendingEncode>> pending_encodes_;
+
+  bool using_native_input_;
+  VideoPixelFormat format_;
+  VideoFrame::StorageType storage_type_;
+
+  VideoCodecProfile profile_;
   Options options_;
   OutputCB output_cb_;
 };

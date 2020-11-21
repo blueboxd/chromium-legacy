@@ -30,6 +30,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/autofill/content/browser/webauthn/internal_authenticator_impl.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
@@ -1567,7 +1568,7 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(crbug/1150681): Better testing, e.g. use a mock/fake u2fd proxy here.
 TEST_F(AuthenticatorImplTest, IsUVPAA) {
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -1579,7 +1580,7 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
   // There's no u2fd DBus proxy in tests so not available.
   EXPECT_FALSE(cb.value());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class OverrideRPIDAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {
@@ -6329,6 +6330,7 @@ TEST_F(CableV2AuthenticatorImplTest, QRBasedWithNoPairing) {
   auto discovery = std::make_unique<device::cablev2::Discovery>(
       network_context_.get(), qr_generator_key_,
       /*pairings=*/std::vector<std::unique_ptr<device::cablev2::Pairing>>(),
+      /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback());
   auto* const discovery_ptr = discovery.get();
 
@@ -6353,6 +6355,7 @@ TEST_F(CableV2AuthenticatorImplTest, PairingBased) {
   auto discovery = std::make_unique<device::cablev2::Discovery>(
       network_context_.get(), qr_generator_key_,
       /*pairings=*/std::vector<std::unique_ptr<device::cablev2::Pairing>>(),
+      /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback());
   auto* discovery_ptr = discovery.get();
 
@@ -6374,6 +6377,7 @@ TEST_F(CableV2AuthenticatorImplTest, PairingBased) {
   // Now do a pairing-based exchange.
   discovery = std::make_unique<device::cablev2::Discovery>(
       network_context_.get(), qr_generator_key_, std::move(pairings_),
+      /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback());
   discovery_ptr = discovery.get();
 
@@ -6428,6 +6432,7 @@ TEST_F(CableV2AuthenticatorImplTest, ContactIDDisabled) {
   auto network_context = device::cablev2::NewMockTunnelServer(base::nullopt);
   auto discovery = std::make_unique<device::cablev2::Discovery>(
       network_context.get(), qr_generator_key_, std::move(pairings),
+      /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback());
 
   AuthenticatorEnvironmentImpl::GetInstance()

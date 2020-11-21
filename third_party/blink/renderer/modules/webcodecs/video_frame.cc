@@ -400,6 +400,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
         local_frame->format() == media::PIXEL_FORMAT_I420A)) ||
       (local_frame->HasTextures() &&
        (local_frame->format() == media::PIXEL_FORMAT_I420 ||
+        local_frame->format() == media::PIXEL_FORMAT_I420A ||
         local_frame->format() == media::PIXEL_FORMAT_NV12 ||
         local_frame->format() == media::PIXEL_FORMAT_ABGR ||
         local_frame->format() == media::PIXEL_FORMAT_XRGB))) {
@@ -437,6 +438,16 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
           SkImage::MakeRasterData(info, image_pixels, bytes_per_row);
       image = UnacceleratedStaticBitmapImage::Create(std::move(skImage));
     } else {
+      if (!IsMainThread()) {
+        // TODO(crbug.com/1148849): We should either hop to the media thread and
+        // use the media context, or use the SharedGpuContext. Currently
+        // obtaining the media context requires synchronizing with the main
+        // thread, and PaintCanvasVideoRenderer is not compatible with
+        // SharedGpuContext.
+        exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                          "Graphics context unavailable.");
+        return ScriptPromise();
+      }
       scoped_refptr<viz::RasterContextProvider> raster_context_provider =
           Platform::Current()->SharedMainThreadContextProvider();
       auto* ri = raster_context_provider->RasterInterface();

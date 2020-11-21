@@ -19,13 +19,13 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/control_service.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/setup.h"
 #include "chrome/updater/tag.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/update_service_internal.h"
 #include "chrome/updater/updater_version.h"
 #include "components/prefs/pref_service.h"
 
@@ -128,17 +128,18 @@ void AppInstall::InstallCandidateDone(int result) {
 }
 
 void AppInstall::WakeCandidate() {
-  // Invoke ControlService::InitializeUpdateService to wake this version of the
-  // updater, qualify, and possibly promote this version as a result. The
-  // |ControlService| instance has sequence affinity. Bind it in the closure to
-  // ensure it is released in this sequence.
-  scoped_refptr<ControlService> control_service = CreateControlService();
-  control_service->InitializeUpdateService(base::BindOnce(
-      [](scoped_refptr<ControlService> /*control_service*/,
+  // Invoke UpdateServiceInternal::InitializeUpdateService to wake this version
+  // of the updater, qualify, and possibly promote this version as a result. The
+  // |UpdateServiceInternal| instance has sequence affinity. Bind it in the
+  // closure to ensure it is released in this sequence.
+  scoped_refptr<UpdateServiceInternal> update_service_internal =
+      CreateUpdateServiceInternal();
+  update_service_internal->InitializeUpdateService(base::BindOnce(
+      [](scoped_refptr<UpdateServiceInternal> /*update_service_internal*/,
          scoped_refptr<AppInstall> app_install) {
         app_install->WakeCandidateDone();
       },
-      control_service, base::WrapRefCounted(this)));
+      update_service_internal, base::WrapRefCounted(this)));
 }
 
 void AppInstall::RegisterUpdater() {

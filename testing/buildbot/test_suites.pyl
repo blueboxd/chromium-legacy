@@ -103,6 +103,7 @@
     # Test suites will be gradually moved from android_marshmallow_wpr_gtests
     # to this one, when there are more GCE capacity.
     'android_marshmallow_emulator_gtests': {
+      'chrome_public_smoke_test': {},
       'unit_tests': {
         'android_swarming': {
           'shards': 2,
@@ -787,13 +788,6 @@
       'base_junit_tests': {},
       'chrome_java_test_pagecontroller_junit_tests': {},
       'chrome_junit_tests': {},
-      'chrome_junit_tests_with_shards': {
-        'args': [
-          '--shards=6',
-        ],
-        'test': 'chrome_junit_tests',
-        'experiment_percentage': 10,
-      },
       'components_junit_tests': {},
       'content_junit_tests': {},
       'device_junit_tests': {},

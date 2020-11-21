@@ -17,15 +17,15 @@ serial_test(async (t, fake) => {
 
   // Add ports one at a time so that we can map tokens to ports.
   const token1 = fake.addPort();
-  const port1 = (await eventWatcher.wait_for(['connect'])).port;
+  const port1 = (await eventWatcher.wait_for(['connect'])).target;
 
   const token2 = fake.addPort();
-  const port2 = (await eventWatcher.wait_for(['connect'])).port;
+  const port2 = (await eventWatcher.wait_for(['connect'])).target;
 
   fake.removePort(token2);
   const event1 = await eventWatcher.wait_for(['disconnect']);
-  assert_true(event1 instanceof SerialConnectionEvent);
-  assert_equals(event1.port, port2);
+  assert_true(event1 instanceof Event);
+  assert_equals(event1.target, port2);
 
   ports = await navigator.serial.getPorts();
   assert_equals(ports.length, 1);
@@ -33,8 +33,8 @@ serial_test(async (t, fake) => {
 
   fake.removePort(token1);
   const event2 = await eventWatcher.wait_for(['disconnect']);
-  assert_true(event2 instanceof SerialConnectionEvent);
-  assert_equals(event2.port, port1);
+  assert_true(event2 instanceof Event);
+  assert_equals(event2.target, port1);
 
   ports = await navigator.serial.getPorts();
   assert_equals(ports.length, 0);

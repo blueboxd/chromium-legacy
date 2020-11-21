@@ -1909,7 +1909,7 @@ bool WebContentsImpl::IsCrashed() {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
     case base::TERMINATION_STATUS_OOM:
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
 #if defined(OS_ANDROID)
@@ -2572,8 +2572,8 @@ void WebContentsImpl::SetSlowWebPreferences(
 
     std::tie(prefs->available_pointer_types, prefs->available_hover_types) =
         ui::GetAvailablePointerAndHoverTypes();
-    prefs->primary_pointer_type =
-        ui::GetPrimaryPointerType(prefs->available_pointer_types);
+    prefs->primary_pointer_type = static_cast<blink::mojom::PointerType>(
+        ui::GetPrimaryPointerType(prefs->available_pointer_types));
     prefs->primary_hover_type =
         ui::GetPrimaryHoverType(prefs->available_hover_types);
 
@@ -8828,23 +8828,6 @@ void WebContentsImpl::RenderFrameHostStateChanged(
     // Close the color chooser popup when RenderFrameHost changes state from
     // kActive.
     color_chooser_.reset();
-  }
-}
-
-void WebContentsImpl::GetFrameSequenceNumbersForDebugging(
-    RenderFrameHostImpl* render_frame_host,
-    int64_t& item_sequence_number,
-    int64_t& document_sequence_number) {
-  NavigationEntryImpl* entry =
-      controller_.GetEntryWithUniqueID(render_frame_host->nav_entry_id());
-  if (!entry)
-    return;
-
-  FrameNavigationEntry* frame_entry =
-      entry->GetFrameEntry(render_frame_host->frame_tree_node());
-  if (frame_entry) {
-    item_sequence_number = frame_entry->item_sequence_number();
-    document_sequence_number = frame_entry->document_sequence_number();
   }
 }
 

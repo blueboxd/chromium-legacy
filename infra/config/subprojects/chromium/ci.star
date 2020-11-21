@@ -84,8 +84,8 @@ luci.gitiles_poller(
         "chromium.updater",
     ],
 ) for name, title in (
-    ("main", settings.main_console_title),
-    ("mirrors", settings.cq_mirrors_console_title),
+    ("main", "{} Main Console".format(settings.project_title)),
+    ("mirrors", "{} CQ Mirrors Console".format(settings.project_title)),
 )]
 
 ci.console_view(
@@ -2656,15 +2656,6 @@ ci.updater_builder(
 )
 
 ci.updater_builder(
-    name = "mac10.10-updater-tester-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "release|mac",
-        short_name = "10.10",
-    ),
-    triggered_by = ["mac-updater-builder-rel"],
-)
-
-ci.updater_builder(
     name = "mac10.11-updater-tester-rel",
     console_view_entry = ci.console_view_entry(
         category = "release|mac",
@@ -2773,7 +2764,6 @@ ci.updater_builder(
         category = "debug|win",
         short_name = "10",
     ),
-    os = os.WINDOWS_10,
     triggered_by = ["win-updater-builder-dbg"],
 )
 
@@ -2783,7 +2773,6 @@ ci.updater_builder(
         category = "release|win",
         short_name = "10",
     ),
-    os = os.WINDOWS_10,
     triggered_by = ["win-updater-builder-rel"],
 )
 
@@ -4470,19 +4459,6 @@ ci.thin_tester(
     execution_timeout = 6 * time.hour,
     tree_closing = False,
     triggered_by = [builder_name("mac-arm64-rel")],
-)
-
-ci.thin_tester(
-    name = "Mac10.10 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
-    console_view_entry = ci.console_view_entry(
-        category = "release",
-        short_name = "10",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = "main",
-    triggered_by = [builder_name("Mac Builder")],
 )
 
 ci.thin_tester(

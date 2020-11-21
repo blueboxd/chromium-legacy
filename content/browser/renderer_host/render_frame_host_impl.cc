@@ -1946,14 +1946,14 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
   if (accessibility_reset_token_ || !render_accessibility_)
     return;
 
-  accessibility_reset_count_++;
-  if (accessibility_reset_count_ > max_accessibility_resets_) {
+  accessibility_fatal_error_count_++;
+  if (accessibility_fatal_error_count_ > max_accessibility_resets_) {
     // This will both create an "Aw Snap..." and generate a second crash report
     // in addition to the DumpWithoutCrashing() for the first reset.
     render_accessibility_->FatalError();
   } else {
     // Crash keys set in BrowserAccessibilityManager::Unserialize().
-    if (accessibility_reset_count_ == 1) {
+    if (accessibility_fatal_error_count_ == 1) {
       // Only send crash report first time -- don't skew crash stats too much.
       base::debug::DumpWithoutCrashing();
     }
@@ -2039,6 +2039,14 @@ void RenderFrameHostImpl::AccessibilityHitTest(
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
   return is_main_frame();
+}
+
+WebContentsAccessibility*
+RenderFrameHostImpl::AccessibilityGetWebContentsAccessibility() {
+  RenderWidgetHostViewBase* view = GetViewForAccessibility();
+  if (!view)
+    return nullptr;
+  return view->GetWebContentsAccessibility();
 }
 
 void RenderFrameHostImpl::RenderProcessExited(
@@ -3638,6 +3646,15 @@ void RenderFrameHostImpl::ShowCreatedWindow(
   // the handle to this class's associated RenderWidgetHostView.
   RenderFrameHostImpl* opener_frame_host =
       FromFrameToken(GetProcess()->GetID(), opener_frame_token);
+
+  // If |opener_frame_host| has been destroyed just return.
+  // TODO(crbug.com/1150976): Get rid of having to look up the opener frame
+  // to find the newly created web contents, because it is actually just
+  // |delegate_|.
+  if (!opener_frame_host) {
+    std::move(callback).Run();
+    return;
+  }
   opener_frame_host->delegate()->ShowCreatedWindow(
       opener_frame_host, GetRenderWidgetHost()->GetRoutingID(), disposition,
       initial_rect, user_gesture);
@@ -5526,16 +5543,6 @@ void RenderFrameHostImpl::BeginNavigation(
         GetStoragePartition(), validated_params->url);
   }
 
-  if (NavigationTypeUtils::IsSameDocument(validated_params->navigation_type)) {
-    // TODO(crbug.com/1125106): A same document navigation can not be done
-    // with a provisional frame, and yet it is happening inside a provisional
-    // frame somehow. This path appears to only allow cross-document
-    // navigation as the renderer never constructs a SAME document request to
-    // send to BeginNavigation(). This DumpWithoutCrashing() is to verify that
-    // fact.
-    base::debug::DumpWithoutCrashing();
-  }
-
   if (waiting_for_init_) {
     pending_navigate_ = std::make_unique<PendingNavigation>(
         std::move(validated_params), std::move(begin_params),
@@ -5590,10 +5597,8 @@ void RenderFrameHostImpl::HandleAXEvents(
   }
   accessibility_reset_token_ = 0;
 
-  RenderWidgetHostViewBase* view = GetViewForAccessibility();
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.is_mode_off() || !view ||
-      IsInactiveAndDisallowReactivation()) {
+  if (accessibility_mode.is_mode_off() || IsInactiveAndDisallowReactivation()) {
     std::move(callback).Run();
     return;
   }
@@ -5645,29 +5650,25 @@ void RenderFrameHostImpl::HandleAXLocationChanges(
   if (accessibility_reset_token_ || IsInactiveAndDisallowReactivation())
     return;
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetWidget()->GetView());
-  if (view) {
-    ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-      BrowserAccessibilityManager* manager =
-          GetOrCreateBrowserAccessibilityManager();
-      if (manager)
-        manager->OnLocationChanges(changes);
-    }
-
-    // Send the updates to the automation extension API.
-    std::vector<AXLocationChangeNotificationDetails> details;
-    details.reserve(changes.size());
-    for (auto& change : changes) {
-      AXLocationChangeNotificationDetails detail;
-      detail.id = change->id;
-      detail.ax_tree_id = GetAXTreeID();
-      detail.new_location = change->new_location;
-      details.push_back(detail);
-    }
-    delegate_->AccessibilityLocationChangesReceived(details);
+  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+    BrowserAccessibilityManager* manager =
+        GetOrCreateBrowserAccessibilityManager();
+    if (manager)
+      manager->OnLocationChanges(changes);
   }
+
+  // Send the updates to the automation extension API.
+  std::vector<AXLocationChangeNotificationDetails> details;
+  details.reserve(changes.size());
+  for (auto& change : changes) {
+    AXLocationChangeNotificationDetails detail;
+    detail.id = change->id;
+    detail.ax_tree_id = GetAXTreeID();
+    detail.new_location = change->new_location;
+    details.push_back(detail);
+  }
+  delegate_->AccessibilityLocationChangesReceived(details);
 }
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
@@ -6503,66 +6504,10 @@ void RenderFrameHostImpl::CommitNavigation(
          subresource_loader_factories);
 
   if (is_same_document) {
-    if (frame_tree_node()->current_frame_host() != this) {
-      // TODO(crbug.com/1125106): A same document navigation can not be done
-      // with a provisional frame, and yet it is happening inside a provisional
-      // frame somehow.
-      RenderFrameHostImpl* current = frame_tree_node()->current_frame_host();
-      std::string from_url;
-      std::string from_site_info;
-      std::string from_process_lock;
-      int64_t from_item_seq_number = -2;
-      int64_t from_document_seq_number = -2;
-      std::string to_url;
-      std::string to_site_info;
-      std::string to_process_lock;
-      int64_t to_item_seq_number;
-      int64_t to_document_seq_number;
-      if (current) {
-        SiteInstanceImpl* current_site = current->GetSiteInstance();
-
-        from_url = current->GetLastCommittedURL().possibly_invalid_spec();
-        from_site_info = current_site->GetSiteInfo().GetDebugString();
-        from_process_lock = current_site->GetProcessLock().ToString();
-        delegate_->GetFrameSequenceNumbersForDebugging(
-            current, from_item_seq_number, from_document_seq_number);
-      }
-      to_url = navigation_request->GetURL().possibly_invalid_spec();
-      to_site_info = GetSiteInstance()->GetSiteInfo().GetDebugString();
-      to_process_lock = GetSiteInstance()->GetProcessLock().ToString();
-      to_item_seq_number = navigation_request->ItemSequenceNumberForDebugging();
-      to_document_seq_number =
-          navigation_request->DocumentSequenceNumberForDebugging();
-
-      bool is_speculative =
-          frame_tree_node()->render_manager()->speculative_frame_host() == this;
-      SCOPED_CRASH_KEY_BOOL(SpecSameDocNav, is_speculative, is_speculative);
-      SCOPED_CRASH_KEY_BOOL(SpecSameDocNav, browser_initiated,
-                            navigation_request->browser_initiated());
-
-      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, from_item_sequence,
-                              from_item_seq_number);
-      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, to_item_sequence,
-                              to_item_seq_number);
-      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, from_document_sequence,
-                              from_document_seq_number);
-      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, to_document_sequence,
-                              to_document_seq_number);
-      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, from_url, from_url);
-      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, to_url, to_url);
-      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, from_site_info,
-                                 from_site_info);
-      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, to_site_info, to_site_info);
-      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, from_process_lock,
-                                 from_process_lock);
-      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, to_process_lock,
-                                 to_process_lock);
-
-      base::debug::DumpWithoutCrashing();
-    }
+    DCHECK_EQ(frame_tree_node()->current_frame_host(), this);
+    DCHECK(same_document_navigation_request_);
     bool should_replace_current_entry =
         common_params->should_replace_current_entry;
-    DCHECK(same_document_navigation_request_);
     GetNavigationControl()->CommitSameDocumentNavigation(
         std::move(common_params), std::move(commit_params),
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
@@ -7145,12 +7090,12 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
 
 BrowserAccessibilityManager*
 RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
-  RenderWidgetHostViewBase* view = GetViewForAccessibility();
-  if (view && !browser_accessibility_manager_ &&
-      !no_create_browser_accessibility_manager_for_testing_) {
-    browser_accessibility_manager_.reset(
-        view->CreateBrowserAccessibilityManager(this, is_main_frame()));
-  }
+  if (browser_accessibility_manager_ ||
+      no_create_browser_accessibility_manager_for_testing_)
+    return browser_accessibility_manager_.get();
+
+  browser_accessibility_manager_.reset(
+      BrowserAccessibilityManager::Create(this));
   return browser_accessibility_manager_.get();
 }
 
@@ -8861,7 +8806,7 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   // navigation isn't right. This should be moved to DidCommitNewDocument().
   loading_mem_tracker_ = navigation_request->TakePeakGpuMemoryTracker();
 
-  accessibility_reset_count_ = 0;
+  accessibility_fatal_error_count_ = 0;
 }
 
 void RenderFrameHostImpl::OnSameDocumentCommitProcessed(

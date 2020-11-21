@@ -74,12 +74,6 @@ class BASE_EXPORT Process {
   static Process OpenWithAccess(ProcessId pid, DWORD desired_access);
 #endif
 
-  // Creates an object from a |handle| owned by someone else.
-  // Don't use this for new code. It is only intended to ease the migration to
-  // a strict ownership model.
-  // TODO(rvargas) crbug.com/417532: Remove this code.
-  static Process DeprecatedGetProcessFromHandle(ProcessHandle handle);
-
   // Returns true if processes can be backgrounded.
   static bool CanBackgroundProcesses();
 
@@ -95,6 +89,11 @@ class BASE_EXPORT Process {
 
   // Returns a second object that represents this process.
   Process Duplicate() const;
+
+  // Relinquishes ownership of the handle and sets this to kNullProcessHandle.
+  // The result may be a pseudo-handle, depending on the OS and value stored in
+  // this.
+  ProcessHandle Release() WARN_UNUSED_RESULT;
 
   // Get the PID for this process.
   ProcessId Pid() const;
@@ -166,7 +165,7 @@ class BASE_EXPORT Process {
   // process though that should be avoided.
   void Exited(int exit_code) const;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // The Mac needs a Mach port in order to manipulate a process's priority,
   // and there's no good way to get that from base given the pid. These Mac
   // variants of the IsProcessBackgrounded and SetProcessBackgrounded API take

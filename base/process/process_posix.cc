@@ -10,6 +10,8 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
+#include <utility>
+
 #include "base/clang_profiling_buildflags.h"
 #include "base/debug/activity_tracker.h"
 #include "base/files/scoped_file.h"
@@ -261,12 +263,6 @@ Process Process::OpenWithExtraPrivileges(ProcessId pid) {
   return Open(pid);
 }
 
-// static
-Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
-  DCHECK_NE(handle, GetCurrentProcessHandle());
-  return Process(handle);
-}
-
 #if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_MAC) && \
     !defined(OS_AIX)
 // static
@@ -297,6 +293,10 @@ Process Process::Duplicate() const {
     return Current();
 
   return Process(process_);
+}
+
+ProcessHandle Process::Release() {
+  return std::exchange(process_, kNullProcessHandle);
 }
 
 ProcessId Process::Pid() const {

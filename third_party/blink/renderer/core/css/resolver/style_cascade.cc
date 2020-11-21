@@ -574,19 +574,9 @@ void StyleCascade::ForceColors() {
       style->ForcedColorAdjust() == EForcedColorAdjust::kNone)
     return;
 
-  int bg_color_alpha =
-      style->VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha();
-  int visited_bg_color_alpha =
-      style->ResolvedColor(style->InternalVisitedBackgroundColor()).Alpha();
   const SVGComputedStyle& svg_style = style->SvgStyle();
 
   MaybeForceColor(GetCSSPropertyColor(), style->GetColor());
-  MaybeForceColor(GetCSSPropertyBackgroundColor(), style->BackgroundColor());
-  MaybeForceColor(GetCSSPropertyBorderBottomColor(),
-                  style->BorderBottomColor());
-  MaybeForceColor(GetCSSPropertyBorderLeftColor(), style->BorderLeftColor());
-  MaybeForceColor(GetCSSPropertyBorderRightColor(), style->BorderRightColor());
-  MaybeForceColor(GetCSSPropertyBorderTopColor(), style->BorderTopColor());
   MaybeForceColor(GetCSSPropertyFill(), svg_style.FillPaint().GetColor());
   MaybeForceColor(GetCSSPropertyOutlineColor(), style->OutlineColor());
   MaybeForceColor(GetCSSPropertyStroke(), svg_style.StrokePaint().GetColor());
@@ -599,16 +589,6 @@ void StyleCascade::ForceColors() {
                   style->TextEmphasisColor());
   MaybeForceColor(GetCSSPropertyInternalVisitedColor(),
                   style->InternalVisitedColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBackgroundColor(),
-                  style->InternalVisitedBackgroundColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderBottomColor(),
-                  style->InternalVisitedBorderBottomColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderLeftColor(),
-                  style->InternalVisitedBorderLeftColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderRightColor(),
-                  style->InternalVisitedBorderRightColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderTopColor(),
-                  style->InternalVisitedBorderTopColor());
   MaybeForceColor(GetCSSPropertyInternalVisitedFill(),
                   svg_style.InternalVisitedFillPaint().GetColor());
   MaybeForceColor(GetCSSPropertyInternalVisitedOutlineColor(),
@@ -630,16 +610,6 @@ void StyleCascade::ForceColors() {
     StyleBuilder::ApplyProperty(GetCSSPropertyBackgroundImage(), state_,
                                 scoped_none);
   }
-
-  // Preserve the author/user defined background alpha channel.
-  style->SetBackgroundColor(
-      StyleColor(style->BackgroundColor().ResolveWithAlpha(
-          style->GetCurrentColor(), mojom::blink::ColorScheme::kLight,
-          bg_color_alpha)));
-  style->SetInternalVisitedBackgroundColor(
-      StyleColor(style->InternalVisitedBackgroundColor().ResolveWithAlpha(
-          style->GetCurrentColor(), mojom::blink::ColorScheme::kLight,
-          visited_bg_color_alpha)));
 }
 
 void StyleCascade::MaybeForceColor(const CSSProperty& property,
@@ -664,10 +634,6 @@ const CSSValue* StyleCascade::GetForcedColorValue(CSSPropertyName name) {
   CascadePriority* p = map_.Find(name, CascadeOrigin::kUserAgent);
   if (p)
     return ValueAt(match_result_, p->GetPosition());
-  if (name.Id() == CSSPropertyID::kBackgroundColor ||
-      name.Id() == CSSPropertyID::kInternalVisitedBackgroundColor) {
-    return CSSIdentifierValue::Create(CSSValueID::kCanvas);
-  }
   return cssvalue::CSSUnsetValue::Create();
 }
 

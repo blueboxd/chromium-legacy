@@ -1258,7 +1258,6 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-ma
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
 crbug.com/1043295 [ Fuchsia ] virtual/font-access/external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
 crbug.com/1043295 [ Fuchsia ] virtual/font-access/external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access-chooser/external/wpt/font-access/font_access-chooser.tentative.https.window.html [ Skip ]
 
 # ====== Style team owned tests from here ======
 
@@ -2006,6 +2005,9 @@ crbug.com/808834 [ Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Fai
 crbug.com/932343 external/wpt/css/css-pseudo/selection-text-shadow-016.html [ Failure ]
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
+
+# Will be re-enabled and rebaselined once https://crrev.com/c/2552506 lands and rolls.
+crbug.com/1151285 http/tests/devtools/extensions/extensions-api.js [ Failure Pass ]
 
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
@@ -5293,6 +5295,8 @@ crbug.com/1029941 [ Win ] external/wpt/css/css-paint-api/background-image-alpha.
 
 # Failing document policy tests
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
+
+crbug.com/1134464 http/tests/images/document-policy/document-policy-oversized-images-edge-cases.php [ Pass Timeout ]
 
 # Skipping because of unimplemented behaviour
 crbug.com/965495 external/wpt/feature-policy/experimental-features/focus-without-user-activation-enabled-tentative.sub.html [ Skip ]

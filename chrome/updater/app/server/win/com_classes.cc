@@ -227,9 +227,9 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
 }
 
 // See the comment for the UpdaterImpl::Update.
-HRESULT UpdaterControlImpl::Run(IUpdaterControlCallback* callback) {
-  using IUpdaterControlCallbackPtr =
-      Microsoft::WRL::ComPtr<IUpdaterControlCallback>;
+HRESULT UpdaterInternalImpl::Run(IUpdaterInternalCallback* callback) {
+  using IUpdaterInternalCallbackPtr =
+      Microsoft::WRL::ComPtr<IUpdaterInternalCallback>;
   scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
 
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
@@ -238,35 +238,35 @@ HRESULT UpdaterControlImpl::Run(IUpdaterControlCallback* callback) {
   com_server->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](scoped_refptr<ControlService> control_service,
+          [](scoped_refptr<UpdateServiceInternal> update_service_internal,
              scoped_refptr<base::SequencedTaskRunner> task_runner,
-             IUpdaterControlCallbackPtr callback) {
-            control_service->Run(base::BindOnce(
+             IUpdaterInternalCallbackPtr callback) {
+            update_service_internal->Run(base::BindOnce(
                 [](scoped_refptr<base::SequencedTaskRunner> task_runner,
-                   IUpdaterControlCallbackPtr callback) {
+                   IUpdaterInternalCallbackPtr callback) {
                   task_runner->PostTaskAndReplyWithResult(
                       FROM_HERE,
-                      base::BindOnce(&IUpdaterControlCallback::Run, callback,
+                      base::BindOnce(&IUpdaterInternalCallback::Run, callback,
                                      0),
                       base::BindOnce([](HRESULT hr) {
-                        DVLOG(2) << "UpdaterControlImpl::Run "
+                        DVLOG(2) << "UpdaterInternalImpl::Run "
                                  << "callback returned " << std::hex << hr;
                       }));
                 },
                 task_runner, callback));
           },
-          com_server->control_service(), task_runner,
-          IUpdaterControlCallbackPtr(callback)));
+          com_server->update_service_internal(), task_runner,
+          IUpdaterInternalCallbackPtr(callback)));
 
   // Always return S_OK from this function. Errors must be reported using the
   // callback interface.
   return S_OK;
 }
 
-HRESULT UpdaterControlImpl::InitializeUpdateService(
-    IUpdaterControlCallback* callback) {
-  using IUpdaterControlCallbackPtr =
-      Microsoft::WRL::ComPtr<IUpdaterControlCallback>;
+HRESULT UpdaterInternalImpl::InitializeUpdateService(
+    IUpdaterInternalCallback* callback) {
+  using IUpdaterInternalCallbackPtr =
+      Microsoft::WRL::ComPtr<IUpdaterInternalCallback>;
   scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
 
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
@@ -275,26 +275,26 @@ HRESULT UpdaterControlImpl::InitializeUpdateService(
   com_server->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](scoped_refptr<ControlService> control_service,
+          [](scoped_refptr<UpdateServiceInternal> update_service_internal,
              scoped_refptr<base::SequencedTaskRunner> task_runner,
-             IUpdaterControlCallbackPtr callback) {
-            control_service->InitializeUpdateService(base::BindOnce(
+             IUpdaterInternalCallbackPtr callback) {
+            update_service_internal->InitializeUpdateService(base::BindOnce(
                 [](scoped_refptr<base::SequencedTaskRunner> task_runner,
-                   IUpdaterControlCallbackPtr callback) {
+                   IUpdaterInternalCallbackPtr callback) {
                   task_runner->PostTaskAndReplyWithResult(
                       FROM_HERE,
-                      base::BindOnce(&IUpdaterControlCallback::Run, callback,
+                      base::BindOnce(&IUpdaterInternalCallback::Run, callback,
                                      0),
                       base::BindOnce([](HRESULT hr) {
                         DVLOG(2)
-                            << "UpdaterControlImpl::InitializeUpdateService "
+                            << "UpdaterInternalImpl::InitializeUpdateService "
                             << "callback returned " << std::hex << hr;
                       }));
                 },
                 task_runner, callback));
           },
-          com_server->control_service(), task_runner,
-          IUpdaterControlCallbackPtr(callback)));
+          com_server->update_service_internal(), task_runner,
+          IUpdaterInternalCallbackPtr(callback)));
 
   // Always return S_OK from this function. Errors must be reported using the
   // callback interface.

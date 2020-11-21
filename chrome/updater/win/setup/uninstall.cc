@@ -36,7 +36,7 @@ namespace {
 
 void DeleteComServer(HKEY root) {
   for (const auto& clsid :
-       {__uuidof(UpdaterClass), __uuidof(UpdaterControlClass),
+       {__uuidof(UpdaterClass), __uuidof(UpdaterInternalClass),
         __uuidof(GoogleUpdate3WebUserClass)}) {
     InstallUtil::DeleteRegistryKey(root, GetComServerClsidRegistryPath(clsid),
                                    WorkItem::kWow64Default);
@@ -145,7 +145,7 @@ int UninstallCandidate(bool is_machine) {
     updater::UnregisterWakeTask();
   }
 
-  // TODO(crbug.com/1140562): Remove the ControlService server as well.
+  // TODO(crbug.com/1140562): Remove the UpdateServiceInternal server as well.
 
   return RunUninstallScript(false);
 }

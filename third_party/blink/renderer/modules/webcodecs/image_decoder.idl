@@ -6,9 +6,10 @@
 
 // An ImageDecoder decodes images.
 [
-    Exposed=(Window,Worker),
+    Exposed=(Window,DedicatedWorker),
     RuntimeEnabled=WebCodecs,
-    ImplementedAs=ImageDecoderExternal
+    ImplementedAs=ImageDecoderExternal,
+    ActiveScriptWrappable
 ] interface ImageDecoder {
   [CallWith=ScriptState, RaisesException, MeasureAs=WebCodecsImageDecoder] constructor(ImageDecoderInit init);
 

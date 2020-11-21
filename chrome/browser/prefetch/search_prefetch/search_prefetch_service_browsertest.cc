@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
@@ -21,6 +22,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -49,6 +52,7 @@ constexpr char kSearchDomain[] = "search.com";
 constexpr char kOmniboxSuggestPrefetchQuery[] = "porgs";
 constexpr char kOmniboxSuggestPrefetchSecondItemQuery[] = "porgsandwich";
 constexpr char kOmniboxSuggestNonPrefetchQuery[] = "puffins";
+constexpr char kLoadInSubframe[] = "/load_in_subframe";
 }  // namespace
 
 // A response that hangs after serving the start of the response.
@@ -125,6 +129,14 @@ class SearchPrefetchBaseBrowserTest : public InProcessBrowserTest {
 
   GURL GetSearchServerQueryURLWithNoQuery(const std::string& path) const {
     return search_server_->GetURL(kSearchDomain, path);
+  }
+
+  // Get a URL for a page that embeds the search |path| as an iframe.
+  GURL GetSearchServerQueryURLWithSubframeLoad(const std::string& path) const {
+    return search_server_->GetURL(kSearchDomain,
+                                  std::string(kLoadInSubframe)
+                                      .append("/search_page.html?q=")
+                                      .append(path));
   }
 
   GURL GetSuggestServerURL(const std::string& path) const {
@@ -257,6 +269,23 @@ class SearchPrefetchBaseBrowserTest : public InProcessBrowserTest {
         base::BindOnce(&SearchPrefetchBaseBrowserTest::
                            MonitorSearchResourceRequestOnUIThread,
                        base::Unretained(this), request, is_prefetch));
+
+    // If this is an embedded search for load in iframe, parse out the iframe
+    // URL and serve it as an iframe in the returned HTML.
+    if (request.relative_url.find(kLoadInSubframe) == 0) {
+      std::string subframe_path =
+          request.relative_url.substr(std::string(kLoadInSubframe).size());
+      std::string content = "<html><body><iframe src=\"";
+      content.append(subframe_path);
+      content.append("\"/></body></html>");
+
+      std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      resp->set_code(is_prefetch ? net::HTTP_BAD_GATEWAY : net::HTTP_OK);
+      resp->set_content_type("text/html");
+      resp->set_content(content);
+      return resp;
+    }
 
     if (request.GetURL().spec().find("502_on_prefetch") != std::string::npos) {
       std::unique_ptr<net::test_server::BasicHttpResponse> resp =
@@ -884,21 +913,6 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
   ASSERT_TRUE(prefetch_status.has_value());
   EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
 
-  // Change the autocomplete to demote "porgs", but keep it as a match by using
-  // the default returned suggest list.
-  AutocompleteInput empty_input(
-      base::ASCIIToUTF16("empty"), metrics::OmniboxEventProto::BLANK,
-      ChromeAutocompleteSchemeClassifier(browser()->profile()));
-  autocomplete_controller->Start(empty_input);
-  ui_test_utils::WaitForAutocompleteDone(browser());
-  EXPECT_TRUE(autocomplete_controller->done());
-
-  WaitForDuration(base::TimeDelta::FromMilliseconds(100));
-  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
-      base::ASCIIToUTF16(search_terms));
-  ASSERT_TRUE(prefetch_status.has_value());
-  EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
-
   // Change the autocomplete to remove "porgs" entirely.
   AutocompleteInput other_input(
       base::ASCIIToUTF16(kOmniboxSuggestNonPrefetchQuery),
@@ -1058,6 +1072,113 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       NoPrefetchWhenJSDisabled) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kWebKitJavascriptEnabled,
+                                               false);
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+
+  GURL prefetch_url = GetSearchServerQueryURL(search_terms);
+
+  EXPECT_FALSE(search_prefetch_service->MaybePrefetchURL(prefetch_url));
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       NoPrefetchWhenJSDisabledOnDSE) {
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+
+  GURL prefetch_url = GetSearchServerQueryURL(search_terms);
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(prefetch_url, GURL(),
+                                      ContentSettingsType::JAVASCRIPT,
+                                      CONTENT_SETTING_BLOCK);
+
+  EXPECT_FALSE(search_prefetch_service->MaybePrefetchURL(prefetch_url));
+
+  auto prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(
+          base::ASCIIToUTF16(search_terms));
+  EXPECT_FALSE(prefetch_status.has_value());
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       NoServeWhenJSDisabled) {
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+
+  GURL prefetch_url = GetSearchServerQueryURL(search_terms);
+
+  EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(prefetch_url));
+
+  auto prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(
+          base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
+
+  WaitUntilStatusChanges(base::ASCIIToUTF16(search_terms));
+
+  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
+      base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kCanBeServed, prefetch_status.value());
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kWebKitJavascriptEnabled,
+                                               false);
+
+  ui_test_utils::NavigateToURL(browser(), prefetch_url);
+
+  // The prefetch request and the new non-prefetched served request.
+  EXPECT_EQ(2u, search_server_request_count());
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       NoServeWhenJSDisabledOnDSE) {
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+
+  GURL prefetch_url = GetSearchServerQueryURL(search_terms);
+
+  EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(prefetch_url));
+
+  auto prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(
+          base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
+
+  WaitUntilStatusChanges(base::ASCIIToUTF16(search_terms));
+
+  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
+      base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kCanBeServed, prefetch_status.value());
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(prefetch_url, GURL(),
+                                      ContentSettingsType::JAVASCRIPT,
+                                      CONTENT_SETTING_BLOCK);
+
+  ui_test_utils::NavigateToURL(browser(), prefetch_url);
+
+  // The prefetch request and the new non-prefetched served request.
+  EXPECT_EQ(2u, search_server_request_count());
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
                        OnlyStreamedResponseCanServePartialRequest) {
   set_hang_requests_after_start(true);
   auto* search_prefetch_service =
@@ -1089,6 +1210,60 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
   } else {
     EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
   }
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       DontInterceptSubframes) {
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+  GURL prefetch_url = GetSearchServerQueryURL(search_terms);
+  GURL navigation_url = GetSearchServerQueryURLWithSubframeLoad(search_terms);
+
+  EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(prefetch_url));
+  auto prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(
+          base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
+
+  WaitUntilStatusChanges(base::ASCIIToUTF16(search_terms));
+
+  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
+      base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kCanBeServed, prefetch_status.value());
+
+  ui_test_utils::NavigateToURL(browser(), navigation_url);
+
+  const auto& requests = search_server_requests();
+  EXPECT_EQ(3u, requests.size());
+  // This flow should have resulted in a prefetch of the search terms, a main
+  // frame navigation to the special subframe loader page, and a navigation to
+  // the subframe that matches the prefetch URL.
+
+  // 2 requests should be to the search terms directly, one for the prefetch and
+  // one for the subframe (that can't be served from the prefetch cache).
+  EXPECT_EQ(2,
+            std::count_if(requests.begin(), requests.end(),
+                          [search_terms](const auto& request) {
+                            return request.relative_url.find(kLoadInSubframe) ==
+                                       std::string::npos &&
+                                   request.relative_url.find(search_terms) !=
+                                       std::string::npos;
+                          }));
+  // 1 request should specify to load content in a subframe but also contain the
+  // search terms.
+  EXPECT_EQ(1,
+            std::count_if(requests.begin(), requests.end(),
+                          [search_terms](const auto& request) {
+                            return request.relative_url.find(kLoadInSubframe) !=
+                                       std::string::npos &&
+                                   request.relative_url.find(search_terms) !=
+                                       std::string::npos;
+                          }));
 }
 
 // True means that responses are streamed, false means full responses must be

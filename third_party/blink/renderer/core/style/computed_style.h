@@ -110,6 +110,8 @@ class ColumnRuleColor;
 class Fill;
 class Float;
 class FloodColor;
+class InternalForcedBackgroundColor;
+class InternalForcedBorderColor;
 class InternalVisitedBackgroundColor;
 class InternalVisitedBorderBottomColor;
 class InternalVisitedBorderLeftColor;
@@ -118,7 +120,9 @@ class InternalVisitedBorderTopColor;
 class InternalVisitedCaretColor;
 class InternalVisitedColor;
 class InternalVisitedColumnRuleColor;
+class InternalVisitedFill;
 class InternalVisitedOutlineColor;
+class InternalVisitedStroke;
 class InternalVisitedTextDecorationColor;
 class InternalVisitedTextEmphasisColor;
 class InternalVisitedTextFillColor;
@@ -214,6 +218,8 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::Fill;
   friend class css_longhand::Float;
   friend class css_longhand::FloodColor;
+  friend class css_longhand::InternalForcedBackgroundColor;
+  friend class css_longhand::InternalForcedBorderColor;
   friend class css_longhand::InternalVisitedBackgroundColor;
   friend class css_longhand::InternalVisitedBorderBottomColor;
   friend class css_longhand::InternalVisitedBorderLeftColor;
@@ -222,7 +228,9 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedCaretColor;
   friend class css_longhand::InternalVisitedColor;
   friend class css_longhand::InternalVisitedColumnRuleColor;
+  friend class css_longhand::InternalVisitedFill;
   friend class css_longhand::InternalVisitedOutlineColor;
+  friend class css_longhand::InternalVisitedStroke;
   friend class css_longhand::InternalVisitedTextDecorationColor;
   friend class css_longhand::InternalVisitedTextEmphasisColor;
   friend class css_longhand::InternalVisitedTextFillColor;
@@ -2549,7 +2557,8 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasBackgroundRelatedColorReferencingCurrentColor() const {
     if (BackgroundColor().IsCurrentColor() ||
-        InternalVisitedBackgroundColor().IsCurrentColor())
+        InternalVisitedBackgroundColor().IsCurrentColor() ||
+        InternalForcedBackgroundColor().IsCurrentColor())
       return true;
     if (!BoxShadow())
       return false;
@@ -2565,13 +2574,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Color utility functions.
   CORE_EXPORT Color
   VisitedDependentColor(const CSSProperty& color_property) const;
-
-  // Helper for resolving a StyleColor which may contain currentColor or a
-  // system color keyword. This is intended for cases such as SVG <paint> where
-  // a given property consists of a StyleColor plus additional information. For
-  // <color> properties, prefer VisitedDependentColor() or
-  // Longhand::ColorIncludingFallback() instead.
-  Color ResolvedColor(const StyleColor& color) const;
 
   // -webkit-appearance utility functions.
   bool HasEffectiveAppearance() const {
@@ -2842,6 +2844,13 @@ class ComputedStyle : public ComputedStyleBase,
     return InternalVisitedTextStrokeColorInternal();
   }
 
+  const StyleColor& InternalForcedBackgroundColor() const {
+    return InternalForcedBackgroundColorInternal();
+  }
+  const StyleColor& InternalForcedBorderColor() const {
+    return InternalForcedBorderColorInternal();
+  }
+
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
 
   const StyleColor& StopColor() const { return SvgStyle().StopColor(); }
@@ -2887,6 +2896,13 @@ class ComputedStyle : public ComputedStyleBase,
 
   Color GetCurrentColor() const;
   Color GetInternalVisitedCurrentColor() const;
+
+  // Helper for resolving a StyleColor which may contain currentColor or a
+  // system color keyword. This is intended for cases where a given property
+  // consists of a StyleColor plus additional information. For <color>
+  // properties, prefer VisitedDependentColor() or
+  // Longhand::ColorIncludingFallback() instead.
+  Color ResolvedColor(const StyleColor& color) const;
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 
@@ -2935,6 +2951,8 @@ class ComputedStyle : public ComputedStyleBase,
   static Difference ComputeDifferenceIgnoringInheritedFirstLineStyle(
       const ComputedStyle& old_style,
       const ComputedStyle& new_style);
+
+  bool ShouldForceColor(const StyleColor& unforced_color) const;
 
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,

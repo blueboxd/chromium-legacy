@@ -558,7 +558,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20201015",
+                    "name": "Enabled_20201116",
                     "enable_features": [
                         "AssistPersonalInfo",
                         "AssistPersonalInfoAddress",
@@ -4018,27 +4018,6 @@
             ]
         }
     ],
-    "LimitReferrerGranularity": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ReducedReferrerGranularity"
-                    ]
-                }
-            ]
-        }
-    ],
     "LiteVideo": [
         {
             "platforms": [
@@ -4961,6 +4940,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OneCopyRasterBufferPlaybackNormalThreadPriority"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OopRasterizationDDL": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OopRasterizationDDL"
                     ]
                 }
             ]
@@ -6102,21 +6096,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingRealTimeUrlLookupEnabledIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingRealTimeUrlLookupEnabled"
                     ]
                 }
             ]

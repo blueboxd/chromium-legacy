@@ -123,7 +123,6 @@ thread_time_constraint_policy_data_t GetTimeConstraints(
     uint32_t abs_realtime_period =
         saturated_cast<uint32_t>(realtime_period.InNanoseconds() *
                                  (double(tb_info.denom) / tb_info.numer));
-
     time_constraints.period = abs_realtime_period;
     time_constraints.computation = abs_realtime_period / 2;
     time_constraints.constraint = abs_realtime_period;

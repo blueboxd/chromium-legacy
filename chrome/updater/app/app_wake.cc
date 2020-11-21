@@ -7,13 +7,12 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/app.h"
-#include "chrome/updater/control_service.h"
+#include "chrome/updater/update_service_internal.h"
 
 namespace updater {
 
-// AppWake is a simple client which dials the same-versioned server via RPC and
-// tells that server to run its control tasks. This is done via the
-// ControlService interface.
+// AppWake is a simple client which dials the same-versioned server via RPC.
+// This is done via the UpdateServiceInternal interface.
 class AppWake : public App {
  public:
   AppWake() = default;
@@ -25,21 +24,22 @@ class AppWake : public App {
   void FirstTaskRun() override;
   void Uninitialize() override;
 
-  scoped_refptr<ControlService> control_service_;
+  scoped_refptr<UpdateServiceInternal> update_service_internal_;
 };
 
 void AppWake::FirstTaskRun() {
-  // The service creation might need task runners and the control service needs
-  // to be instantiated after the base class has initialized the thread pool.
+  // The service creation might need task runners and the update service
+  // internal needs to be instantiated after the base class has initialized
+  // the thread pool.
   //
   // TODO(crbug.com/1113448) - consider initializing the thread pool in the
   // constructor of the base class or earlier, in the updater main.
-  control_service_ = CreateControlService();
-  control_service_->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
+  update_service_internal_ = CreateUpdateServiceInternal();
+  update_service_internal_->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
 }
 
 void AppWake::Uninitialize() {
-  control_service_->Uninitialize();
+  update_service_internal_->Uninitialize();
 }
 
 scoped_refptr<App> MakeAppWake() {

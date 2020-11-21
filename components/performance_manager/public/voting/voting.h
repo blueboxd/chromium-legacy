@@ -64,6 +64,7 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/containers/flat_map.h"
 #include "base/types/pass_key.h"
 #include "base/util/type_safety/id_type.h"
 
@@ -448,8 +449,8 @@ class VoteConsumerDefaultImpl : public VoteConsumer<VoteImpl> {
 
   VotingChannelFactory<VoteImpl> voting_channel_factory_;
 
-  std::map<VoterId<VoteImpl>,
-           std::map<const ContextType*, AcceptedVote<VoteImpl>>>
+  base::flat_map<VoterId<VoteImpl>,
+                 base::flat_map<const ContextType*, AcceptedVote<VoteImpl>>>
       accepted_votes_by_voter_id_;
 };
 
@@ -464,6 +465,9 @@ class VotingChannelWrapper {
 
   VotingChannelWrapper();
   ~VotingChannelWrapper();
+
+  VotingChannelWrapper(VotingChannelWrapper&&);
+  VotingChannelWrapper& operator=(VotingChannelWrapper&&);
 
   // Sets the underlying VotingChannel. Can only be invoked once, and it must be
   // done before any calls to the functions to submit/change/invalidate votes.
@@ -484,10 +488,12 @@ class VotingChannelWrapper {
   // Returns true if the underlying VotingChannel is valid.
   bool IsValid() const;
 
+  VoterId<VoteImpl> voter_id() const { return voting_channel_.voter_id(); }
+
  private:
   VotingChannel<VoteImpl> voting_channel_;
 
-  std::map<const ContextType*, VoteReceipt<VoteImpl>> vote_receipts_;
+  base::flat_map<const ContextType*, VoteReceipt<VoteImpl>> vote_receipts_;
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -978,6 +984,14 @@ VotingChannelWrapper<VoteImpl>::VotingChannelWrapper() = default;
 
 template <class VoteImpl>
 VotingChannelWrapper<VoteImpl>::~VotingChannelWrapper() = default;
+
+template <class VoteImpl>
+VotingChannelWrapper<VoteImpl>::VotingChannelWrapper(VotingChannelWrapper&&) =
+    default;
+
+template <class VoteImpl>
+VotingChannelWrapper<VoteImpl>& VotingChannelWrapper<VoteImpl>::operator=(
+    VotingChannelWrapper<VoteImpl>&&) = default;
 
 template <class VoteImpl>
 void VotingChannelWrapper<VoteImpl>::SetVotingChannel(

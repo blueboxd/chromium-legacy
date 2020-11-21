@@ -117,20 +117,6 @@ Process Process::OpenWithExtraPrivileges(ProcessId pid) {
 }
 
 // static
-Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
-  DCHECK_NE(handle, GetCurrentProcessHandle());
-  zx::process out;
-  zx_status_t result =
-      zx::unowned_process(handle)->duplicate(ZX_RIGHT_SAME_RIGHTS, &out);
-  if (result != ZX_OK) {
-    ZX_DLOG(ERROR, result) << "zx_handle_duplicate(from_handle)";
-    return Process();
-  }
-
-  return Process(out.release());
-}
-
-// static
 bool Process::CanBackgroundProcesses() {
   return false;
 }
@@ -166,6 +152,21 @@ Process Process::Duplicate() const {
   }
 
   return Process(out.release());
+}
+
+ProcessHandle Process::Release() {
+  if (is_current()) {
+    // Caller expects to own the reference, so duplicate the self handle.
+    zx::process handle;
+    zx_status_t result =
+        zx::process::self()->duplicate(ZX_RIGHT_SAME_RIGHTS, &handle);
+    if (result != ZX_OK) {
+      return kNullProcessHandle;
+    }
+    is_current_process_ = false;
+    return handle.release();
+  }
+  return process_.release();
 }
 
 ProcessId Process::Pid() const {

@@ -80,7 +80,7 @@ class MODULES_EXPORT VideoEncoder final
   enum class AccelerationPreference { kAllow, kDeny, kRequire };
 
   // TODO(ezemtsov): Replace this with a {Audio|Video}EncoderConfig.
-  struct ParsedConfig final {
+  struct ParsedConfig final : public GarbageCollected<ParsedConfig> {
     media::VideoCodec codec;
     media::VideoCodecProfile profile;
     uint8_t level;
@@ -90,11 +90,16 @@ class MODULES_EXPORT VideoEncoder final
 
     media::VideoEncoder::Options options;
     String codec_string;
+
+    void Trace(Visitor*) const {}
   };
 
   struct Request final : public GarbageCollected<Request> {
     enum class Type {
+      // Configure an encoder from scratch, possibly replacing the existing one.
       kConfigure,
+      // Adjust options in the already configured encoder.
+      kReconfigure,
       kEncode,
       kFlush,
     };
@@ -110,6 +115,7 @@ class MODULES_EXPORT VideoEncoder final
   };
 
   void CallOutputCallback(
+      ParsedConfig* active_config,
       uint32_t reset_count,
       media::VideoEncoderOutput output,
       base::Optional<media::VideoEncoder::CodecDescription> codec_desc);
@@ -119,6 +125,7 @@ class MODULES_EXPORT VideoEncoder final
   void ProcessRequests();
   void ProcessEncode(Request* request);
   void ProcessConfigure(Request* request);
+  void ProcessReconfigure(Request* request);
   void ProcessFlush(Request* request);
 
   void UpdateEncoderLog(std::string encoder_name, bool is_hw_accelerated);
@@ -128,14 +135,14 @@ class MODULES_EXPORT VideoEncoder final
   void ResolvePromise(Request* req);
   void RejectPromise(Request* req, DOMException* ex = nullptr);
 
-  std::unique_ptr<ParsedConfig> ParseConfig(const VideoEncoderConfig*,
-                                            ExceptionState&);
+  ParsedConfig* ParseConfig(const VideoEncoderConfig*, ExceptionState&);
   bool VerifyCodecSupport(ParsedConfig*, ExceptionState&);
   std::unique_ptr<media::VideoEncoder> CreateMediaVideoEncoder(
       const ParsedConfig& config);
+  bool CanReconfigure(ParsedConfig& original_config, ParsedConfig& new_config);
 
-  std::unique_ptr<ParsedConfig> active_config_;
   std::unique_ptr<media::VideoEncoder> media_encoder_;
+  bool is_hw_accelerated_ = false;
 
   // |parent_media_log_| must be destroyed if ever the ExecutionContext is
   // destroyed, since the blink::MediaInspectorContext* pointer given to
@@ -149,6 +156,7 @@ class MODULES_EXPORT VideoEncoder final
 
   V8CodecState state_;
 
+  Member<ParsedConfig> active_config_;
   Member<ScriptState> script_state_;
   Member<V8VideoEncoderOutputCallback> output_callback_;
   Member<V8WebCodecsErrorCallback> error_callback_;
@@ -166,6 +174,7 @@ class MODULES_EXPORT VideoEncoder final
   // kEncode. This flag stops processing of new requests in the requests_ queue
   // till the current requests is finished.
   bool stall_request_processing_ = false;
+
   SEQUENCE_CHECKER(sequence_checker_);
 };
 

@@ -195,7 +195,6 @@ void StyleCascade::Apply(CascadeFilter filter) {
     if (resolver.AuthorFlags() & CSSProperty::kBorder)
       state_.Style()->SetHasAuthorBorder();
   }
-  ForceColors();
 }
 
 std::unique_ptr<CSSBitset> StyleCascade::GetImportantSet() {
@@ -566,51 +565,6 @@ void StyleCascade::LookupAndApplyInterpolation(const CSSProperty& property,
   const auto& entry = map.find(handle);
   DCHECK_NE(entry, map.end());
   ApplyInterpolation(property, priority, *entry->value, resolver);
-}
-
-void StyleCascade::ForceColors() {
-  ComputedStyle* style = state_.Style();
-  if (!GetDocument().InForcedColorsMode() ||
-      style->ForcedColorAdjust() == EForcedColorAdjust::kNone)
-    return;
-
-  MaybeForceColor(GetCSSPropertyColor(), style->GetColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedColor(),
-                  style->InternalVisitedColor());
-
-  ScopedCSSValue scoped_none(*CSSIdentifierValue::Create(CSSValueID::kNone),
-                             nullptr);
-  StyleBuilder::ApplyProperty(GetCSSPropertyTextShadow(), state_, scoped_none);
-  StyleBuilder::ApplyProperty(GetCSSPropertyBoxShadow(), state_, scoped_none);
-  if (!style->HasUrlBackgroundImage()) {
-    StyleBuilder::ApplyProperty(GetCSSPropertyBackgroundImage(), state_,
-                                scoped_none);
-  }
-}
-
-void StyleCascade::MaybeForceColor(const CSSProperty& property,
-                                   const StyleColor& color) {
-  DCHECK(GetDocument().InForcedColorsMode() &&
-         state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone);
-
-  // Preserve the author/user color if it computes to a system color.
-  if (color.IsSystemColor())
-    return;
-
-  StyleBuilder::ApplyProperty(
-      property, state_,
-      ScopedCSSValue(*GetForcedColorValue(property.GetCSSPropertyName()),
-                     nullptr));
-}
-
-const CSSValue* StyleCascade::GetForcedColorValue(CSSPropertyName name) {
-  DCHECK(GetDocument().InForcedColorsMode() &&
-         state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone);
-
-  CascadePriority* p = map_.Find(name, CascadeOrigin::kUserAgent);
-  if (p)
-    return ValueAt(match_result_, p->GetPosition());
-  return cssvalue::CSSUnsetValue::Create();
 }
 
 bool StyleCascade::IsRootElement() const {
@@ -1039,9 +993,6 @@ void StyleCascade::CountUse(WebFeature feature) {
 }
 
 void StyleCascade::MaybeUseCountRevert(const CSSValue& value) {
-  // In forced colors mode, any value can behave like 'revert' [1], but we
-  // should only use-count the true uses of 'revert'.
-  // [1] https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
   if (IsRevert(value))
     CountUse(WebFeature::kCSSKeywordRevert);
 }

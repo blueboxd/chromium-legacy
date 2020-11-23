@@ -6,14 +6,12 @@
 
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/privacy_screen_dlp_helper.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_notification_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
-#include "chrome/browser/ui/ash/chrome_capture_mode_delegate.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -115,18 +113,19 @@ bool DlpContentManager::IsScreenCaptureRestricted(
   return false;
 }
 
-void DlpContentManager::OnVideoCaptureStarted(const ScreenshotArea& area) {
+void DlpContentManager::OnVideoCaptureStarted(const ScreenshotArea& area,
+                                              base::OnceClosure stop_callback) {
   if (IsVideoCaptureRestricted(area)) {
-    if (ash::features::IsCaptureModeEnabled())
-      ChromeCaptureModeDelegate::Get()->InterruptVideoRecordingIfAny();
+    std::move(stop_callback).Run();
     return;
   }
-  DCHECK(!running_video_capture_area_.has_value());
-  running_video_capture_area_.emplace(area);
+  DCHECK(!running_video_capture_.has_value());
+  running_video_capture_.emplace(
+      std::make_pair(area, std::move(stop_callback)));
 }
 
 void DlpContentManager::OnVideoCaptureStopped() {
-  running_video_capture_area_.reset();
+  running_video_capture_.reset();
 }
 
 bool DlpContentManager::IsCaptureModeInitRestricted() const {
@@ -228,20 +227,22 @@ DlpContentRestrictionSet DlpContentManager::GetRestrictionSetForURL(
     return set;
   DlpRulesManager* dlp_rules_manager = DlpRulesManager::Get();
 
-  static const base::NoDestructor<std::vector<
-      std::pair<DlpRulesManager::Restriction, DlpContentRestriction>>>
-      kRestrictionsList({{DlpRulesManager::Restriction::kScreenshot,
-                          DlpContentRestriction::kScreenshot},
-                         {DlpRulesManager::Restriction::kScreenshot,
-                          DlpContentRestriction::kVideoCapture},
-                         {DlpRulesManager::Restriction::kPrivacyScreen,
-                          DlpContentRestriction::kPrivacyScreen},
-                         {DlpRulesManager::Restriction::kPrinting,
-                          DlpContentRestriction::kPrint},
-                         {DlpRulesManager::Restriction::kScreenShare,
-                          DlpContentRestriction::kScreenShare}});
+  const size_t kRestrictionsCount = 5;
+  static constexpr std::array<
+      std::pair<DlpRulesManager::Restriction, DlpContentRestriction>,
+      kRestrictionsCount>
+      kRestrictionsArray = {{{DlpRulesManager::Restriction::kScreenshot,
+                              DlpContentRestriction::kScreenshot},
+                             {DlpRulesManager::Restriction::kScreenshot,
+                              DlpContentRestriction::kVideoCapture},
+                             {DlpRulesManager::Restriction::kPrivacyScreen,
+                              DlpContentRestriction::kPrivacyScreen},
+                             {DlpRulesManager::Restriction::kPrinting,
+                              DlpContentRestriction::kPrint},
+                             {DlpRulesManager::Restriction::kScreenShare,
+                              DlpContentRestriction::kScreenShare}}};
 
-  for (const auto& restriction : *kRestrictionsList) {
+  for (const auto& restriction : kRestrictionsArray) {
     if (dlp_rules_manager->IsRestricted(url, restriction.first) ==
         DlpRulesManager::Level::kBlock) {
       set.SetRestriction(restriction.second);
@@ -368,13 +369,13 @@ bool DlpContentManager::IsAreaRestricted(
 }
 
 void DlpContentManager::CheckRunningVideoCapture() {
-  if (!running_video_capture_area_.has_value())
+  if (!running_video_capture_.has_value())
     return;
-  if (IsAreaRestricted(*running_video_capture_area_,
-                       DlpContentRestriction::kVideoCapture)) {
-    if (ash::features::IsCaptureModeEnabled())
-      ChromeCaptureModeDelegate::Get()->InterruptVideoRecordingIfAny();
-    running_video_capture_area_.reset();
+  const auto& area = running_video_capture_->first;
+  auto& stop_callback = running_video_capture_->second;
+  if (IsAreaRestricted(area, DlpContentRestriction::kVideoCapture)) {
+    std::move(stop_callback).Run();
+    running_video_capture_.reset();
   }
 }
 

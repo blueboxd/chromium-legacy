@@ -969,7 +969,7 @@ crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descenda
 crbug.com/982211 fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 
 ### With LayoutNGFragmentItem enabled
-crbug.com/982194 [ Win7 ] external/wpt/css/css-text/white-space/seg-break-transformation-018.html [ Failure ]
+crbug.com/982194 [ Win7 ] external/wpt/css/css-text/white-space/seg-break-transformation-018.tentative.html [ Failure ]
 crbug.com/982194 [ Win10 ] fast/inline/emptyInlinesWithinLists.html [ Pass Failure ]
 crbug.com/982194 [ Win10 ] fast/writing-mode/background-vertical-rl.html [ Pass Failure ]
 crbug.com/982194 [ Win10 ] fast/writing-mode/border-image-vertical-lr.html [ Pass Failure ]
@@ -1064,7 +1064,6 @@ crbug.com/1066616 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mul
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-002.xht [ Crash Failure Timeout ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-003.xht [ Crash Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-009.html [ Crash Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure Crash ]
 crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Crash Failure ]
 crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
@@ -1084,8 +1083,8 @@ crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-opacity-
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-unconstrained-width.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
+crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
+crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary-fixed-multicol-height.html [ Failure ]
@@ -2006,9 +2005,6 @@ crbug.com/932343 external/wpt/css/css-pseudo/selection-text-shadow-016.html [ Fa
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
-# Will be re-enabled and rebaselined once https://crrev.com/c/2552506 lands and rolls.
-crbug.com/1151285 http/tests/devtools/extensions/extensions-api.js [ Failure Pass ]
-
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
@@ -2592,6 +2588,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection-no-sink.https.html [ Timeout ]
+crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/full-width-leading-spaces-004.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.worker.html [ Timeout ]
@@ -2927,7 +2925,6 @@ crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-nesting
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-bidi-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-end-of-line-001.html [ Failure ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-destroy-script-execution.html [ Timeout ]
-crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-no-sink.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
 ### See crbug.com/891427 comment near the top of this file:
@@ -3805,6 +3802,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definiti
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.tentative.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-rows-fit-content-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/explicitly-sized-grid-item-as-table.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-auto-margin-and-replaced-item-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-automatic-minimum-intrinsic-aspect-ratio-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-inline-items-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-inline-items-002.html [ Failure ]
@@ -5306,7 +5304,6 @@ crbug.com/965495 external/wpt/permissions-policy/experimental-features/focus-wit
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Pass Failure ]
-crbug.com/1011811 http/tests/devtools/console/console-big-array.js [ Skip ]
 
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
@@ -6023,3 +6020,9 @@ crbug.com/1150475 fast/dom/open-and-close-by-DOM.html [ Pass Failure ]
 
 # Skip to land change in frontend (https://crrev.com/c/2550061) before this layout test can be updated
 crbug.com/1150854 http/tests/devtools/unit/soft-context-menu.js [ Skip ]
+
+#Sheriff 2020-11-23
+crbug.com/1151844 [ Win ] virtual/controls-refresh-hc/fast/forms/color-scheme/calendar-picker/date-picker-disabled-values.html [ Failure ]
+crbug.com/1151844 [ Win ] virtual/controls-refresh-hc/fast/forms/color-scheme/media/video-overlay-menu.html [ Failure ]
+crbug.com/1151844 [ Win ] virtual/controls-refresh-hc/fast/forms/color-scheme/file/file-appearance-basic.html [ Failure ]
+crbug.com/1151861 external/wpt/workers/semantics/multiple-workers/003.html [ Timeout Crash ]

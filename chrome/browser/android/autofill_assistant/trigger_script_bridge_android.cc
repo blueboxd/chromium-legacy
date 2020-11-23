@@ -125,7 +125,8 @@ void TriggerScriptBridgeAndroid::OnTriggerScriptShown(
   }
   JNIEnv* env = AttachCurrentThread();
   auto jheader_model =
-      Java_AssistantTriggerScriptBridge_getHeaderModel(env, java_object_);
+      Java_AssistantTriggerScriptBridge_createHeaderAndGetModel(env,
+                                                                java_object_);
   AssistantHeaderModel header_model(jheader_model);
   if (disable_header_animations_for_testing_) {
     header_model.SetDisableAnimations(disable_header_animations_for_testing_);
@@ -200,6 +201,18 @@ void TriggerScriptBridgeAndroid::OnTriggerScriptFinished(
   Java_AssistantTriggerScriptBridge_onTriggerScriptFinished(
       AttachCurrentThread(), java_object_, static_cast<int>(state));
   StopTriggerScript();
+}
+
+void TriggerScriptBridgeAndroid::OnWebContentsVisibilityChanged(bool visible) {
+  if (!visible || !trigger_script_coordinator_) {
+    return;
+  }
+
+  // Every time the tab becomes visible again we have to double-check if the
+  // proactive help settings is still enabled.
+  trigger_script_coordinator_->OnProactiveHelpSettingChanged(
+      Java_AssistantTriggerScriptBridge_isProactiveHelpEnabled(
+          AttachCurrentThread()));
 }
 
 base::Optional<TriggerScriptUIProto>

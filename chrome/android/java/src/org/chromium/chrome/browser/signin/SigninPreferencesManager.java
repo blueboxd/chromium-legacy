@@ -14,7 +14,11 @@ import java.util.Set;
 
 /**
  * SigninPreferencesManager stores the state of SharedPreferences related to account sign-in.
+ *
+ * Please use SigninPreferencesManager in org.chromium.chrome.browser.signin.services,
+ * the current class will be removed after migration of this class in clank.
  */
+@Deprecated
 public class SigninPreferencesManager {
     private static final SigninPreferencesManager INSTANCE = new SigninPreferencesManager();
 

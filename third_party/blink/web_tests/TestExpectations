@@ -1098,7 +1098,6 @@ crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/layers-split-across
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/line-too-tall-for-second-outer-row.html [ Failure ]
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.html [ Crash Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-auto-height-short-first-row.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-columns.html [ Failure ]
@@ -1532,9 +1531,11 @@ crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/international/bidi-neutral-directionality-paragraph-start.html [ Skip ]
+crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/international/bidi-LDB-2-formatting-characters.html [ Skip ]
 crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Skip ]
 crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/stroking-decorations.html [ Skip ]
+crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/whitespace/whitespace-and-margin-wrap-after-list-marker-crash.html [ Skip ]
 
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-018.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Failure ]
@@ -1812,8 +1813,6 @@ crbug.com/574283 [ Mac ] virtual/threaded-prefer-compositing/fast/scroll-behavio
 crbug.com/574283 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
 crbug.com/574283 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
 
-
-crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Pass Failure Crash ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
@@ -5510,9 +5509,6 @@ crbug.com/1053903 external/wpt/webxr/events_referenceSpace_reset_inline.https.ht
 # Sheriff 2020-02-21
 crbug.com/1054977 media/video-controls-rendering.html [ Pass Failure ]
 
-# Sheriff 2020-02-21
-crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.html [ Pass Failure Timeout ]
-
 # Sheriff 2020-02-28
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
 crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
@@ -5976,9 +5972,8 @@ crbug.com/1142877 external/wpt/mediacapture-fromelement/capture.html [ Pass Fail
 crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
 
 # Eco-Infra Sheriff 2020-11-02
-crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Pass Failure ]
-crbug.com/1144677 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Pass Failure ]
-crbug.com/1144677 external/wpt/infrastructure/reftest/reftest.www.sub.html [ Failure ]
+crbug.com/1151922 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure ]
+crbug.com/1151922 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure ]
 
 crbug.com/1144537 external/wpt/xhr/responsexml-document-properties.htm [ Pass Failure ]
 
@@ -6010,6 +6005,10 @@ crbug.com/1150700 [ Win ] virtual/plz-dedicated-worker/external/wpt/service-work
 crbug.com/1130020 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
 crbug.com/1130020 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
 
+# Temporarily disable test to allow devtools-frontend changes
+crbug.com/1140481 http/tests/devtools/resource-parameters-ipv6.js [ Pass Failure Crash ]
+crbug.com/1140481 http/tests/devtools/resource-tree/resource-tree-frame-in-crafted-frame.js [ Pass Failure ]
+
 # Sheriff 2020-11-16
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Failure Timeout ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Failure Timeout ]
@@ -6026,3 +6025,7 @@ crbug.com/1151844 [ Win ] virtual/controls-refresh-hc/fast/forms/color-scheme/ca
 crbug.com/1151844 [ Win ] virtual/controls-refresh-hc/fast/forms/color-scheme/media/video-overlay-menu.html [ Failure ]
 crbug.com/1151844 [ Win ] virtual/controls-refresh-hc/fast/forms/color-scheme/file/file-appearance-basic.html [ Failure ]
 crbug.com/1151861 external/wpt/workers/semantics/multiple-workers/003.html [ Timeout Crash ]
+crbug.com/1152088 [ Mac10.13 Debug ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
+crbug.com/1149734 http/tests/devtools/sources/source-frame-toolbar-items.js [ Pass Failure ]
+crbug.com/1149734 http/tests/devtools/sources/debugger-frameworks/frameworks-sourcemap.js [ Pass Failure ]
+crbug.com/1149734 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]

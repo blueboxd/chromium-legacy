@@ -19,6 +19,7 @@
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/content/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/common/visual_utils.h"
 #include "components/safe_browsing/core/db/allowlist_checker_client.h"
 #include "components/safe_browsing/core/features.h"
@@ -125,7 +126,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       request_timeout_in_ms_(request_timeout_in_ms),
       request_proto_(std::make_unique<LoginReputationClientRequest>()),
       is_modal_warning_showing_(false) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
@@ -142,12 +143,12 @@ PasswordProtectionRequest::~PasswordProtectionRequest() {
 }
 
 void PasswordProtectionRequest::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   CheckWhitelist();
 }
 
 void PasswordProtectionRequest::CheckWhitelist() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   // In order to send pings for about:blank, we skip the whitelist check for
   // URLs with unsupported schemes.
@@ -181,7 +182,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
 }
 
 void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (match_whitelist) {
     if (password_protection_service_->CanSendSamplePing()) {
       FillRequestProto(/*is_sampled_ping=*/true);
@@ -197,7 +198,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
 }
 
 void PasswordProtectionRequest::CheckCachedVerdicts() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (!password_protection_service_) {
     Finish(RequestOutcome::SERVICE_DESTROYED, nullptr);
     return;
@@ -254,8 +255,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
       password_protection_service_->GetStoredVerdictCount(trigger_type_));
 
   bool clicked_through_interstitial =
-      password_protection_service_->UserClickedThroughSBInterstitial(
-          web_contents_);
+      password_protection_service_->UserClickedThroughSBInterstitial(this);
   request_proto_->set_clicked_through_interstitial(
       clicked_through_interstitial);
   request_proto_->set_content_type(web_contents_->GetContentsMimeType());
@@ -360,7 +360,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
 void PasswordProtectionRequest::OnGetDomFeatures(
     mojom::PhishingDetectorResult result,
     const std::string& verdict) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (dom_features_collection_complete_)
     return;
 
@@ -403,7 +403,7 @@ void PasswordProtectionRequest::OnGetDomFeatures(
 }
 
 void PasswordProtectionRequest::OnGetDomFeatureTimeout() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (!dom_features_collection_complete_) {
     dom_features_collection_complete_ = true;
     MaybeCollectVisualFeatures();
@@ -461,7 +461,7 @@ void PasswordProtectionRequest::OnScreenshotTaken(const SkBitmap& screenshot) {
 
 void PasswordProtectionRequest::OnVisualFeatureCollectionDone(
     std::unique_ptr<VisualFeatures> visual_features) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   request_proto_->mutable_visual_features()->Swap(visual_features.get());
 
@@ -473,7 +473,7 @@ void PasswordProtectionRequest::OnVisualFeatureCollectionDone(
 #endif
 
 void PasswordProtectionRequest::SendRequest() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   web_ui_token_ =
       WebUIInfoSingleton::GetInstance()->AddToPGPings(*request_proto_);
@@ -533,7 +533,7 @@ void PasswordProtectionRequest::SendRequest() {
 }
 
 void PasswordProtectionRequest::StartTimeout() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   // If request is not done withing 10 seconds, we cancel this request.
   // The weak pointer used for the timeout will be invalidated (and
@@ -547,7 +547,7 @@ void PasswordProtectionRequest::StartTimeout() {
 
 void PasswordProtectionRequest::OnURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   int response_code = 0;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
     response_code = url_loader_->ResponseInfo()->headers->response_code();
@@ -580,7 +580,7 @@ void PasswordProtectionRequest::OnURLLoaderComplete(
 void PasswordProtectionRequest::Finish(
     RequestOutcome outcome,
     std::unique_ptr<LoginReputationClientResponse> response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   tracker_.TryCancelAll();
 
   // If the request is canceled, the PasswordProtectionService is already
@@ -611,7 +611,7 @@ void PasswordProtectionRequest::Finish(
 }
 
 void PasswordProtectionRequest::Cancel(bool timed_out) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   url_loader_.reset();
   // If request is canceled because |password_protection_service_| is shutting
   // down, ignore all these deferred navigations.

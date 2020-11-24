@@ -101,6 +101,7 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/pref_names.h"
+#include "components/federated_learning/floc_id.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
@@ -300,7 +301,7 @@
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
-#include "chrome/browser/chromeos/policy/app_install_event_logger.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_logger.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -585,6 +586,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeTracingDelegate::RegisterPrefs(registry);
   component_updater::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
+  federated_learning::FlocId::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
   signin::IdentityManager::RegisterLocalStatePrefs(registry);
@@ -992,7 +994,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   guest_os::prefs::RegisterProfilePrefs(registry);
   lock_screen_apps::StateController::RegisterProfilePrefs(registry);
   plugin_vm::prefs::RegisterProfilePrefs(registry);
-  policy::AppInstallEventLogger::RegisterProfilePrefs(registry);
+  policy::ArcAppInstallEventLogger::RegisterProfilePrefs(registry);
   policy::AppInstallEventLogManagerWrapper::RegisterProfilePrefs(registry);
   policy::ExtensionInstallEventLogManagerWrapper::RegisterProfilePrefs(
       registry);

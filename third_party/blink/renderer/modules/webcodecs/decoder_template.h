@@ -11,6 +11,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/media_log.h"
 #include "media/base/status.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_codec_state.h"
@@ -33,6 +34,7 @@ namespace blink {
 template <typename Traits>
 class MODULES_EXPORT DecoderTemplate
     : public ScriptWrappable,
+      public ActiveScriptWrappable<DecoderTemplate<Traits>>,
       public ExecutionContextLifecycleObserver {
  public:
   typedef typename Traits::ConfigType ConfigType;
@@ -57,6 +59,9 @@ class MODULES_EXPORT DecoderTemplate
 
   // ExecutionContextLifecycleObserver override.
   void ContextDestroyed() override;
+
+  // ScriptWrappable override.
+  bool HasPendingActivity() const override;
 
   // GarbageCollected override.
   void Trace(Visitor*) const override;
@@ -120,7 +125,7 @@ class MODULES_EXPORT DecoderTemplate
   void OnFlushDone(media::Status);
   void OnConfigureFlushDone(media::Status);
   void OnResetDone();
-  void OnOutput(scoped_refptr<MediaOutputType>);
+  void OnOutput(uint32_t reset_generation, scoped_refptr<MediaOutputType>);
 
   // Helper function making it easier to check |state_|.
   bool IsClosed();

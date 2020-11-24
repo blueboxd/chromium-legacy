@@ -2167,7 +2167,7 @@
   {
     "name": "enable-subresource-redirect",
     "owners": [ "rajendrant", "mcrouse", "tbansal" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "enable-suggested-files",
@@ -2182,6 +2182,11 @@
   {
     "name": "enable-surface-control",
     "owners": [ "vikassoni", "khushalsagar" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-swipe-to-move-cursor",
+    "owners": [ "ctzsm", "changwan"],
     "expiry_milestone": 90
   },
   {
@@ -2737,12 +2742,12 @@
   {
     "name": "form-controls-dark-mode",
     "owners": [ "sasebree@microsoft.com", "masonfreed", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "form-controls-refresh",
     "owners": [ "iopopesc@microsoft.com", "masonfreed", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "fractional-scroll-offsets",

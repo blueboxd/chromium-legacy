@@ -16,8 +16,7 @@ cr.define('cellular_setup', function() {
     PROFILE_SEARCH: 'profile-search',
     ACTIVATION_CODE_ENTRY: 'activation-code-entry',
     MULTI_PROFILE_SELECTION: 'multi-profile-selection',
-    SETUP_SUCCESS: 'setup-success',
-    SETUP_FAILURE: 'setup-failure',
+    SETUP_FINISH: 'setup-finish',
   };
 
   /**
@@ -71,6 +70,12 @@ cr.define('cellular_setup', function() {
       selectedProfiles_: {
         type: Object,
       },
+
+      /** @private */
+      activationCode_: {
+        type: String,
+        value: '',
+      },
     },
 
     /**
@@ -78,6 +83,9 @@ cr.define('cellular_setup', function() {
      * @private {?chromeos.cellularSetup.mojom.ESimManagerRemote}
      */
     eSimManagerRemote_: null,
+
+    /** @private {?chromeos.cellularSetup.mojom.EuiccRemote} */
+    euicc_: null,
 
     listeners: {
       'activation-code-updated': 'onActivationCodeUpdated_',
@@ -99,21 +107,20 @@ cr.define('cellular_setup', function() {
 
     /** @private */
     fetchProfiles_() {
-      let euicc;
       this.eSimManagerRemote_.getAvailableEuiccs()
           .then(response => {
             // TODO(crbug.com/1093185) User should have at least 1 EUICC or
             // we shouldn't have gotten to this flow. Add check for this in
             // cellular_setup.
-            euicc = response.euiccs[0];
-            return euicc.requestPendingProfiles();
+            this.euicc_ = response.euiccs[0];
+            return this.euicc_.requestPendingProfiles();
           })
           .then(response => {
             if (response.result ===
                 chromeos.cellularSetup.mojom.ESimOperationResult.kFailure) {
               console.error('Error requesting pending profiles: ' + response);
             }
-            return euicc.getProfileList();
+            return this.euicc_.getProfileList();
           })
           .then(response => {
             return this.filterForPendingProfiles_(response.profiles);
@@ -124,10 +131,10 @@ cr.define('cellular_setup', function() {
                 this.state_ = ESimUiState.ACTIVATION_CODE_ENTRY;
                 break;
               case 1:
-                // TODO(crbug.com/1093185) Install the
-                // profile. Handle error state. Handle
-                // confirmation code if needed.
-                this.state_ = ESimUiState.SETUP_SUCCESS;
+                // Assume installing the profile doesn't require a confirmation
+                // code, send an empty string.
+                profiles[0].installProfile('').then(
+                    this.handleProfileInstallResponse_.bind(this));
                 break;
               default:
                 // TODO(crbug.com/1093185) Populate the profile discovery with
@@ -160,6 +167,26 @@ cr.define('cellular_setup', function() {
       });
     },
 
+    /**
+     * @private
+     * @param {{result: chromeos.cellularSetup.mojom.ProfileInstallResult}}
+     *     response
+     */
+    handleProfileInstallResponse_(response) {
+      // TODO(crbug.com/1093185) Handle
+      // confirmation code if needed.
+      // TODO(crbug.com/1093185) If response.result ===
+      // kErrorInvalidActivationCode, show error in activation code page.
+      this.showError_ = response.result !==
+          chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess;
+      if (response.result ===
+              chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess ||
+          response.result ===
+              chromeos.cellularSetup.mojom.ProfileInstallResult.kFailure) {
+        this.state_ = ESimUiState.SETUP_FINISH;
+      }
+    },
+
     /** @private */
     updateSelectedPage_() {
       switch (this.state_) {
@@ -172,7 +199,7 @@ cr.define('cellular_setup', function() {
         case ESimUiState.MULTI_PROFILE_SELECTION:
           this.selectedESimPageName_ = ESimPageName.PROFILE_DISCOVERY;
           break;
-        case ESimUiState.SETUP_SUCCESS:
+        case ESimUiState.SETUP_FINISH:
           this.selectedESimPageName_ = ESimPageName.FINAL;
           break;
         default:
@@ -210,7 +237,7 @@ cr.define('cellular_setup', function() {
             skipDiscovery: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
           };
           break;
-        case ESimUiState.SETUP_SUCCESS:
+        case ESimUiState.SETUP_FINISH:
           buttonState = {
             backward: cellularSetup.ButtonState.HIDDEN,
             cancel: cellularSetup.ButtonState.HIDDEN,
@@ -256,9 +283,12 @@ cr.define('cellular_setup', function() {
     navigateForward() {
       switch (this.state_) {
         case ESimUiState.ACTIVATION_CODE_ENTRY:
-          // TODO(crbug.com/1093185) Install the profile. Handle error state.
-          // Handle confirmation code if needed.
-          this.state_ = ESimUiState.SETUP_SUCCESS;
+          // Assume installing the profile doesn't require a confirmation
+          // code, send an empty string.
+          this.euicc_
+              .installProfileFromActivationCode(
+                  this.activationCode_, /*confirmationCode=*/ '')
+              .then(this.handleProfileInstallResponse_.bind(this));
           break;
         case ESimUiState.MULTI_PROFILE_SELECTION:
           this.state_ = ESimUiState.ACTIVATION_CODE_ENTRY;

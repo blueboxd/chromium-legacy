@@ -129,10 +129,26 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void DrawDebugRects(PaintCanvas* canvas,
                       DebugRectHistory* debug_rect_history);
 
+  // This function draws a single web vital metric. If the metrics doesn't have
+  // a valid value, the value is set to -1. This function returns the height
+  // of the current draw so it can be used to calculate the top of the next
+  // draw.
+  int DrawSingleMetric(PaintCanvas* canvas,
+                       int left,
+                       int right,
+                       int top,
+                       std::string name,
+                       const WebVitalMetrics::MetricsInfo& info,
+                       double value) const;
   SkRect DrawWebVitalMetrics(PaintCanvas* canvas,
-                             int right,
+                             int left,
                              int top,
                              int width) const;
+
+  SkRect DrawSmoothnessMetrics(PaintCanvas* canvas,
+                               int left,
+                               int top,
+                               int width) const;
 
   ResourcePool::InUsePoolResource in_flight_resource_;
   std::unique_ptr<ResourcePool> pool_;

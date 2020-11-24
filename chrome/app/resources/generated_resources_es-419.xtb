@@ -121,7 +121,7 @@
 <translation id="1128591060186966949">Editar el motor de búsqueda</translation>
 <translation id="1129850422003387628">Administrar apps</translation>
 <translation id="1130589222747246278"><ph name="WINDOW_TITLE" />: Parte del grupo <ph name="GROUP_NAME" /></translation>
-<translation id="1130712065489627903">Ahora puedes recibir notificaciones del teléfono en tu dispositivo <ph name="DEVICE_TYPE" />. Cuando descartes notificaciones en tu dispositivo <ph name="DEVICE_TYPE" />, también se descartarán en el teléfono. Asegúrate de que esté cerca, desbloqueado y tenga el Bluetooth y la conexión Wi-Fi activados.</translation>
+<translation id="1130712065489627903">Ahora puedes recibir notificaciones del teléfono en tu <ph name="DEVICE_TYPE" />. Cuando las descartes en tu <ph name="DEVICE_TYPE" />, también se descartarán en el teléfono. Asegúrate de que esté cerca, desbloqueado y tenga las conexiones Bluetooth y Wi-Fi activadas.</translation>
 <translation id="1134009406053225289">Abrir en una ventana de incógnito</translation>
 <translation id="1136179794690960030"><ph name="EMOJI_NAME" />. <ph name="EMOJI_INDEX" /> de <ph name="EMOJI_COUNT" />.</translation>
 <translation id="1136712381129578788">Se ingresó el PIN de forma incorrecta demasiadas veces; por lo tanto, se bloqueó la llave de seguridad. Para desbloquearla, quítala y vuelve a insertarla.</translation>
@@ -248,7 +248,7 @@
 <translation id="1264337193001759725">Para ver los registros de IU de la red, consulta: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="126710816202626562">Idioma de traducción:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1270369111467284986">Se sospecha que hay un portal cautivo.</translation>
+<translation id="1270369111467284986">Posible portal cautivo</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1272293450992660632">Los valores del PIN no coinciden.</translation>
 <translation id="1272978324304772054">Esta cuenta de usuario no pertenece al dominio en el que se inscribió el dispositivo. Si deseas inscribirte en un dominio diferente, primero tendrás que realizar el proceso de recuperación del dispositivo.</translation>
@@ -432,6 +432,7 @@
 <translation id="1475502736924165259">Tienes certificados archivados que no coinciden con ninguna de las demás categorías</translation>
 <translation id="1476088332184200792">Copiar a tu dispositivo</translation>
 <translation id="1476607407192946488">&amp;Configuración de idiomas</translation>
+<translation id="1477446329585670721"><ph name="DOMAIN" /> requiere que no quites la tarjeta inteligente.</translation>
 <translation id="1478340334823509079">Detalles: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">La instalación no está habilitada</translation>
 <translation id="1481537595330271162">Se produjo un error al cambiar el tamaño del disco</translation>
@@ -1027,7 +1028,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2157474325782140681">Para obtener más funciones, usa una estación de conexión Dell diseñada para funcionar con esta Chromebook.</translation>
 <translation id="215753907730220065">Salir de pantalla completa</translation>
 <translation id="2157875535253991059">Esta página está en modo de pantalla completa.</translation>
-<translation id="2160589599612868242">Recibe las notificaciones del teléfono en tu dispositivo <ph name="DEVICE_TYPE" />.</translation>
+<translation id="2160589599612868242">Recibe las notificaciones del teléfono en tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="216169395504480358">Agregar Wi-Fi</translation>
 <translation id="2162155940152307086">La sincronización volverá a comenzar cuando salgas de la configuración</translation>
 <translation id="2162838847352058695">No permitir que los sitios descarguen múltiples archivos de forma automática</translation>
@@ -1036,7 +1037,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2165421703844373933">Di "Ok Google" para acceder al Asistente. Para ahorrar batería, elige "Activado (recomendado)". El Asistente responderá únicamente cuando el dispositivo esté conectado a una fuente de energía o se esté cargando.</translation>
 <translation id="2166369534954157698">El veloz murciélago hindú comía feliz cardillo y kiwi</translation>
 <translation id="2169062631698640254">Acceder de todos modos</translation>
-<translation id="2170054054876170358">Asegúrate de que esté cerca, desbloqueado y tenga el Bluetooth y la conexión Wi-Fi activados.</translation>
+<translation id="2170054054876170358">Asegúrate de que esté cerca, desbloqueado y tenga las conexiones Bluetooth y Wi-Fi activadas.</translation>
 <translation id="2172784515318616985">Continuar</translation>
 <translation id="2173302385160625112">Comprueba tu conexión a Internet</translation>
 <translation id="2173801458090845390">Agregar la ID de la solicitud a este dispositivo</translation>
@@ -1816,7 +1817,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3058498974290601450">Puedes activar la sincronización en la configuración en cualquier momento</translation>
 <translation id="3060379269883947824">Habilitar Seleccionar para pronunciar</translation>
 <translation id="3060952009917586498">Cambia el idioma del dispositivo. El idioma actual es <ph name="LANGUAGE" />.</translation>
-<translation id="3060987956645097882">No se pudo establecer conexión con tu teléfono. Asegúrate de que esté cerca, desbloqueado y tenga el Bluetooth y la conexión Wi-Fi activados.</translation>
+<translation id="3060987956645097882">No se pudo establecer conexión con tu teléfono. Asegúrate de que esté cerca, desbloqueado y tenga las conexiones Bluetooth y Wi-Fi activadas.</translation>
 <translation id="3065041951436100775">La pestaña terminó los comentarios.</translation>
 <translation id="306535478112428611">No puede editar archivos ni carpetas del dispositivo</translation>
 <translation id="3065522099314259755">Latencia de repetición del teclado</translation>
@@ -1873,7 +1874,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3129215702932019810">Error al iniciar la aplicación</translation>
 <translation id="3130528281680948470">El dispositivo se restablecerá y todas las cuentas de usuario y los datos locales se eliminarán. Esta acción no se puede deshacer.</translation>
 <translation id="313205617302240621">¿Olvidaste la contraseña?</translation>
-<translation id="3132277757485842847">No se pudo mantener la conexión con tu teléfono. Asegúrate de que esté cerca, desbloqueado y tenga el Bluetooth y la conexión Wi-Fi activados.</translation>
+<translation id="3132277757485842847">No se pudo mantener la conexión con tu teléfono. Asegúrate de que esté cerca, desbloqueado y tenga las conexiones Bluetooth y Wi-Fi activadas.</translation>
 <translation id="3132996321662585180">Actualizar todos los días</translation>
 <translation id="313963229645891001">Descargando, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar amarillo predeterminado</translation>
@@ -2027,6 +2028,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3320630259304269485">Navegación segura (protección contra sitios peligrosos) y otras opciones de configuración de seguridad</translation>
 <translation id="3323295311852517824">{NUM_FILES,plural, =0{Estos datos incluyen contenido sensible o peligroso. Quita el contenido correspondiente y vuelve a intentarlo.}=1{Este archivo incluye contenido sensible o peligroso. Quita el contenido correspondiente y vuelve a intentarlo.}other{Estos archivos incluyen contenido sensible o peligroso. Quita el contenido correspondiente y vuelve a intentarlo.}}</translation>
 <translation id="3323521181261657960">Bonus: Disfruta de más tiempo de uso</translation>
+<translation id="3325804108816646710">Buscando perfiles disponibles…</translation>
 <translation id="3325910708063135066">La cámara y el micrófono están desactivados en las Preferencias del Sistema de Mac</translation>
 <translation id="3327050066667856415">Las Chromebooks están diseñadas para ser seguras. Tu dispositivo cuenta con una protección automática contra software malicioso, por lo que no necesitas una protección adicional.</translation>
 <translation id="3328489342742826322">Si implementas una copia de seguridad, se borrarán los datos y apps de Linux existentes en tu carpeta de archivos de Linux.</translation>
@@ -2094,6 +2096,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3412265149091626468">Saltar a selección</translation>
 <translation id="3413122095806433232">Emisores de certificados: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Tamaño:</translation>
+<translation id="3414966631182382431"><ph name="MANAGER" /> <ph name="BEGIN_LINK" />administra tu navegador<ph name="END_LINK" /></translation>
 <translation id="3416468988018290825">Mostrar siempre las URL completas</translation>
 <translation id="3417835166382867856">Buscar pestañas</translation>
 <translation id="3417836307470882032">Formato de 24 horas</translation>
@@ -3168,6 +3171,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4651484272688821107">No se pudo cargar el componente en línea con los recursos del modo de demostración.</translation>
 <translation id="4652935475563630866">Es necesario que reinicies Parallels Desktop para aplicar los cambios en la configuración de la cámara. Para continuar, reinicia Parallels Desktop.</translation>
 <translation id="4653405415038586100">Se produjo un error al configurar Linux</translation>
+<translation id="4657914796247705218">Velocidad de TrackPoint</translation>
 <translation id="465878909996028221">Solo se admiten los protocolos http, https y de archivo para las redirecciones a navegadores.</translation>
 <translation id="4659077111144409915">Cuenta principal</translation>
 <translation id="4659126640776004816">Esta función se activa cuando accedes a tu Cuenta de Google.</translation>
@@ -3342,7 +3346,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4880827082731008257">Buscar historial</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4882312758060467256">Tiene acceso a este sitio</translation>
-<translation id="4882670371033027418">Configura tu huella digital para desbloquear tu dispositivo <ph name="DEVICE_TYPE" /> más rápido</translation>
+<translation id="4882670371033027418">Configura tu huella digital para desbloquear tu <ph name="DEVICE_TYPE" /> más rápido</translation>
 <translation id="4882831918239250449">Controlar cómo se usa tu historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4882919381756638075">Por lo general, los sitios utilizan el micrófono para habilitar funciones de comunicación, como videochat.</translation>
 <translation id="4883436287898674711">Todos los sitios de <ph name="WEBSITE_1" /></translation>
@@ -3828,6 +3832,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5470735824776589490">Debes reiniciar tu dispositivo para poder restablecerlo con Powerwash. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Hola, soy la voz que leerá tus textos.</translation>
 <translation id="5472627187093107397">Guardar contraseñas para este sitio</translation>
+<translation id="5473156705047072749">{NUM_CHARACTERS,plural, =1{El PIN debe tener al menos un carácter}other{El PIN debe tener al menos # caracteres}}</translation>
 <translation id="5473333559083690127">Vuelve a ingresar el PIN nuevo</translation>
 <translation id="5481273127572794904">No puede descargar múltiples archivos de forma automática</translation>
 <translation id="5481941284378890518">Agregar impresoras cercanas</translation>
@@ -4307,7 +4312,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6031600495088157824">Opciones de entrada de la barra de herramientas</translation>
 <translation id="6032715498678347852">Haz clic en una extensión para otorgarle acceso a este sitio.</translation>
 <translation id="6032912588568283682">Sistema de archivos</translation>
-<translation id="603539183851330738">Botón para deshacer la autocorrección. Revertir a <ph name="TYPED_WORD" />.  Presiona Intro para activar o Esc para descartar.</translation>
+<translation id="603539183851330738">Botón para deshacer la autocorrección. Revertir a <ph name="TYPED_WORD" />.  Presiona Intro para Deshacer o Esc para descartar.</translation>
 <translation id="6035517790085323771">Quién puede compartir contenido con tu dispositivo</translation>
 <translation id="6038929619733116134">Bloquear si el sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="6039651071822577588">Diccionario de propiedades de la red con formato no válido</translation>
@@ -4366,6 +4371,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6087960857463881712">Cara increíble</translation>
 <translation id="6091761513005122595">Se activó correctamente el recurso compartido.</translation>
 <translation id="6093888419484831006">Cancelando actualización…</translation>
+<translation id="6095541101974653012">Saliste de tu cuenta.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Abrir de forma maximizada</translation>
 <translation id="6096326118418049043">Nombre X 500</translation>
@@ -4699,6 +4705,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6474884162850599008">Desconectar la cuenta de Google Drive</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> desea compartir el contenido de tu pantalla. Elige lo que deseas compartir.</translation>
 <translation id="6478248366783946499">¿Deseas conservar el archivo peligroso?</translation>
+<translation id="6480327114083866287">Administrador: <ph name="MANAGER" /></translation>
 <translation id="6483485061007832714">Abrir el archivo descargado</translation>
 <translation id="6483805311199035658">Abriendo <ph name="FILE" />...</translation>
 <translation id="6488384360522318064">Seleccionar idioma</translation>
@@ -4887,6 +4894,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="671928215901716392">Bloquear pantalla</translation>
 <translation id="6721678857435001674">Ver la marca y el modelo de tu llave de seguridad</translation>
 <translation id="6721972322305477112">&amp;Archivo</translation>
+<translation id="672208878794563299">Este sitio solicitará acceso la próxima vez.</translation>
 <translation id="672213144943476270">Desbloquea tu perfil antes de navegar como invitado.</translation>
 <translation id="6723661294526996303">Importar favoritos y configuración...</translation>
 <translation id="6723839937902243910">Alimentación</translation>
@@ -5599,7 +5607,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7556033326131260574">Smart Lock no pudo verificar la cuenta. Escribe la contraseña para acceder.</translation>
 <translation id="7556242789364317684">Lamentablemente, <ph name="SHORT_PRODUCT_NAME" /> no puede recuperar la configuración. Para solucionar el error, <ph name="SHORT_PRODUCT_NAME" /> debe restablecer el dispositivo con Powerwash.</translation>
 <translation id="7557194624273628371">Redirección de puertos para Linux</translation>
-<translation id="7559269329306630685">Los datos de las huellas digitales se guardan en un lugar seguro de tu dispositivo <ph name="DEVICE_TYPE" />.</translation>
+<translation id="7559269329306630685">Los datos de las huellas digitales se guardan en un lugar seguro de tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="7559719679815339381">Espera. La aplicación de kiosco se está actualizando. No desconectes el dispositivo USB.</translation>
 <translation id="7561196759112975576">Siempre</translation>
 <translation id="756445078718366910">Abrir la ventana del navegador</translation>
@@ -6048,7 +6056,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8045923671629973368">Ingresa el ID de aplicación o la URL de la tienda web</translation>
 <translation id="8047242494569930800">Mover a la Cuenta de Google</translation>
 <translation id="804786196054284061">Acuerdo de licencia de usuario final</translation>
-<translation id="8048977114738515028">Crea un acceso directo de escritorio en tu dispositivo para acceder directamente a este perfil.</translation>
+<translation id="8048977114738515028">Crea un acceso directo de escritorio en tu dispositivo para acceder directamente a este perfil</translation>
 <translation id="8049705080247101012">Google marcó <ph name="EXTENSION_NAME" /> como extensión maliciosa y se canceló la instalación</translation>
 <translation id="8049948037269924837">Desplazamiento invertido del panel táctil</translation>
 <translation id="8050038245906040378">Firma de código comercial de Microsoft</translation>
@@ -6284,6 +6292,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8317671367883557781">Agregar conexión de red</translation>
 <translation id="8319414634934645341">Uso extendido de la clave</translation>
 <translation id="8320459152843401447">Tu pantalla completa</translation>
+<translation id="8321837372750396788"><ph name="MANAGER" /> administrará este dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8322814362483282060">Esta página no tiene permiso para acceder al micrófono.</translation>
 <translation id="8323167517179506834">Ingresar URL</translation>
 <translation id="8324784016256120271">Los sitios pueden usar cookies para ver la actividad de navegación en diferentes sitios, por ejemplo, con el fin de personalizar anuncios.</translation>
@@ -6591,6 +6600,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8698269656364382265">Si quieres regresar a la pantalla anterior, desliza el dedo desde el lado izquierdo.</translation>
 <translation id="869884720829132584">Menú Aplicaciones</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>
+<translation id="8702825062053163569">Se bloqueó tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8703346390800944767">Omitir anuncio</translation>
 <translation id="8705331520020532516">Número de serie</translation>
 <translation id="8705580154597116082">Wi-Fi disponible mediante el teléfono</translation>
@@ -6750,7 +6760,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="885246833287407341">Argumentos de la función de la API</translation>
 <translation id="8853586775156634952">Esta tarjeta solo se guardará en este dispositivo</translation>
 <translation id="8855977033756560989">Este dispositivo Chromebook Enterprise incluye la actualización de Chrome Enterprise. Para aprovechar las capacidades empresariales, inscribe este dispositivo con una cuenta de administrador de Google.</translation>
-<translation id="8856028055086294840">Restaurar apps y páginas</translation>
+<translation id="8856028055086294840">Restablecer apps y páginas</translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8859057652521303089">Selecciona tu idioma:</translation>
 <translation id="8859174528519900719">Submarco: <ph name="SUBFRAME_SITE" /></translation>
@@ -7111,7 +7121,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="971774202801778802">URL del marcador</translation>
 <translation id="973473557718930265">Salir</translation>
 <translation id="975893173032473675">Idioma de destino de la traducción</translation>
-<translation id="976499800099896273">Se muestra el diálogo para deshacer la autocorrección de la palabra <ph name="TYPED_WORD" /> corregida a <ph name="CORRECTED_WORD" />.  Presiona la flecha hacia arriba para acceder o Esc para ignorar.</translation>
+<translation id="976499800099896273">Se muestra el diálogo para deshacer la autocorrección de la palabra <ph name="TYPED_WORD" /> corregida a <ph name="CORRECTED_WORD" />.  Presiona la flecha hacia arriba para acceder al botón Deshacer o Esc para ignorar el diálogo.</translation>
 <translation id="978146274692397928">El ancho de la puntuación inicial está completo</translation>
 <translation id="97905529126098460">Cuando se complete la cancelación, se cerrará esta ventana.</translation>
 <translation id="980731642137034229">Botón del menú de Acción</translation>

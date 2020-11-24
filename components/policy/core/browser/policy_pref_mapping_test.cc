@@ -35,6 +35,21 @@ namespace {
 // to be parsed.
 const char kTemplateSampleTest[] = "-- Template --";
 
+enum class PrefLocation {
+  kUserProfile,
+  kLocalState,
+};
+
+PrefLocation GetPrefLocation(const base::Value& settings) {
+  const std::string* location = settings.FindStringKey("location");
+  if (!location || *location == "user_profile")
+    return PrefLocation::kUserProfile;
+  if (*location == "local_state")
+    return PrefLocation::kLocalState;
+  NOTREACHED() << "Unknown pref location: " << *location;
+  return PrefLocation::kUserProfile;
+}
+
 std::string GetPolicyName(const std::string& policy_name_decorated) {
   const size_t offset = policy_name_decorated.find('.');
   if (offset != std::string::npos)
@@ -93,7 +108,7 @@ class PrefTestCase {
   explicit PrefTestCase(const std::string& name, const base::Value& settings) {
     const base::Value* value = settings.FindKey("value");
     const base::Value* indicator_test = settings.FindDictKey("indicator_test");
-    is_local_state_ = settings.FindBoolKey("local_state").value_or(false);
+    location_ = GetPrefLocation(settings);
     check_for_mandatory_ =
         settings.FindBoolKey("check_for_mandatory").value_or(true);
     check_for_recommended_ =
@@ -116,7 +131,7 @@ class PrefTestCase {
   const std::string& pref() const { return pref_; }
   const base::Value* value() const { return value_.get(); }
 
-  bool is_local_state() const { return is_local_state_; }
+  PrefLocation location() const { return location_; }
 
   bool check_for_mandatory() const { return check_for_mandatory_; }
 
@@ -131,7 +146,7 @@ class PrefTestCase {
  private:
   std::string pref_;
   std::unique_ptr<base::Value> value_;
-  bool is_local_state_;
+  PrefLocation location_;
   bool check_for_mandatory_;
   bool check_for_recommended_;
   bool expect_default_;
@@ -233,12 +248,8 @@ class PolicyTestCase {
       }
     }
 
-    const base::Value* test_policy = test_case.FindDictKey("test_policy");
-    if (test_policy)
-      test_policy_ = test_policy->CreateDeepCopy();
-
     const base::Value* policy_pref_mapping_tests =
-        test_case.FindListKey("policy_pref_mapping_test");
+        test_case.FindListKey("policy_pref_mapping_tests");
     if (policy_pref_mapping_tests) {
       for (const auto& mapping : policy_pref_mapping_tests->GetList()) {
         if (mapping.is_dict()) {
@@ -285,8 +296,6 @@ class PolicyTestCase {
     return IsOsSupported();
   }
 
-  const base::Value* test_policy() const { return test_policy_.get(); }
-
   const std::vector<std::unique_ptr<PolicyPrefMappingTest>>&
   policy_pref_mapping_test() const {
     return policy_pref_mapping_test_;
@@ -297,7 +306,6 @@ class PolicyTestCase {
   bool is_official_only_;
   bool can_be_recommended_;
   std::vector<std::string> supported_os_;
-  std::unique_ptr<base::Value> test_policy_;
   std::vector<std::unique_ptr<PolicyPrefMappingTest>> policy_pref_mapping_test_;
 };
 
@@ -395,7 +403,7 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
 
     // This can only be a warning as many policies are not really testable
     // this way and only present as a single line in the file.
-    // Although they could at least contain the "os" and "test_policy" fields.
+    // Although they could at least contain the "os" fields.
     // See http://crbug.com/791125.
     LOG_IF(WARNING, !has_test_case_for_this_os)
         << "Policy " << policy->first
@@ -463,7 +471,8 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
             continue;
 
           PrefService* prefs =
-              pref_case->is_local_state() ? local_state : user_prefs;
+              pref_case->location() == PrefLocation::kLocalState ? local_state
+                                                                 : user_prefs;
           // The preference must have been registered.
           const PrefService::Preference* pref =
               prefs->FindPreference(pref_case->pref().c_str());

@@ -993,9 +993,9 @@ const char kEnableUseZoomForDsfChoiceEnabled[] = "Enabled";
 const char kEnableUseZoomForDsfChoiceDisabled[] = "Disabled";
 
 const char kEnableSubresourceRedirectName[] =
-    "Enable Render Level Data Use Optimization";
+    "Enable Subresource Redirect Compression";
 const char kEnableSubresourceRedirectDescription[] =
-    "Allow Render Level Data Use Optimization";
+    "Allow subresource compression for data savings";
 
 const char kEnableWebAuthenticationCableV2SupportName[] =
     "Web Authentication caBLE v2 support";
@@ -3219,6 +3219,10 @@ const char kAndroidNightModeTabReparentingName[] =
 const char kAndroidNightModeTabReparentingDescription[] =
     "If enabled, when the user changes themes the current tabs are reparented "
     "instead of reloaded.";
+
+const char kSwipeToMoveCursorName[] = "Swipe to move cursor";
+const char kSwipeToMoveCursorDescription[] =
+    "Allows user to use touch gestures to move the text cursor around.";
 
 const char kTabbedAppOverflowMenuIconsName[] =
     "Android tabbed app overflow menu icons";

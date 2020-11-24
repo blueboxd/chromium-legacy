@@ -21,6 +21,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="TextFragmentSource">
+<!-- Should be synced with TextFragmentLinkOpenSource in enums.xml. -->
+
+  <variant name="" summary="all sources">
+    <obsolete>
+      Replaced by split out versions below.
+    </obsolete>
+  </variant>
+  <variant name=".SearchEngine" summary="the default search engine."/>
+  <variant name=".Unknown" summary="unknown but not the default search engine"/>
+</variants>
+
 <histogram name="AccountManager.AccountAdditionSource"
     enum="AccountManagerAccountAdditionSource" expires_after="2021-03-28">
   <owner>sinhak@chromium.org</owner>
@@ -5267,7 +5279,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FirstRun.IOSFirebaseConfigured" enum="FirebaseConfiguredState"
-    expires_after="M87">
+    expires_after="M89">
   <owner>ghendel@chromium.org</owner>
   <owner>pkl@chromium.org</owner>
   <summary>Track whether Firebase is enabled or not at app startup.</summary>
@@ -7672,25 +7684,43 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode"
     expires_after="2021-04-04">
-  <owner>anthonyvd@chromium.org</owner>
-  <owner>frechette@chromium.org</owner>
+  <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
-  <summary>Accept languages.</summary>
+  <summary>
+    Accept languages with country codes removed. Recorded once per profile
+    intitalization. Incognito profiles are ignored.
+  </summary>
 </histogram>
 
 <histogram name="LanguageUsage.AcceptLanguage.Count" units="units"
     expires_after="2021-06-01">
   <owner>dvallet@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
-  <summary>The number of accepted languages in the user preferences.</summary>
+  <summary>
+    The number of accepted languages in the user preferences recored once per
+    profile initialization. Incognito profiles are ignored.
+  </summary>
 </histogram>
 
 <histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageCode"
     expires_after="2021-04-04">
-  <owner>anthonyvd@chromium.org</owner>
-  <owner>frechette@chromium.org</owner>
+  <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
-  <summary>Application languages used for UI.</summary>
+  <summary>
+    Application languages used for UI recorded once per profile initialization.
+    Incognito profiles are ignored.
+  </summary>
+</histogram>
+
+<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageCode"
+    expires_after="M90">
+  <owner>perrier@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Source page language from UrlLanguageHistogram recorded one per profile
+    during initialization. Each language with a frequency over 5% is recorded
+    once. Incognito profiles are ignored and not recorded on ChromeOS.
+  </summary>
 </histogram>
 
 <histogram name="Launch.FlagsAtStartup" enum="LoginCustomFlags"
@@ -9455,6 +9485,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Nearby.Share.Medium.FinalPayloadStatus.{UpgradedMedium}"
+    enum="NearbyShareFinalPayloadStatus" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records whether a transfer succeeded, failed, or was cancelled when
+    transmitted over {UpgradedMedium}. Emitted when the payload transfer
+    finishes, independent of whether the transfer was successful.
+  </summary>
+  <token key="UpgradedMedium">
+    <variant name="NoMediumUpgrade" summary="the initial bandwidth medium"/>
+    <variant name="UnknownMediumUpgrade"
+        summary="an unknown bandwidth-upgraded medium"/>
+    <variant name="WebRtcUpgrade" summary="an upgraded WebRTC medium"/>
+  </token>
+</histogram>
+
 <histogram name="Nearby.Share.Medium.InitiateBandwidthUpgradeResult"
     enum="BooleanSuccess" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
@@ -9466,6 +9513,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     this metric does not capture automatic bandwidth upgrades initiated
     internally by the Nearby Connections library. Emitted when the Nearby
     Connections client explicitly requests a bandwidth upgrade.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Medium.RequestedBandwidthUpgradeResult"
+    enum="BooleanUpgraded" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records if the transfer medium was successfully upgraded after an explicit
+    bandwidth upgrade request from the client. Emitted when the transfer channel
+    is disconnected after a bandwidth upgrade request was made by the client.
   </summary>
 </histogram>
 
@@ -9564,14 +9622,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
-    name="Nearby.Share.Transfer.Rate{Direction}{ShareTargetType}{PayloadStatus}"
+    name="Nearby.Share.Transfer.Rate{Direction}{ShareTargetType}{UpgradedMedium}{PayloadStatus}"
     units="KB/s" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Records the transfer rate of a Nearby Share {Direction} transfer that
-    {PayloadStatus} when sharing with {ShareTargetType}. Emitted when the
-    transfer concludes.
+    {PayloadStatus} when sharing with {ShareTargetType} over {UpgradedMedium}.
+    Emitted when the transfer concludes.
   </summary>
   <token key="Direction">
     <variant name="" summary="outgoing (send) or incoming (receive)"/>
@@ -9584,6 +9642,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Phone" summary="a phone"/>
     <variant name=".Tablet" summary="a tablet"/>
     <variant name=".Unknown" summary="an unknown device type"/>
+  </token>
+  <token key="UpgradedMedium">
+    <variant name="" summary="any possible bandwidth medium"/>
+    <variant name=".NoMediumUpgrade" summary="the initial bandwidth medium"/>
+    <variant name=".UnknownMediumUpgrade"
+        summary="an unknown bandwidth-upgraded medium"/>
+    <variant name=".WebRtcUpgrade" summary="an upgraded WebRTC medium"/>
   </token>
   <token key="PayloadStatus">
     <variant name="" summary="succeeded, failed, or was cancelled"/>
@@ -9594,14 +9659,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
-    name="Nearby.Share.Transfer.TotalSize{Direction}{ShareTargetType}{PayloadStatus}"
+    name="Nearby.Share.Transfer.TotalSize{Direction}{ShareTargetType}{UpgradedMedium}{PayloadStatus}"
     units="KB" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Records the total payload size of a Nearby Share {Direction} transfer that
-    {PayloadStatus} when sharing with {ShareTargetType}. Emitted when the
-    transfer concludes.
+    {PayloadStatus} when sharing with {ShareTargetType} over {UpgradedMedium}.
+    Emitted when the transfer concludes.
   </summary>
   <token key="Direction">
     <variant name="" summary="outgoing (send) or incoming (receive)"/>
@@ -9614,6 +9679,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Phone" summary="a phone"/>
     <variant name=".Tablet" summary="a tablet"/>
     <variant name=".Unknown" summary="an unknown device type"/>
+  </token>
+  <token key="UpgradedMedium">
+    <variant name="" summary="any possible bandwidth medium"/>
+    <variant name=".NoMediumUpgrade" summary="the initial bandwidth medium"/>
+    <variant name=".UnknownMediumUpgrade"
+        summary="an unknown bandwidth-upgraded medium"/>
+    <variant name=".WebRtcUpgrade" summary="an upgraded WebRTC medium"/>
   </token>
   <token key="PayloadStatus">
     <variant name="" summary="succeeded, failed, or was cancelled"/>
@@ -14693,39 +14765,6 @@ should be kept until we remove incident reporting. -->
   </summary>
 </histogram>
 
-<histogram name="TextFragmentAnchor.AmbiguousMatch" enum="Boolean"
-    expires_after="2021-03-07">
-  <owner>nburris@chromium.org</owner>
-  <owner>bokan@chromium.org</owner>
-  <summary>
-    Whether we found multiple matches for a selector. Recorded when
-    TextFragmentAnchor finishes searching once the page is loaded.
-  </summary>
-</histogram>
-
-<histogram name="TextFragmentAnchor.DidScrollIntoView" enum="Boolean"
-    expires_after="2021-05-09">
-  <owner>nburris@chromium.org</owner>
-  <owner>bokan@chromium.org</owner>
-  <summary>
-    Whether the page did a non-zero scroll in order to scroll the match into
-    view. Only recorded if we found a match and scrolled it into view. Recorded
-    when TextFragmentAnchor finishes searching once the page is loaded.
-  </summary>
-</histogram>
-
-<histogram name="TextFragmentAnchor.DirectiveLength" units="characters"
-    expires_after="2021-05-09">
-  <owner>nburris@chromium.org</owner>
-  <owner>bokan@chromium.org</owner>
-  <summary>
-    The raw length of the directive in the URL (e.g. spaces count as the three
-    characters '%20'), regardless of how many text= terms there are. Recorded if
-    there was a text directive, regardless of whether a match was found.
-    Recorded when TextFragmentAnchor finishes searching once the page is loaded.
-  </summary>
-</histogram>
-
 <histogram name="TextFragmentAnchor.ElementIdFragmentFound" enum="Boolean"
     expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
@@ -14734,28 +14773,6 @@ should be kept until we remove incident reporting. -->
     Whether an element-id based fragment was found in the document. Counted only
     when a fragment was specified and it wasn't parsed into a |targetText| style
     anchor.
-  </summary>
-</histogram>
-
-<histogram name="TextFragmentAnchor.EndTextLength" units="characters"
-    expires_after="2021-03-07">
-  <owner>nburris@chromium.org</owner>
-  <owner>bokan@chromium.org</owner>
-  <summary>
-    The length of the end parameter, in the case of a range match. Only recorded
-    if a match was found. Recorded when TextFragmentAnchor finishes searching
-    once the page is loaded.
-  </summary>
-</histogram>
-
-<histogram name="TextFragmentAnchor.ExactTextLength" units="characters"
-    expires_after="2021-05-09">
-  <owner>nburris@chromium.org</owner>
-  <owner>bokan@chromium.org</owner>
-  <summary>
-    The length of the matched text, in the case of an exact match. Only recorded
-    if a match was found. Recorded when TextFragmentAnchor finishes searching
-    once the page is loaded.
   </summary>
 </histogram>
 
@@ -14779,28 +14796,104 @@ should be kept until we remove incident reporting. -->
   </summary>
 </histogram>
 
-<histogram name="TextFragmentAnchor.ListItemMatch" units="Boolean"
-    expires_after="2021-03-07">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.AmbiguousMatch"
+    enum="Boolean" expires_after="2021-03-07">
+  <owner>nburris@chromium.org</owner>
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    Whether we found multiple matches for a selector. Recorded when
+    TextFragmentAnchor finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
+  </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
+</histogram>
+
+<histogram name="TextFragmentAnchor{TextFragmentSource}.DidScrollIntoView"
+    enum="Boolean" expires_after="2021-05-09">
+  <owner>nburris@chromium.org</owner>
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    Whether the page did a non-zero scroll in order to scroll the match into
+    view. Only recorded if we found a match and scrolled it into view. Recorded
+    when TextFragmentAnchor finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
+  </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
+</histogram>
+
+<histogram name="TextFragmentAnchor{TextFragmentSource}.DirectiveLength"
+    units="characters" expires_after="2021-05-09">
+  <owner>nburris@chromium.org</owner>
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    The raw length of the directive in the URL (e.g. spaces count as the three
+    characters '%20'), regardless of how many text= terms there are. Recorded if
+    there was a text directive, regardless of whether a match was found.
+    Recorded when TextFragmentAnchor finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
+  </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
+</histogram>
+
+<histogram name="TextFragmentAnchor{TextFragmentSource}.EndTextLength"
+    units="characters" expires_after="2021-03-07">
+  <owner>nburris@chromium.org</owner>
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    The length of the end parameter, in the case of a range match. Only recorded
+    if a match was found. Recorded when TextFragmentAnchor finishes searching
+    once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
+  </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
+</histogram>
+
+<histogram name="TextFragmentAnchor{TextFragmentSource}.ExactTextLength"
+    units="characters" expires_after="2021-05-09">
+  <owner>nburris@chromium.org</owner>
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    The length of the matched text, in the case of an exact match. Only recorded
+    if a match was found. Recorded when TextFragmentAnchor finishes searching
+    once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
+  </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
+</histogram>
+
+<histogram name="TextFragmentAnchor{TextFragmentSource}.ListItemMatch"
+    units="Boolean" expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     Whether the match was within a list item. Only recorded for exact text
     fragments and only if a match was found. Recorded when TextFragmentAnchor
     finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.MatchRate" units="%"
+<histogram name="TextFragmentAnchor{TextFragmentSource}.MatchRate" units="%"
     expires_after="2021-05-09">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     The percentage of selectors for which a match was found in the document.
     Recorded when TextFragmentAnchor finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.Parameters"
+<histogram name="TextFragmentAnchor{TextFragmentSource}.Parameters"
     enum="TextFragmentAnchorParameters" expires_after="2021-05-09">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
@@ -14808,65 +14901,98 @@ should be kept until we remove incident reporting. -->
     An enum indicating which parameters were specified in the text fragment
     anchor. Only recorded if a match was found. Recorded when TextFragmentAnchor
     finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.RangeMatchLength" units="characters"
-    expires_after="2021-03-07">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.RangeMatchLength"
+    units="characters" expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     The length of the matched text, in the case of a range match. Only recorded
     if a match was found. Recorded when TextFragmentAnchor finishes searching
     once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.ScrollCancelled" enum="Boolean"
-    expires_after="2021-03-07">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.ScrollCancelled"
+    enum="Boolean" expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     Whether the scroll into view was cancelled by a user gesture or programmatic
     scroll. Recorded when TextFragmentAnchor finishes searching once the page is
     loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.SelectorCount" units="selectors"
-    expires_after="2021-05-09">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.SelectorCount"
+    units="selectors" expires_after="2021-05-09">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     The number of selectors in the text fragment anchor if it is present.
     Recorded when TextFragmentAnchor finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.StartTextLength" units="characters"
-    expires_after="2021-03-07">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.SpansMultipleBlocks"
+    units="Boolean" expires_after="2021-05-20">
+  <owner>bokan@chromium.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Whether or not a range-based text fragment match crosses any block
+    boundaries. That is, the start and end of the range are in different blocks
+    or in the same block but contain an intervening block. Only recorded for
+    range-based (start,end) text fragments. Only recorded on successful match.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
+  </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
+</histogram>
+
+<histogram name="TextFragmentAnchor{TextFragmentSource}.StartTextLength"
+    units="characters" expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     The length of the start parameter, in the case of a range match. Only
     recorded if a match was found. Recorded when TextFragmentAnchor finishes
     searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.TableCellMatch" units="Boolean"
-    expires_after="2021-03-07">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.TableCellMatch"
+    units="Boolean" expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
     Whether the match was within a table cell. Only recorded for exact text
     fragments and only if a match was found. Recorded when TextFragmentAnchor
     finishes searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.TimeToScrollIntoView" units="ms"
-    expires_after="2021-05-09">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.TimeToScrollIntoView"
+    units="ms" expires_after="2021-05-09">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
@@ -14874,11 +15000,14 @@ should be kept until we remove incident reporting. -->
     and scrolling the target into view. Only recorded if there is a match and we
     scroll it into view. Recorded when TextFragmentAnchor finishes searching
     once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
-<histogram name="TextFragmentAnchor.TimeToScrollToTop" units="ms"
-    expires_after="2021-03-07">
+<histogram name="TextFragmentAnchor{TextFragmentSource}.TimeToScrollToTop"
+    units="ms" expires_after="2021-03-07">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
@@ -14887,7 +15016,10 @@ should be kept until we remove incident reporting. -->
     recorded if a match is scrolled into view and the user subsequently scrolled
     back to the top of the page. Recorded when TextFragmentAnchor finishes
     searching once the page is loaded.
+
+    Recorded from text fragment links followed from {TextFragmentSource}.
   </summary>
+  <token key="TextFragmentSource" variants="TextFragmentSource"/>
 </histogram>
 
 <histogram name="TextToSpeech.Event" enum="TextToSpeechEvent"

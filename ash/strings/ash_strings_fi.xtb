@@ -238,6 +238,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
 <translation id="3249513730522716925">Ikkuna <ph name="WINDOW_TITLE" /> siirretty työpöydältä <ph name="ACTIVE_DESK" /> työpöydälle <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Mitä osaat tehdä?</translation>
+<translation id="3269597722229482060">Klikkaa kakkospainiketta</translation>
 <translation id="3289674678944039601">Ladataan virtalähteen kautta</translation>
 <translation id="3290356915286466215">Suojaamaton</translation>
 <translation id="3294437725009624529">Vierailja</translation>
@@ -340,6 +341,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="4212472694152630271">Vaihda PIN-koodiin</translation>
 <translation id="4215497585250573029">VPN-asetukset</translation>
 <translation id="4217571870635786043">Sanelu</translation>
+<translation id="4221957499226645091"><ph name="APP_NAME" />, asennettu sovellus, keskeytetty</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4250229828105606438">Kuvakaappaus</translation>
 <translation id="425364040945105958">Ei SIM-korttia</translation>
@@ -494,6 +496,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="5648021990716966815">Mikrofoniliitäntä</translation>
 <translation id="5669267381087807207">Aktivoidaan</translation>
 <translation id="5673434351075758678">Muutos asetusten synkronoinnin yhteydessä: <ph name="FROM_LOCALE" /> – <ph name="TO_LOCALE" /></translation>
+<translation id="5677928146339483299">Estetty</translation>
 <translation id="5679050765726761783">Pienitehoinen sovitin liitetty</translation>
 <translation id="5682642926269496722">Google Assistantia ei voi käyttää nykyisellä käyttäjätilillä.</translation>
 <translation id="5689633613396158040">Yövalo helpottaa näytön katsomista ja lukemista hämärässä. Kosketa muuttaaksesi Yövalon syttymisaikaa tai poista se kokonaan käytöstä.</translation>
@@ -695,6 +698,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="7590883480672980941">Syöttöasetukset</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7600875258240007829">Näytä kaikki ilmoitukset</translation>
+<translation id="7607002721634913082">Keskeytetty</translation>
 <translation id="7618774594543487847">Neutraali</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Näytä lähijakamisen asetukset.</translation>
@@ -761,6 +765,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="8142699993796781067">Yksityinen verkko</translation>
 <translation id="8152092012181020186">Sulje painamalla Ctrl + W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Järjestelmänvalvojasi ylläpitää tätä asetusta.</translation>
+<translation id="8155628902202578800">Avaa tietoikkuna: <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> käytössä</translation>
 <translation id="8170567869359129153">Mobiiliverkko. Signaalin voimakkuus <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8192202700944119416">Ilmoitukset on piilotettu.</translation>
@@ -826,6 +831,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="8755498163081687682">Vahvista henkilöllisyytesi: <ph name="ORIGIN_NAME" /> haluaa vahvistaa henkilöllisyytesi</translation>
 <translation id="875593634123171288">Näytä VPN-asetukset</translation>
 <translation id="8759408218731716181">Useisiin tileihin kirjautumista ei sallita</translation>
+<translation id="878215960996152260"><ph name="APP_NAME" />, asennettu sovellus, estetty</translation>
 <translation id="8785070478575117577">Yhdistä: <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

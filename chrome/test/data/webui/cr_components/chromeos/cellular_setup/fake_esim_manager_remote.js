@@ -24,11 +24,30 @@ cr.define('cellular_setup', function() {
      *     chromeos.cellularSetup.mojom.ESimProfileProperties},}>}
      */
     getProperties() {
-      return new Promise((res) => {
-        res({
-          properties: this.properties_,
-        });
+      return Promise.resolve({
+        properties: this.properties_,
       });
+    }
+
+    /**
+     * @override
+     * @param {string} confirmationCode
+     * @return {!Promise<{result:
+     *     chromeos.cellularSetup.mojom.ProfileInstallResult},}>}
+     */
+    installProfile(confirmationCode) {
+      return Promise.resolve({
+        result: this.profileInstallResult_ ?
+            this.profileInstallResult_ :
+            chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess
+      });
+    }
+
+    /**
+     * @param {chromeos.cellularSetup.mojom.ProfileInstallResult} result
+     */
+    setProfileInstallResultForTest(result) {
+      this.profileInstallResult_ = result;
     }
   }
 
@@ -47,10 +66,8 @@ cr.define('cellular_setup', function() {
      *     chromeos.cellularSetup.mojom.ESimOperationResult},}>}
      */
     requestPendingProfiles() {
-      return new Promise((res) => {
-        res({
-          result: chromeos.cellularSetup.mojom.ESimOperationResult.kSuccess
-        });
+      return Promise.resolve({
+        result: chromeos.cellularSetup.mojom.ESimOperationResult.kSuccess,
       });
     }
 
@@ -59,11 +76,31 @@ cr.define('cellular_setup', function() {
      * @return {!Promise<{profiles: Array<!ESimProfile>,}>}
      */
     getProfileList() {
-      return new Promise((res) => {
-        res({
-          profiles: this.profiles_,
-        });
+      return Promise.resolve({
+        profiles: this.profiles_,
       });
+    }
+
+    /**
+     * @override
+     * @param {string} activationCode
+     * @param {string} confirmationCode
+     * @return {!Promise<{result:
+     *     chromeos.cellularSetup.mojom.ProfileInstallResult},}>}
+     */
+    installProfileFromActivationCode(activationCode, confirmationCode) {
+      return Promise.resolve({
+        result: this.profileInstallResult_ ?
+            this.profileInstallResult_ :
+            chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess,
+      });
+    }
+
+    /**
+     * @param {chromeos.cellularSetup.mojom.ProfileInstallResult} result
+     */
+    setProfileInstallResultForTest(result) {
+      this.profileInstallResult_ = result;
     }
 
     /** @private */
@@ -84,8 +121,8 @@ cr.define('cellular_setup', function() {
      * @return {!Promise<{euiccs: !Array<!Euicc>,}>}
      */
     getAvailableEuiccs() {
-      return new Promise((res) => {
-        res({euiccs: this.euiccs_});
+      return Promise.resolve({
+        euiccs: this.euiccs_,
       });
     }
 

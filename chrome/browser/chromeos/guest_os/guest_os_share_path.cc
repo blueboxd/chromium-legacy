@@ -470,7 +470,7 @@ void GuestOsSharePath::SharePaths(const std::string& vm_name,
           base::Owned(new ErrorCapture(paths.size(), std::move(callback))));
   for (const auto& path : paths) {
     CallSeneschalSharePath(vm_name, path, persist,
-                           base::BindOnce(barrier, std::move(path)));
+                           base::BindOnce(barrier, path));
   }
 }
 
@@ -671,7 +671,10 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
   file_watcher_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          base::IgnoreResult(&base::FilePathWatcher::Watch),
+          base::IgnoreResult(static_cast<bool (base::FilePathWatcher::*)(
+                                 const base::FilePath&, bool,
+                                 const base::FilePathWatcher::Callback&)>(
+              &base::FilePathWatcher::Watch)),
           base::Unretained(watcher.get()), path, false,
           base::BindRepeating(std::move(changed), std::move(deleted))));
   shared_paths_.emplace(path, SharedPathInfo(std::move(watcher), vm_name));

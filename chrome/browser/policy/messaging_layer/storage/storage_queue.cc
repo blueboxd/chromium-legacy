@@ -33,6 +33,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
+#include "chrome/browser/policy/messaging_layer/storage/resources/resource_interface.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_configuration.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
@@ -53,11 +54,6 @@ const base::FilePath::CharType METADATA_NAME[] = FILE_PATH_LITERAL("META");
 // The size in bytes that all files and records are rounded to (for privacy:
 // make it harder to differ between kinds of records).
 constexpr size_t FRAME_SIZE = 16u;
-
-// Size of the buffer to read data to. Must be multiple of FRAME_SIZE
-constexpr size_t MAX_BUFFER_SIZE = 1024u * 1024u;  // 1 MiB
-static_assert(MAX_BUFFER_SIZE % FRAME_SIZE == 0u,
-              "Buffer size not multiple of frame size");
 
 // Helper functions for FRAME_SIZE alignment support.
 size_t RoundUpToFrameSize(size_t size) {
@@ -277,6 +273,11 @@ Status StorageQueue::EnumerateDataFiles(
                    << ", status=" << file_seq_number_result.status();
       continue;
     }
+    if (!GetDiskResource()->Reserve(dir_enum.GetInfo().GetSize())) {
+      LOG(WARNING) << "Disk space exceeded adding file "
+                   << full_name.MaybeAsASCII();
+      continue;
+    }
     used_files_set->emplace(full_name);  // File is in use.
     if (!first_seq_number.has_value() ||
         first_seq_number.value() > file_seq_number_result.ValueOrDie()) {
@@ -310,10 +311,14 @@ Status StorageQueue::ScanLastFile() {
     return Status(error::DATA_LOSS, base::StrCat({"Error opening file: '",
                                                   last_file->name(), "'"}));
   }
+  const size_t max_buffer_size =
+      RoundUpToFrameSize(options_.max_record_size()) +
+      RoundUpToFrameSize(sizeof(RecordHeader));
   uint32_t pos = 0;
   for (;;) {
     // Read the header
-    auto read_result = last_file->Read(pos, sizeof(RecordHeader));
+    auto read_result =
+        last_file->Read(pos, sizeof(RecordHeader), max_buffer_size);
     if (read_result.status().error_code() == error::OUT_OF_RANGE) {
       // End of file detected.
       break;
@@ -335,7 +340,7 @@ Status StorageQueue::ScanLastFile() {
         *reinterpret_cast<const RecordHeader*>(read_result.ValueOrDie().data());
     // Read the data (rounded to frame size).
     const size_t data_size = RoundUpToFrameSize(header.record_size);
-    read_result = last_file->Read(pos, data_size);
+    read_result = last_file->Read(pos, data_size, max_buffer_size);
     if (!read_result.ok()) {
       // Error detected.
       LOG(ERROR) << "Error reading file " << last_file->name()
@@ -424,6 +429,9 @@ Status StorageQueue::WriteHeaderAndBlock(
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
   // Prepare header.
   RecordHeader header;
+  // Pad to the whole frame, if necessary.
+  const size_t pad_size =
+      GetPaddingToNextFrameSize(sizeof(header) + data.size());
   // Assign sequence number.
   header.record_seq_number = next_seq_number_++;
   header.record_hash = base::PersistentHash(data.data(), data.size());
@@ -434,6 +442,12 @@ Status StorageQueue::WriteHeaderAndBlock(
     return Status(error::ALREADY_EXISTS,
                   base::StrCat({"Cannot open file=", file->name(),
                                 " status=", open_status.ToString()}));
+  }
+  if (!GetDiskResource()->Reserve(pad_size)) {
+    return Status(
+        error::RESOURCE_EXHAUSTED,
+        base::StrCat({"Not enough disk space available to write into file=",
+                      file->name()}));
   }
   auto write_status = file->Append(base::StringPiece(
       reinterpret_cast<const char*>(&header), sizeof(header)));
@@ -450,9 +464,6 @@ Status StorageQueue::WriteHeaderAndBlock(
           base::StrCat({"Cannot write file=", file->name(),
                         " status=", write_status.status().ToString()}));
     }
-    // Pad to the whole frame, if necessary.
-    const size_t pad_size =
-        GetPaddingToNextFrameSize(sizeof(header) + data.size());
     if (pad_size != FRAME_SIZE) {
       // Fill in with random bytes.
       char junk_bytes[FRAME_SIZE];
@@ -478,6 +489,15 @@ Status StorageQueue::WriteMetadata() {
           .AddExtensionASCII(base::NumberToString(next_seq_number_)),
       /*size=*/0);
   RETURN_IF_ERROR(meta_file->Open(/*read_only=*/false));
+  // Account for the metadata file size.
+  DCHECK(last_record_digest_.has_value());  // Must be set by now.
+  if (!GetDiskResource()->Reserve(sizeof(generation_id_) +
+                                  last_record_digest_.value().size())) {
+    return Status(
+        error::RESOURCE_EXHAUSTED,
+        base::StrCat({"Not enough disk space available to write into file=",
+                      meta_file->name()}));
+  }
   // Write generation id.
   auto append_result = meta_file->Append(base::StringPiece(
       reinterpret_cast<const char*>(&generation_id_), sizeof(generation_id_)));
@@ -488,7 +508,6 @@ Status StorageQueue::WriteMetadata() {
                       " status=", append_result.status().ToString()}));
   }
   // Write last record digest.
-  DCHECK(last_record_digest_.has_value());  // Must be set by now.
   append_result = meta_file->Append(last_record_digest_.value());
   if (!append_result.ok()) {
     return Status(
@@ -550,7 +569,10 @@ Status StorageQueue::RestoreMetadata(
                                                     /*size=*/it->second.second);
   RETURN_IF_ERROR(meta_file->Open(/*read_only=*/true));
   // Read generation id.
-  auto read_result = meta_file->Read(/*pos=*/0, sizeof(generation_id_));
+  constexpr size_t max_buffer_size =
+      sizeof(generation_id_) + crypto::kSHA256Length;
+  auto read_result =
+      meta_file->Read(/*pos=*/0, sizeof(generation_id_), max_buffer_size);
   if (!read_result.ok() ||
       read_result.ValueOrDie().size() != sizeof(generation_id_)) {
     return Status(error::DATA_LOSS,
@@ -560,8 +582,8 @@ Status StorageQueue::RestoreMetadata(
   const uint64_t generation_id =
       *reinterpret_cast<const uint64_t*>(read_result.ValueOrDie().data());
   // Read last record digest.
-  read_result =
-      meta_file->Read(/*pos=*/sizeof(generation_id_), crypto::kSHA256Length);
+  read_result = meta_file->Read(/*pos=*/sizeof(generation_id_),
+                                crypto::kSHA256Length, max_buffer_size);
   if (!read_result.ok() ||
       read_result.ValueOrDie().size() != crypto::kSHA256Length) {
     return Status(error::DATA_LOSS,
@@ -572,12 +594,18 @@ Status StorageQueue::RestoreMetadata(
   generation_id_ = generation_id;
   last_record_digest_ = std::string(read_result.ValueOrDie());
   // Store used metadata file.
+  if (!GetDiskResource()->Reserve(meta_file->size())) {
+    LOG(WARNING) << "Disk space exceeded adding file " << meta_file->name();
+    return Status::StatusOK();  // Ignore lack of space.
+  }
   used_files_set->emplace(meta_file_path);
   return Status::StatusOK();
 }
 
 void StorageQueue::DeleteUnusedFiles(
     const base::flat_set<base::FilePath>& used_files_setused_files_set) {
+  // Note, that these files were not reserved against disk allowance and do not
+  // need to be discarded.
   base::FileEnumerator dir_enum(options_.directory(),
                                 /*recursive=*/true,
                                 base::FileEnumerator::FILES);
@@ -586,12 +614,12 @@ void StorageQueue::DeleteUnusedFiles(
     if (used_files_setused_files_set.count(full_name) > 0) {
       continue;  // File is used, keep it.
     }
-    DeleteFile(full_name);
+    base::DeleteFile(full_name);
   }
 }
 
 void StorageQueue::DeleteOutdatedMetadata(uint64_t seq_number_to_keep) {
-  std::vector<base::FilePath> files_to_delete;
+  std::vector<std::pair<base::FilePath, uint64_t>> files_to_delete;
   base::FileEnumerator dir_enum(
       options_.directory(),
       /*recursive=*/false, base::FileEnumerator::FILES,
@@ -611,10 +639,13 @@ void StorageQueue::DeleteOutdatedMetadata(uint64_t seq_number_to_keep) {
     if (seq_number >= seq_number_to_keep) {
       continue;
     }
-    files_to_delete.emplace_back(full_name);
+    files_to_delete.emplace_back(
+        std::make_pair(full_name, dir_enum.GetInfo().GetSize()));
   }
-  for (const auto& file_path : files_to_delete) {
-    base::DeleteFile(file_path);  // Ignore any errors.
+  for (const auto& file_to_delete : files_to_delete) {
+    if (base::DeleteFile(file_to_delete.first)) {
+      GetDiskResource()->Discard(file_to_delete.second);
+    }
   }
 }
 
@@ -861,8 +892,11 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
 
     // Read from the current file at the current offset.
     RETURN_IF_ERROR(current_file_->second->Open(/*read_only=*/true));
-    auto read_result =
-        current_file_->second->Read(current_pos_, sizeof(RecordHeader));
+    const size_t max_buffer_size =
+        RoundUpToFrameSize(storage_queue->options_.max_record_size()) +
+        RoundUpToFrameSize(sizeof(RecordHeader));
+    auto read_result = current_file_->second->Read(
+        current_pos_, sizeof(RecordHeader), max_buffer_size);
     RETURN_IF_ERROR(read_result.status());
     auto header_data = read_result.ValueOrDie();
     if (header_data.empty()) {
@@ -891,7 +925,8 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
     const size_t data_size = RoundUpToFrameSize(header.record_size);
     // From this point on, header in memory is no longer used and can be
     // overwritten when reading rest of the data.
-    read_result = current_file_->second->Read(current_pos_, data_size);
+    read_result =
+        current_file_->second->Read(current_pos_, data_size, max_buffer_size);
     RETURN_IF_ERROR(read_result.status());
     current_pos_ += read_result.ValueOrDie().size();
     if (read_result.ValueOrDie().size() != data_size) {
@@ -1022,13 +1057,23 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
 
   void SerializeAndEncryptWrappedRecord(WrappedRecord wrapped_record) {
     // Serialize wrapped record into a string.
+    ScopedReservation scoped_reservation(wrapped_record.ByteSizeLong(),
+                                         GetMemoryResource());
+    if (!scoped_reservation.reserved()) {
+      Schedule(&ReadContext::Response, base::Unretained(this),
+               Status(error::RESOURCE_EXHAUSTED,
+                      "Not enough memory for the write buffer"));
+      return;
+    }
+
     std::string buffer;
     if (!wrapped_record.SerializeToString(&buffer)) {
       Schedule(&ReadContext::Response, base::Unretained(this),
                Status(error::DATA_LOSS, "Cannot serialize record"));
       return;
     }
-    wrapped_record.Clear();  // Release wrapped record memory.
+    // Release wrapped record memory, so scoped reservation may act.
+    wrapped_record.Clear();
 
     // Encrypt the result.
     storage_queue_->encryption_module_->EncryptRecord(
@@ -1046,14 +1091,23 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     }
 
     // Serialize encrypted record.
+    ScopedReservation scoped_reservation(
+        encrypted_record_result.ValueOrDie().ByteSizeLong(),
+        GetMemoryResource());
+    if (!scoped_reservation.reserved()) {
+      Schedule(&ReadContext::Response, base::Unretained(this),
+               Status(error::RESOURCE_EXHAUSTED,
+                      "Not enough memory for the write buffer"));
+      return;
+    }
     std::string buffer;
     if (!encrypted_record_result.ValueOrDie().SerializeToString(&buffer)) {
       Schedule(&ReadContext::Response, base::Unretained(this),
                Status(error::DATA_LOSS, "Cannot serialize EncryptedRecord"));
       return;
     }
-    encrypted_record_result.ValueOrDie()
-        .Clear();  // Release encrypted record memory.
+    // Release encrypted record memory, so scoped reservation may act.
+    encrypted_record_result.ValueOrDie().Clear();
 
     // Write into storage on sequntial task runner.
     Schedule(&WriteContext::WriteRecord, base::Unretained(this), buffer);
@@ -1223,6 +1277,7 @@ Status StorageQueue::RemoveConfirmedData(uint64_t seq_number) {
     // Delete it.
     files_.begin()->second->Close();
     if (files_.begin()->second->Delete().ok()) {
+      GetDiskResource()->Discard(files_.begin()->second->size());
       files_.erase(files_.begin());
     }
   }
@@ -1293,6 +1348,7 @@ void StorageQueue::SingleFile::Close() {
   handle_.reset();
   is_readonly_ = base::nullopt;
   buffer_.reset();
+  GetMemoryResource()->Discard(buffer_size_);
 }
 
 Status StorageQueue::SingleFile::Delete() {
@@ -1305,25 +1361,31 @@ Status StorageQueue::SingleFile::Delete() {
   return Status::StatusOK();
 }
 
-StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(uint32_t pos,
-                                                           uint32_t size) {
+StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(
+    uint32_t pos,
+    uint32_t size,
+    size_t max_buffer_size) {
   if (!handle_) {
     return Status(error::UNAVAILABLE, base::StrCat({"File not open ", name()}));
   }
-  if (size > MAX_BUFFER_SIZE) {
+  if (size > max_buffer_size) {
     return Status(error::RESOURCE_EXHAUSTED, "Too much data to read");
   }
   if (size_ == 0) {
     // Empty file, return EOF right away.
     return Status(error::OUT_OF_RANGE, "End of file");
   }
-  const size_t buffer_size =
-      std::min(MAX_BUFFER_SIZE, RoundUpToFrameSize(size_));
+  buffer_size_ = std::min(max_buffer_size, RoundUpToFrameSize(size_));
   // If no buffer yet, allocate.
   // TODO(b/157943192): Add buffer management - consider adding an UMA for
   // tracking the average + peak memory the Storage module is consuming.
   if (!buffer_) {
-    buffer_ = std::make_unique<char[]>(buffer_size);
+    // Register with resource management.
+    if (!GetMemoryResource()->Reserve(buffer_size_)) {
+      return Status(error::RESOURCE_EXHAUSTED,
+                    "Not enough memory for the read buffer");
+    }
+    buffer_ = std::make_unique<char[]>(buffer_size_);
     data_start_ = data_end_ = 0;
     file_position_ = 0;
   }
@@ -1334,7 +1396,7 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(uint32_t pos,
   }
   // If expected data size does not fit into the buffer, move what's left to the
   // start.
-  if (data_start_ + size > buffer_size) {
+  if (data_start_ + size > buffer_size_) {
     DCHECK_GT(data_start_, 0u);  // Cannot happen if 0.
     memmove(buffer_.get(), buffer_.get() + data_start_,
             data_end_ - data_start_);
@@ -1346,7 +1408,7 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(uint32_t pos,
     // Read as much as possible.
     const int32_t result =
         handle_->Read(pos, reinterpret_cast<char*>(buffer_.get() + data_end_),
-                      buffer_size - data_end_);
+                      buffer_size_ - data_end_);
     if (result < 0) {
       return Status(
           error::DATA_LOSS,
@@ -1359,7 +1421,7 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(uint32_t pos,
     }
     pos += result;
     data_end_ += result;
-    DCHECK_LE(data_end_, buffer_size);
+    DCHECK_LE(data_end_, buffer_size_);
     actual_size += result;
   }
   if (actual_size > size) {

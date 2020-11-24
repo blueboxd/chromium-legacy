@@ -1398,7 +1398,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - UIResponder helpers
 
 // Whether the BVC should declare keyboard commands.
+// Since |-keyCommands| can be called by UIKit at any time, no assumptions
+// about the state of |self| can be made; accordingly, if there's anything
+// not initialized (or being torn down), this method should return NO.
 - (BOOL)shouldRegisterKeyboardCommands {
+  if (_isShutdown)
+    return NO;
+
+  if (!self.browser)
+    return NO;
+
   if ([self presentedViewController])
     return NO;
 
@@ -3753,13 +3762,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     didStartNavigation:(web::NavigationContext*)navigation {
   if (webState == self.currentWebState)
     [self updateToolbar];
-}
-
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  SessionRestorationBrowserAgent::FromBrowser(self.browser)
-      ->SaveSession(
-          /*immediately=*/false);
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {

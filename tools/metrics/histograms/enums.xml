@@ -8659,6 +8659,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Received update"/>
 </enum>
 
+<enum name="BooleanUpgraded">
+  <int value="0" label="Not upgraded"/>
+  <int value="1" label="Upgraded"/>
+</enum>
+
 <enum name="BooleanUpload">
   <int value="0" label="Download"/>
   <int value="1" label="Upload"/>
@@ -22826,6 +22831,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="EnterpriseUserPolicyChromeOSSessionAbortType">
+  <obsolete>
+    Deprecated 11/2020.
+  </obsolete>
   <int value="0" label="Initialization, Google cloud management">
     Abort of asynchronous user policy initialization when the user is managed
     with the Google cloud management.
@@ -43262,6 +43270,7 @@ from previous Chrome versions.
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
   <int value="-608775184" label="PasswordsWeaknessCheck:enabled"/>
+  <int value="-607925721" label="WebViewVulkan:disabled"/>
   <int value="-606898702" label="MaterialDesignSettings:disabled"/>
   <int value="-606696801" label="TabGroupsUiImprovementsAndroid:enabled"/>
   <int value="-606431158" label="DrawVerticallyEdgeToEdge:enabled"/>
@@ -45573,6 +45582,7 @@ from previous Chrome versions.
   <int value="1670161209" label="ClickToOpenPDFPlaceholder:enabled"/>
   <int value="1670799163" label="ChromeHomeShowGoogleGWhenUrlCleared:enabled"/>
   <int value="1671021713" label="AutofillImportDynamicForms:disabled"/>
+  <int value="1671985641" label="WebViewVulkan:enabled"/>
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
   <int value="1677167062" label="AutomaticPasswordGeneration:enabled"/>
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
@@ -50221,6 +50231,12 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Disallowed by policy"/>
 </enum>
 
+<enum name="NearbyShareFinalPayloadStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Canceled"/>
+</enum>
+
 <enum name="NearbyShareHttpResult">
   <int value="0" label="Success"/>
   <int value="1" label="Timeout"/>
@@ -50299,6 +50315,16 @@ Called by update_use_counter_css.py.-->
              (deprecated)."/>
   <int value="8"
       label="Histogram active sample wrapped 2^31 during accumulation."/>
+</enum>
+
+<enum name="NeighborLinkMonitorFailureType">
+  <int value="0" label="Unknown type of failure"/>
+  <int value="1" label="IPv4 gateway neighbor lost"/>
+  <int value="2" label="IPv4 DNS server neighbor lost"/>
+  <int value="3" label="IPv4 gateway and DNS server neighbor lost"/>
+  <int value="4" label="IPv6 gateway neighbor lost"/>
+  <int value="5" label="IPv6 DNS server neighbor lost"/>
+  <int value="6" label="IPv6 gateway and DNS server neighbor lost"/>
 </enum>
 
 <enum name="NetCacheState">
@@ -58020,6 +58046,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Notification inline reply response"/>
   <int value="13" label="Show notification access setup request"/>
   <int value="14" label="Show notification access setup response"/>
+</enum>
+
+<enum name="PhoneHubNotificationInteraction">
+  <int value="0" label="User sent an inline reply from notification"/>
+  <int value="1" label="User dismissed notification"/>
 </enum>
 
 <enum name="PhoneHubQuickAction">

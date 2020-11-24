@@ -204,8 +204,9 @@ public class BookmarkTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
+        if (mBookmarkActivity != null) ApplicationTestUtils.finishActivity(mBookmarkActivity);
     }
 
     @AfterClass
@@ -283,7 +284,7 @@ public class BookmarkTest {
         // Click the star button again to launch the edit activity.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.bookmark_this_page_id);
-        waitForEditActivity();
+        waitForEditActivity().finish();
     }
 
     @Test
@@ -314,8 +315,9 @@ public class BookmarkTest {
             currentSnackbar.getController().onAction(null);
         });
 
-        waitForEditActivity();
+        BookmarkEditActivity activity = waitForEditActivity();
         SnackbarManager.setDurationForTesting(0);
+        activity.finish();
     }
 
     @Test
@@ -1553,11 +1555,41 @@ public class BookmarkTest {
         Assert.assertEquals("The 1st view should be reading list.", BookmarkType.READING_LIST,
                 getIdByPosition(0).getType());
         onView(withText("Reading list")).check(matches(isDisplayed()));
+        onView(withText("No unread pages")).check(matches(isDisplayed()));
 
         Assert.assertEquals("The 2nd view should be a divider.", BookmarkListEntry.ViewType.DIVIDER,
                 getAdapter().getItemViewType(1));
         Assert.assertEquals("The 3rd view should be a normal folder.",
                 BookmarkListEntry.ViewType.FOLDER, getAdapter().getItemViewType(2));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
+    public void testReadingListFolderShownOneUnreadPage() throws Exception {
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel.addToReadingList("a", "https://a.com/reading_list_0");
+            mManager.openFolder(mBookmarkModel.getRootFolderId());
+        });
+        onView(withText("Reading list")).check(matches(isDisplayed()));
+        onView(withText("1 unread page")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
+    public void testReadingListFolderShownMultipleUnreadPages() throws Exception {
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel.addToReadingList("a", "https://a.com/reading_list_0");
+            mBookmarkModel.addToReadingList("b", "https://a.com/reading_list_1");
+            mManager.openFolder(mBookmarkModel.getRootFolderId());
+        });
+        onView(withText("Reading list")).check(matches(isDisplayed()));
+        onView(withText("2 unread pages")).check(matches(isDisplayed()));
     }
 
     /**
@@ -1701,12 +1733,13 @@ public class BookmarkTest {
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
     }
 
-    private void waitForEditActivity() {
+    private BookmarkEditActivity waitForEditActivity() {
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(ApplicationStatus.getLastTrackedFocusedActivity(),
                     IsInstanceOf.instanceOf(BookmarkEditActivity.class));
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        return (BookmarkEditActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 
     private ChromeTabbedActivity waitForTabbedActivity() {

@@ -422,8 +422,10 @@ class SSLUITestBase : public InProcessBrowserTest,
   }
 
   void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 
@@ -860,7 +862,7 @@ class SSLUITestBase : public InProcessBrowserTest,
   net::SpawnedTestServer wss_server_expired_;
   net::SpawnedTestServer wss_server_mismatched_;
 
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
   network::mojom::SSLConfig last_ssl_config_;
   mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
@@ -1664,8 +1666,10 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
   }
 
   void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 
@@ -1715,7 +1719,7 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
 
   net::EmbeddedTestServer https_server_;
 
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateTransparencySSLUITest);
 };
@@ -5417,8 +5421,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
   entries.push_back(std::move(restored_entry));
   content::TestNavigationObserver observer(raw_tab2);
   raw_tab2->GetController().Restore(
-      entries.size() - 1, content::RestoreType::LAST_SESSION_EXITED_CLEANLY,
-      &entries);
+      entries.size() - 1, content::RestoreType::LAST_SESSION, &entries);
   raw_tab2->GetController().LoadIfNecessary();
   observer.Wait();
   ssl_test_util::CheckAuthenticatedState(raw_tab2, AuthState::NONE);
@@ -5855,8 +5858,10 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
       static const char kSecondProfileGaiaId[] = "9876543210";
       static const char kSecondProfileHash[] = "testProfile2";
 
-      EXPECT_CALL(policy_for_profile_2_, IsInitializationComplete(testing::_))
-          .WillRepeatedly(testing::Return(true));
+      ON_CALL(policy_for_profile_2_, IsInitializationComplete(testing::_))
+          .WillByDefault(testing::Return(true));
+      ON_CALL(policy_for_profile_2_, IsFirstPolicyLoadComplete(testing::_))
+          .WillByDefault(testing::Return(true));
       policy::PushProfilePolicyConnectorProviderForTesting(
           &policy_for_profile_2_);
 
@@ -5928,7 +5933,8 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
   net::NSSCertDatabase* profile_2_cert_db_;
 
   // Policy provider for |profile_2_|. Overrides any other policy providers.
-  policy::MockConfigurationPolicyProvider policy_for_profile_2_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider>
+      policy_for_profile_2_;
 
  private:
   void DidGetCertDatabase(base::RunLoop* loop,

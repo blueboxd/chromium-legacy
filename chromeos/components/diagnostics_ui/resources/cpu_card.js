@@ -63,6 +63,12 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /** @type {boolean} */
+    isTestRunning: {
+      type: Boolean,
+      notify: true,
+    }
   },
 
   /** @override */
@@ -128,5 +134,11 @@ Polymer({
   getCpuTemp_() {
     return loadTimeData.getStringF(
         'cpuTempText', this.cpuUsage_.averageCpuTempCelsius);
+  },
+
+  /** @protected */
+  getCpuUsageTooltipText_() {
+    // TODO(michaelcheco): Update when number of cores is added to the api.
+    return loadTimeData.getString('cpuUsageTooltipText');
   },
 });

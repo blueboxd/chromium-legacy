@@ -185,6 +185,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2718395828230677721">Gece Işığı</translation>
 <translation id="2727175239389218057">Yanıtla</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
+<translation id="2778650143428714839"><ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> tarafından yönetiliyor</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
 <translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
 <translation id="28232023175184696">İnternete bağlanamıyor. Tekrar denemek için tıklayın.</translation>
@@ -493,6 +494,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="5648021990716966815">Mikrofon jakı</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5673434351075758678">Ayarlarınız senkronize edildikten sonra "<ph name="FROM_LOCALE" />" olan dil "<ph name="TO_LOCALE" />" olarak değiştirildi.</translation>
+<translation id="5677928146339483299">Engellendi</translation>
 <translation id="5679050765726761783">Düşük güçlü bir adaptör bağlandı</translation>
 <translation id="5682642926269496722">Google Asistan geçerli kullanıcı hesabı için kullanılamaz.</translation>
 <translation id="5689633613396158040">Gece Işığı, loş ışıkta ekranınızı daha iyi görmenizi ve daha kolay okumanızı sağlar. Gece Işığı'nın ne zaman açılacağını değiştirmek veya tamamen kapatmak için dokunun.</translation>
@@ -564,6 +566,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="6297287540776456956">Alan seçmek için ekran kalemini kullanın</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> dönme ayarı <ph name="ROTATION" /> olarak değiştirildi</translation>
 <translation id="6315170314923504164">Ses</translation>
+<translation id="6338485349199627913"><ph name="DISPLAY_NAME" />, <ph name="MANAGER" /> tarafından yönetilen bir oturumdur</translation>
 <translation id="6376931439017688372">Bluetooth açık</translation>
 <translation id="6381109794406942707">Cihazın kilidini açmak için PIN'inizi girin.</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
@@ -692,6 +695,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="7590883480672980941">Giriş ayarları</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7600875258240007829">Tüm bildirimleri göster</translation>
+<translation id="7607002721634913082">Duraklatıldı</translation>
 <translation id="7618774594543487847">Normal</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Yakındakilerle Paylaşım ayarlarını gösterir.</translation>

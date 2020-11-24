@@ -40,7 +40,14 @@ var TabSearchAppTest = class extends TabSearchBrowserTest {
   }
 };
 
-TEST_F('TabSearchAppTest', 'All', function() {
+// Disabled on Windows because of random crash on Win 7 Tests x64 (1).
+// See: https://crbug.com/1152287
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('TabSearchAppTest', 'MAYBE_All', function() {
   mocha.run();
 });
 

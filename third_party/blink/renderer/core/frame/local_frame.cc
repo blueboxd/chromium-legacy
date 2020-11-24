@@ -2366,14 +2366,22 @@ void LocalFrame::SetContextPaused(bool is_paused) {
     return;
   paused_ = is_paused;
 
-  GetDocument()->Fetcher()->SetDefersLoading(IsLoadDeferred());
-  Loader().SetDefersLoading(IsLoadDeferred());
+  GetDocument()->Fetcher()->SetDefersLoading(GetLoadDeferType());
+  Loader().SetDefersLoading(GetLoadDeferType());
   // TODO(altimin): Move this to PageScheduler level.
   GetFrameScheduler()->SetPaused(is_paused);
 }
 
 bool LocalFrame::IsLoadDeferred() {
   return frozen_ || paused_;
+}
+
+WebURLLoader::DeferType LocalFrame::GetLoadDeferType() {
+  if (GetPage()->GetPageScheduler()->IsInBackForwardCache())
+    return WebURLLoader::DeferType::kDeferredWithBackForwardCache;
+  if (paused_ || frozen_)
+    return WebURLLoader::DeferType::kDeferred;
+  return WebURLLoader::DeferType::kNotDeferred;
 }
 
 void LocalFrame::DidFreeze() {
@@ -2390,8 +2398,12 @@ void LocalFrame::DidFreeze() {
         performance_manager::mojom::LifecycleState::kFrozen);
   }
 
-  GetDocument()->Fetcher()->SetDefersLoading(true);
-  Loader().SetDefersLoading(true);
+  WebURLLoader::DeferType defer =
+      GetPage()->GetPageScheduler()->IsInBackForwardCache()
+          ? WebURLLoader::DeferType::kDeferredWithBackForwardCache
+          : WebURLLoader::DeferType::kDeferred;
+  GetDocument()->Fetcher()->SetDefersLoading(defer);
+  Loader().SetDefersLoading(defer);
 }
 
 void LocalFrame::DidResume() {
@@ -2408,8 +2420,11 @@ void LocalFrame::DidResume() {
     document_resource_coordinator->SetLifecycleState(
         performance_manager::mojom::LifecycleState::kRunning);
   }
-  GetDocument()->Fetcher()->SetDefersLoading(IsLoadDeferred());
-  Loader().SetDefersLoading(IsLoadDeferred());
+
+  // TODO(yuzus): Figure out if we should call GetLoadDeferType().
+  GetDocument()->Fetcher()->SetDefersLoading(
+      WebURLLoader::DeferType::kNotDeferred);
+  Loader().SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {

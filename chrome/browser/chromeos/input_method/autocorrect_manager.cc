@@ -22,7 +22,8 @@ namespace {
 enum class AutocorrectActions {
   kWindowShown = 0,
   kUnderlined = 1,
-  kMaxValue = kUnderlined,
+  kReverted = 2,
+  kMaxValue = kReverted,
 };
 
 void LogAssistiveAutocorrectAction(AutocorrectActions action) {
@@ -38,9 +39,8 @@ AutocorrectManager::AutocorrectManager(
     SuggestionHandlerInterface* suggestion_handler)
     : suggestion_handler_(suggestion_handler) {}
 
-void AutocorrectManager::MarkAutocorrectRange(
-    gfx::Range autocorrect_range,
-    const std::string& original_text) {
+void AutocorrectManager::HandleAutocorrect(gfx::Range autocorrect_range,
+                                           const std::string& original_text) {
   // TODO(crbug/1111135): call setAutocorrectTime() (for metrics)
   // TODO(crbug/1111135): record metric (coverage)
   ui::IMEInputContextHandlerInterface* input_context =
@@ -176,6 +176,7 @@ void AutocorrectManager::UndoAutocorrect() {
       (base::UTF16ToUTF8(
            surrounding_text.surrounding_text.substr(0, range.start())) +
        original_text_));
+  LogAssistiveAutocorrectAction(AutocorrectActions::kReverted);
 }
 
 }  // namespace chromeos

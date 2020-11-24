@@ -181,7 +181,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:6cbe3f56e9f00b8f65eae21f01838a8b58191a47',
+  'luci_go': 'git_revision:1a022d3a4c50be4207ee93451255d71896416596',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -200,7 +200,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ce0c876ce2732b9623eb81724d694bd5fc213074',
+  'skia_revision': '3df719619f0a21d51dd19d0e5850623fe0a61d69',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -212,7 +212,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c2a74cbb8ee1b1076c6e28f6aae2e8f8de283f28',
+  'angle_revision': '084b862ba31bd6134158aa8c5c4fb86d926982a5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -563,7 +563,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a539853e3ca9603dfc10f9e6680114970a295879',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '77c77dc0f8ac9da6d3a1e127df40049924cdb18b',
       'condition': 'checkout_ios',
   },
 
@@ -919,7 +919,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '260eb0f662b4b173c66e9dc892328f982185e83c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b35dd76cd5f6a1f2e34810d995f6d98df9033527',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1274,7 +1274,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'b5ac6d34a14cc938258a938ebe3604a93776f7fa',
+    Var('chromium_git') + '/openscreen' + '@' + '784170929fae06482dd9603d62697d57d5bde382',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1369,7 +1369,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'qDJOg4W2RuPZ92H6d33I9kLLWjqfYuMr_gFsPRodSQAC'
+              'version': 'xP-64hTow-Hi_OEgw5l-GAguP8htsWKyhoX-a9Fj9KcC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1535,10 +1535,10 @@ deps = {
     Var('chromium_git') + '/external/github.com/SeleniumHQ/selenium/py.git' + '@' + 'd0045ec570c1a77612db35d1e92f05e1d27b4d53',
 
   'src/third_party/webgl/src':
-    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '1a111c2adcb4898655aacaca018d6e275172760b',
+    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '3e3f152617996e4a175fd0b597a1936824b371f3',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '7518ac184c13bc1d7d68309d03234c834682428e',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a8196844ac6228fea3560b82d29e01fed2fbf13a',
 
   'src/third_party/blink/web_tests/wpt_internal/webgpu/third_party/glslang_js': {
     'packages': [
@@ -1551,7 +1551,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '19526a69c763d26f4699f14dd33681db8976a1b1',
+    Var('webrtc_git') + '/src.git' + '@' + '47a03e8743c972d259adc6b99aebf23e68a5b81f',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1623,7 +1623,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@432bf817a4370fe41a4eddcc4f5c018f53ab446a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c983c977f266a143f7b4eaa1e0e20942a4d3756b',
     'condition': 'checkout_src_internal',
   },
 

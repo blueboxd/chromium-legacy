@@ -113,10 +113,6 @@ void LogEvent(ImeServiceEvent event) {
   UMA_HISTOGRAM_ENUMERATION("InputMethod.Mojo.Extension.Event", event);
 }
 
-void LogLatency(const char* name, const base::TimeDelta& latency) {
-  base::UmaHistogramCustomCounts(name, latency.InMilliseconds(), 0, 1000, 50);
-}
-
 }  // namespace
 
 NativeInputMethodEngine::NativeInputMethodEngine() = default;
@@ -155,7 +151,7 @@ bool NativeInputMethodEngine::IsConnectedForTesting() const {
 void NativeInputMethodEngine::OnAutocorrect(std::string typed_word,
                                             std::string corrected_word,
                                             int start_index) {
-  autocorrect_manager_->MarkAutocorrectRange(
+  autocorrect_manager_->HandleAutocorrect(
       gfx::Range(start_index, start_index + corrected_word.length()),
       typed_word);
 }
@@ -182,11 +178,8 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
       ShouldUseFstMojoEngine(engine_id)) {
     if (!remote_manager_.is_bound()) {
       auto* ime_manager = input_method::InputMethodManager::Get();
-      const auto start = base::Time::Now();
       ime_manager->ConnectInputEngineManager(
           remote_manager_.BindNewPipeAndPassReceiver());
-      LogLatency("InputMethod.Mojo.Extension.ServiceInitLatency",
-                 base::Time::Now() - start);
       remote_manager_.set_disconnect_handler(base::BindOnce(
           &ImeObserver::OnError, base::Unretained(this), base::Time::Now()));
       LogEvent(ImeServiceEvent::kInitSuccess);
@@ -436,6 +429,13 @@ void NativeInputMethodEngine::ImeObserver::DeleteSurroundingText(
       /*length=*/num_bytes_before_cursor + num_bytes_after_cursor);
 }
 
+void NativeInputMethodEngine::ImeObserver::HandleAutocorrect(
+    ime::mojom::AutocorrectSpanPtr autocorrect_span) {
+  autocorrect_manager_->HandleAutocorrect(
+      autocorrect_span->autocorrect_range,
+      std::move(autocorrect_span->original_text));
+}
+
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
   remote_manager_.FlushForTesting();
   if (remote_to_engine_.is_bound())
@@ -447,8 +447,6 @@ void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
 void NativeInputMethodEngine::ImeObserver::OnConnected(base::Time start,
                                                        std::string engine_id,
                                                        bool bound) {
-  LogLatency("InputMethod.Mojo.Extension.ActivateIMELatency",
-             base::Time::Now() - start);
   LogEvent(bound ? ImeServiceEvent::kActivateImeSuccess
                  : ImeServiceEvent::kActivateImeSuccess);
 }
@@ -472,9 +470,6 @@ void NativeInputMethodEngine::ImeObserver::OnRuleBasedKeyEventResponse(
     base::Time start,
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
     ime::mojom::KeypressResponseForRulebasedPtr response) {
-  LogLatency("InputMethod.Mojo.Extension.Rulebased.ProcessLatency",
-             base::Time::Now() - start);
-
   for (const auto& op : response->operations) {
     switch (op->method) {
       case ime::mojom::OperationMethodForRulebased::COMMIT_TEXT:

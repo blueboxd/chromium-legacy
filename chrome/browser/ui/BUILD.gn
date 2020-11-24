@@ -343,6 +343,7 @@ static_library("ui") {
     "//base:i18n",
     "//base/allocator:buildflags",
     "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//cc/paint",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -4627,6 +4628,7 @@ static_library("test_support") {
   ]
   public_deps = [ ":ui" ]
   deps = [
+    "//build:chromeos_buildflags",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
     "//chrome/browser/devtools",

@@ -271,20 +271,9 @@ bool VideoEncoder::VerifyCodecSupport(ParsedConfig* config,
                                       ExceptionState& exception_state) {
   switch (config->codec) {
     case media::kCodecVP8:
-      if (config->acc_pref == AccelerationPreference::kRequire) {
-        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                          "Accelerated vp8 is not supported");
-        return false;
-      }
       break;
 
     case media::kCodecVP9:
-      if (config->acc_pref == AccelerationPreference::kRequire) {
-        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                          "Accelerated vp9 is not supported");
-        return false;
-      }
-
       // TODO(https://crbug.com/1119636): Implement / call a proper method for
       // detecting support of encoder configs.
       if (config->profile == media::VideoCodecProfile::VP9PROFILE_PROFILE1 ||
@@ -368,7 +357,7 @@ std::unique_ptr<media::VideoEncoder> VideoEncoder::CreateMediaVideoEncoder(
     case AccelerationPreference::kRequire: {
       auto result =
           CreateAcceleratedVideoEncoder(config.profile, config.options);
-      is_hw_accelerated_ = !!result;
+      support_nv12_ = !!result;
       if (result)
         UpdateEncoderLog("AcceleratedVideoEncoder", true);
       return result;
@@ -376,7 +365,7 @@ std::unique_ptr<media::VideoEncoder> VideoEncoder::CreateMediaVideoEncoder(
     case AccelerationPreference::kAllow:
       if (auto result =
               CreateAcceleratedVideoEncoder(config.profile, config.options)) {
-        is_hw_accelerated_ = true;
+        support_nv12_ = true;
         UpdateEncoderLog("AcceleratedVideoEncoder", true);
         return result;
       }
@@ -386,17 +375,19 @@ std::unique_ptr<media::VideoEncoder> VideoEncoder::CreateMediaVideoEncoder(
       switch (config.codec) {
         case media::kCodecVP8:
         case media::kCodecVP9:
+          support_nv12_ = true;
           result = CreateVpxVideoEncoder();
           UpdateEncoderLog("VpxVideoEncoder", false);
           break;
         case media::kCodecH264:
+          // TODO: support NV12 format in OpenH264 encoder.
+          support_nv12_ = false;
           result = CreateOpenH264VideoEncoder();
           UpdateEncoderLog("OpenH264VideoEncoder", false);
           break;
         default:
           return nullptr;
       }
-      is_hw_accelerated_ = false;
       if (!result)
         return nullptr;
       return std::make_unique<media::OffloadingVideoEncoder>(std::move(result));
@@ -628,7 +619,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
   };
 
   scoped_refptr<media::VideoFrame> frame = request->frame->frame();
-  if (frame->HasGpuMemoryBuffer() && !is_hw_accelerated_) {
+  if (frame->HasGpuMemoryBuffer() && !support_nv12_) {
     frame = ConvertToI420Frame(frame);
     if (!frame) {
       HandleError("Unexpected frame format.",

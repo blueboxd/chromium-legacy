@@ -149,6 +149,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
   OnCreateChildFrame(
       GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderReceiver(),
       CreateStubBrowserInterfaceBrokerReceiver(),
+      CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, frame_name, frame_unique_name,
       false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(
@@ -189,20 +190,6 @@ void TestRenderFrameHost::SimulateBeforeUnloadCompleted(bool proceed) {
 
 void TestRenderFrameHost::SimulateUnloadACK() {
   OnUnloadACK();
-}
-
-void TestRenderFrameHost::SimulateFeaturePolicyHeader(
-    blink::mojom::FeaturePolicyFeature feature,
-    const std::vector<url::Origin>& allowlist) {
-  blink::ParsedFeaturePolicy header(1);
-  header[0].feature = feature;
-  header[0].matches_all_origins = false;
-  header[0].matches_opaque_src = false;
-  for (const auto& origin : allowlist) {
-    header[0].allowed_origins.push_back(origin);
-  }
-  DidSetFramePolicyHeaders(network::mojom::WebSandboxFlags::kNone, header,
-                           {} /* dp_header */);
 }
 
 void TestRenderFrameHost::SimulateUserActivation() {
@@ -474,13 +461,6 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
   return RenderFrameHostImpl::GetWebBluetoothServiceForTesting();
 }
 
-void TestRenderFrameHost::SendFramePolicy(
-    network::mojom::WebSandboxFlags sandbox_flags,
-    const blink::ParsedFeaturePolicy& fp_header,
-    const blink::DocumentPolicyFeatureState& dp_header) {
-  DidSetFramePolicyHeaders(sandbox_flags, fp_header, dp_header);
-}
-
 void TestRenderFrameHost::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
@@ -600,8 +580,7 @@ TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
 }
 
 void TestRenderFrameHost::AbortCommit(NavigationRequest* navigation_request) {
-  OnCrossDocumentCommitProcessed(navigation_request,
-                                 blink::mojom::CommitResult::Aborted);
+  NavigationRequestCancelled(navigation_request);
 }
 
 // static
@@ -617,6 +596,13 @@ mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
 TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver() {
   return mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
       .InitWithNewPipeAndPassReceiver();
+}
+
+// static
+mojo::PendingAssociatedReceiver<blink::mojom::PolicyContainerHost>
+TestRenderFrameHost::CreateStubPolicyContainerHostReceiver() {
+  return mojo::PendingAssociatedRemote<blink::mojom::PolicyContainerHost>()
+      .InitWithNewEndpointAndPassReceiver();
 }
 
 void TestRenderFrameHost::SimulateLoadingCompleted(

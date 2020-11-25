@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
@@ -364,8 +365,8 @@ void UpdateHitTestResult(HitTestResult& result,
 
   // We may already have set an inner node, but not a box fragment, if the inner
   // node was text or non-atomic inline content. Set the containing box fragment
-  // now.
-  if (!result.BoxFragment())
+  // now, unless it's an anonymous CSS box.
+  if (!result.BoxFragment() && (!fragment.IsCSSBox() || fragment.GetNode()))
     result.SetBoxFragment(&fragment);
 
   if (!result.InnerNode())
@@ -379,6 +380,35 @@ unsigned FragmentainerUniqueIdentifier(const NGPhysicalBoxFragment& fragment) {
   if (const auto* break_token = To<NGBlockBreakToken>(fragment.BreakToken()))
     return break_token->SequenceNumber() + 1;
   return 0;
+}
+
+// Returns the |ComputedStyle| to use for painting outlines. When |fragment| is
+// a block in a continuation-chain, it may need to paint outlines if its
+// ancestor inline boxes in the DOM tree has outlines.
+const ComputedStyle* StyleForContinuationOutline(
+    const NGPhysicalBoxFragment& fragment) {
+  // Fail fast if |fragment| is not a anonymous block.
+  const LayoutObject* layout_object = fragment.GetLayoutObject();
+  if (!layout_object || !layout_object->IsAnonymous() ||
+      layout_object->IsInline())
+    return nullptr;
+
+  // Check ancestors of the continuation in case nested inline boxes; e.g.
+  // <span style="outline: auto">
+  //   <span>
+  //     <div>block</div>
+  //   </span>
+  // </span>
+  for (const LayoutObject* continuation =
+           To<LayoutBoxModelObject>(layout_object)->Continuation();
+       continuation && continuation->IsLayoutInline();
+       continuation = continuation->Parent()) {
+    const ComputedStyle& style = continuation->StyleRef();
+    if (style.OutlineStyleIsAuto() &&
+        NGOutlineUtils::HasPaintedOutline(style, continuation->GetNode()))
+      return &style;
+  }
+  return nullptr;
 }
 
 }  // anonymous namespace
@@ -538,9 +568,9 @@ void NGBoxFragmentPainter::PaintObject(
     const PhysicalOffset& paint_offset,
     bool suppress_box_decoration_background) {
   const PaintPhase paint_phase = paint_info.phase;
-  const NGPhysicalBoxFragment& physical_box_fragment = PhysicalFragment();
-  const ComputedStyle& style = box_fragment_.Style();
-  bool is_visible = IsVisibleToPaint(physical_box_fragment, style);
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  const ComputedStyle& style = fragment.Style();
+  bool is_visible = IsVisibleToPaint(fragment, style);
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
     if (is_visible) {
       PaintBoxDecorationBackground(paint_info, paint_offset,
@@ -558,21 +588,20 @@ void NGBoxFragmentPainter::PaintObject(
 
   if (paint_phase == PaintPhase::kForeground) {
     if (paint_info.ShouldAddUrlMetadata()) {
-      NGFragmentPainter(box_fragment_, GetDisplayItemClient())
+      NGFragmentPainter(fragment, GetDisplayItemClient())
           .AddURLRectIfNeeded(paint_info, paint_offset);
     }
-    if (is_visible && box_fragment_.HasExtraMathMLPainting())
-      NGMathMLPainter(box_fragment_).Paint(paint_info, paint_offset);
+    if (is_visible && fragment.HasExtraMathMLPainting())
+      NGMathMLPainter(fragment).Paint(paint_info, paint_offset);
   }
 
   // Paint children.
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
-      (!physical_box_fragment.Children().empty() ||
-       physical_box_fragment.HasItems() || inline_box_cursor_) &&
+      (!fragment.Children().empty() || fragment.HasItems() ||
+       inline_box_cursor_) &&
       !paint_info.DescendantPaintingBlocked()) {
     if (is_visible && UNLIKELY(paint_phase == PaintPhase::kForeground &&
-                               box_fragment_.IsCSSBox() &&
-                               box_fragment_.Style().HasColumnRule()))
+                               fragment.IsCSSBox() && style.HasColumnRule()))
       PaintColumnRules(paint_info, paint_offset);
 
     if (paint_phase != PaintPhase::kFloat) {
@@ -589,15 +618,15 @@ void NGBoxFragmentPainter::PaintObject(
                          paint_offset_to_inline_formatting_context,
                          box_item_->OffsetInContainerBlock(), &descendants);
       } else if (items_) {
-        if (physical_box_fragment.IsBlockFlow()) {
+        if (fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
         } else {
-          DCHECK(physical_box_fragment.IsInlineBox());
-          NGInlineCursor cursor(physical_box_fragment, *items_);
+          DCHECK(fragment.IsInlineBox());
+          NGInlineCursor cursor(fragment, *items_);
           PaintInlineItems(paint_info.ForDescendants(), paint_offset,
                            PhysicalOffset(), &cursor);
         }
-      } else if (!physical_box_fragment.IsInlineFormattingContext()) {
+      } else if (!fragment.IsInlineFormattingContext()) {
         PaintBlockChildren(paint_info, paint_offset);
       } else if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
         // This is the NGPaintFragment code path. We need the check for
@@ -624,7 +653,7 @@ void NGBoxFragmentPainter::PaintObject(
         // the remaining 50px of #fl - no items (all in-flow content fits in the
         // first fragment).
         DCHECK(paint_fragment_);
-        if (physical_box_fragment.IsBlockFlow()) {
+        if (fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
         } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
           // TODO(kojii): |PaintInlineChildrenOutlines()| should do the work
@@ -642,14 +671,24 @@ void NGBoxFragmentPainter::PaintObject(
     if (paint_phase == PaintPhase::kFloat ||
         paint_phase == PaintPhase::kSelectionDragImage ||
         paint_phase == PaintPhase::kTextClip) {
-      if (physical_box_fragment.HasFloatingDescendantsForPaint())
+      if (fragment.HasFloatingDescendantsForPaint())
         PaintFloats(paint_info);
     }
   }
 
-  if (is_visible && ShouldPaintSelfOutline(paint_phase)) {
-    NGFragmentPainter(box_fragment_, GetDisplayItemClient())
-        .PaintOutline(paint_info, paint_offset);
+  if (!is_visible)
+    return;
+  if (ShouldPaintSelfOutline(paint_phase)) {
+    if (NGOutlineUtils::HasPaintedOutline(style, fragment.GetNode())) {
+      NGFragmentPainter(fragment, GetDisplayItemClient())
+          .PaintOutline(paint_info, paint_offset, style);
+    }
+  } else if (ShouldPaintDescendantOutlines(paint_phase)) {
+    if (const ComputedStyle* outline_style =
+            StyleForContinuationOutline(fragment)) {
+      NGFragmentPainter(fragment, GetDisplayItemClient())
+          .PaintOutline(paint_info, paint_offset, *outline_style);
+    }
   }
 }
 

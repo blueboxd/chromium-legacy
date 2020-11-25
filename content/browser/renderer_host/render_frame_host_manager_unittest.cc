@@ -1812,6 +1812,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame_name", "uniqueName1",
       false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
@@ -1819,6 +1820,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame_name", "uniqueName2",
       false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
@@ -1976,6 +1978,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       contents1->GetMainFrame()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame_name", "uniqueName1",
       false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
@@ -2027,6 +2030,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       main_rfh->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName1",
       false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
@@ -2236,18 +2240,18 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       root1->current_frame_host(), process_id, 12,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName0",
-      false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      mojo::NullAssociatedReceiver(), blink::mojom::TreeScopeType::kDocument,
+      std::string(), "uniqueName0", false, base::UnguessableToken::Create(),
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), false, kOwnerType);
   tree1->AddFrame(
       root1->current_frame_host(), process_id, 13,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName1",
-      false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      mojo::NullAssociatedReceiver(), blink::mojom::TreeScopeType::kDocument,
+      std::string(), "uniqueName1", false, base::UnguessableToken::Create(),
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), false, kOwnerType);
 
   std::unique_ptr<TestWebContents> tab2(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2259,18 +2263,18 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       root2->current_frame_host(), process_id, 22,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName2",
-      false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      mojo::NullAssociatedReceiver(), blink::mojom::TreeScopeType::kDocument,
+      std::string(), "uniqueName2", false, base::UnguessableToken::Create(),
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), false, kOwnerType);
   tree2->AddFrame(
       root2->current_frame_host(), process_id, 23,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName3",
-      false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      mojo::NullAssociatedReceiver(), blink::mojom::TreeScopeType::kDocument,
+      std::string(), "uniqueName3", false, base::UnguessableToken::Create(),
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), false, kOwnerType);
 
   std::unique_ptr<TestWebContents> tab3(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2287,10 +2291,10 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       root4->current_frame_host(), process_id, 42,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName4",
-      false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      mojo::NullAssociatedReceiver(), blink::mojom::TreeScopeType::kDocument,
+      std::string(), "uniqueName4", false, base::UnguessableToken::Create(),
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), false, kOwnerType);
 
   root1->child_at(1)->SetOpener(root1->child_at(1));
   root1->SetOpener(root2->child_at(1));
@@ -2356,6 +2360,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame1", "uniqueName1", false,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
@@ -2363,6 +2368,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame2", "uniqueName2", false,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
@@ -2370,6 +2376,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame3", "uniqueName3", false,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
@@ -2477,6 +2484,7 @@ TEST_P(RenderFrameHostManagerTest,
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame1", "uniqueName1", false,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
@@ -3028,6 +3036,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerHostReceiver(),
       blink::mojom::TreeScopeType::kDocument, "frame1", "uniqueName1", false,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
@@ -3289,33 +3298,6 @@ TEST_P(RenderFrameHostManagerTestWithBackForwardCache,
       NavigationSimulator::CreateRendererInitiated(kUrl3, initial_rfh);
   navigation_to_kUrl3->Start();
   EXPECT_FALSE(main_test_rfh()->frame_tree_node()->navigation_request());
-}
-
-// Tests that sandbox flags received after a navigation away has started do not
-// affect the document being navigated to.
-TEST_P(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
-  // The RFH should start out with an fully permissive sandbox policy.
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
-            main_test_rfh()->frame_tree_node()->active_sandbox_flags());
-
-  // Navigate, but don't commit the navigation.
-  auto navigation = NavigationSimulator::CreateBrowserInitiated(
-      GURL("http://a.com"), contents());
-  navigation->ReadyToCommit();
-
-  // Now send the frame policy for the initial page.
-  main_test_rfh()->SendFramePolicy(network::mojom::WebSandboxFlags::kAll,
-                                   {} /* feature_policy_header */,
-                                   {} /* document_policy_header */);
-
-  // Check 'SendFramePolicy' updated the active sandbox flags.
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
-            main_test_rfh()->frame_tree_node()->active_sandbox_flags());
-
-  // Commit the navigation. The new frame should have a clear frame policy.
-  navigation->Commit();
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
-            main_test_rfh()->frame_tree_node()->active_sandbox_flags());
 }
 
 // Check that after a navigation, the final SiteInstance has the correct

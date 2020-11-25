@@ -191,6 +191,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // calling |SetUISessionState| in response to relevant changes in browser
   // state.
   InputMethodManagerImpl(std::unique_ptr<InputMethodDelegate> delegate,
+                         std::unique_ptr<ComponentExtensionIMEManagerDelegate>
+                             component_extension_ime_manager_delegate,
                          bool enable_extension_loading);
   ~InputMethodManagerImpl() override;
 
@@ -257,8 +259,6 @@ class InputMethodManagerImpl : public InputMethodManager,
                const content::NotificationDetails& details) override;
 
  private:
-  friend class InputMethodManagerImplTest;
-
   // CandidateWindowController::Observer overrides:
   void CandidateClicked(int index) override;
   void CandidateWindowOpened() override;

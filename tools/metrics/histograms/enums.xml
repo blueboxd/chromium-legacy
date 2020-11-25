@@ -956,7 +956,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="DismissedBack">
     User has dismissed the promo by tapping back button.
   </int>
-  <int value="2" label="AddAccount">
+  <int value="2" label="AddAccountStarted">
     User has tapped |Add account to device| from expanded account list.
   </int>
   <int value="3" label="StartedIncognitoSession">
@@ -996,6 +996,10 @@ Unknown properties are collapsed to zero. -->
   <int value="14" label="DismissedButton">
     User has dismissed the promo by tapping on the dismissal button in the
     bottom sheet.
+  </int>
+  <int value="15" label="AddAccountCompleted">
+    User has completed the account addition flow triggered from the bottom
+    sheet.
   </int>
 </enum>
 
@@ -49414,7 +49418,7 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
-<enum name="ModuleBlocklistCacheReadResult">
+<enum name="ModuleBlacklistCacheReadResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open the file"/>
   <int value="2" label="Failed to read the metadata"/>
@@ -49425,8 +49429,8 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Invalid MD5 digest"/>
 </enum>
 
-<enum name="ModuleBlocklistStatus">
-  <int value="0" label="Newly blocklisted"/>
+<enum name="ModuleBlacklistStatus">
+  <int value="0" label="Newly blacklisted"/>
   <int value="1" label="Blocked"/>
 </enum>
 
@@ -73188,7 +73192,7 @@ Full version information for the fingerprint enum values:
   <int value="27" label="kSettingsResetPromptLastTriggeredForStartupUrls"/>
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
   <int value="29" label="kMediaStorageIdSalt"/>
-  <int value="30" label="kModuleBlocklistCacheMD5Digest"/>
+  <int value="30" label="kModuleBlacklistCacheMD5Digest"/>
 </enum>
 
 <enum name="TranslateAssistContentResult">

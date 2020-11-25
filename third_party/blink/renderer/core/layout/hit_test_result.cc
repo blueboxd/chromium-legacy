@@ -147,8 +147,8 @@ void HitTestResult::SetNodeAndPosition(
     Node* node,
     scoped_refptr<const NGPhysicalBoxFragment> box_fragment,
     const PhysicalOffset& position) {
-  SetBoxFragment(std::move(box_fragment));
-  SetNodeAndPosition(node, position);
+  local_point_ = position;
+  SetInnerNodeAndBoxFragment(node, std::move(box_fragment));
 }
 
 void HitTestResult::OverrideNodeAndPosition(Node* node,
@@ -178,12 +178,16 @@ PositionWithAffinity HitTestResult::GetPosition() const {
     return PositionWithAffinity();
   if (inner_possibly_pseudo_node_->IsPseudoElement() &&
       inner_possibly_pseudo_node_->GetPseudoId() == kPseudoIdBefore) {
-    return PositionWithAffinity(MostForwardCaretPosition(
-        Position(inner_node_, PositionAnchorType::kBeforeChildren)));
+    return PositionWithAffinity(
+        MostForwardCaretPosition(Position::FirstPositionInNode(*inner_node_)));
   }
+  // TODO(crbug.com/1152696): We have to use PostLayout() here, but maybe it
+  // should rather be illegal to call GetPosition() on a HitTestResult after
+  // relayout?
   if (box_fragment_ &&
-      RuntimeEnabledFeatures::LayoutNGFullPositionForPointEnabled())
-    return box_fragment_->PositionForPoint(LocalPoint());
+      RuntimeEnabledFeatures::LayoutNGFullPositionForPointEnabled() &&
+      !box_fragment_->IsLayoutObjectDestroyedOrMoved())
+    return box_fragment_->PostLayout()->PositionForPoint(LocalPoint());
   return layout_object->PositionForPoint(LocalPoint());
 }
 
@@ -285,10 +289,17 @@ HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
 }
 
 void HitTestResult::SetInnerNode(Node* n) {
+  SetInnerNodeAndBoxFragment(n, /* box_fragment */ nullptr);
+}
+
+void HitTestResult::SetInnerNodeAndBoxFragment(
+    Node* n,
+    scoped_refptr<const NGPhysicalBoxFragment> box_fragment) {
   if (!n) {
     inner_possibly_pseudo_node_ = nullptr;
     inner_node_ = nullptr;
     inner_element_ = nullptr;
+    DCHECK(!box_fragment);
     box_fragment_ = nullptr;
     return;
   }
@@ -309,7 +320,9 @@ void HitTestResult::SetInnerNode(Node* n) {
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutNGFullPositionForPointEnabled()) {
+  if (box_fragment) {
+    SetBoxFragment(std::move(box_fragment));
+  } else if (RuntimeEnabledFeatures::LayoutNGFullPositionForPointEnabled()) {
     if (const LayoutBox* layout_box = n->GetLayoutBox()) {
       // Fragmentation-aware code will set the correct box fragment on its own,
       // but sometimes we enter legacy layout code when hit-testing, e.g. for

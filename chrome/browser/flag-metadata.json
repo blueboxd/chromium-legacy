@@ -1076,7 +1076,7 @@
   {
     "name": "edit-passwords-in-settings",
     "owners": [ "fhorschig", "jdoerrie" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 89
   },
   {
     "name": "elastic-overscroll-win",
@@ -3704,11 +3704,6 @@
     "name": "page-info-performance-hints",
     "owners": [ "jds" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "page-info-refactoring",
-    "owners": [ "ewannpv", "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 88
   },
   {
     "name": "page-info-version-2",

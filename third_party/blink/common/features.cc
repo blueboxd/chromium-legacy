@@ -75,7 +75,7 @@ const base::Feature kTopLevelAwait{"TopLevelAwait",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable EditingNG by default. This feature is for a kill switch.
-const base::Feature kEditingNG{"EditingNG", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEditingNG{"EditingNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -88,7 +88,7 @@ const base::Feature kLayoutNGTextControl{"LayoutNGTextControl",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFragmentItem{"FragmentItem",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -824,5 +824,10 @@ const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
 // noopener behavior by default. TODO(crbug.com/898942): Remove in Chrome 95.
 const base::Feature kTargetBlankImpliesNoOpener{
     "TargetBlankImpliesNoOpener", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls how max frame rates are enforced in MediaStreamTracks.
+// TODO(crbug.com/1152307): Remove in M91.
+const base::Feature kMediaStreamTrackUseConfigMaxFrameRate{
+    "MediaStreamTrackUseConfigMaxFrameRate", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace blink

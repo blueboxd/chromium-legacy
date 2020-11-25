@@ -107,7 +107,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
@@ -2562,9 +2561,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // be unrecognized.
   if (_isShutdown)
     return;
-  if (!base::FeatureList::IsEnabled(kPageInfoRefactoring) &&
-      [self.dispatcher respondsToSelector:@selector(hidePageInfo)])
-    [self.dispatcher hidePageInfo];
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [self.helpHandler hideAllHelpBubbles];
 }
@@ -3772,12 +3768,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
   }
 
-  // If there is no first responder, or it is not a view, try to make the
-  // webview or the NTP first responder to have it answer keyboard commands
-  // (e.g. space bar to scroll).
-  BOOL isFirstResponderView =
-      [GetFirstResponder() isKindOfClass:[UIView class]];
-  if (!isFirstResponderView && self.currentWebState) {
+  // If there is no first responder, try to make the webview or the NTP first
+  // responder to have it answer keyboard commands (e.g. space bar to scroll).
+  if (!GetFirstResponder() && self.currentWebState) {
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(webState);
     if (NTPHelper && NTPHelper->IsActive()) {

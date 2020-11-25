@@ -469,6 +469,7 @@ static_library("test_support") {
     ]
 
     deps += [
+      "//build:chromeos_buildflags",
       "//chrome/browser/web_applications:web_applications_on_extensions_test_support",
       "//chrome/browser/web_applications:web_applications_test_support",
     ]
@@ -2164,6 +2165,7 @@ if (!is_android) {
       }
 
       deps += [
+        "//build:chromeos_buildflags",
         "//chrome/browser/devtools:test_support",
         "//chrome/common/extensions/api",
         "//chrome/services/media_gallery_util/public/cpp:browser_tests",
@@ -7008,6 +7010,7 @@ if (!is_fuchsia) {
     deps = [
       ":test_support",
       "//base",
+      "//build:chromeos_buildflags",
       "//components/bookmarks/browser:test_support",
       "//components/invalidation/impl",
       "//components/invalidation/impl:test_support",
@@ -7135,6 +7138,7 @@ if (!is_fuchsia && !is_android) {
       ":sync_integration_test_support",
       ":test_support",
       ":test_support_ui",
+      "//build:chromeos_buildflags",
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",

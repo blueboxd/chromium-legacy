@@ -216,13 +216,17 @@ class BLINK_EXPORT WebLocalFrameClient {
   // to prevent the new child frame from being attached. Otherwise, embedders
   // should create a new WebLocalFrame, insert it into the frame tree, and
   // return the created frame.
-  virtual WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                          mojom::TreeScopeType,
-                                          const WebString& name,
-                                          const WebString& fallback_name,
-                                          const FramePolicy&,
-                                          const WebFrameOwnerProperties&,
-                                          mojom::FrameOwnerElementType) {
+  virtual WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      mojom::TreeScopeType,
+      const WebString& name,
+      const WebString& fallback_name,
+      const FramePolicy&,
+      const WebFrameOwnerProperties&,
+      mojom::FrameOwnerElementType,
+      CrossVariantMojoAssociatedReceiver<
+          mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) {
     return nullptr;
   }
 
@@ -258,14 +262,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}
-
-  // Called when a Feature-Policy or Document-Policy or Content-Security-Policy
-  // HTTP header (for sandbox flags) is encountered while loading the frame's
-  // document.
-  virtual void DidSetFramePolicyHeaders(
-      network::mojom::WebSandboxFlags flags,
-      const ParsedFeaturePolicy& feature_policy_header,
-      const DocumentPolicyFeatureState& document_policy_header) {}
 
   // Called when a watched CSS selector matches or stops matching.
   virtual void DidMatchCSS(
@@ -341,9 +337,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The one exception is if the Window object is reused; in that case, blink
   // passes |should_reset_browser_interface_broker| = false, and the old
   // BrowserInterfaceBroker connection will be reused.
-  virtual void DidCommitNavigation(WebHistoryCommitType,
-                                   bool should_reset_browser_interface_broker) {
-  }
+  virtual void DidCommitNavigation(
+      WebHistoryCommitType commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicyFeatureState& document_policy_header) {}
 
   // The frame's initial empty document has just been initialized.
   virtual void DidCreateInitialEmptyDocument() {}

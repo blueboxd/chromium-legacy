@@ -73,6 +73,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
@@ -83,10 +84,10 @@
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/policy_container.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
@@ -584,7 +585,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& fallback_name,
       const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
-      blink::mojom::FrameOwnerElementType frame_owner_element_type) override;
+      blink::mojom::FrameOwnerElementType frame_owner_element_type,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override;
   std::pair<blink::WebRemoteFrame*, blink::PortalToken> CreatePortal(
       blink::CrossVariantMojoAssociatedReceiver<
           blink::mojom::PortalInterfaceBase> portal_endpoint,
@@ -598,10 +602,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillDetach() override;
   void FrameDetached() override;
   void DidChangeName(const blink::WebString& name) override;
-  void DidSetFramePolicyHeaders(
-      network::mojom::WebSandboxFlags flags,
-      const blink::ParsedFeaturePolicy& fp_header,
-      const blink::DocumentPolicyFeatureState& dp_header) override;
   void DidMatchCSS(
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
@@ -616,8 +616,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
-  void DidCommitNavigation(blink::WebHistoryCommitType commit_type,
-                           bool should_reset_browser_interface_broker) override;
+  void DidCommitNavigation(
+      blink::WebHistoryCommitType commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicyFeatureState& document_policy_header) override;
   void DidCreateInitialEmptyDocument() override;
   void DidCommitDocumentReplacementNavigation(
       blink::WebDocumentLoader* document_loader) override;
@@ -1073,6 +1077,9 @@ class CONTENT_EXPORT RenderFrameImpl
   mojom::DidCommitProvisionalLoadParamsPtr MakeDidCommitProvisionalLoadParams(
       blink::WebHistoryCommitType commit_type,
       ui::PageTransition transition,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicyFeatureState& document_policy_header,
       const base::Optional<base::UnguessableToken>& embedding_token);
 
   // Updates the navigation history depending on the passed parameters.
@@ -1096,6 +1103,9 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebHistoryCommitType commit_type,
       bool was_within_same_document,
       ui::PageTransition transition,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicyFeatureState& document_policy_header,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
       const base::Optional<base::UnguessableToken>& embedding_token);
 

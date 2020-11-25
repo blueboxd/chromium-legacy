@@ -530,6 +530,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
           interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
+      mojo::PendingAssociatedReceiver<blink::mojom::PolicyContainerHost>
+          policy_container_host_receiver,
       blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
@@ -1688,9 +1690,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute) override;
   void DidChangeFramePolicy(const base::UnguessableToken& child_frame_token,
                             const blink::FramePolicy& frame_policy) override;
-  void BindPolicyContainer(
-      mojo::PendingAssociatedReceiver<blink::mojom::PolicyContainerHost>
-          receiver) override;
   void CapturePaintPreviewOfSubframe(
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
@@ -1983,8 +1982,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            NavigationCommitInIframePendingDeletionAB);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            NavigationCommitInIframePendingDeletionABC);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           CommittedOriginIncompatibleWithOriginLock);
   FRIEND_TEST_ALL_PREFIXES(
       SitePerProcessBrowserTest,
       IsDetachedSubframeObservableDuringUnloadHandlerSameProcess);
@@ -2059,6 +2056,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
           interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
+      mojo::PendingAssociatedReceiver<blink::mojom::PolicyContainerHost>
+          policy_container_host_receiver,
       blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
@@ -2091,10 +2090,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ResourceLoadInfoPtr resource_load_info) override;
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override;
-  void DidSetFramePolicyHeaders(
-      network::mojom::WebSandboxFlags sandbox_flags,
-      const blink::ParsedFeaturePolicy& feature_policy_header,
-      const blink::DocumentPolicyFeatureState& document_policy_header) override;
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
@@ -2434,13 +2429,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSameDocumentCommitProcessed(int64_t navigation_id,
                                      bool should_replace_current_entry,
                                      blink::mojom::CommitResult result);
-
-  // Called by the renderer process when it is done processing a cross-document
-  // commit request.
-  // TODO(https://crbug.com/1020175): this is only called with
-  // blink::mojom::CommitResult::Aborted.
-  void OnCrossDocumentCommitProcessed(NavigationRequest* navigation_request,
-                                      blink::mojom::CommitResult result);
 
   // Creates a TracedValue object containing the details of a committed
   // navigation, so it can be logged with the tracing system.
@@ -2942,9 +2930,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See BindingsPolicy for details.
   int enabled_bindings_ = 0;
 
-  // Tracks the feature policy which has been set on this frame.
-  std::unique_ptr<blink::FeaturePolicy> feature_policy_;
-
   // Tracks the sandbox flags which are in effect on this frame. This includes
   // any flags which have been set by a Content-Security-Policy header, in
   // addition to those which are set by the embedding frame. This is initially a
@@ -2954,15 +2939,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::mojom::WebSandboxFlags active_sandbox_flags_ =
       network::mojom::WebSandboxFlags::kNone;
 
-  // Same as |active_sandbox_flags_|, except this is computed:
-  // - outside of the renderer process.
-  // - before loading the document.
-  //
-  // For now, this is simply used to double check this matches the renderer
-  // computation. Later this will be used as the source of truth.
-  //
-  // [OutOfBlinkSandbox](https://crbug.com/1041376)
-  base::Optional<network::mojom::WebSandboxFlags> active_sandbox_flags_control_;
+  // Parsed feature policy header. It is parsed from blink, received during
+  // DidCommitProvisionalLoad. This is constant during the whole lifetime of
+  // this document.
+  blink::ParsedFeaturePolicy feature_policy_header_;
+
+  // Tracks the feature policy which has been set on this frame.
+  std::unique_ptr<blink::FeaturePolicy> feature_policy_;
 
   // Tracks the document policy which has been set on this frame.
   std::unique_ptr<blink::DocumentPolicy> document_policy_;

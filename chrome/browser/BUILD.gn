@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors.All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
@@ -2378,6 +2378,7 @@ static_library("browser") {
       "//chromeos/components/help_app_ui",
       "//chromeos/components/help_app_ui:mojo_bindings",
       "//chromeos/components/local_search_service",
+      "//chromeos/components/local_search_service/public/cpp:cpp",
       "//chromeos/components/local_search_service/public/mojom",
       "//chromeos/components/media_app_ui",
       "//chromeos/components/media_app_ui:mojo_bindings",
@@ -4572,6 +4573,7 @@ static_library("browser") {
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/ui/frame",
+      "//components/account_manager_core",
     ]
   }
 
@@ -4804,10 +4806,10 @@ static_library("browser") {
         "win/conflicts/incompatible_applications_updater.h",
         "win/conflicts/installed_applications.cc",
         "win/conflicts/installed_applications.h",
-        "win/conflicts/module_blocklist_cache_updater.cc",
-        "win/conflicts/module_blocklist_cache_updater.h",
-        "win/conflicts/module_blocklist_cache_util.cc",
-        "win/conflicts/module_blocklist_cache_util.h",
+        "win/conflicts/module_blacklist_cache_updater.cc",
+        "win/conflicts/module_blacklist_cache_updater.h",
+        "win/conflicts/module_blacklist_cache_util.cc",
+        "win/conflicts/module_blacklist_cache_util.h",
         "win/conflicts/module_list_component_updater.cc",
         "win/conflicts/module_list_component_updater.h",
         "win/conflicts/module_list_filter.cc",

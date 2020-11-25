@@ -8518,11 +8518,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
-// Sandboxed documents are not cached because we don't properly restore sandbox
-// flags at the moment.
-// TODO(altimin, carlscab): Remove this after sandbox flags will move to RFH /
-// BrowsingInstanceFrameState.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SandboxedFramesNotCached) {
+// Check that sandboxed documents are cached and won't lose their sandbox flags
+// after restoration.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CspSandbox) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url_a(
@@ -8533,27 +8531,86 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SandboxedFramesNotCached) {
 
   // 1) Navigate to A, which should set CSP.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
-
-  // Check that CSP was set.
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   {
     const std::vector<network::mojom::ContentSecurityPolicyHeader>& root_csp =
         current_frame_host()
             ->frame_tree_node()
             ->current_replication_state()
             .accumulated_csp_headers;
-    EXPECT_EQ(1u, root_csp.size());
-    EXPECT_EQ("sandbox", root_csp[0].header_value);
-  }
+    ASSERT_EQ(1u, root_csp.size());
+    ASSERT_EQ("sandbox", root_csp[0].header_value);
+    ASSERT_EQ(network::mojom::WebSandboxFlags::kAll,
+              current_frame_host()->active_sandbox_flags());
+  };
 
-  // 2) Navigate to B.
+  // 2) Navigate to B. Expect the previous RenderFrameHost to enter the bfcache.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  {
+    const std::vector<network::mojom::ContentSecurityPolicyHeader>& root_csp =
+        current_frame_host()
+            ->frame_tree_node()
+            ->current_replication_state()
+            .accumulated_csp_headers;
+    ASSERT_EQ(0u, root_csp.size());
+    ASSERT_EQ(network::mojom::WebSandboxFlags::kNone,
+              current_frame_host()->active_sandbox_flags());
+  };
 
-  // 3) Navigate back and expect that the page wasn't restored from bfcache.
+  // 3) Navigate back and expect the page to be restored, with the correct
+  // CSP and sandbox flags.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kFrameTreeNodeStateReset},
-      FROM_HERE);
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(current_frame_host(), rfh_a);
+  {
+    const std::vector<network::mojom::ContentSecurityPolicyHeader>& root_csp =
+        current_frame_host()
+            ->frame_tree_node()
+            ->current_replication_state()
+            .accumulated_csp_headers;
+    ASSERT_EQ(1u, root_csp.size());
+    ASSERT_EQ("sandbox", root_csp[0].header_value);
+    ASSERT_EQ(network::mojom::WebSandboxFlags::kAll,
+              current_frame_host()->active_sandbox_flags());
+  };
+}
+
+class BackForwardCacheBrowserTestWithFileSystemAPISupported
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "file_system_api_supported", "true");
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFileSystemAPISupported,
+                       CacheWithFileSystemAPI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("/fileapi/request_test.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to a page with WebFileSystem usage.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted(rfh_a);
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 3) Go back to the page with WebFileSystem.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
 }
 
 }  // namespace content

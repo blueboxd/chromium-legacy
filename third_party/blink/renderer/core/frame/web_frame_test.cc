@@ -4224,7 +4224,12 @@ class ClearScrollStateOnCommitWebFrameClient
   ~ClearScrollStateOnCommitWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitNavigation(WebHistoryCommitType, bool) override {
+  void DidCommitNavigation(
+      WebHistoryCommitType commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicyFeatureState& document_policy_header) override {
     Frame()->View()->ResetScrollAndScaleState();
   }
 };
@@ -4443,7 +4448,10 @@ class ContextLifetimeTestWebFrameClient
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<ContextLifetimeTestWebFrameClient>(
                                 create_notifications_, release_notifications_));
@@ -6385,15 +6393,23 @@ TEST_F(CompositedSelectionBoundsTest, InputScrolled) {
 class TestWillInsertBodyWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
-  TestWillInsertBodyWebFrameClient() : did_load_(false) {}
-  ~TestWillInsertBodyWebFrameClient() override = default;
+  TestWillInsertBodyWebFrameClient() = default;
+  ~TestWillInsertBodyWebFrameClient() final = default;
+
+  bool did_load() const { return did_load_; }
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitNavigation(WebHistoryCommitType, bool) override {
+  void DidCommitNavigation(
+      WebHistoryCommitType commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicyFeatureState& document_policy_header) final {
     did_load_ = true;
   }
 
-  bool did_load_;
+ private:
+  bool did_load_ = false;
 };
 
 TEST_F(WebFrameTest, HTMLDocument) {
@@ -6404,7 +6420,7 @@ TEST_F(WebFrameTest, HTMLDocument) {
   web_view_helper.InitializeAndLoad(base_url_ + "clipped-body.html",
                                     &web_frame_client);
 
-  EXPECT_TRUE(web_frame_client.did_load_);
+  EXPECT_TRUE(web_frame_client.did_load());
 }
 
 TEST_F(WebFrameTest, EmptyDocument) {
@@ -6414,7 +6430,7 @@ TEST_F(WebFrameTest, EmptyDocument) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
 
-  EXPECT_FALSE(web_frame_client.did_load_);
+  EXPECT_FALSE(web_frame_client.did_load());
 }
 
 TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection) {
@@ -7235,7 +7251,10 @@ class TestCachePolicyWebFrameClient
       const WebString&,
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
-      mojom::blink::FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override {
     auto child = std::make_unique<TestCachePolicyWebFrameClient>();
     auto* child_ptr = child.get();
     child_clients_.push_back(std::move(child));
@@ -7727,7 +7746,10 @@ class FailCreateChildFrame : public frame_test_helpers::TestWebFrameClient {
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
-      mojom::blink::FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override {
     ++call_count_;
     return nullptr;
   }
@@ -8860,7 +8882,10 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<WebFrameSwapTestClient>(this));
   }
@@ -9478,8 +9503,12 @@ class RemoteToLocalSwapWebFrameClient
   ~RemoteToLocalSwapWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitNavigation(WebHistoryCommitType history_commit_type,
-                           bool) override {
+  void DidCommitNavigation(
+      WebHistoryCommitType history_commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicyFeatureState& document_policy_header) override {
     history_commit_type_ = history_commit_type;
     remote_frame_->Swap(Frame());
   }
@@ -9731,21 +9760,25 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle) {
 
 class CommitTypeWebFrameClient : public frame_test_helpers::TestWebFrameClient {
  public:
-  CommitTypeWebFrameClient() : history_commit_type_(kWebHistoryInertCommit) {}
-  ~CommitTypeWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  void DidCommitNavigation(WebHistoryCommitType history_commit_type,
-                           bool) override {
-    history_commit_type_ = history_commit_type;
-  }
+  CommitTypeWebFrameClient() = default;
+  ~CommitTypeWebFrameClient() final = default;
 
   WebHistoryCommitType HistoryCommitType() const {
     return history_commit_type_;
   }
 
+  // frame_test_helpers::TestWebFrameClient:
+  void DidCommitNavigation(
+      WebHistoryCommitType history_commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicyFeatureState& document_policy_header) final {
+    history_commit_type_ = history_commit_type;
+  }
+
  private:
-  WebHistoryCommitType history_commit_type_;
+  WebHistoryCommitType history_commit_type_ = kWebHistoryInertCommit;
 };
 
 TEST_F(WebFrameTest, RemoteFrameInitialCommitType) {
@@ -10995,7 +11028,10 @@ class WebLocalFrameVisibilityChangeTest
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override {
     return CreateLocalChild(*parent, scope, &child_client_);
   }
 
@@ -12696,7 +12732,10 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
         const WebString& fallback_name,
         const FramePolicy&,
         const WebFrameOwnerProperties&,
-        mojom::blink::FrameOwnerElementType) override {
+        mojom::blink::FrameOwnerElementType,
+        blink::CrossVariantMojoAssociatedReceiver<
+            blink::mojom::PolicyContainerHostInterfaceBase>
+            policy_container_host_receiver) override {
       return CreateLocalChild(*parent, scope, &child_client_);
     }
 
@@ -12968,7 +13007,10 @@ class TestFallbackWebFrameClient
       const WebString&,
       const FramePolicy&,
       const WebFrameOwnerProperties& frameOwnerProperties,
-      mojom::blink::FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PolicyContainerHostInterfaceBase>
+          policy_container_host_receiver) override {
     DCHECK(child_client_);
     return CreateLocalChild(*parent, scope, child_client_);
   }

@@ -19,7 +19,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
 }
 
-if (is_mac) {
+if (is_apple) {
   import("//build/config/mac/symbols.gni")
 }
 
@@ -216,7 +216,7 @@ declare_args() {
 # official builders.
 strip_absolute_paths_from_debug_symbols_default =
     is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
-    is_chromeos || (is_mac && !enable_dsyms) || ios_use_goma_rbe
+    is_chromeos || (is_apple && !enable_dsyms)
 
 # If the platform uses stripped absolute paths by default, then we don't expose
 # it as a configuration option. If this is causing problems, please file a bug.
@@ -233,9 +233,8 @@ assert(
     use_debug_fission == "default" || use_debug_fission || !use_debug_fission,
     "Invalid use_debug_fission.")
 if (use_debug_fission == "default") {
-  use_debug_fission = (is_android && is_official_build) ||
-                      (is_debug && !is_android && !is_fuchsia && !is_apple &&
-                       !is_win && (use_gold || use_lld) && cc_wrapper == "")
+  use_debug_fission = is_debug && !is_android && !is_fuchsia && !is_apple &&
+                      !is_win && (use_gold || use_lld) && cc_wrapper == ""
 }
 
 # If it wasn't manually set, set to an appropriate default.

@@ -50,6 +50,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
@@ -182,8 +183,7 @@ std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
   // In MD Settings, the exceptions no longer have a separate subpage.
   // This list overrides the group names defined in site_settings_helper for the
   // purposes of URL generation for MD Settings only. We need this because some
-  // of the old group names are no longer appropriate: i.e. "plugins" =>
-  // "flash".
+  // of the old group names are no longer appropriate.
   //
   // TODO(crbug.com/728353): Update the group names defined in
   // site_settings_helper once Options is removed from Chrome. Then this list
@@ -195,7 +195,6 @@ std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
            {ContentSettingsType::MEDIASTREAM_MIC, "microphone"},
            {ContentSettingsType::MEDIASTREAM_CAMERA, "camera"},
            {ContentSettingsType::MIDI_SYSEX, "midiDevices"},
-           {ContentSettingsType::PLUGINS, "flash"},
            {ContentSettingsType::ADS, "ads"},
            {ContentSettingsType::PPAPI_BROKER, "unsandboxedPlugins"}});
   const auto it = kSettingsPathOverrides->find(type);
@@ -481,7 +480,8 @@ GURL GetOSSettingsUrl(const std::string& sub_page) {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void ShowBrowserSignin(Browser* browser,
-                       signin_metrics::AccessPoint access_point) {
+                       signin_metrics::AccessPoint access_point,
+                       signin::ConsentLevel consent_level) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
 
@@ -492,11 +492,21 @@ void ShowBrowserSignin(Browser* browser,
       std::make_unique<ScopedTabbedBrowserDisplayer>(original_profile);
   browser = displayer->browser();
 
-  profiles::BubbleViewMode bubble_view_mode =
-      IdentityManagerFactory::GetForProfile(original_profile)
-              ->HasPrimaryAccount()
-          ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
-          : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+  profiles::BubbleViewMode bubble_view_mode;
+  if (IdentityManagerFactory::GetForProfile(original_profile)
+          ->HasPrimaryAccount()) {
+    bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
+  } else {
+    switch (consent_level) {
+      case signin::ConsentLevel::kSync:
+        bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+        break;
+      case signin::ConsentLevel::kNotRequired:
+        bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
+        break;
+    }
+  }
+
   browser->signin_view_controller()->ShowSignin(bubble_view_mode, access_point);
 }
 
@@ -508,7 +518,7 @@ void ShowBrowserSigninOrSettings(Browser* browser,
           ->HasPrimaryAccount())
     ShowSettings(browser);
   else
-    ShowBrowserSignin(browser, access_point);
+    ShowBrowserSignin(browser, access_point, signin::ConsentLevel::kSync);
 }
 #endif
 

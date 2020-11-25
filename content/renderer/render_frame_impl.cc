@@ -2622,7 +2622,7 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
   }
 
   base::Value value;
-  if (!result.empty() && wants_result_) {
+  if (!result.empty() && !result.begin()->IsEmpty() && wants_result_) {
     // It's safe to always use the main world context when converting
     // here. V8ValueConverterImpl shouldn't actually care about the
     // context scope, and it switches to v8::Object's creation context
@@ -4515,7 +4515,7 @@ void RenderFrameImpl::ShowContextMenu(
   UntrustworthyContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   if (host_context_menu_location.has_value()) {
     // If the context menu request came from the browser, it came with a
-    // position that was stored on blink::WebFrameWidgetBase and is relative to
+    // position that was stored on blink::WebFrameWidgetImpl and is relative to
     // the WindowScreenRect.
     params.x = host_context_menu_location.value().x();
     params.y = host_context_menu_location.value().y();
@@ -5595,7 +5595,7 @@ void RenderFrameImpl::BeginNavigation(
         !is_history_navigation_in_new_child_frame) {
       for (auto& observer : observers_)
         observer.DidStartNavigation(url, info->navigation_type);
-      CommitSyncNavigation(std::move(info));
+      CommitInitialEmptyDocument(std::move(info));
       return;
     }
 
@@ -5619,7 +5619,7 @@ void RenderFrameImpl::BeginNavigation(
   }
 }
 
-void RenderFrameImpl::CommitSyncNavigation(
+void RenderFrameImpl::CommitInitialEmptyDocument(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   CHECK_EQ(NavigationCommitState::kInitialEmptyDocument,
            navigation_commit_state_);

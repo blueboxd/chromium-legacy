@@ -196,7 +196,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InputMethod.Assistive.UserPref.PersonalInfo"
-    enum="BooleanEnabled" expires_after="2021-03-21">
+    enum="BooleanEnabled" expires_after="2021-05-23">
   <owner>myy@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -451,6 +451,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     from the IME extension starts loading a private Mojo bundle for making a
     request to connect a IME service until the connection between the extension
     and the IME Mojo service is built.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.NextWordPrediction" enum="BooleanEnabled"
+    expires_after="2021-04-01">
+  <owner>myy@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    Whether next word prediction is enabled for a user. Recorded when a specific
+    language settings page is updated or when the input extension is activated.
   </summary>
 </histogram>
 

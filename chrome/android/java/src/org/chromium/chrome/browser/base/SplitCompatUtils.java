@@ -18,6 +18,7 @@ import org.chromium.base.annotations.IdentifierNameString;
 
 /** Utils for compatibility with isolated splits. */
 public class SplitCompatUtils {
+    private static final String CHROME_SPLIT_NAME = "chrome";
     private static final ArraySet<ClassLoader> sInflationClassLoaders = new ArraySet<>();
 
     private SplitCompatUtils() {}
@@ -33,16 +34,20 @@ public class SplitCompatUtils {
 
     /** Creates a context which can be used to load code and resources in the chrome split. */
     public static Context createChromeContext(Context base) {
-        return BundleUtils.createIsolatedSplitContext(base, "chrome");
+        if (!BundleUtils.isIsolatedSplitInstalled(base, CHROME_SPLIT_NAME)) {
+            return base;
+        }
+        return BundleUtils.createIsolatedSplitContext(base, CHROME_SPLIT_NAME);
     }
 
     /**
-     * Constructs a new instance of the given class name using the class loader from the context.
+     * Constructs a new instance of the given class name. If the application context class loader
+     * can load the class, that class loader will be used, otherwise the class loader from the
+     * passed in context will be used.
      */
     public static Object newInstance(Context context, String className) {
-        // TODO(crbug.com/1142589): If this crash fix works we can remove the context arg from here.
         Context appContext = ContextUtils.getApplicationContext();
-        if (appContext != null) {
+        if (appContext != null && canLoadClass(appContext.getClassLoader(), className)) {
             context = appContext;
         }
         try {

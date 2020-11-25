@@ -115,10 +115,9 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/web_remote_frame_impl.h"
-#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -1147,7 +1146,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   if (!main_frame)
     return;
 
-  WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+  WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
   widget->SetBrowserControlsShownRatio(GetBrowserControls().TopShownRatio(),
                                        GetBrowserControls().BottomShownRatio());
   widget->SetBrowserControlsParams(GetBrowserControls().Params());
@@ -1290,7 +1289,7 @@ void WebViewImpl::SetScreenOrientationOverrideForTesting(
   // Since we updated the override value, notify all widgets.
   for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame()) {
-      if (WebFrameWidgetBase* widget = static_cast<WebFrameWidgetBase*>(
+      if (WebFrameWidgetImpl* widget = static_cast<WebFrameWidgetImpl*>(
               frame->ToWebLocalFrame()->FrameWidget()))
         widget->UpdateScreenInfo(widget->GetScreenInfo());
     }
@@ -1319,7 +1318,8 @@ void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
 }
 
-void WebViewImpl::SetMainFrameViewWidget(WebViewFrameWidget* widget) {
+void WebViewImpl::SetMainFrameViewWidget(WebFrameWidgetImpl* widget) {
+  DCHECK(!widget || widget->ForMainFrame());
   web_widget_ = widget;
 }
 
@@ -1333,7 +1333,7 @@ void WebViewImpl::SetKeyboardFocusURL(const KURL& url) {
   UpdateTargetURL(focus_url_, mouse_over_url_);
 }
 
-WebViewFrameWidget* WebViewImpl::MainFrameViewWidget() {
+WebFrameWidgetImpl* WebViewImpl::MainFrameViewWidget() {
   return web_widget_;
 }
 
@@ -2378,7 +2378,7 @@ void WebViewImpl::RemoveFocusAndTextInputState() {
   // Note that the TextInputState itself is cleared when we clear the focus,
   // but no updates to the browser will be triggered until the next animation
   // frame, which won't happen if we're freezing the page.
-  if (auto* widget = static_cast<WebFrameWidgetBase*>(
+  if (auto* widget = static_cast<WebFrameWidgetImpl*>(
           focused_frame->GetWidgetForLocalRoot())) {
     widget->FinishComposingText(false /* keep_selection */);
     widget->UpdateTextInputState();

@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -2107,7 +2108,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 // The test launches an app with guest and closes the window on loadcommit. It
 // then launches the app window again. The process is repeated 3 times.
 // TODO(crbug.com/949923): The test is flaky (crash) on ChromeOS debug and ASan/LSan
-#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#if BUILDFLAG(IS_CHROMEOS_ASH) && \
+    (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_CloseOnLoadcommit DISABLED_CloseOnLoadcommit
 #else
 #define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
@@ -2930,7 +2932,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 #else
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DownloadCookieIsolation_CrossSession
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_DownloadCookieIsolation_CrossSession) {
@@ -3183,39 +3185,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoContentSettingsAPI) {
   TestHelper("testPostMessageCommChannel", "web_view/shim", NO_TEST_SERVER);
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-class WebViewPluginTest : public WebViewTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewTest::SetUpCommandLine(command_line);
-    ASSERT_TRUE(ppapi::RegisterTestPlugin(command_line));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
-  TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
-  const char kTestMimeType[] = "application/pdf";
-  const char kTestFileType[] = "pdf";
-  content::WebPluginInfo plugin_info;
-  plugin_info.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
-  plugin_info.mime_types.push_back(
-      content::WebPluginMimeType(kTestMimeType, kTestFileType, std::string()));
-  content::PluginService::GetInstance()->RegisterInternalPlugin(plugin_info,
-                                                                true);
-
-  TestHelper("testPluginLoadInternalResource", "web_view/shim", NO_TEST_SERVER);
-  // Sanity check to ensure no GuestView was created.
-  for (auto* guest_wc : GetEmbedderWebContents()->GetInnerWebContents()) {
-    EXPECT_FALSE(extensions::MimeHandlerViewEmbedder::Get(
-        guest_wc->GetMainFrame()->GetFrameTreeNodeId()));
-  }
-}
-
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-
 class WebViewCaptureTest : public WebViewTest {
  public:
   WebViewCaptureTest() {}
@@ -3227,7 +3196,11 @@ class WebViewCaptureTest : public WebViewTest {
 };
 
 // https://crbug.com/1087381
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_CHROMEOS) ||                                  \
+    ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+     defined(ADDRESS_SANITIZER))
 #define MAYBE_Shim_TestZoomAPI DISABLED_Shim_TestZoomAPI
 #else
 #define MAYBE_Shim_TestZoomAPI Shim_TestZoomAPI
@@ -3394,15 +3367,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebViewInsideFrame) {
 // See http://crbug.com/327035.
 IN_PROC_BROWSER_TEST_F(WebViewCaptureTest, DISABLED_Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
-}
-
-// Tests that browser process does not crash when loading plugin inside
-// <webview> with content settings set to CONTENT_SETTING_BLOCK.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
-                                 CONTENT_SETTING_BLOCK);
-  TestHelper("testPlugin", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 // Test is disabled because it times out often.
@@ -4158,7 +4122,9 @@ class ChromeSignInWebViewTest : public WebViewTest {
   }
 };
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MAC) || \
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC) || \
     defined(OS_WIN)
 // This verifies the fix for http://crbug.com/667708.
 IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,

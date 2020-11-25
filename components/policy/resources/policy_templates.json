@@ -457,6 +457,7 @@
         'AuthAndroidNegotiateAccountType',
         'AllowCrossOriginAuthPrompt',
         'NtlmV2Enabled',
+        'IntegratedWebAuthenticationAllowed',
       ],
     },
     {
@@ -1760,6 +1761,7 @@
         'chrome_os:14-',
         'android:30-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5081,7 +5083,7 @@
         },
         {
           'value': None,
-          'caption': 'Allow 3rd party cookes, but allow the user to change this setting',
+          'caption': 'Allow 3rd party cookies, but allow the user to change this setting',
         },
       ],
       'example_value': False,
@@ -11873,13 +11875,13 @@
 
       * A warning dialog appears if the user remains idle for the time specified by <ph name="IDLE_WARNING_FIELD_NAME">IdleWarning</ph>. It warns the user that the idle action will be taken and only appears if the idle action is to sign out or shut down.
 
-      * The action specified by <ph name="IDLE_ACTION_FIELD_NAME">IdleAction</ph> is taken if the user is idle for the time specified by Idle.
+      * The action specified by <ph name="IDLE_ACTION_FIELD_NAME">IdleAction</ph> is taken if the user is idle for the time specified by <ph name="IDLE_FIELD_NAME">Idle</ph>.
 
       For each of the above actions, the delay should be specified in milliseconds and must be set to a value greater than zero to trigger the corresponding action. If the delay is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> won't take the corresponding action.
 
       For each of the above delays, when the time is unset, a default value is used.
 
-      <ph name="SCREEN_DIM_FIELD_NAME">ScreenDim</ph> values will be clamped to be less than or equal to <ph name="SCREEN_OFF_FIELD_NAME">ScreenOff</ph>. <ph name="SCREEN_OFF_FIELD_NAME">ScreenOff</ph> and <ph name="IDLE_WARNING_FIELD_NAME">IdleWarning</ph> will be clamped to be less than or equal to Idle.
+      <ph name="SCREEN_DIM_FIELD_NAME">ScreenDim</ph> values will be clamped to be less than or equal to <ph name="SCREEN_OFF_FIELD_NAME">ScreenOff</ph>. <ph name="SCREEN_OFF_FIELD_NAME">ScreenOff</ph> and <ph name="IDLE_WARNING_FIELD_NAME">IdleWarning</ph> will be clamped to be less than or equal to <ph name="IDLE_FIELD_NAME">Idle</ph>.
 
       <ph name="IDLE_ACTION_FIELD_NAME">IdleAction</ph> can be one of 4 actions:
 
@@ -16311,13 +16313,17 @@
       'id': 784,
       'caption': '''Configure allowed quick unlock modes''',
       'tags': [],
-      'desc': '''The policy controls a list of quick unlock modes that users can configure and use to unlock the lock screen.
+      'desc': '''Setting the policy controls which quick unlock modes can unlock the lock screen.
 
-          This value is a list of strings; valid list entries are: "all", "PIN", "FINGERPRINT". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
+      To allow:
 
-          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To allow PIN and fingerprint, use ["PIN", "FINGERPRINT"].
+      * Every quick unlock mode, use ["all"] (includes modes added in the future).
 
-          If the policy is not set or set to an empty list, no quick unlock modes are available for managed devices''',
+      * Only PIN unlock, use ["PIN"].
+
+      * PIN and fingerprint, use ["PIN", "FINGERPRINT"].
+
+      If the policy is unset or set to an empty list, no quick unlock modes are available for managed devices.''',
     },
     {
       'name': 'QuickUnlockModeWhitelist',
@@ -16346,15 +16352,19 @@
       'id': 352,
       'caption': '''Configure allowed quick unlock modes''',
       'tags': [],
-      'desc': '''The policy controls a list of quick unlock modes that users can configure and use to unlock the lock screen.
+      'desc': '''Setting the policy controls which quick unlock modes can unlock the lock screen.
 
-          This value is a list of strings; valid list entries are: "all", "PIN", "FINGERPRINT". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
+      To allow:
 
-          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To allow PIN and fingerprint, use ["PIN", "FINGERPRINT"].
+      * Every quick unlock mode, use ["all"] (includes modes added in the future).
 
-          If the policy is not set or set to an empty list, no quick unlock modes are available for managed devices
+      * Only PIN unlock, use ["PIN"].
 
-          This policy is deprecated, please use <ph name="QUICK_UNLOCK_MODE_ALLOW_LIST_POLICY_NAME">QuickUnlockModeAllowlist</ph> instead=''',
+      * PIN and fingerprint, use ["PIN", "FINGERPRINT"].
+
+      If the policy is unset or set to an empty list, no quick unlock modes are available for managed devices.
+
+      This policy is deprecated, please use <ph name="QUICK_UNLOCK_MODE_ALLOW_LIST_POLICY_NAME">QuickUnlockModeAllowlist</ph> instead''',
     },
     {
       'name': 'QuickUnlockTimeout',
@@ -16395,11 +16405,9 @@
       'id': 353,
       'caption': '''Set how often user has to enter password to use quick unlock''',
       'tags': [],
-      'desc': '''This setting controls how often the lock screen will request the password to be entered in order to continue using quick unlock. Each time the lock screen is entered, if the last password entry was more than this setting, the quick unlock will not be available on entering the lock screen. Should the user stay on the lock screen past this period of time, a password will be requested next time the user enters the wrong code, or re-enters the lock screen, whichever comes first.
+      'desc': '''Setting the policy controls how often the lock screen requests the password for quick unlock. Each time the lock screen appears, if the last password entry occured before the time window specified by the value chosen, quick unlock won't be available. If users stay on the lock screen past this amount of time, a password is requested next time they enter the wrong code or re-enter the lock screen, whichever comes first.
 
-          If this setting is configured, users using quick unlock will be requested to enter their passwords on the lock screen depending on this setting.
-
-          If this setting is not configured, users using quick unlock will be requested to enter their password on the lock screen every day.''',
+      Leaving the policy unset means users using quick unlock enter their password on the lock screen daily.''',
     },
     {
       'name': 'PinUnlockMinimumLength',
@@ -16415,12 +16423,9 @@
       'id': 354,
       'caption': '''Set the minimum length of the lock screen PIN''',
       'tags': [],
-      'desc': '''If the policy is set, the configured minimal PIN length is
-          enforced. (The absolute minimum PIN length is 1; values less than 1
-          are treated as 1.)
+      'desc': '''Setting the policy enforces the minimum PIN length chosen. (Values below 1 are rounded up to the minimum of 1.)
 
-          If the policy is not set, a minimal PIN length of 6 digits is
-          enforced. This is the recommended minimum.''',
+      Leaving the policy unset enforces a minimal PIN length of 6 digits, the recommended minimum.''',
     },
     {
       'name': 'PinUnlockMaximumLength',
@@ -16436,9 +16441,9 @@
       'id': 355,
       'caption': '''Set the maximum length of the lock screen PIN''',
       'tags': [],
-      'desc': '''If the policy is set, the configured maximal PIN length is enforced. A value of 0 or less means no maximum length; in that case the user may set a PIN as long as they want. If this setting is less than <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME">PinUnlockMinimumLength</ph> but greater than 0, the maximum length is the same as the minimum length.
+      'desc': '''Setting the policy means the configured maximum PIN length is enforced. A value of 0 or less means the user may set a PIN of any length. If the value is less than <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME">PinUnlockMinimumLength</ph> but greater than 0, the maximum length is set to the minimum length.
 
-          If the policy is not set, no maximum length is enforced.''',
+      Leaving the policy unset means no maximum length is enforced.''',
     },
     {
       'name': 'PinUnlockWeakPinsAllowed',
@@ -16454,11 +16459,9 @@
       'id': 356,
       'caption': '''Enable users to set weak PINs for the lock screen PIN''',
       'tags': [],
-      'desc': '''If false, users will be unable to set PINs which are weak and easy to guess.
+      'desc': '''Setting the policy to Enabled allows weak PINs. Some characteristics of weak PINs: only one digit (1111), digits increase by 1 (1234), digits decrease by 1 (4321), and common PINs. Setting the policy to Disabled means users can't set weak, easy-to-guess PINs.
 
-          Some example weak PINs: PINs containing only one digit (1111), PINs whose digits are increasing by 1 (1234), PINs whose digits are decreasing by 1 (4321), and PINs which are commonly used.
-
-          By default, users will get a warning, not error, if the PIN is considered weak.''',
+      By default, users get a warning, not an error, for a weak PIN.''',
     },
     {
       'name': 'DeviceWallpaperImage',
@@ -20427,7 +20430,7 @@
       'id': 538,
       'caption': '''Enable peak shift power management''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled and setting <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_POLICY_NAME">DevicePowerPeakShiftBatteryThreshold</ph> and <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_POLICY_NAME">DevicePowerPeakShiftDayConfig</ph> keeps power peak shift on, if supported on the device. Power peak shift power management policy is a power-saving policy that minimizes alternating current usage during peak times. For each weekday, you can set a start and end time to run in power peak shift mode. As long as the battery stays above the threshold specified, during these times, the system runs from the battery (even if the alternating current is attached). After the specified end time, the system runs from alternating current (if attached), but won't charge the battery. The system will again function normally using alternating current and recharging the battery after the specified start time.
+      'desc': '''Setting the policy to Enabled and setting <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_POLICY_NAME">DevicePowerPeakShiftBatteryThreshold</ph> and <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_POLICY_NAME">DevicePowerPeakShiftDayConfig</ph> keeps power peak shift on, if supported on the device. Power peak shift power management policy is a power-saving policy that minimizes alternating current usage during peak times. For each weekday, you can set a start and end time to run in power peak shift mode. As long as the battery stays above the threshold specified, during these times, the device runs from the battery (even if the alternating current is attached). After the specified end time, the device runs from alternating current (if attached), but won't charge the battery. The device will again function normally using alternating current and recharging the battery after the specified charge start time.
 
       Setting the policy to Disabled keeps power peak shift off.
 
@@ -23856,6 +23859,37 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
       If this policy is set to Enabled, the user can use the <ph name="LACROS_NAME">Lacros</ph> browser.''',
     },
+    {
+      'name': 'IntegratedWebAuthenticationAllowed',
+      'owners': ['acostinas@chromium.org', 'pmarko@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:89-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'The <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will be used for network authentication to a managed proxy.',
+        },
+        {
+          'value': False,
+          'caption': 'The <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will not be used for network authentication.',
+        },
+      ],
+      'example_value': True,
+      'id': 808,
+      'default': False,
+      'caption': '''Allow reusing the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials for network authentication''',
+      'tags': [],
+      'desc': '''This setting allows users to authenticate to a managed proxy secured with NTLM authentication using the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials.
+
+      If this policy is set to False or unset, the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will not be used for network authentication.
+
+      If this policy is set to True, the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will be used for network authentication to a managed proxy. In case the authentication with the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials fails, the user will be prompted for credentials.''',
+    },
   ],
 
   'messages': {
@@ -24778,6 +24812,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 807,
+  'highest_id_currently_used': 808,
   'highest_atomic_group_id_currently_used': 40
 }

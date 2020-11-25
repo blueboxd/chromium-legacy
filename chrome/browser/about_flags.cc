@@ -1510,9 +1510,20 @@ const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
          kPromoBrowserCommandOpenSafeBrowsingSettingsEnhancedProtectionCommandParam),
      nullptr}};
 #if !defined(OS_ANDROID)
+
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
+    {ntp_features::kNtpStatefulTasksModuleDataParam, "fake"}};
+const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
+    {"- Fake Data", kNtpRecipeTasksModuleFakeData,
+     base::size(kNtpRecipeTasksModuleFakeData), nullptr},
+};
+
+const FeatureEntry::FeatureParam kNtpShoppingTasksModuleFakeData[] = {
+    {ntp_features::kNtpStatefulTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpShoppingTasksModuleVariations[] = {
-    {"- Real Data", {}, 0, "t3329137" /* variation_id */},
-    {"- Fake Data", {}, 0, "t3329139" /* variation_id */},
+    {"- Fake Data", kNtpShoppingTasksModuleFakeData,
+     base::size(kNtpShoppingTasksModuleFakeData),
+     "t3329139" /* variation_id */},
 };
 
 const FeatureEntry::FeatureParam kNtpRepeatableQueriesInsertPositionStart[] = {
@@ -1697,6 +1708,9 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
 
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
+    {"enable_price_tracking", "true"}};
+
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
     {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
@@ -1706,6 +1720,8 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_TallNTV), nullptr},
     {"Search term chip", kTabGridLayoutAndroid_SearchChip,
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
+    {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
+     base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -2435,6 +2451,13 @@ const FeatureEntry::FeatureVariation kSubresourceRedirectVariations[] = {
     {"robots.txt allowed image compression in non logged-in pages",
      kSubresourceRedirectLoginRobotsBasedCompression,
      base::size(kSubresourceRedirectLoginRobotsBasedCompression), nullptr}};
+
+#if defined(OS_CHROMEOS)
+const FeatureEntry::FeatureVariation
+    kOmniboxRichEntitiesInLauncherVariations[] = {
+        {"with linked Suggest experiment", {}, 0, "t4461027"},
+};
+#endif  // OS_CHROMEOS
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -4393,7 +4416,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"ntp-recipe-tasks-module", flag_descriptions::kNtpRecipeTasksModuleName,
      flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpRecipeTasksModule)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpRecipeTasksModule,
+                                    kNtpRecipeTasksModuleVariations,
+                                    "NtpRecipeTasksModule")},
 
     {"ntp-shopping-tasks-module",
      flag_descriptions::kNtpShoppingTasksModuleName,
@@ -5084,13 +5109,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"shared-clipboard-ui", flag_descriptions::kSharedClipboardUIName,
      flag_descriptions::kSharedClipboardUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharedClipboardUI)},
-
-    {"enable-send-tab-to-self-omnibox-sending-animation",
-     flag_descriptions::kSendTabToSelfOmniboxSendingAnimationName,
-     flag_descriptions::kSendTabToSelfOmniboxSendingAnimationDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         send_tab_to_self::kSendTabToSelfOmniboxSendingAnimation)},
 
     {"sharing-prefer-vapid", flag_descriptions::kSharingPreferVapidName,
      flag_descriptions::kSharingPreferVapidDescription, kOsAll,
@@ -6630,7 +6648,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-rich-entities-in-launcher",
      flag_descriptions::kOmniboxRichEntitiesInLauncherName,
      flag_descriptions::kOmniboxRichEntitiesInLauncherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableOmniboxRichEntities)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         app_list_features::kEnableOmniboxRichEntities,
+         kOmniboxRichEntitiesInLauncherVariations,
+         "OmniboxRichEntitiesInLauncher")},
 
     {"separate-pointing-stick-settings",
      flag_descriptions::kSeparatePointingStickSettingsName,

@@ -39,8 +39,7 @@ std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
   if (parameters.server_certificate_fingerprints.empty()) {
     return std::make_unique<ProofVerifierChromium>(
         context->cert_verifier(), context->ct_policy_enforcer(),
-        context->transport_security_state(),
-        context->cert_transparency_verifier(), context->sct_auditing_delegate(),
+        context->transport_security_state(), context->sct_auditing_delegate(),
         HostsFromOrigins(
             context->quic_context()->params()->origins_to_force_quic_on),
         isolation_key);
@@ -286,7 +285,7 @@ void QuicTransportClient::CreateConnection() {
   session_ = std::make_unique<quic::QuicTransportClientSession>(
       connection_.get(), this, InitializeQuicConfig(*quic_context_->params()),
       supported_versions_, url_, &crypto_config_, origin_, this,
-      /*datagram_observer=*/nullptr);
+      std::make_unique<DatagramObserverProxy>(this));
 
   packet_reader_ = std::make_unique<QuicChromiumPacketReader>(
       socket_.get(), quic_context_->clock(), this, kQuicYieldAfterPacketsRead,
@@ -479,6 +478,13 @@ void QuicTransportClient::OnConnectionClosed(
   }
 
   TransitionToState(FAILED);
+}
+
+void QuicTransportClient::DatagramObserverProxy::OnDatagramProcessed(
+    absl::optional<quic::MessageStatus> status) {
+  client_->visitor_->OnDatagramProcessed(
+      status.has_value() ? base::Optional<quic::MessageStatus>(*status)
+                         : base::Optional<quic::MessageStatus>());
 }
 
 }  // namespace net

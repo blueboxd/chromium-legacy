@@ -149,14 +149,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     private OverviewModeBehavior mOverviewModeBehavior;
     private MinimalUICoordinator mMinimalUi;
 
-    /**
-     * True if we should skip showing PaymentRequest UI.
-     *
-     * <p>In cases where there is a single payment app and the merchant does not request shipping
-     * or billing, we can skip showing UI as Payment Request UI is not benefiting the user at all.
-     */
-    private boolean mShouldSkipShowingPaymentRequestUi;
-
     /** The delegate of this class. */
     public interface Delegate {
         /** Dispatch the payer detail change event if needed. */
@@ -344,14 +336,54 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         return mMerchantSupportsAutofillCards;
     }
 
-    /** @return Get the PaymentMethodsSection of the PaymentRequest UI. */
-    public SectionInformation getPaymentMethodsSection() {
-        return mPaymentMethodsSection;
+    /** @return Get the payment apps of the PaymentRequest UI. */
+    public List<EditableOption> getPaymentApps() {
+        return mPaymentMethodsSection.getItems();
     }
 
-    /** Set the PaymentMethodsSection of the PaymentRequest UI. */
-    public void setPaymentMethodsSection(SectionInformation paymentMethodsSection) {
-        mPaymentMethodsSection = paymentMethodsSection;
+    /**
+     * @return Get the payment apps of the PaymentRequest UI in the form of a {@link PaymentApp}
+     *         list.
+     */
+    public List<PaymentApp> getPaymentAppsInPaymentAppList() {
+        List<PaymentApp> paymentApps = new ArrayList<>();
+        for (EditableOption each : mPaymentMethodsSection.getItems()) {
+            paymentApps.add((PaymentApp) each);
+        }
+        return paymentApps;
+    }
+
+    /**
+     * Returns the selected payment app, if any.
+     * @return The selected payment app or null if none selected.
+     */
+    @Nullable
+    public EditableOption getSelectedPaymentApp() {
+        return mPaymentMethodsSection.getSelectedItem();
+    }
+
+    /**
+     * Loads the payment apps into the app selector UI (aka, PaymentRequest UI).
+     * @param apps The payment apps to be loaded into the app selector UI.
+     */
+    public void setPaymentApps(List<PaymentApp> apps) {
+        Collections.sort(apps, mPaymentAppComparator);
+        // Possibly pre-select the first app on the list.
+        int selection =
+                !apps.isEmpty() && apps.get(0).canPreselect() ? 0 : SectionInformation.NO_SELECTION;
+
+        // The list of payment apps is ready to display.
+        mPaymentMethodsSection = new SectionInformation(
+                PaymentRequestUI.DataType.PAYMENT_METHODS, selection, new ArrayList<>(apps));
+
+        // Record the number suggested payment methods and whether at least one of them was
+        // complete.
+        // TODO(crbug.com/1152498): move this into PaymentRequestService because the WebLayer
+        // payment request needs to record this as well.
+        mJourneyLogger.setNumberOfSuggestionsShown(
+                Section.PAYMENT_METHOD, apps.size(), !apps.isEmpty() && apps.get(0).isComplete());
+
+        updateAppModifiedTotals();
     }
 
     /** Get the ShippingAddressesSection of the PaymentRequest UI. */
@@ -487,11 +519,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
 
         // When non-minimal UI is opened.
         onUiCompleted.run();
-    }
-
-    /** @return Whether PaymentRequestUI should be skipped. */
-    public boolean shouldSkipShowingPaymentRequestUi() {
-        return mShouldSkipShowingPaymentRequestUi;
     }
 
     // Implement SettingsAutofillAndPaymentsObserver.Observer:
@@ -1259,14 +1286,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
 
     /**
-     * Rank the payment apps for PaymentRequest UI.
-     * @param paymentApps A list of payment apps to be ranked in place.
-     */
-    public void rankPaymentAppsForPaymentRequestUI(List<PaymentApp> paymentApps) {
-        Collections.sort(paymentApps, mPaymentAppComparator);
-    }
-
-    /**
      * Edit the credit cards on the PaymentRequest UI.
      * @param toEdit The AutofillPaymentInstrument whose credit card is to replace those on the UI,
      *         allowed to be null.
@@ -1408,21 +1427,19 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
 
     /**
      * @param options The payment options specified in the payment request.
+     * @param allApps All available payment apps.
      * @return true when there is exactly one available payment app which can provide all requested
      * information including shipping address and payer's contact information whenever needed.
      */
-    public boolean onlySingleAppCanProvideAllRequiredInformation(PaymentOptions options) {
-        assert mPaymentMethodsSection != null;
-
+    private static boolean onlySingleAppCanProvideAllRequiredInformation(
+            PaymentOptions options, List<PaymentApp> allApps) {
         if (!PaymentOptionsUtils.requestAnyInformation(options)) {
-            return mPaymentMethodsSection.getSize() == 1
-                    && !((PaymentApp) mPaymentMethodsSection.getItem(0)).isAutofillInstrument();
+            return allApps.size() == 1 && !((PaymentApp) allApps.get(0)).isAutofillInstrument();
         }
 
         boolean anAppCanProvideAllInfo = false;
-        int sectionSize = mPaymentMethodsSection.getSize();
-        for (int i = 0; i < sectionSize; i++) {
-            PaymentApp app = (PaymentApp) mPaymentMethodsSection.getItem(i);
+        for (int i = 0; i < allApps.size(); i++) {
+            PaymentApp app = (PaymentApp) allApps.get(i);
             if ((!options.requestShipping || app.handlesShippingAddress())
                     && (!options.requestPayerName || app.handlesPayerName())
                     && (!options.requestPayerPhone || app.handlesPayerPhone())
@@ -1478,33 +1495,31 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
 
     /**
-     * Calculate whether the browser payment sheet should be skipped directly into the payment app.
      * @param isUserGestureShow Whether the PaymentRequest.show() is triggered by user gesture.
      * @param skipUiForNonUrlPaymentMethodIdentifiers True when skip UI is available for non-url
      *         based payment method identifiers (e.g., basic-card).
      * @param options The payment options specified in the payment request.
      * @param paymentMethods The payment methods supported by this request.
+     * @param selectedApp The selected payment apps.
+     * @param allApps All available payment apps.
+     * @return Whether the browser payment sheet should be skipped directly into the payment app.
      */
-    public void calculateWhetherShouldSkipShowingPaymentRequestUi(boolean isUserGestureShow,
+    public static boolean shouldSkipShowingPaymentRequestUi(boolean isUserGestureShow,
             boolean skipUiForNonUrlPaymentMethodIdentifiers, PaymentOptions options,
-            Set<String> paymentMethods) {
-        assert mPaymentMethodsSection != null;
-        PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
-
+            Set<String> paymentMethods, PaymentApp selectedApp, List<PaymentApp> allApps) {
         boolean urlPaymentMethodIdentifiersSupported =
                 isUrlPaymentMethodIdentifiersSupported(paymentMethods);
 
         // If there is only a single payment app which can provide all merchant requested
         // information, we can safely go directly to the payment app instead of showing Payment
         // Request UI.
-        mShouldSkipShowingPaymentRequestUi =
-                PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
+        return PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
                 // Only allowing payment apps that own their own UIs.
                 // This excludes AutofillPaymentInstrument as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
                 && (urlPaymentMethodIdentifiersSupported || skipUiForNonUrlPaymentMethodIdentifiers)
-                && mPaymentMethodsSection.getSize() >= 1
-                && onlySingleAppCanProvideAllRequiredInformation(options)
+                && allApps.size() >= 1
+                && onlySingleAppCanProvideAllRequiredInformation(options, allApps)
                 // Skip to payment app only if it can be pre-selected.
                 && selectedApp != null
                 // Skip to payment app only if user gesture is provided when it is required to

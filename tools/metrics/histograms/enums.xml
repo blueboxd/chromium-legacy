@@ -4597,6 +4597,7 @@ others/histograms.xml -->
   <int value="21" label="No trigger script available"/>
   <int value="22" label="Failed to show"/>
   <int value="23" label="Disabled proactive help setting"/>
+  <int value="24" label="Base64 decoding error"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptOnboarding">
@@ -10025,6 +10026,7 @@ histogram as enum -->
   <summary>Defines Chrome OS sharesheet actions.</summary>
   <int value="0" label="Cancelled by user"/>
   <int value="1" label="Launch ARC app"/>
+  <int value="2" label="Launch share action"/>
 </enum>
 
 <enum name="ChromeOSUICommands">
@@ -22607,6 +22609,7 @@ Called by update_document_policy_enum.py.-->
   <int value="805" label="NTPCardsVisible"/>
   <int value="806" label="BasicAuthOverHttpEnabled"/>
   <int value="807" label="SystemFeaturesDisableMode"/>
+  <int value="808" label="IntegratedWebAuthenticationAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -30344,6 +30347,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3730" label="AddEventListenerWithAbortSignal"/>
   <int value="3731" label="XRSessionRequestLightProbe"/>
   <int value="3732" label="BeforematchRevealedHiddenMatchable"/>
+  <int value="3733" label="AddSourceBufferUsingConfig"/>
+  <int value="3734" label="ChangeTypeUsingConfig"/>
+  <int value="3735" label="V8SourceBuffer_AppendEncodedChunks_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41479,6 +41485,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Gaia ID mismatch"/>
 </enum>
 
+<enum name="LocationPermissionsIOSUI">
+  <int value="0" label="First Run Location Prompt Not Shown"/>
+  <int value="1" label="First Run Location Permissions Modal Shown"/>
+</enum>
+
 <enum name="LockedFullscreenState">
   <int value="0" label="Exited"/>
   <int value="1" label="Entered"/>
@@ -49403,7 +49414,7 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
-<enum name="ModuleBlacklistCacheReadResult">
+<enum name="ModuleBlocklistCacheReadResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open the file"/>
   <int value="2" label="Failed to read the metadata"/>
@@ -49414,8 +49425,8 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Invalid MD5 digest"/>
 </enum>
 
-<enum name="ModuleBlacklistStatus">
-  <int value="0" label="Newly blacklisted"/>
+<enum name="ModuleBlocklistStatus">
+  <int value="0" label="Newly blocklisted"/>
   <int value="1" label="Blocked"/>
 </enum>
 
@@ -73177,7 +73188,7 @@ Full version information for the fingerprint enum values:
   <int value="27" label="kSettingsResetPromptLastTriggeredForStartupUrls"/>
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
   <int value="29" label="kMediaStorageIdSalt"/>
-  <int value="30" label="kModuleBlacklistCacheMD5Digest"/>
+  <int value="30" label="kModuleBlocklistCacheMD5Digest"/>
 </enum>
 
 <enum name="TranslateAssistContentResult">

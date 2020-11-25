@@ -535,6 +535,7 @@ if (is_android) {
       ":test_support",
       ":test_support_java",
       ":test_support_ui_android",
+      "//build:chromeos_buildflags",
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
       "//chrome/browser/metrics:test_support",
@@ -3575,6 +3576,7 @@ test("unit_tests") {
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
     "../browser/performance_hints/performance_hints_observer_unittest.cc",
     "../browser/performance_hints/rewrite_handler_unittest.cc",
+    "../browser/performance_manager/decorators/execution_context_priority/ad_frame_voter_unittest.cc",
     "../browser/performance_manager/decorators/execution_context_priority/frame_visibility_voter_unittest.cc",
     "../browser/performance_manager/decorators/execution_context_priority/root_vote_observer_unittest.cc",
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
@@ -4106,7 +4108,7 @@ test("unit_tests") {
       "data/offline_pages/",
       "data/osdd/",
       "data/public_offline_pages/",
-      "data/whitelists/content_pack/site_list.json",
+      "data/allowlists/content_pack/site_list.json",
 
       # webapk_installer_unittest
       "data/banners/image-512px-corp.png",
@@ -4632,6 +4634,7 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_bar_unittest.h",
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
       "../browser/ui/user_education/active_tab_tracker_unittest.cc",
+      "../browser/ui/user_education/feature_promo_text_replacements_unittest.cc",
       "../browser/ui/user_education/mock_feature_promo_controller.cc",
       "../browser/ui/user_education/mock_feature_promo_controller.h",
       "../browser/ui/user_education/reopen_tab_in_product_help_trigger_unittest.cc",
@@ -5973,6 +5976,7 @@ test("unit_tests") {
   }
   if (toolkit_views) {
     deps += [
+      "//chrome:unit_tests_pak",
       "//components/media_router/browser:test_support",
       "//components/web_modal:test_support",
       "//content/test:test_support",
@@ -5980,6 +5984,9 @@ test("unit_tests") {
       "//ui/views:test_support",
       "//ui/web_dialogs:test_support",
     ]
+
+    data_deps += [ "//chrome:unit_tests_pak" ]
+
     sources += [
       "../../ui/views/controls/webview/web_dialog_view_unittest.cc",
       "../../ui/views/controls/webview/webview_unittest.cc",

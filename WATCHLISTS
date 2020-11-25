@@ -1472,7 +1472,8 @@
                   '^chrome/browser/ui/omnibox/|'\
                   '^chrome/browser/ui/.*/location_bar/|'\
                   '^chrome/browser/ui/.*/omnibox/|'\
-                  '^components/omnibox/'
+                  '^components/omnibox/|'\
+                  '^components/search_engines/'
     },
     'optimization_guide': {
       'filepath': 'optimization_guide|'\
@@ -2185,8 +2186,10 @@
     'base_scheduler': ['scheduler-bugs+base@chromium.org'],
     'base_thread_pool': ['fdoray+watch@chromium.org',
                          'gab+watch@chromium.org',
+                         'jessemckenna+watch@google.com',
                          'robliao+watch@chromium.org'],
     'base_win': ['grt+watch@chromium.org',
+                 'jessemckenna+watch@google.com',
                  'robliao+watch@chromium.org',
                  'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],

@@ -103,6 +103,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
+    const std::string& mime_type,
     const std::string& username,
     PasswordType password_type,
     const std::vector<password_manager::MatchingReusedCredential>&
@@ -111,11 +112,11 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     bool password_field_exists,
     PasswordProtectionService* pps,
     int request_timeout_in_ms)
-    : content::WebContentsObserver(web_contents),
-      web_contents_(web_contents),
+    : web_contents_(web_contents),
       main_frame_url_(main_frame_url),
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
+      mime_type_(mime_type),
       username_(username),
       password_type_(password_type),
       matching_domains_(GetMatchingDomains(matching_reused_credentials)),
@@ -136,6 +137,9 @@ PasswordProtectionRequest::PasswordProtectionRequest(
   request_proto_->set_trigger_type(trigger_type_);
   *request_proto_->mutable_url_display_experiment() =
       pps->GetUrlDisplayExperiment();
+
+  request_canceler_ =
+      RequestCanceler::CreateRequestCanceler(GetWeakPtr(), web_contents);
 }
 
 PasswordProtectionRequest::~PasswordProtectionRequest() {
@@ -258,7 +262,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
       password_protection_service_->UserClickedThroughSBInterstitial(this);
   request_proto_->set_clicked_through_interstitial(
       clicked_through_interstitial);
-  request_proto_->set_content_type(web_contents_->GetContentsMimeType());
+  request_proto_->set_content_type(mime_type_);
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   if (password_protection_service_->IsExtendedReporting() &&
@@ -631,10 +635,6 @@ void PasswordProtectionRequest::HandleDeferredNavigations() {
       throttle->ResumeNavigation();
   }
   throttles_.clear();
-}
-
-void PasswordProtectionRequest::WebContentsDestroyed() {
-  Cancel(/*timed_out=*/false);
 }
 
 }  // namespace safe_browsing

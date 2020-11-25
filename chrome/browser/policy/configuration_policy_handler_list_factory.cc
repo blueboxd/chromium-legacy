@@ -1124,6 +1124,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSystemFeaturesDisableMode,
     policy::policy_prefs::kSystemFeaturesDisableMode,
     base::Value::Type::STRING },
+    { key::kIntegratedWebAuthenticationAllowed,
+    prefs::kIntegratedWebAuthenticationAllowed,
+    base::Value::Type::BOOLEAN },
 #else // BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kMetricsReportingEnabled,
     metrics::prefs::kMetricsReportingEnabled,
@@ -1419,8 +1422,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
-      WebUsbAllowDevicesForUrlsPolicyHandler::CreateForUserPolicy(
-          chrome_schema));
+      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
   handlers->AddHandler(
       std::make_unique<PrintingAllowedBackgroundGraphicsModesPolicyHandler>());
   handlers->AddHandler(
@@ -1768,9 +1770,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-  handlers->AddHandler(
-      WebUsbAllowDevicesForUrlsPolicyHandler::CreateForDevicePolicy(
-          chrome_schema));
   handlers->AddHandler(
       std::make_unique<SystemFeaturesDisableListPolicyHandler>());
   handlers->AddHandler(std::make_unique<SimplePolicyHandler>(

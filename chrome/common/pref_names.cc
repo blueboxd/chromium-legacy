@@ -390,7 +390,7 @@ const char kSSLErrorOverrideAllowed[] = "ssl.error_override_allowed";
 
 // Enum that specifies whether Incognito mode is:
 // 0 - Enabled. Default behaviour. Default mode is available on demand.
-// 1 - Disabled. Used cannot browse pages in Incognito mode.
+// 1 - Disabled. User cannot browse pages in Incognito mode.
 // 2 - Forced. All pages/sessions are forced into Incognito.
 const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 
@@ -1035,11 +1035,6 @@ const char kDeviceName[] = "device_name";
 // settings that links to OS settings.
 const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 
-// A JSON pref for controlling which USB devices are whitelisted for certain
-// urls to be used via the WebUSB API on the login screen.
-const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[] =
-    "device_login_screen_webusb_allow_devices_for_urls";
-
 // Int64 pref indicating the time in microseconds since Windows epoch when the
 // timer for update required which will block user session was started. If the
 // timer is not started the pref holds the default value base::Time().
@@ -1061,6 +1056,11 @@ const char kSystemProxyUserTrafficHostAndPort[] =
 const char kEduCoexistenceArcMigrationCompleted[] =
     "account_manager.edu_coexistence_arc_migration_completed";
 
+// Boolean pref indicating whether reusing the Chrome OS login credentials for
+// network authentication is allowed. Note: currently only used for managed
+// proxies secured with NTLM authentication.
+const char kIntegratedWebAuthenticationAllowed[] =
+    "auth.integrated_web_authentication_allowed";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
@@ -2820,8 +2820,8 @@ const char kIncompatibleApplications[] = "incompatible_applications";
 
 // Contains the MD5 digest of the current module blacklist cache. Used to detect
 // external tampering.
-const char kModuleBlacklistCacheMD5Digest[] =
-    "module_blacklist_cache_md5_digest";
+const char kModuleBlocklistCacheMD5Digest[] =
+    "module_blocklist_cache_md5_digest";
 
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.

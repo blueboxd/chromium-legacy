@@ -26,7 +26,6 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
 #include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
@@ -73,6 +72,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
@@ -238,7 +238,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                       false),
         http_server_properties_(std::make_unique<HttpServerProperties>()),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
-        cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
         scoped_mock_network_change_notifier_(nullptr),
         factory_(nullptr),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
@@ -264,7 +263,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         net_log_.net_log(), host_resolver_.get(), ssl_config_service_.get(),
         socket_factory_.get(), http_server_properties_.get(),
         cert_verifier_.get(), &ct_policy_enforcer_, &transport_security_state_,
-        cert_transparency_verifier_.get(), /*sct_auditing_delegate=*/nullptr,
+        /*sct_auditing_delegate=*/nullptr,
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &context_);
   }
@@ -914,7 +913,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   TransportSecurityState transport_security_state_;
-  std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ScopedMockNetworkChangeNotifier>
       scoped_mock_network_change_notifier_;
@@ -4669,6 +4667,14 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
   HttpRequestHeaders request_headers;
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
+  // Disable connection migration on the request streams.
+  // This should have no effect for port migration.
+  QuicChromiumClientStream* chrome_stream =
+      static_cast<QuicChromiumClientStream*>(
+          quic::test::QuicSessionPeer::GetStream(
+              session, GetNthClientInitiatedBidirectionalStreamId(0)));
+  EXPECT_TRUE(chrome_stream);
+  chrome_stream->DisableConnectionMigrationToCellularNetwork();
 
   EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
@@ -4725,9 +4731,14 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
 
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
-  // Verify that the session is still alive.
+  // Verify that the session is still alive, and the request stream is still
+  // alive.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  chrome_stream = static_cast<QuicChromiumClientStream*>(
+      quic::test::QuicSessionPeer::GetStream(
+          session, GetNthClientInitiatedBidirectionalStreamId(0)));
+  EXPECT_TRUE(chrome_stream);
 
   stream.reset();
   EXPECT_TRUE(quic_data1.AllReadDataConsumed());

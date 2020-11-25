@@ -345,7 +345,6 @@ extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
 extern const char kLoginExtensionApiLaunchExtensionId[];
 extern const char kSettingsShowOSBanner[];
-extern const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[];
 extern const char kUpdateRequiredTimerStartTime[];
 extern const char kUpdateRequiredWarningPeriod[];
 extern const char kSystemProxyUserTrafficHostAndPort[];
@@ -797,6 +796,7 @@ extern const char kNtlmV2Enabled[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kKerberosEnabled[];
+extern const char kIntegratedWebAuthenticationAllowed[];
 #endif
 
 extern const char kCertRevocationCheckingEnabled[];
@@ -960,7 +960,7 @@ extern const char kWebShareVisitedTargets[];
 #if defined(OS_WIN)
 // Only used in branded builds.
 extern const char kIncompatibleApplications[];
-extern const char kModuleBlacklistCacheMD5Digest[];
+extern const char kModuleBlocklistCacheMD5Digest[];
 extern const char kThirdPartyBlockingEnabled[];
 #endif  // defined(OS_WIN)
 

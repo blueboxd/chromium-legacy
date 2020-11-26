@@ -303,38 +303,6 @@ static void PartitionDumpBucketStats(
   }
 }
 
-template <bool thread_safe>
-void InitBucketIndexLookup(PartitionRoot<thread_safe>* root) {
-  uint16_t* bucket_index_ptr =
-      &PartitionRoot<thread_safe>::bucket_index_lookup[0];
-  uint16_t bucket_index = 0;
-  const uint16_t sentinel_bucket_index = kNumBuckets;
-
-  for (uint16_t order = 0; order <= kBitsPerSizeT; ++order) {
-    for (uint16_t j = 0; j < kNumBucketsPerOrder; ++j) {
-      if (order < kMinBucketedOrder) {
-        // Use the bucket of the finest granularity for malloc(0) etc.
-        *bucket_index_ptr++ = 0;
-      } else if (order > kMaxBucketedOrder) {
-        *bucket_index_ptr++ = sentinel_bucket_index;
-      } else {
-        uint16_t valid_bucket_index = bucket_index;
-        while (root->buckets[valid_bucket_index].slot_size % kSmallestBucket)
-          valid_bucket_index++;
-        *bucket_index_ptr++ = valid_bucket_index;
-        bucket_index++;
-      }
-    }
-  }
-  PA_DCHECK(bucket_index == kNumBuckets);
-  PA_DCHECK(bucket_index_ptr ==
-            PartitionRoot<thread_safe>::bucket_index_lookup +
-                ((kBitsPerSizeT + 1) * kNumBucketsPerOrder));
-  // And there's one last bucket lookup that will be hit for e.g. malloc(-1),
-  // which tries to overflow to a non-existent order.
-  *bucket_index_ptr = sentinel_bucket_index;
-}
-
 }  // namespace internal
 
 // TODO(lizeb): Consider making this constexpr. Without C++17 std::array, this
@@ -438,11 +406,6 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
   PA_DCHECK(current_size == 1 << kMaxBucketedOrder);
   PA_DCHECK(bucket == &buckets[0] + kNumBuckets);
 
-  // Then set up the fast size -> bucket lookup table.  We call this multiple
-  // times, even though the indices are shared between all PartitionRoots, but
-  // this operation is idempotent, so there is no harm.
-  internal::InitBucketIndexLookup(this);
-
 #if !defined(PA_THREAD_CACHE_SUPPORTED)
   // TLS in ThreadCache not supported on other OSes.
   with_thread_cache = false;
@@ -493,15 +456,16 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
 
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_slot_size - new_slot_size;
-    DecommitSystemPages(char_ptr + new_slot_size, decommit_size,
-                        PageUpdatePermissions);
+    DecommitSystemPagesForData(char_ptr + new_slot_size, decommit_size,
+                               PageUpdatePermissions);
   } else if (new_slot_size <=
              DirectMapExtent::FromSlotSpan(slot_span)->map_size) {
     // Grow within the actually allocated memory. Just need to make the
     // pages accessible again.
     size_t recommit_slot_size_growth = new_slot_size - current_slot_size;
-    RecommitSystemPages(char_ptr + current_slot_size, recommit_slot_size_growth,
-                        PageUpdatePermissions);
+    RecommitSystemPagesForData(char_ptr + current_slot_size,
+                               recommit_slot_size_growth,
+                               PageUpdatePermissions);
 
 #if DCHECK_IS_ON()
     memset(char_ptr + current_slot_size, kUninitializedByte,
@@ -633,10 +597,12 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
   // TODO(chromium:1129751): Change to LIKELY once PCScan is enabled by default.
-  if (UNLIKELY(IsScanEnabled()) && (flags & PartitionPurgeForceAllFreed)) {
-    PCScan::Instance().PerformScanIfNeeded(PCScan::InvocationMode::kBlocking);
+  if (UNLIKELY(IsScanEnabled())) {
+    if (flags & PartitionPurgeForceAllFreed)
+      PCScan::Instance().PerformScan(PCScan::InvocationMode::kBlocking);
+    else
+      PCScan::Instance().PerformScanIfNeeded(PCScan::InvocationMode::kBlocking);
   }
-
   {
     ScopedGuard guard{lock_};
     if (flags & PartitionPurgeDecommitEmptySlotSpans)

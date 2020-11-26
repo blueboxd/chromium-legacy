@@ -1952,6 +1952,7 @@ static_library("browser") {
     "//chrome/app/theme:theme_resources",
     "//chrome/app/vector_icons",
     "//chrome/browser:browser_process",
+    "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media:media_engagement_preload_proto",
@@ -2276,7 +2277,6 @@ static_library("browser") {
     "//net",
     "//net:extras",
     "//ppapi/buildflags",
-    "//ppapi/host",
     "//printing",
     "//printing/buildflags",
     "//rlz/buildflags",
@@ -5995,7 +5995,6 @@ static_library("browser") {
     deps += [
       "//components/pdf/browser",
       "//media:media_buildflags",
-      "//ppapi/buildflags",
       "//ppapi/host",
       "//ppapi/proxy:ipc",
       "//services/device/public/mojom",

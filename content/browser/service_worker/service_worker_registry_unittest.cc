@@ -288,6 +288,8 @@ class ServiceWorkerRegistryTest : public testing::Test {
     return special_storage_policy_.get();
   }
 
+  size_t inflight_call_count() { return registry()->inflight_calls_.size(); }
+
   void InitializeTestHelper() {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
         user_data_directory_path_, special_storage_policy_.get());
@@ -1288,6 +1290,7 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
       CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScriptUrl2,
                                                 /*resource_id=*/2);
 
+  // Store two registrations. Restart the remote storage several times.
   {
     registry()->SimulateStorageRestartForTesting();
 
@@ -1309,11 +1312,206 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
           loop2.Quit();
         }));
 
+    EXPECT_EQ(inflight_call_count(), 2U);
     registry()->SimulateStorageRestartForTesting();
 
     loop1.Run();
     loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
   }
+
+  // Finding registrations stored in the previous block.
+  {
+    base::RunLoop loop1;
+    registry()->FindRegistrationForClientUrl(
+        kScope1,
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                scoped_refptr<ServiceWorkerRegistration> found_registration) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(found_registration, registration1);
+              loop1.Quit();
+            }));
+
+    base::RunLoop loop2;
+    registry()->FindRegistrationForScope(
+        GURL("http://www.example.com/not-in-scope"),
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                scoped_refptr<ServiceWorkerRegistration> found_registration) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorNotFound);
+              EXPECT_EQ(found_registration, nullptr);
+              loop2.Quit();
+            }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    registry()->SimulateStorageRestartForTesting();
+
+    // TODO(crbug.com/1133143): Add test for FindRegistrationForId().
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Get both of the registrations by these APIs.
+  {
+    base::RunLoop loop1;
+    registry()->GetRegistrationsForOrigin(
+        kOrigin1,
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+                    registrations) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(registrations.size(), 2U);
+              loop1.Quit();
+            }));
+
+    base::RunLoop loop2;
+    registry()->GetAllRegistrationsInfos(base::BindLambdaForTesting(
+        [&](blink::ServiceWorkerStatusCode status,
+            const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          EXPECT_EQ(registrations.size(), 2U);
+          loop2.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    registry()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Delete `registrations` from the storage.
+  {
+    base::RunLoop loop;
+    registry()->DeleteRegistration(
+        registration2, kScope2.GetOrigin(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 1U);
+    registry()->SimulateStorageRestartForTesting();
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Update fields of `registration1` in the storage.
+  {
+    base::RunLoop loop1;
+    registry()->UpdateToActiveState(
+        registration1->id(), kScope1.GetOrigin(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop1.Quit();
+        }));
+
+    base::RunLoop loop2;
+    registry()->UpdateLastUpdateCheckTime(
+        registration1->id(), kScope1.GetOrigin(), base::Time::Now(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop2.Quit();
+        }));
+
+    base::RunLoop loop3;
+    registry()->UpdateNavigationPreloadEnabled(
+        registration1->id(), kScope1.GetOrigin(), /*enable=*/true,
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop3.Quit();
+        }));
+
+    base::RunLoop loop4;
+    registry()->UpdateNavigationPreloadHeader(
+        registration1->id(), kScope1.GetOrigin(), "header",
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop4.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 4U);
+    registry()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    loop3.Run();
+    loop4.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+}
+
+TEST_F(ServiceWorkerRegistryTest,
+       RetryInflightCalls_CreateNewRegistrationAndVersion) {
+  const GURL kScope("http://www.example.com/scope/");
+  const GURL kScriptUrl("http://www.example.com/script.js");
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+
+  {
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = kScope;
+    base::RunLoop loop;
+    registry()->CreateNewRegistration(
+        std::move(options),
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<ServiceWorkerRegistration> new_registration) {
+              EXPECT_EQ(new_registration->scope(), kScope);
+              registration = new_registration;
+              loop.Quit();
+            }));
+
+    registry()->SimulateStorageRestartForTesting();
+    EXPECT_EQ(inflight_call_count(), 1U);
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  {
+    base::RunLoop loop;
+    registry()->CreateNewVersion(
+        registration, kScriptUrl, blink::mojom::ScriptType::kClassic,
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<ServiceWorkerVersion> new_version) {
+              EXPECT_EQ(new_version->script_url(), kScriptUrl);
+              EXPECT_EQ(new_version->registration_id(), registration->id());
+              loop.Quit();
+            }));
+
+    registry()->SimulateStorageRestartForTesting();
+    EXPECT_EQ(inflight_call_count(), 1U);
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+}
+
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_DeleteAndStartOver) {
+  base::RunLoop loop;
+  registry()->DeleteAndStartOver(
+      base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+        DCHECK_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+        loop.Quit();
+      }));
+
+  EXPECT_EQ(inflight_call_count(), 1U);
+  registry()->SimulateStorageRestartForTesting();
+
+  base::HistogramTester histogram_tester;
+  loop.Run();
+  EXPECT_EQ(inflight_call_count(), 0U);
+  const size_t kExpectedRetryCountForRecovery = 0;
+  const size_t kExpectedSampleCount = 1;
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.Storage.RetryCountForRecovery",
+      kExpectedRetryCountForRecovery, kExpectedSampleCount);
 }
 
 class ServiceWorkerRegistryOriginTrialsTest : public ServiceWorkerRegistryTest {

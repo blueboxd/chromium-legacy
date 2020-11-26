@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/object_bitmap.h"
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
@@ -532,13 +533,11 @@ void PCScan<thread_safe>::PerformScan(InvocationMode invocation_mode) {
   auto task = std::make_unique<PCScanTask>(*this);
 
   // Post PCScan task.
-  const auto callback = [](PCScanTask task) { std::move(task).RunOnce(); };
-  if (UNLIKELY(invocation_mode == InvocationMode::kBlocking)) {
-    // Blocking is only used for testing.
-    callback(std::move(*task));
-  } else {
-    PA_DCHECK(InvocationMode::kNonBlocking == invocation_mode);
+  if (LIKELY(invocation_mode == InvocationMode::kNonBlocking)) {
     PCScanThread::Instance().PostTask(std::move(task));
+  } else {
+    PA_DCHECK(InvocationMode::kBlocking == invocation_mode);
+    std::move(*task).RunOnce();
   }
 }
 
@@ -557,8 +556,9 @@ void PCScan<thread_safe>::RegisterRoot(Root* root) {
     for (char* super_page = super_page_extent->super_page_base;
          super_page != super_page_extent->super_pages_end;
          super_page += kSuperPageSize) {
-      SetSystemPagesAccess(internal::SuperPageQuarantineBitmaps(super_page),
-                           quarantine_bitmaps_size_to_commit, PageReadWrite);
+      RecommitSystemPages(internal::SuperPageQuarantineBitmaps(super_page),
+                          quarantine_bitmaps_size_to_commit, PageReadWrite,
+                          PageUpdatePermissions);
     }
   }
   roots_.Add(root);

@@ -107,8 +107,6 @@ _CONFIG = [
             'base::CancelableOnceClosure',
             'base::CancelableRepeatingCallback',
             'base::CancelableRepeatingClosure',
-            'base::CancelableCallback',
-            'base::CancelableClosure',
 
             # //base/mac/scoped_nsobject.h
             'base::scoped_nsobject',
@@ -717,6 +715,7 @@ _CONFIG = [
         'paths': ['third_party/blink/renderer/core/page/scrolling'],
         'allowed': [
             'cc::ScrollbarLayerBase',
+            'shared_highlighting::.+',
         ],
     },
     {

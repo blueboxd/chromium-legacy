@@ -2265,38 +2265,27 @@ void Document::PropagateStyleToViewport() {
       }
     }
 
-    // TODO(954423, 952711): overscroll-behavior (and most likely
-    // overflow-anchor) should be propagated from the document element and not
-    // the viewport defining element.
+    // TODO(954423): overscroll-behavior (and most likely overflow-anchor)
+    // should be propagated from the document element and not the viewport
+    // defining element.
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX,
                    EOverscrollBehavior::kAuto);
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY,
                    EOverscrollBehavior::kAuto);
 
-    // Counts any time scroll snapping and scroll padding break if we change its
-    // viewport propagation logic. Scroll snapping only breaks if body has
-    // non-none snap type that is different from the document one.
-    // TODO(952711): Remove once propagation logic change is complete.
+    // Counts any time overscroll behavior break if we change its viewport
+    // propagation logic. Overscroll behavior only breaks if body has non-none
+    // type that is different from the document one.
+    // TODO(954423): Remove once propagation logic change is complete.
     if (document_element_style && body_style) {
-      bool snap_type_is_different =
-          !body_style->GetScrollSnapType().is_none &&
-          (body_style->GetScrollSnapType() !=
-           document_element_style->GetScrollSnapType());
-      bool scroll_padding_is_different =
-          body_style->ScrollPaddingTop() !=
-              document_element_style->ScrollPaddingTop() ||
-          body_style->ScrollPaddingBottom() !=
-              document_element_style->ScrollPaddingBottom() ||
-          body_style->ScrollPaddingLeft() !=
-              document_element_style->ScrollPaddingLeft() ||
-          body_style->ScrollPaddingRight() !=
-              document_element_style->ScrollPaddingRight();
-
-      if (snap_type_is_different) {
-        UseCounter::Count(*this, WebFeature::kScrollSnapOnViewportBreaks);
-      }
-      if (scroll_padding_is_different) {
-        UseCounter::Count(*this, WebFeature::kScrollPaddingOnViewportBreaks);
+      bool overscroll_behavior_is_different =
+          body_style->OverscrollBehaviorX() !=
+              document_element_style->OverscrollBehaviorX() ||
+          body_style->OverscrollBehaviorY() !=
+              document_element_style->OverscrollBehaviorY();
+      if (overscroll_behavior_is_different) {
+        UseCounter::Count(*this,
+                          WebFeature::kOversrollBehaviorOnViewportBreaks);
       }
     }
 

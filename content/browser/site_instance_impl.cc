@@ -579,8 +579,9 @@ void SiteInstanceImpl::SetProcessInternal(RenderProcessHost* process) {
   CHECK(process);
   process_ = process;
   process_->AddObserver(this);
-  DCHECK(!agent_scheduling_group_);
-  agent_scheduling_group_ = AgentSchedulingGroupHost::Get(*this, *process_);
+  CHECK(!agent_scheduling_group_);
+  agent_scheduling_group_ =
+      AgentSchedulingGroupHost::GetOrCreate(*this, *process_);
 
   MaybeSetBrowsingInstanceDefaultProcess();
 
@@ -659,7 +660,7 @@ void SiteInstanceImpl::SetSiteInfoInternal(const SiteInfo& site_info) {
     // BrowsingInstance, even if its opt-in status changes later.
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
-    url::Origin site_origin(url::Origin::Create(site_info_.site_url()));
+    url::Origin site_origin(url::Origin::Create(site_info_.process_lock_url()));
     policy->AddOptInIsolatedOriginForBrowsingInstance(
         browsing_instance_->isolation_context(), site_origin);
   }

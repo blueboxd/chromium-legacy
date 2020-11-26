@@ -192,6 +192,9 @@ extern const char kBackForwardCacheDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
+extern const char kChangePasswordAffiliationInfoName[];
+extern const char kChangePasswordAffiliationInfoDescription[];
+
 extern const char kCheckOfflineCapabilityName[];
 extern const char kCheckOfflineCapabilityDescription[];
 
@@ -838,6 +841,9 @@ extern const char kMobileIdentityConsistencyDescription[];
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
+extern const char kUseOfHashAffiliationFetcherName[];
+extern const char kUseOfHashAffiliationFetcherDescription[];
+
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
@@ -1135,6 +1141,9 @@ extern const char kRestrictGamepadAccessDescription[];
 
 extern const char kDelayAsyncScriptExecutionName[];
 extern const char kDelayAsyncScriptExecutionDescription[];
+
+extern const char kMBIModeName[];
+extern const char kMBIModeDescription[];
 
 extern const char kDelayCompetingLowPriorityRequestsName[];
 extern const char kDelayCompetingLowPriorityRequestsDescription[];

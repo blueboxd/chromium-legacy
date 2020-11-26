@@ -370,13 +370,19 @@ const base::Feature kLogJsConsoleMessages {
 #endif
 };
 
-// Removes the association between the `AgentSchedulingGroup` interfaces and the
-// IPC Channel. This will break ordering guarantees between different agent
+// The MBI mode controls whether or not communication over the
+// AgentSchedulingGroup is ordered with respect to the render-process-global
+// legacy IPC channel, as well as the granularity of AgentSchedulingGroup
+// creation. This will break ordering guarantees between different agent
 // scheduling groups (ordering withing a group is still preserved).
 // DO NOT USE! The feature is not yet fully implemented. See crbug.com/1111231.
-const base::Feature kMbiDetachAgentSchedulingGroupFromChannel{
-    "MbiDetachAgentSchedulingGroupFromChannel",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMBIMode{"MBIMode", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<MBIMode>::Option mbi_mode_types[] = {
+    {MBIMode::kLegacy, "legacy"},
+    {MBIMode::kEnabledPerRenderProcessHost, "per_render_process_host"},
+    {MBIMode::kEnabledPerSiteInstance, "per_site_instance"}};
+const base::FeatureParam<MBIMode> kMBIModeParam{
+    &kMBIMode, "mode", MBIMode::kLegacy, &mbi_mode_types};
 
 // If this feature is enabled, media-device enumerations use a cache that is
 // invalidated upon notifications sent by base::SystemMonitor. If disabled, the
@@ -435,7 +441,7 @@ const base::Feature kNotificationTriggers{"NotificationTriggers",
 // Note that the origin policy-based variant of origin isolation is controlled
 // by kOriginPolicy, instead.
 const base::Feature kOriginIsolationHeader{"OriginIsolationHeader",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Origin Policy. See https://crbug.com/751996
 const base::Feature kOriginPolicy{"OriginPolicy",

@@ -81,6 +81,9 @@ class FakeScanService {
     /** @private {?chromeos.scanning.mojom.ScanJobObserverRemote} */
     this.scanJobObserverRemote_ = null;
 
+    /** @private {boolean} */
+    this.failStartScan_ = false;
+
     this.resetForTest();
   }
 
@@ -88,6 +91,7 @@ class FakeScanService {
     this.scanners_ = [];
     this.capabilities_ = new Map();
     this.scanJobObserverRemote_ = null;
+    this.failStartScan_ = false;
     this.resolverMap_.set('getScanners', new PromiseResolver());
     this.resolverMap_.set('getScannerCapabilities', new PromiseResolver());
     this.resolverMap_.set('startScan', new PromiseResolver());
@@ -142,6 +146,11 @@ class FakeScanService {
     this.capabilities_ = capabilities;
   }
 
+  /** @param {boolean} failStartScan */
+  setFailStartScan(failStartScan) {
+    this.failStartScan_ = failStartScan;
+  }
+
   /**
    * @param {number} pageNumber
    * @param {number} progressPercent
@@ -165,10 +174,11 @@ class FakeScanService {
 
   /**
    * @param {boolean} success
+   * @param {!mojoBase.mojom.FilePath} lastScannedFilePath
    * @return {!Promise}
    */
-  simulateScanComplete(success) {
-    this.scanJobObserverRemote_.onScanComplete(success, {'path': ''});
+  simulateScanComplete(success, lastScannedFilePath) {
+    this.scanJobObserverRemote_.onScanComplete(success, lastScannedFilePath);
     return flushTasks();
   }
 
@@ -204,7 +214,7 @@ class FakeScanService {
     return new Promise(resolve => {
       this.scanJobObserverRemote_ = remote;
       this.methodCalled('startScan');
-      resolve({success: true});
+      resolve({success: !this.failStartScan_});
     });
   }
 
@@ -299,6 +309,9 @@ export function scanningAppTest() {
     let capabilities = new Map();
     capabilities.set(firstScannerId, firstCapabilities);
     capabilities.set(secondScannerId, secondCapabilities);
+
+    /** @type {!mojoBase.mojom.FilePath} */
+    const lastScannedFilePath = {'path': '/test/path/scan.jpg'};
 
     /** @type {!HTMLSelectElement} */
     let scannerSelect;
@@ -441,7 +454,8 @@ export function scanningAppTest() {
         })
         .then(() => {
           // Complete the scan.
-          return fakeScanService_.simulateScanComplete(true);
+          return fakeScanService_.simulateScanComplete(
+              true, lastScannedFilePath);
         })
         .then(() => {
           assertTrue(isVisible(scannedImages));
@@ -449,6 +463,9 @@ export function scanningAppTest() {
           assertTrue(isVisible(
               /** @type {!HTMLElement} */ (
                   scanningApp.$$('scan-done-section'))));
+          assertEquals(
+              lastScannedFilePath.path,
+              scanningApp.$$('scan-done-section').lastScannedFilePath.path);
 
           // Click the Done button to return to READY state.
           return clickDoneButton();
@@ -531,6 +548,42 @@ export function scanningAppTest() {
           // enabled, and the cancel button shouldn't be visible.
           assertTrue(isVisible(scanButton));
           assertFalse(isVisible(cancelButton));
+        });
+  });
+
+  test('ScanFailedToStart', () => {
+    const expectedScanners = [
+      createScanner(firstScannerId, firstScannerName),
+    ];
+
+    let capabilities = new Map();
+    capabilities.set(firstScannerId, firstCapabilities);
+
+    fakeScanService_.setFailStartScan(true);
+
+    /** @type {!CrButtonElement} */
+    let scanButton;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          assertFalse(scanningApp.$$('#toast').open);
+          // Click the Scan button and the scan will fail to start.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          assertTrue(scanningApp.$$('#toast').open);
+          assertEquals(
+              scanningApp.i18n('startScanFailedToast'),
+              scanningApp.$$('#toastText').textContent.trim());
+
+          assertFalse(scanButton.disabled);
+          assertTrue(isVisible(scanButton));
         });
   });
 

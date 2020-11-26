@@ -528,6 +528,19 @@ const FeatureEntry::FeatureVariation
          base::size(kDelayAsyncScriptExecutionFirstPaintOrFinishedParsing),
          nullptr}};
 
+const FeatureEntry::FeatureParam kMBIModeLegacy[] = {{"mode", "legacy"}};
+const FeatureEntry::FeatureParam kMBIModeEnabledPerRenderProcessHost[] = {
+    {"mode", "per_render_process_host"}};
+const FeatureEntry::FeatureParam kMBIModeEnabledPerSiteInstance[] = {
+    {"mode", "per_site_instance"}};
+
+const FeatureEntry::FeatureVariation kMBIModeVariations[] = {
+    {"legacy mode", kMBIModeLegacy, base::size(kMBIModeLegacy), nullptr},
+    {"per render process host", kMBIModeEnabledPerRenderProcessHost,
+     base::size(kMBIModeEnabledPerRenderProcessHost), nullptr},
+    {"per site instance", kMBIModeEnabledPerSiteInstance,
+     base::size(kMBIModeEnabledPerSiteInstance), nullptr}};
+
 const FeatureEntry::FeatureParam
     kDelayCompetingLowPriorityRequestsAggressiveFirstPaint[] = {
         {"until", "first_paint"},
@@ -4289,6 +4302,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kDelayAsyncScriptExecutionFeatureVariations,
                                     "DelayAsyncScriptExecution")},
 
+    {"mbi-mode", flag_descriptions::kMBIModeName,
+     flag_descriptions::kMBIModeDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kMBIMode,
+                                    kMBIModeVariations,
+                                    "MBIMode")},
+
     {"delay-competing-low-priority-requests",
      flag_descriptions::kDelayCompetingLowPriorityRequestsName,
      flag_descriptions::kDelayCompetingLowPriorityRequestsDescription, kOsAll,
@@ -6832,6 +6851,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSwipeToMoveCursorDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kSwipeToMoveCursor)},
 #endif  // defined(OS_ANDROID)
+    {"change-password-affiliation",
+     flag_descriptions::kChangePasswordAffiliationInfoName,
+     flag_descriptions::kChangePasswordAffiliationInfoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kUseOfHashAffiliationFetcher)},
+
+    {"use-of-hash-affiliation-fetcher",
+     flag_descriptions::kUseOfHashAffiliationFetcherName,
+     flag_descriptions::kUseOfHashAffiliationFetcherDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kUseOfHashAffiliationFetcher)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

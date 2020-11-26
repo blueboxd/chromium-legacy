@@ -67,17 +67,23 @@ void LogLoadRulesetResult(LoadRulesetResult result) {
 
 // Returns whether the extension's allocation should be released. This would
 // return true for cases where we expect the extension to be unloaded for a
-// while.
+// while or if the extension directory's contents changed in a reload.
 bool ShouldReleaseAllocationOnUnload(const ExtensionPrefs* prefs,
-                                     const ExtensionId& extension_id,
+                                     const Extension& extension,
                                      UnloadedExtensionReason reason) {
   if (reason == UnloadedExtensionReason::DISABLE) {
     static constexpr int kReleaseAllocationDisableReasons =
         disable_reason::DISABLE_BLOCKED_BY_POLICY |
         disable_reason::DISABLE_REMOTELY_FOR_MALWARE;
 
-    return (prefs->GetDisableReasons(extension_id) &
-            kReleaseAllocationDisableReasons) != 0;
+    // Release allocation on reload of an unpacked extension and treat it as a
+    // new install since the extension directory's contents may have changed.
+    bool is_unpacked_reload =
+        Manifest::IsUnpackedLocation(extension.location()) &&
+        prefs->HasDisableReason(extension.id(), disable_reason::DISABLE_RELOAD);
+
+    return is_unpacked_reload || (prefs->GetDisableReasons(extension.id()) &
+                                  kReleaseAllocationDisableReasons) != 0;
   }
 
   return reason == UnloadedExtensionReason::BLOCKLIST;
@@ -379,8 +385,9 @@ void RulesMonitorService::OnExtensionUnloaded(
     if (reason != UnloadedExtensionReason::UPDATE)
       prefs_->SetDNRKeepExcessAllocation(extension->id(), false);
 
-    if (ShouldReleaseAllocationOnUnload(prefs_, extension->id(), reason))
+    if (ShouldReleaseAllocationOnUnload(prefs_, *extension, reason)) {
       global_rules_tracker_.ClearExtensionAllocation(extension->id());
+    }
   }
 
   // Return early if the extension does not have an active indexed ruleset.
@@ -738,13 +745,15 @@ void RulesMonitorService::OnDynamicRulesUpdated(
     base::Optional<std::string> error) {
   DCHECK_EQ(1u, load_data.rulesets.size());
 
+  const bool has_error = error.has_value();
+
   LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // Respond to the extension.
   std::move(callback).Run(std::move(error));
 
   RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
-  DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !error.has_value());
+  DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !has_error);
 
   if (!dynamic_ruleset.did_load_successfully())
     return;

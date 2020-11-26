@@ -10,7 +10,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="nearby_contact_manager.html">
 <link rel="import" href="nearby_page_template.html">
 <link rel="import" href="nearby_share_settings_behavior.html">
@@ -196,6 +195,13 @@
 
       .contact-item[disabled] {
         opacity: var(--cr-disabled-opacity);
+      }
+
+      .elide {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 400px;
       }
 
       .contact-toggle {
@@ -404,8 +410,10 @@
                       class="padded-icon grey-icon contact-icon">
                   </iron-icon>
                   <div>
-                    <div class="cr-title-text">[[item.name]]</div>
-                    <div class="cr-secondary-text">[[item.description]]</div>
+                    <div class="cr-title-text elide">[[item.name]]</div>
+                    <div class="cr-secondary-text elide">
+                      [[item.description]]
+                    </div>
                   </div>
                   <template is="dom-if"
                       if="[[showContactCheckBoxes_(selectedVisibility)]]">

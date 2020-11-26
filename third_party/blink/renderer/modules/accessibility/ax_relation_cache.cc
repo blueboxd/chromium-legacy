@@ -15,7 +15,7 @@ AXRelationCache::AXRelationCache(AXObjectCacheImpl* object_cache)
 
 AXRelationCache::~AXRelationCache() = default;
 
-void AXRelationCache::Init() {
+void AXRelationCache::DoInitialDocumentScan() {
   // Init the relation cache with elements already in the document.
   Document& document = object_cache_->GetDocument();
   for (Element& element :
@@ -29,14 +29,20 @@ void AXRelationCache::Init() {
     // Defers adding aria-owns targets as children of their new parents,
     // and to the relation cache, until the appropriate document lifecycle.
     if (element.FastHasAttribute(html_names::kAriaOwnsAttr)) {
+      // FIXME(accessibility) This can be a dangerous time to GetOrCreate().
       if (AXObject* owner = GetOrCreate(&element)) {
         owner_ids_to_update_.insert(owner->AXObjectID());
       }
     }
   }
+
+  initialized_ = true;
 }
 
 void AXRelationCache::ProcessUpdatesWithCleanLayout() {
+  if (!initialized_)
+    DoInitialDocumentScan();
+
   for (AXID aria_owns_obj_id : owner_ids_to_update_) {
     AXObject* obj = ObjectFromAXID(aria_owns_obj_id);
     if (obj)

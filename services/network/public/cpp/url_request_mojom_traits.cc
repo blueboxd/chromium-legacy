@@ -216,7 +216,6 @@ bool StructTraits<
     base::debug::DumpWithoutCrashing();
   }
 
-  out->force_ignore_site_for_cookies = data.force_ignore_site_for_cookies();
   out->update_first_party_url_on_redirect =
       data.update_first_party_url_on_redirect();
   out->load_flags = data.load_flags();
@@ -274,6 +273,10 @@ bool StructTraits<network::mojom::DataElementDataView, network::DataElement>::
   if (data.type() == network::mojom::DataElementType::kBytes) {
     mojo_base::BigBufferView big_buffer;
     if (!data.ReadBuf(&big_buffer))
+      return false;
+    // TODO(yoichio): Fix DataElementDataView::ReadBuf issue
+    // (crbug.com/1152664).
+    if (data.length() != big_buffer.data().size())
       return false;
     out->buf_.clear();
     out->buf_.insert(out->buf_.end(), big_buffer.data().begin(),

@@ -1605,7 +1605,13 @@ const char kNotificationPermissionActions[] =
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";
 
-// List of directories of the profiles last active.
+// List of directories of the profiles last active in browser windows. It does
+// not include profiles active in app windows. When a browser window is opened,
+// if it's the only browser window open in the profile, its profile is added to
+// this list. When a browser window is closed, and there are no other browser
+// windows open in the profile, its profile is removed from this list. When
+// Chrome is launched with --session-restore, each of the profiles in this list
+// have their sessions restored.
 const char kProfilesLastActive[] = "profile.last_active_profiles";
 
 // Total number of profiles created for this Chrome build. Used to tag profile
@@ -2820,8 +2826,8 @@ const char kIncompatibleApplications[] = "incompatible_applications";
 
 // Contains the MD5 digest of the current module blacklist cache. Used to detect
 // external tampering.
-const char kModuleBlacklistCacheMD5Digest[] =
-    "module_blacklist_cache_md5_digest";
+const char kModuleBlocklistCacheMD5Digest[] =
+    "module_blocklist_cache_md5_digest";
 
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.

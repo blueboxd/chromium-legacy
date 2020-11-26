@@ -73,6 +73,10 @@ public class MaterialSpinnerView extends AppCompatImageView {
     }
 
     private void updateAnimationState(boolean isAttached) {
+        // Some Android versions call onVisibilityChanged() during the View's constructor before the
+        // spinner is created.
+        if (mSpinner == null) return;
+
         // TODO(crbug.com/1151391): This feature is used for A:B testing to determine the impact of
         // a bug fix. Remove after experiment is complete.
         if (mAlwaysAnimate) {

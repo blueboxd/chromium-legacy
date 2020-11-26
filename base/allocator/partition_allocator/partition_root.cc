@@ -5,6 +5,7 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 
 #include "base/allocator/partition_allocator/oom.h"
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
@@ -13,6 +14,22 @@
 #include "build/build_config.h"
 
 namespace base {
+
+namespace {
+template <bool thread_safe>
+typename PartitionRoot<thread_safe>::PCScanMode PartitionOptionsToPCScanMode(
+    PartitionOptions::PCScan opt) {
+  using Root = PartitionRoot<thread_safe>;
+  switch (opt) {
+    case PartitionOptions::PCScan::kAlwaysDisabled:
+      return Root::PCScanMode::kNonScannable;
+    case PartitionOptions::PCScan::kDisabledByDefault:
+      return Root::PCScanMode::kDisabled;
+    case PartitionOptions::PCScan::kForcedEnabledForTesting:
+      return Root::PCScanMode::kEnabled;
+  }
+}
+}  // namespace
 
 namespace internal {
 
@@ -381,12 +398,13 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
   extras_size = static_cast<uint32_t>(size);
   extras_offset = static_cast<uint32_t>(offset);
 
-  scannable = (opts.pcscan != PartitionOptions::PCScan::kAlwaysDisabled);
-  // Concurrent freeing in PCScan can only safely work on thread-safe
-  // partitions.
-  if (thread_safe &&
-      opts.pcscan == PartitionOptions::PCScan::kForcedEnabledForTesting)
-    pcscan.emplace(this);
+  pcscan_mode = PartitionOptionsToPCScanMode<thread_safe>(opts.pcscan);
+  if (pcscan_mode == PCScanMode::kEnabled) {
+    // Concurrent freeing in PCScan can only safely work on thread-safe
+    // partitions.
+    PA_CHECK(thread_safe);
+    PCScan::Instance().RegisterRoot(this);
+  }
 
   // We mark the sentinel slot span as free to make sure it is skipped by our
   // logic to find a new active slot span.
@@ -475,18 +493,15 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
 
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_slot_size - new_slot_size;
-    DecommitSystemPages(char_ptr + new_slot_size, decommit_size);
-    SetSystemPagesAccess(char_ptr + new_slot_size, decommit_size,
-                         PageInaccessible);
+    DecommitSystemPages(char_ptr + new_slot_size, decommit_size,
+                        PageUpdatePermissions);
   } else if (new_slot_size <=
              DirectMapExtent::FromSlotSpan(slot_span)->map_size) {
     // Grow within the actually allocated memory. Just need to make the
     // pages accessible again.
     size_t recommit_slot_size_growth = new_slot_size - current_slot_size;
-    SetSystemPagesAccess(char_ptr + current_slot_size,
-                         recommit_slot_size_growth, PageReadWrite);
-    RecommitSystemPages(char_ptr + current_slot_size,
-                        recommit_slot_size_growth);
+    RecommitSystemPages(char_ptr + current_slot_size, recommit_slot_size_growth,
+                        PageUpdatePermissions);
 
 #if DCHECK_IS_ON()
     memset(char_ptr + current_slot_size, kUninitializedByte,
@@ -618,9 +633,8 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
   // TODO(chromium:1129751): Change to LIKELY once PCScan is enabled by default.
-  if (UNLIKELY(pcscan) && (flags & PartitionPurgeForceAllFreed)) {
-    pcscan->PerformScanIfNeeded(
-        internal::PCScan<thread_safe>::InvocationMode::kBlocking);
+  if (UNLIKELY(IsScanEnabled()) && (flags & PartitionPurgeForceAllFreed)) {
+    PCScan::Instance().PerformScanIfNeeded(PCScan::InvocationMode::kBlocking);
   }
 
   {
@@ -702,7 +716,7 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
     stats.total_resident_bytes += direct_mapped_allocations_total_size;
     stats.total_active_bytes += direct_mapped_allocations_total_size;
 
-    stats.has_thread_cache = !is_light_dump && with_thread_cache;
+    stats.has_thread_cache = with_thread_cache;
     if (stats.has_thread_cache) {
       internal::ThreadCacheRegistry::Instance().DumpStats(
           true, &stats.current_thread_cache_stats);

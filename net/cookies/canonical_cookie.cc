@@ -50,6 +50,7 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -438,7 +439,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // Get the port, this will get a default value if a port isn't provided.
   int source_port = url.EffectiveIntPort();
 
-  std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
+  std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
       creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
       parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority(),
@@ -519,7 +520,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 
-  std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
+  std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       name, value, cookie_domain, cookie_path, creation_time, expiration_time,
       last_access_time, secure, http_only, same_site, priority, same_party,
       source_scheme, source_port));
@@ -544,7 +545,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
     bool same_party,
     CookieSourceScheme source_scheme,
     int source_port) {
-  std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
+  std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       name, value, domain, path, creation, expiration, last_access, secure,
       httponly, same_site, priority, same_party, source_scheme, source_port));
   if (!cc->IsCanonical())
@@ -553,7 +554,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
 }
 
 // static
-CanonicalCookie CanonicalCookie::CreateUnsafeCookieForTesting(
+std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateUnsafeCookieForTesting(
     const std::string& name,
     const std::string& value,
     const std::string& domain,
@@ -568,9 +569,9 @@ CanonicalCookie CanonicalCookie::CreateUnsafeCookieForTesting(
     bool same_party,
     CookieSourceScheme source_scheme,
     int source_port) {
-  return CanonicalCookie(name, value, domain, path, creation, expiration,
-                         last_access, secure, httponly, same_site, priority,
-                         same_party, source_scheme, source_port);
+  return base::WrapUnique(new CanonicalCookie(
+      name, value, domain, path, creation, expiration, last_access, secure,
+      httponly, same_site, priority, same_party, source_scheme, source_port));
 }
 
 std::string CanonicalCookie::DomainWithoutDot() const {
@@ -775,17 +776,17 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
 
 CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
     const CookieOptions& options,
-    CookieAccessSemantics access_semantics) const {
+    const CookieAccessParams& params) const {
   CookieAccessResult access_result;
-  IsSetPermittedInContext(options, access_semantics, &access_result);
+  IsSetPermittedInContext(options, params, &access_result);
   return access_result;
 }
 
 void CanonicalCookie::IsSetPermittedInContext(
     const CookieOptions& options,
-    CookieAccessSemantics access_semantics,
+    const CookieAccessParams& params,
     CookieAccessResult* access_result) const {
-  access_result->access_semantics = access_semantics;
+  access_result->access_semantics = params.access_semantics;
   if (options.exclude_httponly() && IsHttpOnly()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "HttpOnly cookie not permitted in script context.";
@@ -796,7 +797,7 @@ void CanonicalCookie::IsSetPermittedInContext(
   // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
   // are enabled, non-SameSite cookies without the Secure attribute will be
   // rejected.
-  if (access_semantics != CookieAccessSemantics::LEGACY &&
+  if (params.access_semantics != CookieAccessSemantics::LEGACY &&
       cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
       SameSite() == CookieSameSite::NO_RESTRICTION && !IsSecure()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
@@ -812,11 +813,12 @@ void CanonicalCookie::IsSetPermittedInContext(
   // For LEGACY cookies we should always return the schemeless context,
   // otherwise let GetContextForCookieInclusion() decide.
   CookieOptions::SameSiteCookieContext::ContextType cookie_inclusion_context =
-      access_semantics == CookieAccessSemantics::LEGACY
+      params.access_semantics == CookieAccessSemantics::LEGACY
           ? options.same_site_cookie_context().context()
           : options.same_site_cookie_context().GetContextForCookieInclusion();
 
-  access_result->effective_same_site = GetEffectiveSameSite(access_semantics);
+  access_result->effective_same_site =
+      GetEffectiveSameSite(params.access_semantics);
   DCHECK(access_result->effective_same_site !=
          CookieEffectiveSameSite::UNDEFINED);
   switch (access_result->effective_same_site) {

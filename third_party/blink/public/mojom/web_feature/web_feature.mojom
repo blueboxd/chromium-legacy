@@ -2294,8 +2294,8 @@ enum WebFeature {
   kV8Database_ReadTransaction_Method = 2961,
   kV8SQLTransaction_ExecuteSql_Method = 2962,
   kV8PointerEvent_GetPredictedEvents_Method = 2971,
-  kScrollSnapOnViewportBreaks = 2972,
-  kScrollPaddingOnViewportBreaks = 2973,
+  kOBSOLETE_ScrollSnapOnViewportBreaks = 2972,
+  kOBSOLETE_ScrollPaddingOnViewportBreaks = 2973,
   kDownloadInAdFrame = 2974,
   kDownloadInSandbox = 2975,
   kDownloadWithoutUserGesture = 2976,
@@ -3062,6 +3062,7 @@ enum WebFeature {
   kAddSourceBufferUsingConfig = 3733,
   kChangeTypeUsingConfig = 3734,
   kV8SourceBuffer_AppendEncodedChunks_Method = 3735,
+  kOversrollBehaviorOnViewportBreaks = 3736,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

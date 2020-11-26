@@ -29572,8 +29572,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2968" label="SVGSMILDiscardElementParsed"/>
   <int value="2969" label="SVGSMILDiscardElementTriggered"/>
   <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
-  <int value="2972" label="ScrollSnapOnViewportBreaks"/>
-  <int value="2973" label="ScrollPaddingOnViewportBreaks"/>
+  <int value="2972" label="OBSOLETE_ScrollSnapOnViewportBreaks"/>
+  <int value="2973" label="OBSOLETE_ScrollPaddingOnViewportBreaks"/>
   <int value="2974" label="DownloadInAdFrame"/>
   <int value="2975" label="DownloadInSandbox"/>
   <int value="2976" label="DownloadWithoutUserGesture"/>
@@ -30354,6 +30354,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3733" label="AddSourceBufferUsingConfig"/>
   <int value="3734" label="ChangeTypeUsingConfig"/>
   <int value="3735" label="V8SourceBuffer_AppendEncodedChunks_Method"/>
+  <int value="3736" label="OversrollBehaviorOnViewportBreaks"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39779,6 +39780,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Cache Miss"/>
 </enum>
 
+<enum name="KaleidoscopeDialogClosedBoolean">
+  <int value="0" label="The user did not open a watch action"/>
+  <int value="1" label="The user did open a watch action"/>
+</enum>
+
 <enum name="KaleidoscopeFirstRunProgress">
   <int value="0" label="Completed"/>
   <int value="1" label="Provider Selection"/>
@@ -43459,6 +43465,7 @@ from previous Chrome versions.
   <int value="-433879402"
       label="EnableAmbientAuthenticationInIncognito:disabled"/>
   <int value="-432612065" label="AImageReader:enabled"/>
+  <int value="-431553693" label="ChangePasswordAffiliationInfo:disabled"/>
   <int value="-430369215" label="AssistPersonalInfo:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
@@ -43955,6 +43962,7 @@ from previous Chrome versions.
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="44240181" label="SharingQRCodeGenerator:disabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
+  <int value="50643563" label="MBIMode:enabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52150780" label="OsSettingsPolymer3:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
@@ -43972,6 +43980,7 @@ from previous Chrome versions.
   <int value="58727839" label="WebAssemblyLazyCompilation:enabled"/>
   <int value="59784035" label="ImeThread:disabled"/>
   <int value="59964519" label="OmniboxEnableClipboardProvider:disabled"/>
+  <int value="59992411" label="ChangePasswordAffiliationInfo:enabled"/>
   <int value="60023885" label="AutofillNoLocalSaveOnUnmaskSuccess:disabled"/>
   <int value="61130490" label="WebViewBrotliSupport:enabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
@@ -44193,6 +44202,7 @@ from previous Chrome versions.
   <int value="304588364" label="TextureLayerSkipWaitForActivation:enabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="305356014" label="WebViewMeasureScreenCoverage:disabled"/>
+  <int value="306565540" label="UseOfHashAffiliationFetcher:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="306834044" label="webui-tab-strip"/>
   <int value="307543404" label="disable-team-drives"/>
@@ -44792,6 +44802,7 @@ from previous Chrome versions.
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
   <int value="880510010" label="enable-permissions-bubbles"/>
+  <int value="882893584" label="UseOfHashAffiliationFetcher:disabled"/>
   <int value="883190338" label="PrintWithReducedRasterization:disabled"/>
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="885186849" label="finch-seed-expiration-age"/>
@@ -45641,6 +45652,7 @@ from previous Chrome versions.
   <int value="1712880335" label="FiltersInRecents:enabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
   <int value="1714016217" label="EnableHeuristicPalmDetectionFilter:enabled"/>
+  <int value="1714520147" label="MBIMode:disabled"/>
   <int value="1714922056" label="GlobalMediaControls:disabled"/>
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
   <int value="1715382788" label="ElasticOverscrollWin:disabled"/>
@@ -49418,7 +49430,7 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
-<enum name="ModuleBlacklistCacheReadResult">
+<enum name="ModuleBlocklistCacheReadResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open the file"/>
   <int value="2" label="Failed to read the metadata"/>
@@ -49429,8 +49441,8 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Invalid MD5 digest"/>
 </enum>
 
-<enum name="ModuleBlacklistStatus">
-  <int value="0" label="Newly blacklisted"/>
+<enum name="ModuleBlocklistStatus">
+  <int value="0" label="Newly blocklisted"/>
   <int value="1" label="Blocked"/>
 </enum>
 
@@ -73192,7 +73204,7 @@ Full version information for the fingerprint enum values:
   <int value="27" label="kSettingsResetPromptLastTriggeredForStartupUrls"/>
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
   <int value="29" label="kMediaStorageIdSalt"/>
-  <int value="30" label="kModuleBlacklistCacheMD5Digest"/>
+  <int value="30" label="kModuleBlocklistCacheMD5Digest"/>
 </enum>
 
 <enum name="TranslateAssistContentResult">

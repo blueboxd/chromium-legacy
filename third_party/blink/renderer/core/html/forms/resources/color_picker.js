@@ -1782,6 +1782,7 @@ class ChannelValueContainer extends HTMLInputElement {
 
     this.addEventListener('input', this.onValueChange_);
     this.addEventListener('blur', this.onBlur_);
+    this.addEventListener('focus', this.onFocus_);
   }
 
   get channelValue() {
@@ -1844,13 +1845,12 @@ class ChannelValueContainer extends HTMLInputElement {
     if (value) {
       switch (this.colorChannel_) {
         case ColorChannel.HEX:
-          if (value.startsWith('#')) {
+          if (value.startsWith('#'))
             value = value.substr(1).toLowerCase();
-            if (value.match(/^[0-9a-f]+$/)) {
-              // Ex. 'ffffff' => this.channelValue_ == 'ffffff'
-              // Ex. 'ff' => this.channelValue_ == '0000ff'
-              this.channelValue_ = ('000000' + value).slice(-6);
-            }
+          if (value.match(/^[0-9a-f]+$/)) {
+            // Ex. 'ffffff' => this.channelValue_ == 'ffffff'
+            // Ex. 'ff' => this.channelValue_ == '0000ff'
+            this.channelValue_ = ('000000' + value).slice(-6);
           }
           break;
         case ColorChannel.R:
@@ -1867,11 +1867,10 @@ class ChannelValueContainer extends HTMLInputElement {
           break;
         case ColorChannel.S:
         case ColorChannel.L:
-          if (value.endsWith('%')) {
+          if (value.endsWith('%'))
             value = value.substring(0, value.length - 1);
-            if (value.match(/^\d+$/) && (0 <= value) && (value <= 100)) {
-              this.channelValue_ = Number(value);
-            }
+          if (value.match(/^\d+$/) && (0 <= value) && (value <= 100)) {
+            this.channelValue_ = Number(value);
           }
           break;
       }
@@ -1901,6 +1900,10 @@ class ChannelValueContainer extends HTMLInputElement {
         }
         break;
     }
+  }
+
+  onFocus_ = () => {
+    this.select();
   }
 }
 window.customElements.define(

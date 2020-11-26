@@ -23,7 +23,7 @@
     font-size: 16px;
     height: 100%;
     outline: none;
-    padding-inline-end:  40px;
+    padding-inline-end:  44px;
     padding-inline-start: 52px;
     position: relative;
     width: 100%;
@@ -38,10 +38,6 @@
 
   input::placeholder {
     color: var(--search-box-placeholder, var(--google-grey-refresh-700));
-  }
-
-  input:focus::placeholder {
-    color: transparent;
   }
 
   input:focus,
@@ -102,7 +98,7 @@
   <input id="input" type="search" autocomplete="off" spellcheck="false"
       aria-live="polite" placeholder="$i18n{searchBoxHint}"
       on-copy="onInputCutCopy_" on-cut="onInputCutCopy_"
-      on-focus="onInputFocus_" on-input="onInputInput_"
+      on-focus="onInputFocus_" on-blur="onInputBlur_" on-input="onInputInput_"
       on-keydown="onInputKeydown_" on-keyup="onInputKeyup_"
       on-mousedown="onInputMouseDown_" on-paste="onInputPaste_">
   <ntp-realbox-icon id="icon" match="[[selectedMatch_]]"

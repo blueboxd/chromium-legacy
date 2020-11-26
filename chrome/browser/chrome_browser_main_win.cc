@@ -651,10 +651,10 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // is enabled or not.
   //
   // What truly controls if the blocking is enabled is the presence of the
-  // module blacklist cache file. This means that to disable the feature, the
+  // module blocklist cache file. This means that to disable the feature, the
   // cache must be deleted and the browser relaunched.
   if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
-      !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
+      !ModuleBlocklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
         base::ThreadPool::CreateTaskRunner(
             {base::TaskPriority::BEST_EFFORT,
@@ -681,7 +681,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   // complete run of the Chrome Cleanup tool. If post-cleanup settings reset is
   // enabled, we delay checks for settings reset prompt until the scheduled
   // reset is finished.
-  if (safe_browsing::PostCleanupSettingsResetter::IsEnabled()) {
+  if (safe_browsing::PostCleanupSettingsResetter::IsEnabled() &&
+      !parsed_command_line().HasSwitch(switches::kAppId)) {
     // Using last opened profiles, because we want to find reset the profile
     // that was open in the last Chrome run, which may not be open yet in
     // the current run.

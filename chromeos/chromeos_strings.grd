@@ -573,6 +573,15 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_CANCEL_BUTTON_TEXT" desc="The text displayed for the button to cancel an ongoing scan job.">
         Cancel
       </message>
+      <message name="IDS_SCANNING_APP_SHOW_FILE_LOCATION_LABEL" desc="The label for the button that opens the Files app. The Files app will open with the user's saved scan file highlighted.">
+        Show file location
+      </message>
+      <message name="IDS_SCANNING_APP_START_SCAN_FAILED_TOAST" desc="The error message displayed when a scan job fails to start.">
+        Couldn't start scanning
+      </message>
+      <message name="IDS_SCANNING_APP_GET_HELP_LINK_TEXT" desc="The text used for the link that navigates to the Scan app help webpage. This is shown to the user after a scanning error.">
+        Get help
+      </message>
 
       <!-- Diagnostics App -->
       <!-- TODO(michaelcheco): Update with finalized copies of the strings -->
@@ -704,6 +713,13 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_DIAGNOSTICS_MEMORY_ROUTINE_TEXT" desc="The text for the memory routine." translateable="false">
         Memory
+      </message>
+      <message name="IDS_CHARGE_TEST_RESULT" desc="The result text for charging routine." translateable="true">
+        Charged <ph name="RATE">$1<ex>10%</ex></ph> in <ph name="NUM_SECONDS">$1<ex>10</ex></ph> seconds.
+      </message>
+      <!-- TODO(joonbug): verify this string since it's not present in the mock -->
+      <message name="IDS_DISCHARGE_TEST_RESULT" desc="The result text for discharging routine." translateable="false">
+        Discharged <ph name="RATE">$1<ex>10%</ex></ph> in <ph name="NUM_SECONDS">$1<ex>10</ex></ph> seconds.
       </message>
 
       <!-- Quick Answers -->

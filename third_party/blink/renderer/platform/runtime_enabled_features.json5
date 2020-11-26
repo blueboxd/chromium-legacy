@@ -685,11 +685,11 @@
     },
     {
       name: "DecodeJpeg420ImagesToYUV",
-      status: "test",
+      status: "stable",
     },
     {
       name: "DecodeLossyWebPImagesToYUV",
-      status: "test",
+      status: "stable",
     },
     {
       name: "DelayAsyncScriptExecutionUntilFinishedParsing",
@@ -1081,6 +1081,7 @@
       // enabled, we'll typically fall back to legacy code for block children.
       name: "LayoutNGFullPositionForPoint",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal"],
+      status: "stable",
     },
     {
       name: "LayoutNGGrid",
@@ -1380,7 +1381,7 @@
     {
       name: "OriginIsolationHeader",
       origin_trial_feature_name: "OriginIsolationHeader",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "OriginPolicy",

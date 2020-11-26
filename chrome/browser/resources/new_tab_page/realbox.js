@@ -351,10 +351,20 @@ class RealboxElement extends PolymerElement {
   }
 
   /**
+   * @param {!FocusEvent} e
    * @private
    */
-  onInputFocus_() {
+  onInputFocus_(e) {
     this.lastInputFocusTime_ = window.performance.now();
+    e.target.placeholder = '';
+  }
+
+  /**
+   * @param {!FocusEvent} e
+   * @private
+   */
+  onInputBlur_(e) {
+    e.target.placeholder = loadTimeData.getString('realboxHint');
   }
 
   /**
@@ -529,7 +539,9 @@ class RealboxElement extends PolymerElement {
 
     if (e.key === 'Enter') {
       if ([this.$.matches, this.$.input].includes(e.target)) {
-        if (this.lastQueriedInput_ === decodeString16(this.result_.input)) {
+        if (this.lastQueriedInput_ !== null &&
+            this.lastQueriedInput_.trimLeft() ===
+                decodeString16(this.result_.input)) {
           if (this.selectedMatch_) {
             this.navigateToMatch_(this.selectedMatchIndex_, e);
           }
@@ -559,7 +571,9 @@ class RealboxElement extends PolymerElement {
       return;
     }
 
-    if (e.key === 'Escape' && this.selectedMatchIndex_ === 0) {
+    // Clear the input as well as the matches when 'Escape' is pressed if the
+    // the first match is selected or there are no selected matches.
+    if (e.key === 'Escape' && this.selectedMatchIndex_ <= 0) {
       this.updateInput_({text: '', inline: ''});
       this.clearAutocompleteMatches_();
       e.preventDefault();

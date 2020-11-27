@@ -660,8 +660,7 @@ void AutofillManager::OnVirtualCardCandidateSelected(
 }
 #endif
 
-bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
-                                       const base::TimeTicks timestamp) {
+bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms) {
   bool autofill_enabled = IsAutofillEnabled();
   sync_state_ = personal_data_ ? personal_data_->GetSyncSigninState()
                                : AutofillSyncSigninState::kNumSyncStates;
@@ -797,7 +796,7 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
     copied_credit_cards.push_back(*card);
 
   // Annotate the form with the source language of the page.
-  form_structure->set_original_page_language(GetPageLanguage());
+  form_structure->set_current_page_language(GetPageLanguage());
 
   // Attach the Randomized Encoder.
   form_structure->set_randomized_encoder(
@@ -2033,8 +2032,7 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
   return suggestions;
 }
 
-void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms,
-                                    const base::TimeTicks timestamp) {
+void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms) {
   DCHECK(!forms.empty());
   has_parsed_forms_ = true;
 
@@ -2798,7 +2796,7 @@ LanguageCode AutofillManager::GetPageLanguage() const {
   const translate::LanguageState* language_state = client_->GetLanguageState();
   if (!language_state)
     return LanguageCode();
-  return LanguageCode(language_state->original_language());
+  return LanguageCode(language_state->current_language());
 }
 
 }  // namespace autofill

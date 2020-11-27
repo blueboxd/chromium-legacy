@@ -109,15 +109,15 @@ def LoadPList(path):
 
 def SavePList(path, format, data):
   """Saves |data| as a Plist to |path| in the specified |format|."""
+  # The below does not replace the destination file but update it in place,
+  # so if more than one hardlink points to destination all of them will be
+  # modified. This is not what is expected, so delete destination file if
+  # it does exist.
+  if os.path.exists(path):
+    os.unlink(path)
   if sys.version_info.major == 2:
     fd, name = tempfile.mkstemp()
     try:
-      # "plutil" does not replace the destination file but update it in place,
-      # so if more than one hardlink points to destination all of them will be
-      # modified. This is not what is expected, so delete destination file if
-      # it does exist.
-      if os.path.exists(path):
-        os.unlink(path)
       with os.fdopen(fd, 'wb') as f:
         plistlib.writePlist(data, f)
       subprocess.check_call(['plutil', '-convert', format, '-o', path, name])
@@ -126,7 +126,7 @@ def SavePList(path, format, data):
   else:
     with open(path, 'wb') as f:
       plist_format = {'binary1': plistlib.FMT_BINARY, 'xml1': plistlib.FMT_XML}
-      plistlib.dump(data, f, fmt=plist_format[options.format])
+      plistlib.dump(data, f, fmt=plist_format[format])
 
 
 def MergePList(plist1, plist2):

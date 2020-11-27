@@ -462,7 +462,7 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
+    autofill_manager_->OnFormsSeen(forms);
   }
 
   void FormSubmitted(const FormData& form) {
@@ -8458,22 +8458,22 @@ TEST_F(AutofillManagerTest, PageLanguageGetsCorrectlySet) {
   FormData form;
   test::CreateTestAddressFormData(&form);
 
-  autofill_client_.GetLanguageState()->SetOriginalLanguage("und");
+  autofill_client_.GetLanguageState()->SetCurrentLanguage("und");
 
-  autofill_manager_->OnFormsSeen({form}, base::TimeTicks());
+  autofill_manager_->OnFormsSeen({form});
   FormStructure* parsed_form =
       autofill_manager_->FindCachedFormByRendererId(form.unique_renderer_id);
 
   ASSERT_TRUE(parsed_form);
-  ASSERT_EQ(LanguageCode("und"), parsed_form->original_page_language());
+  ASSERT_EQ(LanguageCode("und"), parsed_form->current_page_language());
 
-  autofill_client_.GetLanguageState()->SetOriginalLanguage("zh");
+  autofill_client_.GetLanguageState()->SetCurrentLanguage("zh");
 
-  autofill_manager_->OnFormsSeen({form}, base::TimeTicks());
+  autofill_manager_->OnFormsSeen({form});
   parsed_form =
       autofill_manager_->FindCachedFormByRendererId(form.unique_renderer_id);
 
-  ASSERT_EQ(LanguageCode("zh"), parsed_form->original_page_language());
+  ASSERT_EQ(LanguageCode("zh"), parsed_form->current_page_language());
 }
 
 // AutofillManagerTest with kAutofillDisabledMixedForms feature enabled.

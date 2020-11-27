@@ -45,9 +45,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/244856
     "race:libpulsecommon*.so\n"
 
-    // http://crbug.com/246968
-    "race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback\n"
-
     // http://crbug.com/258479
     "race:g_trace_state\n"
 
@@ -72,10 +69,6 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/328868
     "race:PR_Lock\n"
-
-    // http://crbug.com/348982
-    "race:cricket::P2PTransportChannel::OnConnectionDestroyed\n"
-    "race:cricket::P2PTransportChannel::AddConnection\n"
 
     // http://crbug.com/348984
     "race:sctp_express_handle_sack\n"

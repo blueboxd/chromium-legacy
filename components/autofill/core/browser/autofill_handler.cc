@@ -45,7 +45,7 @@ AutofillField* FindAutofillFillField(const FormStructure& form,
 bool CachedFormNeedsUpdate(const FormData& live_form,
                            const LanguageCode& live_form_language,
                            const FormStructure& cached_form) {
-  if (cached_form.original_page_language() != live_form_language)
+  if (cached_form.current_page_language() != live_form_language)
     return true;
 
   if (live_form.fields.size() != cached_form.field_count())
@@ -76,14 +76,13 @@ void AutofillHandler::OnFormSubmitted(const FormData& form,
     OnFormSubmittedImpl(form, known_success, source);
 }
 
-void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
-                                  const base::TimeTicks timestamp) {
+void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms) {
   if (!IsValidFormDataVector(forms) || !driver_->RendererIsAvailable())
     return;
 
   // This should be called even forms is empty, AutofillProviderAndroid uses
   // this event to detect form submission.
-  if (!ShouldParseForms(forms, timestamp))
+  if (!ShouldParseForms(forms))
     return;
 
   if (forms.empty())
@@ -131,7 +130,7 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
 
   if (new_forms.empty())
     return;
-  OnFormsParsed(new_forms, timestamp);
+  OnFormsParsed(new_forms);
 }
 
 void AutofillHandler::OnTextFieldDidChange(const FormData& form,
@@ -294,7 +293,7 @@ FormStructure* AutofillHandler::ParseForm(const FormData& form,
       value_from_dynamic_change_form_ = true;
   }
 
-  form_structure->set_original_page_language(GetPageLanguage());
+  form_structure->set_current_page_language(GetPageLanguage());
 
   form_structure->DetermineHeuristicTypes(log_manager_);
 

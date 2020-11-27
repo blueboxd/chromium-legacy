@@ -22,7 +22,8 @@ class CORE_EXPORT ContentCaptureTaskHistogramReporter
   static constexpr char kCaptureContentTime[] =
       "ContentCapture.CaptureContentTime2";
   static constexpr char kSendContentTime[] = "ContentCapture.SendContentTime";
-  static constexpr char kSentContentCount[] = "ContentCapture.SentContentCount";
+  static constexpr char kSentContentCount[] =
+      "ContentCapture.SentContentCount2";
   static constexpr char kTaskDelayInMs[] = "ContentCapture.TaskDelayTimeInMs";
   static constexpr char kTaskRunsPerCapture[] =
       "ContentCapture.TaskRunsPerCapture";
@@ -66,21 +67,12 @@ class CORE_EXPORT ContentCaptureTaskHistogramReporter
   // and sending the content.
   size_t task_runs_per_capture_ = 0;
 
-  // Records time from first content change to content that has been sent, its
-  // range is 500ms from to 30s.
-  CustomCountHistogram capture_content_delay_time_histogram_;
   // Records time to capture the content, its range is from 0 to 50,000
   // microseconds.
   CustomCountHistogram capture_content_time_histogram_;
   // Records time to send the content, its range is from 0 to 50,000
   // microseconds.
   CustomCountHistogram send_content_time_histogram_;
-  // Records total count has been sent, its range is from 0 to 10,000.
-  LinearHistogram sent_content_count_histogram_;
-  // Records time taken for the task to start after it is schedule, its range is
-  // 1ms to 128s. The time of task that was scheduled for the retry wasn't
-  // measured because it is always 500ms.
-  CustomCountHistogram task_delay_time_in_ms_histogram_;
   // Records the number of times ContentCapture task run to complete a capture
   // which includes capturing and sending the content.
   CustomCountHistogram task_runs_per_capture_histogram_;

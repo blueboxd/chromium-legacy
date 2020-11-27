@@ -181,7 +181,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:1a022d3a4c50be4207ee93451255d71896416596',
+  'luci_go': 'git_revision:67aba6e3373bb0b9e3ef9871362045736cd29b6e',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -200,7 +200,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '48a99420a2495a665a732a7fe335e93ec7a83418',
+  'skia_revision': '3f522b2688cef5010faa12fde9fa10a511086db0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -212,7 +212,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fcb6b5a5c55ee35d232f35bcfa9c35aefc00f89e',
+  'angle_revision': '10e6c1e43b65f24bac71ccd12c9a2a099e390ce8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -267,7 +267,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'ae003f552e4e16247758303d671076690c405c45',
+  'catapult_revision': '759827265102502cc7f814572675b9685c351908',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -275,7 +275,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '0f58c2f5f2e092ab56b9789258f8c9b4459b000f',
+  'devtools_frontend_revision': 'e0a00b9ed0c3b7deec2759748b60e8411ab8f5f4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -899,7 +899,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'fc23bc1c96acb0fa2fcc526204333fb9a373ecb6',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9ed30bc3ed292b02d85fde89c64207484b7a3aa4',
       'condition': 'checkout_chromeos',
   },
 
@@ -1623,7 +1623,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2059a8265441e09166b61eeb800fb4726f1aec96',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@00d0678c14681479a65df4c487d5330b27118dd3',
     'condition': 'checkout_src_internal',
   },
 

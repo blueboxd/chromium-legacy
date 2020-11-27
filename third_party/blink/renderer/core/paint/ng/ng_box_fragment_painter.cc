@@ -359,18 +359,10 @@ bool NodeAtPointInFragment(const NGPhysicalBoxFragment& fragment,
 void UpdateHitTestResult(HitTestResult& result,
                          const NGPhysicalBoxFragment& fragment,
                          PhysicalOffset offset) {
-  Node* node = fragment.NodeForHitTest();
-  if (!node)
+  if (result.InnerNode())
     return;
-
-  // We may already have set an inner node, but not a box fragment, if the inner
-  // node was text or non-atomic inline content. Set the containing box fragment
-  // now, unless it's an anonymous CSS box.
-  if (!result.BoxFragment() && (!fragment.IsCSSBox() || fragment.GetNode()))
-    result.SetBoxFragment(&fragment);
-
-  if (!result.InnerNode())
-    result.SetNodeAndPosition(node, offset);
+  if (Node* node = fragment.NodeForHitTest())
+    result.SetNodeAndPosition(node, &fragment, offset);
 }
 
 // Return an ID for this fragmentainer, which is unique within the fragmentation
@@ -380,35 +372,6 @@ unsigned FragmentainerUniqueIdentifier(const NGPhysicalBoxFragment& fragment) {
   if (const auto* break_token = To<NGBlockBreakToken>(fragment.BreakToken()))
     return break_token->SequenceNumber() + 1;
   return 0;
-}
-
-// Returns the |ComputedStyle| to use for painting outlines. When |fragment| is
-// a block in a continuation-chain, it may need to paint outlines if its
-// ancestor inline boxes in the DOM tree has outlines.
-const ComputedStyle* StyleForContinuationOutline(
-    const NGPhysicalBoxFragment& fragment) {
-  // Fail fast if |fragment| is not a anonymous block.
-  const LayoutObject* layout_object = fragment.GetLayoutObject();
-  if (!layout_object || !layout_object->IsAnonymous() ||
-      layout_object->IsInline())
-    return nullptr;
-
-  // Check ancestors of the continuation in case nested inline boxes; e.g.
-  // <span style="outline: auto">
-  //   <span>
-  //     <div>block</div>
-  //   </span>
-  // </span>
-  for (const LayoutObject* continuation =
-           To<LayoutBoxModelObject>(layout_object)->Continuation();
-       continuation && continuation->IsLayoutInline();
-       continuation = continuation->Parent()) {
-    const ComputedStyle& style = continuation->StyleRef();
-    if (style.OutlineStyleIsAuto() &&
-        NGOutlineUtils::HasPaintedOutline(style, continuation->GetNode()))
-      return &style;
-  }
-  return nullptr;
 }
 
 }  // anonymous namespace
@@ -685,7 +648,7 @@ void NGBoxFragmentPainter::PaintObject(
     }
   } else if (ShouldPaintDescendantOutlines(paint_phase)) {
     if (const ComputedStyle* outline_style =
-            StyleForContinuationOutline(fragment)) {
+            fragment.StyleForContinuationOutline()) {
       NGFragmentPainter(fragment, GetDisplayItemClient())
           .PaintOutline(paint_info, paint_offset, *outline_style);
     }
@@ -2141,12 +2104,14 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
     return false;
 
   return hit_test.AddNodeToResult(
-      text_fragment.NodeForHitTest(), /* box_fragment */ nullptr, rect,
+      text_fragment.NodeForHitTest(), &cursor.ContainerFragment(), rect,
       physical_offset - text_paint_fragment->OffsetInContainerFragment());
 }
 
-bool NGBoxFragmentPainter::HitTestTextItem(const HitTestContext& hit_test,
-                                           const NGFragmentItem& text_item) {
+bool NGBoxFragmentPainter::HitTestTextItem(
+    const HitTestContext& hit_test,
+    const NGFragmentItem& text_item,
+    const NGInlineBackwardCursor& cursor) {
   DCHECK(text_item.IsText());
 
   if (hit_test.action != kHitTestForeground)
@@ -2168,7 +2133,7 @@ bool NGBoxFragmentPainter::HitTestTextItem(const HitTestContext& hit_test,
     return false;
 
   return hit_test.AddNodeToResult(text_item.NodeForHitTest(),
-                                  /* box_fragment */ nullptr, rect,
+                                  &cursor.ContainerFragment(), rect,
                                   hit_test.inline_root_offset);
 }
 
@@ -2328,7 +2293,7 @@ bool NGBoxFragmentPainter::HitTestChildBoxItem(
     bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
     if (hit_test.location.Intersects(bounds_rect)) {
       if (hit_test.AddNodeToResult(item.NodeForHitTest(),
-                                   /* box_fragment */ nullptr, bounds_rect,
+                                   &cursor.ContainerFragment(), bounds_rect,
                                    child_offset))
         return true;
     }
@@ -2501,7 +2466,7 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
     }
 
     if (item->IsText()) {
-      if (HitTestTextItem(hit_test, *item))
+      if (HitTestTextItem(hit_test, *item, cursor))
         return true;
     } else if (item->Type() == NGFragmentItem::kLine) {
       const NGPhysicalLineBoxFragment* child_fragment = item->LineBoxFragment();

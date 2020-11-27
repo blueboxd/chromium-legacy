@@ -304,6 +304,13 @@ class ServiceWorkerRegistryTest : public testing::Test {
     InitializeTestHelper();
   }
 
+  void EnsureRemoteCallsAreExecuted() {
+    storage_control().FlushForTesting();
+    // ServiceWorkerRegistry has an internal queue for inflight remote calls.
+    // Run all tasks until all calls in the queue are executed.
+    content::RunAllTasksUntilIdle();
+  }
+
   std::vector<url::Origin> GetRegisteredOrigins() {
     std::vector<url::Origin> result;
     base::RunLoop loop;
@@ -1347,8 +1354,6 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
     EXPECT_EQ(inflight_call_count(), 2U);
     registry()->SimulateStorageRestartForTesting();
 
-    // TODO(crbug.com/1133143): Add test for FindRegistrationForId().
-
     loop1.Run();
     loop2.Run();
     EXPECT_EQ(inflight_call_count(), 0U);
@@ -1445,6 +1450,67 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
     loop4.Run();
     EXPECT_EQ(inflight_call_count(), 0U);
   }
+}
+
+// Tests that FindRegistrationForId methods are retried after the remote storage
+// is restarted. Separated from other FindRegistration method tests because
+// these methods skip remote calls when live registrations are alive.
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_FindRegistrationForId) {
+  // Prerequisite: Store two registrations.
+  const GURL origin1("https://www.example.com");
+  const GURL scope1("https://www.example.com/foo/");
+  const GURL script1(origin1.spec() + "/script.js");
+  const int64_t registration_id1 = 1;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources1;
+  resources1.push_back(CreateResourceRecord(1, script1, 100));
+  storage::mojom::ServiceWorkerRegistrationDataPtr data1 =
+      CreateRegistrationData(registration_id1,
+                             /*version_id=*/1000,
+                             /*scope=*/scope1,
+                             /*script_url=*/script1, resources1);
+  StoreRegistrationData(std::move(data1), std::move(resources1));
+
+  const GURL origin2("https://www.example.com");
+  const GURL scope2("https://www.example.com/bar/");
+  const GURL script2(origin2.spec() + "/script.js");
+  const int64_t registration_id2 = 2;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources2;
+  resources2.push_back(CreateResourceRecord(2, script2, 200));
+  storage::mojom::ServiceWorkerRegistrationDataPtr data2 =
+      CreateRegistrationData(registration_id2,
+                             /*version_id=*/2000,
+                             /*scope=*/scope2,
+                             /*script_url=*/script2, resources2);
+  StoreRegistrationData(std::move(data2), std::move(resources2));
+
+  base::RunLoop loop1;
+  registry()->FindRegistrationForId(
+      registration_id1, url::Origin::Create(origin1.GetOrigin()),
+      base::BindLambdaForTesting(
+          [&](blink::ServiceWorkerStatusCode status,
+              scoped_refptr<ServiceWorkerRegistration> found_registration) {
+            EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+            EXPECT_EQ(found_registration->id(), registration_id1);
+            loop1.Quit();
+          }));
+
+  base::RunLoop loop2;
+  registry()->FindRegistrationForIdOnly(
+      registration_id2,
+      base::BindLambdaForTesting(
+          [&](blink::ServiceWorkerStatusCode status,
+              scoped_refptr<ServiceWorkerRegistration> found_registration) {
+            EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+            EXPECT_EQ(found_registration->id(), registration_id2);
+            loop2.Quit();
+          }));
+
+  EXPECT_EQ(inflight_call_count(), 2U);
+  registry()->SimulateStorageRestartForTesting();
+
+  loop1.Run();
+  loop2.Run();
+  EXPECT_EQ(inflight_call_count(), 0U);
 }
 
 TEST_F(ServiceWorkerRegistryTest,
@@ -1692,8 +1758,7 @@ class ServiceWorkerRegistryResourceTest : public ServiceWorkerRegistryTest {
     // Add the resources ids to the uncommitted list.
     registry()->StoreUncommittedResourceId(resource_id1_, scope_);
     registry()->StoreUncommittedResourceId(resource_id2_, scope_);
-    // Make sure that StoreUncommittedResourceId mojo message is received.
-    storage_control().FlushForTesting();
+    EnsureRemoteCallsAreExecuted();
 
     std::vector<int64_t> verify_ids = GetUncommittedResourceIds();
     EXPECT_EQ(2u, verify_ids.size());
@@ -2009,8 +2074,7 @@ TEST_F(ServiceWorkerRegistryResourceTest, CleanupOnRestart) {
   int64_t kStaleUncommittedResourceId = GetNewResourceIdSync(storage_control());
   registry()->StoreUncommittedResourceId(kStaleUncommittedResourceId,
                                          registration_->scope());
-  // Make sure that StoreUncommittedResourceId mojo message is received.
-  storage_control().FlushForTesting();
+  EnsureRemoteCallsAreExecuted();
   verify_ids = GetUncommittedResourceIds();
   EXPECT_EQ(1u, verify_ids.size());
   WriteBasicResponse(storage_control(), kStaleUncommittedResourceId);
@@ -2087,6 +2151,31 @@ TEST_F(ServiceWorkerRegistryResourceTest, Restart_LiveVersion) {
   ASSERT_EQ(GetPurgingResources().size(), 0u);
   ASSERT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
   ASSERT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
+}
+
+// Tests that StoreUncommittedResourceId() and DoomUncommittedResource() are
+// automatically retried after storage restarts.
+TEST_F(ServiceWorkerRegistryResourceTest, RetryInflightCalls_Resources) {
+  const int64_t kResourceId = GetNewResourceIdSync(storage_control());
+
+  registry()->StoreUncommittedResourceId(kResourceId, registration_->scope());
+  EXPECT_EQ(inflight_call_count(), 1U);
+
+  registry()->SimulateStorageRestartForTesting();
+  EnsureRemoteCallsAreExecuted();
+
+  EXPECT_EQ(inflight_call_count(), 0U);
+  EXPECT_THAT(GetUncommittedResourceIds(),
+              testing::UnorderedElementsAreArray({kResourceId}));
+
+  registry()->DoomUncommittedResource(kResourceId);
+  EXPECT_EQ(inflight_call_count(), 1U);
+
+  registry()->SimulateStorageRestartForTesting();
+  EnsureRemoteCallsAreExecuted();
+
+  EXPECT_EQ(inflight_call_count(), 0U);
+  EXPECT_EQ(GetUncommittedResourceIds().size(), 0U);
 }
 
 }  // namespace content

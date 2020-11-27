@@ -122,10 +122,11 @@ public class PageInfoCookiesController
     public void onSubpageRemoved() {
         assert mSubPage != null;
         AppCompatActivity host = (AppCompatActivity) mRowView.getContext();
-        PageInfoCookiesPreference subBage = mSubPage;
+        PageInfoCookiesPreference subPage = mSubPage;
         mSubPage = null;
-        if (host.isFinishing()) return;
-        host.getSupportFragmentManager().beginTransaction().remove(subBage).commitNow();
+        // If the activity is getting destroyed or saved, it is not allowed to modify fragments.
+        if (host.isFinishing() || host.getSupportFragmentManager().isStateSaved()) return;
+        host.getSupportFragmentManager().beginTransaction().remove(subPage).commitNow();
     }
 
     @Override

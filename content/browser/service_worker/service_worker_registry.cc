@@ -537,10 +537,12 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
 void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id,
                                                        const GURL& origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->StoreUncommittedResourceId(
-      resource_id, origin,
-      base::BindOnce(&ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
-                     weak_factory_.GetWeakPtr()));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::StoreUncommittedResourceId,
+      base::BindRepeating(
+          &ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
+          weak_factory_.GetWeakPtr()),
+      static_cast<const int64_t>(resource_id), origin);
 }
 
 void ServiceWorkerRegistry::DoomUncommittedResource(int64_t resource_id) {
@@ -729,11 +731,12 @@ void ServiceWorkerRegistry::FindRegistrationForIdInternal(
     return;
   }
 
-  GetRemoteStorageControl()->FindRegistrationForId(
-      registration_id, origin,
-      base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForId,
-                     weak_factory_.GetWeakPtr(), registration_id,
-                     std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::FindRegistrationForId,
+      base::BindRepeating(&ServiceWorkerRegistry::DidFindRegistrationForId,
+                          weak_factory_.GetWeakPtr(), registration_id,
+                          base::Passed(&callback)),
+      static_cast<const int64_t>(registration_id), origin);
 }
 
 ServiceWorkerRegistration*
@@ -855,10 +858,11 @@ ServiceWorkerRegistry::FindFromLiveRegistrationsForId(int64_t registration_id) {
 void ServiceWorkerRegistry::DoomUncommittedResources(
     const std::vector<int64_t>& resource_ids) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->DoomUncommittedResources(
-      resource_ids,
-      base::BindOnce(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
-                     weak_factory_.GetWeakPtr()));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::DoomUncommittedResources,
+      base::BindRepeating(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
+                          weak_factory_.GetWeakPtr()),
+      resource_ids);
 }
 
 void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
@@ -949,9 +953,11 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
 void ServiceWorkerRegistry::DidFindRegistrationForId(
     int64_t registration_id,
     FindRegistrationCallback callback,
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     storage::mojom::ServiceWorkerFindRegistrationResultPtr result) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
           storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
@@ -1221,13 +1227,19 @@ void ServiceWorkerRegistry::DidUpdateRegistration(
 }
 
 void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
 }
 
 void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
 }

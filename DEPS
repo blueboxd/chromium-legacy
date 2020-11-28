@@ -275,7 +275,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cfdee4f1ac19ab54e8e0f6a3c266e8c49413fec7',
+  'devtools_frontend_revision': '689f1df869b9f54f51949975dc3de552d5441626',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1369,7 +1369,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'nv1qScP1jMWHbtAnUPBMcQOVcG6n7KxhpPYWWa21rA8C'
+              'version': 'xSLGBy9YVgE3OzSwrnR3yqDwyZerQuy2QBEFfV1Lc2IC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1623,7 +1623,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ebca626471e3a0360533b627b061edd0c3df7d42',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@702e2188bb43c8d7b8415cd59839537c1f853d7c',
     'condition': 'checkout_src_internal',
   },
 

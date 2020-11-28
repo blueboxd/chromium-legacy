@@ -3881,6 +3881,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-order-property-auto-placement-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-order-property-auto-placement-004.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-order-property-auto-placement-005.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/percentage-size-indefinite-replaced.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/percentage-size-replaced-subitems-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/percentage-size-subitems-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/remove-svg-grid-item-001.html [ Failure ]
@@ -5915,11 +5916,6 @@ crbug.com/1042877 http/tests/security/mixedContent/strict-mode-via-pref-image-bl
 
 # Mixed content autoupgrades cause test to fail because test relied on http subresources to test a different origin, needs to be changed to not rely on HTTP URLs.
 crbug.com/1042877 http/tests/security/img-crossorigin-redirect-credentials.https.html [ Failure ]
-
-# Sheriff 2020-09-30
-crbug.com/1133821 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation.https.html [ Pass Failure ]
-crbug.com/1133821 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/two-custom-property-animation.https.html [ Pass Failure ]
-crbug.com/1133821 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/two-element-custom-property-animation.https.html [ Pass Failure ]
 
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]

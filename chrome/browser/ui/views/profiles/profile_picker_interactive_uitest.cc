@@ -42,6 +42,8 @@ class ViewDeletedWaiter : public views::ViewObserver {
  private:
   // ViewObserver:
   void OnViewIsDeleting(views::View* observed_view) override {
+    // Reset the observation before the view is actually deleted.
+    observation_.Reset();
     run_loop_.Quit();
   }
 

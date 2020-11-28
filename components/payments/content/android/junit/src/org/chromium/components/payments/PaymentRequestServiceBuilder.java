@@ -29,6 +29,7 @@ public class PaymentRequestServiceBuilder implements PaymentRequestService.Deleg
     private final Delegate mDelegate;
     private final RenderFrameHost mRenderFrameHost;
     private final Runnable mOnClosedListener;
+    private final PaymentAppService mPaymentAppService;
     private final Factory mBrowserPaymentRequestFactory;
     private WebContents mWebContents;
     private boolean mIsOffTheRecord = true;
@@ -48,12 +49,14 @@ public class PaymentRequestServiceBuilder implements PaymentRequestService.Deleg
     private PaymentRequestSpec mSpec;
 
     /* package */ static PaymentRequestServiceBuilder defaultBuilder(Runnable onClosedListener,
-            PaymentRequestClient client, BrowserPaymentRequest browserPaymentRequest) {
-        return new PaymentRequestServiceBuilder(onClosedListener, client, browserPaymentRequest);
+            PaymentRequestClient client, PaymentAppService appService,
+            BrowserPaymentRequest browserPaymentRequest) {
+        return new PaymentRequestServiceBuilder(
+                onClosedListener, client, appService, browserPaymentRequest);
     }
 
     private PaymentRequestServiceBuilder(Runnable onClosedListener, PaymentRequestClient client,
-            BrowserPaymentRequest browserPaymentRequest) {
+            PaymentAppService appService, BrowserPaymentRequest browserPaymentRequest) {
         mDelegate = this;
         mWebContents = Mockito.mock(WebContents.class);
         setTopLevelOrigin("https://top.level.origin");
@@ -69,6 +72,7 @@ public class PaymentRequestServiceBuilder implements PaymentRequestService.Deleg
         mDetails.id = "testId";
         mDetails.total = new PaymentItem();
         mOptions = new PaymentOptions();
+        mOptions.requestShipping = true;
         mSpec = Mockito.mock(PaymentRequestSpec.class);
         Mockito.doReturn(new PaymentItem()).when(mSpec).getRawTotal();
         Map<String, PaymentMethodData> methodDataMap = new HashMap<>();
@@ -76,6 +80,7 @@ public class PaymentRequestServiceBuilder implements PaymentRequestService.Deleg
         mBrowserPaymentRequestFactory = (paymentRequestService) -> browserPaymentRequest;
         mOnClosedListener = onClosedListener;
         mClient = client;
+        mPaymentAppService = appService;
     }
 
     @Override
@@ -141,6 +146,11 @@ public class PaymentRequestServiceBuilder implements PaymentRequestService.Deleg
         return mSpec;
     }
 
+    @Override
+    public PaymentAppService getPaymentAppService() {
+        return mPaymentAppService;
+    }
+
     /* package */ PaymentRequestServiceBuilder setRenderFrameHostLastCommittedOrigin(
             Origin origin) {
         Mockito.doReturn(origin).when(mRenderFrameHost).getLastCommittedOrigin();
@@ -178,8 +188,18 @@ public class PaymentRequestServiceBuilder implements PaymentRequestService.Deleg
         return this;
     }
 
-    /* package */ PaymentRequestServiceBuilder setDetails(PaymentDetails details) {
+    /* package */ PaymentRequestServiceBuilder setPaymentDetailsInit(PaymentDetails details) {
         mDetails = details;
+        return this;
+    }
+
+    /* package */ PaymentRequestServiceBuilder setPaymentDetailsInitId(String id) {
+        mDetails.id = id;
+        return this;
+    }
+
+    /* package */ PaymentRequestServiceBuilder setPaymentDetailsInitTotal(PaymentItem total) {
+        mDetails.total = total;
         return this;
     }
 

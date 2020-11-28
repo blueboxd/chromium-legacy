@@ -1,16 +1,16 @@
 {
     "trace_processor_shell": {
         "win": {
-            "hash": "cb4cdb03766f3c69c381bdf17ce5ac88bc71e30e",
-            "remote_path": "perfetto_binaries/trace_processor_shell/win/254ea334b65f8a7d5d4ab087f861df0572fa6af7/trace_processor_shell.exe"
+            "hash": "c223875d95916f375761037015f2d792ef208dfb",
+            "remote_path": "perfetto_binaries/trace_processor_shell/win/6cdb496e99b434eb28978a9a5519042cce88c3a9/trace_processor_shell.exe"
         },
         "mac": {
-            "hash": "23c054de3c5738695431f962b9f5e79a888eb135",
-            "remote_path": "perfetto_binaries/trace_processor_shell/mac/254ea334b65f8a7d5d4ab087f861df0572fa6af7/trace_processor_shell"
+            "hash": "78d036e9d284668b97ab4930ac68ce3f4d6f78e0",
+            "remote_path": "perfetto_binaries/trace_processor_shell/mac/f37338cdaa2126eef2a11e1a6f0cb075888c20e6/trace_processor_shell"
         },
         "linux": {
-            "hash": "68451064b202f0b800ab6a86da1cdeb450fe5745",
-            "remote_path": "perfetto_binaries/trace_processor_shell/linux/254ea334b65f8a7d5d4ab087f861df0572fa6af7/trace_processor_shell"
+            "hash": "757b4657ed193f4d5dc0c9e3185a86b93a995d9c",
+            "remote_path": "perfetto_binaries/trace_processor_shell/linux/f37338cdaa2126eef2a11e1a6f0cb075888c20e6/trace_processor_shell"
         }
     },
     "power_profile.sql": {

@@ -97,7 +97,7 @@ public class PaymentRequestService
     private PaymentRequestSpec mSpec;
     private boolean mHasClosed;
     private boolean mIsFinishedQueryingPaymentApps;
-    private boolean mIsCurrentPaymentRequestShowing;
+    private boolean mIsShowCalled;
     private boolean mIsShowWaitingForUpdatedDetails;
 
     /** If not empty, use this error message for rejecting PaymentRequest.show(). */
@@ -282,6 +282,11 @@ public class PaymentRequestService
                 String appLocale) {
             return new PaymentRequestSpec(options, details, methodData, appLocale);
         }
+
+        /** @return The PaymentAppService that is used to create payment app for this service. */
+        default PaymentAppService getPaymentAppService() {
+            return PaymentAppService.getInstance();
+        }
     }
 
     /**
@@ -376,15 +381,15 @@ public class PaymentRequestService
 
         if (renderFrameHost.getLastCommittedOrigin() == null
                 || renderFrameHost.getLastCommittedURL() == null) {
-            abortBeforeInstantiation(/*client=*/null, /*journeyLogger=*/null, ErrorStrings.NO_FRAME,
-                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            abortForInvalidDataFromRenderer(
+                    /*client=*/null, /*journeyLogger=*/null, ErrorStrings.NO_FRAME);
             return null;
         }
 
         WebContents webContents = delegate.getLiveWebContents(renderFrameHost);
         if (webContents == null || webContents.isDestroyed()) {
-            abortBeforeInstantiation(/*client=*/null, /*journeyLogger=*/null,
-                    ErrorStrings.NO_WEB_CONTENTS, AbortReason.INVALID_DATA_FROM_RENDERER);
+            abortForInvalidDataFromRenderer(
+                    /*client=*/null, /*journeyLogger=*/null, ErrorStrings.NO_WEB_CONTENTS);
             return null;
         }
 
@@ -392,45 +397,35 @@ public class PaymentRequestService
         JourneyLogger journeyLogger = delegate.createJourneyLogger(isOffTheRecord, webContents);
 
         if (client == null) {
-            abortBeforeInstantiation(/*client=*/null, journeyLogger, ErrorStrings.INVALID_STATE,
-                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            abortForInvalidDataFromRenderer(
+                    /*client=*/null, journeyLogger, ErrorStrings.INVALID_STATE);
             return null;
         }
 
         if (!delegate.isOriginSecure(webContents.getLastCommittedUrl())) {
-            abortBeforeInstantiation(client, journeyLogger, ErrorStrings.NOT_IN_A_SECURE_ORIGIN,
-                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            abortForInvalidDataFromRenderer(
+                    client, journeyLogger, ErrorStrings.NOT_IN_A_SECURE_ORIGIN);
             return null;
         }
 
         if (methodData == null) {
-            abortBeforeInstantiation(client, journeyLogger,
-                    ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA,
-                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            abortForInvalidDataFromRenderer(
+                    client, journeyLogger, ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
             return null;
         }
 
-        for (PaymentMethodData datum : methodData) {
-            if (datum == null || TextUtils.isEmpty(datum.supportedMethod)) {
-                abortBeforeInstantiation(client, journeyLogger,
-                        ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA,
-                        AbortReason.INVALID_DATA_FROM_RENDERER);
-                return null;
-            }
-        }
-
         // details has default value, so could never be null, according to payment_request.idl.
-        if (details == null || details.id == null || details.total == null) {
-            abortBeforeInstantiation(client, journeyLogger, ErrorStrings.INVALID_PAYMENT_DETAILS,
-                    AbortReason.INVALID_DATA_FROM_RENDERER);
+        if (details == null) {
+            abortForInvalidDataFromRenderer(
+                    client, journeyLogger, ErrorStrings.INVALID_PAYMENT_DETAILS);
             return null;
         }
 
         // options has default value, so could never be null, according to
         // payment_request.idl.
         if (options == null) {
-            abortBeforeInstantiation(client, journeyLogger, ErrorStrings.INVALID_PAYMENT_OPTIONS,
-                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            abortForInvalidDataFromRenderer(
+                    client, journeyLogger, ErrorStrings.INVALID_PAYMENT_OPTIONS);
             return null;
         }
 
@@ -447,7 +442,7 @@ public class PaymentRequestService
     }
 
     private void startPaymentAppService() {
-        PaymentAppService service = PaymentAppService.getInstance();
+        PaymentAppService service = mDelegate.getPaymentAppService();
         mBrowserPaymentRequest.addPaymentAppFactories(service, /*delegate=*/this);
         service.create(/*delegate=*/this);
     }
@@ -492,12 +487,13 @@ public class PaymentRequestService
         }
     }
 
-    /** Abort the request, used before this class's instantiation. */
-    private static void abortBeforeInstantiation(@Nullable PaymentRequestClient client,
-            @Nullable JourneyLogger journeyLogger, String debugMessage, int reason) {
+    private static void abortForInvalidDataFromRenderer(@Nullable PaymentRequestClient client,
+            @Nullable JourneyLogger journeyLogger, String debugMessage) {
         Log.d(TAG, debugMessage);
-        if (client != null) client.onError(reason, debugMessage);
-        if (journeyLogger != null) journeyLogger.setAborted(reason);
+        if (client != null) {
+            client.onError(PaymentErrorReason.INVALID_DATA_FROM_RENDERER, debugMessage);
+        }
+        if (journeyLogger != null) journeyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
         if (sNativeObserverForTest != null) sNativeObserverForTest.onConnectionTerminated();
     }
 
@@ -556,6 +552,8 @@ public class PaymentRequestService
 
     private boolean initAndValidate(Factory factory, PaymentMethodData[] rawMethodData,
             PaymentDetails details, boolean googlePayBridgeEligible) {
+        assert rawMethodData != null;
+        assert details != null;
         mBrowserPaymentRequest = factory.createBrowserPaymentRequest(this);
         mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.INITIATED);
 
@@ -588,8 +586,8 @@ public class PaymentRequestService
         mBrowserPaymentRequest.modifyMethodDataIfNeeded(methodData);
         if (methodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA, PaymentErrorReason.USER_CANCEL);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA,
+                    PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
             return false;
         }
         methodData = Collections.unmodifiableMap(methodData);
@@ -597,11 +595,11 @@ public class PaymentRequestService
         mQueryForQuota = new HashMap<>(methodData);
         mBrowserPaymentRequest.modifyQueryForQuotaCreatedIfNeeded(mQueryForQuota, mPaymentOptions);
 
-        if (details == null || details.id == null || details.total == null
+        if (details.id == null || details.total == null
                 || !mDelegate.validatePaymentDetails(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    ErrorStrings.INVALID_PAYMENT_DETAILS, PaymentErrorReason.USER_CANCEL);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS,
+                    PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
             return false;
         }
 
@@ -615,7 +613,7 @@ public class PaymentRequestService
         if (spec.getRawTotal() == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
-                    ErrorStrings.TOTAL_REQUIRED, PaymentErrorReason.USER_CANCEL);
+                    ErrorStrings.TOTAL_REQUIRED, PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
             return false;
         }
         mSpec = spec;
@@ -762,7 +760,7 @@ public class PaymentRequestService
 
         mBrowserPaymentRequest.notifyPaymentUiOfPendingApps(mPendingApps);
         mPendingApps.clear();
-        if (isCurrentPaymentRequestShowing()) {
+        if (mIsShowCalled) {
             String error = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
                     mSpec.getRawTotal(), mSpec.getPaymentOptions(), mIsUserGestureShow);
             if (error != null) {
@@ -796,7 +794,7 @@ public class PaymentRequestService
      * @return Whether client has been disconnected.
      */
     private boolean disconnectIfNoPaymentMethodsSupported(boolean hasAvailableApps) {
-        if (!mIsFinishedQueryingPaymentApps || !isCurrentPaymentRequestShowing()) return false;
+        if (!mIsFinishedQueryingPaymentApps || !mIsShowCalled) return false;
         if (!mCanMakePayment || (mPendingApps.isEmpty() && !hasAvailableApps)) {
             // All factories have responded, but none of them have apps. It's possible to add credit
             // cards, but the merchant does not support them either. The payment request must be
@@ -855,24 +853,6 @@ public class PaymentRequestService
 
     private boolean isInTwa() {
         return !TextUtils.isEmpty(mDelegate.getTwaPackageName());
-    }
-
-    /** @return Whether PaymentRequest.show() was invoked with a user gesture. */
-    public boolean isUserGestureShow() {
-        return mIsUserGestureShow;
-    }
-
-    /** @return Whether the current payment request service has called show(). */
-    public boolean isCurrentPaymentRequestShowing() {
-        return mIsCurrentPaymentRequestShowing;
-    }
-
-    /**
-     * @return Whether all payment apps have been queried of canMakePayment() and
-     *         hasEnrolledInstrument().
-     */
-    public boolean isFinishedQueryingPaymentApps() {
-        return mIsFinishedQueryingPaymentApps;
     }
 
     @VisibleForTesting
@@ -1007,6 +987,11 @@ public class PaymentRequestService
         return result;
     }
 
+    @VisibleForTesting
+    public static void resetShowingPaymentRequestForTest() {
+        sShowingPaymentRequest = null;
+    }
+
     /**
      * The component part of the {@link PaymentRequest#show} implementation. Check {@link
      * PaymentRequest#show} for the parameters' specification.
@@ -1016,7 +1001,7 @@ public class PaymentRequestService
         assert mSpec != null;
         assert !mSpec.isDestroyed() : "mSpec is destroyed only after close().";
 
-        if (mBrowserPaymentRequest.isShowingUi()) {
+        if (mIsShowCalled) {
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
@@ -1035,7 +1020,7 @@ public class PaymentRequestService
         }
         sShowingPaymentRequest = this;
         mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.SHOW_CALLED);
-        mIsCurrentPaymentRequestShowing = true;
+        mIsShowCalled = true;
         mIsUserGestureShow = isUserGesture;
         mIsShowWaitingForUpdatedDetails = waitForUpdatedDetails;
 
@@ -1043,7 +1028,7 @@ public class PaymentRequestService
         if (disconnectIfNoPaymentMethodsSupported(mBrowserPaymentRequest.hasAvailableApps())) {
             return;
         }
-        if (isFinishedQueryingPaymentApps()) {
+        if (mIsFinishedQueryingPaymentApps) {
             String error = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
                     mSpec.getRawTotal(), mSpec.getPaymentOptions(), mIsUserGestureShow);
             if (error != null) {
@@ -1062,7 +1047,7 @@ public class PaymentRequestService
     // Return the error if failed, null if success.
     @Nullable
     private String triggerPaymentAppUiSkipIfApplicable() {
-        if (!mIsFinishedQueryingPaymentApps || !mIsCurrentPaymentRequestShowing
+        if (mHasClosed || !mIsFinishedQueryingPaymentApps || !mIsShowCalled
                 || mIsShowWaitingForUpdatedDetails) {
             return null;
         }
@@ -1078,12 +1063,12 @@ public class PaymentRequestService
     private static boolean onlySingleAppCanProvideAllRequiredInformation(
             PaymentOptions options, List<PaymentApp> allApps) {
         if (!PaymentOptionsUtils.requestAnyInformation(options)) {
-            return allApps.size() == 1 && !((PaymentApp) allApps.get(0)).isAutofillInstrument();
+            return allApps.size() == 1 && !allApps.get(0).isAutofillInstrument();
         }
 
         boolean anAppCanProvideAllInfo = false;
         for (int i = 0; i < allApps.size(); i++) {
-            PaymentApp app = (PaymentApp) allApps.get(i);
+            PaymentApp app = allApps.get(i);
             if ((!options.requestShipping || app.handlesShippingAddress())
                     && (!options.requestPayerName || app.handlesPayerName())
                     && (!options.requestPayerPhone || app.handlesPayerPhone())
@@ -1154,13 +1139,18 @@ public class PaymentRequestService
                 && invokedPaymentApp.isValidForPaymentMethodData(methodName, null);
     }
 
-    private String continueShow(PaymentDetails details) {
+    private boolean isPaymentDetailsUpdateValid(PaymentDetails details) {
+        // ID cannot be updated. Updating the total is optional.
+        return details.id == null && mDelegate.validatePaymentDetails(details)
+                && mBrowserPaymentRequest.parseAndValidateDetailsFurtherIfNeeded(details);
+    }
+
+    private String continueShow(@Nullable PaymentDetails details) {
         assert mIsShowWaitingForUpdatedDetails;
         // mSpec.updateWith() can be used only when mSpec has not been destroyed.
         assert !mSpec.isDestroyed();
 
-        if (!mDelegate.validatePaymentDetails(details)
-                || !mBrowserPaymentRequest.parseAndValidateDetailsFurtherIfNeeded(details)) {
+        if (details == null || !isPaymentDetailsUpdateValid(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             return ErrorStrings.INVALID_PAYMENT_DETAILS;
         }
@@ -1177,9 +1167,10 @@ public class PaymentRequestService
 
     /**
      * The component part of the {@link PaymentRequest#updateWith} implementation.
-     * @param details The details that the merchant provides to update the payment request.
+     * @param details The details that the merchant provides to update the payment request, can be
+     *         null.
      */
-    /* package */ void updateWith(PaymentDetails details) {
+    /* package */ void updateWith(@Nullable PaymentDetails details) {
         if (mBrowserPaymentRequest == null) return;
         if (mIsShowWaitingForUpdatedDetails) {
             // Under this condition, updateWith() is called in response to the resolution of
@@ -1192,34 +1183,31 @@ public class PaymentRequestService
             return;
         }
 
-        if (!mIsCurrentPaymentRequestShowing) {
+        if (!mIsShowCalled) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW, PaymentErrorReason.USER_CANCEL);
             return;
         }
 
+        boolean hasNotifiedInvokedPaymentApp =
+                mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate();
         if (!PaymentOptionsUtils.requestAnyInformation(mPaymentOptions)
-                && (mInvokedPaymentApp == null
-                        || !mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate())) {
+                && !hasNotifiedInvokedPaymentApp) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     ErrorStrings.INVALID_STATE, PaymentErrorReason.USER_CANCEL);
             return;
         }
 
-        // ID cannot be updated. Updating the total is optional.
-        if (details == null || details.id != null || !mDelegate.validatePaymentDetails(details)
-                || !mBrowserPaymentRequest.parseAndValidateDetailsFurtherIfNeeded(details)) {
+        if (details == null || !isPaymentDetailsUpdateValid(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    ErrorStrings.INVALID_PAYMENT_DETAILS, PaymentErrorReason.USER_CANCEL);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS,
+                    PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
             return;
         }
         mSpec.updateWith(details);
 
-        boolean hasNotifiedInvokedPaymentApp =
-                mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate();
         if (hasNotifiedInvokedPaymentApp) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
             // via updateWith() should be forwarded to the invoked app, so it can reflect the
@@ -1237,7 +1225,7 @@ public class PaymentRequestService
      */
     /* package */ void onPaymentDetailsNotUpdated() {
         if (mBrowserPaymentRequest == null) return;
-        if (!mIsCurrentPaymentRequestShowing) {
+        if (!mIsShowCalled) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW, PaymentErrorReason.USER_CANCEL);
@@ -1370,7 +1358,8 @@ public class PaymentRequestService
      */
     /* package */ void abortForInvalidDataFromRenderer(String debugMessage) {
         mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-        disconnectFromClientWithDebugMessage(debugMessage, PaymentErrorReason.USER_CANCEL);
+        disconnectFromClientWithDebugMessage(
+                debugMessage, PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
     }
 
     /**
@@ -1382,7 +1371,6 @@ public class PaymentRequestService
         if (mHasClosed) return;
         mHasClosed = true;
 
-        mIsCurrentPaymentRequestShowing = false;
         sShowingPaymentRequest = null;
 
         if (mBrowserPaymentRequest != null) {
@@ -1581,12 +1569,6 @@ public class PaymentRequestService
     @Nullable
     public String getTwaPackageName() {
         return mDelegate.getTwaPackageName();
-    }
-
-    /** @return The invoked payment app, can be null. */
-    @Nullable
-    public PaymentApp getInvokedPaymentApp() {
-        return mInvokedPaymentApp;
     }
 
     // Implements PaymentRequestUpdateEventListener:

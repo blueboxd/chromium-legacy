@@ -190,6 +190,9 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
               old_registry->user_data_directory_,
               old_registry->database_task_runner_,
               old_registry->quota_manager_proxy_.get()))),
+      user_data_directory_(old_registry->user_data_directory_),
+      database_task_runner_(old_registry->database_task_runner_),
+      quota_manager_proxy_(old_registry->quota_manager_proxy_),
       special_storage_policy_(old_registry->special_storage_policy_) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
@@ -665,18 +668,27 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
 void ServiceWorkerRegistry::GetRegisteredOrigins(
     GetRegisteredOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->GetRegisteredOrigins(std::move(callback));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::GetRegisteredOrigins,
+      base::BindRepeating(&ServiceWorkerRegistry::DidGetRegisteredOrigins,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void ServiceWorkerRegistry::PerformStorageCleanup(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->PerformStorageCleanup(std::move(callback));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::PerformStorageCleanup,
+      base::BindRepeating(&ServiceWorkerRegistry::DidPerformStorageCleanup,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void ServiceWorkerRegistry::PrepareForDeleteAndStartOver() {
   should_schedule_delete_and_start_over_ = false;
-  GetRemoteStorageControl()->Disable();
   is_storage_disabled_ = true;
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::Disable,
+      base::BindRepeating(&ServiceWorkerRegistry::DidDisable,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
@@ -685,6 +697,11 @@ void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
       &storage::mojom::ServiceWorkerStorageControl::Delete,
       base::BindRepeating(&ServiceWorkerRegistry::DidDeleteAndStartOver,
                           weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+}
+
+void ServiceWorkerRegistry::DisableStorageForTesting(
+    base::OnceClosure callback) {
+  GetRemoteStorageControl()->Disable(std::move(callback));
 }
 
 void ServiceWorkerRegistry::SimulateStorageRestartForTesting() {
@@ -701,7 +718,7 @@ void ServiceWorkerRegistry::Start() {
         weak_factory_.GetWeakPtr(),
         base::WrapRefCounted(special_storage_policy_.get()));
 
-    GetRemoteStorageControl()->GetRegisteredOrigins(
+    GetRegisteredOrigins(
         base::BindOnce(&ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup,
                        weak_factory_.GetWeakPtr()));
   }
@@ -1367,6 +1384,27 @@ void ServiceWorkerRegistry::DidDeleteAndStartOver(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   FinishRemoteCall(call_id);
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidGetRegisteredOrigins(
+    GetRegisteredOriginsCallback callback,
+    uint64_t call_id,
+    const std::vector<url::Origin>& origins) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
+  std::move(callback).Run(origins);
+}
+
+void ServiceWorkerRegistry::DidPerformStorageCleanup(base::OnceClosure callback,
+                                                     uint64_t call_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
+  std::move(callback).Run();
+}
+
+void ServiceWorkerRegistry::DidDisable(uint64_t call_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
 }
 
 void ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup(

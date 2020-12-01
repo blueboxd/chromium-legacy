@@ -29758,7 +29758,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3124" label="WebkitBoxPackCenterDoesSomething"/>
   <int value="3125" label="WebkitBoxPackEndDoesSomething"/>
   <int value="3126" label="V8KeyframeEffect_Constructor"/>
-  <int value="3127" label="WebNfcAPI"/>
+  <int value="3127" label="OBSOLETE_WebNfcAPI"/>
   <int value="3128" label="HostCandidateAttributeGetter"/>
   <int value="3129" label="CSPWithReasonableObjectRestrictions"/>
   <int value="3130" label="CSPWithReasonableBaseRestrictions"/>
@@ -42710,6 +42710,7 @@ from previous Chrome versions.
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
   <int value="-1159369873" label="TabGroupsUiImprovementsAndroid:disabled"/>
   <int value="-1159154050" label="FilesSinglePartitionFormat:enabled"/>
+  <int value="-1159151875" label="RecordWebAppDebugInfo:disabled"/>
   <int value="-1158993534" label="PrintScaling:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
@@ -43286,6 +43287,7 @@ from previous Chrome versions.
   <int value="-596337171" label="disable-ash-sidebar"/>
   <int value="-595819071"
       label="OmniboxUIExperimentBlueTitlesOnPageSuggestions:disabled"/>
+  <int value="-595353721" label="RecordWebAppDebugInfo:enabled"/>
   <int value="-594076614" label="PluginVmShowCameraPermissions:disabled"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
   <int value="-591874964" label="LiteVideo:enabled"/>
@@ -43911,6 +43913,7 @@ from previous Chrome versions.
   <int value="19629326" label="OmniboxExperimentalKeywordMode:enabled"/>
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="21055794" label="OpenXR:enabled"/>
+  <int value="23121136" label="MobileIdentityConsistencyVar:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="26875005" label="disable-explicit-dma-fences"/>
   <int value="26945819" label="EnhancedDeskAnimations:disabled"/>
@@ -44291,6 +44294,7 @@ from previous Chrome versions.
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="403288255" label="enable-wheel-scroll-latching"/>
+  <int value="403554154" label="SafetyCheckWeakPasswords:enabled"/>
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
   <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
@@ -44602,6 +44606,7 @@ from previous Chrome versions.
   <int value="699149897" label="ContentSuggestionsDebugLog:disabled"/>
   <int value="700346797" label="WheelEventRegions:enabled"/>
   <int value="701766325" label="PerNavigationMojoInterface:enabled"/>
+  <int value="702060507" label="SafetyCheckWeakPasswords:disabled"/>
   <int value="703469777" label="AndroidNightModeTabReparenting:enabled"/>
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
   <int value="705411729" label="AccessiblePDFForm:disabled"/>
@@ -45971,6 +45976,7 @@ from previous Chrome versions.
   <int value="2018956925" label="UseAAudioDriver:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2020898714" label="HudDisplayForPerformanceMetrics:enabled"/>
+  <int value="2022153130" label="MobileIdentityConsistencyVar:disabled"/>
   <int value="2022294878" label="WifiSyncAndroid:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
   <int value="2024298022"

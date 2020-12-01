@@ -445,12 +445,32 @@ const base::Feature kHappinessTrackingSurveysForDesktopDemo{
     "HappinessTrackingSurveysForDesktopDemo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the Happiness Tracking System for COEP issues in Chrome
+// DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesCOEP{
+    "HaTSDesktopDevToolsIssuesCOEP", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Mixed Content issues in
+// Chrome DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesMixedContent{
+    "HaTSDesktopDevToolsIssuesMixedContent", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Happiness Tracking System for same-site cookies
 // issues in Chrome DevTools on Desktop.
 const base::Feature
     kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite{
         "HappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite",
         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Heavy Ad issues in
+// Chrome DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesHeavyAd{
+    "HaTSDesktopDevToolsIssuesHeavyAd", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for CSP issues in Chrome
+// DevTools on Desktop.
+const base::Feature kHaTSDesktopDevToolsIssuesCSP{
+    "HaTSDesktopDevToolsIssuesCSP", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the migration of Happiness Tracking Surveys on Desktop (to the latest
 // version).
@@ -712,6 +732,11 @@ const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables recording additional web app related debugging data to be displayed
+// in: chrome://internals/web-app
+const base::Feature kRecordWebAppDebugInfo{"RecordWebAppDebugInfo",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables notification permission revocation for abusive origins.
 const base::Feature kAbusiveNotificationPermissionRevocation{
     "AbusiveOriginNotificationPermissionRevocation",
@@ -732,6 +757,9 @@ const base::Feature kSafetyCheckAndroid{"SafetyCheckAndroid",
 const base::Feature kSafetyCheckChromeCleanerChild{
     "SafetyCheckChromeCleanerChild", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+const base::Feature kSafetyCheckWeakPasswords{
+    "SafetyCheckWeakPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.

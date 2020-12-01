@@ -523,7 +523,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
           rect.offset.ConvertToLogical(writing_direction, container.Size(),
                                        rect.size) +
           rect.size.ConvertToLogical(writing_direction.GetWritingMode());
-      return rect_logical_end.inline_offset > border_inline_start &&
+      return rect_logical_end.inline_offset > border_inline_start ||
              rect_logical_end.block_offset > border_block_start;
     }
 
@@ -802,7 +802,8 @@ void NGPhysicalBoxFragment::AddOutlineRectsForInlineBox(
 }
 
 PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
-    PhysicalOffset point) const {
+    PhysicalOffset point,
+    bool is_content_offset) const {
   if (layout_object_->IsBox() && !layout_object_->IsLayoutNGObject()) {
     // Layout engine boundary. Enter legacy PositionForPoint().
     return layout_object_->PositionForPoint(point);
@@ -816,7 +817,7 @@ PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
   DCHECK(!IsAtomicInline() ||
          PhysicalRect(PhysicalOffset(), Size()).Contains(point));
 
-  if (IsScrollContainer())
+  if (!is_content_offset && IsScrollContainer())
     point += PhysicalOffset(PixelSnappedScrolledContentOffset());
 
   if (const NGFragmentItems* items = Items()) {

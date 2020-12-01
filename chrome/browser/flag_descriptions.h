@@ -838,6 +838,9 @@ extern const char kMixedFormsInterstitialDescription[];
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
+extern const char kMobileIdentityConsistencyVarName[];
+extern const char kMobileIdentityConsistencyVarDescription[];
+
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
@@ -1105,6 +1108,9 @@ extern const char kForceEnablePrivetPrintingDescription[];
 extern const char kSafetyCheckAndroidName[];
 extern const char kSafetyCheckAndroidDescription[];
 
+extern const char kSafetyCheckWeakPasswordsName[];
+extern const char kSafetyCheckWeakPasswordsDescription[];
+
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
 
@@ -1132,6 +1138,9 @@ extern const char kRawClipboardDescription[];
 
 extern const char kReadLaterName[];
 extern const char kReadLaterDescription[];
+
+extern const char kRecordWebAppDebugInfoName[];
+extern const char kRecordWebAppDebugInfoDescription[];
 
 extern const char kRewriteLevelDBOnDeletionName[];
 extern const char kRewriteLevelDBOnDeletionDescription[];

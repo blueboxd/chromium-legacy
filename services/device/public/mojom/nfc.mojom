@@ -5,17 +5,15 @@
 module device.mojom;
 
 enum NDEFErrorType {
-  // No permssion.
+  // No permission.
   NOT_ALLOWED,
   // No hardware support, no NFC adapter, the connection cannot be established,
   // or operation is not supported by the NFC Adapter.
   NOT_SUPPORTED,
   // NFC adapter is disabled.
   NOT_READABLE,
-  NOT_FOUND,
   INVALID_MESSAGE,
   OPERATION_CANCELLED,
-  CANNOT_CANCEL,
   // Transfer data error.
   IO_ERROR
 };
@@ -103,9 +101,11 @@ struct NDEFWriteOptions {
   bool overwrite;
 };
 
+// Interface used by Web NFC to push data to NFC devices and get notified of
+// nearby NFC devices.
 interface NFC {
-  // NFCClient interface is used to notify |client| when NDEFMessage matches one
-  // or more pending watch operations.
+  // NFCClient interface is used to notify |client| when watching for nearby
+  // NFC devices.
   SetClient(pending_remote<NFCClient> client);
 
   // Pushes data to NFC device.
@@ -113,19 +113,18 @@ interface NFC {
   Push(NDEFMessage message, NDEFWriteOptions? options) => (NDEFError? error);
 
   // Cancels pending push request.
-  CancelPush() => (NDEFError? error);
+  CancelPush();
 
   // Starts watching for nearby NFC devices. |id| identifies each watch request
   // on the current Mojo connection.
   Watch(uint32 id) => (NDEFError? error);
 
   // Cancels watch operation with provided id.
-  CancelWatch (uint32 id) => (NDEFError? error);
-
-  // Cancels all watch operations.
-  CancelAllWatches () => (NDEFError? error);
+  CancelWatch(uint32 id);
 };
 
+// Interface that client of the NFC interface must implement to get notified of
+// nearby NFC devices.
 interface NFCClient {
   // Sends |message| to those readers that have registered |watch_ids| via
   // NFC.Watch(), i.e. |message| matches their filtering criteria.

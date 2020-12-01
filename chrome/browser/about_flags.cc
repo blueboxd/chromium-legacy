@@ -459,6 +459,15 @@ const FeatureEntry::FeatureVariation kReaderModeDiscoverabilityVariations[] = {
      base::size(kReaderModeOfferInSettings), nullptr}};
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kDismissButtonWithNoThanks[] = {
+    {"dismiss_button", "no_thanks"}};
+
+const FeatureEntry::FeatureVariation kMobileIdentityConsistencyVariations[] = {
+    {"Dismiss No Thanks", kDismissButtonWithNoThanks,
+     base::size(kDismissButtonWithNoThanks), nullptr}};
+#endif  // OS_ANDROID
+
 #if !defined(OS_CHROMEOS)
 const FeatureEntry::FeatureParam kForceDark_SimpleHsl[] = {
     {"inversion_method", "hsl_based"},
@@ -3335,6 +3344,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsRunOnOsLoginName,
      flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
+    {"record-web-app-debug-info",
+     flag_descriptions::kRecordWebAppDebugInfoName,
+     flag_descriptions::kRecordWebAppDebugInfoDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kRecordWebAppDebugInfo)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
      SINGLE_VALUE_TYPE_AND_VALUE(
@@ -5295,6 +5308,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistency)},
+    {"mobile-identity-consistency-var",
+     flag_descriptions::kMobileIdentityConsistencyVarName,
+     flag_descriptions::kMobileIdentityConsistencyVarDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(signin::kMobileIdentityConsistencyVar,
+                                    kMobileIdentityConsistencyVariations,
+                                    "MobileIdentityConsistencyVar")},
 #endif  // defined(OS_ANDROID)
 
     {"autofill-use-improved-label-disambiguation",
@@ -6878,6 +6897,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseOfHashAffiliationFetcherDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kUseOfHashAffiliationFetcher)},
+
+    {"safety-check-weak-passwords",
+     flag_descriptions::kSafetyCheckWeakPasswordsName,
+     flag_descriptions::kSafetyCheckWeakPasswordsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSafetyCheckWeakPasswords)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

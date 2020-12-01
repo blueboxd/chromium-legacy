@@ -38,7 +38,10 @@ using mojom::blink::PermissionStatus;
 namespace {
 
 constexpr char kNotSupportedOrPermissionDenied[] =
-    "WebNFC feature is unavailable or permission denied.";
+    "Web NFC is unavailable or permission denied.";
+
+constexpr char kChildFrameErrorMessage[] =
+    "Web NFC can only be accessed in a top-level browsing context.";
 
 constexpr char kInvalidStateErrorMessage[] = "A scan() operation is ongoing.";
 }  // namespace
@@ -77,15 +80,11 @@ bool NDEFReader::HasPendingActivity() const {
 ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                const NDEFScanOptions* options,
                                ExceptionState& exception_state) {
-  LocalFrame* frame = script_state->ContextIsValid()
-                          ? LocalDOMWindow::From(script_state)->GetFrame()
-                          : nullptr;
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!frame || !frame->IsMainFrame()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
-                                      "NFC interfaces are only available "
-                                      "in a top-level browsing context");
+  if (!DomWindow() || !DomWindow()->GetFrame()->IsMainFrame()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kChildFrameErrorMessage);
     return ScriptPromise();
   }
 
@@ -122,7 +121,7 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
 
   GetPermissionService()->RequestPermission(
       CreatePermissionDescriptor(PermissionName::NFC),
-      LocalFrame::HasTransientUserActivation(frame),
+      LocalFrame::HasTransientUserActivation(DomWindow()->GetFrame()),
       WTF::Bind(&NDEFReader::ReadOnRequestPermission, WrapPersistent(this),
                 WrapPersistent(options)));
   return scan_resolver_->Promise();
@@ -150,9 +149,6 @@ void NDEFReader::ReadOnRequestPermission(const NDEFScanOptions* options,
     scan_resolver_.Clear();
     return;
   }
-
-  // TODO(https://crbug.com/994936) remove when origin trial is complete.
-  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcAPI);
 
   GetNfcProxy()->StartReading(
       this,
@@ -211,15 +207,11 @@ ScriptPromise NDEFReader::write(ScriptState* script_state,
                                 const NDEFMessageSource& write_message,
                                 const NDEFWriteOptions* options,
                                 ExceptionState& exception_state) {
-  LocalDOMWindow* window = script_state->ContextIsValid()
-                               ? LocalDOMWindow::From(script_state)
-                               : nullptr;
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!window || !window->GetFrame()->IsMainFrame()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
-                                      "NFC interfaces are only available "
-                                      "in a top-level browsing context");
+  if (!DomWindow() || !DomWindow()->GetFrame()->IsMainFrame()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kChildFrameErrorMessage);
     return ScriptPromise();
   }
 
@@ -234,7 +226,7 @@ ScriptPromise NDEFReader::write(ScriptState* script_state,
   // Step 11.2: Run "create NDEF message", if this throws an exception,
   // reject p with that exception and abort these steps.
   NDEFMessage* ndef_message =
-      NDEFMessage::Create(window, write_message, exception_state);
+      NDEFMessage::Create(DomWindow(), write_message, exception_state);
   if (exception_state.HadException()) {
     return ScriptPromise();
   }
@@ -251,7 +243,7 @@ ScriptPromise NDEFReader::write(ScriptState* script_state,
 
   GetPermissionService()->RequestPermission(
       CreatePermissionDescriptor(PermissionName::NFC),
-      LocalFrame::HasTransientUserActivation(window->GetFrame()),
+      LocalFrame::HasTransientUserActivation(DomWindow()->GetFrame()),
       WTF::Bind(&NDEFReader::WriteOnRequestPermission, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(options),
                 std::move(message)));
@@ -284,9 +276,6 @@ void NDEFReader::WriteOnRequestPermission(
                                               WrapPersistent(resolver)));
   }
 
-  // TODO(https://crbug.com/994936) remove when origin trial is complete.
-  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcAPI);
-
   auto callback = WTF::Bind(&NDEFReader::WriteOnRequestCompleted,
                             WrapPersistent(this), WrapPersistent(resolver));
   GetNfcProxy()->Push(std::move(message),
@@ -311,15 +300,13 @@ void NDEFReader::WriteOnRequestCompleted(
 
 void NDEFReader::WriteAbort(ScriptPromiseResolver* resolver) {
   // WriteOnRequestCompleted() should always be called whether the push
-  // operation is cancelled successfully or not. So do nothing for the cancelled
-  // callback.
-  // TODO(https://crbug.com/1151857) Remove the callback since it is unused.
-  GetNfcProxy()->CancelPush(device::mojom::blink::NFC::CancelPushCallback());
+  // operation is cancelled successfully or not.
+  GetNfcProxy()->CancelPush();
 }
 
 NFCProxy* NDEFReader::GetNfcProxy() const {
-  DCHECK(GetExecutionContext());
-  return NFCProxy::From(*To<LocalDOMWindow>(GetExecutionContext()));
+  DCHECK(DomWindow());
+  return NFCProxy::From(*DomWindow());
 }
 
 void NDEFReader::Trace(Visitor* visitor) const {

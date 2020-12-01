@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -52,6 +53,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 
 namespace chromeos {
@@ -329,16 +331,20 @@ const std::vector<SearchConcept>& GetParentalSearchConcepts() {
   return *tags;
 }
 
-void AddAccountManagerPageStrings(content::WebUIDataSource* html_source) {
+void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
+                                  Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"accountManagerDescription", IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION},
+      {"accountManagerPrimaryAccountDescription",
+       IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_DESCRIPTION},
       {"accountManagerChildDescription",
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION},
       {"accountManagerChildFirstMessage",
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_FIRST_MESSAGE},
       {"accountManagerChildSecondMessage",
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_SECOND_MESSAGE},
-      {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER},
+      {"accountListTooltip", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_TOOLTIP},
+      {"accountListTooltipNoSecondaryAccounts",
+       IDS_SETTINGS_ACCOUNT_MANAGER_LIST_TOOLTIP_NO_SECONDARY_ACCOUNTS},
       {"accountManagerPrimaryAccountTooltip",
        IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP},
       {"accountManagerEducationAccountLabel",
@@ -373,11 +379,34 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddString("accountManagerLearnMoreUrl",
                          chrome::kAccountManagerLearnMoreURL);
-
   html_source->AddLocalizedString(
-      "addAccountLabel", chromeos::features::IsAccountManagementFlowsV2Enabled()
-                             ? IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL_V2
-                             : IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL);
+      "accountManagerManagementDescription",
+      profile->IsChild() ? IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_CHILD
+                         : IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS);
+  html_source->AddString("accountManagerChromeUIManagementURL",
+                         base::UTF8ToUTF16(chrome::kChromeUIManagementURL));
+
+  if (chromeos::features::IsAccountManagementFlowsV2Enabled()) {
+    static constexpr webui::LocalizedString kLocalizedStringsV2[] = {
+        {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL_V2},
+        {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_V2},
+        {"accountListHeaderChild",
+         IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_CHILD},
+    };
+    AddLocalizedStringsBulk(html_source, kLocalizedStringsV2);
+
+    html_source->AddString(
+        "accountManagerDescription",
+        l10n_util::GetStringFUTF16(IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2,
+                                   ui::GetChromeOSDeviceName()));
+  } else {
+    static constexpr webui::LocalizedString kLocalizedStringsV1[] = {
+        {"accountManagerDescription", IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION},
+        {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL},
+        {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER},
+    };
+    AddLocalizedStringsBulk(html_source, kLocalizedStringsV1);
+  }
 }
 
 void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
@@ -757,16 +786,13 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  html_source->AddBoolean(
-      "isAccountManagementFlowsV2Enabled",
-      chromeos::features::IsAccountManagementFlowsV2Enabled());
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile());
+  DCHECK(user);
+
   if (chromeos::features::IsAccountManagementFlowsV2Enabled()) {
     html_source->AddLocalizedString("osPeoplePageTitle",
                                     IDS_OS_SETTINGS_PEOPLE_V2);
 
-    user_manager::User* user =
-        ProfileHelper::Get()->GetUserByProfile(profile());
-    DCHECK(user);
     // This string is not used if the flag is disabled.
     html_source->AddString("osProfileName", l10n_util::GetStringFUTF16(
                                                 IDS_OS_SETTINGS_PROFILE_NAME,
@@ -786,6 +812,13 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",
                           account_manager_ != nullptr);
+  html_source->AddBoolean(
+      "isAccountManagementFlowsV2Enabled",
+      chromeos::features::IsAccountManagementFlowsV2Enabled());
+  html_source->AddBoolean(
+      "isDeviceAccountManaged",
+      user->IsActiveDirectoryUser() ||
+          profile()->GetProfilePolicyConnector()->IsManaged());
 
   if (chromeos::features::ShouldUseBrowserSyncConsent()) {
     static constexpr webui::LocalizedString kTurnOffStrings[] = {
@@ -822,7 +855,7 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
-  AddAccountManagerPageStrings(html_source);
+  AddAccountManagerPageStrings(html_source, profile());
   KerberosAccountsHandler::AddLoadTimeKerberosStrings(
       html_source, kerberos_credentials_manager_);
   AddLockScreenPageStrings(html_source, profile()->GetPrefs());

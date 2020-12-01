@@ -5189,6 +5189,27 @@
             ]
         }
     ],
+    "PartitionAllocGigaCage32bit": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PartitionAllocGigaCage32bit"
+                    ]
+                }
+            ]
+        }
+    ],
     "PartitionConnectionsByNetworkIsolationKey": [
         {
             "platforms": [
@@ -5366,6 +5387,24 @@
                     },
                     "enable_features": [
                         "TrimOnMemoryPressure"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PermissionChip": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PermissionChip"
                     ]
                 }
             ]
@@ -7308,6 +7347,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "V8OffThreadFinalization"
+                    ]
+                }
+            ]
+        }
+    ],
+    "VerifyHTMLFetchedFromAppCacheBeforeDelay": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "VerifyHTMLFetchedFromAppCacheBeforeDelay"
                     ]
                 }
             ]

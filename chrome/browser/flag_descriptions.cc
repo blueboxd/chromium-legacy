@@ -1412,6 +1412,12 @@ const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";
 
+const char kMobileIdentityConsistencyVarName[] =
+    "Mobile identity consistency variations";
+const char kMobileIdentityConsistencyVarDescription[] =
+    "Enables stronger identity consistency on mobile with different UI "
+    "variations";
+
 const char kMouseSubframeNoImplicitCaptureName[] =
     "Disable mouse implicit capture for iframe";
 const char kMouseSubframeNoImplicitCaptureDescription[] =
@@ -1886,6 +1892,11 @@ const char kSafetyCheckAndroidDescription[] =
     "A settings component for checking multiple areas of browser safety. "
     "Requires #password-check to also be enabled.";
 
+const char kSafetyCheckWeakPasswordsName[] = "Safety check for weak passwords";
+const char kSafetyCheckWeakPasswordsDescription[] =
+    "If weak passwords were found, show them in safety check."
+    "Requires #passwords-weakness-check to also be enabled.";
+
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =
@@ -1934,6 +1945,11 @@ const char kReadLaterName[] = "Read Later";
 const char kReadLaterDescription[] =
     "Allow users to save tabs for later. Enables a new button and menu for "
     "accessing tabs saved for later.";
+
+const char kRecordWebAppDebugInfoName[] = "Record web app debug info";
+const char kRecordWebAppDebugInfoDescription[] =
+    "Enables recording additional web app related debugging data to be "
+    "displayed in: chrome://internals/web-app";
 
 const char kRewriteLevelDBOnDeletionName[] =
     "Rewrite LevelDB instances after full deletions";

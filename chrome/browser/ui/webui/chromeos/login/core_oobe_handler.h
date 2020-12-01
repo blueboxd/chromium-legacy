@@ -67,6 +67,7 @@ class CoreOobeView {
   virtual void ShowDeviceResetScreen() = 0;
   virtual void UpdateKeyboardState() = 0;
   virtual void FocusReturned(bool reverse) = 0;
+  virtual void SetOrientation(bool is_horizontal) = 0;
 };
 
 // The core handler for Javascript messages related to the "oobe" view.
@@ -138,6 +139,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void SetDialogPaddingMode(CoreOobeView::DialogPaddingMode mode) override;
   void ShowDeviceResetScreen() override;
   void FocusReturned(bool reverse) override;
+  void SetOrientation(bool is_horizontal) override;
 
   void UpdateKeyboardState() override;
 
@@ -150,6 +152,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Handlers for JS WebUI messages.
   void HandleHideOobeDialog();
+  void HandleEnableShelfButtons(bool enable);
   void HandleInitialized();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSkipToLoginForTesting();

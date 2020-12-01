@@ -1697,11 +1697,24 @@ void DocumentLoader::CommitNavigation() {
   InitializeWindow(owner_document);
 
   SecurityContextInit security_init(frame_->DomWindow());
-  // FeaturePolicy and DocumentPolicy require SecurityOrigin and origin trials
-  // to be initialized.
-  // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
-  security_init.ApplyFeaturePolicy(frame_.Get(), response_, origin_policy_,
-                                   frame_policy_);
+
+  // The document constructed by XSLTProcessor should inherit Feature Policy
+  // from the previous Document. Note: In XSLT commit, |response_| no longer
+  // holds header fields. Going through regular initialization will cause empty
+  // policy even if there is header on xml document.
+  // TODO(crbug.com/1151954): Fix the problem for Document Policy as well.
+  if (commit_reason_ == CommitReason::kXSLT) {
+    DCHECK(response_.HttpHeaderField(http_names::kFeaturePolicy).IsEmpty());
+    DCHECK(response_.HttpHeaderField(http_names::kPermissionsPolicy).IsEmpty());
+    security_init.InitFeaturePolicyFrom(previous_window->GetSecurityContext());
+  } else {
+    // FeaturePolicy and DocumentPolicy require SecurityOrigin and origin trials
+    // to be initialized.
+    // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
+    security_init.ApplyFeaturePolicy(frame_.Get(), response_, origin_policy_,
+                                     frame_policy_);
+  }
+
   // |document_policy_| is parsed in document loader because it is
   // compared with |frame_policy.required_document_policy| to decide
   // whether to block the document load or not.
@@ -1832,6 +1845,19 @@ void DocumentLoader::CommitNavigation() {
           previous_window != frame_->DomWindow(),
           frame_->DomWindow()->GetSandboxFlags(),
           security_init.FeaturePolicyHeader(), document_policy_.feature_state);
+      // Originally, before OOPIFs, the previous document associated with the
+      // frame will always already by detached at this point, so no JS unload
+      // handlers should run. However, with OOPIFs, this `LocalFrame` might
+      // still be provisional: it doesn't become swapped in until Blink notifies
+      // the embedder by calling `DidCommitNavigation()`. As a result,
+      // `DidCommitLoad()` might end up running the unload handlers for the
+      // previous *frame* when swapping it out, which might detach `this`.
+      //
+      // TODO(https://crbug.com/1153043): Fix this so that the frame is swapped
+      // in earlier, at `FrameLoader::DetachDocument()`. At that point, it is
+      // certain that the navigation will commit.
+      if (!frame_)
+        return;
     }
     // TODO(dgozman): make DidCreateScriptContext notification call currently
     // triggered by installing new document happen here, after commit.

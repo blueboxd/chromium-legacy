@@ -267,10 +267,6 @@
 #include "ppapi/shared_impl/ppapi_switches.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "content/browser/net/reporting_service_proxy.h"
-#endif
-
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
 #include "content/browser/hyphenation/hyphenation_impl.h"
 #endif
@@ -2311,20 +2307,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::BindRepeating(&device::GamepadHapticsManager::Create));
 
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::BindRepeating(&RenderProcessHostImpl::BindPushMessagingManager,
-                            weak_factory_.GetWeakPtr()));
-  } else {
-    // Note, the base::Unretained() is safe because the target object has an IO
-    // thread deleter and the callback is also targeting the IO thread.  When
-    // the RPHI is destroyed it also triggers the destruction of the registry
-    // on the IO thread.
-    registry->AddInterface(
-        base::BindRepeating(&PushMessagingManager::AddPushMessagingReceiver,
-                            base::Unretained(push_messaging_manager_.get())));
-  }
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindPushMessagingManager,
+                          weak_factory_.GetWeakPtr()));
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
       GetID(), storage_partition_impl_->GetFileSystemContext(),
@@ -2386,12 +2372,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateCodeCacheHost,
                           weak_factory_.GetWeakPtr()));
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  AddUIThreadInterface(
-      registry.get(),
-      base::BindRepeating(&CreateReportingServiceProxy, GetID()));
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   AddUIThreadInterface(
       registry.get(),

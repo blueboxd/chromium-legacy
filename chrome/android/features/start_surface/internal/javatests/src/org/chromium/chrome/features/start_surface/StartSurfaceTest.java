@@ -808,12 +808,14 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/exclude_mv_tiles/true"
             + "/show_last_active_tab_only/true/show_stack_tab_switcher/true"})
-    public void
-    testShow_SingleAsHomepageV2_FromResumeShowStart() throws Exception {
+    public void testShow_SingleAsHomepageV2_FromResumeShowStart() throws Exception {
         // clang-format on
-        if (!mImmediateReturn) return;
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         CriteriaHelper.pollUiThread(
@@ -833,11 +835,60 @@ public class StartSurfaceTest {
         // Simulates pressing Chrome's icon and launching Chrome from warm start.
         mActivityTestRule.resumeMainActivityFromLauncher();
 
+        waitForTabModel();
+        if (mImmediateReturn) {
+            CriteriaHelper.pollUiThread(()
+                                                -> cta.getLayoutManager() != null
+                            && cta.getLayoutManager().overviewVisible());
+            // Verifies that with the vertical tab switcher, the regular Start surface is shown when
+            // resuming.
+            assertFalse(cta.getTabModelSelector().getCurrentModel().isIncognito());
+            assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(0));
+        } else {
+            assertTrue(cta.getTabModelSelector().getCurrentModel().isIncognito());
+            onViewWaiting(allOf(withId(R.id.new_tab_incognito_container), isDisplayed()));
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testShow_SingleAsHomepage_FromResumeShowStart() throws Exception {
+        // clang-format on
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         CriteriaHelper.pollUiThread(
                 () -> cta.getLayoutManager() != null && cta.getLayoutManager().overviewVisible());
         waitForTabModel();
-        assertFalse(cta.getTabModelSelector().getCurrentModel().isIncognito());
-        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(0));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.getTabModelSelector().getModel(false).closeAllTabs(); });
+        TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
+        assertTrue(cta.getLayoutManager().overviewVisible());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> cta.getTabCreator(true /*incognito*/).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
+
+        // Simulates pressing the Android's home button and bringing Chrome to the background.
+        pressHome();
+
+        // Simulates pressing Chrome's icon and launching Chrome from warm start.
+        mActivityTestRule.resumeMainActivityFromLauncher();
+
+        waitForTabModel();
+        assertTrue(cta.getTabModelSelector().getCurrentModel().isIncognito());
+        if (mImmediateReturn) {
+            CriteriaHelper.pollUiThread(()
+                                                -> cta.getLayoutManager() != null
+                            && cta.getLayoutManager().overviewVisible());
+            onViewWaiting(allOf(withId(R.id.secondary_tasks_surface_view), isDisplayed()));
+        } else {
+            onViewWaiting(allOf(withId(R.id.new_tab_incognito_container), isDisplayed()));
+        }
     }
 
     @Test
@@ -1411,6 +1462,8 @@ public class StartSurfaceTest {
             // omnibox.
             return;
         }
+
+        /** Verifies the case of start surface -> a tab -> tab switcher -> start surface. */
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
@@ -1422,6 +1475,28 @@ public class StartSurfaceTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
+
+        /** Verifies the case of navigating to a tab -> start surface -> tab switcher. */
+        onView(allOf(withParent(withId(
+                             org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container)),
+                       withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
+
+        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
+
+        try {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    ()
+                            -> mActivityTestRule.getActivity()
+                                       .findViewById(org.chromium.chrome.tab_ui.R.id.more_tabs)
+                                       .performClick());
+        } catch (ExecutionException e) {
+            fail("Failed to tap 'more tabs' " + e.toString());
+        }
+        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        assertTrue(bottomSheetTestSupport.hasSuppressionTokens());
     }
 
     private static Matcher<View> isView(final View targetView) {

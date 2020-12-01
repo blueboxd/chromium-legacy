@@ -34,7 +34,6 @@ class PendingAppRegistrationTaskBase;
 // only be used from the UI thread.
 class PendingAppManagerImpl : public PendingAppManager {
  public:
-
   explicit PendingAppManagerImpl(Profile* profile);
   PendingAppManagerImpl(const PendingAppManagerImpl&) = delete;
   PendingAppManagerImpl& operator=(const PendingAppManagerImpl&) = delete;

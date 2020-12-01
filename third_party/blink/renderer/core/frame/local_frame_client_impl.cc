@@ -548,6 +548,12 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
     web_frame_->Client()->DidCommitNavigation(
         commit_type, should_reset_browser_interface_broker, sandbox_flags,
         feature_policy_header, document_policy_header);
+
+    // With local to local swap it's possible for the frame to be deleted as a
+    // side effect of JS event handlers called in DidCommitNavigation
+    // (e.g. unload).
+    if (!web_frame_->Client())
+      return;
     if (web_frame_->GetFrame()->IsLocalRoot()) {
       // This update should be sent as soon as loading the new document begins
       // so that the browser and compositor could reset their states. However,
@@ -1106,6 +1112,16 @@ void LocalFrameClientImpl::OnMainFrameIntersectionChanged(
     const IntRect& intersection_rect) {
   DCHECK(web_frame_->Client());
   web_frame_->Client()->OnMainFrameIntersectionChanged(intersection_rect);
+}
+
+void LocalFrameClientImpl::OnOverlayPopupAdDetected() {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->OnOverlayPopupAdDetected();
+}
+
+void LocalFrameClientImpl::OnLargeStickyAdDetected() {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->OnLargeStickyAdDetected();
 }
 
 bool LocalFrameClientImpl::IsPluginHandledExternally(

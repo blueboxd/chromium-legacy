@@ -3175,13 +3175,9 @@
       'id': 15,
       'caption': '''Enable reporting of usage and crash-related data''',
       'tags': ['google-sharing'],
-      'desc': '''Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled turns on anonymous reporting of usage and crash-related data about Chrome to Google and prevents users from changing this setting. Setting the policy to Disabled means this information is not sent to Google.
 
-      If this setting is enabled, anonymous reporting of usage and crash-related
-      data is sent to Google.  If it is disabled, this information is not sent
-      to Google.  In both cases, users cannot change or override the setting.
-      If this policy is left not set, the setting will be what the user chose
-      upon installation / first run.
+      If you set the policy, users can't change it. If not set, users choose the behavior at installation or first run.
 
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.
 
@@ -9428,13 +9424,9 @@
       'id': 484,
       'caption': '''Report information about usage of Linux apps''',
       'tags': ['admin-sharing'],
-      'desc': '''Information about the usage of Linux apps is sent back to the
-      server.
+      'desc': '''If <ph name="LINUX_OS_NAME">Linux</ph> app support is on, setting the policy to Enabled sends information about <ph name="LINUX_OS_NAME">Linux</ph> apps usage back to the server.
 
-      If the policy is set to false or left unset, no usage information is
-      reported. If set to true, usage information is reported.
-
-      This policy only applies if Linux app support is enabled.''',
+      Setting the policy to Disabled or leaving it unset means no usage information is reported.''',
     },
     {
       'name': 'HeartbeatEnabled',
@@ -10294,13 +10286,11 @@
       'id': 138,
       'caption': '''Continue running background apps when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is closed''',
       'tags': ['system-security'],
-      'desc': '''Determines whether a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> process is started on OS login and keeps running when the last browser window is closed, allowing background apps and the current browsing session to remain active, including any session cookies. The background process displays an icon in the system tray and can always be closed from there.
+      'desc': '''Setting the policy to Enabled turns background mode on. In backgroudn mode, a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> process is started on OS sign-in and keeps running when the last browser window is closed, allowing background apps and the browsing session to remain active, including any session cookies. The background process displays an icon in the system tray and can always be closed from there.
 
-      If this policy is set to True, background mode is enabled and cannot be controlled by the user in the browser settings.
+      Setting the policy to Disabled turns background mode off.
 
-      If this policy is set to False, background mode is disabled and cannot be controlled by the user in the browser settings.
-
-      If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.''',
+      If you set the policy, users can't change it in the browser settings. If unset, background mode is off at first, but users can change it.''',
     },
     {
       'name': 'DriveDisabled',
@@ -10722,17 +10712,13 @@
       'id': 165,
       'caption': '''Use built-in DNS client''',
       'tags': [],
-      'desc': '''Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy controls which software stack is used to communicate with the DNS server: the Operating System DNS client, or <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s built-in DNS client. This policy does not affect which DNS servers are used: if, for example, the operating system is configured to use an enterprise DNS server, that same server would be used by the built-in DNS client. It also does not control if DNS-over-HTTPS is used; <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always use the built-in resolver for DNS-over-HTTPS requests. Please see the <ph name="DNS_OVER_HTTPS_MODE_POLICY_NAME">DnsOverHttpsMode</ph> policy for information on controlling DNS-over-HTTPS.
 
-      This does not affect which DNS servers are used; just the software stack which is used to communicate with them. For example if the operating system is configured to use an enterprise DNS server, that same server would be used by the built-in DNS client. It is however possible that the built-in DNS client will address servers in different ways by using more modern DNS-related protocols such as DNS-over-TLS.
+      If this policy is set to Enabled, the built-in DNS client will be used, if available.
 
-      This policy has no effect on DNS-over-HTTPS. Please see the <ph name="DNS_OVER_HTTPS_MODE_POLICY_NAME">DnsOverHttpsMode</ph> policy to change that behavior.
+      If this policy is set to Disabled, the built-in DNS client will only be used when DNS-over-HTTPS is in use.
 
-      If this policy is set to true, the built-in DNS client will be used, if available.
-
-      If this policy is set to false, the built-in DNS client will never be used.
-
-      If this policy is left not set, the built-in DNS client will be enabled by default on macOS, Android (when neither Private DNS nor VPN are enabled) and ChromeOS, and the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.''',
+      If this policy is left unset, the built-in DNS client will be enabled by default on <ph name="MAC_OS_NAME">macOS</ph>, <ph name="ANDROID_NAME">Android</ph> (when neither Private DNS nor VPN are enabled) and <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
     },
     {
       'name': 'DnsOverHttpsMode',
@@ -13351,9 +13337,9 @@
       'id': 207,
       'caption': '''Enable remote attestation for the device''',
       'tags': [],
-      'desc': '''If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
+      'desc': '''Setting the policy to Enabled allows remote attestation for the device. A certificate is automatically generated and uploaded to the Device Management Server.
 
-          If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeys extension API will fail.''',
+      Setting the policy to Disabled or leaving it unset means no certificate is generated and calls to the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> fail.''',
     },
     {
       'name': 'AttestationEnabledForUser',
@@ -13369,9 +13355,9 @@
       'id': 200,
       'caption': '''Enable remote attestation for the user''',
       'tags': [],
-      'desc': '''If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> using <ph name="CHALLENGE_USER_KEY_FUNCTION">chrome.enterprise.platformKeys.challengeUserKey()</ph>.
+      'desc': '''Setting the policy to Enabled lets users use the hardware on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices to remotely attest its identity to the privacy CA through the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> using <ph name="CHALLENGE_USER_KEY_FUNCTION">chrome.enterprise.platformKeys.challengeUserKey()</ph>.
 
-          If it is set to false, or if it is not set, calls to the API will fail with an error code.''',
+      Setting the policy to Disabled or leaving it unset has calls to the API fail with an error code.''',
     },
     {
       'name': 'AttestationExtensionAllowlist',
@@ -13390,9 +13376,9 @@
       'id': 785,
       'caption': '''Extensions allowed to to use the remote attestation API''',
       'tags': [],
-      'desc': '''This policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> functions for remote attestation. Extensions must be added to this list to use the API.
+      'desc': '''Setting the policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> functions for remote attestation. Extensions must be on this list to use the API.
 
-          If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
+      If an extension is not in the list, or the list is not set, the call to the API fails with an error code.''',
     },
     {
       'name': 'AttestationExtensionWhitelist',
@@ -13412,11 +13398,11 @@
       'id': 201,
       'caption': '''Extensions allowed to to use the remote attestation API''',
       'tags': [],
-      'desc': '''This policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> function <ph name="CHALLENGE_USER_KEY_FUNCTION">chrome.enterprise.platformKeys.challengeUserKey()</ph> for remote attestation. Extensions must be added to this list to use the API.
+      'desc': '''This policy is deprecated, please use <ph name="ATTESTATION_EXTENSION_ALLOWLIST_POLICY_NAME">AttestationExtensionAllowlist</ph> instead.
 
-          If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.
+      Setting the policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> function <ph name="CHALLENGE_USER_KEY_FUNCTION">chrome.enterprise.platformKeys.challengeUserKey()</ph> for remote attestation. Extensions must be on this list to use the API.
 
-          This policy is deprecated, please use <ph name="ATTESTATION_EXTENSION_ALLOWLIST_POLICY_NAME">AttestationExtensionAllowlist</ph> instead.''',
+      If an extension is not in the list, or the list is not set, the call to the API fails with an error code.''',
     },
     {
       'name': 'AttestationForContentProtectionEnabled',
@@ -13433,11 +13419,9 @@
       'id': 239,
       'caption': '''Enable the use of remote attestation for content protection for the device''',
       'tags': [],
-      'desc': '''Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts the device is eligible to play protected content.  This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
+      'desc': '''Setting the policy to Enabled or leaving it unset lets <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices use remote attestation (Verified Access) to get a certificate issued by the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> CA that asserts the device is eligible to play protected content. This process involves sending hardware endorsement information to the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> CA which uniquely identifies the device.
 
-          If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
-
-          If this setting is true, or if it is not set, remote attestation may be used for content protection.''',
+      Setting the policy to Disabled means the device won't use remote attestation for content protection, and the device may not play protected content.''',
     },
     {
       'name': 'SuppressChromeFrameTurndownPrompt',
@@ -13594,11 +13578,9 @@
       'id': 241,
       'caption': '''Enable the data compression proxy feature''',
       'tags': [],
-      'desc': '''Enable or disable the data compression proxy and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled allows the data compression proxy. Setting the policy to Disabled disallows the proxy.
 
-      If you enable or disable this setting, users cannot change or override this setting.
-
-      If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.''',
+      If you set the policy, users can't change it. If unset, users can choose to use the feature.''',
     },
     {
       'name': 'UserAvatarImage',
@@ -14389,9 +14371,9 @@
       'id': 304,
       'caption': '''Use hardware acceleration when available''',
       'tags': [],
-      'desc': '''If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
+      'desc': '''Setting the policy to Enabled or leaving it unset turns on hardware acceleration, if available.
 
-      If this policy is set to false, hardware acceleration will be disabled.''',
+      Setting the policy to Disabled turns off hardware acceleration.''',
     },
     {
       'name': 'UnifiedDesktopEnabledByDefault',
@@ -14801,9 +14783,9 @@
       'name': 'TaskManagerEndProcessEnabled',
       'owners': ['file://components/policy/resources/OWNERS'],
       'caption': '''Enable ending processes in Task Manager''',
-      'desc': '''If set to false, the 'End process' button is disabled in the Task Manager.
+      'desc': '''Setting the policy to Disabled prevents users from ending processes in the Task Manager.
 
-      If set to true or not configured, the user can end processes in the Task Manager.''',
+      Setting the policy to Enabled or leaving it unset lets users end processes in the Task Manager.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:52-','chrome_os:52-'],
@@ -16970,11 +16952,9 @@
       'id': 522,
       'caption': '''Select task scheduler configuration''',
       'tags': [],
-      'desc': '''Instructs <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to use the task scheduler configuration identified by the specified name.
+      'desc': '''Setting the policy instructs <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to use the task scheduler configuration identified by the specified name. This policy can be set to <ph name="CONSERVATIVE_VALUE">Conservative</ph> or <ph name="PERFORMANCE_VALUE">Performance</ph>, which tune the task scheduler for stability or maximum performance, respectively.
 
-      This policy can be set to "conservative" and "performance", which select task scheduler configurations that are tuned for stability vs. maximum performance, respectively.
-
-      If the policy is left unset, the user can make their own choice.''',
+      If unset, users make their own choice.''',
     },
     {
       'name': 'NoteTakingAppsLockScreenWhitelist',
@@ -18483,13 +18463,13 @@
       'id': 442,
       'caption': '''Control how Chrome Cleanup reports data to Google''',
       'tags': ['system-security'],
-      'desc': '''If unset, should Chrome Cleanup detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will then ask the user if they wish to clean up the unwanted software. The user can choose to share results of the cleanup with Google to assist with future unwanted software detection. These results contain file metadata, automatically installed extensions and registry keys as described by the Chrome Privacy Whitepaper.
+      'desc': '''Setting the policy to Enabled means if <ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph> detects unwanted software, it may, in line with policy set by <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME">SafeBrowsingExtendedReportingEnabled</ph>, report about the scan to Google. <ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph> asks users if they want the cleanup. It sends results to Google.
 
-      If disabled, should Chrome Cleanup detect unwanted software, it will not report metadata about the scan to Google, overriding any policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will ask the user if they wish to clean up the unwanted software.  Results of the cleanup will not be reported to Google and the user will not have the option to do so.
+      Setting the policy to Disabled means if <ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph> detects unwanted software, it won't report about the scan to Google, regardless of the value of <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME">SafeBrowsingExtendedReportingEnabled</ph>. <ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph> asks users if they want the cleanup. The results aren't reported to Google.
 
-      If enabled, should Chrome Cleanup detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will ask the user if they wish to clean up the unwanted software.  Results of the cleanup will be reported to Google and the user will not have the option to prevent it.
+      Leaving the policy unset means <ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph> may, in line with policy set by <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME">SafeBrowsingExtendedReportingEnabled</ph>, report about scans for detecting unwanted software to Google. <ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph> asks users if they want the cleanup and to share the results with Google to help with future unwanted software detection. These results have file metadata, automatically installed extensions, and registry keys, as described by the Chrome Privacy Whitepaper.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>.''',
     },
     {
       'name': 'AllowedLanguages',
@@ -19111,15 +19091,11 @@
       'id': 461,
       'caption': '''Enable URL-keyed anonymized data collection''',
       'tags': ['google-sharing'],
-      'desc': '''Enable URL-keyed anonymized data collection in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled means URL-keyed anonymized data collection, which sends URLs of pages the user visits to Google to make searches and browsing better, is always active.
 
-      URL-keyed anonymized data collection sends URLs of pages the user visits to Google to make searches and browsing better.
+      Setting the policy to Disabled results in no URL-keyed anonymized data collection.
 
-      If you enable this policy, URL-keyed anonymized data collection is always active.
-
-      If you disable this policy, URL-keyed anonymized data collection is never active.
-
-      If this policy is left not set, URL-keyed anonymized data collection will be enabled but the user will be able to change it.''',
+      If you set the policy, users can't change. If not set, then URL-keyed anonymized data collection at first, but users can change it.''',
     },
     {
       'id': 462,
@@ -19151,12 +19127,11 @@
       'id': 464,
       'caption': '''Allow collection of WebRTC event logs from Google services''',
       'tags': ['google-sharing'],
-      'desc': '''
-      Setting the policy to True allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to collect WebRTC event logs from Google services such as Hangouts Meet and upload them to Google. These logs have diagnostic information for debugging issues with audio or video meetings in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, such as the time and size of RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs have no audio or video content from the meeting. To make debugging easier, Google might associate these logs, by means of a session ID, with other logs collected by the Google service itself.
+      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can collect WebRTC event logs from Google services such as Hangouts Meet and upload them to Google. These logs have diagnostic information for debugging issues with audio or video meetings in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, such as the time and size of RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs have no audio or video content from the meeting. To make debugging easier, Google might associate these logs, by means of a session ID, with other logs collected by the Google service itself.
 
-      Setting the policy to False results in no collection or uploading of such logs.
+      Setting the policy to Disabled results in no collection or uploading of such logs.
 
-      Leaving the policy unset on versions up to and including M76 means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> defaults to not being able to collect and upload these logs. Starting at M77, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> defaults to being able to collect and upload these logs from most profiles affected by cloud-based user-level enterprise policies. From M77 up to and including M80, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can also collect and upload these logs by default from profiles affected by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on-premise management.''',
+      Leaving the policy unset on versions up to and including M76 means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> defaults to not being able to collect and upload these logs. Starting at M77, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> defaults to being able to collect and upload these logs from most profiles affected by cloud-based, user-level enterprise policies. From M77 up to and including M80, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can also collect and upload these logs by default from profiles affected by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on-premise management.''',
     },
     {
       'name': 'PowerSmartDimEnabled',
@@ -24131,6 +24106,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     ['DeviceLoginScreenSaverId', ''],
     ['DeviceLoginScreenSaverTimeout', ''],
     ['DeviceAppPack', ''],
+    ['DeviceStartUpFlags', ''],
     # Proto fields with unknown policy.
     ['', 'device_reporting.report_running_kiosk_app'],
     ['', 'camera_enabled.camera_enabled'],
@@ -24296,7 +24272,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceWiFiAllowed': 'device_wifi_allowed.device_wifi_allowed',
     'AutoCleanUpStrategy': 'auto_clean_up_settings.clean_up_strategy',
     'SupervisedUsersEnabled': 'supervised_users_settings.supervised_users_enabled',
-    'DeviceStartUpFlags': 'start_up_flags.flags',
     'ReportDeviceBoardStatus': 'device_reporting.report_board_status',
     'ReportDeviceCpuInfo': 'device_reporting.report_cpu_info',
     'ReportDeviceTimezoneInfo': 'device_reporting.report_timezone_info',

@@ -157,6 +157,7 @@ void CoreOobeHandler::RegisterMessages() {
 
   AddCallback("hideOobeDialog", &CoreOobeHandler::HandleHideOobeDialog);
   AddCallback("updateOobeUIState", &CoreOobeHandler::HandleUpdateOobeUIState);
+  AddCallback("enableShelfButtons", &CoreOobeHandler::HandleEnableShelfButtons);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -214,6 +215,10 @@ void CoreOobeHandler::SetShelfHeight(int height) {
   CallJS("cr.ui.Oobe.setShelfHeight", height);
 }
 
+void CoreOobeHandler::SetOrientation(bool is_horizontal) {
+  CallJS("cr.ui.Oobe.setOrientation", is_horizontal);
+}
+
 void CoreOobeHandler::HandleInitialized() {
   VLOG(3) << "CoreOobeHandler::HandleInitialized";
   GetOobeUI()->InitializeHandlers();
@@ -231,6 +236,11 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
 void CoreOobeHandler::HandleHideOobeDialog() {
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->HideOobeDialog();
+}
+
+void CoreOobeHandler::HandleEnableShelfButtons(bool enable) {
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->SetShelfButtonsEnabled(enable);
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting() {
@@ -348,6 +358,8 @@ void CoreOobeHandler::UpdateClientAreaSize() {
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
   SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
+  if (features::IsNewOobeLayoutEnabled())
+    SetOrientation(/*is_horizontal= */ size.width() > size.height());
 }
 
 void CoreOobeHandler::SetDialogPaddingMode(

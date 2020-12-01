@@ -212,11 +212,16 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) InstallAttributes {
   // errors (cryptohomed startup is slow).
   void TriggerConsistencyCheck(int dbus_retries);
 
-  // Callback for `GetTpmNonsensitiveStatus()` DBUS call.  Generates UMA or
+  // Callback for `GetTpmNonsensitiveStatus()` D-Bus call. Generates UMA or
   // schedules retry in case of DBUS error.
   void OnTpmStatusComplete(
       int dbus_retries_remaining,
       const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply);
+
+  // Callback for `ClearStoredOwnerPassword()` D-Bus call. Logs status code if
+  // the call fails.
+  void OnClearStoredOwnerPassword(
+      const ::tpm_manager::ClearStoredOwnerPasswordReply& reply);
 
   CryptohomeClient* cryptohome_client_;
 

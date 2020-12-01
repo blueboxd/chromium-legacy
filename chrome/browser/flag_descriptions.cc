@@ -46,13 +46,6 @@ const char kAllowInsecureLocalhostDescription[] =
     "Allows requests to localhost over HTTPS even when an invalid certificate "
     "is presented.";
 
-const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[] =
-    "Allow Signed HTTP Exchange certificates without extension";
-const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
-    "Accepts Origin-Signed HTTP Exchanges to be signed with certificates "
-    "that do not have CanSignHttpExchangesDraft extension. Warning: Enabling "
-    "this may pose a security risk.";
-
 const char kAllowSyncXHRInPageDismissalName[] =
     "Allows synchronous XHR requests in page dismissal";
 const char kAllowSyncXHRInPageDismissalDescription[] =
@@ -799,6 +792,10 @@ const char kDownloadLaterDebugOnWifiNameDescription[] =
 const char kEnableLayoutNGName[] = "Enable LayoutNG";
 const char kEnableLayoutNGDescription[] =
     "Enable Blink's next generation layout engine.";
+
+const char kEnableLayoutNGTableName[] = "Enable TableNG";
+const char kEnableLayoutNGTableDescription[] =
+    "Enable Blink's next generation table layout.";
 
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
@@ -1687,6 +1684,11 @@ const char kOmniboxWebUIOmniboxPopupName[] = "WebUI Omnibox Popup";
 const char kOmniboxWebUIOmniboxPopupDescription[] =
     "If enabled, uses WebUI to render the omnibox suggestions popup, similar "
     "to how the NTP \"realbox\" is implemented.";
+
+const char kEnableSearchPrefetchName[] = "Search Prefetch";
+const char kEnableSearchPrefetchDescription[] =
+    "Allow the default search engine to specify prefetch behavior for "
+    "suggestions to search results pages.";
 
 const char kOopRasterizationName[] = "Out of process rasterization";
 const char kOopRasterizationDescription[] =
@@ -3257,6 +3259,10 @@ const char kWalletRequiresFirstSyncSetupCompleteDescription[] =
     "Controls whether the Wallet (GPay) integration on Android requires "
     "first-sync-setup to be complete. Only has an effect if "
     "enable-autofill-account-wallet-storage is also enabled.";
+
+const char kWebFeedName[] = "Web Feed";
+const char kWebFeedDescription[] =
+    "Allows users to keep up with and consume web content.";
 
 // Non-Android -----------------------------------------------------------------
 

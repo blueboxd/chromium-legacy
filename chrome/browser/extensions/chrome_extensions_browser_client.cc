@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
@@ -208,7 +209,7 @@ void ChromeExtensionsBrowserClient::LoadResourceFromResourceBundle(
 }
 
 bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
-    const GURL& url,
+    const network::ResourceRequest& request,
     blink::mojom::ResourceType resource_type,
     ui::PageTransition page_transition,
     int child_id,
@@ -218,7 +219,7 @@ bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const ProcessMap& process_map) {
   bool allowed = false;
   if (chrome_url_request_util::AllowCrossRendererResourceLoad(
-          url, resource_type, page_transition, child_id, is_incognito,
+          request, resource_type, page_transition, child_id, is_incognito,
           extension, extensions, process_map, &allowed)) {
     return allowed;
   }
@@ -579,6 +580,13 @@ bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
 bool ChromeExtensionsBrowserClient::IsScreenshotRestricted(
     content::WebContents* web_contents) const {
   return tabs_util::IsScreenshotRestricted(web_contents);
+}
+
+bool ChromeExtensionsBrowserClient::IsValidTabId(
+    content::BrowserContext* context,
+    int tab_id) const {
+  return ExtensionTabUtil::GetTabById(
+      tab_id, context, true /* include_incognito */, nullptr /* contents */);
 }
 
 // static

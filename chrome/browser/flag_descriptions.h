@@ -66,9 +66,6 @@ extern const char kAlignFontDisplayAutoTimeoutWithLCPGoalDescription[];
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
-extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
-extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
-
 extern const char kAllowSyncXHRInPageDismissalName[];
 extern const char kAllowSyncXHRInPageDismissalDescription[];
 
@@ -458,6 +455,9 @@ extern const char kEnableImplicitRootScrollerDescription[];
 
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
+
+extern const char kEnableLayoutNGTableName[];
+extern const char kEnableLayoutNGTableDescription[];
 
 extern const char kEnableLazyFrameLoadingName[];
 extern const char kEnableLazyFrameLoadingDescription[];
@@ -984,6 +984,9 @@ extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
 extern const char kOmniboxWebUIOmniboxPopupName[];
 extern const char kOmniboxWebUIOmniboxPopupDescription[];
+
+extern const char kEnableSearchPrefetchName[];
+extern const char kEnableSearchPrefetchDescription[];
 
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
@@ -1879,6 +1882,9 @@ extern const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[];
 
 extern const char kWalletRequiresFirstSyncSetupCompleteName[];
 extern const char kWalletRequiresFirstSyncSetupCompleteDescription[];
+
+extern const char kWebFeedName[];
+extern const char kWebFeedDescription[];
 
 // Non-Android ----------------------------------------------------------------
 

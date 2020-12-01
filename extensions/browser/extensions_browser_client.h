@@ -27,7 +27,6 @@
 #include "ui/base/page_transition_types.h"
 
 class ExtensionFunctionRegistry;
-class GURL;
 class PrefService;
 
 namespace base {
@@ -177,7 +176,7 @@ class ExtensionsBrowserClient {
   // in renderer B. For example, Chrome overrides this to provide support for
   // webview and dev tools. May be called on either the UI or IO thread.
   virtual bool AllowCrossRendererResourceLoad(
-      const GURL& url,
+      const network::ResourceRequest& request,
       blink::mojom::ResourceType resource_type,
       ui::PageTransition page_transition,
       int child_id,
@@ -370,6 +369,9 @@ class ExtensionsBrowserClient {
   // Returns whether screenshot of |web_contents| is restricted due to Data Leak
   // Protection policy.
   virtual bool IsScreenshotRestricted(content::WebContents* web_contents) const;
+
+  // Returns true if the given |tab_id| exists.
+  virtual bool IsValidTabId(content::BrowserContext* context, int tab_id) const;
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

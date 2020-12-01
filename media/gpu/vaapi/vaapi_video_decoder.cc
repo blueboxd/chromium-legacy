@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
@@ -162,7 +164,8 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
       std::move(init_cb).Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
       return;
     }
-    if (config.codec() != kCodecH264 && config.codec() != kCodecVP9) {
+    if (config.codec() != kCodecH264 && config.codec() != kCodecVP9 &&
+        config.codec() != kCodecHEVC) {
       VLOGF(1)
           << "Vaapi decoder does not support this codec for encrypted content";
       std::move(init_cb).Run(StatusCode::kEncryptedContentUnsupported);
@@ -172,6 +175,14 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     cdm_event_cb_registration_ = cdm_context_->RegisterEventCB(
         base::BindRepeating(&VaapiVideoDecoder::OnCdmContextEvent,
                             weak_this_factory_.GetWeakPtr()));
+#endif
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+  } else if (config.codec() == kCodecHEVC &&
+             !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableClearHevcForTesting)) {
+    DVLOG(1) << "Clear HEVC content is not supported";
+    std::move(init_cb).Run(StatusCode::kClearContentUnsupported);
+    return;
 #endif
   }
 
@@ -685,12 +696,12 @@ Status VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   DVLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  VaapiVideoDecoderDelegate::ProtectedSessionUpdateCB protected_update_cb =
+      BindToCurrentLoop(base::BindRepeating(
+          &VaapiVideoDecoder::ProtectedSessionUpdate, weak_this_));
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     auto accelerator = std::make_unique<H264VaapiVideoDecoderDelegate>(
-        this, vaapi_wrapper_,
-        BindToCurrentLoop(base::BindRepeating(
-            &VaapiVideoDecoder::ProtectedSessionUpdate, weak_this_)),
-        cdm_context_);
+        this, vaapi_wrapper_, std::move(protected_update_cb), cdm_context_);
     decoder_delegate_ = accelerator.get();
 
     decoder_.reset(
@@ -703,10 +714,7 @@ Status VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
     decoder_.reset(new VP8Decoder(std::move(accelerator)));
   } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
     auto accelerator = std::make_unique<VP9VaapiVideoDecoderDelegate>(
-        this, vaapi_wrapper_,
-        BindToCurrentLoop(base::BindRepeating(
-            &VaapiVideoDecoder::ProtectedSessionUpdate, weak_this_)),
-        cdm_context_);
+        this, vaapi_wrapper_, std::move(protected_update_cb), cdm_context_);
     decoder_delegate_ = accelerator.get();
 
     decoder_.reset(
@@ -714,8 +722,8 @@ Status VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   }
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   else if (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX) {
-    auto accelerator =
-        std::make_unique<H265VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    auto accelerator = std::make_unique<H265VaapiVideoDecoderDelegate>(
+        this, vaapi_wrapper_, std::move(protected_update_cb), cdm_context_);
     decoder_delegate_ = accelerator.get();
 
     decoder_.reset(

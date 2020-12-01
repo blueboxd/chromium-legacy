@@ -267,7 +267,7 @@ void AccessibilityHitTestingBrowserTest::SimulatePinchZoom(
 std::string
 AccessibilityHitTestingBrowserTest::FormatHitTestAccessibilityTree() {
   std::unique_ptr<AXTreeFormatter> accessibility_tree_formatter =
-      AccessibilityTreeFormatterBlink::CreateBlink();
+      AXInspectFactory::CreateBlinkFormatter();
   accessibility_tree_formatter->set_show_ids(true);
   accessibility_tree_formatter->SetPropertyFilters(
       {{"name=*", ui::AXPropertyFilter::ALLOW},
@@ -471,13 +471,12 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
                                                 "rectF");
 
-  FrameTreeVisualizer visualizer;
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
       "   +--Site B ------- proxies for A\n"
       "Where A = http://a.com/\n"
       "      B = http://b.com/",
-      visualizer.DepictFrameTree(root));
+      DepictFrameTree(*root));
 
   // Before scrolling.
   {

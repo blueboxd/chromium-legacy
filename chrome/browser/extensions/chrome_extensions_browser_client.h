@@ -82,7 +82,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       const std::string& content_security_policy,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool send_cors_header) override;
-  bool AllowCrossRendererResourceLoad(const GURL& url,
+  bool AllowCrossRendererResourceLoad(const network::ResourceRequest& request,
                                       blink::mojom::ResourceType resource_type,
                                       ui::PageTransition page_transition,
                                       int child_id,
@@ -159,6 +159,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                           content::BrowserContext* context) override;
   bool IsScreenshotRestricted(
       content::WebContents* web_contents) const override;
+  bool IsValidTabId(content::BrowserContext* context,
+                    int tab_id) const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
 

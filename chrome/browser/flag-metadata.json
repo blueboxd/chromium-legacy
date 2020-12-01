@@ -90,13 +90,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "allow-sxg-certs-without-extension",
-    "owners": [ "//content/browser/web_package/OWNERS" ],
-    // Used by developers for testing signed exchange loading using normal
-    // certs. See https://crbug.com/862003
-    "expiry_milestone": 92
-  },
-  {
     "name": "allow-sync-xhr-in-page-dismissal",
     "owners": [ "kdillon@chromium.org" ],
     "expiry_milestone": 88
@@ -1938,7 +1931,7 @@
   {
     "name": "enable-notification-indicator",
     "owners": [ "mmourgos", "newcomer" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "enable-offline-previews",
@@ -2267,6 +2260,11 @@
     "name": "enable-tab-to-gts-animation",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "enable-table-ng",
+    "owners": [ "atotic@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "enable-text-fragment-anchor",
@@ -4229,6 +4227,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "search-prefetch",
+    "owners": ["ryansturm"],
+    "expiry_milestone": 95
+  },
+  {
     "name": "select-to-speak-navigation-control",
     "owners": [ "joelriley" ],
     "expiry_milestone": 89
@@ -4845,6 +4848,11 @@
     "name": "web-contents-occlusion",
     "owners": [ "davidbienvenu", "fdoray" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "web-feed",
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 99
   },
   {
     "name": "web-otp-backend",

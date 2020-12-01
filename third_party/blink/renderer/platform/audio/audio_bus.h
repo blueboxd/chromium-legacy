@@ -80,9 +80,9 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   // Channels
   unsigned NumberOfChannels() const { return channels_.size(); }
 
-  AudioChannel* Channel(unsigned channel) { return channels_[channel].get(); }
+  AudioChannel* Channel(unsigned channel) { return &channels_[channel]; }
   const AudioChannel* Channel(unsigned channel) const {
-    return channels_[channel].get();
+    return &channels_[channel];
   }
   AudioChannel* ChannelByType(unsigned type);
   const AudioChannel* ChannelByType(unsigned type) const;
@@ -165,9 +165,7 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   static scoped_refptr<AudioBus> GetDataResource(int resource_id,
                                                  float sample_rate);
 
- protected:
-  AudioBus() = default;
-
+ private:
   AudioBus(unsigned number_of_channels, uint32_t length, bool allocate);
 
   void DiscreteSumFrom(const AudioBus&);
@@ -178,11 +176,10 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   void SumFromByDownMixing(const AudioBus&);
 
   uint32_t length_;
-  Vector<std::unique_ptr<AudioChannel>> channels_;
+  Vector<AudioChannel, 2> channels_;
   int layout_;
   float sample_rate_;  // 0.0 if unknown or N/A
 
- private:
   DISALLOW_COPY_AND_ASSIGN(AudioBus);
 };
 

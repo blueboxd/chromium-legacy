@@ -185,7 +185,22 @@ Polymer({
      * The key to retrieve the appropriate string to display in the toast.
      * @private {string}
      */
-    toastMessageKey_: String,
+    toastMessageKey_: {
+      type: String,
+      observer: 'onToastMessageKeyChange_',
+    },
+
+    /** @private {boolean} */
+    showToastInfoIcon_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {boolean} */
+    showToastHelpLink_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @override */
@@ -253,6 +268,21 @@ Polymer({
     }
 
     this.statusText_ = 'Scan failed.';
+    this.setAppState_(AppState.READY);
+  },
+
+  /**
+   * Overrides chromeos.scanning.mojom.ScanJobObserverInterface.
+   * @param {boolean} success
+   */
+  onCancelComplete(success) {
+    // If the cancel request fails, continue showing the scan progress page.
+    if (!success) {
+      this.showToast_('cancelFailedToastText');
+      return;
+    }
+
+    this.showToast_('scanCanceledToastText');
     this.setAppState_(AppState.READY);
   },
 
@@ -414,16 +444,8 @@ Polymer({
   /** @private */
   onCancelClick_() {
     assert(this.appState_ === AppState.SCANNING);
-
     this.scanService_.cancelScan();
-    this.setAppState_(AppState.READY);
   },
-
-  /**
-   * Overrides chromeos.scanning.mojom.ScanJobObserverInterface.
-   * @param {boolean} success
-   */
-  onCancelComplete(success) {},
 
   /**
    * Revokes and removes all of the object URLs.
@@ -487,5 +509,11 @@ Polymer({
   showToast_(toastMessageKey) {
     this.toastMessageKey_ = toastMessageKey;
     this.$.toast.show();
+  },
+
+  /** @private */
+  onToastMessageKeyChange_() {
+    this.showToastInfoIcon_ = this.toastMessageKey_ !== 'scanCanceledToastText';
+    this.showToastHelpLink_ = this.toastMessageKey_ !== 'scanCanceledToastText';
   },
 });

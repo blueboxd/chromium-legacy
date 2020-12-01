@@ -47,7 +47,6 @@ class PendingAppInstallTask {
 
     const InstallResultCode code;
     const base::Optional<AppId> app_id;
-
   };
 
   using ResultCallback = base::OnceCallback<void(Result)>;

@@ -1742,8 +1742,6 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in
 crbug.com/381684 [ Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
 
-crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
-
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
 # No support for WPT print-reftests:
@@ -1769,7 +1767,6 @@ crbug.com/555703 [ Fuchsia ] virtual/media-gpu-accelerated/* [ Skip ]
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
-crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
 
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
@@ -2578,12 +2575,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection-no-sink.https.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
-crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.worker.html [ Timeout ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/request/request-bad-port.any.worker.html [ Timeout ]
-crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.sharedworker.html [ Timeout ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/request/request-bad-port.any.sharedworker.html [ Timeout ]
-crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.html [ Timeout ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/request/request-bad-port.any.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-element-and-another-list.tentative.html?Backspace [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Backspace,ul [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-elements.tentative.html?Backspace [ Timeout ]
@@ -5147,13 +5138,6 @@ crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Fa
 crbug.com/994692 [ Linux ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 crbug.com/994692 [ Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 
-# Video flakily not being being rendered on Mac
-crbug.com/988248 media/controls/captions-menu-always-visible.html [ Pass Failure ]
-crbug.com/988248 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
-crbug.com/988248 [ Mac ] media/video-persistence.html [ Pass Failure ]
-crbug.com/988248 [ Linux ] media/video-persistence.html [ Pass Failure ]
-crbug.com/988248 [ Mac ] media/video-zoom.html [ Pass Failure ]
-
 crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
 # Sheriff 2019-08-22
@@ -5277,8 +5261,6 @@ crbug.com/1029941 [ Win ] external/wpt/css/css-paint-api/background-image-alpha.
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
 
 crbug.com/1134464 http/tests/images/document-policy/document-policy-oversized-images-edge-cases.php [ Pass Timeout ]
-
-crbug.com/1151954 http/tests/permissions-policy/permissions-policy-in-xsl.php [ Failure ]
 
 # Skipping because of unimplemented behaviour
 crbug.com/965495 external/wpt/feature-policy/experimental-features/focus-without-user-activation-enabled-tentative.sub.html [ Skip ]
@@ -5490,9 +5472,6 @@ crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resourc
 
 # Sheriff 2020-02-19
 crbug.com/1053903 external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Failure Timeout ]
-
-# Sheriff 2020-02-21
-crbug.com/1054977 media/video-controls-rendering.html [ Pass Failure ]
 
 # Sheriff 2020-02-28
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
@@ -5875,7 +5854,6 @@ crbug.com/1143929 svg/transforms/text-with-mask-with-svg-transform.svg [ Pass Fa
 
 # Sheriff 2020-09-29
 crbug.com/1133342 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/reporting-observer.html [ Pass Failure Timeout ]
-crbug.com/1083605 media/controls-styling-strict.html [ Pass Failure ]
 
 # Transform animation reftests
 crbug.com/1133901 virtual/threaded/external/wpt/css/css-transforms/animation/transform-interpolation-translate-em.html [ Failure ]
@@ -6013,3 +5991,12 @@ crbug.com/1134459 accessibility/aom-click-action.html [ Pass Timeout ]
 #Sheriff 2020-11-26
 crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/931646 [ Mac ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
+
+# These tests will only run in the virtual test suite where the frequency
+# capping for overlay popup detection is disabled. This eliminates the need
+# for waitings in web tests to trigger a detection event.
+crbug.com/1032681 http/tests/subresource_filter/overlay_popup_ad/* [ Skip ]
+crbug.com/1032681 virtual/disable-frequency-capping-for-overlay-popup-detection/http/tests/subresource_filter/overlay_popup_ad/* [ Pass ]
+
+#Sheriff 2020-12-01
+crbug.com/1153626 http/tests/wasm/wasm_worker_termination_while_compiling.html [ Pass Crash ]

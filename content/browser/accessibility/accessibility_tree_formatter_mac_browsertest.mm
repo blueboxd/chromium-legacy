@@ -59,7 +59,8 @@ void AccessibilityTreeFormatterMacBrowserTest::TestAndCheck(
   waiter.WaitForNotification();
 
   std::unique_ptr<ui::AXTreeFormatter> formatter =
-      AccessibilityTreeFormatter::Create();
+      AXInspectFactory::CreatePlatformFormatter();
+
   std::vector<ui::AXPropertyFilter> property_filters;
 
   for (const char* filter : filters) {
@@ -184,6 +185,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        ParameterizedAttributes_IntArray) {
+  // This line is needed until we turn extra mac nodes back on by default.
+  BrowserAccessibilityManager::AllowExtraMacNodesForTesting();
+
   TestAndCheck(R"~~(data:text/html,
                     <table role="grid"><tr><td>CELL</td></tr></table>)~~",
                {"AXCellForColumnAndRow([0, 0])=*"}, R"~~(AXWebArea
@@ -200,6 +204,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        ParameterizedAttributes_IntArray_NilValue) {
+  // This line is needed until we turn extra mac nodes back on by default.
+  BrowserAccessibilityManager::AllowExtraMacNodesForTesting();
+
   TestAndCheck(R"~~(data:text/html,
                     <table role="grid"></table>)~~",
                {"AXCellForColumnAndRow([0, 0])=*"}, R"~~(AXWebArea
@@ -210,6 +217,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        ParameterizedAttributes_IntArray_WrongParameters) {
+  // This line is needed until we turn extra mac nodes back on by default.
+  BrowserAccessibilityManager::AllowExtraMacNodesForTesting();
+
   TestWrongParameters(R"~~(data:text/html,
                            <table role="grid"><tr><td>CELL</td></tr></table>)~~",
                       {"0, 0", "{1, 2}", "[1, NaN]", "[NaN, 1]"},

@@ -168,7 +168,40 @@ TEST(AutofillStructuredAddress, ParseStreetAddress) {
        .street_name = "Av. Paulista",
        .house_number = "1098",
        .floor = "1",
-       .apartment = "101"}};
+       .apartment = "101"},
+      // Examples for Mexico.
+      {.street_address = "Street Name 12 - Piso 13 - 14",
+       .street_name = "Street Name",
+       .house_number = "12",
+       .floor = "13",
+       .apartment = "14"},
+      {.street_address = "Street Name 12 - 14",
+       .street_name = "Street Name",
+       .house_number = "12",
+       .floor = "",
+       .apartment = "14"},
+      {.street_address = "Street Name 12 - Piso 13",
+       .street_name = "Street Name",
+       .house_number = "12",
+       .floor = "13",
+       .apartment = ""},
+      // Examples for Spain.
+      {.street_address = "Street Name 1, 2º, 3ª",
+       .street_name = "Street Name",
+       .house_number = "1",
+       .floor = "2",
+       .apartment = "3"},
+      {.street_address = "Street Name 1, 2º",
+       .street_name = "Street Name",
+       .house_number = "1",
+       .floor = "2",
+       .apartment = ""},
+      {.street_address = "Street Name 1, 3ª",
+       .street_name = "Street Name",
+       .house_number = "1",
+       .floor = "",
+       .apartment = "3"},
+  };
 
   for (const auto& test_case : test_cases)
     TestAddressLineParsing(test_case);
@@ -228,7 +261,46 @@ TEST(AutofillStructuredAddress, TestStreetAddressFormatting) {
        .street_name = "Amphitheatre Parkway",
        .house_number = "1600",
        .floor = "6",
-       .apartment = "12"}};
+       .apartment = "12"},
+      // Examples for Mexico.
+      {.country_code = "MX",
+       .street_address = "StreetName 12 - Piso 13 - 14",
+       .street_name = "StreetName",
+       .house_number = "12",
+       .floor = "13",
+       .apartment = "14"},
+      {.country_code = "MX",
+       .street_address = "StreetName 12 - 14",
+       .street_name = "StreetName",
+       .house_number = "12",
+       .floor = "",
+       .apartment = "14"},
+      {.country_code = "MX",
+       .street_address = "StreetName 12 - Piso 13",
+       .street_name = "StreetName",
+       .house_number = "12",
+       .floor = "13",
+       .apartment = ""},
+      // Examples for Spain.
+      {.country_code = "ES",
+       .street_address = "Street Name 1, 3ª",
+       .street_name = "Street Name",
+       .house_number = "1",
+       .floor = "",
+       .apartment = "3"},
+      {.country_code = "ES",
+       .street_address = "Street Name 1, 2º",
+       .street_name = "Street Name",
+       .house_number = "1",
+       .floor = "2",
+       .apartment = ""},
+      {.country_code = "ES",
+       .street_address = "Street Name 1, 2º, 3ª",
+       .street_name = "Street Name",
+       .house_number = "1",
+       .floor = "2",
+       .apartment = "3"},
+  };
 
   for (const auto& test_case : test_cases)
     TestAddressLineFormatting(test_case);
@@ -481,6 +553,67 @@ TEST(AutofillStructuredAddress, TestMigrationAndFinalization_AlreadyMigrated) {
   // Verify that the address was not changed by the migration.
   VerifyTestValues(&address, test_values);
 }
+
+// Tests that a valid address structure is not wiped.
+TEST(AutofillStructuredAddress,
+     TestWipingAnInvalidSubstructure_ValidStructure) {
+  Address address;
+  AddressComponentTestValues address_with_valid_structure = {
+      // This structure is valid because all structured components are contained
+      // in the unstructured representation.
+      {.type = ADDRESS_HOME_STREET_ADDRESS,
+       .value = "123 Street name",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_STREET_NAME,
+       .value = "Street name",
+       .status = VerificationStatus::kParsed},
+      {.type = ADDRESS_HOME_HOUSE_NUMBER,
+       .value = "123",
+       .status = VerificationStatus::kParsed},
+  };
+
+  SetTestValues(&address, address_with_valid_structure, /*finalize=*/false);
+
+  EXPECT_FALSE(address.WipeInvalidStructure());
+  VerifyTestValues(&address, address_with_valid_structure);
+}
+
+// Tests that an invalid address structure is wiped.
+TEST(AutofillStructuredAddress,
+     TestWipingAnInvalidSubstructure_InValidStructure) {
+  Address address;
+  AddressComponentTestValues address_with_valid_structure = {
+      {.type = ADDRESS_HOME_STREET_ADDRESS,
+       .value = "Some other name",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_STREET_NAME,
+       .value = "Street name",
+       .status = VerificationStatus::kParsed},
+      // The structure is invalid, because the house number is not contained in
+      // the unstructured street address.
+      {.type = ADDRESS_HOME_HOUSE_NUMBER,
+       .value = "123",
+       .status = VerificationStatus::kParsed},
+  };
+
+  SetTestValues(&address, address_with_valid_structure, /*finalize=*/false);
+
+  EXPECT_TRUE(address.WipeInvalidStructure());
+
+  AddressComponentTestValues address_with_wiped_structure = {
+      {.type = ADDRESS_HOME_STREET_ADDRESS,
+       .value = "Some other name",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_STREET_NAME,
+       .value = "",
+       .status = VerificationStatus::kNoStatus},
+      {.type = ADDRESS_HOME_HOUSE_NUMBER,
+       .value = "",
+       .status = VerificationStatus::kNoStatus},
+  };
+  VerifyTestValues(&address, address_with_wiped_structure);
+}
+
 }  // namespace
 }  // namespace structured_address
 }  // namespace autofill

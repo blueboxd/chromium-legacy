@@ -336,6 +336,8 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android-lollipop-arm-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
+    cores = 16,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -1223,6 +1225,11 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "tricium-oilpan-analysis",
+    executable = "recipe:tricium_oilpan",
+)
+
+try_.chromium_linux_builder(
     name = "tricium-simple",
     executable = "recipe:tricium_simple",
 )
@@ -1402,9 +1409,9 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
-    caches = [xcode_cache.x12b5035g],
+    caches = [xcode_cache.x12b5044c],
     properties = {
-        "xcode_build_version": "12b5035g",
+        "xcode_build_version": "12b5044c",
     },
 )
 

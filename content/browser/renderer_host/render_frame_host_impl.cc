@@ -7754,8 +7754,8 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
           worker_process_id,
           /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
           /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
-          last_committed_origin_, cross_origin_embedder_policy_,
-          std::move(coep_reporter)),
+          last_committed_origin_, GetNetworkIsolationKey(),
+          cross_origin_embedder_policy_, std::move(coep_reporter)),
       std::move(receiver));
 }
 
@@ -8633,6 +8633,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                   ukm_recorder);
   }
 
+  if (!is_same_document_navigation) {
+    DCHECK_EQ(navigation_request->IsOverridingUserAgent() &&
+                  frame_tree_node_->IsMainFrame(),
+              params->is_overriding_user_agent);
+  } else {
+    DCHECK_EQ(is_overriding_user_agent_, params->is_overriding_user_agent);
+  }
+
   // TODO(https://crbug.com/1131832): Do not pass |params| to DidNavigate().
   frame_tree_node()->navigator().DidNavigate(this, *params,
                                              std::move(navigation_request),
@@ -8753,6 +8761,9 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   // the |navigation_request|, which was generated and stays browser side.
   is_mhtml_document_ = navigation_request->IsWaitingToCommit() &&
                        navigation_request->IsLoadedFromMhtmlArchive();
+
+  is_overriding_user_agent_ = navigation_request->IsOverridingUserAgent() &&
+                              frame_tree_node_->IsMainFrame();
 
   RecordCrossOriginIsolationMetrics(this);
 

@@ -215,15 +215,14 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* ComputeParent() const override;
   AXObject* ComputeParentIfExists() const override;
 
-  // Low-level accessibility tree exploration.
-  AXObject* RawFirstChild() const override;
-  AXObject* RawNextSibling() const override;
   void AddChildren() override;
 
   bool CanHaveChildren() const override;
   // Set is_from_aria_owns to true if the child is being added because it was
   // pointed to from aria-owns.
   void AddChild(AXObject*, bool is_from_aria_owns = false);
+  // If node is non-null, GetOrCreate an AXObject for it and add as a child.
+  void AddNodeChild(Node*);
   // Set is_from_aria_owns to true if the child is being insert because it was
   // pointed to from aria-owns.
   void InsertChild(AXObject*, unsigned index, bool is_from_aria_owns = false);
@@ -310,14 +309,15 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsDescendantOfElementType(HashSet<QualifiedName>& tag_names) const;
   String PlaceholderFromNativeAttribute() const;
 
+  void AddNodeChildren();
+  void AddLayoutChildren();
   void AddInlineTextBoxChildren(bool force);
   void AddImageMapChildren();
   void AddPopupChildren();
   void AddRemoteSVGChildren();
+  bool IsHtmlTable() const;
   void AddTableChildren();
   void AddValidationMessageChild();
-  // For some nodes, only LayoutBuilderTraversal visits the necessary children.
-  bool ShouldUseLayoutBuilderTraversal() const override;
   ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
 
   DISALLOW_COPY_AND_ASSIGN(AXNodeObject);

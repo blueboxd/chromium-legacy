@@ -470,6 +470,14 @@ ci.builder(
             #    'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
             #},
             {
+                "sdk_package_name": "system-images;android-27;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-27/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-27;google_apis_playstore;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-27/google_apis_playstore/x86.yaml",
+            },
+            {
                 "sdk_package_name": "system-images;android-29;google_apis;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-29/google_apis/x86.yaml",
             },
@@ -2581,6 +2589,28 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = "linux-paeverywhere-x64-fyi-dbg",
+    builderless = True,
+    console_view_entry = ci.console_view_entry(
+        category = "paeverywhere|linux",
+        short_name = "64dbg",
+    ),
+    notifies = ["chrome-memory-safety"],
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "linux-paeverywhere-x64-fyi-rel",
+    builderless = True,
+    console_view_entry = ci.console_view_entry(
+        category = "paeverywhere|linux",
+        short_name = "64rel",
+    ),
+    notifies = ["chrome-memory-safety"],
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
     name = "linux-perfetto-rel",
     console_view_entry = ci.console_view_entry(
         category = "linux",
@@ -2730,6 +2760,28 @@ ci.updater_builder(
         short_name = "11.0 arm64",
     ),
     triggered_by = ["mac-updater-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "mac-paeverywhere-x64-fyi-dbg",
+    builderless = True,
+    console_view_entry = ci.console_view_entry(
+        category = "paeverywhere|mac",
+        short_name = "64dbg",
+    ),
+    notifies = ["chrome-memory-safety"],
+    os = os.MAC_ANY,
+)
+
+ci.fyi_builder(
+    name = "mac-paeverywhere-x64-fyi-rel",
+    builderless = True,
+    console_view_entry = ci.console_view_entry(
+        category = "paeverywhere|mac",
+        short_name = "64rel",
+    ),
+    notifies = ["chrome-memory-safety"],
+    os = os.MAC_ANY,
 )
 
 ci.updater_builder(
@@ -3116,9 +3168,9 @@ ci.fyi_ios_builder(
         category = "iOS|iOS14",
         short_name = "sdk14",
     ),
-    caches = [xcode_cache.x12b5035g],
+    caches = [xcode_cache.x12b5044c],
     properties = {
-        "xcode_build_version": "12b5035g",
+        "xcode_build_version": "12b5044c",
     },
 )
 

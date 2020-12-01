@@ -204,10 +204,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 #   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAP_SCALE
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_CANVASMATRIX33
-#define SK_SUPPORT_LEGACY_CANVASMATRIX33
-#endif
-
 #ifndef SK_DISABLE_LEGACY_CONTEXT_FACTORIES
 #define SK_DISABLE_LEGACY_CONTEXT_FACTORIES
 #endif
@@ -235,10 +231,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #ifndef SK_SUPPORT_LEGACY_ADJUSTHQHEURISTIC
 #define SK_SUPPORT_LEGACY_ADJUSTHQHEURISTIC
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_SCALEPIXELS_PARAM
-#define SK_SUPPORT_LEGACY_SCALEPIXELS_PARAM
 #endif
 
 // Staging for lowp::bilerp_clamp_8888, and for planned misc. others.

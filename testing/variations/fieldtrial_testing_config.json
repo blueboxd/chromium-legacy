@@ -842,6 +842,27 @@
             ]
         }
     ],
+    "AutofillNameSectionsWithRendererIds": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillNameSectionsWithRendererIds"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillProfileValidation": [
         {
             "platforms": [
@@ -899,6 +920,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillPruneSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillRefillWithRendererIds": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillRefillWithRendererIds"
                     ]
                 }
             ]
@@ -2055,6 +2097,21 @@
             ]
         }
     ],
+    "DecoupleSyncFromAndroidMasterSync": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20201130",
+                    "enable_features": [
+                        "DecoupleSyncFromAndroidMasterSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "DeepScanningForAppUsers": [
         {
             "platforms": [
@@ -3078,22 +3135,6 @@
             ]
         }
     ],
-    "GestureNavigation": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OverscrollHistoryNavigation"
-                    ]
-                }
-            ]
-        }
-    ],
     "GlobalMediaControlsInProductHelp": [
         {
             "platforms": [
@@ -4057,6 +4098,26 @@
                         "LoadingPredictorPrefetch",
                         "LoadingPredictorUseLocalPredictions",
                         "LoadingPredictorUseOptimizationGuide"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LookalikeTargetEmbeddingHeuristic": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TargetEmbeddingLookalikes"
                     ]
                 }
             ]
@@ -6761,7 +6822,10 @@
     "TabSearch": [
         {
             "platforms": [
-                "chromeos"
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {

@@ -236,11 +236,18 @@ LayoutUnit InlineSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                      const LogicalSize& aspect_ratio,
                                      EBoxSizing box_sizing,
                                      LayoutUnit block_size) {
-  if (box_sizing == EBoxSizing::kBorderBox)
-    return block_size * aspect_ratio.inline_size / aspect_ratio.block_size;
+  // TODO(dgrogan/ikilpatrick): These calculations might need to be done in
+  // integer space, in a potential BoundedMultiplyAndDivide(LayoutUnit,
+  // LayoutUnit, LayoutUnit) function.
+  if (box_sizing == EBoxSizing::kBorderBox) {
+    return LayoutUnit::FromDoubleRound(block_size *
+                                       aspect_ratio.inline_size.ToDouble() /
+                                       aspect_ratio.block_size.ToDouble());
+  }
 
-  return ((block_size - border_padding.BlockSum()) * aspect_ratio.inline_size /
-          aspect_ratio.block_size) +
+  return LayoutUnit::FromDoubleRound((block_size - border_padding.BlockSum()) *
+                                     aspect_ratio.inline_size.ToDouble() /
+                                     aspect_ratio.block_size.ToDouble()) +
          border_padding.InlineSum();
 }
 
@@ -248,11 +255,16 @@ LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                     const LogicalSize& aspect_ratio,
                                     EBoxSizing box_sizing,
                                     LayoutUnit inline_size) {
-  if (box_sizing == EBoxSizing::kBorderBox)
-    return inline_size * aspect_ratio.block_size / aspect_ratio.inline_size;
+  if (box_sizing == EBoxSizing::kBorderBox) {
+    return LayoutUnit::FromDoubleRound(inline_size *
+                                       aspect_ratio.block_size.ToDouble() /
+                                       aspect_ratio.inline_size.ToDouble());
+  }
 
-  return ((inline_size - border_padding.InlineSum()) * aspect_ratio.block_size /
-          aspect_ratio.inline_size) +
+  return LayoutUnit::FromDoubleRound(
+             (inline_size - border_padding.InlineSum()) *
+             aspect_ratio.block_size.ToDouble() /
+             aspect_ratio.inline_size.ToDouble()) +
          border_padding.BlockSum();
 }
 
@@ -264,7 +276,8 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
     const NGBlockNode& child,
     const MinMaxSizesFunc& min_max_sizes_func) {
   const ComputedStyle& style = child.Style();
-  WritingMode child_writing_mode = style.GetWritingMode();
+  const WritingMode child_writing_mode = style.GetWritingMode();
+
   // Synthesize a zero-sized constraint space for resolving sizes against.
   NGConstraintSpace space =
       NGConstraintSpaceBuilder(child_writing_mode, style.GetWritingDirection(),
@@ -330,6 +343,13 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
   }
   result.sizes.Encompass(min);
 
+  // Tables need to apply one final constraint. They are never allowed to go
+  // below their min-intrinsic size (even if they have an inline-size, etc).
+  if (child.IsNGTable()) {
+    result.sizes.Encompass(
+        min_max_sizes_func(MinMaxSizesType::kIntrinsic).sizes.min_size);
+  }
+
   return result;
 }
 
@@ -358,7 +378,7 @@ MinMaxSizesResult ComputeMinAndMaxContentContribution(
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
     // Tables are special; even if a width is specified, they may end up being
     // sized different. So we just always let the table code handle this.
-    if (child.IsTable())
+    if (child.IsTable() && !child.IsNGTable())
       return child.ComputeMinMaxSizes(parent_writing_mode, input, nullptr);
 
     // Replaced elements may size themselves using aspect ratios and block

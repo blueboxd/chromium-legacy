@@ -3339,8 +3339,14 @@ String Internals::selectedTextForClipboard() {
 void Internals::setVisualViewportOffset(int x, int y) {
   if (!GetFrame())
     return;
+  FloatPoint offset(x, y);
 
-  GetFrame()->GetPage()->GetVisualViewport().SetLocation(FloatPoint(x, y));
+  // `setVisualViewportOffset()` inputs are in physical pixels, but
+  // `SetLocation()` gets positions in DIPs when --use-zoom-for-dsf disabled.
+  GetFrame()->GetPage()->GetVisualViewport().SetLocation(
+      Platform::Current()->IsUseZoomForDSFEnabled()
+          ? offset
+          : offset.ScaledBy(1 / GetFrame()->DevicePixelRatio()));
 }
 
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
@@ -3539,10 +3545,6 @@ bool Internals::isTrackingOcclusionForIFrame(HTMLIFrameElement* iframe) const {
     return false;
   RemoteFrame* remote_frame = To<RemoteFrame>(iframe->ContentFrame());
   return remote_frame->View()->NeedsOcclusionTracking();
-}
-
-void Internals::DisableFrequencyCappingForOverlayPopupDetection() const {
-  OverlayInterstitialAdDetector::DisableFrequencyCappingForTesting();
 }
 
 void Internals::addEmbedderCustomElementName(const AtomicString& name,

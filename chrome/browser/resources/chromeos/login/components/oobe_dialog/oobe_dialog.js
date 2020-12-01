@@ -126,6 +126,7 @@ Polymer({
   },
 
   onBeforeShow() {
+    document.documentElement.removeAttribute('new-layout');
     this.$$('#lazy').get();
     this.observeScrolling_();
   },

@@ -182,6 +182,15 @@ class FakeScanService {
     return flushTasks();
   }
 
+  /**
+   * @param {boolean} success
+   * @return {!Promise}
+   */
+  simulateCancelComplete(success) {
+    this.scanJobObserverRemote_.onCancelComplete(success);
+    return flushTasks();
+  }
+
   // scanService methods:
 
   /** @return {!Promise<{scanners: !ScannerArr}>} */
@@ -541,13 +550,87 @@ export function scanningAppTest() {
         .then(() => {
           // Click the cancel button to cancel the scan.
           cancelButton.click();
-          return fakeScanService_.cancelScan();
+          return fakeScanService_.whenCalled('cancelScan');
+        })
+        .then(() => {
+          // Simulate cancel completing successfully.
+          return fakeScanService_.simulateCancelComplete(true);
         })
         .then(() => {
           // After canceling is complete, the scan button should be visible and
           // enabled, and the cancel button shouldn't be visible.
           assertTrue(isVisible(scanButton));
           assertFalse(isVisible(cancelButton));
+          assertTrue(scanningApp.$$('#toast').open);
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#infoIcon'))));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#getHelpLink'))));
+          assertEquals(
+              scanningApp.i18n('scanCanceledToastText'),
+              scanningApp.$$('#toastText').textContent.trim());
+        });
+  });
+
+  test('CancelScanFailed', () => {
+    const expectedScanners = [
+      createScanner(firstScannerId, firstScannerName),
+    ];
+
+    let capabilities = new Map();
+    capabilities.set(firstScannerId, firstCapabilities);
+
+    /** @type {!CrButtonElement} */
+    let scanButton;
+    /** @type {!CrButtonElement} */
+    let cancelButton;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          cancelButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#cancelButton'));
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          // Click the Scan button and wait till the scan is started.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // Simulate a progress update and verify the progress bar and text are
+          // updated correctly.
+          return fakeScanService_.simulateProgress(1, 17);
+        })
+        .then(() => {
+          // Click the cancel button to cancel the scan.
+          cancelButton.click();
+          assertFalse(scanningApp.$$('#toast').open);
+          return fakeScanService_.whenCalled('cancelScan');
+        })
+        .then(() => {
+          // Simulate cancel failing.
+          return fakeScanService_.simulateCancelComplete(false);
+        })
+        .then(() => {
+          // After canceling fails, the error toast should pop up.
+          assertTrue(scanningApp.$$('#toast').open);
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#infoIcon'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#getHelpLink'))));
+          assertEquals(
+              scanningApp.i18n('cancelFailedToastText'),
+              scanningApp.$$('#toastText').textContent.trim());
+          // The scan progress page should still be showing with the cancel
+          // button visible.
+          assertTrue(
+              isVisible(scanningApp.$$('#scanPreview').$$('#scanProgress')));
+          assertTrue(isVisible(cancelButton));
+          assertFalse(
+              isVisible(scanningApp.$$('#scanPreview').$$('#helperText')));
+          assertFalse(isVisible(scanButton));
         });
   });
 
@@ -578,6 +661,10 @@ export function scanningAppTest() {
         })
         .then(() => {
           assertTrue(scanningApp.$$('#toast').open);
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#infoIcon'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#getHelpLink'))));
           assertEquals(
               scanningApp.i18n('startScanFailedToast'),
               scanningApp.$$('#toastText').textContent.trim());

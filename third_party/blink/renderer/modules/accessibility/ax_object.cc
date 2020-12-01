@@ -3519,6 +3519,22 @@ AXObject* AXObject::ContainerWidget() const {
   return ancestor;
 }
 
+bool AXObject::ShouldUseLayoutObjectTraversalForChildren() const {
+  if (!GetLayoutObject())
+    return false;
+
+  // If no node, this may be an anonymous layout object, e.g. an anonymous block
+  // that is inserted to enforce the rule that all children are blocks or all
+  // children are inlines. Anonymous blocks have a layout object but no node.
+  if (!GetNode())
+    return true;
+
+  // The only other case for using layout builder traversal is for a pseudo
+  // element, such as ::before. Pseudo element child text and images are not
+  // visibited by LayoutBuilderTraversal.
+  return GetNode()->IsPseudoElement();
+}
+
 void AXObject::UpdateChildrenIfNecessary() {
   if (!HasChildren())
     AddChildren();
@@ -4589,7 +4605,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     // if the row might receive focus
     case ax::mojom::blink::Role::kRow:
     case ax::mojom::blink::Role::kRuby:
-    case ax::mojom::blink::Role::kRubyAnnotation:
     case ax::mojom::blink::Role::kSection:
     case ax::mojom::blink::Role::kStrong:
     case ax::mojom::blink::Role::kTime:
@@ -4618,6 +4633,22 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
                      AOMRelationProperty::kActiveDescendant);
       }
       break;
+
+    case ax::mojom::blink::Role::kRubyAnnotation:
+      // Ruby annotations are removed from accessible names and instead used
+      // as a description of the parent Role::kRuby object. The benefit is that
+      // announcement of the description can be toggled on/off per user choice.
+      // In this way, ruby annotations are treated like other annotations, e.g.
+      // <mark aria-description="annotation">base text</mark>.
+      // In order to achieve the above:
+      // * When recursive is true:
+      //   Return false, so that the ruby annotation text does not contribute to
+      //   the name of the parent Role::kRuby, since it will also be in the
+      //   description of that object.
+      // * When recursive is false:
+      //   Return true, so that text is generated for the object. This text will
+      //   be assigned as the description of he parent Role::kRuby object.
+      return !recursive;
 
     case ax::mojom::blink::Role::kPdfActionableHighlight:
       LOG(ERROR) << "PDF specific highlight role, Blink shouldn't generate "

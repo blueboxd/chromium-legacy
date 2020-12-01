@@ -26,7 +26,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/accessibility_tree_formatter.h"
+#include "content/public/browser/ax_inspect_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -227,6 +227,10 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // we want all events to fire immediately to make tests predictable and not
   // flaky.
   BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting();
+
+  // Extra mac nodes are disabled temporarily for stability purposes, but keep
+  // them on for tests.
+  BrowserAccessibilityManager::AllowExtraMacNodesForTesting();
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 

@@ -29,14 +29,6 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
     "AllowContentInitiatedDataUrlNavigations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Accepts Origin-Signed HTTP Exchanges to be signed with certificates
-// that do not have CanSignHttpExchangesDraft extension.
-// TODO(https://crbug.com/862003): Remove when certificates with
-// CanSignHttpExchangesDraft extension are available from trusted CAs.
-const base::Feature kAllowSignedHTTPExchangeCertsWithoutExtension{
-    "AllowSignedHTTPExchangeCertsWithoutExtension",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Allows Blink to request fonts from the Android Downloadable Fonts API through
 // the service implemented on the Java side.
 const base::Feature kAndroidDownloadableFontsMatching{
@@ -456,14 +448,8 @@ const base::Feature kOpenXrExtendedFeatureSupport{
     "OpenXrExtendedFeatureSupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // History navigation in response to horizontal overscroll (aka gesture-nav).
-const base::Feature kOverscrollHistoryNavigation {
-  "OverscrollHistoryNavigation",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kOverscrollHistoryNavigation{
+    "OverscrollHistoryNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
@@ -649,9 +635,13 @@ const base::Feature kSignedHTTPExchangePingValidity{
     "SignedHTTPExchangePingValidity", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This is intended as a kill switch for the WebOTP Service feature. To enable
-// this feature, the experimental web platform features flag should be set,
-// or the site should obtain an Origin Trial token.
+// this feature, the experimental web platform features flag should be set.
 const base::Feature kWebOTP{"WebOTP", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables WebOTP calls in cross-origin iframes if allowed by Permissions
+// Policy.
+const base::Feature kWebOTPAssertionFeaturePolicy{
+    "WebOTPAssertionFeaturePolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether Site Isolation protects against spoofing of origin in
 // mojom::FileSystemManager::Open IPC from compromised renderer processes.  See

@@ -1285,6 +1285,8 @@ Unknown properties are collapsed to zero. -->
 <enum name="AdsViolations">
   <int value="0" label="kMobileAdDensityByHeightAbove30"/>
   <int value="1" label="kHeavyAdsInterventionAtHostLimit"/>
+  <int value="2" label="kLargeStickyAd"/>
+  <int value="3" label="kOverlayPopupAd"/>
 </enum>
 
 <enum name="AdUserActivationStatus">
@@ -30476,6 +30478,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="77" label="ClipboardWrite"/>
   <int value="78" label="WebShare"/>
   <int value="79" label="Gamepad"/>
+  <int value="80" label="OTPCredentials"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -39756,6 +39759,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Completed"/>
   <int value="1" label="Provider Selection"/>
   <int value="2" label="Media Feeds Consent"/>
+  <int value="3" label="Welcome Screen"/>
 </enum>
 
 <enum name="KaleidoscopeNavigation">
@@ -42029,6 +42033,7 @@ from previous Chrome versions.
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766162197" label="AppServiceInstanceRegistry:enabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
+  <int value="-1763899404" label="LayoutNGTable:enabled"/>
   <int value="-1760624380"
       label="ImprovedCookieControlsForThirdPartyCookieBlocking:enabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
@@ -43196,6 +43201,7 @@ from previous Chrome versions.
   <int value="-683370370" label="EnableAppDataSearch:enabled"/>
   <int value="-683306022" label="OverscrollHistoryNavigation:enabled"/>
   <int value="-682580680" label="DisableOfficeEditingComponentApp:disabled"/>
+  <int value="-681434111" label="WebFeed:disabled"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-679500267" label="UseXpsForPrinting:disabled"/>
@@ -44310,6 +44316,7 @@ from previous Chrome versions.
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
+  <int value="427184788" label="WebFeed:enabled"/>
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
@@ -45067,6 +45074,7 @@ from previous Chrome versions.
   <int value="1173244409" label="AutofillUseMobileLabelDisambiguation:enabled"/>
   <int value="1174088940" label="enable-wasm"/>
   <int value="1177120582" label="InstallableInkDrop:disabled"/>
+  <int value="1177174300" label="LayoutNGTable:disabled"/>
   <int value="1177628103" label="GaiaActionButtons:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
@@ -45457,6 +45465,7 @@ from previous Chrome versions.
   <int value="1552753678" label="DnsHttpssvc:disabled"/>
   <int value="1553310752" label="AccessibilityCursorColor:enabled"/>
   <int value="1553422694" label="EnablePalmOnMaxTouchMajor:enabled"/>
+  <int value="1553777815" label="enable-search-prefetch-service"/>
   <int value="1556554961" label="DriveFsBidirectionalNativeMessaging:enabled"/>
   <int value="1558410842" label="FilesZipNoNaCl:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
@@ -58072,6 +58081,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="User dismissed notification"/>
 </enum>
 
+<enum name="PhoneHubOptInEntryPoint">
+  <int value="0" label="New user opted in via multidevice setup flow"/>
+  <int value="1" label="User opted in via onboarding promotion"/>
+  <int value="2" label="User opted in via Settings page"/>
+</enum>
+
 <enum name="PhoneHubQuickAction">
   <int value="0" label="Toggle Hotspot On"/>
   <int value="1" label="Toggle Hotspot Off"/>
@@ -58256,6 +58271,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Canceled"/>
   <int value="4" label="Failed"/>
   <int value="5" label="Uncompleted"/>
+</enum>
+
+<enum name="PinSetupScreenUserAction">
+  <summary>Actions which happen on the screen.</summary>
+  <int value="0" label="Done button clicked"/>
+  <int value="1" label="Skip button clicked on starting page"/>
+  <int value="2" label="Skip button clicked in flow"/>
 </enum>
 
 <enum name="PipelineStatus">
@@ -59991,6 +60013,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="PreviewPageRendered with no metafile (Deprecated)"/>
   <int value="7" label="Received bad printer settings"/>
   <int value="8" label="Capture metadata failed (Deprecated)"/>
+  <int value="9" label="Got empty printer settings"/>
 </enum>
 
 <enum name="PrintPreviewFontTypeType">
@@ -65916,6 +65939,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="SYNC_DELETE_SUCCESS"/>
   <int value="1" label="SYNC_DELETE_FAIL_NONEXISTENT_ENGINE"/>
   <int value="2" label="SYNC_DELETE_FAIL_DEFAULT_SEARCH_PROVIDER"/>
+  <int value="3" label="SYNC_ADD_SUCCESS"/>
+  <int value="4" label="SYNC_ADD_CONVERTED_TO_UPDATE"/>
+  <int value="5" label="SYNC_ADD_FAIL_OTHER_ERROR"/>
+  <int value="6" label="SYNC_UPDATE_SUCCESS"/>
+  <int value="7" label="SYNC_UPDATE_CONVERTED_TO_ADD"/>
 </enum>
 
 <enum name="SearchWidgetUseInfo">
@@ -67474,6 +67502,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="30" label="Re-signin after an account rename"/>
   <int value="31" label="Sign-in promo in the web sign-in flow"/>
   <int value="32" label="Safety check settings page"/>
+  <int value="33" label="Kaleidoscope"/>
 </enum>
 
 <enum name="SigninAccountEquality">

@@ -46,6 +46,7 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
+#include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
@@ -3598,6 +3599,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"interest-feed-v2", flag_descriptions::kInterestFeedV2Name,
      flag_descriptions::kInterestFeedV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2)},
+    {"web-feed", flag_descriptions::kWebFeedName,
+     flag_descriptions::kWebFeedDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kWebFeed)},
     {"report-feed-user-actions", flag_descriptions::kReportFeedUserActionsName,
      flag_descriptions::kReportFeedUserActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kReportFeedUserActions)},
@@ -4264,6 +4268,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxWebUIOmniboxPopupDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kWebUIOmniboxPopup)},
 
+    {"search-prefetch", flag_descriptions::kEnableSearchPrefetchName,
+     flag_descriptions::kEnableSearchPrefetchDescription, kOsAll,
+     SINGLE_VALUE_TYPE(kSearchPrefetchServiceCommandLineFlag)},
+
 #if defined(OS_CHROMEOS)
     {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
@@ -4747,7 +4755,11 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
      flag_descriptions::kEnableLayoutNGDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},
+     FEATURE_VALUE_TYPE(blink::features::kLayoutNGTable)},
+
+    {"enable-table-ng", flag_descriptions::kEnableLayoutNGTableName,
+     flag_descriptions::kEnableLayoutNGTableDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kLayoutNGTable)},
 
     {"enable-lazy-image-loading",
      flag_descriptions::kEnableLazyImageLoadingName,
@@ -4859,14 +4871,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableUseAaudioDriverDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kUseAAudioDriver)},
 #endif
-
-    {"allow-sxg-certs-without-extension",
-     flag_descriptions::kAllowSignedHTTPExchangeCertsWithoutExtensionName,
-     flag_descriptions::
-         kAllowSignedHTTPExchangeCertsWithoutExtensionDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         features::kAllowSignedHTTPExchangeCertsWithoutExtension)},
 
     {"enable-sxg-subresource-prefetching",
      flag_descriptions::kEnableSignedExchangeSubresourcePrefetchName,

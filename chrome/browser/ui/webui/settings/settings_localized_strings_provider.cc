@@ -1436,6 +1436,14 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   AddPersonalizationOptionsStrings(html_source);
 }
 
+void AddPrivacySandboxStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"privacySandboxTitle", IDS_SETTINGS_PRIVACY_SANDBOX_TITLE},
+      {"privacySandboxPageHeading", IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_HEADING},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
 void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"safetyCheckSectionTitle", IDS_SETTINGS_SAFETY_CHECK_SECTION_TITLE},
@@ -2379,6 +2387,7 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       {"securityKeysTitle", IDS_SETTINGS_SECURITY_KEYS_TITLE},
       {"securityKeysTouchToContinue",
        IDS_SETTINGS_SECURITY_KEYS_TOUCH_TO_CONTINUE},
+      {"securityKeysSetPinButton", IDS_SETTINGS_SECURITY_KEYS_SET_PIN_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kSecurityKeysStrings);
   bool win_native_api_available = false;
@@ -2423,6 +2432,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
+
+  if (base::FeatureList::IsEnabled(features::kPrivacySandboxSettings))
+    AddPrivacySandboxStrings(html_source);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   AddChromeOSUserStrings(html_source, profile);

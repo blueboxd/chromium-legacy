@@ -588,6 +588,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_SCAN_CANCELED_TOAST_TEXT" desc="The message displayed when a scan job is successfully canceled.">
         Scanning has been canceled
       </message>
+      <message name="IDS_SCANNING_APP_CANCELING_SCANNING_TEXT" desc="The text displayed in the scan preview to indicate a scan job is being canceled.">
+        Canceling scanning
+      </message>
+      <message name="IDS_SCANNING_APP_FILE_NOT_FOUND_TOAST_TEXT" desc="The message displayed when attempting to open a saved scan file and it is either missing or deleted.">
+        File not found
+      </message>
 
       <!-- Diagnostics App -->
       <!-- TODO(michaelcheco): Update with finalized copies of the strings -->
@@ -771,6 +777,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_DIAGNOSTICS_STOP_TEST_BUTTON_TEXT" desc="The text for the button used to stop a test." translateable="true">
         Stop test
+      </message>
+      <message name="IDS_DIAGNOSTICS_CPU_SPEED_TEXT" desc="The text that displays the CPU speed. GHz is an SI unit for gigahertz." translateable="true">
+        <ph name="CURRENT">$1<ex>1.6</ex></ph>GHz / <ph name="MAX">$2<ex>1.9</ex></ph>GHz
       </message>
 
       <!-- Quick Answers -->

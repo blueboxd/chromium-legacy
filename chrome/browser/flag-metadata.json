@@ -179,6 +179,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "arc-use-high-memory-dalvik-profile",
+    "owners": [ "khmel" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "ash-debug-shortcuts",
     "owners": [ "//ash/OWNERS" ],
     // Used by developers for debugging and to dump extra information to logs
@@ -1121,6 +1126,11 @@
     "name": "enable-android-dark-search",
     "owners": [ "wylieb", "twellington", "fgorski" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "enable-android-layout-change-tab-reparenting",
+    "owners": [ "lazzzis@google.com", "twellington" ],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-android-night-mode-tab-reparenting",
@@ -3513,6 +3523,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "omnibox-disable-cgi-param-matching",
+    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "omnibox-display-title-for-current-url",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
@@ -4361,7 +4376,7 @@
   {
     "name": "show-metered-toggle",
     "owners": [ "stevenjb" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 92
   },
   {
     "name": "show-overdraw-feedback",

@@ -24,6 +24,8 @@ extern const char kTranslatePageLoadFinalTargetLanguage[];
 extern const char kTranslatePageLoadInitialSourceLanguage[];
 extern const char kTranslatePageLoadInitialState[];
 extern const char kTranslatePageLoadInitialTargetLanguage[];
+extern const char
+    kTranslatePageLoadIsInitialSourceLanguageInUsersContentLanguages[];
 extern const char kTranslatePageLoadNumTargetLanguageChanges[];
 extern const char kTranslatePageLoadNumTranslations[];
 extern const char kTranslatePageLoadNumReversions[];
@@ -45,10 +47,12 @@ class NullTranslateMetricsLogger : public TranslateMetricsLogger {
   void LogAutofillAssistantDeferredTriggerDecision() override {}
   void LogInitialState() override {}
   void LogTranslationStarted() override {}
-  void LogTranslationFinished(bool was_sucessful) override {}
+  void LogTranslationFinished(TranslateErrors::Type error_type) override {}
   void LogReversion() override {}
   void LogUIChange(bool is_ui_shown) override {}
   void LogOmniboxIconChange(bool is_omnibox_icon_shown) override {}
+  void LogInitialSourceLanguage(const std::string& source_language_code,
+                                bool is_in_users_content_languages) override {}
   void LogSourceLanguage(const std::string& source_language_code) override {}
   void LogTargetLanguage(const std::string& target_language_code) override {}
 };
@@ -85,10 +89,12 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   void LogAutofillAssistantDeferredTriggerDecision() override;
   void LogInitialState() override;
   void LogTranslationStarted() override;
-  void LogTranslationFinished(bool was_sucessful) override;
+  void LogTranslationFinished(TranslateErrors::Type error_type) override;
   void LogReversion() override;
   void LogUIChange(bool is_ui_shown) override;
   void LogOmniboxIconChange(bool is_omnibox_icon_shown) override;
+  void LogInitialSourceLanguage(const std::string& source_language_code,
+                                bool is_in_users_content_languages) override;
   void LogSourceLanguage(const std::string& source_language_code) override;
   void LogTargetLanguage(const std::string& target_language_code) override;
 
@@ -162,10 +168,15 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   // Tracks the source and target language over the course of the page load.
   std::string initial_source_language_;
   std::string current_source_language_;
+  bool is_initial_source_language_in_users_content_languages_ = false;
 
   std::string initial_target_language_;
   std::string current_target_language_;
   int num_target_language_changes_ = 0;
+
+  // Tracks any translation errors that occur over the course of the page load.
+  TranslateErrors::Type first_translate_error_type_ = TranslateErrors::NONE;
+  int num_translate_errors_ = 0;
 
   base::WeakPtrFactory<TranslateMetricsLoggerImpl> weak_method_factory_{this};
 };

@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_navigation_url_loader.h"
@@ -22,25 +24,6 @@
 namespace content {
 
 namespace {
-
-using HeaderDisposition = AncestorThrottle::HeaderDisposition;
-
-net::HttpResponseHeaders* GetAncestorHeaders(const char* xfo, const char* csp) {
-  std::string header_string("HTTP/1.1 200 OK\nX-Frame-Options: ");
-  header_string += xfo;
-  if (csp != nullptr) {
-    header_string += "\nContent-Security-Policy: ";
-    header_string += csp;
-  }
-  header_string += "\n\n";
-  std::replace(header_string.begin(), header_string.end(), '\n', '\0');
-  net::HttpResponseHeaders* headers =
-      new net::HttpResponseHeaders(header_string);
-  EXPECT_TRUE(headers->HasHeader("X-Frame-Options"));
-  if (csp != nullptr)
-    EXPECT_TRUE(headers->HasHeader("Content-Security-Policy"));
-  return headers;
-}
 
 network::mojom::ContentSecurityPolicyPtr ParsePolicy(
     const std::string& policy) {
@@ -59,89 +42,6 @@ network::mojom::ContentSecurityPolicyPtr ParsePolicy(
 // -------------------------------------------------------------
 
 class AncestorThrottleTest : public testing::Test {};
-
-TEST_F(AncestorThrottleTest, ParsingXFrameOptions) {
-  struct TestCase {
-    const char* header;
-    AncestorThrottle::HeaderDisposition expected;
-    const char* value;
-  } cases[] = {
-      // Basic keywords
-      {"DENY", HeaderDisposition::DENY, "DENY"},
-      {"SAMEORIGIN", HeaderDisposition::SAMEORIGIN, "SAMEORIGIN"},
-      {"ALLOWALL", HeaderDisposition::ALLOWALL, "ALLOWALL"},
-
-      // Repeated keywords
-      {"DENY,DENY", HeaderDisposition::DENY, "DENY, DENY"},
-      {"SAMEORIGIN,SAMEORIGIN", HeaderDisposition::SAMEORIGIN,
-       "SAMEORIGIN, SAMEORIGIN"},
-      {"ALLOWALL,ALLOWALL", HeaderDisposition::ALLOWALL, "ALLOWALL, ALLOWALL"},
-
-      // Case-insensitive
-      {"deNy", HeaderDisposition::DENY, "deNy"},
-      {"sAmEorIgIn", HeaderDisposition::SAMEORIGIN, "sAmEorIgIn"},
-      {"AlLOWaLL", HeaderDisposition::ALLOWALL, "AlLOWaLL"},
-
-      // Trim whitespace
-      {" DENY", HeaderDisposition::DENY, "DENY"},
-      {"SAMEORIGIN ", HeaderDisposition::SAMEORIGIN, "SAMEORIGIN"},
-      {" ALLOWALL ", HeaderDisposition::ALLOWALL, "ALLOWALL"},
-      {"   DENY", HeaderDisposition::DENY, "DENY"},
-      {"SAMEORIGIN   ", HeaderDisposition::SAMEORIGIN, "SAMEORIGIN"},
-      {"   ALLOWALL   ", HeaderDisposition::ALLOWALL, "ALLOWALL"},
-      {" DENY , DENY ", HeaderDisposition::DENY, "DENY, DENY"},
-      {"SAMEORIGIN,  SAMEORIGIN", HeaderDisposition::SAMEORIGIN,
-       "SAMEORIGIN, SAMEORIGIN"},
-      {"ALLOWALL  ,ALLOWALL", HeaderDisposition::ALLOWALL,
-       "ALLOWALL, ALLOWALL"},
-  };
-
-  AncestorThrottle throttle(nullptr);
-  for (const auto& test : cases) {
-    SCOPED_TRACE(test.header);
-    scoped_refptr<net::HttpResponseHeaders> headers =
-        GetAncestorHeaders(test.header, nullptr);
-    std::string header_value;
-    EXPECT_EQ(test.expected,
-              throttle.ParseXFrameOptionsHeader(headers.get(), &header_value));
-    EXPECT_EQ(test.value, header_value);
-  }
-}
-
-TEST_F(AncestorThrottleTest, ErrorsParsingXFrameOptions) {
-  struct TestCase {
-    const char* header;
-    AncestorThrottle::HeaderDisposition expected;
-    const char* failure;
-  } cases[] = {
-      // Empty == Invalid.
-      {"", HeaderDisposition::INVALID, ""},
-
-      // Invalid
-      {"INVALID", HeaderDisposition::INVALID, "INVALID"},
-      {"INVALID DENY", HeaderDisposition::INVALID, "INVALID DENY"},
-      {"DENY DENY", HeaderDisposition::INVALID, "DENY DENY"},
-      {"DE NY", HeaderDisposition::INVALID, "DE NY"},
-
-      // Conflicts
-      {"INVALID,DENY", HeaderDisposition::CONFLICT, "INVALID, DENY"},
-      {"DENY,ALLOWALL", HeaderDisposition::CONFLICT, "DENY, ALLOWALL"},
-      {"SAMEORIGIN,DENY", HeaderDisposition::CONFLICT, "SAMEORIGIN, DENY"},
-      {"ALLOWALL,SAMEORIGIN", HeaderDisposition::CONFLICT,
-       "ALLOWALL, SAMEORIGIN"},
-      {"DENY,  SAMEORIGIN", HeaderDisposition::CONFLICT, "DENY, SAMEORIGIN"}};
-
-  AncestorThrottle throttle(nullptr);
-  for (const auto& test : cases) {
-    SCOPED_TRACE(test.header);
-    scoped_refptr<net::HttpResponseHeaders> headers =
-        GetAncestorHeaders(test.header, nullptr);
-    std::string header_value;
-    EXPECT_EQ(test.expected,
-              throttle.ParseXFrameOptionsHeader(headers.get(), &header_value));
-    EXPECT_EQ(test.failure, header_value);
-  }
-}
 
 TEST_F(AncestorThrottleTest, AllowsBlanketEnforcementOfRequiredCSP) {
   struct TestCase {
@@ -469,6 +369,121 @@ TEST_F(AncestorThrottleNavigationTest, EvaluateCSPEmbeddedEnforcement) {
       EXPECT_EQ(NavigationThrottle::BLOCK_RESPONSE,
                 simulator->GetLastThrottleCheckResult());
     }
+  }
+}
+
+TEST_F(AncestorThrottleNavigationTest, EmbeddingOptInRequirement) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kEmbeddingRequiresOptIn);
+
+  // Set up the main frame. We'll add nested frames to it in the tests below.
+  NavigateAndCommit(GURL("https://www.example.org"));
+  auto* main_frame = static_cast<TestRenderFrameHost*>(main_rfh());
+
+  struct TestCase {
+    const char* name;
+    const char* frame_url;
+    const char* xfo;
+    const char* csp;
+    NavigationThrottle::ThrottleAction expected_result;
+  } cases[] = {{
+                   "Same-origin, no XFO, no CSP",
+                   "https://www.example.org",
+                   nullptr,
+                   nullptr,
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Same-site, no XFO, no CSP",
+                   "https://not.example.org",
+                   nullptr,
+                   nullptr,
+                   NavigationThrottle::BLOCK_RESPONSE,
+               },
+               {
+                   "Same-site, XFO: ALLOWALL, no CSP",
+                   "https://not.example.org",
+                   "ALLOWALL",
+                   nullptr,
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Same-site, XFO: INVALID, no CSP",
+                   "https://not.example.org",
+                   "INVALID",
+                   nullptr,
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Same-site, no XFO, CSP: frame-ancestors *",
+                   "https://not.example.org",
+                   nullptr,
+                   "frame-ancestors *",
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Same-site, no XFO, CSP without frame-ancestors",
+                   "https://not.example.org",
+                   nullptr,
+                   "img-src 'self'",
+                   NavigationThrottle::BLOCK_RESPONSE,
+               },
+               {
+                   "Cross-origin, no XFO, no CSP",
+                   "https://www.not-example.org",
+                   nullptr,
+                   nullptr,
+                   NavigationThrottle::BLOCK_RESPONSE,
+               },
+               {
+                   "Cross-origin, XFO: ALLOWALL, no CSP",
+                   "https://www.not-example.org",
+                   "ALLOWALL",
+                   nullptr,
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Cross-origin, XFO: INVALID, no CSP",
+                   "https://www.not-example.org",
+                   "INVALID",
+                   nullptr,
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Cross-origin, no XFO, CSP: frame-ancestors *",
+                   "https://www.not-example.org",
+                   nullptr,
+                   "frame-ancestors *",
+                   NavigationThrottle::PROCEED,
+               },
+               {
+                   "Cross-origin, no XFO, CSP without frame-ancestors",
+                   "https://www.not-example.org",
+                   nullptr,
+                   "img-src 'self'",
+                   NavigationThrottle::BLOCK_RESPONSE,
+               }};
+
+  for (auto test : cases) {
+    SCOPED_TRACE(test.name);
+    auto* frame = static_cast<TestRenderFrameHost*>(
+        content::RenderFrameHostTester::For(main_frame)
+            ->AppendChild(test.name));
+    std::unique_ptr<NavigationSimulator> simulator =
+        content::NavigationSimulator::CreateRendererInitiated(
+            GURL(test.frame_url), frame);
+
+    auto response_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+    if (test.xfo)
+      response_headers->SetHeader("X-Frame-Options", test.xfo);
+    if (test.csp)
+      response_headers->SetHeader("Content-Security-Policy", test.csp);
+
+    simulator->SetResponseHeaders(response_headers);
+    simulator->ReadyToCommit();
+
+    EXPECT_EQ(test.expected_result, simulator->GetLastThrottleCheckResult());
   }
 }
 

@@ -34,7 +34,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </variants>
 
 <histogram name="AccountManager.AccountAdditionSource"
-    enum="AccountManagerAccountAdditionSource" expires_after="2021-03-28">
+    enum="AccountManagerAccountAdditionSource" expires_after="2021-05-30">
   <owner>sinhak@chromium.org</owner>
   <owner>anastasiian@chromium.org</owner>
   <summary>
@@ -165,7 +165,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AccountManager.NumAccounts" units="count"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>sinhak@chromium.org</owner>
   <summary>
     Tracks the number of accounts stored in Chrome OS Account Manager by a given
@@ -326,7 +326,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Ads.Media.Duration" units="ms" expires_after="2021-03-28">
+<histogram name="Ads.Media.Duration" units="ms" expires_after="2021-05-30">
   <owner>johnidel@chromium.org</owner>
   <owner>dalecurtis@chromium.org</owner>
   <summary>
@@ -428,7 +428,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AnimatedImage.NumOfFramesSkipped" units="count"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>khushalsagar@chromium.org</owner>
   <summary>
     If the frame rate for the image animation can not be reached, frames in the
@@ -1682,7 +1682,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bookmarks.OpenBookmarkType" enum="BookmarkType"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>wychen@chromium.org</owner>
   <summary>
     Logs whether the bookmark entry is a user bookmark or a partner bookmark
@@ -2379,10 +2379,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ClientHints.PersistDuration" units="ms" expires_after="M88">
+<histogram name="ClientHints.PersistDuration" units="ms" expires_after="M90">
   <owner>yoavweiss@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <owner>mkwst@chromium.org</owner>
+  <owner>aarontag@chromium.org</owner>
   <summary>
     Duration for which the origin requested the client hints to be persisted.
     Collected on the renderer side.
@@ -2390,20 +2391,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ClientHints.UpdateEventCount" units="count"
-    expires_after="M88">
+    expires_after="M90">
   <owner>yoavweiss@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <owner>mkwst@chromium.org</owner>
+  <owner>aarontag@chromium.org</owner>
   <summary>
     Count of events when the client hints needs to be persisted to the disk by
     the browser.
   </summary>
 </histogram>
 
-<histogram name="ClientHints.UpdateSize" units="count" expires_after="M88">
+<histogram name="ClientHints.UpdateSize" units="count" expires_after="M90">
   <owner>yoavweiss@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <owner>mkwst@chromium.org</owner>
+  <owner>aarontag@chromium.org</owner>
   <summary>
     Count of client hints that need to be persisted to the disk. Recorded by the
     renderer.
@@ -3002,7 +3005,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContextMenu.TimeToTakeAction.Abandoned" units="ms"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -3015,7 +3018,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContextMenu.TimeToTakeAction.SelectedItem" units="ms"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -4316,6 +4319,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Downgrade.RestoreSnapshot.CleanupAfterFailure.Result"
     enum="BooleanSuccess" expires_after="2020-12-31">
+  <obsolete>
+    Removed in M89.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -4326,6 +4332,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Downgrade.RestoreSnapshot.FailureCount" units="count"
     expires_after="2020-12-31">
+  <obsolete>
+    Removed in M89.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -4335,7 +4344,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Downgrade.RestoreSnapshot.Result"
-    enum="SnapshotOperationResult" expires_after="2020-12-31">
+    enum="SnapshotOperationResult" expires_after="never">
+<!-- expires-never: To monitor snapshot restoration results. -->
+
   <owner>grt@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -4385,7 +4396,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Downgrade.TakeSnapshot.Result" enum="SnapshotOperationResult"
-    expires_after="2021-03-07">
+    expires_after="2021-05-30">
   <owner>grt@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -4534,7 +4545,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DrmUtil.CreateDisplaySnapshot.BitsPerChannel" units="bits"
-    expires_after="M89">
+    expires_after="2022-01-03">
   <owner>andrescj@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
   <owner>chromeos-gfx@google.com</owner>
@@ -4545,7 +4556,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DrmUtil.CreateDisplaySnapshot.HasEdidBlob" enum="Boolean"
-    expires_after="2021-04-18">
+    expires_after="2022-01-03">
   <owner>andrescj@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
   <owner>chromeos-gfx@google.com</owner>
@@ -4556,7 +4567,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DrmUtil.CreateDisplaySnapshot.IsHDR" enum="Boolean"
-    expires_after="M89">
+    expires_after="2022-01-03">
   <owner>andrescj@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
   <owner>chromeos-gfx@google.com</owner>
@@ -6723,7 +6734,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ImportantFile.FileRenameError" enum="PlatformFileError"
-    expires_after="2021-03-21">
+    expires_after="2021-05-30">
   <owner>grt@chromium.org</owner>
   <owner>xaerox@yandex-team.ru</owner>
   <summary>
@@ -8164,7 +8175,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.WindowManager" enum="LinuxWindowManagerName"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>pkotwicz@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -8493,7 +8504,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MachineLearningService.MojoConnectionEvent"
-    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2021-03-28">
+    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2021-05-30">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -8709,7 +8720,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ManualFallback.VisibleSuggestions.OpenCreditCards"
-    units="Suggestions" expires_after="2021-01-15">
+    units="Suggestions" expires_after="2021-05-30">
   <owner>javierrobles@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -8719,7 +8730,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ManualFallback.VisibleSuggestions.OpenPasswords"
-    units="Suggestions" expires_after="2021-01-15">
+    units="Suggestions" expires_after="2021-05-30">
   <owner>javierrobles@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -9406,6 +9417,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
+    name="Nearby.Share.Certificates.Manager.BluetoothMacAddressSetInPrivateCertificate"
+    enum="BooleanSet" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records whether or not a Bluetooth MAC address is set in the local device's
+    private certificate metadata during certificate creation. Emitted when
+    private certificates are created, which typically occurs every three days if
+    Nearby Share is enabled. This will only be emitted once if multiple
+    certificates are created at a time, for example, when all certificates are
+    created after onboarding.
+  </summary>
+</histogram>
+
+<histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesCount"
     units="certificates" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
@@ -9600,6 +9626,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Emitted when the Nearby Share service starts. This happens at login if the
     feature flag is on.
   </summary>
+</histogram>
+
+<histogram name="Nearby.Share.InstantMessaging.{Direction}Express.Result"
+    enum="BooleanSuccess" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records whether an HTTPS call to {Direction} the Instant Messaging API
+    succeeds or fails. Emitted when the HTTPS call succeeds or fails.
+  </summary>
+  <token key="Direction">
+    <variant name="Receive" summary="receive a message from"/>
+    <variant name="Send" summary="send a message to"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Nearby.Share.InstantMessaging.{Direction}Express.Result.FailureReason"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the network error code or HTTPS response code from a failed HTTPS
+    call to {Direction} the Instant Messaging API. Emitted when the HTTPS call
+    fails.
+  </summary>
+  <token key="Direction">
+    <variant name="Receive" summary="receive a message from"/>
+    <variant name="Send" summary="send a message to"/>
+  </token>
 </histogram>
 
 <histogram name="Nearby.Share.LocalDeviceData.DeviceDataUpdater.HttpResult"
@@ -10606,7 +10662,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PDF.IsTagged" enum="BooleanIsTagged"
-    expires_after="2021-03-29">
+    expires_after="2021-05-30">
   <owner>dmazzoni@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -10692,7 +10748,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PerformanceHints.Observer.HintForURLResult"
-    enum="PerformanceHintsObserverHintForURLResult" expires_after="2021-03-28">
+    enum="PerformanceHintsObserverHintForURLResult" expires_after="2021-05-30">
   <owner>jds@chromium.org</owner>
   <owner>src/chrome/browser/performance_hints/OWNERS</owner>
   <summary>
@@ -10715,7 +10771,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="PerformanceHints.Observer.SourceLookupStatus"
     enum="PerformanceHintsObserverSourceLookupStatus"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>jds@chromium.org</owner>
   <owner>src/chrome/browser/performance_hints/OWNERS</owner>
   <summary>
@@ -11061,7 +11117,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.BodySize" units="bytes"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -11084,7 +11140,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.Count" units="count"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -11426,7 +11482,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.CookieDomainCount" units="units"
-    expires_after="M89">
+    expires_after="M93">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -11437,7 +11493,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.DatabaseSize" units="KiB"
-    expires_after="M89">
+    expires_after="M93">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -11448,7 +11504,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.RecordCount" units="units"
-    expires_after="M89">
+    expires_after="M93">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -11459,7 +11515,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.StorageOriginCount" units="units"
-    expires_after="M89">
+    expires_after="M93">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -11470,7 +11526,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.TopFrameOriginCount" units="units"
-    expires_after="M89">
+    expires_after="M93">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -13008,7 +13064,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="ScreenLocker.AuthenticationFailure" enum="UnlockType"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>antrim@chromium.org</owner>
   <owner>jessejames@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
@@ -13029,7 +13085,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="ScreenLocker.AuthenticationSuccess" enum="UnlockType"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>antrim@chromium.org</owner>
   <owner>jessejames@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
@@ -14914,7 +14970,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="TextFragmentAnchor.ElementIdFragmentFound" enum="Boolean"
-    expires_after="2021-03-07">
+    expires_after="2021-05-30">
   <owner>nburris@chromium.org</owner>
   <owner>bokan@chromium.org</owner>
   <summary>
@@ -15828,7 +15884,7 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="Tracing.Background.FinalizingTraceSizeInKB" units="KB"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>oysteine@chromium.org</owner>
   <summary>
     The size, in kilobytes, of a finalized trace ready to be uploaded.
@@ -16537,7 +16593,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.DismissedEventSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-03-28">
+    enum="VoiceInteractionEventSource" expires_after="2021-05-30">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -16557,7 +16613,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.FinishEventSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-03-28">
+    enum="VoiceInteractionEventSource" expires_after="2021-05-30">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -16609,7 +16665,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.StartEventSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-03-28">
+    enum="VoiceInteractionEventSource" expires_after="2021-05-30">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -16637,7 +16693,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceResultConfidenceValue" units="%"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -16648,7 +16704,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceSearchResult" enum="BooleanSuccess"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -17155,7 +17211,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebAuthentication.MakeCredentialResponseTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2021-03-07">
+    enum="WebAuthenticationFidoTransport" expires_after="2021-05-30">
   <owner>kenrb@chromium.org</owner>
   <owner>martinkr@google.com</owner>
   <summary>

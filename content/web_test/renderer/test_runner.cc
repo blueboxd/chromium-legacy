@@ -34,7 +34,6 @@
 #include "content/web_test/renderer/test_preferences.h"
 #include "content/web_test/renderer/web_frame_test_proxy.h"
 #include "content/web_test/renderer/web_view_test_proxy.h"
-#include "content/web_test/renderer/web_widget_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -54,6 +53,7 @@
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/test/frame_widget_test_helper.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_array_buffer.h"
 #include "third_party/blink/public/web/web_array_buffer_converter.h"
@@ -1237,14 +1237,13 @@ void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
   if (new_width <= 0 || new_height <= 0)
     return;
 
-  RenderWidget* widget = frame_->GetLocalRootRenderWidget();
+  blink::WebFrameWidget* widget = frame_->GetLocalRootWebFrameWidget();
 
   gfx::Size new_size(new_width, new_height);
   blink::WebView* web_view = GetWebFrame()->View();
   web_view->DisableAutoResizeForTesting(new_size);
 
-  gfx::Rect window_rect(widget->GetWebWidget()->WindowRect().origin(),
-                        new_size);
+  gfx::Rect window_rect(widget->WindowRect().origin(), new_size);
   web_view->SetWindowRectSynchronouslyForTesting(window_rect);
 }
 
@@ -1829,7 +1828,7 @@ void TestRunnerBindings::RemoveWebPageOverlay() {
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite() {
   if (invalid_)
     return;
-  static_cast<WebWidgetTestProxy*>(frame_->GetLocalRootRenderWidget())
+  frame_->GetLocalRootFrameWidgetTestHelper()
       ->UpdateAllLifecyclePhasesAndComposite(base::DoNothing());
 }
 
@@ -1837,7 +1836,7 @@ void TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
     return;
-  static_cast<WebWidgetTestProxy*>(frame_->GetLocalRootRenderWidget())
+  frame_->GetLocalRootFrameWidgetTestHelper()
       ->UpdateAllLifecyclePhasesAndComposite(
           WrapV8Closure(std::move(v8_callback)));
 }
@@ -2105,9 +2104,8 @@ std::string TestRunnerBindings::TooltipText() {
   if (invalid_)
     return {};
 
-  blink::WebString tooltip_text = frame_->GetLocalRootRenderWidget()
-                                      ->GetWebWidget()
-                                      ->GetLastToolTipTextForTesting();
+  blink::WebString tooltip_text =
+      frame_->GetLocalRootWebFrameWidget()->GetLastToolTipTextForTesting();
   return tooltip_text.Utf8();
 }
 
@@ -2311,19 +2309,16 @@ void TestRunner::ResetWebView(WebViewTestProxy* web_view_test_proxy) {
   web_view->UseSynchronousResizeModeForTesting(false);
 }
 
-void TestRunner::ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy) {
-  blink::WebFrameWidget* web_widget =
-      web_widget_test_proxy->GetWebFrameWidget();
-
-  web_widget->SetDeviceScaleFactorForTesting(0);
-  web_widget->ReleaseMouseLockAndPointerCaptureForTesting();
+void TestRunner::ResetWebFrameWidget(blink::WebFrameWidget* web_frame_widget) {
+  web_frame_widget->SetDeviceScaleFactorForTesting(0);
+  web_frame_widget->ReleaseMouseLockAndPointerCaptureForTesting();
 
   // These things are only modified/valid for the main frame's widget.
-  if (web_widget_test_proxy->delegate()) {
-    web_widget->ResetZoomLevelForTesting();
+  if (!web_frame_widget->LocalRoot()->Parent()) {
+    web_frame_widget->ResetZoomLevelForTesting();
 
-    web_widget->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
-    web_widget->SetTextZoomFactor(1);
+    web_frame_widget->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
+    web_frame_widget->SetTextZoomFactor(1);
   }
 }
 
@@ -3123,7 +3118,7 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
     return;
 
   auto* frame_proxy = static_cast<WebFrameTestProxy*>(main_frame);
-  RenderWidget* widget = frame_proxy->GetLocalRootRenderWidget();
+  blink::WebFrameWidget* widget = frame_proxy->GetLocalRootWebFrameWidget();
 
   // Web tests get multiple windows in one renderer by doing same-site
   // window.open() calls (or about:blank). They want to be able to move focus
@@ -3133,13 +3128,13 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
   if (!focus) {
     // This path simulates losing focus on the window, without moving it to
     // another window.
-    if (widget->GetWebWidget()->HasFocus()) {
+    if (widget->HasFocus()) {
       auto* view_proxy = frame_proxy->GetWebViewTestProxy();
       // TODO(dtapuska): We should call the exact IPC the browser
       // calls. ie. WebFrameWidgetImpl::SetActive but that isn't
       // exposed outside of blink.
       view_proxy->GetWebView()->SetIsActive(false);
-      widget->GetWebWidget()->SetFocus(false);
+      widget->SetFocus(false);
     }
     return;
   }
@@ -3147,20 +3142,21 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
   // Find the currently focused window, and remove its focus.
   for (WebFrameTestProxy* other_main_frame : main_frames_) {
     if (other_main_frame != main_frame) {
-      RenderWidget* other_widget = other_main_frame->GetLocalRootRenderWidget();
-      if (other_widget->GetWebWidget()->HasFocus()) {
+      blink::WebFrameWidget* other_widget =
+          other_main_frame->GetLocalRootWebFrameWidget();
+      if (other_widget->HasFocus()) {
         auto* other_view_proxy = other_main_frame->GetWebViewTestProxy();
         // TODO(dtapuska): We should call the exact IPC the browser
         // calls. ie. WebFrameWidgetImpl::SetActive but that isn't
         // exposed outside of blink.
         other_view_proxy->GetWebView()->SetIsActive(false);
-        other_widget->GetWebWidget()->SetFocus(false);
+        other_widget->SetFocus(false);
       }
     }
   }
 
-  if (!widget->GetWebWidget()->HasFocus()) {
-    widget->GetWebWidget()->SetFocus(true);
+  if (!widget->HasFocus()) {
+    widget->SetFocus(true);
   }
 }
 

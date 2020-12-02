@@ -23,6 +23,8 @@ const char kTranslatePageLoadInitialSourceLanguage[] =
 const char kTranslatePageLoadInitialState[] = "Translate.PageLoad.InitialState";
 const char kTranslatePageLoadInitialTargetLanguage[] =
     "Translate.PageLoad.InitialTargetLanguage";
+const char kTranslatePageLoadIsInitialSourceLanguageInUsersContentLanguages[] =
+    "Translate.PageLoad.IsInitialSourceLanguageInUsersContentLanguages";
 const char kTranslatePageLoadNumTargetLanguageChanges[] =
     "Translate.PageLoad.NumTargetLanguageChanges";
 const char kTranslatePageLoadNumTranslations[] =
@@ -111,6 +113,9 @@ void TranslateMetricsLoggerImpl::RecordPageLoadUmaMetrics() {
                            base::HashMetricName(initial_source_language_));
   base::UmaHistogramSparse(kTranslatePageLoadFinalSourceLanguage,
                            base::HashMetricName(current_source_language_));
+  base::UmaHistogramBoolean(
+      kTranslatePageLoadIsInitialSourceLanguageInUsersContentLanguages,
+      is_initial_source_language_in_users_content_languages_);
   base::UmaHistogramSparse(kTranslatePageLoadInitialTargetLanguage,
                            base::HashMetricName(initial_target_language_));
   base::UmaHistogramSparse(kTranslatePageLoadFinalTargetLanguage,
@@ -161,8 +166,10 @@ void TranslateMetricsLoggerImpl::LogTranslationStarted() {
   is_translation_in_progress_ = true;
 }
 
-void TranslateMetricsLoggerImpl::LogTranslationFinished(bool was_sucessful) {
-  if (was_sucessful) {
+void TranslateMetricsLoggerImpl::LogTranslationFinished(
+    TranslateErrors::Type error_type) {
+  // The translation succeeded if and only if there were no translation errors.
+  if (error_type == TranslateErrors::NONE) {
     UpdateTimeTranslated(previous_state_is_translated_, is_foreground_);
     num_translations_++;
   } else {
@@ -172,6 +179,12 @@ void TranslateMetricsLoggerImpl::LogTranslationFinished(bool was_sucessful) {
     // Update the initial state if it was dependent on this translation..
     if (is_initial_state_dependent_on_in_progress_translation_)
       initial_state_is_translated_ = previous_state_is_translated_;
+
+    // Check if this was the first error, and then increment the number of
+    // errors for this page load.
+    if (first_translate_error_type_ == TranslateErrors::NONE)
+      first_translate_error_type_ = error_type;
+    num_translate_errors_++;
   }
 
   is_translation_in_progress_ = false;
@@ -193,11 +206,18 @@ void TranslateMetricsLoggerImpl::LogOmniboxIconChange(
   current_state_is_omnibox_icon_shown_ = is_omnibox_icon_shown;
 }
 
+void TranslateMetricsLoggerImpl::LogInitialSourceLanguage(
+    const std::string& source_language_code,
+    bool is_in_users_content_languages) {
+  initial_source_language_ = source_language_code;
+  is_initial_source_language_in_users_content_languages_ =
+      is_in_users_content_languages;
+
+  current_source_language_ = source_language_code;
+}
+
 void TranslateMetricsLoggerImpl::LogSourceLanguage(
     const std::string& source_language_code) {
-  if (initial_source_language_ == "")
-    initial_source_language_ = source_language_code;
-
   current_source_language_ = source_language_code;
 }
 

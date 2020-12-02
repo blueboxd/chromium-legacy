@@ -2721,10 +2721,6 @@ NavigationRequest::ErrorPageProcess NavigationRequest::ComputeErrorPageProcess(
   return ErrorPageProcess::kDestinationProcess;
 }
 
-void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
-  frame_tree_node_->navigator().LogResourceRequestTime(timestamp,
-                                                       common_params_->url);
-}
 namespace {
 
 void OnServiceWorkerAccessedThreadSafeWrapper(
@@ -3235,8 +3231,16 @@ void NavigationRequest::AddOldPageInfoToCommitParamsIfNeeded() {
 }
 
 void NavigationRequest::CommitNavigation() {
-  frame_tree_node_->render_manager()
-      ->ValidateSpeculativeRenderFrameHostForBug1146573();
+  // It's expected that we do a same-SiteInstance local swap here when replacing
+  // a crashed frame if ShouldSkipEarlyCommitPendingForCrashedFrame is
+  // enabled. So don't call in that case.
+  if (!(ShouldSkipEarlyCommitPendingForCrashedFrame() &&
+        frame_tree_node_->render_manager()
+            ->current_frame_host()
+            ->must_be_replaced())) {
+    frame_tree_node_->render_manager()
+        ->ValidateSpeculativeRenderFrameHostForBug1146573();
+  }
   UpdateCommitNavigationParamsHistory();
   DCHECK(NeedsUrlLoader() == !!response_head_ ||
          (was_redirected_ && common_params_->url.IsAboutBlank()));

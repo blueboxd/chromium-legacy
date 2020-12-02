@@ -35,10 +35,11 @@ class MockTranslateMetricsLogger : public TranslateMetricsLogger {
   MOCK_METHOD0(LogAutofillAssistantDeferredTriggerDecision, void());
   MOCK_METHOD0(LogInitialState, void());
   MOCK_METHOD0(LogTranslationStarted, void());
-  MOCK_METHOD1(LogTranslationFinished, void(bool));
+  MOCK_METHOD1(LogTranslationFinished, void(TranslateErrors::Type));
   MOCK_METHOD0(LogReversion, void());
   MOCK_METHOD1(LogUIChange, void(bool));
   MOCK_METHOD1(LogOmniboxIconChange, void(bool));
+  MOCK_METHOD2(LogInitialSourceLanguage, void(const std::string&, bool));
   MOCK_METHOD1(LogSourceLanguage, void(const std::string&));
   MOCK_METHOD1(LogTargetLanguage, void(const std::string&));
 

@@ -252,6 +252,25 @@ namespace {
 // VAEntrypoint is an enumeration starting from 1, but has no "invalid" value.
 constexpr VAEntrypoint kVAEntrypointInvalid = static_cast<VAEntrypoint>(0);
 
+// Returns true if the SoC has a Gen8 GPU. CPU model ID's are referenced from
+// the following file in the kernel source: arch/x86/include/asm/intel-family.h.
+bool IsGen8Gpu() {
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  constexpr int kBroadwellCoreModelId = 0x3D;
+  constexpr int kBroadwellGT3EModelId = 0x47;
+  constexpr int kBroadwellXModelId = 0x4F;
+  constexpr int kBroadwellXeonDModelId = 0x56;
+  constexpr int kBraswellModelId = 0x4C;
+  static const base::NoDestructor<base::CPU> cpuid;
+  static const bool is_gen8_gpu = cpuid->family() == kPentiumAndLaterFamily &&
+                                  (cpuid->model() == kBroadwellCoreModelId ||
+                                   cpuid->model() == kBroadwellGT3EModelId ||
+                                   cpuid->model() == kBroadwellXModelId ||
+                                   cpuid->model() == kBroadwellXeonDModelId ||
+                                   cpuid->model() == kBraswellModelId);
+  return is_gen8_gpu;
+}
+
 // Returns true if the SoC has a Gen9 GPU. CPU model ID's are referenced from
 // the following file in the kernel source: arch/x86/include/asm/intel-family.h.
 bool IsGen9Gpu() {
@@ -285,6 +304,17 @@ bool IsGen95Gpu() {
                                     cpuid->model() == kCometLakeModelId ||
                                     cpuid->model() == kCometLake_LModelId);
   return is_gen95_gpu;
+}
+
+// Returns true if the intel hybrid driver is used for decoding |va_profile|.
+// https://github.com/intel/intel-hybrid-driver
+// Note that since the hybrid driver runs as a part of the i965 driver,
+// vaQueryVendorString() returns "Intel i965 driver".
+bool IsUsingHybridDriverForDecoding(VAProfile va_profile) {
+  // Note that Skylake (not gen8) also needs the hybrid decoder for VP9
+  // decoding. However, it is disabled today on ChromeOS
+  // (see crrev.com/c/390511).
+  return va_profile == VAProfileVP9Profile0 && IsGen8Gpu();
 }
 
 // Returns true if the SoC is considered a low power one, i.e. it's an Intel
@@ -1099,6 +1129,42 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
     return false;
   }
 
+  if (base::FeatureList::IsEnabled(kVaapiEnforceVideoMinMaxResolution) &&
+      va_profile != VAProfileJPEGBaseline) {
+    // Deny unreasonably small resolutions (e.g. 0x0) for VA-API hardware video
+    // decode and encode acceleration.
+    profile_info->min_resolution.SetToMax(gfx::Size(16, 16));
+    if (entrypoint == VAEntrypointEncSliceLP ||
+        entrypoint == VAEntrypointEncSlice) {
+      // Using VA-API for accelerated encoding frames smaller than a certain
+      // size is less efficient than using a software encoder.
+      constexpr gfx::Size kMinEncodeResolution(320 + 1, 240 + 1);
+      if (!gfx::Rect(profile_info->min_resolution)
+               .Contains(gfx::Rect(kMinEncodeResolution))) {
+        profile_info->min_resolution.SetToMax(kMinEncodeResolution);
+        DVLOG(2) << "Setting the minimum supported encoding resolution to "
+                 << profile_info->min_resolution.ToString() << " for "
+                 << vaProfileStr(va_profile);
+      }
+    } else if (entrypoint == VAEntrypointVLD &&
+               IsUsingHybridDriverForDecoding(va_profile)) {
+      // Using the hybrid driver for accelerated decoding of frames smaller than
+      // a certain size is less efficient than using a software decoder. This
+      // minimum resolution is selected from the fact that the resolutions of
+      // videos in tile layout in Google Meet are QVGA.
+      constexpr gfx::Size kMinDecodeResolutionForHybridDecoder(320 + 1,
+                                                               240 + 1);
+      if (!gfx::Rect(profile_info->min_resolution)
+               .Contains(gfx::Rect(kMinDecodeResolutionForHybridDecoder))) {
+        profile_info->min_resolution.SetToMax(
+            kMinDecodeResolutionForHybridDecoder);
+        DVLOG(2) << "Setting the minimum supported decoding resolution to "
+                 << profile_info->min_resolution.ToString() << " for "
+                 << vaProfileStr(va_profile);
+      }
+    }
+  }
+
   // Create a new configuration to find the supported RT formats. We don't pass
   // required attributes here because we want the driver to tell us all the
   // supported RT formats.
@@ -1383,10 +1449,7 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
 
     VideoEncodeAccelerator::SupportedProfile profile;
     profile.profile = media_profile;
-    // Using VA-API for accelerated encoding frames smaller than a certain
-    // size is less efficient than using a software encoder.
-    const gfx::Size kMinEncodeResolution = gfx::Size(320 + 1, 240 + 1);
-    profile.min_resolution = kMinEncodeResolution;
+    profile.min_resolution = profile_info->min_resolution;
     profile.max_resolution = profile_info->max_resolution;
     // Maximum framerate of encoded profile. This value is an arbitrary
     // limit and not taken from HW documentation.
@@ -1426,7 +1489,7 @@ VaapiWrapper::GetSupportedDecodeProfiles(
     VideoDecodeAccelerator::SupportedProfile profile;
     profile.profile = media_profile;
     profile.max_resolution = profile_info->max_resolution;
-    profile.min_resolution.SetSize(16, 16);
+    profile.min_resolution = profile_info->min_resolution;
     profiles.push_back(profile);
   }
   return profiles;
@@ -1853,6 +1916,25 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
   // vpp, just passing 0x0.
   const int flag = mode_ != kVideoProcess ? VA_PROGRESSIVE : 0x0;
   const gfx::Size picture_size = mode_ != kVideoProcess ? size : gfx::Size();
+  if (mode_ != kVideoProcess) {
+    const VASupportedProfiles::ProfileInfo* profile_info =
+        VASupportedProfiles::Get().IsProfileSupported(mode_, va_profile_,
+                                                      va_entrypoint_);
+    DCHECK(profile_info);
+    const bool is_picture_within_bounds =
+        gfx::Rect(picture_size)
+            .Contains(gfx::Rect(profile_info->min_resolution)) &&
+        gfx::Rect(profile_info->max_resolution)
+            .Contains(gfx::Rect(picture_size));
+    if (!is_picture_within_bounds) {
+      VLOG(2) << "Requested resolution=" << picture_size.ToString()
+              << " is not within bounds ["
+              << profile_info->min_resolution.ToString() << ", "
+              << profile_info->max_resolution.ToString() << "]";
+      return false;
+    }
+  }
+
   VAStatus va_res = vaCreateContext(
       va_display_, va_config_id_, picture_size.width(), picture_size.height(),
       flag, empty_va_surfaces_ids_pointer, empty_va_surfaces_ids_size,

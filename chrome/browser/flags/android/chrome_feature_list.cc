@@ -79,7 +79,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill_assistant::features::kAutofillAssistant,
     &autofill_assistant::features::kAutofillAssistantChromeEntry,
     &autofill_assistant::features::kAutofillAssistantDirectActions,
+    &autofill_assistant::features::kAutofillAssistantDisableOnboardingFlow,
     &autofill_assistant::features::kAutofillAssistantProactiveHelp,
+    &autofill_assistant::features::
+        kAutofillAssistantDisableProactiveHelpTiedToMSBB,
     &device::kWebAuthPhoneSupport,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kDownloadLater,
@@ -116,6 +119,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
     &kAndroidDefaultBrowserPromo,
+    &kAndroidLayoutChangeTabReparenting,
     &kAndroidManagedByMenuItem,
     &kAndroidMultipleDisplay,
     &kAndroidNightModeTabReparenting,
@@ -299,6 +303,9 @@ const base::Feature kAdjustWebApkInstallationSpace = {
 
 const base::Feature kAndroidDefaultBrowserPromo{
     "AndroidDefaultBrowserPromo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAndroidLayoutChangeTabReparenting{
+    "AndroidLayoutChangeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidManagedByMenuItem{"AndroidManagedByMenuItem",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

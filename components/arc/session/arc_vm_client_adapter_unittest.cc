@@ -22,10 +22,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -1189,7 +1189,7 @@ TEST_F(ArcVmClientAdapterTest, TestCreateArcVmClientAdapter) {
 }
 
 TEST_F(ArcVmClientAdapterTest, ChromeOsChannelStable) {
-  base::SysInfo::SetChromeOSVersionInfoForTest(
+  base::test::ScopedChromeOSVersionInfo info(
       "CHROMEOS_RELEASE_TRACK=stable-channel", base::Time::Now());
 
   StartParams start_params(GetPopulatedStartParams());
@@ -1199,13 +1199,11 @@ TEST_F(ArcVmClientAdapterTest, ChromeOsChannelStable) {
   EXPECT_TRUE(
       base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
                      "androidboot.chromeos_channel=stable"));
-
-  base::SysInfo::ResetChromeOSVersionInfoForTest();
 }
 
 TEST_F(ArcVmClientAdapterTest, ChromeOsChannelUnknown) {
-  base::SysInfo::SetChromeOSVersionInfoForTest("CHROMEOS_RELEASE_TRACK=invalid",
-                                               base::Time::Now());
+  base::test::ScopedChromeOSVersionInfo info("CHROMEOS_RELEASE_TRACK=invalid",
+                                             base::Time::Now());
 
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
@@ -1214,8 +1212,6 @@ TEST_F(ArcVmClientAdapterTest, ChromeOsChannelUnknown) {
   EXPECT_TRUE(
       base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
                      "androidboot.chromeos_channel=unknown"));
-
-  base::SysInfo::ResetChromeOSVersionInfoForTest();
 }
 
 // Tests that the binary translation type is set to None when no library is
@@ -1358,6 +1354,47 @@ TEST_F(ArcVmClientAdapterTest, TestBootNotificationServerIsNotListening) {
                                            base::TimeDelta::FromSeconds(26));
 
   StartMiniArcWithParams(false, {});
+}
+
+struct DalvikMemoryProfileTestParam {
+  // Requested profile.
+  StartParams::DalvikMemoryProfile profile;
+  // Name of profile that is expected.
+  const char* profile_name;
+};
+
+constexpr DalvikMemoryProfileTestParam kDalvikMemoryProfileTestCases[] = {
+    {StartParams::DalvikMemoryProfile::DEFAULT, nullptr},
+    {StartParams::DalvikMemoryProfile::M4G, "4G"},
+    {StartParams::DalvikMemoryProfile::M8G, "8G"},
+    {StartParams::DalvikMemoryProfile::M16G, "16G"}};
+
+class ArcVmClientAdapterDalvikMemoryProfileTest
+    : public ArcVmClientAdapterTest,
+      public testing::WithParamInterface<DalvikMemoryProfileTestParam> {};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ArcVmClientAdapterDalvikMemoryProfileTest,
+                         ::testing::ValuesIn(kDalvikMemoryProfileTestCases));
+
+TEST_P(ArcVmClientAdapterDalvikMemoryProfileTest, Profile) {
+  const auto& test_param = GetParam();
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.dalvik_memory_profile = test_param.profile;
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArcWithParams(true, GetPopulatedUpgradeParams());
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  if (test_param.profile_name) {
+    EXPECT_TRUE(base::Contains(
+        GetTestConciergeClient()->start_arc_vm_request().params(),
+        std::string("androidboot.arc_dalvik_memory_profile=") +
+            test_param.profile_name));
+  } else {
+    // Not expected any arc_dalvik_memory_profile.
+    for (const auto& param : request.params())
+      EXPECT_EQ(std::string::npos, param.find("arc_dalvik_memory_profile"));
+  }
 }
 
 }  // namespace

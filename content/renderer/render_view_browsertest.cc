@@ -94,6 +94,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_origin_trials.h"
+#include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -291,10 +292,7 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   blink::WebFrameWidget* main_frame_widget() {
-    return static_cast<blink::WebFrameWidget*>(view()
-                                                   ->GetMainRenderFrame()
-                                                   ->GetLocalRootRenderWidget()
-                                                   ->GetWebWidget());
+    return view()->GetMainRenderFrame()->GetLocalRootWebFrameWidget();
   }
 
   TestRenderFrame* frame() {
@@ -505,7 +503,7 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   gfx::Size MainWidgetSizeInDIPS() {
-    blink::WebSize widget_size = main_widget()->GetWebWidget()->Size();
+    blink::WebSize widget_size = main_frame_widget()->Size();
     blink::WebRect widget_rect(0, 0, widget_size.width, widget_size.height);
     main_widget()->ConvertViewportToWindow(&widget_rect);
     return gfx::Rect(widget_rect).size();
@@ -547,14 +545,12 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void SetDeviceScaleFactor(float dsf) {
-    RenderWidget* widget = main_widget();
-    widget->GetWebWidget()->ApplyVisualProperties(
+    blink::WebFrameWidget* widget = main_frame_widget();
+    widget->ApplyVisualProperties(
         MakeVisualPropertiesWithDeviceScaleFactor(dsf));
 
     ASSERT_EQ(dsf, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
-    ASSERT_EQ(
-        dsf,
-        widget->GetWebWidget()->GetOriginalScreenInfo().device_scale_factor);
+    ASSERT_EQ(dsf, widget->GetOriginalScreenInfo().device_scale_factor);
   }
 
   blink::VisualProperties MakeVisualPropertiesWithDeviceScaleFactor(float dsf) {
@@ -572,10 +568,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     return visual_properties;
   }
 
-  void TestEmulatedSizeDprDsf(int width,
-                              int height,
-                              float dpr,
-                              float compositor_dsf) {
+  void TestEmulatedSizeDprDsf(int width, int height, float dpr, float dsf) {
     static base::string16 get_width =
         base::ASCIIToUTF16("Number(window.innerWidth)");
     static base::string16 get_height =
@@ -596,8 +589,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     EXPECT_EQ(height, emulated_height);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_dpr, &emulated_dpr));
     EXPECT_EQ(static_cast<int>(dpr * 10), emulated_dpr);
-    cc::LayerTreeHost* host = main_widget()->layer_tree_host();
-    EXPECT_EQ(compositor_dsf, host->device_scale_factor());
+    ASSERT_EQ(dsf,
+              main_frame_widget()->GetOriginalScreenInfo().device_scale_factor);
   }
 
   void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size) {
@@ -730,16 +723,11 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
   gfx::Rect widget_screen_rect(5, 7, 57, 59);
 
   // Verify screen rect will be set.
-  EXPECT_EQ(gfx::Rect(main_widget()->GetWebWidget()->GetScreenInfo().rect),
-            screen_rect);
+  EXPECT_EQ(gfx::Rect(main_frame_widget()->GetScreenInfo().rect), screen_rect);
 
   {
     // Make a popup widget.
     blink::WebPagePopup* popup = view()->CreatePopup(frame()->GetWebFrame());
-    RenderWidget* popup_widget =
-        static_cast<RenderWidget*>(popup->GetClientForTesting());
-    ASSERT_TRUE(popup_widget);
-
     // Set its size.
     popup->SetScreenRects(widget_screen_rect, window_screen_rect);
 
@@ -749,7 +737,7 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     EXPECT_EQ(widget_screen_rect, gfx::Rect(popup->ViewRect()));
     EXPECT_EQ(screen_rect, gfx::Rect(popup->GetScreenInfo().rect));
 
-    popup->GetClientForTesting()->BrowserClosedIpcChannelForPopupWidget();
+    popup->Close();
   }
 
   // Enable device emulation on the parent widget.
@@ -766,9 +754,6 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     // Make a popup again. It should inherit device emulation params.
     blink::WebPagePopup* popup = view()->CreatePopup(frame()->GetWebFrame());
     popup->InitializeForTesting(view()->GetWebView());
-    RenderWidget* popup_widget =
-        static_cast<RenderWidget*>(popup->GetClientForTesting());
-    ASSERT_TRUE(popup_widget);
 
     // Set its size again.
     popup->SetScreenRects(widget_screen_rect, window_screen_rect);
@@ -795,20 +780,18 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     EXPECT_EQ(window_screen_rect.height(), popup->WindowRect().height());
     EXPECT_EQ(widget_screen_rect.width(), popup->ViewRect().width());
     EXPECT_EQ(widget_screen_rect.height(), popup->ViewRect().height());
+    EXPECT_EQ(emulated_widget_rect, gfx::Rect(main_frame_widget()->ViewRect()));
     EXPECT_EQ(emulated_widget_rect,
-              gfx::Rect(main_widget()->GetWebWidget()->ViewRect()));
-    EXPECT_EQ(emulated_widget_rect,
-              gfx::Rect(main_widget()->GetWebWidget()->WindowRect()));
+              gfx::Rect(main_frame_widget()->WindowRect()));
 
     // TODO(danakj): Why isn't the ScreenRect visible to the popup an emulated
     // value? The ScreenRect has been changed by emulation as demonstrated
     // below.
-    EXPECT_EQ(gfx::Rect(800, 600),
-              gfx::Rect(popup_widget->GetWebWidget()->GetScreenInfo().rect));
+    EXPECT_EQ(gfx::Rect(800, 600), gfx::Rect(popup->GetScreenInfo().rect));
     EXPECT_EQ(emulated_widget_rect,
-              gfx::Rect(main_widget()->GetWebWidget()->GetScreenInfo().rect));
+              gfx::Rect(main_frame_widget()->GetScreenInfo().rect));
 
-    popup->GetClientForTesting()->BrowserClosedIpcChannelForPopupWidget();
+    popup->Close();
   }
 }
 
@@ -1124,8 +1107,6 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
 // ScreenInfo.
 TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   const float device_scale = 2.0f;
-  float compositor_dsf =
-      compositor_deps_->IsUseZoomForDSFEnabled() ? 1.f : device_scale;
   SetDeviceScaleFactor(device_scale);
 
   LoadHTML(
@@ -1150,20 +1131,16 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   // Verify that the system device scale factor has propagated into the
   // RenderFrameProxy.
   EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
-  EXPECT_EQ(device_scale, main_widget()
-                              ->GetWebWidget()
-                              ->GetOriginalScreenInfo()
-                              .device_scale_factor);
+  EXPECT_EQ(device_scale,
+            main_frame_widget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
 
-  TestEmulatedSizeDprDsf(640, 480, 3.f, compositor_dsf);
+  TestEmulatedSizeDprDsf(640, 480, 3.f, device_scale);
 
   // Verify that the RenderFrameProxy device scale factor is still the same.
   EXPECT_EQ(3.f, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
-  EXPECT_EQ(device_scale, main_widget()
-                              ->GetWebWidget()
-                              ->GetOriginalScreenInfo()
-                              .device_scale_factor);
+  EXPECT_EQ(device_scale,
+            main_frame_widget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
 
   ReceiveDisableDeviceEmulation(view());
@@ -1241,9 +1218,6 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   // Do the remote-to-local transition for the proxy, which is to create a
   // provisional local frame.
   int routing_id = kProxyRoutingId + 1;
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      stub_interface_provider;
-  ignore_result(stub_interface_provider.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
@@ -1277,7 +1251,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   widget_params->widget_host = blink_widget_host.Unbind();
 
   RenderFrameImpl::CreateFrame(
-      *agent_scheduling_group_, routing_id, std::move(stub_interface_provider),
+      *agent_scheduling_group_, routing_id,
       std::move(stub_browser_interface_broker), kProxyRoutingId, base::nullopt,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
       base::UnguessableToken::Create(), replication_state,
@@ -1338,15 +1312,12 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   // Do the first step of a remote-to-local transition for the child proxy,
   // which is to create a provisional local frame.
   int routing_id = kProxyRoutingId + 1;
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      stub_interface_provider;
-  ignore_result(stub_interface_provider.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
   RenderFrameImpl::CreateFrame(
-      *agent_scheduling_group_, routing_id, std::move(stub_interface_provider),
+      *agent_scheduling_group_, routing_id,
       std::move(stub_browser_interface_broker), kProxyRoutingId, base::nullopt,
       frame()->GetRoutingID(), MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
@@ -1476,7 +1447,7 @@ TEST_F(RenderViewImplTextInputStateChanged, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    main_widget()->UpdateTextInputState();
+    main_frame_widget()->UpdateTextInputState();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(1u, updated_states().size());
     ui::TextInputType type = updated_states()[0]->type;
@@ -1493,7 +1464,7 @@ TEST_F(RenderViewImplTextInputStateChanged, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    main_widget()->UpdateTextInputState();
+    main_frame_widget()->UpdateTextInputState();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(1u, updated_states().size());
     type = updated_states()[0]->type;
@@ -1513,7 +1484,7 @@ TEST_F(RenderViewImplTextInputStateChanged, OnImeTypeChanged) {
 
       // Update the IME status and verify if our IME backend sends an IPC
       // message to activate IMEs.
-      main_widget()->UpdateTextInputState();
+      main_frame_widget()->UpdateTextInputState();
       base::RunLoop().RunUntilIdle();
       EXPECT_EQ(1u, updated_states().size());
       type = updated_states()[0]->type;
@@ -1559,7 +1530,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   // Focus the text field, trigger a state update and check that the right IPC
   // is sent.
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_FALSE(updated_states()[0]->always_hide_ime);
@@ -1568,7 +1539,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   // Tell the client to suppress the keyboard. Check whether always_hide_ime is
   // set correctly.
   client.SetShouldSuppressKeyboard(true);
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_TRUE(updated_states()[0]->always_hide_ime);
@@ -1607,7 +1578,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
 
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   blink::WebRect edit_context_control_bounds_expected(10, 20, 30, 40);
@@ -1653,7 +1624,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   blink::WebRect edit_context_control_bounds_expected(10, 20, 31, 41);
@@ -1700,7 +1671,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   blink::WebRect edit_context_control_bounds_expected(-2147483648, -2147483648,
@@ -1740,7 +1711,7 @@ TEST_F(RenderViewImplTextInputStateChanged, ActiveElementGetLayoutBounds) {
   run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   blink::WebInputMethodController* controller =
@@ -1774,7 +1745,7 @@ TEST_F(RenderViewImplTextInputStateChanged, VirtualKeyboardPolicyAuto) {
   run_loop.Run();
   // Update the text input state and verify the virtualkeyboardpolicy attribute
   // value.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_EQ(updated_states()[0]->vk_policy,
@@ -1802,7 +1773,7 @@ TEST_F(RenderViewImplTextInputStateChanged, VirtualKeyboardPolicyAutoToManual) {
   run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify virtualkeyboardpolicy change of the focused element.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_EQ(updated_states()[0]->vk_policy,
@@ -1836,7 +1807,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify virtualkeyboardpolicy change of the focused element and the show
   // API call.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_EQ(updated_states()[0]->vk_policy,
@@ -1854,7 +1825,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify virtualkeyboardpolicy change of the focused element and the hide
   // API call.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_EQ(updated_states()[0]->vk_policy,
@@ -1887,7 +1858,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify virtualkeyboardpolicy change of the focused element and the show
   // API call.
-  main_widget()->UpdateTextInputState();
+  main_frame_widget()->UpdateTextInputState();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, updated_states().size());
   EXPECT_EQ(updated_states()[0]->vk_policy,
@@ -2020,7 +1991,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    main_widget()->UpdateTextInputState();
+    main_frame_widget()->UpdateTextInputState();
     base::RunLoop().RunUntilIdle();
     render_thread_->sink().ClearMessages();
 
@@ -2569,7 +2540,7 @@ TEST_F(RenderViewImplTextInputMessageOrder,
               TextSelectionChanged(testing::_, testing::_, testing::_))
       .Times(1);
 
-  main_widget()->SetHandlingInputEvent(true);
+  main_frame_widget()->SetHandlingInputEvent(true);
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 }
 
@@ -3066,25 +3037,25 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
 }
 
 TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
-  SetDeviceScaleFactor(2.f);
-  float compositor_dsf = compositor_deps_->IsUseZoomForDSFEnabled() ? 1.f : 2.f;
+  float device_scale = 2.f;
+  SetDeviceScaleFactor(device_scale);
 
   LoadHTML("<body style='min-height:1000px;'></body>");
   {
     SCOPED_TRACE("327x415 1dpr");
-    TestEmulatedSizeDprDsf(327, 415, 1.f, compositor_dsf);
+    TestEmulatedSizeDprDsf(327, 415, 1.f, device_scale);
   }
   {
     SCOPED_TRACE("327x415 1.5dpr");
-    TestEmulatedSizeDprDsf(327, 415, 1.5f, compositor_dsf);
+    TestEmulatedSizeDprDsf(327, 415, 1.5f, device_scale);
   }
   {
     SCOPED_TRACE("1005x1102 2dpr");
-    TestEmulatedSizeDprDsf(1005, 1102, 2.f, compositor_dsf);
+    TestEmulatedSizeDprDsf(1005, 1102, 2.f, device_scale);
   }
   {
     SCOPED_TRACE("1005x1102 3dpr");
-    TestEmulatedSizeDprDsf(1005, 1102, 3.f, compositor_dsf);
+    TestEmulatedSizeDprDsf(1005, 1102, 3.f, device_scale);
   }
 
   ReceiveDisableDeviceEmulation(view());

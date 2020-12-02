@@ -822,7 +822,7 @@
     "type": "additional_compile_target",
   },
   "errorprone_plugin_tests": {
-    "label": "//tools/android/errorprone_plugin:errorprone_plugin_tests",
+    "label": "//tools/android/errorprone_plugin/test:errorprone_plugin_tests",
     "type": "additional_compile_target",
   },
   "events_unittests": {
@@ -1552,6 +1552,10 @@
   },
   "setup_unittests": {
     "label": "//chrome/installer/setup:setup_unittests",
+    "type": "console_test_launcher",
+  },
+  "shell_encryption_unittests": {
+    "label": "//third_party/shell-encryption:shell_encryption_unittests",
     "type": "console_test_launcher",
   },
   "shell_dialogs_unittests": {

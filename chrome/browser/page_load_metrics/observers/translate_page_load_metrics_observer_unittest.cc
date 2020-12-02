@@ -58,8 +58,9 @@ class MockTranslateMetricsLoggerContainer
     mock_translate_metrics_logger_->LogTranslationStarted();
   }
 
-  void LogTranslationFinished(bool was_sucessful) override {
-    mock_translate_metrics_logger_->LogTranslationFinished(was_sucessful);
+  void LogTranslationFinished(
+      translate::TranslateErrors::Type error_type) override {
+    mock_translate_metrics_logger_->LogTranslationFinished(error_type);
   }
 
   void LogReversion() override {
@@ -72,6 +73,12 @@ class MockTranslateMetricsLoggerContainer
 
   void LogOmniboxIconChange(bool is_omnibox_icon_shown) override {
     mock_translate_metrics_logger_->LogOmniboxIconChange(is_omnibox_icon_shown);
+  }
+
+  void LogInitialSourceLanguage(const std::string& source_language_code,
+                                bool is_in_users_content_languages) override {
+    mock_translate_metrics_logger_->LogInitialSourceLanguage(
+        source_language_code, is_in_users_content_languages);
   }
 
   void LogSourceLanguage(const std::string& source_language_code) override {

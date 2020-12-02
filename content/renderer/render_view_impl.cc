@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "cc/trees/ukm_manager.h"
 #include "content/child/webthemeengine_impl_default.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "ui/base/ui_base_features.h"
@@ -298,12 +300,6 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// RenderWidgetOwnerDelegate -----------------------------------------
-
-bool RenderViewImpl::SupportsMultipleWindowsForWidget() {
-  return webview_->GetWebPreferences().supports_multiple_windows;
-}
-
 // IPC message handlers -----------------------------------------
 
 void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
@@ -446,11 +442,8 @@ WebView* RenderViewImpl::CreateView(
   view_params->widget_host = std::move(reply->widget_host);
   view_params->widget = std::move(reply->widget),
   view_params->blink_page_broadcast = std::move(reply->page_broadcast);
-  view_params->main_frame_interface_bundle =
-      mojom::DocumentScopedInterfaceBundle::New(
-          std::move(reply->main_frame_interface_bundle->interface_provider),
-          std::move(
-              reply->main_frame_interface_bundle->browser_interface_broker));
+  view_params->main_frame_interface_broker =
+      std::move(reply->main_frame_interface_broker);
   view_params->main_frame_widget_routing_id = reply->main_frame_widget_route_id;
   view_params->session_storage_namespace_id =
       reply->cloned_session_storage_namespace_id;
@@ -501,26 +494,21 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderFrameImpl::FromWebFrame(creator)->GetFrameHost()->CreateNewPopupWidget(
       std::move(blink_popup_widget_host_receiver),
       std::move(blink_widget_host_receiver), std::move(blink_widget));
-  RenderWidget* opener_render_widget =
-      RenderFrameImpl::FromWebFrame(creator)->GetLocalRootRenderWidget();
-
-  RenderWidget* popup_widget =
-      RenderWidget::CreateForPopup(opener_render_widget->compositor_deps());
+  blink::WebFrameWidget* opener_widget =
+      RenderFrameImpl::FromWebFrame(creator)->GetLocalRootWebFrameWidget();
 
   // The returned WebPagePopup is self-referencing, so the pointer here is not
   // an owning pointer. It is de-referenced by calling Close().
-  blink::WebPagePopup* popup_web_widget = blink::WebPagePopup::Create(
-      popup_widget, std::move(blink_popup_widget_host),
-      std::move(blink_widget_host), std::move(blink_widget_receiver),
+  blink::WebPagePopup* popup = blink::WebPagePopup::Create(
+      std::move(blink_popup_widget_host), std::move(blink_widget_host),
+      std::move(blink_widget_receiver),
       agent_scheduling_group_.agent_group_scheduler().DefaultTaskRunner());
-
-  // Adds a self-reference on the |popup_widget| so it will not be destroyed
-  // when leaving scope. The WebPagePopup takes responsibility for Close()ing
-  // and thus destroying the RenderWidget.
-  popup_widget->InitForPopup(
-      opener_render_widget, popup_web_widget,
-      opener_render_widget->GetWebWidget()->GetOriginalScreenInfo());
-  return popup_web_widget;
+  popup->InitializeCompositing(compositor_deps_->GetWebMainThreadScheduler(),
+                               compositor_deps_->GetTaskGraphRunner(),
+                               opener_widget->GetOriginalScreenInfo(),
+                               compositor_deps_->CreateUkmRecorderFactory(),
+                               /*settings=*/nullptr);
+  return popup;
 }
 
 base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
@@ -530,10 +518,10 @@ base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
   RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
-  RenderWidget* render_widget = render_frame->GetLocalRootRenderWidget();
+  blink::WebFrameWidget* frame_widget =
+      render_frame->GetLocalRootWebFrameWidget();
 
-  render_frame->ScriptedPrint(
-      render_widget->GetWebWidget()->HandlingInputEvent());
+  render_frame->ScriptedPrint(frame_widget->HandlingInputEvent());
 }
 
 void RenderViewImpl::ZoomLevelChanged() {

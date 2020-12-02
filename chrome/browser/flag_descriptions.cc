@@ -1512,6 +1512,11 @@ const char kOmniboxCompactSuggestionsDescription[] =
     "Conserve the space for Omnibox Suggestions by slightly reducing their "
     "size.";
 
+const char kOmniboxDisableCGIParamMatchingName[] =
+    "Disable CGI Param Name Matching";
+const char kOmniboxDisableCGIParamMatchingDescription[] =
+    "Disables using matches in CGI parameter names while scoring suggestions.";
+
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
@@ -2586,6 +2591,13 @@ const char kAndroidDetailedLanguageSettingsName[] =
     "Detailed Language Settings";
 const char kAndroidDetailedLanguageSettingsDescription[] =
     "Enable the new detailed language settings page";
+
+const char kAndroidLayoutChangeTabReparentingName[] =
+    "Android Chrome UI phone/tablet layout change tab reparenting";
+const char kAndroidLayoutChangeTabReparentingDescription[] =
+    "If enabled, when the screen size switches between phone and tablet size, "
+    "the UI layout updates to the proper one and the current tabs are "
+    "reparented instead of reloaded.";
 
 const char kAndroidManagedByMenuItemName[] = "Managed by menu item";
 const char kAndroidManagedByMenuItemDescription[] =
@@ -3687,6 +3699,12 @@ const char kArcNativeBridge64BitSupportExperimentName[] =
     "Enable experimental 64-bit native bridge support for ARC";
 const char kArcNativeBridge64BitSupportExperimentDescription[] =
     "Enable experimental 64-bit native bridge support for ARC where available.";
+
+const char kArcUseHighMemoryDalvikProfileName[] =
+    "Enable ARC high-memory dalvik profile";
+const char kArcUseHighMemoryDalvikProfileDesc[] =
+    "Allow Android to use high-memory dalvik profile when applicable for "
+    "high-memory devices.";
 
 const char kArcUsbHostName[] = "Enable ARC USB host integration";
 const char kArcUsbHostDescription[] =

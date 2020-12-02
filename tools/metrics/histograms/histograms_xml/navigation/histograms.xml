@@ -150,7 +150,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame.MethodHash"
-    enum="MojoInterfaceName" expires_after="2021-03-28">
+    enum="MojoInterfaceName" expires_after="2021-05-30">
   <owner>hbolaria@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -168,7 +168,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame.TimeUntilIPCReceived"
-    units="ms" expires_after="2021-03-28">
+    units="ms" expires_after="2021-05-30">
   <owner>hbolaria@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -355,6 +355,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     This is recorded when navigation is committed, only for the domains which
     are in the scope of back-forward cache experiment.
+  </summary>
+</histogram>
+
+<histogram name="BackForwardCache.Restore.DisableEvictionDelay" units="ms"
+    expires_after="2021-10-01">
+  <owner>carlscab@google.com</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Delay introduced by the IPC round trips to disable eviction in all the
+    renderers of a page stored in the back-forward cache. That is, the interval
+    of time between sending an SetPageLifecycleState IPC to each renderer and
+    receiving all the responses.
+
+    Recorded on reception of the last ACK reply. We added this histogram to
+    measure the impact of this extra round trip to the renderer when restoring a
+    page from the back-forward cache.
   </summary>
 </histogram>
 
@@ -951,6 +967,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.TimeToURLJobStart" units="ms" expires_after="M85">
+  <obsolete>
+    Removed from code in M89 (Nov 2020), after expiring in M85.
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <summary>
     Time between the start of a browser-started navigation request and the

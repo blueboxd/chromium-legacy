@@ -207,6 +207,8 @@ public abstract class ChromeFeatureList {
             "AutofillEnableSaveCardInfoBarAccountIndicationFooter";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_DEFAULT_BROWSER_PROMO = "AndroidDefaultBrowserPromo";
+    public static final String ANDROID_LAYOUT_CHANGE_TAB_REPARENT =
+            "AndroidLayoutChangeTabReparenting";
     public static final String ANDROID_MANAGED_BY_MENU_ITEM = "AndroidManagedByMenuItem";
     public static final String ANDROID_MULTIPLE_DISPLAY = "AndroidMultipleDisplay";
     public static final String ANDROID_NIGHT_MODE_TAB_REPARENTING =
@@ -219,7 +221,11 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_ASSISTANT = "AutofillAssistant";
     public static final String AUTOFILL_ASSISTANT_CHROME_ENTRY = "AutofillAssistantChromeEntry";
     public static final String AUTOFILL_ASSISTANT_DIRECT_ACTIONS = "AutofillAssistantDirectActions";
+    public static final String AUTOFILL_ASSISTANT_DISABLE_ONBOARDING_FLOW =
+            "AutofillAssistantDisableOnboardingFlow";
     public static final String AUTOFILL_ASSISTANT_PROACTIVE_HELP = "AutofillAssistantProactiveHelp";
+    public static final String AUTOFILL_ASSISTANT_DISABLE_PROACTIVE_HELP_TIED_TO_MSBB =
+            "AutofillAssistantDisableProactiveHelpTiedToMSBB";
     public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID = "AutofillManualFallbackAndroid";
     public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
     public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";

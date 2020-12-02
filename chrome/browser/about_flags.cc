@@ -3673,6 +3673,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidNightModeTabReparentingName,
      flag_descriptions::kAndroidNightModeTabReparentingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidNightModeTabReparenting)},
+
+    {"enable-android-layout-change-tab-reparenting",
+     flag_descriptions::kAndroidLayoutChangeTabReparentingName,
+     flag_descriptions::kAndroidLayoutChangeTabReparentingDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidLayoutChangeTabReparenting)},
 #endif  // OS_ANDROID
     {"enable-experimental-accessibility-language-detection",
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionName,
@@ -3828,6 +3834,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcNativeBridge64BitSupportExperimentDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridge64BitSupportExperimentFeature)},
+    {"arc-use-high-memory-dalvik-profile",
+     flag_descriptions::kArcUseHighMemoryDalvikProfileName,
+     flag_descriptions::kArcUseHighMemoryDalvikProfileDesc, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kUseHighMemoryDalvikProfile)},
     {"arc-usb-host", flag_descriptions::kArcUsbHostName,
      flag_descriptions::kArcUsbHostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kUsbHostFeature)},
@@ -4132,6 +4142,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kBookmarkPaths,
                                     kOmniboxBookmarkPathsVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"omnibox-disable-cgi-param-matching",
+     flag_descriptions::kOmniboxDisableCGIParamMatchingName,
+     flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kDisableCGIParamMatching)},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -4173,7 +4187,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          chrome::android::kTabbedAppOverflowMenuThreeButtonActionbar,
          kTabbedAppOverflowMenuThreeButtonActionbarVariations,
-         "AndroidAppMenuThreeButtonActionbar")},
+         "AndroidAppMenuUiReworkPhase4And5")},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -7005,6 +7019,7 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
 #endif  // OS_WIN
 
   if (!strcmp("dns-over-https", entry.internal_name) &&
+      SystemNetworkContextManager::GetInstance() &&
       (SystemNetworkContextManager::GetStubResolverConfigReader()
            ->ShouldDisableDohForManaged() ||
        features::kDnsOverHttpsShowUiParam.Get())) {
@@ -7081,6 +7096,10 @@ void GetFlagFeatureEntriesForDeprecatedPage(
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&ShouldSkipNonDeprecatedFeatureEntry));
+}
+
+flags_ui::FlagsState* GetCurrentFlagsState() {
+  return FlagsStateSingleton::GetFlagsState();
 }
 
 bool IsRestartNeededToCommitChanges() {

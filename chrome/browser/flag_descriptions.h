@@ -896,6 +896,9 @@ extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 extern const char kOmniboxCompactSuggestionsName[];
 extern const char kOmniboxCompactSuggestionsDescription[];
 
+extern const char kOmniboxDisableCGIParamMatchingName[];
+extern const char kOmniboxDisableCGIParamMatchingDescription[];
+
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
@@ -1506,6 +1509,9 @@ extern const char kAndroidDefaultBrowserPromoDescription[];
 
 extern const char kAndroidDetailedLanguageSettingsName[];
 extern const char kAndroidDetailedLanguageSettingsDescription[];
+
+extern const char kAndroidLayoutChangeTabReparentingName[];
+extern const char kAndroidLayoutChangeTabReparentingDescription[];
 
 extern const char kAndroidManagedByMenuItemName[];
 extern const char kAndroidManagedByMenuItemDescription[];
@@ -2140,6 +2146,9 @@ extern const char kArcNativeBridgeToggleDescription[];
 
 extern const char kArcNativeBridge64BitSupportExperimentName[];
 extern const char kArcNativeBridge64BitSupportExperimentDescription[];
+
+extern const char kArcUseHighMemoryDalvikProfileName[];
+extern const char kArcUseHighMemoryDalvikProfileDesc[];
 
 extern const char kArcUsbHostName[];
 extern const char kArcUsbHostDescription[];

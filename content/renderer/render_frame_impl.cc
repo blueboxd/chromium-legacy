@@ -139,7 +139,6 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/common/action_after_pagehide.h"
@@ -1523,14 +1522,11 @@ RenderFrameImpl* RenderFrameImpl::Create(
     AgentSchedulingGroup& agent_scheduling_group,
     RenderViewImpl* render_view,
     int32_t routing_id,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     const base::UnguessableToken& devtools_frame_token) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   CreateParams params(agent_scheduling_group, render_view, routing_id,
-                      std::move(interface_provider),
                       std::move(browser_interface_broker),
                       devtools_frame_token);
 
@@ -1566,15 +1562,9 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // A main frame RenderFrame must have a RenderWidget.
   DCHECK_NE(MSG_ROUTING_NONE, params->main_frame_widget_routing_id);
 
-  CHECK(params->main_frame_interface_bundle);
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      main_frame_interface_provider(
-          std::move(params->main_frame_interface_bundle->interface_provider));
-
   RenderFrameImpl* render_frame = RenderFrameImpl::Create(
       agent_scheduling_group, render_view, params->main_frame_routing_id,
-      std::move(main_frame_interface_provider),
-      std::move(params->main_frame_interface_bundle->browser_interface_broker),
+      std::move(params->main_frame_interface_broker),
       params->devtools_main_frame_token);
   render_frame->InitializeBlameContext(nullptr);
 
@@ -1607,22 +1597,21 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
           mojom::ViewWidgetType::kTopLevel,
       /*hidden=*/true, render_view->widgets_never_composited());
 
-  render_widget->InitForMainFrame(
-      web_frame_widget, params->visual_properties.screen_info, *render_view);
+  render_widget->InitForMainFrame(web_frame_widget,
+                                  params->visual_properties.screen_info);
 
   // The WebFrame created here was already attached to the Page as its main
   // frame, and the WebFrameWidget has been initialized, so we can call
   // WebView's DidAttachLocalMainFrame().
   render_view->GetWebView()->DidAttachLocalMainFrame();
 
-  // The RenderWidget should start with valid VisualProperties, including a
-  // non-zero size. While RenderWidget would not normally receive IPCs and
+  // The WebFrameWidget should start with valid VisualProperties, including a
+  // non-zero size. While WebFrameWidget would not normally receive IPCs and
   // thus would not get VisualProperty updates while the frame is provisional,
   // we need at least one update to them in order to meet expectations in the
   // renderer, and that update comes as part of the CreateFrame message.
-  // TODO(crbug.com/419087): This could become part of RenderWidget Init.
-  render_widget->GetWebWidget()->ApplyVisualProperties(
-      params->visual_properties);
+  // TODO(crbug.com/419087): This could become part of WebFrameWidget Init.
+  web_frame_widget->ApplyVisualProperties(params->visual_properties);
 
   render_frame->render_widget_ = render_widget.get();
   render_frame->owned_render_widget_ = std::move(render_widget);
@@ -1636,8 +1625,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 void RenderFrameImpl::CreateFrame(
     AgentSchedulingGroup& agent_scheduling_group,
     int routing_id,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     int previous_routing_id,
@@ -1684,8 +1671,7 @@ void RenderFrameImpl::CreateFrame(
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame = RenderFrameImpl::Create(
         agent_scheduling_group, parent_proxy->render_view(), routing_id,
-        std::move(interface_provider), std::move(browser_interface_broker),
-        devtools_frame_token);
+        std::move(browser_interface_broker), devtools_frame_token);
     render_frame->InitializeBlameContext(FromRoutingID(parent_routing_id));
     render_frame->unique_name_helper_.set_propagated_name(
         replicated_state.unique_name);
@@ -1727,8 +1713,7 @@ void RenderFrameImpl::CreateFrame(
     // main frame, as in the case where a navigation to the current process'
     render_frame = RenderFrameImpl::Create(
         agent_scheduling_group, render_view, routing_id,
-        std::move(interface_provider), std::move(browser_interface_broker),
-        devtools_frame_token);
+        std::move(browser_interface_broker), devtools_frame_token);
     render_frame->InitializeBlameContext(nullptr);
     render_frame->previous_routing_id_ = previous_routing_id;
     web_frame = blink::WebLocalFrame::CreateProvisional(
@@ -1779,16 +1764,14 @@ void RenderFrameImpl::CreateFrame(
         /*hidden=*/true, render_view->widgets_never_composited());
 
     render_widget->InitForMainFrame(
-        web_frame_widget, widget_params->visual_properties.screen_info,
-        *render_view);
-    // The RenderWidget should start with valid VisualProperties, including a
-    // non-zero size. While RenderWidget would not normally receive IPCs and
+        web_frame_widget, widget_params->visual_properties.screen_info);
+    // The WebFrameWidget should start with valid VisualProperties, including a
+    // non-zero size. While WebFrameWidget would not normally receive IPCs and
     // thus would not get VisualProperty updates while the frame is provisional,
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
-    // TODO(crbug.com/419087): This could become part of RenderWidget Init.
-    render_widget->GetWebWidget()->ApplyVisualProperties(
-        widget_params->visual_properties);
+    // TODO(crbug.com/419087): This could become part of WebFrameWidget Init.
+    web_frame_widget->ApplyVisualProperties(widget_params->visual_properties);
 
     // Note that we do *not* call WebView's DidAttachLocalMainFrame() here yet
     // because this frame is provisional and not attached to the Page yet. We
@@ -1834,14 +1817,13 @@ void RenderFrameImpl::CreateFrame(
     // and run.
     render_widget->InitForChildLocalRoot(
         web_frame_widget, widget_params->visual_properties.screen_info);
-    // The RenderWidget should start with valid VisualProperties, including a
-    // non-zero size. While RenderWidget would not normally receive IPCs and
+    // The WebFrameWidget should start with valid VisualProperties, including a
+    // non-zero size. While WebFrameWidget would not normally receive IPCs and
     // thus would not get VisualProperty updates while the frame is provisional,
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
-    // TODO(crbug.com/419087): This could become part of RenderWidget Init.
-    render_widget->GetWebWidget()->ApplyVisualProperties(
-        widget_params->visual_properties);
+    // TODO(crbug.com/419087): This could become part of WebFrameWidget Init.
+    web_frame_widget->ApplyVisualProperties(widget_params->visual_properties);
 
     render_frame->render_widget_ = render_widget.get();
     render_frame->owned_render_widget_ = std::move(render_widget);
@@ -1973,15 +1955,12 @@ RenderFrameImpl::CreateParams::CreateParams(
     AgentSchedulingGroup& agent_scheduling_group,
     RenderViewImpl* render_view,
     int32_t routing_id,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     const base::UnguessableToken& devtools_frame_token)
     : agent_scheduling_group(&agent_scheduling_group),
       render_view(render_view),
       routing_id(routing_id),
-      interface_provider(std::move(interface_provider)),
       browser_interface_broker(std::move(browser_interface_broker)),
       devtools_frame_token(devtools_frame_token) {}
 RenderFrameImpl::CreateParams::~CreateParams() = default;
@@ -2001,8 +1980,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       previous_routing_id_(MSG_ROUTING_NONE),
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
-      remote_interfaces_(
-          agent_scheduling_group_.agent_group_scheduler().DefaultTaskRunner()),
       render_accessibility_manager_(
           std::make_unique<RenderAccessibilityManager>(this)),
       blame_context_(nullptr),
@@ -2018,10 +1995,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
                               base::Unretained(this))),
       devtools_frame_token_(params.devtools_frame_token) {
   DCHECK(RenderThread::IsMainThread());
-  // The InterfaceProvider to access Mojo services exposed by the RFHI must be
-  // provided at construction time. See: https://crbug.com/729021/.
-  CHECK(params.interface_provider.is_valid());
-  remote_interfaces_.Bind(std::move(params.interface_provider));
   blink_interface_registry_.reset(new BlinkInterfaceRegistryImpl(
       registry_.GetWeakPtr(), associated_interfaces_.GetWeakPtr()));
 
@@ -2166,21 +2139,21 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
   if (instance != focused_pepper_plugin_)
     return;
 
-  GetLocalRootRenderWidget()->UpdateTextInputState();
+  GetLocalRootWebFrameWidget()->UpdateTextInputState();
 }
 
 void RenderFrameImpl::PepperCaretPositionChanged(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  GetLocalRootRenderWidget()->UpdateSelectionBounds();
+  GetLocalRootWebFrameWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::PepperCancelComposition(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  GetLocalRootRenderWidget()->GetWebWidget()->CancelCompositionForPepper();
+  GetLocalRootWebFrameWidget()->CancelCompositionForPepper();
 }
 
 void RenderFrameImpl::PepperSelectionChanged(
@@ -2806,7 +2779,7 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
 }
 
 void RenderFrameImpl::ShowVirtualKeyboard() {
-  GetLocalRootRenderWidget()->GetWebWidget()->ShowVirtualKeyboard();
+  GetLocalRootWebFrameWidget()->ShowVirtualKeyboard();
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
@@ -2842,10 +2815,6 @@ void RenderFrameImpl::BindLocalInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   GetInterface(interface_name, std::move(interface_pipe));
-}
-
-service_manager::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
-  return &remote_interfaces_;
 }
 
 blink::AssociatedInterfaceRegistry*
@@ -2903,7 +2872,7 @@ blink::PreviewsState RenderFrameImpl::GetPreviewsState() {
 }
 
 bool RenderFrameImpl::IsPasting() {
-  return GetLocalRootRenderWidget()->GetFrameWidget()->IsPasting();
+  return GetLocalRootWebFrameWidget()->IsPasting();
 }
 
 // blink::mojom::FullscreenVideoElementHandler implementation ------------------
@@ -3757,7 +3726,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     const blink::WebString& sink_id) {
   return media_factory_.CreateMediaPlayer(
       source, client, inspector_context, encrypted_client, initial_cdm, sink_id,
-      GetLocalRootRenderWidget()->GetFrameWidget()->GetFrameSinkId(),
+      GetLocalRootWebFrameWidget()->GetFrameSinkId(),
       GetLocalRootRenderWidget()->layer_tree_host()->GetSettings());
 }
 
@@ -3951,15 +3920,12 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
           name.IsEmpty() ? fallback_name.Utf8() : name.Utf8(),
           is_created_by_script);
 
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      child_interface_provider;
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
 
   // Now create the child frame in the browser via an asynchronous call.
   GetFrameHost()->CreateChildFrame(
       child_routing_id,
-      child_interface_provider.InitWithNewPipeAndPassReceiver(),
       browser_interface_broker.InitWithNewPipeAndPassReceiver(),
       std::move(policy_container_host_receiver), scope, name.Utf8(),
       frame_unique_name, is_created_by_script, frame_policy,
@@ -3974,8 +3940,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       agent_scheduling_group_, render_view_, child_routing_id,
-      std::move(child_interface_provider), std::move(browser_interface_broker),
-      devtools_frame_token);
+      std::move(browser_interface_broker), devtools_frame_token);
   child_render_frame->unique_name_helper_.set_propagated_name(
       frame_unique_name);
   if (is_created_by_script)
@@ -4224,31 +4189,11 @@ void RenderFrameImpl::DidCommitNavigation(
   // Generate a new embedding token on each document change.
   GetWebFrame()->SetEmbeddingToken(base::UnguessableToken::Create());
 
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-      remote_interface_provider_receiver;
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver;
 
   // blink passes true when the new pipe needs to be bound.
   if (should_reset_browser_interface_broker) {
-    // If we're navigating to a new document, bind |remote_interfaces_| to a new
-    // message pipe. The receiver end of the new InterfaceProvider interface
-    // will be sent over as part of DidCommitProvisionalLoad. After the RFHI
-    // receives the commit confirmation, it will immediately close the old
-    // message pipe to avoid GetInterface calls racing with navigation commit,
-    // and bind the receiver end of the message pipe created here.
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interfaces_provider;
-    remote_interface_provider_receiver =
-        interfaces_provider.InitWithNewPipeAndPassReceiver();
-
-    // Must initialize |remote_interfaces_| with a new working pipe *before*
-    // observers receive DidCommitProvisionalLoad, so they can already request
-    // remote interfaces. The interface requests will be serviced once the
-    // InterfaceProvider interface request is bound by the RenderFrameHostImpl.
-    remote_interfaces_.Close();
-    remote_interfaces_.Bind(std::move(interfaces_provider));
-
     // If we're navigating to a new document, bind
     // |browser_interface_broker_proxy_| to a new browser interface broker. The
     // request end of the new BrowserInterfaceBroker interface will be sent over
@@ -4281,10 +4226,10 @@ void RenderFrameImpl::DidCommitNavigation(
     }
 
     // If the request for |audio_input_stream_factory_| is in flight when
-    // |remote_interfaces_| is reset, it will be silently dropped. We reset
-    // |audio_input_stream_factory_| to force a new mojo request to be sent
-    // the next time it's used. See https://crbug.com/795258 for implementing a
-    // nicer solution.
+    // |browser_interface_broker_proxy_| is reset, it will be silently dropped.
+    // We reset |audio_input_stream_factory_| to force a new mojo request to be
+    // sent the next time it's used. See https://crbug.com/795258 for
+    // implementing a nicer solution.
     audio_input_stream_factory_.reset();
   }
 
@@ -4301,7 +4246,6 @@ void RenderFrameImpl::DidCommitNavigation(
       sandbox_flags, feature_policy_header, document_policy_header,
       should_reset_browser_interface_broker
           ? mojom::DidCommitProvisionalLoadInterfaceParams::New(
-                std::move(remote_interface_provider_receiver),
                 std::move(browser_interface_broker_receiver))
           : nullptr,
       GetWebFrame()->GetEmbeddingToken());
@@ -4492,8 +4436,8 @@ void RenderFrameImpl::AbortClientNavigation() {
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
-  if (!GetLocalRootRenderWidget()->GetWebWidget()->HandlingInputEvent() &&
-      !GetLocalRootRenderWidget()->GetFrameWidget()->HandlingSelectRange())
+  if (!GetLocalRootWebFrameWidget()->HandlingInputEvent() &&
+      !GetLocalRootWebFrameWidget()->HandlingSelectRange())
     return;
 
   if (is_empty_selection)
@@ -4504,7 +4448,7 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   // was changed, and SyncSelectionIfRequired may send SelectionChanged
   // to notify the selection was changed.  Focus change should be notified
   // before selection change.
-  GetLocalRootRenderWidget()->UpdateTextInputState();
+  GetLocalRootWebFrameWidget()->UpdateTextInputState();
   SyncSelectionIfRequired();
 }
 
@@ -4525,8 +4469,7 @@ void RenderFrameImpl::ShowContextMenu(
     // them to DIP coordiates relative to the WindowScreenRect.
     blink::WebRect position_in_window(params.x, params.y, 0, 0);
     GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
-    const float scale =
-        GetLocalRootRenderWidget()->GetWebWidget()->GetEmulatorScale();
+    const float scale = GetLocalRootWebFrameWidget()->GetEmulatorScale();
     params.x = position_in_window.x * scale;
     params.y = position_in_window.y * scale;
   }
@@ -4960,7 +4903,7 @@ bool RenderFrameImpl::IsMainFrame() {
 }
 
 bool RenderFrameImpl::IsHidden() {
-  return GetLocalRootRenderWidget()->GetWebWidget()->IsHidden();
+  return GetLocalRootWebFrameWidget()->IsHidden();
 }
 
 bool RenderFrameImpl::IsLocalRoot() const {
@@ -5214,7 +5157,7 @@ void RenderFrameImpl::UpdateStateForCommit(
     }
   }
 
-  if (render_widget_) {
+  if (IsLocalRoot()) {
     // This goes to WebViewImpl and sets the zoom factor which will be
     // propagated down to this RenderFrameImpl's LocalFrame in blink.
     // Non-local-roots are able to grab the value off their parents but local
@@ -5230,8 +5173,8 @@ void RenderFrameImpl::UpdateStateForCommit(
     //     IFrameZoomBrowserTest.SubframesDontZoomIndependently (and the whole
     //     suite).
     render_view_->PropagatePageZoomToNewlyAttachedFrame(
-        render_widget_->compositor_deps()->IsUseZoomForDSFEnabled(),
-        render_widget_->GetWebWidget()->GetScreenInfo().device_scale_factor);
+        render_view_->compositor_deps()->IsUseZoomForDSFEnabled(),
+        GetLocalRootWebFrameWidget()->GetScreenInfo().device_scale_factor);
   }
 
   // If we are a top frame navigation to another document we should clear any
@@ -5958,7 +5901,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
     selection_range_ = range;
     SetSelectedText(text, offset, range);
   }
-  GetLocalRootRenderWidget()->UpdateSelectionBounds();
+  GetLocalRootWebFrameWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
@@ -6439,8 +6382,8 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   else if (focused_pepper_plugin_ == instance)
     focused_pepper_plugin_ = nullptr;
 
-  GetLocalRootRenderWidget()->UpdateTextInputState();
-  GetLocalRootRenderWidget()->UpdateSelectionBounds();
+  GetLocalRootWebFrameWidget()->UpdateTextInputState();
+  GetLocalRootWebFrameWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::PepperStartsPlayback(PepperPluginInstanceImpl* instance) {
@@ -6547,10 +6490,7 @@ void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
 }
 
 float RenderFrameImpl::GetDeviceScaleFactor() {
-  return GetLocalRootRenderWidget()
-      ->GetWebWidget()
-      ->GetScreenInfo()
-      .device_scale_factor;
+  return GetLocalRootWebFrameWidget()->GetScreenInfo().device_scale_factor;
 }
 
 }  // namespace content

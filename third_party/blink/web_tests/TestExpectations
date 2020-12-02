@@ -217,11 +217,11 @@ crbug.com/1093466 virtual/portals/http/tests/portals/* [ Pass ]
 crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 
 # Subpixel differences
-crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
-crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure ]
-crbug.com/986110 external/wpt/css/css-transforms/perspective-transforms-equivalence.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-transforms/perspective-transforms-equivalence.html [ Failure ]
 
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
@@ -263,9 +263,9 @@ crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transf
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
 
 # Subpixel differences due to compositing on Mac10.14+.
-crbug.com/1079418 [ Mac10.14 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
-crbug.com/1079418 [ Mac10.15 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
-crbug.com/1079418 [ Mac11.0 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
+crbug.com/997202 [ Mac10.14 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
+crbug.com/997202 [ Mac10.15 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
+crbug.com/997202 [ Mac11.0 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
 
 # This test depends on synchronous focus() which does not exist (anymore?).
 crbug.com/1074482 external/wpt/html/interaction/focus/the-autofocus-attribute/update-the-rendering.html [ Failure ]
@@ -347,9 +347,9 @@ crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html
 crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
 # Subpixel rounding differences that are incorrect.
-crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
+crbug.com/997202 compositing/overflow/scaled-overflow.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
-crbug.com/921105 virtual/threaded-no-composited-antialiasing/animations/skew-notsequential-compositor.html [ Failure Pass ]
+crbug.com/997202 virtual/threaded-no-composited-antialiasing/animations/skew-notsequential-compositor.html [ Failure Pass ]
 
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
@@ -1353,7 +1353,6 @@ crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
 crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
-crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure ]
 
 ### sheriff 2018-05-28
 
@@ -1787,7 +1786,7 @@ crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
 # By about a quarter or less of a pixel.
-crbug.com/421412 [ Mac ] virtual/text-antialias/international/bdo-bidi-width.html [ Failure ]
+crbug.com/997202 [ Mac ] virtual/text-antialias/international/bdo-bidi-width.html [ Failure ]
 
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
@@ -2003,6 +2002,9 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 
 crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
+
+# Temporarily disable for incoming DevTools changes
+crbug.com/1150797 http/tests/devtools/console/console-command-copy.js [ Pass Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -4128,10 +4130,6 @@ crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.html [ Failure ]
 
-crbug.com/1150389 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/1150389 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/1150389 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/1150389 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/1150389 [ Mac ] virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure ]
 
 # Added 2016-12-12
@@ -5782,9 +5780,6 @@ crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-
 # Sheriff 2020-11-20
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
 
-# Sheriff 2020-09-08
-crbug.com/1124978 [ Mac ] virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass Failure ]
-
 # Mac11.0 rebaseline
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-weight.html [ Failure ]
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-trak.html [ Failure ]
@@ -5935,10 +5930,7 @@ crbug.com/1145019 [ Win7 ] fast/events/updateLayoutForHitTest.html [ Failure ]
 
 # Lack of support for reftest fuzzy matching
 # Reftests have minor pixel differences due to antialiasing.
-crbug.com/997202 [ Mac ] external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
-crbug.com/997202 [ Mac ] virtual/composite-relative-keyframes/external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
-crbug.com/997202 [ Mac ] virtual/threaded/external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
-crbug.com/997202 [ Mac ] virtual/transform-interop/external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
 
 # Sheriff 2020-11-04
 crbug.com/1144273 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure Timeout ]
@@ -5982,8 +5974,6 @@ crbug.com/1152496 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-sha
 crbug.com/1087242 http/tests/inspector-protocol/service-worker/network-extrainfo-main-request.js [ Pass Failure Timeout Crash ]
 crbug.com/1149771 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Timeout ]
 crbug.com/1152532 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
-crbug.com/1092048 external/wpt/FileAPI/blob/Blob-stream.any.html [ Pass Timeout ]
-crbug.com/1092048 external/wpt/FileAPI/blob/Blob-stream.any.worker.html [ Pass Timeout ]
 crbug.com/1134459 accessibility/aom-click-action.html [ Pass Timeout ]
 
 #Sheriff 2020-11-26
@@ -5995,6 +5985,3 @@ crbug.com/931646 [ Mac ] http/tests/preload/meta-viewport-link-headers-imagesrcs
 # for waitings in web tests to trigger a detection event.
 crbug.com/1032681 http/tests/subresource_filter/overlay_popup_ad/* [ Skip ]
 crbug.com/1032681 virtual/disable-frequency-capping-for-overlay-popup-detection/http/tests/subresource_filter/overlay_popup_ad/* [ Pass ]
-
-#Sheriff 2020-12-01
-crbug.com/1153626 http/tests/wasm/wasm_worker_termination_while_compiling.html [ Pass Crash ]

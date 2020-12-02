@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "cpu", "goma", "os", "xcode_cache")
+load("//lib/builders.star", "cpu", "goma", "os", "xcode")
 load("//lib/try.star", "try_")
 load("//project.star", "settings")
 
@@ -892,6 +892,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "fuchsia-x64-cast",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -899,6 +900,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "fuchsia_arm64",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -906,6 +908,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "fuchsia_x64",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -1021,7 +1024,7 @@ try_.chromium_linux_builder(
     name = "linux-rel-builderful",
     builderless = False,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 10),
+    tryjob = try_.job(experiment_percentage = 5),
     use_clang_coverage = True,
 )
 
@@ -1033,6 +1036,15 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux-viz-rel",
+)
+
+# crbug.com/1149606: Experimental builder to test pre-warming
+try_.chromium_linux_builder(
+    name = "linux-warmed",
+    builderless = False,
+    goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(experiment_percentage = 5),
+    use_clang_coverage = True,
 )
 
 try_.chromium_linux_builder(
@@ -1049,10 +1061,6 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux-wpt-input-fyi-rel",
-)
-
-try_.chromium_linux_builder(
-    name = "linux-wpt-payments-fyi-rel",
 )
 
 try_.chromium_linux_builder(
@@ -1322,6 +1330,9 @@ try_.chromium_mac_ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
+    use_clang_coverage = True,
+    coverage_exclude_sources = "ios_test_files_and_test_utils",
+    coverage_test_types = ["unit"],
     tryjob = try_.job(),
 )
 
@@ -1345,11 +1356,7 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-cronet",
     branch_selector = branches.STANDARD_MILESTONE,
-    caches = [xcode_cache.x11e146],
     main_list_view = "try",
-    properties = {
-        "xcode_build_version": "11e146",
-    },
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/components/cronet/.+",
@@ -1360,12 +1367,16 @@ try_.chromium_mac_ios_builder(
             ".+/[+]/components/cronet/android/.+",
         ],
     ),
+    xcode = xcode.x11e146,
 )
 
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-full-configs",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
+    use_clang_coverage = True,
+    coverage_exclude_sources = "ios_test_files_and_test_utils",
+    coverage_test_types = ["unit"],
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/ios/.+",
@@ -1409,10 +1420,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
-    caches = [xcode_cache.x12b5044c],
-    properties = {
-        "xcode_build_version": "12b5044c",
-    },
+    xcode = xcode.x12b5044c,
 )
 
 try_.chromium_updater_mac_builder(

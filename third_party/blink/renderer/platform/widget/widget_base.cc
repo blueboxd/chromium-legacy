@@ -161,6 +161,7 @@ WidgetBase::WidgetBase(
           scheduler::WebThreadScheduler::MainThreadScheduler()) {
     render_widget_scheduling_state_ =
         main_thread_scheduler->NewRenderWidgetSchedulingState();
+    render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
 }
 
@@ -175,7 +176,9 @@ void WidgetBase::InitializeCompositing(
     bool for_child_local_root_frame,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-    const cc::LayerTreeSettings* settings) {
+    const cc::LayerTreeSettings* settings,
+    base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+        frame_widget_input_handler) {
   main_thread_compositor_task_runner_ =
       main_thread_scheduler->CompositorTaskRunner();
 
@@ -218,9 +221,9 @@ void WidgetBase::InitializeCompositing(
   // WidgetBaseInputHandler.
   bool uses_input_handler = frame_widget;
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-      weak_ptr_factory_.GetWeakPtr(), never_composited_,
-      std::move(compositor_input_task_runner), main_thread_scheduler,
-      uses_input_handler);
+      weak_ptr_factory_.GetWeakPtr(), std::move(frame_widget_input_handler),
+      never_composited_, std::move(compositor_input_task_runner),
+      main_thread_scheduler, uses_input_handler);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -228,13 +231,19 @@ void WidgetBase::InitializeCompositing(
     widget_input_handler_manager_->AllowPreCommitInput();
 
   UpdateScreenInfo(screen_info);
+
+  // If the widget is hidden, delay starting the compositor until the user
+  // shows it. Otherwise start the compositor immediately. If the widget is
+  // for a provisional frame, this importantly starts the compositor before
+  // the frame is inserted into the frame tree, which impacts first paint
+  // metrics.
+  if (!is_hidden_)
+    SetCompositorVisible(true);
 }
 
-void WidgetBase::Shutdown(
-    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) {
-  if (!cleanup_runner)
-    cleanup_runner = base::ThreadTaskRunnerHandle::Get();
-
+void WidgetBase::Shutdown() {
+  scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner =
+      base::ThreadTaskRunnerHandle::Get();
   // The |input_event_queue_| is refcounted and will live while an event is
   // being handled. This drops the connection back to this WidgetBase which
   // is being destroyed.
@@ -286,9 +295,10 @@ void WidgetBase::ForceRedraw(
       base::BindOnce(&OnDidPresentForceDrawFrame, std::move(callback)));
   LayerTreeHost()->SetNeedsCommitWithForcedRedraw();
 
-  // ScheduleAnimationForWebTests() which is implemented by WebWidgetTestProxy,
-  // providing the additional control over the lifecycle of compositing required
-  // by web tests. This will be a no-op on production.
+  // ScheduleAnimationForWebTests() which is implemented by
+  // WebTestWebFrameWidgetImpl, providing the additional control over the
+  // lifecycle of compositing required by web tests. This will be a no-op on
+  // production.
   client_->ScheduleAnimationForWebTests();
 }
 

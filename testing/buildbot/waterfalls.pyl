@@ -2768,14 +2768,6 @@
           'isolated_scripts': 'wpt_web_tests_input',
         },
       },
-      'linux-wpt-payments-fyi-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'wpt_web_tests_payments',
-        },
-      },
       'mac-arm64-rel-tests': {
         'mixins': [
             'mac_arm64_apple_dtk_experimental',
@@ -4923,6 +4915,7 @@
           'all',
         ],
         'mixins': [
+          'isolate_profile_data',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
@@ -4938,6 +4931,7 @@
           'all'
         ],
         'mixins': [
+          'isolate_profile_data',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',

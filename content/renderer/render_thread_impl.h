@@ -197,7 +197,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsElasticOverscrollEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
   bool IsSingleThreaded() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() override;
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsScrollAnimatorEnabled() override;
@@ -499,7 +498,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererInterfaceReceiver(
       mojo::PendingAssociatedReceiver<mojom::Renderer> receiver);
 
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+  scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_memory_allocator_;
 
   // These objects live solely on the render thread.

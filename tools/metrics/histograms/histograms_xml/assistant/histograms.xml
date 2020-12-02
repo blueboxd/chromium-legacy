@@ -50,7 +50,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Assistant.ContextEnabledUserCount" enum="BooleanEnabled"
-    expires_after="2021-03-28">
+    expires_after="2021-05-30">
   <owner>updowndota@chromium.org</owner>
   <owner>xiaohuic@chromium.org</owner>
   <summary>
@@ -292,7 +292,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="QuickAnswers.ContextMenu.Close" enum="BooleanClicked"
-    expires_after="2021-02-14">
+    expires_after="2021-05-30">
   <owner>updowndota@google.com</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>
@@ -302,6 +302,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     engagement metrics, which record whether users click on context menus that
     *do* include a Quick Answers card. Recorded on ChromeOS only.
   </summary>
+</histogram>
+
+<histogram name="QuickAnswers.ContextMenu.Close.Duration{InteractionType}"
+    units="ms" expires_after="2021-02-14">
+  <owner>updowndota@chromium.org</owner>
+  <owner>croissant-eng@chromium.org</owner>
+  <summary>
+    Records the amount of time the context menu was shown before close if the
+    user {InteractionType} (via clicking) with the context menu. Recorded on
+    ChromeOS only.
+  </summary>
+  <token key="InteractionType">
+    <variant name="WithClick" summary="has interacted"/>
+    <variant name="WithoutClick" summary="has not interacted"/>
+  </token>
 </histogram>
 
 <histogram name="QuickAnswers.Intent" enum="QuickAnswersIntentType"

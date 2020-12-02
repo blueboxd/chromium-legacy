@@ -318,7 +318,6 @@
       'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',
       'linux-wpt-identity-fyi-rel': 'release_bot_minimal_symbols',
       'linux-wpt-input-fyi-rel': 'release_bot_minimal_symbols',
-      'linux-wpt-payments-fyi-rel': 'release_bot_minimal_symbols',
       'mac-code-coverage': 'clang_code_coverage',
       'mac-hermetic-upgrade-rel': 'release_bot',
       'mac-paeverywhere-x64-fyi-dbg': 'debug_bot_paeverywhere_x64',
@@ -966,10 +965,10 @@
       'linux-rel-builderful': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-trusty-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-viz-rel': 'release_trybot',
+      'linux-warmed': 'release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-wpt-fyi-rel': 'release_trybot',
       'linux-wpt-identity-fyi-rel': 'release_trybot',
       'linux-wpt-input-fyi-rel': 'release_trybot',
-      'linux-wpt-payments-fyi-rel': 'release_trybot',
       'linux-webkit-msan-rel': 'msan_release_bot',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
@@ -1030,12 +1029,12 @@
       'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
       'ios14-beta-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
       'ios14-sdk-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
-      'ios-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
-      'ios-simulator-coverage-exp': 'clang_code_coverage_ios_partial_instrumentation_xctest',
-      'ios-simulator-full-configs': 'ios_simulator_debug_static_bot_xctest',
-      'ios-simulator-full-configs-coverage-exp': 'clang_code_coverage_ios_partial_instrumentation_xctest',
+      'ios-simulator': 'ios_simulator_rbe_code_coverage_partial_instrumentation_xctest',
+      'ios-simulator-coverage-exp': 'ios_simulator_rbe_code_coverage_partial_instrumentation_xctest',
+      'ios-simulator-full-configs': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
+      'ios-simulator-full-configs-coverage-exp': 'ios_simulator_rbe_code_coverage_partial_instrumentation_xctest',
       'ios-simulator-cronet': 'ios_cronet_xctest',
-      'ios-simulator-code-coverage': 'clang_code_coverage_ios_partial_instrumentation_xctest',
+      'ios-simulator-code-coverage': 'ios_simulator_rbe_code_coverage_partial_instrumentation_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-noncq': 'ios_simulator_debug_static_rbe_bot_xctest',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window_xctest',
@@ -1696,8 +1695,12 @@
       'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_use_goma_rbe', 'xctest',
     ],
 
-    'clang_code_coverage_ios_partial_instrumentation_xctest': [
-      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_use_goma_rbe', 'partial_code_coverage_instrumentation', 'xctest',
+    'ios_simulator_code_coverage_partial_instrumentation_xctest': [
+      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_simulator', 'partial_code_coverage_instrumentation', 'xctest',
+    ],
+
+    'ios_simulator_rbe_code_coverage_partial_instrumentation_xctest': [
+      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_simulator', 'ios_use_goma_rbe', 'partial_code_coverage_instrumentation', 'xctest',
     ],
 
     'clang_tot_asan_lsan_static_release': [
@@ -2484,6 +2487,11 @@
 
     'release_trybot_no_nacl': [
       'release_trybot', 'disable_nacl',
+    ],
+
+    'release_trybot_no_symbols_use_dummy_lastchange_code_coverage': [
+      'release_trybot', 'no_symbols', 'use_dummy_lastchange',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'release_trybot_paeverywhere_x86': [

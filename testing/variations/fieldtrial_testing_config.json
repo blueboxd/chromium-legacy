@@ -75,6 +75,24 @@
             ]
         }
     ],
+    "AndroidAppMenuUiReworkPhase4And5": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AddToOption",
+                    "params": {
+                        "three_button_action_bar": "add_to_option"
+                    },
+                    "enable_features": [
+                        "TabbedAppOverflowMenuThreeButtonActionbar"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidDarkSearch": [
         {
             "platforms": [
@@ -3536,21 +3554,6 @@
             ]
         }
     ],
-    "IOSWebContentDropInteraction": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AddWebContentDropInteraction"
-                    ]
-                }
-            ]
-        }
-    ],
     "Identifiability": [
         {
             "platforms": [
@@ -4840,6 +4843,9 @@
             "experiments": [
                 {
                     "name": "Enabled ",
+                    "params": {
+                        "DisplayOwner": "true"
+                    },
                     "enable_features": [
                         "OmniboxDocumentProvider"
                     ]
@@ -5720,10 +5726,16 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "selected_text_confidence_threshold": "0.7",
+                        "surrounding_text_confidence_threshold": "0.9"
+                    },
                     "enable_features": [
                         "QuickAnswers",
                         "QuickAnswersRichUi",
-                        "QuickAnswersTextAnnotator"
+                        "QuickAnswersTextAnnotator",
+                        "QuickAnswersTranslation",
+                        "QuickAnswersTranslationCloudAPI"
                     ]
                 }
             ]

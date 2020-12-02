@@ -111,11 +111,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesPasswordDialog) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesToast) {
-  RunTestURL("foreground/elements/files_toast_unittest_gen.html");
+  RunTestURL("foreground/elements/files_toast_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesToolTip) {
-  RunTestURL("foreground/elements/files_tooltip_unittest_gen.html");
+  RunTestURL("foreground/elements/files_tooltip_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileSystemMetadataProvider) {

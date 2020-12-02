@@ -275,7 +275,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'bfcaca046e4dd976b041f5ca61e8bc3054273e50',
+  'devtools_frontend_revision': '708087ed385555f4127fa24bf26dc5fe77b774dd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -327,7 +327,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'bb913a94da4f22f7322a1e8a55295ac69c618ff4',
+  'dawn_revision': '429a12542f160a36d87c1daa6c3102bce072207e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1274,7 +1274,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '2095c0498a0f90aa44ecba366b74ab19afdea813',
+    Var('chromium_git') + '/openscreen' + '@' + '7295822ec55621e52b22222072f816e55bda8472',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1291,7 +1291,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1366dd01174e8c6b1f0f8691de1623ef2d4d56a5',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ae504d46b4c459c5ca024d3ba4f70990da6265d1',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1551,7 +1551,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '253f8369bbf492d62900252d08688810d6a891fc',
+    Var('webrtc_git') + '/src.git' + '@' + 'ccfcec402d37f1343110accdf2f47a7c11433a16',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1623,7 +1623,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@19267c28c1ce321f6a22c9745389060efb199878',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@397ec99b1aca6d729b9186ad403b166ba7df926a',
     'condition': 'checkout_src_internal',
   },
 
@@ -1631,7 +1631,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'BBiRmOh9So_xSPEf3Yuzn6hQ2VvWpMYkzK4Gf2U-_aUC',
+        'version': 'aCOs9DEjxU4ept_oo7PSSUnosojJfVRXLD89hP65ov4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1642,7 +1642,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '9Aak3tK4oVEWWOriZzuRXEUPGWU0lUrVTTcsG4FucPgC',
+        'version': '6AHX-97XEsRATZXtxtSFgMgB4HPdjrF2NmTP1UctxQQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

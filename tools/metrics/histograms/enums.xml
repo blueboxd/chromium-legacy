@@ -4566,6 +4566,7 @@ others/histograms.xml -->
   <int value="23" label="User clicked back button during onboarding"/>
   <int value="24" label="User navigation in RUNNING state"/>
   <int value="25" label="The UI was closed unexpectedly"/>
+  <int value="26" label="User navigated during onboarding"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -6656,6 +6657,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="237" label="ASGH_RECEIVED_CONTROL_MESSAGE"/>
   <int value="238" label="CSDH_BAD_OWNER"/>
   <int value="239" label="SYNC_COMPOSITOR_NO_LOCAL_SURFACE_ID"/>
+  <int value="240" label="WCI_INVALID_FULLSCREEN_OPTIONS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -43488,6 +43490,7 @@ from previous Chrome versions.
   <int value="-430369215" label="AssistPersonalInfo:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
+  <int value="-427163069" label="isolation-by-default"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>

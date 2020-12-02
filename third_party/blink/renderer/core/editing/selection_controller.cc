@@ -491,7 +491,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
       Selection().SelectionHasFocus()
           ? PositionRespectingEditingBoundary(
                 Selection().ComputeVisibleSelectionInDOMTree().Start(),
-                hit_test_result.LocalPoint(), target)
+                hit_test_result)
           : PositionWithAffinity();
   const PositionInFlatTreeWithAffinity target_position =
       CreateVisiblePosition(
@@ -627,10 +627,9 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
           .ToPositionWithAffinity();
   const SelectionInFlatTree new_selection =
       pos.IsNotNull()
-          ? CreateVisibleSelectionWithGranularity(
+          ? ExpandWithGranularity(
                 SelectionInFlatTree::Builder().Collapse(pos).Build(),
                 TextGranularity::kWord)
-                .AsSelection()
           : SelectionInFlatTree();
 
   // TODO(editing-dev): Fix CreateVisibleSelectionWithGranularity() to not
@@ -966,10 +965,9 @@ bool SelectionController::HandleTripleClick(
           .ToPositionWithAffinity();
   const SelectionInFlatTree new_selection =
       pos.IsNotNull()
-          ? CreateVisibleSelectionWithGranularity(
+          ? ExpandWithGranularity(
                 SelectionInFlatTree::Builder().Collapse(pos).Build(),
                 TextGranularity::kParagraph)
-                .AsSelection()
           : SelectionInFlatTree();
 
   const bool is_handle_visible =

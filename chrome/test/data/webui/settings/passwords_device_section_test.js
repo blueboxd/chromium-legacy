@@ -4,12 +4,15 @@
 
 /** @fileoverview Runs the Polymer tests for the PasswordsDeviceSection page. */
 
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {MultiStorePasswordUiEntry, PasswordManagerImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {createMultiStorePasswordEntry, createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
+import {createMultiStorePasswordEntry, createPasswordEntry, PasswordDeviceSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {assertEquals, assertTrue} from '../chai_assert.js';
 
 /**
  * Sets the fake password data, the appropriate route and creates the element.
@@ -66,6 +69,8 @@ suite('PasswordsDeviceSection', function() {
   let syncBrowserProxy = null;
   /** @type {!settings.StoredAccount} */
   const SIGNED_IN_ACCOUNT = {email: 'john@gmail.com'};
+  /** @type {PasswordDeviceSectionElementFactory} */
+  let elementFactory = null;
 
   setup(function() {
     PolymerTest.clearBody();
@@ -73,6 +78,7 @@ suite('PasswordsDeviceSection', function() {
     PasswordManagerImpl.instance_ = passwordManager;
     syncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    elementFactory = new PasswordDeviceSectionElementFactory(document);
 
     // The user only enters this page when they are eligible (signed-in but not
     // syncing) and opted-in to account storage.
@@ -305,4 +311,91 @@ suite('PasswordsDeviceSection', function() {
     flush();
     assertEquals(Router.getInstance().currentRoute, routes.PASSWORDS);
   });
+
+  // The move multiple password dialog is dismissable.
+  test('moveMultiplePasswordsDialogDismissable', function() {
+    const deviceEntry = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart', deviceId: 42});
+    const moveMultipleDialog =
+        elementFactory.createMoveMultiplePasswordsDialog([deviceEntry]);
+    assertTrue(moveMultipleDialog.$.dialog.open);
+    moveMultipleDialog.$.cancelButton.click();
+    flush();
+    assertFalse(moveMultipleDialog.$.dialog.open);
+  });
+
+  test('moveMultiplePasswordsDialogFiresCloseEventWhenCanceled', function() {
+    const deviceEntry = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart', deviceId: 42});
+    const moveMultipleDialog =
+        elementFactory.createMoveMultiplePasswordsDialog([deviceEntry]);
+    moveMultipleDialog.$.cancelButton.click();
+    return eventToPromise('close', moveMultipleDialog);
+  });
+
+  // Testing moving multiple password dialog Move button.
+  test('moveMultiplePasswordsDialogMoveButton', async function() {
+    const deviceEntry1 = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart1', deviceId: 41});
+    const deviceEntry2 = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart2', deviceId: 54});
+    const moveMultipleDialog = elementFactory.createMoveMultiplePasswordsDialog(
+        [deviceEntry1, deviceEntry2]);
+    // Uncheck the first entry.
+    const firstPasswordItem = moveMultipleDialog.$$('password-list-item');
+    firstPasswordItem.querySelector('cr-checkbox').click();
+    // Press the Move button
+    moveMultipleDialog.$.moveButton.click();
+    flush();
+    // Only the 2nd entry should be moved
+    const movedIds = await passwordManager.whenCalled('movePasswordsToAccount');
+    assertEquals(1, movedIds.length);
+    assertEquals(deviceEntry2.deviceId, movedIds[0]);
+    // The dialog should be closed.
+    assertFalse(moveMultipleDialog.$.dialog.open);
+  });
+
+  // Testing moving multiple password dialog doesn't have more actions menu
+  // button next to each password row..
+  test('moveMultiplePasswordsDialogNoMoreActionButton', function() {
+    const deviceEntry = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart', deviceId: 42});
+    const moveMultipleDialog =
+        elementFactory.createMoveMultiplePasswordsDialog([deviceEntry]);
+    const firstPasswordItem = moveMultipleDialog.$$('password-list-item');
+    assertTrue(firstPasswordItem.$.moreActionsButton.hidden);
+  });
+
+  // Testing moving multiple password dialog footer reflects how many passwords
+  // are going to be moved.
+  test('moveMultiplePasswordsDialogFooter', async function() {
+    const deviceEntry1 = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart1', deviceId: 41});
+    const deviceEntry2 = createMultiStorePasswordEntry(
+        {url: 'goo.gl', username: 'bart2', deviceId: 54});
+    const moveMultipleDialog = elementFactory.createMoveMultiplePasswordsDialog(
+        [deviceEntry1, deviceEntry2]);
+    flush();
+
+    let expectedCountLabel =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'movePasswordsToAccount', 2);
+    let countLabel =
+        moveMultipleDialog.$$('#movingPasswordsCountLabel').textContent.trim();
+    expectEquals(expectedCountLabel, countLabel);
+
+    // Uncheck the first entry
+    const firstPasswordItem = moveMultipleDialog.$$('password-list-item');
+    firstPasswordItem.querySelector('cr-checkbox').click();
+
+    // The footer should have been updated that only one item is selected now.
+    expectedCountLabel =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'movePasswordsToAccount', 1);
+    countLabel =
+        moveMultipleDialog.$$('#movingPasswordsCountLabel').textContent.trim();
+    expectEquals(expectedCountLabel, countLabel);
+  });
+
+
 });

@@ -10003,6 +10003,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NQE.HttpRttReduction.BasedOnRTTCounts" units="ms"
+    expires_after="2021-10-01">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Duration by which HTTP RTT was reduced because of low confidence.
+  </summary>
+</histogram>
+
 <histogram name="NQE.Kbps.OnECTComputation" units="Kbps"
     expires_after="2021-05-16">
   <owner>bengr@chromium.org</owner>
@@ -17040,6 +17049,17 @@ regressions. -->
   </summary>
 </histogram>
 
+<histogram name="WebApp.Preinstalled.UninstallAndReplaceCount" units="apps"
+    expires_after="2021-04-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records how many preinstalled web app installations uninstalled and replaced
+    an old default app (web app or Chrome app). This corresponds to the
+    &quot;uninstall_and_replace&quot; field in preinstalled web app configs.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.Shortcuts.Creation.Result"
     enum="ShortcutsCreationResult" expires_after="M93">
   <owner>phillis@chromium.org</owner>
@@ -17111,6 +17131,17 @@ regressions. -->
     navigations. Note that &quot;No app in scope&quot; results are ignored due
     to the expected several orders of magnitude higher volume than all other
     update results.
+  </summary>
+</histogram>
+
+<histogram name="Webapp.Update.ManifestUpdateResult.DefaultApp"
+    enum="WebAppManifestUpdateResult" expires_after="M92">
+  <owner>alancutter@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Identical to Webapp.Update.ManifestUpdateResult but restricted to just
+    default installed web apps.
   </summary>
 </histogram>
 

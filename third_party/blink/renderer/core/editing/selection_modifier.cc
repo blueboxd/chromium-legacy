@@ -589,7 +589,8 @@ VisiblePosition SelectionModifier::ModifyExtendingBackwardInternal(
           ComputeVisibleExtent(selection_),
           LineDirectionPointForBlockDirectionNavigation(selection_.Extent()));
     case TextGranularity::kSentenceBoundary:
-      return StartOfSentence(StartForPlatform());
+      return CreateVisiblePosition(
+          StartOfSentencePosition(StartForPlatform().DeepEquivalent()));
     case TextGranularity::kLineBoundary:
       return LogicalStartOfLine(StartForPlatform());
     case TextGranularity::kParagraphBoundary:
@@ -601,7 +602,7 @@ VisiblePosition SelectionModifier::ModifyExtendingBackwardInternal(
         return CreateVisiblePosition(
             StartOfEditableContent(pos.DeepEquivalent()));
       }
-      return StartOfDocument(pos);
+      return CreateVisiblePosition(StartOfDocument(pos.DeepEquivalent()));
     }
   }
   NOTREACHED() << static_cast<int>(granularity);
@@ -682,7 +683,8 @@ VisiblePosition SelectionModifier::ModifyMovingBackward(
           LineDirectionPointForBlockDirectionNavigation(selection_.Start()));
       break;
     case TextGranularity::kSentenceBoundary:
-      pos = StartOfSentence(StartForPlatform());
+      pos = CreateVisiblePosition(
+          StartOfSentencePosition(StartForPlatform().DeepEquivalent()));
       break;
     case TextGranularity::kLineBoundary:
       pos = LogicalStartOfLine(StartForPlatform());
@@ -697,7 +699,7 @@ VisiblePosition SelectionModifier::ModifyMovingBackward(
         pos =
             CreateVisiblePosition(StartOfEditableContent(pos.DeepEquivalent()));
       } else {
-        pos = StartOfDocument(pos);
+        pos = CreateVisiblePosition(StartOfDocument(pos.DeepEquivalent()));
       }
       break;
   }

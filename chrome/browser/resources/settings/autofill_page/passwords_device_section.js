@@ -17,6 +17,7 @@ import '../settings_shared_css.m.js';
 import './avatar_icon.js';
 import './passwords_shared_css.js';
 import './password_list_item.js';
+import './password_move_multiple_passwords_to_account_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
@@ -109,6 +110,17 @@ Polymer({
           'savedPasswords.splices)',
     },
 
+    /**
+     * Passwords displayed in both the device-only and 'device and account'
+     * subsections.
+     * @private {!Array<!MultiStorePasswordUiEntry>}
+     */
+    allDevicePasswords_: {
+      type: Array,
+      value: () => [],
+      computed: 'computeAllDevicePasswords_(savedPasswords.splices)',
+    },
+
     /** @private {!MultiStorePasswordUiEntry} */
     lastFocused_: Object,
 
@@ -153,10 +165,20 @@ Polymer({
       value: null,
     },
 
+    /** @private */
+    showMoveMultiplePasswordsDialog_: Boolean,
+
     /** @private {Route?} */
     currentRoute_: {
       type: Object,
       value: null,
+    },
+
+    /** @private */
+    devicePasswordsLabel_: {
+      type: String,
+      value: '',
+      computed: 'computeDevicePasswordsLabel_(allDevicePasswords_)',
     },
 
     /** @private */
@@ -210,6 +232,14 @@ Polymer({
    * @return {!Array<!MultiStorePasswordUiEntry>}
    * @private
    */
+  computeAllDevicePasswords_() {
+    return this.savedPasswords.filter(p => p.isPresentOnDevice());
+  },
+
+  /**
+   * @return {!Array<!MultiStorePasswordUiEntry>}
+   * @private
+   */
   computeDeviceOnlyPasswords_() {
     return this.savedPasswords.filter(
         p => p.isPresentOnDevice() && !p.isPresentInAccount());
@@ -235,6 +265,17 @@ Polymer({
         (this.syncDisabled_ === null || !!this.syncDisabled_) &&
         (this.optedInForAccountStorage_ === null ||
          !!this.optedInForAccountStorage_);
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  computeDevicePasswordsLabel_() {
+    return this.allDevicePasswords_.length === 1 ?
+        this.i18n('devicePasswordsLinkLabelSingular') :
+        this.i18n(
+            'devicePasswordsLinkLabelPlural', this.allDevicePasswords_.length);
   },
 
   /**
@@ -317,6 +358,16 @@ Polymer({
   onManageAccountPasswordsClicked_() {
     OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('googlePasswordManagerUrl'));
+  },
+
+  /** @private */
+  onMoveMultiplePasswordsTap_() {
+    this.showMoveMultiplePasswordsDialog_ = true;
+  },
+
+  /** @private */
+  onMoveMultiplePasswordsDialogClose_() {
+    this.showMoveMultiplePasswordsDialog_ = false;
   },
 
   /** @private */

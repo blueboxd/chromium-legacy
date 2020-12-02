@@ -51,6 +51,7 @@ class ExternalWebAppManager {
   static const char* kHistogramEnabledCount;
   static const char* kHistogramDisabledCount;
   static const char* kHistogramConfigErrorCount;
+  static const char* kHistogramUninstallAndReplaceCount;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -85,7 +86,7 @@ class ExternalWebAppManager {
     using DisabledConfigWithReason =
         std::pair<ExternalInstallOptions, std::string>;
     std::vector<DisabledConfigWithReason> disabled_configs;
-    std::map<GURL, InstallResultCode> install_results;
+    std::map<GURL, PendingAppManager::InstallResult> install_results;
     std::map<GURL, bool> uninstall_results;
   };
   const DebugInfo* debug_info() const { return debug_info_.get(); }
@@ -104,10 +105,11 @@ class ExternalWebAppManager {
                    std::vector<ExternalInstallOptions>);
   void OnExternalWebAppsSynchronized(
       PendingAppManager::SynchronizeCallback callback,
-      std::map<GURL, InstallResultCode> install_results,
+      std::map<GURL, PendingAppManager::InstallResult> install_results,
       std::map<GURL, bool> uninstall_results);
-  void OnStartUpTaskCompleted(std::map<GURL, InstallResultCode> install_results,
-                              std::map<GURL, bool> uninstall_results);
+  void OnStartUpTaskCompleted(
+      std::map<GURL, PendingAppManager::InstallResult> install_results,
+      std::map<GURL, bool> uninstall_results);
 
   base::FilePath GetConfigDir();
 

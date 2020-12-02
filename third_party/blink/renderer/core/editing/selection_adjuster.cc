@@ -43,10 +43,9 @@ template <typename Strategy>
 SelectionTemplate<Strategy> ComputeAdjustedSelection(
     const SelectionTemplate<Strategy> selection,
     const EphemeralRangeTemplate<Strategy>& range) {
-  if (range.StartPosition().CompareTo(range.EndPosition()) == 0) {
+  if (range.IsCollapsed()) {
     return typename SelectionTemplate<Strategy>::Builder()
-        .Collapse(selection.IsBaseFirst() ? range.StartPosition()
-                                          : range.EndPosition())
+        .Collapse(range.StartPosition())
         .Build();
   }
   if (selection.IsBaseFirst()) {
@@ -127,8 +126,7 @@ class GranularityAdjuster final {
         return CreateVisiblePosition(word_start).DeepEquivalent();
       }
       case TextGranularity::kSentence:
-        return StartOfSentence(CreateVisiblePosition(passed_start))
-            .DeepEquivalent();
+        return StartOfSentencePosition(passed_start.GetPosition());
       case TextGranularity::kLine:
         return StartOfLine(CreateVisiblePosition(passed_start))
             .DeepEquivalent();
@@ -143,14 +141,14 @@ class GranularityAdjuster final {
         return StartOfParagraph(pos).DeepEquivalent();
       }
       case TextGranularity::kDocumentBoundary:
-        return StartOfDocument(CreateVisiblePosition(passed_start))
+        return CreateVisiblePosition(
+                   StartOfDocument(passed_start.GetPosition()))
             .DeepEquivalent();
       case TextGranularity::kParagraphBoundary:
         return StartOfParagraph(CreateVisiblePosition(passed_start))
             .DeepEquivalent();
       case TextGranularity::kSentenceBoundary:
-        return StartOfSentence(CreateVisiblePosition(passed_start))
-            .DeepEquivalent();
+        return StartOfSentencePosition(passed_start.GetPosition());
     }
 
     NOTREACHED();

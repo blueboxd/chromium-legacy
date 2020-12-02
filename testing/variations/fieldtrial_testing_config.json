@@ -1586,6 +1586,24 @@
             ]
         }
     ],
+    "ChromeOSReinstallApps": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "enabled0DayDelay",
+                    "params": {
+                        "interaction_grace_hours": "0"
+                    },
+                    "enable_features": [
+                        "EnableAppReinstallZeroState"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeSharingHubClankV2": [
         {
             "platforms": [
@@ -4208,6 +4226,23 @@
             ]
         }
     ],
+    "ManagedSigninPopup": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncConfirmationUpdatedText"
+                    ]
+                }
+            ]
+        }
+    ],
     "MediaApp": [
         {
             "platforms": [
@@ -6487,25 +6522,6 @@
                         "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
                         "OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover",
                         "SafeBrowsingDelayedWarnings"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmartDimModelV3": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200207",
-                    "params": {
-                        "dim_threshold": "-0.5"
-                    },
-                    "enable_features": [
-                        "SmartDimModelV3",
-                        "UserActivityPrediction"
                     ]
                 }
             ]

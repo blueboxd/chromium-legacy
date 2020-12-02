@@ -6,7 +6,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -55,6 +55,7 @@ generate_grd("build_grd") {
   input_files = [
     "images/cookies_banner_dark.svg",
     "images/cookies_banner.svg",
+    "images/googleg_standard_clr_32px.svg",
     "images/password_check_neutral_dark.svg",
     "images/password_check_neutral.svg",
     "images/password_check_positive_dark.svg",
@@ -92,7 +93,7 @@ generate_grd("build_grd") {
   }
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -152,7 +153,7 @@ preprocess_grit("preprocess") {
   }
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":polymer3_elements" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -186,6 +187,7 @@ preprocess_grit("preprocess_generated") {
     "autofill_page/passwords_section.js",
     "autofill_page/passwords_device_section.js",
     "autofill_page/password_edit_dialog.js",
+    "autofill_page/password_move_multiple_passwords_to_account_dialog.js",
     "autofill_page/password_move_to_account_dialog.js",
     "autofill_page/password_remove_dialog.js",
     "autofill_page/passwords_export_dialog.js",

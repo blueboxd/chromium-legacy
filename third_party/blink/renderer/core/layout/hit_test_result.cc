@@ -171,13 +171,13 @@ void HitTestResult::SetBoxFragment(
 }
 
 PositionWithAffinity HitTestResult::GetPosition() const {
-  if (!inner_possibly_pseudo_node_)
+  const Node* node = inner_possibly_pseudo_node_;
+  if (!node)
     return PositionWithAffinity();
-  LayoutObject* layout_object = GetLayoutObject();
+  LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
     return PositionWithAffinity();
-  if (inner_possibly_pseudo_node_->IsPseudoElement() &&
-      inner_possibly_pseudo_node_->GetPseudoId() == kPseudoIdBefore) {
+  if (node->IsPseudoElement() && node->GetPseudoId() == kPseudoIdBefore) {
     return PositionWithAffinity(
         MostForwardCaretPosition(Position::FirstPositionInNode(*inner_node_)));
   }
@@ -186,13 +186,8 @@ PositionWithAffinity HitTestResult::GetPosition() const {
   // relayout?
   if (box_fragment_ &&
       RuntimeEnabledFeatures::LayoutNGFullPositionForPointEnabled() &&
-      !box_fragment_->IsLayoutObjectDestroyedOrMoved()) {
-    const NGPhysicalBoxFragment* fragment = box_fragment_->PostLayout();
-    // When the node is an inline object, |fragment| is the container fragment,
-    // and |LocalPoint()| is relative to the content.
-    const bool is_content_offset = fragment->GetLayoutObject() != layout_object;
-    return fragment->PositionForPoint(LocalPoint(), is_content_offset);
-  }
+      !box_fragment_->IsLayoutObjectDestroyedOrMoved())
+    return box_fragment_->PostLayout()->PositionForPoint(LocalPoint());
   return layout_object->PositionForPoint(LocalPoint());
 }
 

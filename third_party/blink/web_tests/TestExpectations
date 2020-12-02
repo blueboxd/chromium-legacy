@@ -31,7 +31,6 @@ external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
 external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
 
 # Fuzzy reftests are not supported.
-crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/legacy/reftest_fuzzy_chain_ini.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/legacy/fuzzy-ref-2.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Failure ]
@@ -680,6 +679,7 @@ crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
 crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
+crbug.com/1154574 external/wpt/css/css-contain/contain-size-monolithic-002.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
@@ -1045,6 +1045,7 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-edge.html [ Pass ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
 crbug.com/1113911 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
+crbug.com/1154585 virtual/layout_ng_block_frag/external/wpt/css/css-break/ink-overflow-002.html [ Failure ]
 crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-009.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
@@ -2002,9 +2003,6 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 
 crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
-
-# Temporarily disable for incoming DevTools changes
-crbug.com/1150797 http/tests/devtools/console/console-command-copy.js [ Pass Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -4130,8 +4128,6 @@ crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.html [ Failure ]
 
-crbug.com/1150389 [ Mac ] virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure ]
-
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 
@@ -5779,6 +5775,9 @@ crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-
 
 # Sheriff 2020-11-20
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
+
+# Sheriff 2020-09-08
+crbug.com/1124978 [ Mac ] virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass Failure ]
 
 # Mac11.0 rebaseline
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-weight.html [ Failure ]

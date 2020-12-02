@@ -545,7 +545,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::MediaInspectorContext* inspector_context,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
-      const blink::WebString& sink_id) override;
+      const blink::WebString& sink_id,
+      const cc::LayerTreeSettings& settings) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;
 #if !defined(OS_ANDROID)
@@ -689,8 +690,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(varunjain): delete this method once we figure out how to keep
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired() override;
-  void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect) override;
-  void ResetHasScrolledFocusedEditableIntoView() override;
   void CreateAudioInputStream(
       blink::CrossVariantMojoRemote<
           blink::mojom::RendererAudioInputStreamFactoryClientInterfaceBase>
@@ -1450,11 +1449,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // |devtools_frame_token_| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
   base::UnguessableToken devtools_frame_token_;
-
-  // Bookkeeping to suppress redundant scroll and focus requests for an already
-  // scrolled and focused editable node.
-  bool has_scrolled_focused_editable_node_into_rect_ = false;
-  gfx::Rect rect_for_scrolled_focused_editable_node_;
 
   // Contains a representation of the accessibility tree stored in content for
   // use inside of Blink.

@@ -168,13 +168,12 @@ class ExternalWebAppMigrationBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
 
     auto callback = base::BindLambdaForTesting(
-        [&](std::map<GURL, InstallResultCode> install_results,
+        [&](std::map<GURL, PendingAppManager::InstallResult> install_results,
             std::map<GURL, bool> uninstall_results) {
           if (expect_install) {
-            InstallResultCode result = install_results.at(GetWebAppUrl());
-            EXPECT_TRUE(result == InstallResultCode::kSuccessNewInstall ||
-                        result ==
-                            InstallResultCode::kSuccessOfflineOnlyInstall);
+            InstallResultCode code = install_results.at(GetWebAppUrl()).code;
+            EXPECT_TRUE(code == InstallResultCode::kSuccessNewInstall ||
+                        code == InstallResultCode::kSuccessOfflineOnlyInstall);
           } else {
             EXPECT_EQ(install_results.find(GetWebAppUrl()),
                       install_results.end());
@@ -247,6 +246,7 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
     EXPECT_TRUE(IsExtensionAppInstalled());
 
     {
+      base::HistogramTester histograms;
       extensions::TestExtensionRegistryObserver uninstall_observer(
           extensions::ExtensionRegistry::Get(profile()));
 
@@ -257,6 +257,8 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
           uninstall_observer.WaitForExtensionUninstalled();
       EXPECT_EQ(uninstalled_app->id(), kExtensionId);
       EXPECT_FALSE(IsExtensionAppInstalled());
+      histograms.ExpectUniqueSample(
+          ExternalWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
     }
   }
 
@@ -273,6 +275,7 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
 
   // Re-run migration.
   {
+    base::HistogramTester histograms;
     base::AutoReset<bool> testing_scope =
         SetExternalAppInstallFeatureAlwaysEnabledForTesting();
     ASSERT_TRUE(IsExternalAppInstallFeatureEnabled(kMigrationFlag));
@@ -287,6 +290,8 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
         uninstall_observer.WaitForExtensionUninstalled();
     EXPECT_EQ(uninstalled_app->id(), kExtensionId);
     EXPECT_FALSE(IsExtensionAppInstalled());
+    histograms.ExpectUniqueSample(
+        ExternalWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
   }
 }
 
@@ -342,6 +347,7 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest, MigratePreferences) {
     EXPECT_TRUE(IsExtensionAppInstalled());
 
     {
+      base::HistogramTester histograms;
       extensions::TestExtensionRegistryObserver uninstall_observer(
           extensions::ExtensionRegistry::Get(profile()));
 
@@ -352,6 +358,8 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest, MigratePreferences) {
           uninstall_observer.WaitForExtensionUninstalled();
       EXPECT_EQ(uninstalled_app->id(), kExtensionId);
       EXPECT_FALSE(IsExtensionAppInstalled());
+      histograms.ExpectUniqueSample(
+          ExternalWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
     }
   }
 
@@ -495,6 +503,8 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest,
           ExternalWebAppManager::kHistogramDisabledCount, 0, 1);
       histograms.ExpectUniqueSample(
           ExternalWebAppManager::kHistogramConfigErrorCount, 0, 1);
+      histograms.ExpectUniqueSample(
+          ExternalWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
     }
   }
 }

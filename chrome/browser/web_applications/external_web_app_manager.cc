@@ -18,7 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -219,6 +219,8 @@ const char* ExternalWebAppManager::kHistogramDisabledCount =
     "WebApp.Preinstalled.DisabledCount";
 const char* ExternalWebAppManager::kHistogramConfigErrorCount =
     "WebApp.Preinstalled.ConfigErrorCount";
+const char* ExternalWebAppManager::kHistogramUninstallAndReplaceCount =
+    "WebApp.Preinstalled.UninstallAndReplaceCount";
 
 void ExternalWebAppManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -354,12 +356,12 @@ void ExternalWebAppManager::PostProcessConfigs(ConsumeInstallOptions callback,
     debug_info_->enabled_configs = parsed_configs.options_list;
   }
 
-  base::UmaHistogramCounts100(ExternalWebAppManager::kHistogramEnabledCount,
-                              parsed_configs.options_list.size());
-  base::UmaHistogramCounts100(ExternalWebAppManager::kHistogramDisabledCount,
-                              disabled_count);
-  base::UmaHistogramCounts100(ExternalWebAppManager::kHistogramConfigErrorCount,
-                              parsed_configs.errors.size());
+  UMA_HISTOGRAM_COUNTS_100(ExternalWebAppManager::kHistogramEnabledCount,
+                           parsed_configs.options_list.size());
+  UMA_HISTOGRAM_COUNTS_100(ExternalWebAppManager::kHistogramDisabledCount,
+                           disabled_count);
+  UMA_HISTOGRAM_COUNTS_100(ExternalWebAppManager::kHistogramConfigErrorCount,
+                           parsed_configs.errors.size());
 
   std::move(callback).Run(parsed_configs.options_list);
 }
@@ -378,7 +380,7 @@ void ExternalWebAppManager::Synchronize(
 
 void ExternalWebAppManager::OnExternalWebAppsSynchronized(
     PendingAppManager::SynchronizeCallback callback,
-    std::map<GURL, InstallResultCode> install_results,
+    std::map<GURL, PendingAppManager::InstallResult> install_results,
     std::map<GURL, bool> uninstall_results) {
   // Note that we are storing the Chrome version instead of a "has synchronised"
   // bool in order to do version update specific logic in the future.
@@ -386,8 +388,17 @@ void ExternalWebAppManager::OnExternalWebAppsSynchronized(
       prefs::kWebAppsLastPreinstallSynchronizeVersion,
       version_info::GetMajorVersionNumber());
 
-  RecordExternalAppInstallResultCode("Webapp.InstallResult.Default",
-                                     install_results);
+  size_t uninstall_and_replace_count = 0;
+  for (const auto& url_and_result : install_results) {
+    UMA_HISTOGRAM_ENUMERATION("Webapp.InstallResult.Default",
+                              url_and_result.second.code);
+    if (url_and_result.second.did_uninstall_and_replace)
+      ++uninstall_and_replace_count;
+  }
+  UMA_HISTOGRAM_COUNTS_100(
+      ExternalWebAppManager::kHistogramUninstallAndReplaceCount,
+      uninstall_and_replace_count);
+
   if (callback) {
     std::move(callback).Run(std::move(install_results),
                             std::move(uninstall_results));
@@ -395,7 +406,7 @@ void ExternalWebAppManager::OnExternalWebAppsSynchronized(
 }
 
 void ExternalWebAppManager::OnStartUpTaskCompleted(
-    std::map<GURL, InstallResultCode> install_results,
+    std::map<GURL, PendingAppManager::InstallResult> install_results,
     std::map<GURL, bool> uninstall_results) {
   if (debug_info_) {
     debug_info_->is_start_up_task_complete = true;

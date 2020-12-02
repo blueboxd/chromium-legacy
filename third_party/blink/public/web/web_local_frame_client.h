@@ -88,6 +88,10 @@
 #include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"
 
+namespace cc {
+class LayerTreeSettings;
+}  // namespace cc
+
 namespace blink {
 namespace mojom {
 enum class TreeScopeType;
@@ -141,12 +145,14 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // May return null.
   // WebContentDecryptionModule* may be null if one has not yet been set.
-  virtual WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
-                                            WebMediaPlayerClient*,
-                                            blink::MediaInspectorContext*,
-                                            WebMediaPlayerEncryptedMediaClient*,
-                                            WebContentDecryptionModule*,
-                                            const WebString& sink_id) {
+  virtual WebMediaPlayer* CreateMediaPlayer(
+      const WebMediaPlayerSource&,
+      WebMediaPlayerClient*,
+      blink::MediaInspectorContext*,
+      WebMediaPlayerEncryptedMediaClient*,
+      WebContentDecryptionModule*,
+      const WebString& sink_id,
+      const cc::LayerTreeSettings& settings) {
     return nullptr;
   }
 
@@ -674,13 +680,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Update the current frame selection to the browser.
   virtual void SyncSelectionIfRequired() {}
-
-  // Scroll the focused editable element into the rect. This should eventually
-  // be removed and all be done inside blink.
-  virtual void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect) {}
-
-  // Reset the currently tracked scrolled focused node.
-  virtual void ResetHasScrolledFocusedEditableIntoView() {}
 
   // TODO(https://crbug.com/787252): Remove the methods below and use the
   // Supplement mechanism.

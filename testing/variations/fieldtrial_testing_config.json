@@ -3575,6 +3575,21 @@
             ]
         }
     ],
+    "IOSRestoreGaiaCookies": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RestoreGAIACookiesIfDeleted"
+                    ]
+                }
+            ]
+        }
+    ],
     "Identifiability": [
         {
             "platforms": [
@@ -6444,6 +6459,21 @@
                     },
                     "enable_features": [
                         "ShareButtonInTopToolbar"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ShareByDefaultInCCT": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ShareByDefaultInCCT"
                     ]
                 }
             ]

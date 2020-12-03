@@ -32,6 +32,7 @@
 #include "components/variations/net/variations_url_loader_throttle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/frame.mojom.h"
+#include "content/common/net/ip_address_space_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
@@ -54,7 +55,6 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
-#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
@@ -633,8 +633,8 @@ void WebURLLoaderImpl::Context::Start(
   uint32_t loader_options = network::mojom::kURLLoadOptionNone;
   if (!no_mime_sniffing) {
     loader_options |= network::mojom::kURLLoadOptionSniffMimeType;
-    throttles.push_back(
-        std::make_unique<blink::MimeSniffingThrottle>(freezable_task_runner_));
+    throttles.push_back(std::make_unique<blink::MimeSniffingThrottle>(
+        unfreezable_task_runner_));
   }
 
   if (sync_load_response) {
@@ -659,8 +659,11 @@ void WebURLLoaderImpl::Context::Start(
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
                          TRACE_EVENT_FLAG_FLOW_OUT);
+  // If we use freezable_task_runner_, we won't call
+  // URLLoaderClientImpl::OnStartLoadingResponseBody until after bfcache
+  // restore. Is this OK?
   request_id_ = resource_dispatcher_->StartAsync(
-      std::move(request), requestor_id, freezable_task_runner_,
+      std::move(request), requestor_id, unfreezable_task_runner_,
       GetTrafficAnnotationTag(resource_type), loader_options, std::move(peer),
       url_loader_factory_, std::move(throttles),
       std::move(resource_load_info_notifier_wrapper));
@@ -896,21 +899,13 @@ void WebURLLoaderImpl::PopulateURLResponse(
           : blink::WebString());
 
   response->SetRemoteIPEndpoint(head.remote_endpoint);
-
   // This computation can only be done once SetUrlListViaServiceWorker() has
   // been called on |response|, so that ResponseUrl() returns the correct
   // answer.
   //
   // Implements: https://wicg.github.io/cors-rfc1918/#integration-html
-  //
-  // TODO(crbug.com/955213): Just copy the address space in |head| once it is
-  // made available.
-  if (response->ResponseUrl().ProtocolIs("file")) {
-    response->SetAddressSpace(network::mojom::IPAddressSpace::kLocal);
-  } else {
-    response->SetAddressSpace(
-        network::IPAddressToIPAddressSpace(head.remote_endpoint.address()));
-  }
+  response->SetAddressSpace(CalculateResourceAddressSpace(
+      response->ResponseUrl(), head.remote_endpoint.address()));
 
   blink::WebVector<blink::WebString> cors_exposed_header_names(
       head.cors_exposed_header_names.size());

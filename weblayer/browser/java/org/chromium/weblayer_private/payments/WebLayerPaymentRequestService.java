@@ -19,7 +19,6 @@ import org.chromium.components.payments.PaymentResponseHelper;
 import org.chromium.components.payments.PaymentResponseHelperInterface;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentItem;
-import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class WebLayerPaymentRequestService implements BrowserPaymentRequest {
     private PaymentRequestService mPaymentRequestService;
     private PaymentRequestSpec mSpec;
     private boolean mHasClosed;
-    private boolean mShouldSkipShowingPaymentRequestUi;
+    private boolean mShouldSkipAppSelector;
     private PaymentApp mSelectedApp;
 
     /**
@@ -110,15 +109,10 @@ public class WebLayerPaymentRequestService implements BrowserPaymentRequest {
     // Implements BrowserPaymentRequest:
     @Override
     @Nullable
-    public String showAppSelector(boolean isShowWaitingForUpdatedDetails, PaymentItem total,
-            PaymentOptions paymentOptions, boolean isUserGestureShow) {
-        assert mAvailableApps.size() <= 1 : "Only GooglePay payment app is supported.";
-        mShouldSkipShowingPaymentRequestUi =
-                PaymentRequestService.shouldSkipShowingPaymentRequestUi(isUserGestureShow,
-                        /*skipUiForNonUrlPaymentMethodIdentifiers=*/false,
-                        mSpec.getPaymentOptions(), mSpec.getMethodData().keySet(), mSelectedApp,
-                        mAvailableApps);
-        if (!mShouldSkipShowingPaymentRequestUi) {
+    public String showOrSkipAppSelector(boolean isShowWaitingForUpdatedDetails, PaymentItem total,
+            boolean shouldSkipAppSelector) {
+        mShouldSkipAppSelector = shouldSkipAppSelector;
+        if (!mShouldSkipAppSelector) {
             return "This request is not supported in Web Layer. Please try in Chrome, or make sure "
                     + "that: (1) show() is triggered by user gesture, or"
                     + "(2) do not request any contact information.";
@@ -134,7 +128,7 @@ public class WebLayerPaymentRequestService implements BrowserPaymentRequest {
             : "triggerPaymentAppUiSkipIfApplicable() should be called only when there is any "
                 + "available app.";
         PaymentApp selectedPaymentApp = mAvailableApps.get(0);
-        if (mShouldSkipShowingPaymentRequestUi) {
+        if (mShouldSkipAppSelector) {
             mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
             assert mSpec.getRawTotal() != null;
             // The total amount in details should be finalized at this point. So it is safe to
@@ -146,5 +140,17 @@ public class WebLayerPaymentRequestService implements BrowserPaymentRequest {
             mPaymentRequestService.invokePaymentApp(selectedPaymentApp, paymentResponseHelper);
         }
         return null;
+    }
+
+    // Implements BrowserPaymentRequest:
+    @Override
+    public PaymentApp getSelectedPaymentApp() {
+        return mAvailableApps.get(0);
+    }
+
+    // Implements BrowserPaymentRequest:
+    @Override
+    public List<PaymentApp> getPaymentApps() {
+        return mAvailableApps;
     }
 }

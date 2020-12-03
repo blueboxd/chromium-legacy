@@ -13,28 +13,17 @@ const DumpDatabase = (function() {
   /**
    * Get the database dump.
    */
-  function getDatabaseDump() {
-    chrome.send('getDatabaseDump');
-  }
-
-  /**
-   * Creates an element named |elementName| containing the content |text|.
-   * @param {string} elementName Name of the new element to be created.
-   * @param {string} text Text to be contained in the new element.
-   * @return {HTMLElement} The newly created HTML element.
-   */
-  function createElementFromText(elementName, text) {
-    const element = document.createElement(elementName);
-    element.appendChild(document.createTextNode(text));
-    return element;
+  function refreshDatabaseDump() {
+    cr.sendWithPromise('getDatabaseDump').then(DumpDatabase.onGetDatabaseDump);
   }
 
   /**
    * Creates a table by filling |header| and |body|.
-   * @param {HTMLElement} div The outer container of the table to be renderered.
-   * @param {HTMLElement} header The table header element to be fillied by
+   * @param {!HTMLElement} div The outer container of the table to be
+   *     renderered.
+   * @param {!HTMLElement} header The table header element to be fillied by
    *     this function.
-   * @param {HTMLElement} body The table body element to be filled by this
+   * @param {!HTMLElement} body The table body element to be filled by this
    *     function.
    * @param {Array} databaseDump List of dictionaries for the database dump.
    *     The first element must have metadata of the entry.
@@ -70,10 +59,12 @@ const DumpDatabase = (function() {
     const placeholder = $('dump-database-placeholder');
     placeholder.innerHTML = trustedTypes.emptyHTML;
     for (let i = 0; i < databaseDump.length; ++i) {
-      const div = document.createElement('div');
+      const div = /** @type {!HTMLElement} */ (document.createElement('div'));
       const table = document.createElement('table');
-      const header = document.createElement('thead');
-      const body = document.createElement('tbody');
+      const header =
+          /** @type {!HTMLElement} */ (document.createElement('thead'));
+      const body =
+          /** @type {!HTMLElement} */ (document.createElement('tbody'));
       createDatabaseDumpTable(div, header, body, databaseDump[i]);
       table.appendChild(header);
       table.appendChild(body);
@@ -83,8 +74,8 @@ const DumpDatabase = (function() {
   };
 
   function main() {
-    getDatabaseDump();
-    $('refresh-database-dump').addEventListener('click', getDatabaseDump);
+    refreshDatabaseDump();
+    $('refresh-database-dump').addEventListener('click', refreshDatabaseDump);
   }
 
   document.addEventListener('DOMContentLoaded', main);

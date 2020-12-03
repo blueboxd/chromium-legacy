@@ -2630,6 +2630,7 @@ static_library("ui") {
       "//chromeos/components/drivefs/mojom:mojom",
       "//chromeos/components/help_app_ui",
       "//chromeos/components/local_search_service:local_search_service",
+      "//chromeos/components/local_search_service:local_search_service_sync",
       "//chromeos/components/media_app_ui",
       "//chromeos/components/multidevice",
       "//chromeos/components/multidevice/debug_webui",
@@ -4532,6 +4533,8 @@ static_library("ui") {
       sources += [
         "webui/print_preview/local_printer_handler_chromeos.cc",
         "webui/print_preview/local_printer_handler_chromeos.h",
+        "webui/print_preview/print_preview_handler_chromeos.cc",
+        "webui/print_preview/print_preview_handler_chromeos.h",
       ]
     } else {
       sources += [

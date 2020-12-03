@@ -70,6 +70,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
+#include "content/common/net/ip_address_space_util.h"
 #include "content/common/state_transitions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -107,7 +108,6 @@
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -1010,7 +1010,7 @@ NavigationRequest::NavigationRequest(
       commit_params_(std::move(commit_params)),
       browser_initiated_(browser_initiated),
       navigation_ui_data_(std::move(navigation_ui_data)),
-      restore_type_(entry ? entry->restore_type() : RestoreType::NONE),
+      restore_type_(entry ? entry->restore_type() : RestoreType::kNotRestored),
       // Some navigations, such as renderer-initiated subframe navigations,
       // won't have a NavigationEntryImpl. Set |reload_type_| if applicable
       // for them.
@@ -1423,43 +1423,51 @@ void NavigationRequest::BeginNavigation() {
     is_loaded_from_mhtml_archive_ = IsForMhtmlSubframe();
     ComputeSandboxFlagsToCommit();
 
-    // Select an appropriate RenderFrameHost.
-    std::string frame_host_choice_reason;
-    render_frame_host_ =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(
-            this, &frame_host_choice_reason);
+    // Same-document navigations occur in the currently loaded document. See
+    // also RenderFrameHostManager::DidCreateNavigationRequest() which will
+    // expect us to use the current RenderFrameHost for this NavigationRequest,
+    // and https://crbug.com/1125106.
+    if (IsSameDocument()) {
+      render_frame_host_ = frame_tree_node_->current_frame_host();
+    } else {
+      // Select an appropriate RenderFrameHost.
+      std::string frame_host_choice_reason;
+      render_frame_host_ =
+          frame_tree_node_->render_manager()->GetFrameHostForNavigation(
+              this, &frame_host_choice_reason);
 
-    // TODO(crbug.com/1116320): Remove the ad-hoc |frame_host_choice_reason| and
-    // other crash keys once the bug investigation completes.  Note that the
-    // crash related to crbug/1116320 is expected to happen inside the call to
-    // CommitNavigation below, a few statements down.
-    SCOPED_CRASH_KEY_STRING256("nav_request", host_choice_reason,
-                               frame_host_choice_reason);
-    SCOPED_CRASH_KEY_BOOL("nav_request", has_source_instance,
-                          !!GetSourceSiteInstance());
-    // Crash keys capturing values affecting |was_opener_suppressed| in
-    // RequiresInitiatorBasedSourceSiteInstance:
-    SCOPED_CRASH_KEY_BOOL("nav_request", is_main_frame, IsInMainFrame());
-    SCOPED_CRASH_KEY_BOOL(
-        "nav_request", got_initiator_routing_id,
-        GetInitiatorRoutingId().frame_routing_id != MSG_ROUTING_NONE);
-    SCOPED_CRASH_KEY_BOOL("nav_request", is_renderer_initiated,
-                          IsRendererInitiated());
-    // Crash keys capturing values affecting whether
-    // SetSourceSiteInstanceToInitiatorIfNeeded is called:
-    SCOPED_CRASH_KEY_BOOL("nav_request", from_begin_navigation,
-                          from_begin_navigation_);
-    SCOPED_CRASH_KEY_NUMBER("nav_request", navigation_type,
-                            static_cast<int>(common_params().navigation_type));
-    SCOPED_CRASH_KEY_BOOL(
-        "nav_request", is_hist_nav_in_new_child,
-        common_params().is_history_navigation_in_new_child_frame);
-    SCOPED_CRASH_KEY_BOOL("nav_request", has_nav_entry, !!GetNavigationEntry());
+      // TODO(crbug.com/1116320): Remove the ad-hoc |frame_host_choice_reason|
+      // and other crash keys once the bug investigation completes.  Note that
+      // the crash related to crbug/1116320 is expected to happen inside the
+      // call to CommitNavigation below, a few statements down.
+      SCOPED_CRASH_KEY_STRING256("nav_request", host_choice_reason,
+                                 frame_host_choice_reason);
+      SCOPED_CRASH_KEY_BOOL("nav_request", has_source_instance,
+                            !!GetSourceSiteInstance());
+      // Crash keys capturing values affecting |was_opener_suppressed| in
+      // RequiresInitiatorBasedSourceSiteInstance:
+      SCOPED_CRASH_KEY_BOOL("nav_request", is_main_frame, IsInMainFrame());
+      SCOPED_CRASH_KEY_BOOL(
+          "nav_request", got_initiator_routing_id,
+          GetInitiatorRoutingId().frame_routing_id != MSG_ROUTING_NONE);
+      SCOPED_CRASH_KEY_BOOL("nav_request", is_renderer_initiated,
+                            IsRendererInitiated());
+      // Crash keys capturing values affecting whether
+      // SetSourceSiteInstanceToInitiatorIfNeeded is called:
+      SCOPED_CRASH_KEY_BOOL("nav_request", from_begin_navigation,
+                            from_begin_navigation_);
+      SCOPED_CRASH_KEY_NUMBER(
+          "nav_request", navigation_type,
+          static_cast<int>(common_params().navigation_type));
+      SCOPED_CRASH_KEY_BOOL(
+          "nav_request", is_hist_nav_in_new_child,
+          common_params().is_history_navigation_in_new_child_frame);
+      SCOPED_CRASH_KEY_BOOL("nav_request", has_nav_entry,
+                            !!GetNavigationEntry());
 
-    if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
-            render_frame_host_, GetUrlInfo(),
-            /* is_renderer_initiated_check */ false)) {
-      CHECK(false);
+      CHECK(Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
+          render_frame_host_, GetUrlInfo(),
+          /*is_renderer_initiated_check=*/false));
     }
 
     ReadyToCommitNavigation(false /* is_error */);
@@ -2329,6 +2337,8 @@ void NavigationRequest::OnResponseStarted(
     // returns "Potentially Trustworthy" for data URLs, but
     // network::IsUrlPotentiallyTrustworthy returns false, so we need this
     // extra condition.
+    // TODO(https://crbug.com/1119740): Remove the check for "data" scheme when
+    // it is handled by network::IsUrlPotentiallyTrustworthy.
     if (network::IsUrlPotentiallyTrustworthy(url) ||
         url.SchemeIs(url::kDataScheme)) {
       // https://mikewest.github.io/corpp/#process-navigation-response
@@ -2409,7 +2419,8 @@ void NavigationRequest::OnResponseStarted(
   } else {
     render_frame_host_ = nullptr;
   }
-  DCHECK(render_frame_host_ || !response_should_be_rendered_);
+  if (!render_frame_host_)
+    DCHECK(!response_should_be_rendered_);
 
   if (render_frame_host_) {
     DetermineOriginIsolationEndResult(IsOptInIsolationRequested(GetURL()));
@@ -4399,8 +4410,7 @@ void NavigationRequest::UpdateClientSecurityState() {
   DCHECK(!IsServedFromBackForwardCache());
 
   client_security_state_->ip_address_space =
-      network::CalculateClientAddressSpace(common_params_->url,
-                                           response_head_.get());
+      CalculateClientAddressSpace(common_params_->url, response_head_.get());
 
   client_security_state_->is_web_secure_context = IsWebSecureContext();
 

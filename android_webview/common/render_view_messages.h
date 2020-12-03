@@ -29,19 +29,6 @@ IPC_STRUCT_TRAITS_END()
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
-// Request for the renderer to determine if the document contains any image
-// elements.  The id should be passed in the response message so the response
-// can be associated with the request.
-IPC_MESSAGE_ROUTED1(AwViewMsg_DocumentHasImages,
-                    uint32_t /* id */)
-
-// Do hit test at the given webview coordinate. "Webview" coordinates are
-// physical pixel values with the 0,0 at the top left of the current displayed
-// view (ie 0,0 is not the top left of the page if the page is scrolled).
-IPC_MESSAGE_ROUTED2(AwViewMsg_DoHitTest,
-                    gfx::PointF /* touch_center */,
-                    gfx::SizeF /* touch_area */)
-
 // Sets the zoom factor for text only. Used in layout modes other than
 // Text Autosizing.
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomFactor,
@@ -66,11 +53,6 @@ IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.
-
-// Response to AwViewMsg_DocumentHasImages request.
-IPC_MESSAGE_ROUTED2(AwViewHostMsg_DocumentHasImagesResponse,
-                    int, /* id */
-                    bool /* has_images */)
 
 // Response to AwViewMsg_DoHitTest.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,

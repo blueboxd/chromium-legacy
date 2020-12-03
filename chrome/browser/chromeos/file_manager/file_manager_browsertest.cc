@@ -148,6 +148,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableHoldingSpace(bool enable) {
+    options.enable_holding_space = enable;
+    return *this;
+  }
+
   std::string GetFullName() const {
     std::string full_name = name;
 
@@ -665,6 +670,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveOfflineInfoBanner")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    HoldingSpace, /* holding_space.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("holdingSpaceWelcomeBannerWithFeatureDisabled")
+                          .EnableHoldingSpace(false),
+                      TestCase("holdingSpaceWelcomeBannerWithFeatureEnabled")
+                          .EnableHoldingSpace(true)));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Transfer, /* transfer.js */
     FilesAppBrowserTest,
     ::testing::Values(
@@ -1091,6 +1104,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Trash, /* trash.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("trashMoveToTrash").EnableTrash(),
-                      TestCase("trashRestore").EnableTrash()));
+                      TestCase("trashRestoreFromToast").EnableTrash(),
+                      TestCase("trashRestoreFromTrash").EnableTrash(),
+                      TestCase("trashDeleteFromTrash").EnableTrash()));
 
 }  // namespace file_manager

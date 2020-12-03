@@ -774,8 +774,9 @@ public class PaymentRequestService
         PaymentNotShownError ensureError = ensureHasSupportedPaymentMethods();
         if (ensureError != null) return ensureError;
 
-        String showError = mBrowserPaymentRequest.showAppSelector(mIsShowWaitingForUpdatedDetails,
-                mSpec.getRawTotal(), mSpec.getPaymentOptions(), mIsUserGestureShow);
+        boolean shouldSkip = shouldSkipAppSelector();
+        String showError = mBrowserPaymentRequest.showOrSkipAppSelector(
+                mIsShowWaitingForUpdatedDetails, mSpec.getRawTotal(), shouldSkip);
         if (showError != null) {
             return new PaymentNotShownError(
                     NotShownReason.OTHER, showError, PaymentErrorReason.NOT_SUPPORTED);
@@ -1092,7 +1093,7 @@ public class PaymentRequestService
      * @return True when at least one url payment method identifier is specified in payment
      *         request.
      */
-    private static boolean isUrlPaymentMethodIdentifiersSupported(Set<String> methods) {
+    public static boolean isUrlPaymentMethodIdentifiersSupported(Set<String> methods) {
         for (String methodName : methods) {
             if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)
                     || methodName.startsWith(UrlConstants.HTTP_URL_PREFIX)) {
@@ -1103,36 +1104,26 @@ public class PaymentRequestService
     }
 
     /**
-     * @param isUserGestureShow Whether the PaymentRequest.show() is triggered by user gesture.
-     * @param skipUiForNonUrlPaymentMethodIdentifiers True when skip UI is available for non-url
-     *         based payment method identifiers (e.g., basic-card).
-     * @param options The payment options specified in the payment request.
-     * @param paymentMethods The payment methods supported by this request.
-     * @param selectedApp The selected payment apps.
-     * @param allApps All available payment apps.
      * @return Whether the browser payment sheet should be skipped directly into the payment app.
      */
-    public static boolean shouldSkipShowingPaymentRequestUi(boolean isUserGestureShow,
-            boolean skipUiForNonUrlPaymentMethodIdentifiers, PaymentOptions options,
-            Set<String> paymentMethods, PaymentApp selectedApp, List<PaymentApp> allApps) {
-        boolean urlPaymentMethodIdentifiersSupported =
-                isUrlPaymentMethodIdentifiersSupported(paymentMethods);
+    private boolean shouldSkipAppSelector() {
+        assert mBrowserPaymentRequest != null;
+        assert mSpec != null;
+        assert !mSpec.isDestroyed();
 
+        PaymentApp selectedApp = mBrowserPaymentRequest.getSelectedPaymentApp();
+        List<PaymentApp> allApps = mBrowserPaymentRequest.getPaymentApps();
         // If there is only a single payment app which can provide all merchant requested
         // information, we can safely go directly to the payment app instead of showing Payment
         // Request UI.
         return PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
-                // Only allowing payment apps that own their own UIs.
-                // This excludes AutofillPaymentInstrument as its UI is rendered inline in
-                // the payment request UI, thus can't be skipped.
-                && (urlPaymentMethodIdentifiersSupported || skipUiForNonUrlPaymentMethodIdentifiers)
                 && allApps.size() >= 1
-                && onlySingleAppCanProvideAllRequiredInformation(options, allApps)
+                && onlySingleAppCanProvideAllRequiredInformation(mSpec.getPaymentOptions(), allApps)
                 // Skip to payment app only if it can be pre-selected.
                 && selectedApp != null
                 // Skip to payment app only if user gesture is provided when it is required to
                 // skip-UI.
-                && (isUserGestureShow || !selectedApp.isUserGestureRequiredToSkipUi());
+                && (mIsUserGestureShow || !selectedApp.isUserGestureRequiredToSkipUi());
     }
 
     // Implements PaymentDetailsConverter.MethodChecker:

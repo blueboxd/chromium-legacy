@@ -23768,7 +23768,7 @@ Called by update_extension_histograms.py.-->
   <int value="353" label="WEB_VIEW_INTERNAL_ON_CONSOLE_MESSAGE"/>
   <int value="354" label="WEB_VIEW_INTERNAL_ON_CONTENT_LOAD"/>
   <int value="355" label="WEB_VIEW_INTERNAL_ON_DIALOG"/>
-  <int value="356" label="WEB_VIEW_INTERNAL_ON_DROP_LINK"/>
+  <int value="356" label="DELETED_WEB_VIEW_INTERNAL_ON_DROP_LINK"/>
   <int value="357" label="WEB_VIEW_INTERNAL_ON_EXIT"/>
   <int value="358" label="WEB_VIEW_INTERNAL_ON_EXIT_FULLSCREEN"/>
   <int value="359" label="WEB_VIEW_INTERNAL_ON_FIND_REPLY"/>
@@ -54945,6 +54945,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="433" label="Power Idle Behavior While On Battery"/>
   <int value="434" label="Display: Overscan"/>
   <int value="435" label="Pointing Stick: Speed"/>
+  <int value="436" label="Pointing Stick: Acceleration"/>
   <int value="500" label="Open Wallpaper"/>
   <int value="501" label="Ambient Mode On/Off"/>
   <int value="502" label="Ambient Mode Source"/>
@@ -67114,6 +67115,21 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="SHARE_DISABLED"/>
 </enum>
 
+<enum name="ShareOrigin">
+  <int value="0" label="OVERFLOW_MENU"/>
+  <int value="1" label="TOP_TOOLBAR"/>
+  <int value="2" label="CONTEXT_MENU"/>
+  <int value="3" label="WEBSHARE_API"/>
+  <int value="4" label="MOBILE_ACTION_MODE">
+    Shared from text selection menu.
+  </int>
+  <int value="5" label="EDIT_URL">
+    Shared from share button shown when editing the URL in the omnibox.
+  </int>
+  <int value="6" label="TAB_GROUP"/>
+  <int value="7" label="WEBAPP_NOTIFICATION"/>
+</enum>
+
 <enum name="SharingActionSource">
 <!--
   SharingActionSource must be kept in sync with ValidSharingActionSource defined
@@ -76640,6 +76656,36 @@ others/histograms.xml -->
   <int value="7" label="Timeout"/>
 </enum>
 
+<enum name="WebAuthenticationCableV2MobileEvent">
+  <int value="0" label="QR read"/>
+  <int value="1" label="Server-linked connection started"/>
+  <int value="2" label="Cloud message received"/>
+  <int value="3" label="USB connection"/>
+  <int value="4" label="Authenticator setup"/>
+  <int value="5" label="Connected to tunnel server"/>
+  <int value="6" label="Handshake completed"/>
+  <int value="7" label="Request received"/>
+  <int value="8" label="CTAP response with non-zero status"/>
+  <int value="9" label="Unlinked all devices"/>
+  <int value="10" label="Showed notification"/>
+  <int value="11" label="Notification pressed"/>
+  <int value="12" label="User unselected linking checkbox during QR scan"/>
+</enum>
+
+<enum name="WebAuthenticationCableV2MobileResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unexpected EOF"/>
+  <int value="2" label="Failed to connect to tunnel server"/>
+  <int value="3" label="Handshake failure"/>
+  <int value="4" label="Decryption failure"/>
+  <int value="5" label="Invalid CBOR received"/>
+  <int value="6" label="Invalid CTAP received"/>
+  <int value="7" label="Unknown command"/>
+  <int value="8" label="Internal error"/>
+  <int value="9" label="Invalid QR"/>
+  <int value="10" label="Invalid server link data"/>
+</enum>
+
 <enum name="WebAuthenticationFidoTransport">
   <int value="0" label="USB HID"/>
   <int value="1" label="Near Field Communication"/>
@@ -78370,6 +78416,10 @@ Called by update_scheduler_enums.py.-->
   <int value="5" label="WindowActivityBookmarksOrigin"/>
   <int value="6" label="WindowActivityHistoryOrigin"/>
   <int value="7" label="WindowActivityToolsOrigin"/>
+  <int value="8" label="WindowActivityRecentTabsOrigin"/>
+  <int value="9" label="WindowActivityLocationBarSteadyViewOrigin"/>
+  <int value="10" label="WindowActivityContentSuggestionsOrigin"/>
+  <int value="11" label="WindowActivityTabDragOrigin"/>
 </enum>
 
 <enum name="WindowDragEndEventType">

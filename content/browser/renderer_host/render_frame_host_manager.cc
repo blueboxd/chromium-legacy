@@ -698,7 +698,14 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
   const bool force_use_current_render_frame_host =
       // Since the frame from the back-forward cache is being committed to the
       // SiteInstance we already have, it is treated as current.
-      request->IsServedFromBackForwardCache();
+      request->IsServedFromBackForwardCache() ||
+      // Avoid calling GetFrameHostForNavigation() for same-document navigations
+      // since they should always occur in the current document, which means
+      // also in the current SiteInstance.
+      // State may have changed in the browser that would cause us to put the
+      // document in a different SiteInstance if it was loaded again now, but we
+      // do not want to load the document again, see https://crbug.com/1125106.
+      request->IsSameDocument();
 
   if (force_use_current_render_frame_host) {
     // This method should generally be calling GetFrameHostForNavigation() in
@@ -768,6 +775,12 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       << "Don't call this method for JavaScript URLs as those create a "
          "temporary  NavigationRequest and we don't want to reset an ongoing "
          "navigation's speculative RFH.";
+  // Same-document navigations should be committed in the current document
+  // (and current RenderFrameHost), so we should not come here and ask where
+  // we would load that document. The resulting SiteInstance may have changed
+  // since we did load the current document, but we don't want to reload it if
+  // that is the case. See crbug.com/1125106.
+  DCHECK(!request->IsSameDocument());
   // Inactive frames should never be navigated. If this happens, log a
   // DumpWithoutCrashing to understand the root cause. See
   // https://crbug.com/926820 and https://crbug.com/927705.
@@ -2745,7 +2758,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->GetSourceSiteInstance(), request->dest_site_instance(),
       candidate_site_instance, request->common_params().transition,
       request->state() >= NavigationRequest::CANCELING, is_reload,
-      request->IsSameDocument(), request->GetRestoreType() != RestoreType::NONE,
+      request->IsSameDocument(),
+      request->GetRestoreType() == RestoreType::kRestored,
       request->is_view_source(), request->WasServerRedirect(),
       request->coop_status().require_browsing_instance_swap(),
       request->common_params().should_replace_current_entry,

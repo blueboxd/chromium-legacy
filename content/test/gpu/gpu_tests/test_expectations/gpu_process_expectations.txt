@@ -24,7 +24,7 @@
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x699f amd-0x7340
 #         apple apple-apple-a12z
 #         arm
-#         google google-0xffff
+#         google google-0xffff google-angle-(metal-renderer:-apple-a12z)
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
 #               intel-0x5912
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
@@ -60,14 +60,6 @@ crbug.com/257109 [ linux ] GpuProcess_video [ Failure ]
 
 # Seems to have become flaky on Windows recently.
 crbug.com/700522 [ win ] GpuProcess_one_extra_workaround [ RetryOnFailure ]
-
-# Recently flaking badly Android, macOS and ChromeOS.
-crbug.com/1154088 [ mac ] GpuProcess_one_extra_workaround [ Skip ]
-crbug.com/1154088 [ android ] GpuProcess_one_extra_workaround [ Skip ]
-crbug.com/1154088 [ chromeos ] GpuProcess_one_extra_workaround [ Skip ]
-crbug.com/1154088 [ mac ] GpuProcess_disabling_workarounds_works [ Skip ]
-crbug.com/1154088 [ android ] GpuProcess_disabling_workarounds_works [ Skip ]
-crbug.com/1154088 [ chromeos ] GpuProcess_disabling_workarounds_works [ Skip ]
 
 crbug.com/1028974 [ linux ] GpuProcess_feature_status_under_swiftshader [ RetryOnFailure ]
 

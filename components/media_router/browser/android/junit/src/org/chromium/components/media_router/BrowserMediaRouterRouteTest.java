@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -45,6 +46,11 @@ public class BrowserMediaRouterRouteTest extends BrowserMediaRouterTestBase {
                 return TAB_ID2;
             }
         });
+    }
+
+    @After
+    public void tearDown() {
+        MediaRouterClient.setInstance(null);
     }
 
     @Test
@@ -96,7 +102,7 @@ public class BrowserMediaRouterRouteTest extends BrowserMediaRouterTestBase {
         verify(mRouteProvider)
                 .createRoute(SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false,
                         REQUEST_ID1);
-        mBrowserMediaRouter.onRouteRequestError("ERROR", REQUEST_ID1);
+        mBrowserMediaRouter.onCreateRouteRequestError("ERROR", REQUEST_ID1);
 
         assertEquals(0, mBrowserMediaRouter.getRouteIdsToProvidersForTest().size());
     }
@@ -136,7 +142,7 @@ public class BrowserMediaRouterRouteTest extends BrowserMediaRouterTestBase {
         verify(mRouteProvider)
                 .joinRoute(SOURCE_ID2, PRESENTATION_ID1, ORIGIN1, TAB_ID2, REQUEST_ID2);
 
-        mBrowserMediaRouter.onRouteRequestError("error", REQUEST_ID2);
+        mBrowserMediaRouter.onJoinRouteRequestError("error", REQUEST_ID2);
 
         assertEquals(1, mBrowserMediaRouter.getRouteIdsToProvidersForTest().size());
     }

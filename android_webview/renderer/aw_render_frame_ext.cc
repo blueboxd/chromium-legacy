@@ -228,8 +228,6 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
 bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwRenderFrameExt, message)
-    IPC_MESSAGE_HANDLER(AwViewMsg_DocumentHasImages, OnDocumentHasImagesRequest)
-    IPC_MESSAGE_HANDLER(AwViewMsg_DoHitTest, OnDoHitTest)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetTextZoomFactor, OnSetTextZoomFactor)
     IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
                         OnResetScrollAndScaleState)
@@ -238,20 +236,6 @@ bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void AwRenderFrameExt::OnDocumentHasImagesRequest(uint32_t id) {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-
-  // AwViewMsg_DocumentHasImages should only be sent to the main frame.
-  DCHECK(frame);
-  DCHECK(!frame->Parent());
-
-  const blink::WebElement child_img = GetImgChild(frame->GetDocument());
-  bool has_images = !child_img.IsNull();
-
-  Send(new AwViewHostMsg_DocumentHasImagesResponse(routing_id(), id,
-                                                   has_images));
 }
 
 void AwRenderFrameExt::FocusedElementChanged(const blink::WebElement& element) {
@@ -277,8 +261,8 @@ void AwRenderFrameExt::FocusedElementChanged(const blink::WebElement& element) {
 // Only main frame needs to *receive* the hit test request, because all we need
 // is to get the blink::webView object and invoke a the hitTestResultForTap API
 // from it.
-void AwRenderFrameExt::OnDoHitTest(const gfx::PointF& touch_center,
-                                   const gfx::SizeF& touch_area) {
+void AwRenderFrameExt::HitTest(const gfx::PointF& touch_center,
+                               const gfx::SizeF& touch_area) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
@@ -340,6 +324,19 @@ void AwRenderFrameExt::SetBackgroundColor(SkColor c) {
     return;
 
   webview->SetBaseBackgroundColor(c);
+}
+
+void AwRenderFrameExt::DocumentHasImage(DocumentHasImageCallback callback) {
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+
+  // DocumentHasImages Mojo message should only be sent to the main frame.
+  DCHECK(frame);
+  DCHECK(!frame->Parent());
+
+  const blink::WebElement child_img = GetImgChild(frame->GetDocument());
+  bool has_images = !child_img.IsNull();
+
+  std::move(callback).Run(has_images);
 }
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,

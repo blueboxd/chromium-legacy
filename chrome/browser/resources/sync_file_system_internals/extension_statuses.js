@@ -14,27 +14,18 @@ const ExtensionStatuses = (function() {
    * Get initial map of extension statuses (pending batch sync, enabled and
    * disabled).
    */
-  function getExtensionStatuses() {
-    chrome.send('getExtensionStatuses');
-  }
-
-  // TODO(calvinlo): Move to helper file so it doesn't need to be duplicated.
-  /**
-   * Creates an element named |elementName| containing the content |text|.
-   * @param {string} elementName Name of the new element to be created.
-   * @param {string} text Text to be contained in the new element.
-   * @return {HTMLElement} The newly created HTML element.
-   */
-  function createElementFromText(elementName, text) {
-    const element = document.createElement(elementName);
-    element.appendChild(document.createTextNode(text));
-    return element;
+  function refreshExtensionStatuses() {
+    cr.sendWithPromise('getExtensionStatuses')
+        .then(ExtensionStatuses.onGetExtensionStatuses);
   }
 
   /**
    * Handles callback from onGetExtensionStatuses.
-   * @param {Array} list of dictionaries containing 'extensionName',
-   *     'extensionID, 'status'.
+   * @param {!Array<!{
+   *   extensionName: string,
+   *   extensionID: string,
+   *   status: string,
+   * }>} extensionStatuses
    */
   ExtensionStatuses.onGetExtensionStatuses = function(extensionStatuses) {
     const itemContainer = $('extension-entries');
@@ -51,9 +42,9 @@ const ExtensionStatuses = (function() {
   };
 
   function main() {
-    getExtensionStatuses();
+    refreshExtensionStatuses();
     $('refresh-extensions-statuses')
-        .addEventListener('click', getExtensionStatuses);
+        .addEventListener('click', refreshExtensionStatuses);
   }
 
   document.addEventListener('DOMContentLoaded', main);

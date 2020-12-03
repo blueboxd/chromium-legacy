@@ -47,8 +47,7 @@ namespace blink {
 
 OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
     : CanvasRenderingContextHost(
-          CanvasRenderingContextHost::HostType::kOffscreenCanvasHost,
-          {context->UkmRecorder(), context->UkmSourceID()}),
+          CanvasRenderingContextHost::HostType::kOffscreenCanvasHost),
       execution_context_(context),
       size_(size) {
   // Other code in Blink watches for destruction of the context; be
@@ -395,15 +394,9 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
       (Is3d() ? RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
               : RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled());
 
-  // If this context has a placeholder, the resource needs to be optimized for
-  // displaying on screen. In the case we are hardware compositing, we also
-  // try to enable the usage of the image as scanout buffer (overlay).
-  uint32_t shared_image_usage_flags = 0u;
-  if (HasPlaceholderCanvas()) {
-    shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_DISPLAY;
-    if (composited_mode)
-      shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-  }
+  uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+  if (composited_mode)
+    shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   if (can_use_gpu) {
     provider = CanvasResourceProvider::CreateSharedImageProvider(
@@ -525,6 +518,11 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
       SharedGpuContext::ContextProviderWrapper();
   return context_provider_wrapper &&
          context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
+}
+
+UkmParameters OffscreenCanvas::GetUkmParameters() {
+  auto* context = GetExecutionContext();
+  return {context->UkmRecorder(), context->UkmSourceID()};
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {

@@ -1077,6 +1077,7 @@ ci.chromium_builder(
 ci.chromium_builder(
     name = "android-official",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = False,
     main_console_view = "main",
     console_view_entry = ci.console_view_entry(
         category = "android",
@@ -2478,7 +2479,7 @@ ci.fyi_builder(
     properties = {
         "builder_to_warm": "linux-warmed",
     },
-    schedule = "with 5m interval",
+    schedule = "with 2m interval",
     service_account = "chromium-led-tot-warmer@chops-service-accounts.iam.gserviceaccount.com",
     triggered_by = [],
 )
@@ -2570,6 +2571,15 @@ ci.fyi_builder(
         short_name = "tst",
     ),
     triggered_by = ["linux-chromium-tests-staging-builder"],
+)
+
+ci.fyi_builder(
+    name = "linux-example-builder",
+    console_view_entry = ci.console_view_entry(
+        category = "linux",
+    ),
+    schedule = "with 12h interval",
+    triggered_by = [],
 )
 
 ci.fyi_builder(
@@ -3936,15 +3946,6 @@ ci.gpu_fyi_thin_tester(
 )
 
 ci.gpu_fyi_thin_tester(
-    name = "Win10 FYI x64 Release (AMD RX 550)",
-    console_view_entry = ci.console_view_entry(
-        category = "Windows|10|x64|AMD",
-        short_name = "550",
-    ),
-    triggered_by = ["GPU FYI Win x64 Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
     name = "Win10 FYI x64 Release (AMD RX 5500 XT)",
     console_view_entry = ci.console_view_entry(
         category = "Windows|10|x64|AMD",
@@ -3959,18 +3960,6 @@ ci.gpu_fyi_thin_tester(
         category = "Windows|10|x64|Intel",
         short_name = "rel",
     ),
-    triggered_by = ["GPU FYI Win x64 Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Win10 FYI x64 Release (Intel UHD 630)",
-    console_view_entry = ci.console_view_entry(
-        category = "Windows|10|x64|Intel",
-        short_name = "uhd",
-    ),
-    # TODO(https://crbug.com/986939): Remove this increased timeout once
-    # more devices are added.
-    execution_timeout = 18 * time.hour,
     triggered_by = ["GPU FYI Win x64 Builder"],
 )
 

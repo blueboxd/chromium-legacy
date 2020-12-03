@@ -3171,6 +3171,24 @@
             ]
         }
     ],
+    "GlobalMediaControlsForChromeOS": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithDefaultPinnedv1",
+                    "params": {
+                        "CrosGlobalMediaControlsPinParam": "default-pinned"
+                    },
+                    "enable_features": [
+                        "GlobalMediaControlsForChromeOS"
+                    ]
+                }
+            ]
+        }
+    ],
     "GlobalMediaControlsInProductHelp": [
         {
             "platforms": [
@@ -3479,21 +3497,6 @@
             ]
         }
     ],
-    "IOSDragAndDrop": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DragAndDrop"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSFullPageScreenshot": [
         {
             "platforms": [
@@ -3584,11 +3587,12 @@
             ],
             "experiments": [
                 {
-                    "name": "G1",
+                    "name": "G2_20201202",
                     "params": {
-                        "Gen": "1",
+                        "BlockedTypes": "28",
+                        "Gen": "2",
                         "Max": "10",
-                        "Rho": "1000"
+                        "Rho": "100"
                     },
                     "enable_features": [
                         "IdentifiabilityStudy"

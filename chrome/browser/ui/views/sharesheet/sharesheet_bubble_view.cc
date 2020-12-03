@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/sharesheet/sharesheet_target_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -108,12 +107,12 @@ bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
 }  // namespace
 
 SharesheetBubbleView::SharesheetBubbleView(
-    content::WebContents* web_contents,
+    gfx::NativeWindow native_window,
     sharesheet::SharesheetServiceDelegate* delegate)
     : delegate_(delegate) {
-  gfx::NativeWindow parent = web_contents->GetTopLevelNativeWindow();
-  set_parent_window(parent);
-  parent_view_ = views::Widget::GetWidgetForNativeWindow(parent)->GetRootView();
+  set_parent_window(native_window);
+  parent_view_ =
+      views::Widget::GetWidgetForNativeWindow(native_window)->GetRootView();
   UpdateAnchorPosition();
 
   CreateBubble();
@@ -322,19 +321,22 @@ void SharesheetBubbleView::ShowActionView() {
   share_action_scoped_settings->SetPreemptionStrategy(
       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
 
-  // |share_action_view_| scale & opacity fade in.
+  // |share_action_view_| scale fade in.
   share_action_scoped_settings->SetTransitionDuration(kSlowAnimateTime);
   share_action_scoped_settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN_2);
+  // Set##name kicks off the animation with the TransitionDuration and
+  // TweenType currently set. See ui/compositor/layer_animator.cc Set##name.
+  share_action_view_layer->SetTransform(gfx::Transform());
+  // |share_action_view_| opacity fade in.
   share_action_scoped_settings->SetTransitionDuration(kQuickAnimateTime);
   share_action_scoped_settings->SetTweenType(gfx::Tween::Type::LINEAR);
+  share_action_view_layer->SetOpacity(1.0f);
 
   // Delay |share_action_view_| animate so that we can see |main_view_| fade out
   // first.
   share_action_view_layer->GetAnimator()->SchedulePauseForProperties(
       kAnimateDelay, ui::LayerAnimationElement::TRANSFORM |
                          ui::LayerAnimationElement::OPACITY);
-  share_action_view_layer->SetOpacity(1.0f);
-  share_action_view_layer->SetTransform(gfx::Transform());
 }
 
 void SharesheetBubbleView::ResizeBubble(const int& width, const int& height) {

@@ -13,9 +13,9 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
-#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_visibility_state.h"
 #include "ipc/ipc_listener.h"
@@ -34,7 +34,6 @@
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -44,6 +43,7 @@
 namespace blink {
 class AssociatedInterfaceProvider;
 namespace mojom {
+enum class AuthenticatorStatus;
 enum class FeaturePolicyFeature;
 }  // namespace mojom
 }  // namespace blink
@@ -560,8 +560,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Notifies the renderer whether hiding/showing the browser controls is
   // enabled, what the current state should be, and whether or not to animate to
   // the proper state.
-  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
-                                          BrowserControlsState current,
+  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                          cc::BrowserControlsState current,
                                           bool animate) = 0;
 
   // Reloads the frame. It initiates a reload but doesn't wait for it to finish.

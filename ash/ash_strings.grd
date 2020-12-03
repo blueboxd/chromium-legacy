@@ -809,6 +809,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SELECT_TO_SPEAK_DEFAULT_OPTION" desc="The label for the Select-to-speak reading speed option where users can select their default system text-to-speech rate.">
         Default (<ph name="RATE">$1<ex>1.2</ex></ph>x)
       </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_MENU" desc="The name of the Select-to-speak floating menu.">
+        Select-to-speak menu
+      </message>
       <message name="IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION" desc="The tooltip text for the Switch Access back button. The back button allows users to exit the feature's current focus area.">
         Back button
       </message>
@@ -1194,6 +1197,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_HOTSPOT_FAILED_MESSAGE" desc="Message inside a PhoneHub notification when enable hotspot failed to find a connection.">
         Tap to configure
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CONTINUE_BROWSING_TAB_LABEL" desc="Label inside a Phone Hub continue browsing card that describes the index of the card, title of the webpage, and webpage url.">
+        Browser tab <ph name="INDEX">$1<ex>1</ex></ph> of <ph name="TOTAL_COUNT">$2<ex>2</ex></ph>. <ph name="SITE_TITLE">$3<ex>Google</ex></ph>, <ph name="SITE_URL">$4<ex>https://google.com</ex></ph>
       </message>
 
       <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the stylus tools (a pop-up panel next to the status tray). This causes a partial screenshot to be taken (the user selects an area of the screen to take a screenshot of).">

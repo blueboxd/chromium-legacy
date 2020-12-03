@@ -128,6 +128,41 @@ class ServiceWorkerRegistry::InflightCallStoreRegistration
       callback_;
 };
 
+class ServiceWorkerRegistry::InflightCallStoreUserData
+    : public ServiceWorkerRegistry::InflightCall {
+ public:
+  InflightCallStoreUserData(
+      int64_t registration_id,
+      const url::Origin& origin,
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
+      base::RepeatingCallback<
+          void(storage::mojom::ServiceWorkerDatabaseStatus status)> callback)
+      : registration_id_(registration_id),
+        origin_(origin),
+        user_data_(std::move(user_data)),
+        callback_(std::move(callback)) {}
+  ~InflightCallStoreUserData() override = default;
+
+  void Run(ServiceWorkerRegistry* registry) override {
+    DCHECK(registry);
+    DCHECK(registry->GetRemoteStorageControl().is_connected());
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> passed_user_data;
+    for (const auto& entry : user_data_)
+      passed_user_data.push_back(entry.Clone());
+
+    registry->GetRemoteStorageControl()->StoreUserData(
+        registration_id_, origin_, std::move(passed_user_data), callback_);
+  }
+
+ private:
+  const int64_t registration_id_;
+  const url::Origin origin_;
+  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data_;
+  base::RepeatingCallback<void(
+      storage::mojom::ServiceWorkerDatabaseStatus status)>
+      callback_;
+};
+
 class ServiceWorkerRegistry::InflightCallApplyPolicyUpdates
     : public ServiceWorkerRegistry::InflightCall {
  public:
@@ -588,10 +623,11 @@ void ServiceWorkerRegistry::GetUserData(int64_t registration_id,
                                         const std::vector<std::string>& keys,
                                         GetUserDataCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->GetUserData(
-      registration_id, keys,
-      base::BindOnce(&ServiceWorkerRegistry::DidGetUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::GetUserData,
+      base::BindRepeating(&ServiceWorkerRegistry::DidGetUserData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      static_cast<const int64_t>(registration_id), keys);
 }
 
 void ServiceWorkerRegistry::GetUserDataByKeyPrefix(
@@ -599,10 +635,11 @@ void ServiceWorkerRegistry::GetUserDataByKeyPrefix(
     const std::string& key_prefix,
     GetUserDataCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->GetUserDataByKeyPrefix(
-      registration_id, key_prefix,
-      base::BindOnce(&ServiceWorkerRegistry::DidGetUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::GetUserDataByKeyPrefix,
+      base::BindRepeating(&ServiceWorkerRegistry::DidGetUserData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      static_cast<const int64_t>(registration_id), key_prefix);
 }
 
 void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
@@ -610,10 +647,12 @@ void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
     const std::string& key_prefix,
     GetUserKeysAndDataCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->GetUserKeysAndDataByKeyPrefix(
-      registration_id, key_prefix,
-      base::BindOnce(&ServiceWorkerRegistry::DidGetUserKeysAndData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::
+          GetUserKeysAndDataByKeyPrefix,
+      base::BindRepeating(&ServiceWorkerRegistry::DidGetUserKeysAndData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      static_cast<const int64_t>(registration_id), key_prefix);
 }
 
 void ServiceWorkerRegistry::StoreUserData(
@@ -638,20 +677,24 @@ void ServiceWorkerRegistry::StoreUserData(
         registration_id, kv.first, kv.second));
   }
 
-  GetRemoteStorageControl()->StoreUserData(
+  uint64_t call_id = GetNextCallId();
+  auto call = std::make_unique<InflightCallStoreUserData>(
       registration_id, origin, std::move(user_data),
-      base::BindOnce(&ServiceWorkerRegistry::DidStoreUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindRepeating(&ServiceWorkerRegistry::DidStoreUserData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback),
+                          call_id));
+  StartRemoteCall(call_id, std::move(call));
 }
 
 void ServiceWorkerRegistry::ClearUserData(int64_t registration_id,
                                           const std::vector<std::string>& keys,
                                           StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->ClearUserData(
-      registration_id, keys,
-      base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::ClearUserData,
+      base::BindRepeating(&ServiceWorkerRegistry::DidClearUserData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      static_cast<const int64_t>(registration_id), keys);
 }
 
 void ServiceWorkerRegistry::ClearUserDataByKeyPrefixes(
@@ -659,40 +702,49 @@ void ServiceWorkerRegistry::ClearUserDataByKeyPrefixes(
     const std::vector<std::string>& key_prefixes,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->ClearUserDataByKeyPrefixes(
-      registration_id, key_prefixes,
-      base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::ClearUserDataByKeyPrefixes,
+      base::BindRepeating(&ServiceWorkerRegistry::DidClearUserData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      static_cast<const int64_t>(registration_id), key_prefixes);
 }
 
 void ServiceWorkerRegistry::ClearUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->ClearUserDataForAllRegistrationsByKeyPrefix(
-      key_prefix,
-      base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::
+          ClearUserDataForAllRegistrationsByKeyPrefix,
+      base::BindRepeating(&ServiceWorkerRegistry::DidClearUserData,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      key_prefix);
 }
 
 void ServiceWorkerRegistry::GetUserDataForAllRegistrations(
     const std::string& key,
     GetUserDataForAllRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->GetUserDataForAllRegistrations(
-      key,
-      base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::
+          GetUserDataForAllRegistrations,
+      base::BindRepeating(
+          &ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
+          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      key);
 }
 
 void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
     GetUserDataForAllRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->GetUserDataForAllRegistrationsByKeyPrefix(
-      key_prefix,
-      base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::
+          GetUserDataForAllRegistrationsByKeyPrefix,
+      base::BindRepeating(
+          &ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
+          weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+      key_prefix);
 }
 
 void ServiceWorkerRegistry::GetRegisteredOrigins(
@@ -1293,8 +1345,11 @@ void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
 
 void ServiceWorkerRegistry::DidGetUserData(
     GetUserDataCallback callback,
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status,
     const std::vector<std::string>& data) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
@@ -1304,9 +1359,11 @@ void ServiceWorkerRegistry::DidGetUserData(
 
 void ServiceWorkerRegistry::DidGetUserKeysAndData(
     GetUserKeysAndDataCallback callback,
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status,
     const base::flat_map<std::string, std::string>& data_map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
@@ -1316,8 +1373,10 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
 
 void ServiceWorkerRegistry::DidStoreUserData(
     StatusCallback callback,
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   // |status| can be NOT_FOUND when the associated registration did not exist in
   // the database. In the case, we don't have to schedule the corruption
   // recovery.
@@ -1330,8 +1389,10 @@ void ServiceWorkerRegistry::DidStoreUserData(
 
 void ServiceWorkerRegistry::DidClearUserData(
     StatusCallback callback,
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
@@ -1339,9 +1400,11 @@ void ServiceWorkerRegistry::DidClearUserData(
 
 void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     GetUserDataForAllRegistrationsCallback callback,
+    uint64_t call_id,
     storage::mojom::ServiceWorkerDatabaseStatus status,
     std::vector<storage::mojom::ServiceWorkerUserDataPtr> entries) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  FinishRemoteCall(call_id);
   // TODO(crbug.com/1055677): Update call sites of
   // GetUserDataForAllRegistrations so that we can avoid converting mojo struct
   // to a pair.

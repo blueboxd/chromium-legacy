@@ -187,6 +187,9 @@ vars = {
   # instead of downloading the prebuilt pinned revision.
   'llvm_force_head_revision': False,
 
+  # reclient CIPD package version
+  'reclient_version': 're_client_version:0.17.0.7d283ef',
+
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
@@ -200,11 +203,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5334e8976d4263b58b57868f3af3064f1892f9d4',
+  'skia_revision': '9f3f2c24ae4405aea8f4e35cd9e2741e97c0b862',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5b8d12f1c305ceabc39187991c8eb1c0cb0d4d3d',
+  'v8_revision': '417f359d639d085e2086102c1cb366b75cf0b1f7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -212,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8797714c4a78082270473e4b4bed18b4a60f6245',
+  'angle_revision': '8670d6183a8439622e5f4527e4971bafb1a9ffa7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -275,7 +278,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '8bb911c3aa2ceae9d591c3507f0a2c18ea99e677',
+  'devtools_frontend_revision': 'bdcd87cfa31e3ca67a5f10a14dd86953bab26fa0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -323,11 +326,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '6216d098d8abe3ccda8781016c4f69372c48afb9',
+  'shaderc_revision': '1520e40f5e2b6d480f06a467406dade164195bf9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '429a12542f160a36d87c1daa6c3102bce072207e',
+  'dawn_revision': '3668d352bc5fe13af27dc178d203f67032537a7f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -366,7 +369,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'b3becb2f257acf1decb8f7605d9f547ad891ed88',
+  'tint_revision': '685cb02ea8d9afbad46d52ccbe4fa3728ac37693',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -453,12 +456,12 @@ deps = {
   'src/tools/reclient': {
     'packages': [
       {
-        'package': 'infra/rbe/client/linux-amd64',
-        'version': 'FY971v8hquNEs2x-L-AvVGygtX9sFTRy9aloq85WbqYC',
+        'package': 'infra/rbe/client/${{platform}}',
+        'version': Var('reclient_version'),
       }
     ],
     'dep_type': 'cipd',
-    'condition': 'host_os == "linux" and checkout_reclient',
+    'condition': '(host_os == "linux" or host_os == "windows") and checkout_reclient',
   },
   'src/chrome/browser/resources/media_router/extension/src':
     Var('chromium_git') + '/media_router.git' + '@' + 'd4389c097c61fa8c5aa5eb7c3ba34ee203dd62e3',
@@ -854,7 +857,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '9c4671f2e3a63c0f155d9b2511192d0b5fa7f760',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'e3d485f73f5836fdd6fb287ab96973c4f63175e1',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -914,7 +917,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'f6d74c196c6cf15e6b40ad80895dddfbebc5b374',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '7fa43c97b6062c24abfe3ce6ff0033e6b9cc6b91',
       'condition': 'checkout_linux',
   },
 
@@ -1623,7 +1626,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@397ec99b1aca6d729b9186ad403b166ba7df926a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ff0c8040cec4b7f11798576c0b161552ee659a82',
     'condition': 'checkout_src_internal',
   },
 

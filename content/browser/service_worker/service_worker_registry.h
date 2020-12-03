@@ -346,18 +346,23 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       uint64_t call_id,
       storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserData(GetUserDataCallback callback,
+                      uint64_t call_id,
                       storage::mojom::ServiceWorkerDatabaseStatus status,
                       const std::vector<std::string>& data);
   void DidGetUserKeysAndData(
       GetUserKeysAndDataCallback callback,
+      uint64_t call_id,
       storage::mojom::ServiceWorkerDatabaseStatus status,
       const base::flat_map<std::string, std::string>& data_map);
   void DidStoreUserData(StatusCallback callback,
+                        uint64_t call_id,
                         storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidClearUserData(StatusCallback callback,
+                        uint64_t call_id,
                         storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserDataForAllRegistrations(
       GetUserDataForAllRegistrationsCallback callback,
+      uint64_t call_id,
       storage::mojom::ServiceWorkerDatabaseStatus status,
       std::vector<storage::mojom::ServiceWorkerUserDataPtr> entries);
 
@@ -420,6 +425,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   //
   // For StoreRegistration():
   class InflightCallStoreRegistration;
+  // For StoreUserData():
+  class InflightCallStoreUserData;
   // For ApplyPolicyUpdates():
   class InflightCallApplyPolicyUpdates;
 

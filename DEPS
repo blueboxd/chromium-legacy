@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '30217950419d4a8c0de2ca926f597f7934f2eac0',
+  'skia_revision': 'e0dee01043d14ea8a73d91e9429ecfc175e3d7a0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -216,11 +216,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c859c0ac81bbca2066fcaeb6efa48eece5c10103',
+  'angle_revision': '251ba5cb119ff2fed0e861cbc9b096c45004c1fa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'bae138de13ac876cbca0e30a40b89dc808e2b29d',
+  'swiftshader_revision': 'f36e874ade1dbc6f5ddfc857753a892a8bb358c3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -279,7 +279,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b97d85b7ca1851fa31bcd4395a0ec901647a1fa6',
+  'devtools_frontend_revision': '952584d5b9bb07a714db4c04d7741402ee554593',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -567,7 +567,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '62ccb5c72fb6822c7199abbeeafcba8dd61e34e0',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '0118f4a52f8cd03bb95f888a57e064f01096ff2e',
       'condition': 'checkout_ios',
   },
 
@@ -1373,7 +1373,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'FMtthcz6qGrAgLXdxXJ6pP0iueMVqTXO6-6_LOrvTZUC'
+              'version': 'ZgEt2vZQcebeMBnTVKemE7gxtLtigVkD5iHfrp1QkDsC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1617,7 +1617,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0847212051763d38183746388137648f1449a479',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d9042e3e60828db81cc735c315a315278d815a49',
     'condition': 'checkout_src_internal',
   },
 

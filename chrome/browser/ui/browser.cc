@@ -861,7 +861,7 @@ bool Browser::ShouldCloseWindow() {
 
 bool Browser::TryToCloseWindow(
     bool skip_beforeunload,
-    const base::Callback<void(bool)>& on_close_confirmed) {
+    const base::RepeatingCallback<void(bool)>& on_close_confirmed) {
   cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
   return unload_controller_.TryToCloseWindow(skip_beforeunload,
                                              on_close_confirmed);
@@ -893,6 +893,10 @@ void Browser::SetWindowUserTitle(const std::string& user_title) {
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->SetWindowUserTitle(session_id(), user_title);
+}
+
+StatusBubble* Browser::GetStatusBubbleForTesting() {
+  return GetStatusBubble();
 }
 
 void Browser::OnWindowClosing() {
@@ -2689,11 +2693,14 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
-  // In kiosk and exclusive app mode, we want to always hide the status bubble.
-  if (chrome::IsRunningInAppMode())
-    return NULL;
+  // In kiosk and exclusive app mode we want to always hide the status bubble.
+  if (chrome::IsRunningInAppMode() ||
+      (base::FeatureList::IsEnabled(features::kRemoveStatusBarInWebApps) &&
+       web_app::AppBrowserController::IsForWebAppBrowser(this))) {
+    return nullptr;
+  }
 
-  return window_ ? window_->GetStatusBubble() : NULL;
+  return window_ ? window_->GetStatusBubble() : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2751,8 +2758,8 @@ bool Browser::CanCloseWithInProgressDownloads() {
   cancel_download_confirmation_state_ = WAITING_FOR_RESPONSE;
   window_->ConfirmBrowserCloseWithPendingDownloads(
       num_downloads_blocking, dialog_type,
-      base::Bind(&Browser::InProgressDownloadResponse,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&Browser::InProgressDownloadResponse,
+                     weak_factory_.GetWeakPtr()));
 
   // Return false so the browser does not close.  We'll close if the user
   // confirms in the dialog.

@@ -340,6 +340,9 @@ extern const base::Feature kHeavyAdInterventionWarning;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHeavyAdPrivacyMitigations;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHideWebAppOriginText;
+
 #if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImmersiveFullscreen;
@@ -463,6 +466,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPrefixWebAppWindowsWithAppName;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrerenderFallbackToPreconnect;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -492,6 +498,9 @@ extern const base::Feature kRecordWebAppDebugInfo;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAbusiveNotificationPermissionRevocation;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kRemoveStatusBarInWebApps;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)

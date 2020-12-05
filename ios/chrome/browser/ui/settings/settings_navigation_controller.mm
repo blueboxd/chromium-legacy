@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -292,6 +292,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
 
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+    self.navigationBar.translucent = NO;
+    self.toolbar.translucent = NO;
+    self.navigationBar.barTintColor =
+        [UIColor colorNamed:kSecondaryBackgroundColor];
+    self.toolbar.barTintColor = [UIColor colorNamed:kSecondaryBackgroundColor];
     self.view.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   }
 

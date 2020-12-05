@@ -2379,7 +2379,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+          'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
         },
         'mixins': [
           'arm64',
@@ -2686,6 +2686,9 @@
         'additional_compile_targets': [
           'chrome',
         ],
+        'test_suites': {
+          'gtest_tests': 'linux_example_builder_gtests',
+        },
       },
       'linux-fieldtrial-rel': {
         'mixins': [

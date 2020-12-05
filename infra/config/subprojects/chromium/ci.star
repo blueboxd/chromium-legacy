@@ -382,6 +382,20 @@ ci.console_view(
     ("win64-chrome", "win"),
 )]
 
+# The chromium.updater console includes some entries from official chrome builders.
+[branches.console_view_entry(
+    builder = "chrome:official/{}".format(name),
+    console_view = "chromium.updater",
+    category = category,
+    short_name = short_name,
+) for name, category, short_name in (
+    ("mac64", "official|mac", "64"),
+    ("mac-arm64", "official|mac", "arm64"),
+    ("win-asan", "official|win", "asan"),
+    ("win-clang", "official|win", "clang"),
+    ("win64-clang", "official|win", "clang (64)"),
+)]
+
 # Builders are sorted first lexicographically by the function used to define
 # them, then lexicographically by their name
 
@@ -1086,10 +1100,9 @@ ci.chromium_builder(
     cores = 32,
     tree_closing = False,
 
-    # See https://crbug.com/1153349. In 3 hours, the android-official builder
-    # was able to complete only 98% of the target. This gives a bit more time to
-    # finish.
-    execution_timeout = 4 * time.hour,
+    # See https://crbug.com/1153349#c22, as we update symbol_level=2, build
+    # needs longer time to complete.
+    execution_timeout = 7 * time.hour,
 )
 
 ci.chromium_builder(

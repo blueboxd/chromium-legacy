@@ -9,7 +9,6 @@
 
 #include "base/debug/crash_logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/mac_util.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1217,38 +1216,6 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 }
 
-- (void)beginGestureWithEvent:(NSEvent*)event {
-  // This method must be handled when linking with the 10.10 SDK or earlier, or
-  // when the app is running on 10.10 or earlier.  In other circumstances, the
-  // event will be handled by |magnifyWithEvent:|, so this method should do
-  // nothing.
-  bool shouldHandle = true;
-#if defined(MAC_OS_X_VERSION_10_11) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
-  shouldHandle = base::mac::IsAtMostOS10_10();
-#endif
-
-  if (shouldHandle) {
-    [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
-  }
-}
-
-- (void)endGestureWithEvent:(NSEvent*)event {
-  // This method must be handled when linking with the 10.10 SDK or earlier, or
-  // when the app is running on 10.10 or earlier.  In other circumstances, the
-  // event will be handled by |magnifyWithEvent:|, so this method should do
-  // nothing.
-  bool shouldHandle = true;
-#if defined(MAC_OS_X_VERSION_10_11) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
-  shouldHandle = base::mac::IsAtMostOS10_10();
-#endif
-
-  if (shouldHandle) {
-    [self handleEndGestureWithEvent:event];
-  }
-}
-
 - (void)touchesMovedWithEvent:(NSEvent*)event {
   [_responderDelegate touchesMovedWithEvent:event];
 }
@@ -1306,22 +1273,14 @@ void ExtractUnderlines(NSAttributedString* string,
 //     cancels the gesture, all remaining touches are forwarded to the content
 //     scroll logic. The user cannot trigger the navigation logic again.
 - (void)scrollWheel:(NSEvent*)event {
-#if defined(MAC_OS_X_VERSION_10_11) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
-  // When linking against the 10.11 (or later) SDK and running on 10.11 or
-  // later, check the phase of the event and specially handle the "begin" and
-  // "end" phases.
-  if (base::mac::IsAtLeastOS10_11()) {
-    if (event.phase == NSEventPhaseBegan) {
-      [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
-    }
-
-    if (event.phase == NSEventPhaseEnded ||
-        event.phase == NSEventPhaseCancelled) {
-      [self handleEndGestureWithEvent:event];
-    }
+  if (event.phase == NSEventPhaseBegan) {
+    [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
   }
-#endif
+
+  if (event.phase == NSEventPhaseEnded ||
+      event.phase == NSEventPhaseCancelled) {
+    [self handleEndGestureWithEvent:event];
+  }
 
   if (_responderDelegate &&
       [_responderDelegate respondsToSelector:@selector(handleEvent:)]) {

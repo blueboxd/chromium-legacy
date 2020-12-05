@@ -6,11 +6,11 @@
 cr.define('cellular_setup', function() {
   /** @implements {chromeos.cellularSetup.mojom.ESimProfile} */
   class FakeProfile {
-    constructor(id) {
+    constructor(id, fakeEuicc) {
       this.properties_ = {
         activationCode: 'activation-code-' + id,
         eid: '1',
-        iccid: id,
+        iccid: id + '',
         name: {
           data: this.stringToCharCodeArray_('profile' + id),
         },
@@ -22,6 +22,8 @@ cr.define('cellular_setup', function() {
         },
         state: chromeos.cellularSetup.mojom.ProfileState.kPending,
       };
+
+      this.fakeEuicc_ = fakeEuicc;
     }
 
     /**
@@ -66,6 +68,37 @@ cr.define('cellular_setup', function() {
         res.push(string.charCodeAt(i));
       }
       return res;
+    }
+
+    /**
+     * @override
+     * @param {?mojoBase.mojom.String16} nickname
+     * @return {!Promise<{result:
+     *     chromeos.cellularSetup.mojom.ESimOperationResult},}>}
+     */
+    setProfileNickname(nickname) {
+      this.properties_.nickname = nickname;
+      return new Promise((res) => {
+        res({
+          result: chromeos.cellularSetup.mojom.ESimOperationResult.kSuccess
+        });
+      });
+    }
+
+    /** @override */
+    uninstallProfile() {
+      return this.fakeEuicc_.removeProfileForTest(this.properties_.iccid)
+          .then(saved => {
+            if (saved) {
+              return {
+                result:
+                    chromeos.cellularSetup.mojom.ESimOperationResult.kSuccess
+              };
+            }
+            return {
+              result: chromeos.cellularSetup.mojom.ESimOperationResult.kFailure
+            };
+          });
     }
   }
 
@@ -124,7 +157,27 @@ cr.define('cellular_setup', function() {
     /** @private */
     addProfileForTest_() {
       const id = this.profiles_.length + 1;
-      this.profiles_.push(new FakeProfile(id));
+      this.profiles_.push(new FakeProfile(id, this));
+    }
+
+    /**
+     * @param {string} iccid
+     * @private
+     */
+    async removeProfileForTest(iccid) {
+      const result = [];
+      let resp = false;
+      for (let profile of this.profiles_) {
+        const property = await profile.getProperties();
+        if (property.properties.iccid === iccid) {
+          resp = true;
+          continue;
+        }
+        result.push(profile);
+      }
+      this.profiles_ = result;
+
+      return resp;
     }
   }
 

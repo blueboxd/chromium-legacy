@@ -242,8 +242,8 @@ class SSLInterstitialTimerObserver {
  public:
   explicit SSLInterstitialTimerObserver(WebContents* web_contents)
       : web_contents_(web_contents), message_loop_runner_(new base::RunLoop) {
-    callback_ = base::Bind(&SSLInterstitialTimerObserver::OnTimerStarted,
-                           base::Unretained(this));
+    callback_ = base::BindRepeating(
+        &SSLInterstitialTimerObserver::OnTimerStarted, base::Unretained(this));
     SSLErrorHandler::SetInterstitialTimerStartedCallbackForTesting(&callback_);
   }
 
@@ -616,9 +616,9 @@ class SSLUITestBase : public InProcessBrowserTest,
 
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter =
         certificate_reporting_test_utils::CreateMockSSLCertReporter(
-            base::Bind(&certificate_reporting_test_utils::
-                           SSLCertReporterCallback::ReportSent,
-                       base::Unretained(&reporter_callback)),
+            base::BindRepeating(&certificate_reporting_test_utils::
+                                    SSLCertReporterCallback::ReportSent,
+                                base::Unretained(&reporter_callback)),
             expect_report);
 
     SSLBlockingPage* interstitial_page =
@@ -687,9 +687,9 @@ class SSLUITestBase : public InProcessBrowserTest,
 
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter =
         certificate_reporting_test_utils::CreateMockSSLCertReporter(
-            base::Bind(&certificate_reporting_test_utils::
-                           SSLCertReporterCallback::ReportSent,
-                       base::Unretained(&reporter_callback)),
+            base::BindRepeating(&certificate_reporting_test_utils::
+                                    SSLCertReporterCallback::ReportSent,
+                                base::Unretained(&reporter_callback)),
             expect_report);
 
     ASSERT_TRUE(
@@ -1910,47 +1910,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCert) {
   EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
 }
 
-class SSLUITestWithHttpDangerous : public SSLUITest {
- public:
-  SSLUITestWithHttpDangerous() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::kMarkHttpAsParameterDangerous}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Ensure that non-standard origins are marked as neutral when the
-// MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkFileAsNonSecure) {
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  ui_test_utils::NavigateToURL(browser(), GURL("file:///"));
-  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-}
-
-// Ensure that about-protocol origins are marked as neutral when the
-// MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkAboutAsNonSecure) {
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-}
-
 // Data URLs should always be marked as non-secure.
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
@@ -1962,40 +1921,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-}
-
-// Ensure that HTTP-protocol origins are marked as Dangerous when the
-// MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkHTTPAsDangerous) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Navigate to a non-local HTTP page.
-  GURL url = embedded_test_server()->GetURL("/ssl/google.html");
-  GURL::Replacements http_url_replacements;
-  http_url_replacements.SetHostStr("example.test");
-  url = url.ReplaceComponents(http_url_replacements);
-  ui_test_utils::NavigateToURL(browser(), url);
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
-  ASSERT_TRUE(helper);
-
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-}
-
-// Ensure that blob-protocol origins are marked as neutral when the
-// MarkNonSecureAs Dangerous flag is enabled.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkBlobAsNonSecure) {
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL("blob:chrome://newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 // TODO(crbug.com/1148302): This class directly calls
@@ -2516,9 +2441,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
 
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter =
       certificate_reporting_test_utils::CreateMockSSLCertReporter(
-          base::Bind(&certificate_reporting_test_utils::
-                         SSLCertReporterCallback::ReportSent,
-                     base::Unretained(&reporter_callback)),
+          base::BindRepeating(&certificate_reporting_test_utils::
+                                  SSLCertReporterCallback::ReportSent,
+                              base::Unretained(&reporter_callback)),
           certificate_reporting_test_utils::CERT_REPORT_EXPECTED);
 
   SSLBlockingPage* interstitial_page =
@@ -5142,8 +5067,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   // function does not support https to http redirects.
   // This must be done before ServeFilesFromSourceDirectory(), otherwise the
   // test server will serve files instead of redirecting requests to them.
-  https_server_example_domain.RegisterRequestHandler(
-      base::Bind(&HTTPSToHTTPRedirectHandler, &https_server_example_domain));
+  https_server_example_domain.RegisterRequestHandler(base::BindRepeating(
+      &HTTPSToHTTPRedirectHandler, &https_server_example_domain));
 
   https_server_example_domain.ServeFilesFromSourceDirectory(
       GetChromeTestDataDir());

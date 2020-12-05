@@ -23,7 +23,6 @@ enum AuthKeyPrivileges {
   PRIV_ADD = 1 << 1,                // Can add new keys.
   PRIV_REMOVE = 1 << 2,             // Can remove other keys.
   PRIV_MIGRATE = 1 << 3,            // Destroy all keys and replace with new.
-  PRIV_AUTHORIZED_UPDATE = 1 << 4,  // Key can be updated in place.
   PRIV_DEFAULT = PRIV_ADD | PRIV_REMOVE | PRIV_MIGRATE
 };
 
@@ -85,42 +84,6 @@ struct COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) KeyDefinition {
     TYPE_FINGERPRINT = 2,
   };
 
-  struct AuthorizationData {
-    enum Type {
-      TYPE_HMACSHA256 = 0,
-      TYPE_AES256CBC_HMACSHA256
-    };
-
-    struct Secret {
-      Secret();
-      Secret(bool encrypt,
-             bool sign,
-             const std::string& symmetric_key,
-             const std::string& public_key,
-             bool wrapped);
-
-      bool operator==(const Secret& other) const;
-
-      bool encrypt;
-      bool sign;
-      std::string symmetric_key;
-      std::string public_key;
-      bool wrapped;
-    };
-
-    AuthorizationData();
-    AuthorizationData(bool encrypt,
-                      bool sign,
-                      const std::string& symmetric_key);
-    AuthorizationData(const AuthorizationData& other);
-    ~AuthorizationData();
-
-    bool operator==(const AuthorizationData& other) const;
-
-    Type type;
-    std::vector<Secret> secrets;
-  };
-
   // This struct holds metadata that will be stored alongside the key. Each
   // |ProviderData| entry must have a |name| and may hold either a |number| or a
   // sequence of |bytes|. The metadata is entirely opaque to cryptohome. It is
@@ -177,7 +140,6 @@ struct COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) KeyDefinition {
   std::string secret;
   std::vector<chromeos::ChallengeResponseKey> challenge_response_keys;
 
-  std::vector<AuthorizationData> authorization_data;
   std::vector<ProviderData> provider_data;
 };
 

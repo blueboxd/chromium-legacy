@@ -1839,6 +1839,10 @@ static_library("browser") {
     "translate/chrome_translate_client.h",
     "translate/translate_accept_languages_factory.cc",
     "translate/translate_accept_languages_factory.h",
+    "translate/translate_model_service_factory.cc",
+    "translate/translate_model_service_factory.h",
+    "translate/translate_model_service_impl.cc",
+    "translate/translate_model_service_impl.h",
     "translate/translate_ranker_factory.cc",
     "translate/translate_ranker_factory.h",
     "translate/translate_ranker_metrics_provider.cc",
@@ -1884,6 +1888,8 @@ static_library("browser") {
     "wake_lock/wake_lock_permission_context.h",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
+    "webapps/chrome_webapps_client.cc",
+    "webapps/chrome_webapps_client.h",
     "window_placement/window_placement_permission_context.cc",
     "window_placement/window_placement_permission_context.h",
   ]
@@ -2244,6 +2250,7 @@ static_library("browser") {
     "//components/visitedlink/common",
     "//components/web_cache/browser",
     "//components/web_resource",
+    "//components/webapps",
     "//components/webdata/common",
     "//components/webdata_services",
     "//components/webrtc",
@@ -3214,6 +3221,7 @@ static_library("browser") {
       "//chrome/browser/android/webapk:proto",
       "//chrome/browser/banners/android:jni_headers",
       "//chrome/browser/consent_auditor/android:jni_headers",
+      "//chrome/browser/continuous_search",
       "//chrome/browser/download/internal/android",
       "//chrome/browser/endpoint_fetcher:jni_headers",
       "//chrome/browser/feedback/android",
@@ -4379,6 +4387,8 @@ static_library("browser") {
       "nearby_sharing/share_target_info.h",
       "nearby_sharing/sharesheet/nearby_share_action.cc",
       "nearby_sharing/sharesheet/nearby_share_action.h",
+      "nearby_sharing/sharesheet/nearby_share_web_view.cc",
+      "nearby_sharing/sharesheet/nearby_share_web_view.h",
       "nearby_sharing/transfer_metadata.cc",
       "nearby_sharing/transfer_metadata.h",
       "nearby_sharing/transfer_metadata_builder.cc",
@@ -5963,8 +5973,6 @@ static_library("browser") {
       "plugins/chrome_content_browser_client_plugins_part.h",
       "plugins/chrome_plugin_service_filter.cc",
       "plugins/chrome_plugin_service_filter.h",
-      "plugins/flash_permission_context.cc",
-      "plugins/flash_permission_context.h",
       "plugins/flash_temporary_permission_tracker.cc",
       "plugins/flash_temporary_permission_tracker.h",
       "plugins/flash_temporary_permission_tracker_factory.cc",
@@ -6262,6 +6270,7 @@ static_library("browser") {
     if (is_android) {
       if (enable_arcore) {
         deps += [
+          "//chrome/browser/android/vr:ar_jni_headers",
           "//components/webxr/android",
           "//device/vr/android/arcore",
         ]

@@ -154,6 +154,7 @@ void ModuleScriptLoader::FetchInternal(
 
   // Note: |options| should not be modified after here.
   FetchParameters fetch_params(std::move(resource_request), options);
+  fetch_params.SetModuleScript();
 
   // <spec label="SMSR">... its integrity metadata to options's integrity
   // metadata, ...</spec>
@@ -270,9 +271,8 @@ void ModuleScriptLoader::NotifyFetchFinished(
       // a module script given source text, module map settings object,
       // response's url, and options." [spec text]
       module_script_ = JSModuleScript::Create(
-          params->GetSourceText(), params->CacheHandler(),
-          ScriptSourceLocationType::kExternalFile, modulator_,
-          params->GetResponseUrl(), params->GetResponseUrl(), options_);
+          params.value(), params->SourceURL() /* base URL */,
+          ScriptSourceLocationType::kExternalFile, modulator_, options_);
       break;
   }
 

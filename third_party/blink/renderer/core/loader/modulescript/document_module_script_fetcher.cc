@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -20,10 +23,11 @@ void DocumentModuleScriptFetcher::Fetch(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
+  DCHECK_EQ(fetch_params.GetScriptType(), mojom::blink::ScriptType::kModule);
   DCHECK(fetch_client_settings_object_fetcher);
   DCHECK(!client_);
   client_ = client;
-
+  // TODO(crbug.com/1061857): Enable streaming.
   ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
                         this, ScriptResource::kNoStreaming);
 }
@@ -40,11 +44,12 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
     client_->NotifyFetchFinished(base::nullopt, error_messages);
     return;
   }
-
+  // TODO(crbug.com/1061857): Pass ScriptStreamer to the client here.
   ModuleScriptCreationParams params(
       script_resource->GetResponse().CurrentRequestUrl(), module_type,
       script_resource->SourceText(), script_resource->CacheHandler(),
-      script_resource->GetResourceRequest().GetCredentialsMode());
+      script_resource->GetResourceRequest().GetCredentialsMode(), nullptr,
+      ScriptStreamer::NotStreamingReason::kStreamingDisabled);
   client_->NotifyFetchFinished(params, error_messages);
 }
 

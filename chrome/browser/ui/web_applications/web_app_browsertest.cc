@@ -43,6 +43,7 @@
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/common/content_features.h"
@@ -1021,6 +1022,73 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InScopeHttpUrlsDisplayAppTitle) {
   EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
 }
 
+class WebAppBrowserTest_PrefixInTitle : public WebAppBrowserTest {
+ public:
+  WebAppBrowserTest_PrefixInTitle() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kPrefixWebAppWindowsWithAppName);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Ensure that web app windows display the app title as a prefix.
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle, PrefixExistsInTitle) {
+  const GURL app_url = GetSecureAppURL();
+  const base::string16 app_title = base::ASCIIToUTF16("A Web App");
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->start_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->title = app_title;
+  const AppId app_id = InstallWebApp(std::move(web_app_info));
+
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+  content::WebContents* const web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+
+  // The page title should be the combination of app name and title.
+  EXPECT_EQ(base::ASCIIToUTF16("A Web App - Google"),
+            app_browser->GetWindowTitleForCurrentTab(false));
+}
+
+// Ensure that web app windows with blank titles only display the app name.
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle,
+                       EmptyTitlesDisplayAppName) {
+  const GURL app_url = https_server()->GetURL("app.site.com", "/empty.html");
+  const base::string16 app_title = base::ASCIIToUTF16("A Web App");
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->start_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->title = app_title;
+  const AppId app_id = InstallWebApp(std::move(web_app_info));
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+  content::WebContents* const web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
+}
+
+class WebAppBrowserTest_HideOrigin : public WebAppBrowserTest {
+ public:
+  WebAppBrowserTest_HideOrigin() {
+    scoped_feature_list_.InitAndEnableFeature(features::kHideWebAppOriginText);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// WebApps should not have origin text with this feature on.
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_HideOrigin, OriginTextRemoved) {
+  const GURL app_url = GetInstallableAppURL();
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
+  EXPECT_FALSE(app_browser->app_controller()->HasTitlebarAppOriginText());
+}
+
 // Check that a subframe on a regular web page can navigate to a URL that
 // redirects to a web app.  https://crbug.com/721949.
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, SubframeRedirectsToWebApp) {
@@ -1128,6 +1196,24 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_WindowControlsOverlay,
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   EXPECT_EQ(true,
             app_browser->app_controller()->IsWindowControlsOverlayEnabled());
+}
+
+class WebAppBrowserTest_RemoveStatusBar : public WebAppBrowserTest {
+ public:
+  WebAppBrowserTest_RemoveStatusBar() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kRemoveStatusBarInWebApps);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_RemoveStatusBar, RemoveStatusBar) {
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
+  const AppId app_id = InstallPwaForCurrentUrl();
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+  EXPECT_EQ(nullptr, app_browser->GetStatusBubbleForTesting());
 }
 
 }  // namespace web_app

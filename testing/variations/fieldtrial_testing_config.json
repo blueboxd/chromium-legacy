@@ -2285,6 +2285,25 @@
             ]
         }
     ],
+    "DesktopNtpShoppingTasksModule": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NtpModules",
+                        "NtpShoppingTasksModule"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopTabGroupsCollapse": [
         {
             "platforms": [
@@ -4613,6 +4632,30 @@
             ]
         }
     ],
+    "NtpRepeatableQueriesDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "NtpRepeatableQueriesAgeThresholdDays": "180",
+                        "NtpRepeatableQueriesFrequencyExponent": "2",
+                        "NtpRepeatableQueriesInsertPosition": "start",
+                        "NtpRepeatableQueriesRecencyHalfLifeSeconds": "604800"
+                    },
+                    "enable_features": [
+                        "NtpRepeatableQueries"
+                    ]
+                }
+            ]
+        }
+    ],
     "NtpWebUIDesktop": [
         {
             "platforms": [
@@ -5865,6 +5908,27 @@
             ]
         }
     ],
+    "ReparseServerPredictionsFollowingFormChange": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReparseServerPredictionsFollowingFormChange"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
@@ -6384,6 +6448,27 @@
                     },
                     "enable_features": [
                         "EnableQueryBasedMixedTypesRanker"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SecondaryServerFieldPredictions": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SecondaryServerFieldPredictions"
                     ]
                 }
             ]
@@ -7110,6 +7195,27 @@
                     "enable_features": [
                         "TranslateRankerEnforcement",
                         "TranslateRankerQuery"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TreatNewPasswordHeuristicsAsReliable": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TreatNewPasswordHeuristicsAsReliable"
                     ]
                 }
             ]
@@ -8142,27 +8248,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewZeroCopyVideo"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WellKnownChangePassword": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WellKnownChangePassword"
                     ]
                 }
             ]

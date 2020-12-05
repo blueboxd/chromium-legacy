@@ -1369,8 +1369,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    private void addAccessibilityNodeInfoChild(AccessibilityNodeInfo node, int childId) {
-        node.addChild(mView, childId);
+    private void addAccessibilityNodeInfoChildren(AccessibilityNodeInfo node, int[] childIds) {
+        for (int childId : childIds) {
+            node.addChild(mView, childId);
+        }
     }
 
     @CalledByNative
@@ -1535,7 +1537,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @CalledByNative
     private void setAccessibilityNodeInfoBaseAttributes(AccessibilityNodeInfo node, boolean isRoot,
-            String className, String role, String roleDescription, String hint, String targetUrl) {
+            String className, String role, String roleDescription, String hint, String targetUrl,
+            boolean canOpenPopup, boolean dismissable, boolean multiLine, int inputType,
+            int liveRegion, String errorMessage) {
         node.setClassName(className);
 
         Bundle bundle = node.getExtras();
@@ -1548,6 +1552,22 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         if (isRoot) {
             bundle.putCharSequence(
                     "ACTION_ARGUMENT_HTML_ELEMENT_STRING_VALUES", mSupportedHtmlElementTypes);
+        }
+
+        node.setCanOpenPopup(canOpenPopup);
+        node.setDismissable(dismissable);
+        node.setMultiLine(multiLine);
+        node.setInputType(inputType);
+
+        // Deliberately don't call setLiveRegion because TalkBack speaks
+        // the entire region anytime it changes. Instead Chrome will
+        // call announceLiveRegionText() only on the nodes that change.
+        // node.setLiveRegion(liveRegion);
+
+        // We only apply the |errorMessage| if {@link setAccessibilityNodeInfoBooleanAttributes}
+        // set |contentInvalid| to true based on throttle delay.
+        if (node.isContentInvalid()) {
+            node.setError(errorMessage);
         }
     }
 
@@ -1697,27 +1717,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    protected void setAccessibilityNodeInfoAttributes(AccessibilityNodeInfo node,
-            boolean canOpenPopup, boolean dismissable, boolean multiLine, int inputType,
-            int liveRegion, String errorMessage) {
-        node.setCanOpenPopup(canOpenPopup);
-        node.setDismissable(dismissable);
-        node.setMultiLine(multiLine);
-        node.setInputType(inputType);
-
-        // Deliberately don't call setLiveRegion because TalkBack speaks
-        // the entire region anytime it changes. Instead Chrome will
-        // call announceLiveRegionText() only on the nodes that change.
-        // node.setLiveRegion(liveRegion);
-
-        // We only apply the |errorMessage| if {@link setAccessibilityNodeInfoBooleanAttributes}
-        // set |contentInvalid| to true based on throttle delay.
-        if (node.isContentInvalid()) {
-            node.setError(errorMessage);
-        }
-    }
-
-    @CalledByNative
     protected void setAccessibilityNodeInfoCollectionInfo(
             AccessibilityNodeInfo node, int rowCount, int columnCount, boolean hierarchical) {
         node.setCollectionInfo(
@@ -1762,33 +1761,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    private void setAccessibilityEventBooleanAttributes(AccessibilityEvent event, boolean checked,
-            boolean enabled, boolean password, boolean scrollable) {
+    private void setAccessibilityEventBaseAttributes(AccessibilityEvent event, boolean checked,
+            boolean enabled, boolean password, boolean scrollable, int currentItemIndex,
+            int itemCount, int scrollX, int scrollY, int maxScrollX, int maxScrollY,
+            String className) {
         event.setChecked(checked);
         event.setEnabled(enabled);
         event.setPassword(password);
         event.setScrollable(scrollable);
-    }
-
-    @CalledByNative
-    private void setAccessibilityEventClassName(AccessibilityEvent event, String className) {
-        event.setClassName(className);
-    }
-
-    @CalledByNative
-    private void setAccessibilityEventListAttributes(
-            AccessibilityEvent event, int currentItemIndex, int itemCount) {
         event.setCurrentItemIndex(currentItemIndex);
         event.setItemCount(itemCount);
-    }
-
-    @CalledByNative
-    private void setAccessibilityEventScrollAttributes(
-            AccessibilityEvent event, int scrollX, int scrollY, int maxScrollX, int maxScrollY) {
         event.setScrollX(scrollX);
         event.setScrollY(scrollY);
         event.setMaxScrollX(maxScrollX);
         event.setMaxScrollY(maxScrollY);
+        event.setClassName(className);
     }
 
     @CalledByNative
@@ -1810,10 +1797,37 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         event.getText().add(text);
     }
 
+    boolean isCompatAutofillOnlyPossibleAccessibilityConsumer() {
+        // Compatibility Autofill is only available on Android P+.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return false;
+        }
+        // The Android Autofill CompatibilityBridge, which is responsible for translating
+        // Accessibility information to Autofill events, directly hooks into the
+        // AccessibilityManager via an AccessibilityPolicy rather than by running an
+        // AccessibilityService. We can thus check whether it is the only consumer of Accessibility
+        // information by reading the names of active accessibility services from settings.
+        //
+        // Note that the CompatibilityBridge makes getEnabledAccessibilityServicesList return a mock
+        // service to indicate its presence. It is thus easier to read the setting directly than
+        // to filter out this service from the returned list. Furthermore, since Accessibility is
+        // only initialized if there is at least one actual service or if Autofill is enabled,
+        // there is no need to check that Autofill is enabled here.
+        //
+        // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/view/autofill/AutofillManager.java;l=2817;drc=dd7d52f9632a0dbb8b14b69520c5ea31e0b3b4a2
+        String activeServices = Settings.Secure.getString(
+                mContext.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        if (activeServices != null && !activeServices.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     /**
-     * On Android O and higher, we should respect whatever is displayed
-     * in a password box and report that via accessibility APIs, whether
-     * that's the unobscured password, or all dots.
+     * On Android O and higher, we should respect whatever is displayed in a password box and
+     * report that via accessibility APIs, whether that's the unobscured password, or all dots.
+     * However, we deviate from this rule if the only consumer of accessibility information is
+     * Autofill in order to allow third-party Autofill services to save the real, unmasked password.
      *
      * Previous to O, shouldExposePasswordText() returns a system setting
      * that determines whether we should return the unobscured password or all
@@ -1821,14 +1835,24 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
      */
     @CalledByNative
     boolean shouldRespectDisplayedPasswordText() {
+        if (isCompatAutofillOnlyPossibleAccessibilityConsumer()) {
+            return false;
+        }
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     /**
-     * Only relevant prior to Android O, see shouldRespectDisplayedPasswordText.
+     * Only relevant prior to Android O, see shouldRespectDisplayedPasswordText, unless the only
+     * Accessibility consumer is compatibility Autofill.
      */
     @CalledByNative
     boolean shouldExposePasswordText() {
+        // Should always expose the actual password text to Autofill so that third-party Autofill
+        // services can save it rather than obtain only the masking characters.
+        if (isCompatAutofillOnlyPossibleAccessibilityConsumer()) {
+            return true;
+        }
+
         ContentResolver contentResolver = mContext.getContentResolver();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -11334,7 +11334,8 @@ Called by update_net_error_codes.py.-->
   <int value="-603" label="FTP_TRANSFER_ABORTED"/>
   <int value="-602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="-601" label="FTP_FAILED"/>
-  <int value="-507" label="TRUST_TOKEN_OPERATION_CACHE_HIT"/>
+  <int value="-507"
+      label="TRUST_TOKEN_OPERATION_SUCCESS_WITHOUT_SENDING_REQUEST"/>
   <int value="-506" label="TRUST_TOKEN_OPERATION_FAILED"/>
   <int value="-505" label="INVALID_WEB_BUNDLE"/>
   <int value="-504" label="INVALID_SIGNED_EXCHANGE"/>
@@ -19408,6 +19409,7 @@ Called by update_document_policy_enum.py.-->
   <int value="0" label="Opened with plaform handler by default"/>
   <int value="1" label="Opened in browser by default"/>
   <int value="2" label="Opened with plaform handler by user choice"/>
+  <int value="3" label="Opened with an alternate rename handler"/>
 </enum>
 
 <enum name="DownloadOriginStateOnResumption">
@@ -32526,6 +32528,12 @@ Called by update_feature_policy_enum.py.-->
   </int>
 </enum>
 
+<enum name="GaiaCookieStateOnSignedInNavigation">
+  <int value="0" label="Gaia cookie is present"/>
+  <int value="1" label="Gaia cookie is missing from Google-associated domain"/>
+  <int value="2" label="Gaia cookie is missing from Add Session"/>
+</enum>
+
 <enum name="GaiaPasswordChangedScreenUserAction">
   <summary>Actions which happen on the screen.</summary>
   <int value="0" label="Resync user data"/>
@@ -42727,6 +42735,7 @@ from previous Chrome versions.
   <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
+  <int value="-1195034892" label="ContinuousSearch:disabled"/>
   <int value="-1194129602" label="ClientSideDetectionModelOnAndroid:disabled"/>
   <int value="-1192790333" label="ArcUseHighMemoryDalvikProfile:disabled"/>
   <int value="-1191258368" label="PageInfoPerformanceHints:disabled"/>
@@ -43213,6 +43222,7 @@ from previous Chrome versions.
   <int value="-728461030" label="AutofillPruneSuggestions:disabled"/>
   <int value="-727860269" label="WebAuthenticationBle:disabled"/>
   <int value="-726892130" label="AndroidMessagesIntegration:disabled"/>
+  <int value="-726567328" label="disable-virtual-keyboard"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-721685663" label="WebViewMixedContentAutoupgrades:enabled"/>
@@ -43237,6 +43247,7 @@ from previous Chrome versions.
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
   <int value="-706159808" label="QuickAnswersOnEditableText:disabled"/>
   <int value="-705746939" label="ChromeDuet:enabled"/>
+  <int value="-704459022" label="ContinuousSearch:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
@@ -50688,7 +50699,8 @@ Called by update_net_error_codes.py.-->
   <int value="504" label="INVALID_SIGNED_EXCHANGE"/>
   <int value="505" label="INVALID_WEB_BUNDLE"/>
   <int value="506" label="TRUST_TOKEN_OPERATION_FAILED"/>
-  <int value="507" label="TRUST_TOKEN_OPERATION_CACHE_HIT"/>
+  <int value="507"
+      label="TRUST_TOKEN_OPERATION_SUCCESS_WITHOUT_SENDING_REQUEST"/>
   <int value="601" label="FTP_FAILED"/>
   <int value="602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="603" label="FTP_TRANSFER_ABORTED"/>
@@ -57969,6 +57981,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="DISMISSED"/>
   <int value="3" label="IGNORED"/>
   <int value="4" label="REVOKED"/>
+  <int value="5" label="GRANTED_ONCE"/>
 </enum>
 
 <enum name="PermissionAutoRevocationHistory">
@@ -76947,6 +76960,7 @@ others/histograms.xml -->
   <int value="4" label="Aborted"/>
   <int value="5" label="Timeout"/>
   <int value="6" label="UserCancelled"/>
+  <int value="7" label="BackendNotAvailable"/>
 </enum>
 
 <enum name="WebpDecodedFormat">

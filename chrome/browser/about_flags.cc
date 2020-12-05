@@ -194,6 +194,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
+#include "chrome/browser/continuous_search/features.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "components/browser_ui/site_settings/android/features.h"
@@ -1484,17 +1485,6 @@ const FeatureEntry::FeatureVariation kOmniboxBubbleUrlSuggestionsVariations[] =
          nullptr,
      }};
 
-const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
-    {security_state::features::kMarkHttpAsFeatureParameterName,
-     security_state::features::kMarkHttpAsParameterDangerous}};
-const FeatureEntry::FeatureParam kMarkHttpAsWarningAndDangerousOnFormEdits[] = {
-    {security_state::features::kMarkHttpAsFeatureParameterName,
-     security_state::features::
-         kMarkHttpAsParameterWarningAndDangerousOnFormEdits}};
-const FeatureEntry::FeatureParam kMarkHttpAsDangerWarning[] = {
-    {security_state::features::kMarkHttpAsFeatureParameterName,
-     security_state::features::kMarkHttpAsParameterDangerWarning}};
-
 // The "Enabled" state for this feature is "0" and representing setting A.
 const FeatureEntry::FeatureParam kTabHoverCardsSettingB[] = {
     {features::kTabHoverCardsFeatureParameterName, "1"}};
@@ -1504,15 +1494,6 @@ const FeatureEntry::FeatureParam kTabHoverCardsSettingC[] = {
 const FeatureEntry::FeatureVariation kTabHoverCardsFeatureVariations[] = {
     {"B", kTabHoverCardsSettingB, base::size(kTabHoverCardsSettingB), nullptr},
     {"C", kTabHoverCardsSettingC, base::size(kTabHoverCardsSettingC), nullptr}};
-
-const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
-    {"(mark as actively dangerous)", kMarkHttpAsDangerous,
-     base::size(kMarkHttpAsDangerous), nullptr},
-    {"(mark with a Not Secure warning and dangerous on form edits)",
-     kMarkHttpAsWarningAndDangerousOnFormEdits,
-     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
-    {"(mark with a grey triangle icon)", kMarkHttpAsDangerWarning,
-     base::size(kMarkHttpAsDangerWarning), nullptr}};
 
 const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
     {features::kPromoBrowserCommandIdParam, "0"}};
@@ -3043,6 +3024,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(keyboard::switches::kEnableVirtualKeyboard)},
+    {"disable-virtual-keyboard",
+     flag_descriptions::kVirtualKeyboardDisabledName,
+     flag_descriptions::kVirtualKeyboardDisabledDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(keyboard::switches::kDisableVirtualKeyboard)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",
@@ -4608,13 +4593,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileName,
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
-
-    {"enable-mark-http-as", flag_descriptions::kMarkHttpAsName,
-     flag_descriptions::kMarkHttpAsDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         security_state::features::kMarkHttpAsFeature,
-         kMarkHttpAsFeatureVariations,
-         "HTTPReallyBadFinal")},
 
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
@@ -6645,11 +6623,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordsWeaknessCheck)},
 #endif  // !defined(OS_ANDROID)
 
-    {"well-known-change-password",
-     flag_descriptions::kWellKnownChangePasswordName,
-     flag_descriptions::kWellKnownChangePasswordDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kWellKnownChangePassword)},
-
     {"window-naming", flag_descriptions::kWindowNamingName,
      flag_descriptions::kWindowNamingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWindowNaming)},
@@ -6902,6 +6875,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSwipeToMoveCursorDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kSwipeToMoveCursor)},
 #endif  // defined(OS_ANDROID)
+
     {"change-password-affiliation",
      flag_descriptions::kChangePasswordAffiliationInfoName,
      flag_descriptions::kChangePasswordAffiliationInfoDescription, kOsAll,
@@ -6918,6 +6892,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafetyCheckWeakPasswordsName,
      flag_descriptions::kSafetyCheckWeakPasswordsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSafetyCheckWeakPasswords)},
+
+#if defined(OS_ANDROID)
+    {"continuous-search", flag_descriptions::kContinuousSearchName,
+     flag_descriptions::kContinuousSearchDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(continuous_search::features::kContinuousSearch)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

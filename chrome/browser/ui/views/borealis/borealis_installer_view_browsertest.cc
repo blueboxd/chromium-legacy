@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/borealis/borealis_context.h"
-#include "chrome/browser/chromeos/borealis/borealis_context_manager.h"
-#include "chrome/browser/chromeos/borealis/borealis_installer_factory.h"
+#include "chrome/browser/chromeos/borealis/borealis_context_manager_mock.h"
+#include "chrome/browser/chromeos/borealis/borealis_installer.h"
 #include "chrome/browser/chromeos/borealis/borealis_metrics.h"
 #include "chrome/browser/chromeos/borealis/borealis_service_fake.h"
 #include "chrome/browser/chromeos/borealis/borealis_task.h"
@@ -40,15 +40,6 @@ class BorealisInstallerMock : public borealis::BorealisInstaller {
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 };
 
-class BorealisContextManagerMock : public borealis::BorealisContextManager {
- public:
-  MOCK_METHOD(void,
-              StartBorealis,
-              (BorealisContextManager::ResultCallback),
-              ());
-  MOCK_METHOD(void, ShutDownBorealis, (), ());
-};
-
 class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
  public:
   BorealisInstallerViewBrowserTest() = default;
@@ -56,20 +47,11 @@ class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void SetUpOnMainThread() override {
     app_name_ = l10n_util::GetStringUTF16(IDS_BOREALIS_APP_NAME);
-    mock_installer_ =
-        static_cast<::testing::StrictMock<BorealisInstallerMock>*>(
-            borealis::BorealisInstallerFactory::GetInstance()
-                ->SetTestingFactoryAndUse(
-                    browser()->profile(),
-                    base::BindRepeating([](content::BrowserContext* context)
-                                            -> std::unique_ptr<KeyedService> {
-                      return std::make_unique<
-                          testing::StrictMock<BorealisInstallerMock>>();
-                    })));
 
     BorealisServiceFake* fake_service =
         BorealisServiceFake::UseFakeForTesting(browser()->profile());
     fake_service->SetContextManagerForTesting(&mock_context_manager_);
+    fake_service->SetInstallerForTesting(&mock_installer_);
   }
 
   void ShowUi(const std::string& name) override {
@@ -129,8 +111,8 @@ class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
   }
 
   void AcceptInstallation() {
-    EXPECT_CALL(*mock_installer_, AddObserver(_));
-    EXPECT_CALL(*mock_installer_, Start());
+    EXPECT_CALL(mock_installer_, AddObserver(_));
+    EXPECT_CALL(mock_installer_, Start());
     view_->AcceptDialog();
     view_->SetInstallingStateForTesting(
         borealis::BorealisInstaller::InstallingState::kInstallingDlc);
@@ -138,13 +120,13 @@ class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
   }
 
   void ClickCancel() {
-    EXPECT_CALL(*mock_installer_, RemoveObserver(_));
+    EXPECT_CALL(mock_installer_, RemoveObserver(_));
     view_->CancelDialog();
 
     EXPECT_TRUE(view_->GetWidget()->IsClosed());
   }
 
-  ::testing::StrictMock<BorealisInstallerMock>* mock_installer_;
+  ::testing::StrictMock<BorealisInstallerMock> mock_installer_;
   ::testing::StrictMock<BorealisContextManagerMock> mock_context_manager_;
   BorealisInstallerView* view_;
   base::string16 app_name_;
@@ -159,8 +141,8 @@ class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
 
 // Test that the dialog can be launched.
 IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, InvokeUi_default) {
-  EXPECT_CALL(*mock_installer_, RemoveObserver(_));
-  EXPECT_CALL(*mock_installer_, Cancel());
+  EXPECT_CALL(mock_installer_, RemoveObserver(_));
+  EXPECT_CALL(mock_installer_, Cancel());
   ShowAndVerifyUi();
 }
 
@@ -172,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, SucessfulInstall) {
   ExpectInstallationCompletedSucessfully();
 
   EXPECT_CALL(mock_context_manager_, StartBorealis(_));
-  EXPECT_CALL(*mock_installer_, RemoveObserver(_));
+  EXPECT_CALL(mock_installer_, RemoveObserver(_));
   view_->AcceptDialog();
 
   EXPECT_TRUE(view_->GetWidget()->IsClosed());
@@ -182,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest,
                        ConfirmationCancelled) {
   ShowUi("default");
 
-  EXPECT_CALL(*mock_installer_, Cancel());
+  EXPECT_CALL(mock_installer_, Cancel());
   ClickCancel();
 }
 
@@ -191,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest,
   ShowUi("default");
   AcceptInstallation();
 
-  EXPECT_CALL(*mock_installer_, Cancel());
+  EXPECT_CALL(mock_installer_, Cancel());
   ClickCancel();
 }
 
@@ -214,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest,
   ExpectInstallationCompletedSucessfully();
 
   EXPECT_CALL(mock_context_manager_, StartBorealis(_));
-  EXPECT_CALL(*mock_installer_, RemoveObserver(_));
+  EXPECT_CALL(mock_installer_, RemoveObserver(_));
   view_->AcceptDialog();
 
   EXPECT_TRUE(view_->GetWidget()->IsClosed());

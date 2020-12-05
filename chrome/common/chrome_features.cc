@@ -516,6 +516,10 @@ const base::Feature kHeavyAdInterventionWarning{
 const base::Feature kHeavyAdPrivacyMitigations{
     "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Hides the origin text from showing up briefly in WebApp windows.
+const base::Feature kHideWebAppOriginText{"HideWebAppOriginText",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -695,6 +699,9 @@ const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kPrefixWebAppWindowsWithAppName{
+    "PrefixWebAppWindowsWithAppName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -741,6 +748,9 @@ const base::Feature kRecordWebAppDebugInfo{"RecordWebAppDebugInfo",
 const base::Feature kAbusiveNotificationPermissionRevocation{
     "AbusiveOriginNotificationPermissionRevocation",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRemoveStatusBarInWebApps{
+    "RemoveStatusBarInWebApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables permanent removal of Legacy Supervised Users on startup.

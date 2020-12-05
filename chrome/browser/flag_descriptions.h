@@ -814,12 +814,6 @@ extern const char kLoadMediaRouterComponentExtensionDescription[];
 extern const char kLogJsConsoleMessagesName[];
 extern const char kLogJsConsoleMessagesDescription[];
 
-extern const char kMarkHttpAsName[];
-extern const char kMarkHttpAsDescription[];
-extern const char kMarkHttpAsDangerous[];
-extern const char kMarkHttpAsWarning[];
-extern const char kMarkHttpAsWarningAndDangerousOnFormEdits[];
-
 extern const char kMediaHistoryName[];
 extern const char kMediaHistoryDescription[];
 
@@ -1485,9 +1479,6 @@ extern const char kWebXrIncubationsDescription[];
 extern const char kWebXrMultiGpuName[];
 extern const char kWebXrMultiGpuDescription[];
 
-extern const char kWellKnownChangePasswordName[];
-extern const char kWellKnownChangePasswordDescription[];
-
 extern const char kWindowNamingName[];
 extern const char kWindowNamingDescription[];
 
@@ -1563,6 +1554,9 @@ extern const char kCCTIncognitoAvailableToThirdPartyDescription[];
 
 extern const char kCCTTargetTranslateLanguageName[];
 extern const char kCCTTargetTranslateLanguageDescription[];
+
+extern const char kContinuousSearchName[];
+extern const char kContinuousSearchDescription[];
 
 extern const char kShareButtonInTopToolbarName[];
 extern const char kShareButtonInTopToolbarDescription[];
@@ -2704,6 +2698,9 @@ extern const char kVaapiWebPImageDecodeAccelerationDescription[];
 
 extern const char kVirtualKeyboardBorderedKeyName[];
 extern const char kVirtualKeyboardBorderedKeyDescription[];
+
+extern const char kVirtualKeyboardDisabledName[];
+extern const char kVirtualKeyboardDisabledDescription[];
 
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];

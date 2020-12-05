@@ -401,10 +401,9 @@ void MostVisitedSites::AddOrRemoveBlockedUrl(const GURL& url, bool add_url) {
   }
 
   if (repeatable_queries_) {
+    // Restoring repeatable queries is not supported as deletion is permanent.
     if (add_url)
       repeatable_queries_->DeleteQueryWithDestinationURL(url);
-    else
-      NOTREACHED() << "Deleted repeatable queries cannot be restored.";
   }
 
   if (top_sites_) {
@@ -947,7 +946,8 @@ void MostVisitedSites::OnRepeatableQueriesUpdated() {
 }
 
 void MostVisitedSites::OnRepeatableQueriesServiceShuttingDown() {
-  repeatable_queries_observation_.RemoveObservation();
+  DCHECK(repeatable_queries_observation_.IsObserving());
+  repeatable_queries_observation_.Reset();
 }
 
 bool MostVisitedSites::ShouldAddHomeTile() const {

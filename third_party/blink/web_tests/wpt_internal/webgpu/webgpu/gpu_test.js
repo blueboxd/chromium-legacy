@@ -1,7 +1,6 @@
 /**
  * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
  **/ import { Fixture } from '../common/framework/fixture.js';
-import { compileGLSL, initGLSL } from '../common/framework/glsl.js';
 import { attemptGarbageCollection } from '../common/framework/util/collect_garbage.js';
 import { assert } from '../common/framework/util/util.js';
 
@@ -33,7 +32,6 @@ export class GPUTest extends Fixture {
 
   async init() {
     await super.init();
-    await initGLSL();
 
     this.provider = await devicePool.reserve();
   }
@@ -89,16 +87,6 @@ export class GPUTest extends Fixture {
     }
   }
 
-  makeShaderModule(stage, code) {
-    // If both are provided, always choose WGSL. (Can change this if needed.)
-    if ('wgsl' in code) {
-      return this.device.createShaderModule({ code: code.wgsl });
-    } else {
-      const spirv = compileGLSL(code.glsl, stage, false);
-      return this.device.createShaderModule({ code: spirv });
-    }
-  }
-
   createCopyForMapRead(src, srcOffset, size) {
     assert(srcOffset % 4 === 0);
     assert(size % 4 === 0);
@@ -132,10 +120,6 @@ export class GPUTest extends Fixture {
   }
 
   expectContents(src, expected, srcOffset = 0) {
-    this.expectSubContents(src, srcOffset, expected);
-  }
-
-  expectSubContents(src, srcOffset, expected) {
     const { dst, begin, end } = this.createAlignedCopyForMapRead(
       src,
       expected.byteLength,
@@ -149,6 +133,32 @@ export class GPUTest extends Fixture {
       const check = this.checkBuffer(actual.subarray(begin, end), expected);
       if (check !== undefined) {
         niceStack.message = check;
+        this.rec.expectationFailed(niceStack);
+      }
+      dst.destroy();
+    });
+  }
+
+  // We can expand this function in order to support multiple valid values or two mixed vectors
+  // if needed. See the discussion at https://github.com/gpuweb/cts/pull/384#discussion_r533101429
+  expectContentsTwoValidValues(src, expected1, expected2, srcOffset = 0) {
+    assert(expected1.byteLength === expected2.byteLength);
+    const { dst, begin, end } = this.createAlignedCopyForMapRead(
+      src,
+      expected1.byteLength,
+      srcOffset
+    );
+
+    this.eventualAsyncExpectation(async niceStack => {
+      const constructor = expected1.constructor;
+      await dst.mapAsync(GPUMapMode.READ);
+      const actual = new constructor(dst.getMappedRange());
+      const check1 = this.checkBuffer(actual.subarray(begin, end), expected1);
+      const check2 = this.checkBuffer(actual.subarray(begin, end), expected2);
+      if (check1 !== undefined && check2 !== undefined) {
+        niceStack.message = `Expected one of the following two checks to succeed:
+  - ${check1}
+  - ${check2}`;
         this.rec.expectationFailed(niceStack);
       }
       dst.destroy();

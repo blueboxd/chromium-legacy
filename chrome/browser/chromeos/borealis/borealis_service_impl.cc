@@ -4,11 +4,6 @@
 
 #include "chrome/browser/chromeos/borealis/borealis_service_impl.h"
 
-#include "chrome/browser/chromeos/borealis/borealis_app_launcher.h"
-#include "chrome/browser/chromeos/borealis/borealis_features.h"
-#include "chrome/browser/chromeos/borealis/borealis_window_manager.h"
-#include "chrome/browser/profiles/profile.h"
-
 namespace borealis {
 
 BorealisServiceImpl::BorealisServiceImpl(Profile* profile)
@@ -16,6 +11,8 @@ BorealisServiceImpl::BorealisServiceImpl(Profile* profile)
       app_launcher_(profile_),
       context_manager_(profile),
       features_(profile_),
+      installer_(profile_),
+      shutdown_monitor_(profile_),
       window_manager_(profile_) {}
 
 BorealisServiceImpl::~BorealisServiceImpl() = default;
@@ -30,6 +27,14 @@ BorealisContextManager& BorealisServiceImpl::ContextManager() {
 
 BorealisFeatures& BorealisServiceImpl::Features() {
   return features_;
+}
+
+BorealisInstaller& BorealisServiceImpl::Installer() {
+  return installer_;
+}
+
+BorealisShutdownMonitor& BorealisServiceImpl::ShutdownMonitor() {
+  return shutdown_monitor_;
 }
 
 BorealisWindowManager& BorealisServiceImpl::WindowManager() {

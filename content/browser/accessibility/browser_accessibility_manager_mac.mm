@@ -183,25 +183,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       if (!focus)
         break;  // Just fire a notification on the root.
 
-      if (base::mac::IsAtLeastOS10_11()) {
-        // |NSAccessibilityPostNotificationWithUserInfo| should be used on OS X
-        // 10.11 or later to notify Voiceover about text selection changes. This
-        // API has been present on versions of OS X since 10.7 but doesn't
-        // appear to be needed by Voiceover before version 10.11.
-        NSDictionary* user_info =
-            GetUserInfoForSelectedTextChangedNotification(focus_changed);
-
-        BrowserAccessibilityManager* root_manager = GetRootManager();
-        if (!root_manager)
-          return;
-        BrowserAccessibility* root = root_manager->GetRoot();
-        if (!root)
-          return;
-
-        return;
-      } else {
-      }
-      break;
+      return;
     }
     case ui::AXEventGenerator::Event::EXPANDED:
       if (node->GetRole() == ax::mojom::Role::kRow ||
@@ -320,7 +302,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:
       DCHECK(node->IsTextField());
       mac_notification = NSAccessibilityValueChangedNotification;
-      if (base::mac::IsAtLeastOS10_11() && !text_edits_.empty()) {
+      if (!text_edits_.empty()) {
         base::string16 deleted_text;
         base::string16 inserted_text;
         int32_t node_id = node->GetId();

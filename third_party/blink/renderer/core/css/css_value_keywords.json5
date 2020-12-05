@@ -435,6 +435,8 @@
     "disc",
     "circle",
     "square",
+    "disclosure-open",
+    "disclosure-closed",
     "decimal",
     "decimal-leading-zero",
     "arabic-indic",
@@ -1434,6 +1436,14 @@
     // none
     "single-fold-vertical",
     "single-fold-horizontal",
+
+    // (screen-fold-posture) media feature
+    "no-fold",
+    "laptop",
+    // flat,
+    "tent",
+    "tablet",
+    "book",
 
     // scrollbar-gutter
     // auto

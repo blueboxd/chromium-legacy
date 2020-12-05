@@ -307,9 +307,6 @@ const char kManagedBookmarksIOSDescription[] =
     "When enabled, managed bookmarks set by an enterprise policy can be shown "
     "in the bookmarks UI on iOS";
 
-const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
-const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
-
 const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
 const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
@@ -467,14 +464,6 @@ const char kWebViewNativeContextMenuDescription[] =
     "When enabled, the native context menu are displayed when the user long "
     "press on a link or an image.";
 
-const char kWellKnownChangePasswordName[] =
-    "Support for .well-known/change-password";
-const char kWellKnownChangePasswordDescription[] =
-    "If enabled the 'change password' button in password checkup redirects to "
-    "the .well-known/change-password path. The path is supposed to point to "
-    "the password change form of the site. When the site doesn't support "
-    ".well-known/change-password it is checked if a fallback url is available. "
-    "Otherwise the user is redirected to the origin.";
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions

@@ -649,6 +649,7 @@ try_.chromium_chromiumos_builder(
 try_.chromium_chromiumos_builder(
     name = "chromeos-amd64-generic-rel",
     branch_selector = branches.ALL_BRANCHES,
+    builderless = not settings.is_master,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -960,6 +961,10 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux-dcheck-off-rel",
+)
+
+try_.chromium_linux_builder(
+    name = "linux-example-builder",
 )
 
 try_.chromium_linux_builder(

@@ -1382,6 +1382,7 @@ if (!is_android) {
       "../browser/tracing/chrome_tracing_delegate_browsertest.cc",
       "../browser/translate/language_detection_service_browsertest.cc",
       "../browser/translate/translate_manager_browsertest.cc",
+      "../browser/translate/translate_model_service_browsertest.cc",
       "../browser/ui/ask_google_for_suggestions_dialog_browsertest.cc",
       "../browser/ui/autofill/payments/card_unmask_prompt_view_browsertest.cc",
       "../browser/ui/autofill/payments/card_unmask_prompt_view_tester.h",
@@ -2853,7 +2854,7 @@ if (!is_android) {
         }
         deps += [ "//printing:test_support" ]
       }
-      if (enable_cros_libassistant) {
+      if (enable_assistant_integration_tests) {
         sources += [
           "../browser/ui/ash/assistant/assistant_browsertest.cc",
           "../browser/ui/ash/assistant/assistant_test_mixin.cc",
@@ -4355,6 +4356,7 @@ test("unit_tests") {
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
+      "//chrome/browser/continuous_search/internal:unit_tests",
       "//chrome/browser/long_screenshots:services",
       "//chrome/browser/optimization_guide/android:native_j_unittests_jni_headers",
       "//chrome/browser/optimization_guide/android:native_java_unittests",

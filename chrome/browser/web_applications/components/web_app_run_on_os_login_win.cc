@@ -24,7 +24,8 @@ bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info) {
                                  SHORTCUT_CREATION_BY_USER, shortcut_info);
 }
 
-bool UnregisterRunOnOsLogin(const base::FilePath& profile_path,
+bool UnregisterRunOnOsLogin(const std::string& app_id,
+                            const base::FilePath& profile_path,
                             const base::string16& shortcut_title) {
   web_app::ShortcutLocations all_shortcut_locations;
   all_shortcut_locations.in_startup = true;

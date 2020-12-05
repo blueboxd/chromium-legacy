@@ -70,6 +70,11 @@ bool IsValidBitDepth(uint8_t bit_depth, VideoCodecProfile profile) {
       return false;
   }
 }
+
+bool IsYUV420Sequence(const Vp9FrameHeader& frame_header) {
+  // Spec 7.2.2
+  return frame_header.subsampling_x == 1u && frame_header.subsampling_y == 1u;
+}
 }  // namespace
 
 VP9Decoder::VP9Accelerator::VP9Accelerator() {}
@@ -130,16 +135,14 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
   while (true) {
     // If we have a pending picture to decode, try that first.
     if (pending_pic_) {
-      VP9Accelerator::Status status = DecodeAndOutputPicture(pending_pic_);
+      VP9Accelerator::Status status =
+          DecodeAndOutputPicture(std::move(pending_pic_));
       if (status == VP9Accelerator::Status::kFail) {
-        pending_pic_.reset();
         SetError();
         return kDecodeError;
       }
       if (status == VP9Accelerator::Status::kTryAgain)
         return kTryAgain;
-
-      pending_pic_.reset();
     }
 
     // Read a new frame header if one is not awaiting decoding already.
@@ -237,6 +240,10 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
                << ", profile=" << GetProfileName(new_profile);
       return kDecodeError;
     }
+    if (!IsYUV420Sequence(*curr_frame_hdr_)) {
+      DVLOG(1) << "Only YUV 4:2:0 is supported";
+      return kDecodeError;
+    }
 
     DCHECK(!new_pic_size.IsEmpty());
     if (new_pic_size != pic_size_ || new_profile != profile_ ||
@@ -277,35 +284,32 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       return kConfigChange;
     }
 
-    pending_pic_ = accelerator_->CreateVP9Picture();
-    if (!pending_pic_) {
+    scoped_refptr<VP9Picture> pic = accelerator_->CreateVP9Picture();
+    if (!pic) {
       return kRanOutOfSurfaces;
     }
     DVLOG(2) << "Render resolution: " << new_render_rect.ToString();
 
-    pending_pic_->set_visible_rect(new_render_rect);
-    pending_pic_->set_bitstream_id(stream_id_);
+    pic->set_visible_rect(new_render_rect);
+    pic->set_bitstream_id(stream_id_);
 
-    pending_pic_->set_decrypt_config(std::move(decrypt_config));
+    pic->set_decrypt_config(std::move(decrypt_config));
 
     // For VP9, container color spaces override video stream color spaces.
     if (container_color_space_.IsSpecified())
-      pending_pic_->set_colorspace(container_color_space_);
+      pic->set_colorspace(container_color_space_);
     else if (curr_frame_hdr_)
-      pending_pic_->set_colorspace(curr_frame_hdr_->GetColorSpace());
+      pic->set_colorspace(curr_frame_hdr_->GetColorSpace());
 
-    pending_pic_->frame_hdr = std::move(curr_frame_hdr_);
+    pic->frame_hdr = std::move(curr_frame_hdr_);
 
-    VP9Accelerator::Status status = DecodeAndOutputPicture(pending_pic_);
+    VP9Accelerator::Status status = DecodeAndOutputPicture(std::move(pic));
     if (status == VP9Accelerator::Status::kFail) {
-      pending_pic_.reset();
       SetError();
       return kDecodeError;
     }
     if (status == VP9Accelerator::Status::kTryAgain)
       return kTryAgain;
-
-    pending_pic_.reset();
   }
 }
 
@@ -342,8 +346,11 @@ VP9Decoder::VP9Accelerator::Status VP9Decoder::DecodeAndOutputPicture(
   VP9Accelerator::Status status = accelerator_->SubmitDecode(
       pic, context.segmentation(), context.loop_filter(), ref_frames_,
       std::move(done_cb));
-  if (status != VP9Accelerator::Status::kOk)
+  if (status != VP9Accelerator::Status::kOk) {
+    if (status == VP9Accelerator::Status::kTryAgain)
+      pending_pic_ = std::move(pic);
     return status;
+  }
 
   if (pic->frame_hdr->show_frame) {
     if (!accelerator_->OutputPicture(pic))

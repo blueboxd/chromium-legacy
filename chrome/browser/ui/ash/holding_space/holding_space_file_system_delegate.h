@@ -73,7 +73,9 @@ class HoldingSpaceFileSystemDelegate : public HoldingSpaceKeyedServiceDelegate,
       std::vector<base::FilePath> invalid_paths);
 
   // Adds/removes a watch for the specified `file_path`.
-  void AddWatch(const base::FilePath& file_path);
+  // Note that `AddWatchForParent` will add a watch for the `file_path`'s parent
+  // directory.
+  void AddWatchForParent(const base::FilePath& file_path);
   void RemoveWatch(const base::FilePath& file_path);
 
   // Removes items that are (transitively) parented by `parent_path` from the

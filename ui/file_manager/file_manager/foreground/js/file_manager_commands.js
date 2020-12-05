@@ -1129,10 +1129,15 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
       dialog.showModalElement();
     }
 
-    dialog.show(message, () => {
+    const deleteCallback = () => {
       dialog.doneCallback && dialog.doneCallback();
+      document.querySelector('files-tooltip').hideTooltip();
+    };
+
+    dialog.show(message, () => {
+      deleteCallback();
       fileManager.fileOperationManager.deleteEntries(entries);
-    }, dialog.doneCallback, null);
+    }, deleteCallback, null);
   }
 
   /**
@@ -1206,7 +1211,8 @@ CommandHandler.registerUndoDeleteToast = function(fileManager) {
     fileManager.ui.toast.show(message, {
       text: str('UNDO_DELETE_ACTION_LABEL'),
       callback: () => {
-        fileManager.fileOperationManager.restoreDeleted(e.trashedEntries);
+        fileManager.fileOperationManager.restoreDeleted(
+            assert(e.trashedEntries));
       }
     });
   };
@@ -1227,7 +1233,6 @@ CommandHandler.COMMANDS_['restore-from-trash'] = new class extends Command {
     fileManager.fileOperationManager.restoreDeleted(entries.map(e => {
       return /** @type {!TrashEntry} */ (e);
     }));
-    fileManager.directoryModel.rescanSoon(/*refresh=*/ false);
   }
 
   /** @override */

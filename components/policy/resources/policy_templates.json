@@ -2349,7 +2349,7 @@
     },
     {
       'name': 'PrintingAllowedColorModes',
-      'owners': ['vkuzkokov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2390,7 +2390,7 @@
     },
     {
       'name': 'PrintingAllowedDuplexModes',
-      'owners': ['vkuzkokov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2431,7 +2431,7 @@
     },
     {
       'name': 'PrintingAllowedPinModes',
-      'owners': ['nikitapodguzov@chromium.org', 'skau@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2472,7 +2472,7 @@
     },
     {
       'name': 'PrintingAllowedBackgroundGraphicsModes',
-      'owners': ['nikitapodguzov@chromium.org', 'skau@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2513,7 +2513,7 @@
     },
     {
       'name': 'PrintingColorDefault',
-      'owners': ['vkuzkokov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2548,7 +2548,7 @@
     },
     {
       'name': 'PrintingDuplexDefault',
-      'owners': ['vkuzkokov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2589,7 +2589,7 @@
     },
     {
       'name': 'PrintingPinDefault',
-      'owners': ['nikitapodguzov@chromium.org', 'skau@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2624,7 +2624,7 @@
     },
     {
       'name': 'PrintingBackgroundGraphicsDefault',
-      'owners': ['nikitapodguzov@chromium.org', 'skau@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -2659,7 +2659,7 @@
     },
     {
       'name': 'PrintingPaperSizeDefault',
-      'owners': ['nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'dict',
       'schema': {
         'type': 'object',
@@ -2845,7 +2845,7 @@
     },
     {
       'name': 'PrintingSendUsernameAndFilenameEnabled',
-      'owners': ['vkuzkokov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:72-'],
@@ -2864,7 +2864,7 @@
     },
     {
       'name': 'PrintingMaxSheetsAllowed',
-      'owners': ['nikitapodguzov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 1 },
       'supported_on': ['chrome_os:84-'],
@@ -2900,7 +2900,7 @@
     },
     {
       'name': 'PrintJobHistoryExpirationPeriod',
-      'owners': ['nikitapodguzov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': -1 },
       'supported_on': ['chrome_os:79-'],
@@ -2922,7 +2922,7 @@
     },
     {
       'name': 'PrintingAPIExtensionsWhitelist',
-      'owners': ['nikitapodguzov@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -2946,7 +2946,7 @@
     },
     {
       'name': 'PrintingAPIExtensionsAllowlist',
-      'owners': ['nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'owners': ['bmalcolm@chromium.org', 'skau@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -13941,7 +13941,9 @@
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
       'tags': [],
-      'desc': '''Setting the policy to a valid value means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't use SSL/TLS versions less than the specified version. Unrecognized values are ignored.
+      'desc': '''Warning: Support for suppressing the TLS 1.0/1.1 warning will be removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> starting in version 91 (around May 2021) and this policy will stop working then.
+
+      Setting the policy to a valid value means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't use SSL/TLS versions less than the specified version. Unrecognized values are ignored.
 
       If this policy is not set, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an error for TLS 1.0 and TLS 1.1, but the user will be able to bypass it.''',
     },
@@ -15817,7 +15819,7 @@
     },
     {
       'name': 'DeviceNativePrinters',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'id': 386,
       'device_only': True,
       'type': 'external',
@@ -15862,7 +15864,7 @@
     },
     {
       'name': 'DeviceNativePrintersAccessMode',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'id': 387,
       'device_only': True,
       'supported_on': ['chrome_os:73-'],
@@ -15907,7 +15909,7 @@
     },
     {
       'name': 'DeviceNativePrintersBlacklist',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'supported_on': ['chrome_os:73-'],
       'device_only': True,
       'id': 388,
@@ -15934,7 +15936,7 @@
     },
     {
       'name': 'DeviceNativePrintersWhitelist',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'supported_on': ['chrome_os:73-'],
       'device_only': True,
       'id': 389,
@@ -15962,7 +15964,7 @@
     },
     {
       'name': 'DevicePrinters',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'id': 743,
       'device_only': True,
       'type': 'external',
@@ -16004,7 +16006,7 @@
     },
     {
       'name': 'DevicePrintersAccessMode',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'id': 733,
       'device_only': True,
       'supported_on': ['chrome_os:87-'],
@@ -16046,7 +16048,7 @@
     },
     {
       'name': 'DevicePrintersBlocklist',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'supported_on': ['chrome_os:87-'],
       'device_only': True,
       'id': 734,
@@ -16070,7 +16072,7 @@
     },
     {
       'name': 'DevicePrintersAllowlist',
-      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'owners': ['skau@chromium.org', 'bmalcolm@chromium.org'],
       'supported_on': ['chrome_os:87-'],
       'device_only': True,
       'id': 735,
@@ -23936,7 +23938,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         },
       },
       'future_on': ['android'],
-      'supported_on': ['chrome.*:87-', 'chrome_os:87-'],
+      'supported_on': ['chrome.*:89-', 'chrome_os:89-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -23955,9 +23957,12 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'caption': 'Browsing Data Lifetime Settings',
       'tags': [],
       'desc': '''Configures browsing data lifetime settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-      This policy controls the time to live of selected browsing data. This policy has no effect if Sync is enabled.
-      The available data types are the <ph name="DATA_TYPE_BROWSING_HISTORY">'browsing_history'</ph>, <ph name="DATA_TYPE_DOWNLOAD_HISTORY">'download_history'</ph>, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">'cookies_and_other_site_data'</ph>, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES">'cached_images_and_files'</ph>, <ph name="DATA_TYPE_PASSWORD">'password_signin'</ph>, <ph name="DATA_TYPE_AUTOFILL">'autofill'</ph>, <ph name="DATA_TYPE_SITE_SETTINGS">'site_settings'</ph> and <ph name="DATA_TYPE_HOSTED_APP_DATA">'hosted_app_data'</ph>.
+      This policy controls the time to live of selected browsing data.
+      The available data types are <ph name="DATA_TYPE_BROWSING_HISTORY">'browsing_history'</ph>, <ph name="DATA_TYPE_DOWNLOAD_HISTORY">'download_history'</ph>, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">'cookies_and_other_site_data'</ph>, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES">'cached_images_and_files'</ph>, <ph name="DATA_TYPE_PASSWORD">'password_signin'</ph>, <ph name="DATA_TYPE_AUTOFILL">'autofill'</ph>, <ph name="DATA_TYPE_SITE_SETTINGS">'site_settings'</ph> and <ph name="DATA_TYPE_HOSTED_APP_DATA">'hosted_app_data'</ph>.
       Chrome will regularly remove data of selected types that is older than <ph name="TIME_TO_LIVE_IN_HOURS">'time_to_live_in_hours'</ph>. As this deletion only happens in certain intervals, some data might live for slightly longer but never more than twice its expected <ph name="TIME_TO_LIVE_IN_HOURS">'time_to_live_in_hours'</ph>.
+      This policy requires the <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy to be set to true, otherwise it will be ignored.
+      If this policy is set at platform level, Sync should be disabled at platform level.
+      If this policy is set at user level, Sync should be disabled for that user in order for this policy to take effect.
       '''
     },
     {
@@ -24022,6 +24027,142 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       If this policy is set to False or unset, the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will not be used for network authentication.
 
       If this policy is set to True, the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will be used for network authentication to a managed proxy. In case the authentication with the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials fails, the user will be prompted for credentials.''',
+    },
+    {
+      'name': 'ClearBrowsingDataOnExitList',
+      'owners': ['ydago@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            'browsing_history',
+            'download_history',
+            'cookies_and_other_site_data',
+            'cached_images_and_files',
+            'password_signin',
+            'autofill',
+            'site_settings',
+            'hosted_app_data',
+          ],
+        },
+      },
+      'items': [
+        {
+          'name': 'browsing_history',
+          'value': 'browsing_history',
+          'caption': '''Browsing history''',
+        },
+        {
+          'name': 'download_history',
+          'value': 'download_history',
+          'caption': '''Download history''',
+        },
+        {
+          'name': 'cookies_and_other_site_data',
+          'value': 'cookies_and_other_site_data',
+          'caption': '''Cookies and other site data''',
+        },
+        {
+          'name': 'cached_images_and_files',
+          'value': 'cached_images_and_files',
+          'caption': '''Cached images and files''',
+        },
+        {
+          'name': 'password_signin',
+          'value': 'password_signin',
+          'caption': '''Password signin''',
+        },
+        {
+          'name': 'autofill',
+          'value': 'autofill',
+          'caption': '''Autofill''',
+        },
+        {
+          'name': 'site_settings',
+          'value': 'site_settings',
+          'caption': '''Site settings''',
+        },
+        {
+          'name': 'hosted_app_data',
+          'value': 'hosted_app_data',
+          'caption': '''Hosted apps data''',
+        },
+      ],
+      'future_on': ['android'],
+      'supported_on': ['chrome.*:89-', 'chrome_os:89-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [
+        'browsing_history',
+        'download_history',
+        'cookies_and_other_site_data',
+        'cached_images_and_files',
+        'password_signin',
+        'autofill',
+        'site_settings',
+        'hosted_app_data',
+      ],
+      'id': 809,
+      'caption': 'Clear Browsing Data on Exit',
+      'tags': [],
+      'desc': '''Configures a list of browsing data types that should be deleted when the browser is closed.
+      The available data types are browsing history (<ph name="DATA_TYPE_BROWSING_HISTORY">browsing_history</ph>), download history (<ph name="DATA_TYPE_DOWNLOAD_HISTORY">download_history</ph>), cookies (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">cookies_and_other_site_data</ph>), cache<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES"> (cached_images_and_files)</ph>, autofill (<ph name="DATA_TYPE_AUTOFILL">autofill</ph>), passwords (<ph name="DATA_TYPE_PASSWORD">password_signin</ph>), site settings (<ph name="DATA_TYPE_SITE_SETTINGS">site_settings</ph>) and hosted apps data (<ph name="DATA_TYPE_HOSTED_APP_DATA">hosted_app_data</ph>).
+      This policy does not take precedence over <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME">AllowDeletingBrowserHistory</ph>.
+      This policy requires the <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy to be set to true, otherwise it will be ignored.
+      If this policy is set at platform level, Sync should be disabled at platform level.
+      If this policy is set at user level, Sync should be disabled for that user in order for this policy to take effect.
+      '''
+    },
+    {
+      'name': 'ProfilePickerOnStartupAvailability',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Enabled',
+          'value': 0,
+          'caption': '''Profile picker available at startup''',
+        },
+        {
+          'name': 'Disabled',
+          'value': 1,
+          'caption': '''Profile picker disabled at startup''',
+        },
+        {
+          'name': 'Forced',
+          'value': 2,
+          'caption': '''Profile picker forced at startup''',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:89-',
+      ],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': 0,
+      'example_value': 0,
+      'id': 810,
+      'caption': '''Profile picker availabily on startup''',
+      'tags': [],
+      'desc': '''Specifies whether the profile picker is enabled, disabled or forced at the browser startup.
+
+      By default the profile picker is not shown if the browser starts in guest or incognito mode, a profile directory and/or urls are specified by command line, an app is explicitly requested to open, the browser was launched by a native notification, there is only one profile available or the policy ForceBrowserSignin is set to true.
+
+      If 'Enabled' (0) is selected or the policy is left unset, the profile picker will be shown at startup by default, but users will be able to enable/disable it.
+
+      If 'Disabled' (1) is selected, the profile picker will never be shown, and users will not be able to change the setting.
+
+      If 'Forced' (2) is selected, the profile picker cannot be suppressed by the user. The profile picker will be shown even if there is only one profile available.''',
     },
   ],
 
@@ -24945,6 +25086,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 808,
+  'highest_id_currently_used': 810,
   'highest_atomic_group_id_currently_used': 40
 }

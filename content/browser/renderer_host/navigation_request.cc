@@ -90,7 +90,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -235,7 +234,8 @@ void UpdateLoadFlagsWithCacheFlags(int* load_flags,
 // TODO(clamy): This should be function in FrameTreeNode.
 bool IsSecureFrame(RenderFrameHostImpl* frame) {
   while (frame) {
-    if (!IsPotentiallyTrustworthyOrigin(frame->GetLastCommittedOrigin()))
+    if (!network::IsOriginPotentiallyTrustworthy(
+            frame->GetLastCommittedOrigin()))
       return false;
     frame = frame->GetParent();
   }
@@ -1024,7 +1024,6 @@ NavigationRequest::NavigationRequest(
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       initiator_csp_context_(std::make_unique<InitiatorCSPContext>(
           std::move(common_params_->initiator_csp_info->initiator_csp),
-          std::move(common_params_->initiator_csp_info->initiator_self_source),
           std::move(navigation_initiator))),
       rfh_restored_from_back_forward_cache_(
           rfh_restored_from_back_forward_cache),

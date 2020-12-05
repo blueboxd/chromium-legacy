@@ -1342,6 +1342,18 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_DESK_4_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
         Desk 4
       </message>
+      <message name="IDS_ASH_DESKS_DESK_5_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+        Desk 5
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_6_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+        Desk 6
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_7_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+        Desk 7
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_8_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+        Desk 8
+      </message>
       <message name="IDS_ASH_DESKS_MAX_NUM_REACHED" desc="Message shown to users when they attempt to add a new virtual desk when the maximum number of desks has been reached.">
         Maximum number of desks reached.
       </message>
@@ -1699,6 +1711,17 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_MIC_JACK_DEVICE" desc="label used for mic jack device">
         Mic jack
+      </message>
+
+      <!-- Status tray Live Caption strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Live Caption feature on or off.">
+        Toggle Live Caption. <ph name="STATE_TEXT">$1<ex>Live Caption is on.</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_ENABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Live Caption feature is on.">
+        Live Caption is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_DISABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Live Caption feature is off.">
+        Live Caption is off.
       </message>
 
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">

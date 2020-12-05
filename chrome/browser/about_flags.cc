@@ -461,12 +461,12 @@ const FeatureEntry::FeatureVariation kReaderModeDiscoverabilityVariations[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kDismissButtonWithNoThanks[] = {
-    {"dismiss_button", "no_thanks"}};
+const FeatureEntry::FeatureParam kHideDismissButton[] = {
+    {"dismiss_button", "hide"}};
 
 const FeatureEntry::FeatureVariation kMobileIdentityConsistencyVariations[] = {
-    {"Dismiss No Thanks", kDismissButtonWithNoThanks,
-     base::size(kDismissButtonWithNoThanks), nullptr}};
+    {"Hide Dismiss Button", kHideDismissButton, base::size(kHideDismissButton),
+     nullptr}};
 #endif  // OS_ANDROID
 
 #if !defined(OS_CHROMEOS)
@@ -2919,7 +2919,7 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kAcceleratedVideoDecodeName,
         flag_descriptions::kAcceleratedVideoDecodeDescription,
         kOsLinux,
-        SINGLE_VALUE_TYPE(switches::kEnableAcceleratedVideoDecode),
+        FEATURE_VALUE_TYPE(media::kVaapiVideoDecodeLinux),
     },
 #else
     {
@@ -3330,7 +3330,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDesktopPWAsMigrationUserDisplayModeCleanUp)},
     {"enable-desktop-pwas-run-on-os-login",
      flag_descriptions::kDesktopPWAsRunOnOsLoginName,
-     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin,
+     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
     {"record-web-app-debug-info", flag_descriptions::kRecordWebAppDebugInfoName,
      flag_descriptions::kRecordWebAppDebugInfoDescription, kOsDesktop,
@@ -4370,7 +4370,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDoubleTapToZoomInTabletMode)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"read-later", flag_descriptions::kReadLaterName,
+    {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
      flag_descriptions::kReadLaterDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(reading_list::switches::kReadLater)},
 
@@ -6568,7 +6568,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContentSettingsRedesignDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kContentSettingsRedesign)},
 
-    {"enable-tab-search", flag_descriptions::kEnableTabSearchName,
+    {flag_descriptions::kEnableTabSearchFlagId,
+     flag_descriptions::kEnableTabSearchName,
      flag_descriptions::kEnableTabSearchDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabSearch)},
 

@@ -2798,10 +2798,6 @@ enum WebFeature {
   // The above items are available in M86 branch.
 
   kWebTransport = 3472,
-  kWebkitPrerenderStartEventFired = 3473,
-  kWebkitPrerenderStopEventFired = 3474,
-  kWebkitPrerenderLoadEventFired = 3475,
-  kWebkitPrerenderDOMContentLoadedEventFired = 3476,
   kIdleDetectionPermissionRequested = 3477,
   kIdentifiabilityStudyReserved3478 = 3478,
   kSpeechSynthesis_GetVoices_Method = 3479,
@@ -3066,6 +3062,8 @@ enum WebFeature {
   kCrossOriginJsonTypeForScript = 3738,
   kSameOriginStrictNosniffWouldBlock = 3739,
   kCrossOriginStrictNosniffWouldBlock = 3740,
+  kCSSSelectorPseudoDir = 3741,
+  kCrossOriginSubframeWithoutEmbeddingControl = 3742,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

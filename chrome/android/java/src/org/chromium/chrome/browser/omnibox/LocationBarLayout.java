@@ -22,7 +22,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
@@ -31,19 +30,13 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.MarginLayoutParamsCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
-import org.chromium.base.CallbackController;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
@@ -53,12 +46,9 @@ import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -113,8 +103,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
     private boolean mUrlFocusedWithoutAnimations;
     protected boolean mVoiceSearchEnabled;
 
-    private OmniboxPrerender mOmniboxPrerender;
-
     protected float mUrlFocusChangeFraction;
     protected LinearLayout mUrlActionContainer;
 
@@ -125,50 +113,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
     private OneshotSupplier<AssistantVoiceSearchService> mAssistantVoiceSearchServiceSupplier;
     private Runnable mKeyboardResizeModeTask;
     private Runnable mKeyboardHideTask;
-    private ObservableSupplier<Profile> mProfileSupplier;
-    private Callback<Profile> mProfileSupplierObserver;
-    private CallbackController mCallbackController = new CallbackController();
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private OverrideUrlLoadingDelegate mOverrideUrlLoadingDelegate;
-
-    /**
-     * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
-     * particular, handle navigating the suggestions list from the keyboard.
-     */
-    private final class UrlBarKeyListener implements OnKeyListener {
-        @Override
-        public boolean onKey(View v, int keyCode, KeyEvent event) {
-            boolean isRtl = v.getLayoutDirection() == LAYOUT_DIRECTION_RTL;
-            if (mAutocompleteCoordinator.handleKeyEvent(keyCode, event)) {
-                return true;
-            } else if (keyCode == KeyEvent.KEYCODE_BACK) {
-                if (KeyNavigationUtil.isActionDown(event) && event.getRepeatCount() == 0) {
-                    // Tell the framework to start tracking this event.
-                    getKeyDispatcherState().startTracking(event, this);
-                    return true;
-                } else if (KeyNavigationUtil.isActionUp(event)) {
-                    getKeyDispatcherState().handleUpEvent(event);
-                    if (event.isTracking() && !event.isCanceled()) {
-                        backKeyPressed();
-                        return true;
-                    }
-                }
-            } else if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
-                if (KeyNavigationUtil.isActionDown(event) && event.getRepeatCount() == 0) {
-                    revertChanges();
-                    return true;
-                }
-            } else if ((!isRtl && KeyNavigationUtil.isGoRight(event))
-                    || (isRtl && KeyNavigationUtil.isGoLeft(event))) {
-                // Ensures URL bar doesn't lose focus, when RIGHT or LEFT (RTL) key is pressed while
-                // the cursor is positioned at the end of the text.
-                TextView tv = (TextView) v;
-                return tv.getSelectionStart() == tv.getSelectionEnd()
-                        && tv.getSelectionEnd() == tv.getText().length();
-            }
-            return false;
-        }
-    }
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
@@ -199,17 +145,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
             mAutocompleteCoordinator = null;
         }
 
-        if (mCallbackController != null) {
-            mCallbackController.destroy();
-            mCallbackController = null;
-        }
-
-        if (mProfileSupplier != null) {
-            mProfileSupplier.removeObserver(mProfileSupplierObserver);
-            mProfileSupplier = null;
-            mProfileSupplierObserver = null;
-        }
-
         if (mTemplateUrlObserver != null) {
             TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
             mTemplateUrlObserver = null;
@@ -226,8 +161,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
 
         StatusView statusView = findViewById(R.id.location_bar_status);
         statusView.setCompositeTouchDelegate(mCompositeTouchDelegate);
-
-        mUrlBar.setOnKeyListener(new UrlBarKeyListener());
     }
 
     @Override
@@ -268,7 +201,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
      * @param urlCoordinator The coordinator for interacting with the url bar.
      * @param statusCoordinator The coordinator for interacting with the status icon.
      * @param locationBarDataProvider Provider of LocationBar data, e.g. url and title.
-     * @param profileSupplier Supplier of the profile for the currently active TabModel.
      * @param windowDelegate {@link WindowDelegate} that will provide {@link Window} related info.
      * @param windowAndroid {@link WindowAndroid} that is used by the owning {@link Activity}.
      */
@@ -276,7 +208,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
     public void initialize(@NonNull AutocompleteCoordinator autocompleteCoordinator,
             @NonNull UrlBarCoordinator urlCoordinator, @NonNull StatusCoordinator statusCoordinator,
             @NonNull LocationBarDataProvider locationBarDataProvider,
-            @NonNull ObservableSupplier<Profile> profileSupplier,
             @NonNull WindowDelegate windowDelegate, @NonNull WindowAndroid windowAndroid,
             @NonNull OverrideUrlLoadingDelegate overrideUrlLoadingDelegate,
             @NonNull VoiceRecognitionHandler voiceRecognitionHandler,
@@ -291,12 +222,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
         mVoiceRecognitionHandler = voiceRecognitionHandler;
         mAssistantVoiceSearchServiceSupplier = assistantVoiceSearchSupplier;
 
-        assert profileSupplier != null;
-        assert mProfileSupplier == null;
-        mProfileSupplier = profileSupplier;
-        mProfileSupplierObserver = mCallbackController.makeCancelable(this::setProfile);
-        mProfileSupplier.addObserver(mProfileSupplierObserver);
-
         updateButtonVisibility();
         updateShouldAnimateIconChanges();
     }
@@ -307,8 +232,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
     }
 
     /**
-     *  Signals to LocationBarLayout that's it safe to call code that requires native to be loaded,
-     * e.g. OmniboxPrerender.
+     *  Signals to LocationBarLayout that's it safe to call code that requires native to be loaded.
      */
     public void onFinishNativeInitialization() {
         TemplateUrlServiceFactory.get().runWhenLoaded(this::registerTemplateUrlObserver);
@@ -318,8 +242,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
         mDeleteButton.setOnClickListener(this);
         mMicButton.setOnClickListener(this);
 
-        mOmniboxPrerender = new OmniboxPrerender();
-
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             post(deferredRunnable);
         }
@@ -328,8 +250,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
         onPrimaryColorChanged();
 
         updateMicButtonVisibility();
-
-        setProfile(mProfileSupplier.get());
     }
 
     /** Initiates a prefetch of autocomplete suggestions. */
@@ -341,26 +261,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
 
     /* package */ void clearOmniboxFocus() {
         setUrlBarFocus(false, null, OmniboxFocusReason.UNFOCUS);
-    }
-
-    public void selectAll() {
-        mUrlCoordinator.selectAll();
-    }
-
-    public void revertChanges() {
-        if (!mUrlHasFocus) {
-            setUrl(mLocationBarDataProvider.getCurrentUrl());
-        } else {
-            String currentUrl = mLocationBarDataProvider.getCurrentUrl();
-            if (NativePageFactory.isNativePageUrl(
-                        currentUrl, mLocationBarDataProvider.isIncognito())) {
-                setUrlBarTextEmpty();
-            } else {
-                setUrlBarText(mLocationBarDataProvider.getUrlBarData(), UrlBar.ScrollType.NO_SCROLL,
-                        SelectionState.SELECT_ALL);
-            }
-            setKeyboardVisibility(false, false);
-        }
     }
 
     /* package */ void onUrlTextChanged() {
@@ -415,25 +315,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
 
     /* package */ void onSuggestionsHidden() {}
 
-    /* package */ void onSuggestionsChanged(String autocompleteText) {
-        String userText = mUrlCoordinator.getTextWithoutAutocomplete();
-        if (mUrlCoordinator.shouldAutocomplete()) {
-            mUrlCoordinator.setAutocompleteText(userText, autocompleteText);
-        }
-
+    /* package */ void onSuggestionsChanged() {
         // Handle the case where suggestions (in particular zero suggest) are received without the
         // URL focusing happening.
         if (mUrlFocusedWithoutAnimations && mUrlHasFocus) {
             handleUrlFocusAnimation(mUrlHasFocus);
-        }
-
-        if (mNativeInitialized
-                && !CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_INSTANT)
-                && PrivacyPreferencesManagerImpl.getInstance().shouldPrerender()
-                && mLocationBarDataProvider.hasTab()) {
-            mOmniboxPrerender.prerenderMaybe(userText, getOriginalUrl(),
-                    mAutocompleteCoordinator.getCurrentNativeAutocompleteResult(),
-                    mLocationBarDataProvider.getProfile(), mLocationBarDataProvider.getTab());
         }
     }
 
@@ -707,10 +593,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
         setUrlBarText(mLocationBarDataProvider.getUrlBarData(), UrlBar.ScrollType.SCROLL_TO_TLD,
                 SelectionState.SELECT_ALL);
         if (!mLocationBarDataProvider.hasTab()) return;
-
-        // Profile may be null if switching to a tab that has not yet been initialized.
-        Profile profile = mLocationBarDataProvider.getProfile();
-        if (profile != null && mOmniboxPrerender != null) mOmniboxPrerender.clear(profile);
     }
 
     /* package */ void setOmniboxEditingText(String text) {
@@ -851,20 +733,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
      */
     protected void notifyShouldAnimateIconChanges(boolean shouldAnimate) {
         mStatusCoordinator.setShouldAnimateIconChanges(shouldAnimate);
-    }
-
-    /**
-     * Updates the profile used by this LocationBar, for, e.g. determining incognito status or
-     * generating autocomplete suggestions..
-     * @param profile The profile to be used.
-     */
-    private void setProfile(Profile profile) {
-        if (profile == null || !mNativeInitialized) return;
-        mAutocompleteCoordinator.setAutocompleteProfile(profile);
-        mOmniboxPrerender.initializeForProfile(profile);
-
-        setShowIconsWhenUrlFocused(
-                SearchEngineLogoUtils.shouldShowSearchEngineLogo(profile.isOffTheRecord()));
     }
 
     /** Focuses the current page. */
@@ -1130,7 +998,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
      * @param selectionState Specifies how the text should be selected in the focused state.
      * @return Whether the URL was changed as a result of this call.
      */
-    private boolean setUrlBarText(
+    /* package */ boolean setUrlBarText(
             UrlBarData urlBarData, @ScrollType int scrollType, @SelectionState int selectionState) {
         return mUrlCoordinator.setUrlBarData(urlBarData, scrollType, selectionState);
     }
@@ -1139,7 +1007,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
      * Clear any text in the URL bar.
      * @return Whether this changed the existing text.
      */
-    private boolean setUrlBarTextEmpty() {
+    /* package */ boolean setUrlBarTextEmpty() {
         boolean textChanged = mUrlCoordinator.setUrlBarData(
                 UrlBarData.EMPTY, UrlBar.ScrollType.SCROLL_TO_BEGINNING, SelectionState.SELECT_ALL);
         forceOnTextChanged();

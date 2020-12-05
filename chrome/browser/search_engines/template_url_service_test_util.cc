@@ -8,9 +8,9 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/test/base/testing_profile.h"
@@ -67,10 +67,14 @@ std::unique_ptr<TemplateURL> CreateTestTemplateURL(
     const base::string16& keyword,
     const std::string& url,
     const std::string& guid,
-    time_t last_mod,
+    base::Time last_modified,
     bool safe_for_autoreplace,
     bool created_by_policy,
     int prepopulate_id) {
+  DCHECK(!base::StartsWith(guid, "key"))
+      << "Don't use test GUIDs with the form \"key1\". Use \"guid1\" instead "
+         "for clarity.";
+
   TemplateURLData data;
   data.SetShortName(base::ASCIIToUTF16("unittest"));
   data.SetKeyword(keyword);
@@ -78,7 +82,7 @@ std::unique_ptr<TemplateURL> CreateTestTemplateURL(
   data.favicon_url = GURL("http://favicon.url");
   data.safe_for_autoreplace = safe_for_autoreplace;
   data.date_created = base::Time::FromTimeT(100);
-  data.last_modified = base::Time::FromTimeT(last_mod);
+  data.last_modified = last_modified;
   data.created_by_policy = created_by_policy;
   data.prepopulate_id = prepopulate_id;
   if (!guid.empty())

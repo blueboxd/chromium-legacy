@@ -88,7 +88,8 @@ TEST_F(WebAppRunOnOsLoginWinTest, Unregister) {
   EXPECT_TRUE(result);
   VerifyShortcutCreated();
 
-  internals::UnregisterRunOnOsLogin(profile()->GetPath(),
+  internals::UnregisterRunOnOsLogin(shortcut_info->extension_id,
+                                    profile()->GetPath(),
                                     base::UTF8ToUTF16(kAppTitle));
   VerifyShortcutDeleted();
 }

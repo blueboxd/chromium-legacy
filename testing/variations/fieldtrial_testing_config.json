@@ -1732,6 +1732,25 @@
             ]
         }
     ],
+    "CodeCacheDeduplicationStudy": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CodeCacheDeduplicationStudy"
+                    ]
+                }
+            ]
+        }
+    ],
     "CodeCacheDeletionWithoutFilter": [
         {
             "platforms": [
@@ -4632,30 +4651,6 @@
             ]
         }
     ],
-    "NtpRepeatableQueriesDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "NtpRepeatableQueriesAgeThresholdDays": "180",
-                        "NtpRepeatableQueriesFrequencyExponent": "2",
-                        "NtpRepeatableQueriesInsertPosition": "start",
-                        "NtpRepeatableQueriesRecencyHalfLifeSeconds": "604800"
-                    },
-                    "enable_features": [
-                        "NtpRepeatableQueries"
-                    ]
-                }
-            ]
-        }
-    ],
     "NtpWebUIDesktop": [
         {
             "platforms": [
@@ -4864,7 +4859,8 @@
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
-                        "OmniboxUIExperimentMaxAutocompleteMatches"
+                        "OmniboxUIExperimentMaxAutocompleteMatches",
+                        "OmniboxZeroSuggestCaching"
                     ]
                 }
             ]
@@ -5071,26 +5067,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OopRasterizationDDL"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OptimizationHintsNoPersistentStore": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "batch_update_hints_for_top_hosts": "false",
-                        "persist_hints_to_disk": "false"
-                    },
-                    "enable_features": [
-                        "OptimizationHints",
-                        "OptimizationHintsFetching"
                     ]
                 }
             ]

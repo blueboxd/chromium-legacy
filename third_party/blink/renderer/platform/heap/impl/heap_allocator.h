@@ -9,6 +9,8 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_table_backing.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_list_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector_backing.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
@@ -24,16 +26,10 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
-#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-class HeapListHashSetAllocator;
-template <typename ValueArg>
-class HeapListHashSetNode;
 
 namespace internal {
 
@@ -42,24 +38,8 @@ constexpr bool IsMember = WTF::IsSubclassOfTemplate<T, Member>::value;
 
 }  // namespace internal
 
-#define DISALLOW_IN_CONTAINER()              \
- public:                                     \
-  using IsDisallowedInContainerMarker = int; \
-                                             \
- private:                                    \
-  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
-
-// IsAllowedInContainer returns true if some type T supports being nested
-// arbitrarily in other containers. This is relevant for collections where some
-// collections assume that they are placed on a non-moving arena.
-template <typename T, typename = int>
-struct IsAllowedInContainer : std::true_type {};
-template <typename T>
-struct IsAllowedInContainer<T, typename T::IsDisallowedInContainerMarker>
-    : std::false_type {};
-
 // This is a static-only class used as a trait on collections to make them heap
-// allocated.  However see also HeapListHashSetAllocator.
+// allocated.
 class PLATFORM_EXPORT HeapAllocator {
   STATIC_ONLY(HeapAllocator);
 
@@ -216,12 +196,6 @@ class HeapHashMap : public HashMap<KeyArg,
     static_assert(std::is_trivially_destructible<HeapHashMap>::value,
                   "HeapHashMap must be trivially destructible.");
     static_assert(
-        IsAllowedInContainer<KeyArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
-    static_assert(
-        IsAllowedInContainer<MappedArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
-    static_assert(
         WTF::IsTraceable<KeyArg>::value || WTF::IsTraceable<MappedArg>::value,
         "For hash maps without traceable elements, use HashMap<> "
         "instead of HeapHashMap<>.");
@@ -266,9 +240,6 @@ class HeapHashSet
                   "HeapHashSet supports only Member and WeakMember.");
     static_assert(std::is_trivially_destructible<HeapHashSet>::value,
                   "HeapHashSet must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<ValueArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<ValueArg>::value,
                   "For hash sets without traceable elements, use HashSet<> "
                   "instead of HeapHashSet<>.");
@@ -288,150 +259,6 @@ template <typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashSet<T, U, V>>
     : public GCInfoTrait<HashSet<T, U, V, HeapAllocator>> {};
 
-template <typename ValueArg, typename TraitsArg = HashTraits<ValueArg>>
-class HeapLinkedHashSet
-    : public LinkedHashSet<ValueArg, TraitsArg, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
-  DISALLOW_NEW();
-
-  static void CheckType() {
-    static_assert(WTF::IsMemberOrWeakMemberType<ValueArg>::value,
-                  "HeapLinkedHashSet supports only Member and WeakMember.");
-    // If not trivially destructible, we have to add a destructor which will
-    // hinder performance.
-    static_assert(std::is_trivially_destructible<HeapLinkedHashSet>::value,
-                  "HeapLinkedHashSet must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<ValueArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
-    static_assert(WTF::IsTraceable<ValueArg>::value,
-                  "For sets without traceable elements, use LinkedHashSet<> "
-                  "instead of HeapLinkedHashSet<>.");
-  }
-
- public:
-  template <typename>
-  static void* AllocateObject(size_t size) {
-    return ThreadHeap::Allocate<HeapLinkedHashSet<ValueArg, TraitsArg>>(size);
-  }
-
-  HeapLinkedHashSet() { CheckType(); }
-};
-
-}  // namespace blink
-
-namespace WTF {
-
-template <typename Value, wtf_size_t inlineCapacity>
-struct ListHashSetTraits<Value, inlineCapacity, blink::HeapListHashSetAllocator>
-    : public HashTraits<blink::Member<blink::HeapListHashSetNode<Value>>> {
-  using Allocator = blink::HeapListHashSetAllocator;
-  using Node = blink::HeapListHashSetNode<Value>;
-
-  static constexpr bool kCanTraceConcurrently =
-      HashTraits<Value>::kCanTraceConcurrently;
-};
-
-}  // namespace WTF
-
-namespace blink {
-
-template <typename ValueArg>
-class HeapListHashSetNode final
-    : public GarbageCollected<HeapListHashSetNode<ValueArg>> {
- public:
-  using NodeAllocator = HeapListHashSetAllocator;
-  using PointerType = Member<HeapListHashSetNode>;
-  using Value = ValueArg;
-
-  template <typename U>
-  static HeapListHashSetNode* Create(NodeAllocator* allocator, U&& value) {
-    return MakeGarbageCollected<HeapListHashSetNode>(std::forward<U>(value));
-  }
-
-  template <typename U>
-  explicit HeapListHashSetNode(U&& value) : value_(std::forward<U>(value)) {
-    static_assert(std::is_trivially_destructible<Value>::value,
-                  "Garbage collected types used in ListHashSet must be "
-                  "trivially destructible");
-  }
-
-  void Destroy(NodeAllocator* allocator) {}
-
-  HeapListHashSetNode* Next() const { return next_; }
-  HeapListHashSetNode* Prev() const { return prev_; }
-
-  void Trace(Visitor* visitor) const {
-    visitor->Trace(prev_);
-    visitor->Trace(next_);
-    visitor->Trace(value_);
-  }
-
-  ValueArg value_;
-  PointerType prev_;
-  PointerType next_;
-};
-
-// Empty allocator as HeapListHashSetNode directly allocates using
-// MakeGarbageCollected().
-class HeapListHashSetAllocator {
-  DISALLOW_NEW();
-
- public:
-  using TableAllocator = HeapAllocator;
-
-  static constexpr bool kIsGarbageCollected = true;
-
-  struct AllocatorProvider final {
-    void CreateAllocatorIfNeeded() {}
-    HeapListHashSetAllocator* Get() { return nullptr; }
-    void Swap(AllocatorProvider& other) {}
-  };
-};
-
-template <typename T, typename U>
-struct GCInfoTrait<HeapLinkedHashSet<T, U>>
-    : public GCInfoTrait<LinkedHashSet<T, U, HeapAllocator>> {};
-
-template <typename ValueArg,
-          wtf_size_t inlineCapacity = 0,  // The inlineCapacity is just a dummy
-                                          // to match ListHashSet (off-heap).
-          typename HashArg = typename DefaultHash<ValueArg>::Hash>
-class HeapListHashSet : public ListHashSet<ValueArg,
-                                           inlineCapacity,
-                                           HashArg,
-                                           HeapListHashSetAllocator> {
-  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
-  DISALLOW_NEW();
-
-  static void CheckType() {
-    static_assert(WTF::IsMemberOrWeakMemberType<ValueArg>::value,
-                  "HeapListHashSet supports only Member and WeakMember.");
-    static_assert(std::is_trivially_destructible<HeapListHashSet>::value,
-                  "HeapListHashSet must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<ValueArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
-    static_assert(WTF::IsTraceable<ValueArg>::value,
-                  "For sets without traceable elements, use ListHashSet<> "
-                  "instead of HeapListHashSet<>.");
-  }
-
- public:
-  template <typename>
-  static void* AllocateObject(size_t size) {
-    return ThreadHeap::Allocate<
-        HeapListHashSet<ValueArg, inlineCapacity, HashArg>>(size);
-  }
-
-  HeapListHashSet() { CheckType(); }
-};
-
-template <typename T, wtf_size_t inlineCapacity, typename U>
-struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U>>
-    : public GCInfoTrait<
-          ListHashSet<T, inlineCapacity, U, HeapListHashSetAllocator>> {};
-
 template <typename Value,
           typename HashFunctions = typename DefaultHash<Value>::Hash,
           typename Traits = HashTraits<Value>>
@@ -445,9 +272,6 @@ class HeapHashCountedSet
                   "HeapHashCountedSet supports only Member and WeakMember.");
     static_assert(std::is_trivially_destructible<HeapHashCountedSet>::value,
                   "HeapHashCountedSet must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<Value>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<Value>::value,
                   "For counted sets without traceable elements, use "
                   "HashCountedSet<> instead of HeapHashCountedSet<>.");
@@ -476,9 +300,6 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
     static_assert(
         std::is_trivially_destructible<HeapVector>::value || inlineCapacity,
         "HeapVector must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<T>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<T>::value,
                   "For vectors without traceable elements, use Vector<> "
                   "instead of HeapVector<>.");
@@ -527,12 +348,12 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
     return *this;
   }
 
-  HeapVector(HeapVector&& other)
+  HeapVector(HeapVector&& other) noexcept
       : Vector<T, inlineCapacity, HeapAllocator>(std::move(other)) {
     CheckType();
   }
 
-  HeapVector& operator=(HeapVector&& other) {
+  HeapVector& operator=(HeapVector&& other) noexcept {
     Vector<T, inlineCapacity, HeapAllocator>::operator=(std::move(other));
     return *this;
   }
@@ -556,9 +377,6 @@ class HeapDeque : public Deque<T, 0, HeapAllocator> {
     static_assert(internal::IsMember<T>, "HeapDeque supports only Member.");
     static_assert(std::is_trivially_destructible<HeapDeque>::value,
                   "HeapDeque must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<T>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<T>::value,
                   "For vectors without traceable elements, use Deque<> instead "
                   "of HeapDeque<>");

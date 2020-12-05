@@ -67,14 +67,6 @@ class MockHoldingSpaceModelObserver : public HoldingSpaceModelObserver {
 
 // Helpers ---------------------------------------------------------------------
 
-// Posts a task and waits for it to run in order to flush the message loop.
-void FlushMessageLoop() {
-  base::RunLoop run_loop;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   run_loop.QuitClosure());
-  run_loop.Run();
-}
-
 // Returns the path of the downloads mount point for the given `profile`.
 base::FilePath GetDownloadsPath(Profile* profile) {
   base::FilePath result;
@@ -86,7 +78,6 @@ base::FilePath GetDownloadsPath(Profile* profile) {
 
 // Creates a txt file at the path of the downloads mount point for `profile`.
 base::FilePath CreateTextFile(
-    Profile* profile,
     const base::FilePath& root_path,
     const base::Optional<std::string>& relative_path) {
   const base::FilePath path =
@@ -199,10 +190,6 @@ const HoldingSpaceItem* AddHoldingSpaceItem(Profile* profile,
   const HoldingSpaceItem* item_ptr = item.get();
   holding_space_model->AddItem(std::move(item));
 
-  // Explicitly flush the message loop after a holding space `item` is
-  // added to give file system watchers a chance to register.
-  FlushMessageLoop();
-
   return item_ptr;
 }
 
@@ -285,8 +272,8 @@ class HoldingSpaceKeyedServiceBrowserTest
   void EnsurePredefinedTestFiles() {
     if (!predefined_test_files_.empty())
       return;
-    predefined_test_files_.push_back(CreateTextFile(
-        browser()->profile(), GetTestMountPoint(), "root/test_file.txt"));
+    predefined_test_files_.push_back(
+        CreateTextFile(GetTestMountPoint(), "root/test_file.txt"));
   }
 
   drive::DriveIntegrationService* CreateDriveIntegrationService(
@@ -368,34 +355,31 @@ INSTANTIATE_TEST_SUITE_P(FileSystem,
 // "disappear". Note that a "disappearance" could be due to file move or delete.
 IN_PROC_BROWSER_TEST_P(HoldingSpaceKeyedServiceBrowserTest,
                        RemovesItemsWhenBackingFileDisappears) {
-  {
-    // Verify that items are removed when their backing files are deleted.
-    const auto* holding_space_item = AddHoldingSpaceItem(
-        browser()->profile(),
-        CreateTextFile(browser()->profile(), GetTestMountPoint(),
-                       /*relative_path=*/base::nullopt));
-    RemoveHoldingSpaceItemViaClosure(
-        holding_space_item, base::BindLambdaForTesting([&]() {
-          base::ScopedAllowBlockingForTesting allow_blocking;
-          EXPECT_TRUE(base::DeleteFile(holding_space_item->file_path()));
-        }));
-  }
+  // Verify that items are removed when their backing files are deleted.
+  const auto* holding_space_item_to_delete = AddHoldingSpaceItem(
+      browser()->profile(), CreateTextFile(GetTestMountPoint(),
+                                           /*relative_path=*/base::nullopt));
 
-  {
-    // Verify that items are removed when their backing files are moved.
-    const auto* holding_space_item = AddHoldingSpaceItem(
-        browser()->profile(),
-        CreateTextFile(browser()->profile(), GetTestMountPoint(),
-                       /*relative_path=*/base::nullopt));
-    RemoveHoldingSpaceItemViaClosure(
-        holding_space_item, base::BindLambdaForTesting([&]() {
-          base::ScopedAllowBlockingForTesting allow_blocking;
-          EXPECT_TRUE(
-              base::Move(holding_space_item->file_path(),
-                         GetTestMountPoint().Append(
-                             base::UnguessableToken::Create().ToString())));
-        }));
-  }
+  // Verify that items are removed when their backing files are moved.
+  const auto* holding_space_item_to_move = AddHoldingSpaceItem(
+      browser()->profile(), CreateTextFile(GetTestMountPoint(),
+                                           /*relative_path=*/base::nullopt));
+
+  RemoveHoldingSpaceItemViaClosure(
+      holding_space_item_to_delete, base::BindLambdaForTesting([&]() {
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        EXPECT_TRUE(
+            base::DeleteFile(holding_space_item_to_delete->file_path()));
+      }));
+
+  RemoveHoldingSpaceItemViaClosure(
+      holding_space_item_to_move, base::BindLambdaForTesting([&]() {
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        EXPECT_TRUE(
+            base::Move(holding_space_item_to_move->file_path(),
+                       GetTestMountPoint().Append(
+                           base::UnguessableToken::Create().ToString())));
+      }));
 }
 
 IN_PROC_BROWSER_TEST_P(HoldingSpaceKeyedServiceBrowserTest,

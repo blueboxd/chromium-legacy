@@ -4,11 +4,12 @@
 
 #include "content/browser/media/media_internals_audio_focus_helper.h"
 
-#include <list>
 #include <string>
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/strcat.h"
 #include "base/values.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -44,6 +45,7 @@ const char kMediaSessionIsControllable[] = "Controllable";
 const char kMediaSessionIsSensitive[] = "Sensitive";
 
 const char kMediaSessionHasAudio[] = "HasAudio";
+const char kMediaSessionHasVideo[] = "HasVideo";
 const char kMediaSessionHasAudioVideo[] = "HasAudioVideo";
 
 }  // namespace
@@ -225,100 +227,114 @@ void MediaInternalsAudioFocusHelper::SerializeAndSendUpdate(
 std::string MediaInternalsAudioFocusHelper::BuildNameString(
     const media_session::mojom::AudioFocusRequestStatePtr& state,
     const std::string& provided_name) const {
-  std::stringstream stream;
+  std::string result;
 
   // Add the |source_name| (optional).
-  if (state->source_name.has_value()) {
-    stream << state->source_name.value();
-    stream << ":";
-  }
+  if (state->source_name.has_value())
+    base::StrAppend(&result, {state->source_name.value(), ":"});
 
   // Add the |request_id|.
-  stream << state->request_id.value().ToString();
+  result.append(state->request_id.value().ToString());
 
   if (!provided_name.empty())
-    stream << " " << provided_name;
-  return stream.str();
+    base::StrAppend(&result, {" ", provided_name});
+
+  return result;
 }
 
 std::string MediaInternalsAudioFocusHelper::BuildStateString(
     const media_session::mojom::AudioFocusRequestStatePtr& state,
     const std::string& provided_state) const {
-  std::stringstream stream;
+  std::string result(" ");
 
   // Convert the AudioFocusType mojo enum to a string.
   switch (state->audio_focus_type) {
     case media_session::mojom::AudioFocusType::kGain:
-      stream << " " << kAudioFocusTypeGain;
+      result.append(kAudioFocusTypeGain);
       break;
     case media_session::mojom::AudioFocusType::kGainTransient:
-      stream << " " << kAudioFocusTypeGainTransient;
+      result.append(kAudioFocusTypeGainTransient);
       break;
     case media_session::mojom::AudioFocusType::kGainTransientMayDuck:
-      stream << " " << kAudioFocusTypeGainTransientMayDuck;
+      result.append(kAudioFocusTypeGainTransientMayDuck);
       break;
     case media_session::mojom::AudioFocusType::kAmbient:
-      stream << " " << kAudioFocusTypeAmbient;
+      result.append(kAudioFocusTypeAmbient);
       break;
   }
 
   // Convert the MediaSessionInfo::SessionState mojo enum to a string.
+  result.append(" ");
   switch (state->session_info->state) {
     case media_session::mojom::MediaSessionInfo::SessionState::kActive:
-      stream << " " << kMediaSessionStateActive;
+      result.append(kMediaSessionStateActive);
       break;
     case media_session::mojom::MediaSessionInfo::SessionState::kDucking:
-      stream << " " << kMediaSessionStateDucking;
+      result.append(kMediaSessionStateDucking);
       break;
     case media_session::mojom::MediaSessionInfo::SessionState::kSuspended:
-      stream << " " << kMediaSessionStateSuspended;
+      result.append(kMediaSessionStateSuspended);
       break;
     case media_session::mojom::MediaSessionInfo::SessionState::kInactive:
-      stream << " " << kMediaSessionStateInactive;
+      result.append(kMediaSessionStateInactive);
       break;
   }
 
   // Convert the MediaPlaybackState mojo enum to a string.
+  result.append(" ");
   switch (state->session_info->playback_state) {
     case media_session::mojom::MediaPlaybackState::kPaused:
-      stream << " " << kMediaSessionPlaybackStatePaused;
+      result.append(kMediaSessionPlaybackStatePaused);
       break;
     case media_session::mojom::MediaPlaybackState::kPlaying:
-      stream << " " << kMediaSessionPlaybackStatePlaying;
+      result.append(kMediaSessionPlaybackStatePlaying);
       break;
   }
 
-  // Convert the audio_video_state to a string.
-  switch (state->session_info->audio_video_state) {
-    case media_session::mojom::MediaAudioVideoState::kUnknown:
-      break;
-    case media_session::mojom::MediaAudioVideoState::kAudioOnly:
-      stream << " " << kMediaSessionHasAudio;
-      break;
-    case media_session::mojom::MediaAudioVideoState::kAudioVideo:
-      stream << " " << kMediaSessionHasAudioVideo;
-      break;
+  // Convert the audio_video_states to a string.
+  if (state->session_info->audio_video_states) {
+    result.append(" {");
+    base::ranges::for_each(
+        *state->session_info->audio_video_states, [&result](const auto& state) {
+          result.append(" ");
+          switch (state) {
+            case media_session::mojom::MediaAudioVideoState::kAudioOnly:
+              result.append(kMediaSessionHasAudio);
+              break;
+            case media_session::mojom::MediaAudioVideoState::kVideoOnly:
+              result.append(kMediaSessionHasVideo);
+              break;
+            case media_session::mojom::MediaAudioVideoState::kAudioVideo:
+              result.append(kMediaSessionHasAudioVideo);
+              break;
+            case media_session::mojom::MediaAudioVideoState::kDeprecatedUnknown:
+              NOTREACHED();
+              break;
+          }
+        });
+    result.append(" }");
   }
 
   // Convert the |force_duck| boolean into a string.
   if (state->session_info->force_duck)
-    stream << " " << kAudioFocusForceDuck;
+    base::StrAppend(&result, {" ", kAudioFocusForceDuck});
 
   // Convert the |prefer_stop_for_gain_focus_loss| boolean into a string.
   if (state->session_info->prefer_stop_for_gain_focus_loss)
-    stream << " " << kAudioFocusPreferStop;
+    base::StrAppend(&result, {" ", kAudioFocusPreferStop});
 
   // Convert the |is_controllable| boolean into a string.
   if (state->session_info->is_controllable)
-    stream << " " << kMediaSessionIsControllable;
+    base::StrAppend(&result, {" ", kMediaSessionIsControllable});
 
   // Convert the |is_sensitive| boolean into a string.
   if (state->session_info->is_sensitive)
-    stream << " " << kMediaSessionIsSensitive;
+    base::StrAppend(&result, {" ", kMediaSessionIsSensitive});
 
   if (!provided_state.empty())
-    stream << " " << provided_state;
-  return stream.str();
+    base::StrAppend(&result, {" ", provided_state});
+
+  return result;
 }
 
 }  // namespace content

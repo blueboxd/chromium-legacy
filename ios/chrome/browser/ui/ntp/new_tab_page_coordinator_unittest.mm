@@ -21,6 +21,8 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -101,8 +103,13 @@ TEST_F(NewTabPageCoordinatorTest, StartOnTheRecord) {
                    forProtocol:@protocol(SnackbarCommands)];
   [coordinator_ start];
   UIViewController* viewController = [coordinator_ viewController];
-  EXPECT_TRUE(
-      [viewController isKindOfClass:[ContentSuggestionsViewController class]]);
+  if (IsRefactoredNTP()) {
+    EXPECT_TRUE(
+        [viewController isKindOfClass:[NewTabPageViewController class]]);
+  } else {
+    EXPECT_TRUE([viewController
+        isKindOfClass:[ContentSuggestionsViewController class]]);
+  }
   [coordinator_ stop];
 }
 

@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.ui.PaymentUiService;
-import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.BrowserPaymentRequest;
@@ -143,7 +142,7 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public PaymentApp getSelectedPaymentApp() {
-        return (PaymentApp) mPaymentUiService.getSelectedPaymentApp();
+        return mPaymentUiService.getSelectedPaymentApp();
     }
 
     // Implements BrowserPaymentRequest:
@@ -301,7 +300,7 @@ public class ChromePaymentRequestService
             }
 
             assert !mPaymentUiService.getPaymentApps().isEmpty();
-            PaymentApp selectedApp = (PaymentApp) mPaymentUiService.getSelectedPaymentApp();
+            PaymentApp selectedApp = mPaymentUiService.getSelectedPaymentApp();
             dimBackgroundIfNotBottomSheetPaymentHandler(selectedApp);
             mDidRecordShowEvent = true;
             mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
@@ -326,7 +325,7 @@ public class ChromePaymentRequestService
             return false;
         }
 
-        PaymentApp app = (PaymentApp) mPaymentUiService.getSelectedPaymentApp();
+        PaymentApp app = mPaymentUiService.getSelectedPaymentApp();
         if (app == null || !app.isReadyForMinimalUI() || TextUtils.isEmpty(app.accountBalance())) {
             return false;
         }
@@ -398,15 +397,8 @@ public class ChromePaymentRequestService
 
         if (hasNotifiedInvokedPaymentApp) return;
 
-        if (mPaymentUiService.shouldShowShippingSection()
-                && (mPaymentUiService.getUiShippingOptions().isEmpty()
-                        || !TextUtils.isEmpty(details.error))
-                && mPaymentUiService.getShippingAddressesSection().getSelectedItem() != null) {
-            mPaymentUiService.getShippingAddressesSection().getSelectedItem().setInvalid();
-            mPaymentUiService.getShippingAddressesSection().setSelectedItemIndex(
-                    SectionInformation.INVALID_SELECTION);
-            mPaymentUiService.getShippingAddressesSection().setErrorMessage(details.error);
-        }
+        String detailsError = mSpec.getPaymentDetails().error;
+        mPaymentUiService.showShippingAddressErrorIfApplicable(detailsError);
 
         boolean providedInformationToPaymentRequestUI =
                 mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
@@ -451,16 +443,7 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public void onPaymentDetailsNotUpdated(@Nullable String selectedShippingOptionError) {
-        if (mPaymentUiService.shouldShowShippingSection()
-                && (mPaymentUiService.getUiShippingOptions().isEmpty()
-                        || !TextUtils.isEmpty(mSpec.selectedShippingOptionError()))
-                && mPaymentUiService.getShippingAddressesSection().getSelectedItem() != null) {
-            mPaymentUiService.getShippingAddressesSection().getSelectedItem().setInvalid();
-            mPaymentUiService.getShippingAddressesSection().setSelectedItemIndex(
-                    SectionInformation.INVALID_SELECTION);
-            mPaymentUiService.getShippingAddressesSection().setErrorMessage(
-                    selectedShippingOptionError);
-        }
+        mPaymentUiService.showShippingAddressErrorIfApplicable(selectedShippingOptionError);
 
         boolean providedInformationToPaymentRequestUI =
                 mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
@@ -507,9 +490,6 @@ public class ChromePaymentRequestService
     public boolean invokePaymentApp(EditableOption selectedShippingAddress,
             EditableOption selectedShippingOption, PaymentApp selectedPaymentApp) {
         if (mPaymentRequestService == null || mSpec == null || mSpec.isDestroyed()) return false;
-        EditableOption selectedContact = mPaymentUiService.getContactSection() != null
-                ? mPaymentUiService.getContactSection().getSelectedItem()
-                : null;
         selectedPaymentApp.setPaymentHandlerHost(getPaymentHandlerHost());
         // Only native apps can use PaymentDetailsUpdateService.
         if (selectedPaymentApp.getPaymentAppType() == PaymentAppType.NATIVE_MOBILE_APP) {
@@ -517,9 +497,10 @@ public class ChromePaymentRequestService
                     ((AndroidPaymentApp) selectedPaymentApp).packageName(),
                     mPaymentRequestService /* PaymentApp.PaymentRequestUpdateEventListener */);
         }
-        PaymentResponseHelperInterface paymentResponseHelper = new ChromePaymentResponseHelper(
-                selectedShippingAddress, selectedShippingOption, selectedContact,
-                selectedPaymentApp, mSpec.getPaymentOptions(), mSkipToGPayHelper != null);
+        PaymentResponseHelperInterface paymentResponseHelper =
+                new ChromePaymentResponseHelper(selectedShippingAddress, selectedShippingOption,
+                        mPaymentUiService.getSelectedContact(), selectedPaymentApp,
+                        mSpec.getPaymentOptions(), mSkipToGPayHelper != null);
         mPaymentRequestService.invokePaymentApp(selectedPaymentApp, paymentResponseHelper);
         return !selectedPaymentApp.isAutofillInstrument();
     }
@@ -665,13 +646,13 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public void onInstrumentDetailsReady() {
-        // If the payment method was an Autofill credit card with an identifier, record its use.
-        PaymentApp selectedPaymentMethod = (PaymentApp) mPaymentUiService.getSelectedPaymentApp();
-        if (selectedPaymentMethod != null
-                && selectedPaymentMethod.getPaymentAppType() == PaymentAppType.AUTOFILL
-                && !selectedPaymentMethod.getIdentifier().isEmpty()) {
+        // If the payment app was an Autofill credit card with an identifier, record its use.
+        PaymentApp selectedPaymentApp = mPaymentUiService.getSelectedPaymentApp();
+        if (selectedPaymentApp != null
+                && selectedPaymentApp.getPaymentAppType() == PaymentAppType.AUTOFILL
+                && !selectedPaymentApp.getIdentifier().isEmpty()) {
             PersonalDataManager.getInstance().recordAndLogCreditCardUse(
-                    selectedPaymentMethod.getIdentifier());
+                    selectedPaymentApp.getIdentifier());
         }
 
         // Showing the app selector UI if we were previously skipping it so the loading

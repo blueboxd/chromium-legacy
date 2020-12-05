@@ -19,10 +19,6 @@
 - (BOOL)hasKeyAppearance;
 - (long long)_resizeDirectionForMouseLocation:(CGPoint)location;
 - (BOOL)_isConsideredOpenForPersistentState;
-
-// Available in later point releases of 10.10. On 10.11+, use the public
-// -performWindowDragWithEvent: instead.
-- (void)beginWindowDragWithEvent:(NSEvent*)event;
 @end
 
 @interface NativeWidgetMacNSWindow () <NSKeyedArchiverDelegate>

@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
@@ -61,6 +62,7 @@ public final class LocationBarCoordinator
     private WindowDelegate mWindowDelegate;
     private View mAutocompleteAnchorView;
     private LocationBarMediator mLocationBarMediator;
+    private View mUrlBar;
     private CallbackController mCallbackController = new CallbackController();
 
     private boolean mNativeInitialized;
@@ -113,14 +115,17 @@ public final class LocationBarCoordinator
                     new LocationBarCoordinatorTablet((LocationBarTablet) locationBarLayout);
         }
 
-        View urlBar = mLocationBarLayout.findViewById(R.id.url_bar);
+        mUrlBar = mLocationBarLayout.findViewById(R.id.url_bar);
         OneshotSupplierImpl<AssistantVoiceSearchService> assistantVoiceSearchSupplier =
                 new OneshotSupplierImpl();
-        mLocationBarMediator = new LocationBarMediator(
-                mLocationBarLayout, locationBarDataProvider, assistantVoiceSearchSupplier);
-        mUrlCoordinator = new UrlBarCoordinator((UrlBar) urlBar, windowDelegate, actionModeCallback,
-                mCallbackController.makeCancelable(mLocationBarMediator::onUrlFocusChange),
-                mLocationBarMediator);
+
+        mLocationBarMediator = new LocationBarMediator(mLocationBarLayout, locationBarDataProvider,
+                assistantVoiceSearchSupplier, profileObservableSupplier,
+                PrivacyPreferencesManagerImpl.getInstance());
+        mUrlCoordinator =
+                new UrlBarCoordinator((UrlBar) mUrlBar, windowDelegate, actionModeCallback,
+                        mCallbackController.makeCancelable(mLocationBarMediator::onUrlFocusChange),
+                        mLocationBarMediator);
         mAutocompleteCoordinator =
                 new AutocompleteCoordinator(mLocationBarLayout, mLocationBarMediator, this,
                         mUrlCoordinator, activityLifecycleDispatcher, modalDialogManagerSupplier,
@@ -128,7 +133,9 @@ public final class LocationBarCoordinator
         StatusView statusView = mLocationBarLayout.findViewById(R.id.location_bar_status);
         mStatusCoordinator = new StatusCoordinator(isTablet(), statusView, mUrlCoordinator,
                 incognitoStateProvider, modalDialogManagerSupplier, locationBarDataProvider);
-        mLocationBarMediator.setCoordinators(mStatusCoordinator);
+        mLocationBarMediator.setCoordinators(
+                mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
+        mUrlBar.setOnKeyListener(mLocationBarMediator);
 
         mUrlCoordinator.addUrlTextChangeListener(mAutocompleteCoordinator);
 
@@ -142,9 +149,8 @@ public final class LocationBarCoordinator
 
         mLocationBarLayout.addUrlFocusChangeListener(mAutocompleteCoordinator);
         mLocationBarLayout.initialize(mAutocompleteCoordinator, mUrlCoordinator, mStatusCoordinator,
-                locationBarDataProvider, profileObservableSupplier, windowDelegate, windowAndroid,
-                overrideUrlLoadingDelegate, mLocationBarMediator.getVoiceRecognitionHandler(),
-                assistantVoiceSearchSupplier);
+                locationBarDataProvider, windowDelegate, windowAndroid, overrideUrlLoadingDelegate,
+                mLocationBarMediator.getVoiceRecognitionHandler(), assistantVoiceSearchSupplier);
     }
 
     @Override
@@ -155,6 +161,8 @@ public final class LocationBarCoordinator
             mSubCoordinator.destroy();
             mSubCoordinator = null;
         }
+        mUrlBar.setOnKeyListener(null);
+        mUrlBar = null;
         mUrlCoordinator.destroy();
         mUrlCoordinator = null;
         mLocationBarLayout.removeUrlFocusChangeListener(mAutocompleteCoordinator);
@@ -212,7 +220,7 @@ public final class LocationBarCoordinator
 
     @Override
     public void selectAll() {
-        mLocationBarMediator.selectAll();
+        mUrlCoordinator.selectAll();
     }
 
     @Override
@@ -227,12 +235,12 @@ public final class LocationBarCoordinator
 
     @Override
     public View getContainerView() {
-        return mLocationBarMediator.getContainerView();
+        return mLocationBarLayout.getContainerView();
     }
 
     @Override
     public View getSecurityIconView() {
-        return mLocationBarMediator.getSecurityIconView();
+        return mLocationBarLayout.getSecurityIconView();
     }
 
     /** Returns the {@link VoiceRecognitionHandler} associated with this LocationBar. */

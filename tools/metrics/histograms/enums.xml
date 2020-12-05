@@ -3446,6 +3446,13 @@ Unknown properties are collapsed to zero. -->
   <int value="9" label="Timeout"/>
 </enum>
 
+<enum name="ArcProvisioningCheckInError">
+  <summary>Defines ARC GMS check-in failure reasons</summary>
+  <int value="1" label="Check-in failed"/>
+  <int value="2" label="Timeout"/>
+  <int value="3" label="Internal error"/>
+</enum>
+
 <!-- These values must be in sync with ProvisionConstants in CloudDPC code -->
 
 <enum name="ArcProvisioningCloudFlowError">
@@ -3487,6 +3494,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="ArcProvisioningResult">
+  <obsolete>
+    Removed in Dec 2020. Replaced by ArcProvisioningStatus.
+  </obsolete>
   <summary>Defines Arc Provisioning success and failure reasons</summary>
   <int value="0" label="Success"/>
   <int value="1" label="Unclassified failure"/>
@@ -3513,6 +3523,34 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="Unsupported account type"/>
   <int value="23" label="Account is not present in Chrome"/>
   <int value="24" label="Cloud provision flow failed"/>
+</enum>
+
+<enum name="ArcProvisioningSignInError">
+  <summary>Defines ARC GMS sign-in failure reasons</summary>
+  <int value="1" label="Network error"/>
+  <int value="2" label="Sign-in service unavailble"/>
+  <int value="3" label="Bad authentication"/>
+  <int value="4" label="Unknown error"/>
+  <int value="5" label="Timeout"/>
+  <int value="6" label="Internal error"/>
+</enum>
+
+<enum name="ArcProvisioningStatus">
+  <summary>Defines ARC GMS check-in failure reasons</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Unclassified failure"/>
+  <int value="2" label="GMS sign-in failed"/>
+  <int value="3" label="GMS check-in failed"/>
+  <int value="4" label="Cloud provision flow failed"/>
+  <int value="5" label="Mojo version mistmached"/>
+  <int value="6" label="ARC provisioning timeout"/>
+  <int value="7" label="Chrome provisioning timeout"/>
+  <int value="8" label="ARC instance is stopped before complete provisioning"/>
+  <int value="9" label="Disabled"/>
+  <int value="10" label="Chrome server communication error"/>
+  <int value="11" label="Network is unavailable"/>
+  <int value="12" label="Unsupported account type"/>
+  <int value="13" label="Account is not present in Chrome"/>
 </enum>
 
 <enum name="ArcSdkVersionUpgradeType">
@@ -10943,26 +10981,46 @@ histogram as enum -->
   <int value="-2014954614" label="so"/>
   <int value="-2005166181" label="ja-Latn"/>
   <int value="-1999171202" label="lv"/>
+  <int value="-1998337622" label="es-CL"/>
   <int value="-1994870905" label="lt"/>
+  <int value="-1986814580" label="om"/>
+  <int value="-1920649864" label="an"/>
   <int value="-1898669966" label="zh-CN"/>
+  <int value="-1872667487" label="rm"/>
   <int value="-1855113037" label="vi"/>
   <int value="-1828586117" label="de"/>
   <int value="-1823968882" label="zh"/>
+  <int value="-1797669833" label="it-IT"/>
   <int value="-1791051166" label="ha"/>
+  <int value="-1787999070" label="wa"/>
+  <int value="-1776903256" label="es-ES"/>
+  <int value="-1767491741" label="es-HN"/>
   <int value="-1760672594" label="mr"/>
+  <int value="-1741747229" label="es-419"/>
   <int value="-1735828230" label="zh-TW"/>
+  <int value="-1734070684" label="en-NZ"/>
   <int value="-1696927720" label="la"/>
   <int value="-1690250140" label="ja"/>
+  <int value="-1683177340" label="qu"/>
+  <int value="-1662603770" label="es-VE"/>
+  <int value="-1625830957" label="ln"/>
+  <int value="-1612285087" label="en-ZA"/>
   <int value="-1566592213" label="hi-Latn"/>
+  <int value="-1558307126" label="es-CO"/>
   <int value="-1532548885" label="pa"/>
   <int value="-1515310228" label="ps"/>
   <int value="-1453785110" label="rw"/>
+  <int value="-1452189651" label="es-CR"/>
+  <int value="-1346992143" label="nn"/>
   <int value="-1284862637" label="ru"/>
   <int value="-1273588087" label="kn"/>
+  <int value="-1242903543" label="es-UY"/>
   <int value="-1211529228" label="gd"/>
   <int value="-1159958698" label="tl"/>
+  <int value="-1136256351" label="zh-HK"/>
   <int value="-1117024738" label="zh-Latn"/>
   <int value="-1100371650" label="sn"/>
+  <int value="-1086322569" label="es-AR"/>
   <int value="-1052948093" label="jw"/>
   <int value="-1048980531" label="ur"/>
   <int value="-1042449480" label="cy"/>
@@ -10971,14 +11029,18 @@ histogram as enum -->
   <int value="-1010619188" label="ru-Latn"/>
   <int value="-1000295094" label="no"/>
   <int value="-950444864" label="tk"/>
+  <int value="-926982267" label="de-AT"/>
   <int value="-887258309" label="hu"/>
+  <int value="-873154203" label="en-CA"/>
   <int value="-862298602" label="st"/>
   <int value="-851607677" label="sm"/>
   <int value="-838275151" label="xh"/>
   <int value="-812926878" label="ug"/>
+  <int value="-780984386" label="fr-CA"/>
   <int value="-750267977" label="bg"/>
   <int value="-742603342" label="ca"/>
   <int value="-740941224" label="ku"/>
+  <int value="-739605699" label="de-LI"/>
   <int value="-734032818" label="km"/>
   <int value="-717751759" label="lb"/>
   <int value="-659007214" label="el"/>
@@ -10987,15 +11049,22 @@ histogram as enum -->
   <int value="-644560085" label="su"/>
   <int value="-598481752" label="et"/>
   <int value="-548175087" label="tt"/>
+  <int value="-450972170" label="oc"/>
   <int value="-442590807" label="sd"/>
   <int value="-441493751" label="el-Latn"/>
+  <int value="-439564761" label="he"/>
+  <int value="-433923634" label="en-US"/>
+  <int value="-429718906" label="sh"/>
   <int value="-426630965" label="ga"/>
   <int value="-415677801" label="it"/>
   <int value="-403118581" label="sw"/>
+  <int value="-371077109" label="fr-FR"/>
   <int value="-349113427" label="am"/>
   <int value="-342591258" label="sq"/>
+  <int value="-302282167" label="ti"/>
   <int value="-226066958" label="bg-Latn"/>
   <int value="-219674420" label="ta"/>
+  <int value="-183664425" label="pt-PT"/>
   <int value="-181870943" label="bn"/>
   <int value="-110306666" label="sr"/>
   <int value="-78164291" label="kk"/>
@@ -11009,6 +11078,7 @@ histogram as enum -->
   <int value="124739394" label="lo"/>
   <int value="132594104" label="be"/>
   <int value="134866094" label="ka"/>
+  <int value="142304335" label="gn"/>
   <int value="142313505" label="ro"/>
   <int value="145030010" label="gu"/>
   <int value="162326141" label="sl"/>
@@ -11022,37 +11092,57 @@ histogram as enum -->
   <int value="522435458" label="hr"/>
   <int value="526531379" label="ml"/>
   <int value="538270200" label="uk"/>
+  <int value="549800655" label="de-CH"/>
+  <int value="584710092" label="nb"/>
   <int value="596295208" label="bs"/>
   <int value="632444664" label="yue-HK"/>
   <int value="673577439" label="cs"/>
+  <int value="720107264" label="es-PE"/>
   <int value="729519028" label="or"/>
   <int value="796588925" label="yo"/>
   <int value="804120371" label="jv"/>
   <int value="873647701" label="th"/>
   <int value="910795716" label="ne"/>
+  <int value="911100675" label="de-DE"/>
   <int value="925733725" label="ms"/>
+  <int value="1062172280" label="en-IN"/>
   <int value="1092864716" label="ht"/>
   <int value="1110169461" label="hmn"/>
   <int value="1119752109" label="te"/>
   <int value="1140816756" label="ar"/>
+  <int value="1152813109" label="to"/>
   <int value="1166708194" label="is"/>
+  <int value="1196096274" label="es-US"/>
+  <int value="1199169847" label="en-AU"/>
   <int value="1214473765" label="unknown"/>
+  <int value="1228519432" label="fo"/>
+  <int value="1282439493" label="es-MX"/>
   <int value="1311313702" label="pt"/>
   <int value="1312638242" label="pl"/>
   <int value="1437205305" label="uz"/>
   <int value="1482920614" label="yi"/>
   <int value="1483760478" label="tg"/>
   <int value="1552733612" label="da"/>
+  <int value="1628170778" label="pt-BR"/>
   <int value="1638257274" label="sk"/>
   <int value="1670494558" label="ko"/>
   <int value="1704087523" label="ky"/>
   <int value="1704315002" label="fr"/>
+  <int value="1708437566" label="it-CH"/>
   <int value="1717583602" label="co"/>
+  <int value="1724977738" label="ia"/>
   <int value="1754979806" label="fy"/>
   <int value="1853848431" label="tr"/>
+  <int value="1884922344" label="ckb"/>
+  <int value="1921155040" label="br"/>
+  <int value="1988450082" label="tw"/>
   <int value="2039992295" label="ig"/>
+  <int value="2077417554" label="fr-CH"/>
+  <int value="2078974161" label="ast"/>
   <int value="2087142539" label="mn"/>
+  <int value="2094171128" label="mo"/>
   <int value="2119087611" label="nl"/>
+  <int value="2147270293" label="en-GB"/>
 </enum>
 
 <enum name="ClearBrowsingDataTab">
@@ -16883,6 +16973,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2" label="Status Bar Issues Counter"/>
   <int value="3" label="Hamburger Menu"/>
   <int value="4" label="Adorner"/>
+  <int value="5" label="Command Menu"/>
 </enum>
 
 <enum name="DevToolsIssuesPanelResourceOpened">
@@ -17233,6 +17324,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="103" label="Crostini Recovery Dialog"/>
   <int value="104" label="Parent Permission ChromeOS"/>
   <int value="105" label="Signin Reauth Dialog"/>
+  <int value="106"
+      label="Confirmation Box for getCurrentBrowsingContextMedia API"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -22679,6 +22772,8 @@ Called by update_document_policy_enum.py.-->
   <int value="806" label="BasicAuthOverHttpEnabled"/>
   <int value="807" label="SystemFeaturesDisableMode"/>
   <int value="808" label="IntegratedWebAuthenticationAllowed"/>
+  <int value="809" label="ClearBrowsingDataOnExitList"/>
+  <int value="810" label="ProfilePickerOnStartupAvailability"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -23131,6 +23226,7 @@ Called by update_document_policy_enum.py.-->
   <int value="18" label="GestureTapUnconfirmed"/>
   <int value="19" label="GestureTwoFingerTap"/>
   <int value="20" label="FirstGestureScrollUpdate"/>
+  <int value="21" label="MouseDragged"/>
 </enum>
 
 <enum name="EventLatencyScrollInputType">
@@ -25247,7 +25343,7 @@ Called by update_extension_histograms.py.-->
   <int value="1282" label="AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER"/>
   <int value="1283" label="AUTOTESTPRIVATE_TAKESCREENSHOT"/>
   <int value="1284" label="ACCESSIBILITY_PRIVATE_TOGGLEDICTATION"/>
-  <int value="1285" label="ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS"/>
+  <int value="1285" label="ACCESSIBILITY_PRIVATE_ENABLEMOUSEEVENTS"/>
   <int value="1286" label="ACCESSIBILITY_PRIVATE_SENDSYNTHETICMOUSEEVENT"/>
   <int value="1287" label="FILEMANAGERPRIVATE_DETECTCHARACTERENCODING"/>
   <int value="1288" label="FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO"/>
@@ -30150,10 +30246,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3470" label="OBSOLETE_ElementAttachInternalsBeforeConstructor"/>
   <int value="3471" label="SMILElementHasRepeatNEventListener"/>
   <int value="3472" label="WebTransport"/>
-  <int value="3473" label="WebkitPrerenderStartEventFired"/>
-  <int value="3474" label="WebkitPrerenderStopEventFired"/>
-  <int value="3475" label="WebkitPrerenderLoadEventFired"/>
-  <int value="3476" label="WebkitPrerenderDOMContentLoadedEventFired"/>
+  <int value="3473" label="OBSOLETE_WebkitPrerenderStartEventFired"/>
+  <int value="3474" label="OBSOLETE_WebkitPrerenderStopEventFired"/>
+  <int value="3475" label="OBSOLETE_WebkitPrerenderLoadEventFired"/>
+  <int value="3476" label="OBSOLETE_WebkitPrerenderDOMContentLoadedEventFired"/>
   <int value="3477" label="IdleDetectionPermissionRequested"/>
   <int value="3478" label="IdentifiabilityStudyReserved3478"/>
   <int value="3479" label="SpeechSynthesis_GetVoices_Method"/>
@@ -30424,6 +30520,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3738" label="CrossOriginJsonTypeForScript"/>
   <int value="3739" label="SameOriginStrictNosniffWouldBlock"/>
   <int value="3740" label="CrossOriginStrictNosniffWouldBlock"/>
+  <int value="3741" label="CSSSelectorPseudoDir"/>
+  <int value="3742" label="CrossOriginSubframeWithoutEmbeddingControl"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38959,6 +39057,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Authorized when Chrome is in use"/>
 </enum>
 
+<enum name="IOSMainThreadFreezeDetectionNotRunningAfterReportBlock">
+  <int value="0" label="After Breakpad Ref">
+    Freeze detection stopped after obtaining the breakpad lock.
+  </int>
+  <int value="1" label="After FileManager UTE move">
+    Freeze detection stopped after moving the hang report out of the Breakpad
+    directory and into the |UTE| directory.
+  </int>
+</enum>
+
 <enum name="IOSMenuAction">
   <int value="0" label="Open in New Tab"/>
   <int value="1" label="Open in New Incognito Tab"/>
@@ -45332,6 +45440,7 @@ from previous Chrome versions.
   <int value="1343516821" label="ignore-previews-blocklist"/>
   <int value="1343713259" label="ArcPrintSpoolerExperiment:disabled"/>
   <int value="1344833841" label="ImeThread:enabled"/>
+  <int value="1345192233" label="VaapiVideoDecoder:enabled"/>
   <int value="1346994602" label="SyncPseudoUSSDictionary:enabled"/>
   <int value="1349100152"
       label="AutofillEnablePasswordInfoBarAccountIndicationFooter:disabled"/>
@@ -45356,6 +45465,7 @@ from previous Chrome versions.
   <int value="1361073386" label="ContentSuggestionsNotifications:enabled"/>
   <int value="1363136936" label="VrCustomTabBrowsing:enabled"/>
   <int value="1363151585" label="SyncPseudoUSSAppList:enabled"/>
+  <int value="1367406392" label="VaapiVideoDecoder:disabled"/>
   <int value="1367467733" label="AutoplayIgnoreWebAudio:enabled"/>
   <int value="1367487214" label="VaapiJpegImageDecodeAcceleration:enabled"/>
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
@@ -49743,6 +49853,11 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Completed Setup"/>
 </enum>
 
+<enum name="MultiDeviceNearbyMessageAction">
+  <int value="0" label="Message Sent"/>
+  <int value="1" label="Message Received"/>
+</enum>
+
 <enum name="MultiDeviceSetupNotification">
   <int value="0" label="New user, potential host exists"/>
   <int value="1" label="Existing user, host switched"/>
@@ -50376,6 +50491,13 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Media unavailable"/>
   <int value="7" label="Not enough space"/>
   <int value="8" label="Unsupported attachment type"/>
+</enum>
+
+<enum name="NearbyShareVisibility">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="No one"/>
+  <int value="2" label="All contacts"/>
+  <int value="3" label="Selected contacts"/>
 </enum>
 
 <enum name="NearOomDetectionEndReason">
@@ -58191,6 +58313,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="OnboardingDismissPrompt"/>
   <int value="8" label="Invalid"/>
   <int value="9" label="PhoneConnecting"/>
+</enum>
+
+<enum name="PhoneHubTetherConnectionResult">
+  <int value="0" label="Started a tether connection attempt"/>
+  <int value="1" label="Attempt was successful"/>
 </enum>
 
 <enum name="PhoneNumberRegexVariantResult">

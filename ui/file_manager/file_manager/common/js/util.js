@@ -484,7 +484,9 @@ util.toggleFullScreen = (appWindow, enabled) => {
  */
 util.FileOperationType = {
   COPY: 'COPY',
+  DELETE: 'DELETE',
   MOVE: 'MOVE',
+  RESTORE: 'RESTORE',
   ZIP: 'ZIP',
 };
 Object.freeze(util.FileOperationType);
@@ -1427,7 +1429,7 @@ util.isFilesCameraFolderEnabled = () => {
  * @return {boolean}
  */
 util.isFilesNg = () => {
-  return loadTimeData.getBoolean('FILES_NG_ENABLED');
+  return true;
 };
 
 /**

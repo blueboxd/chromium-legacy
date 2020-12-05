@@ -9,6 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/files/file_util.h"
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -32,15 +33,26 @@ class HoldingSpaceFileSystemDelegate::FileSystemWatcher {
   FileSystemWatcher& operator=(const FileSystemWatcher&) = delete;
   ~FileSystemWatcher() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
-  void AddWatch(const base::FilePath& file_path) {
+  void AddWatchForParent(const base::FilePath& file_path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (base::Contains(watchers_, file_path))
-      return;
-    watchers_[file_path] = std::make_unique<base::FilePathWatcher>();
-    watchers_[file_path]->Watch(
-        file_path, base::FilePathWatcher::Type::kNonRecursive,
-        base::Bind(&FileSystemWatcher::OnFilePathChanged,
-                   weak_factory_.GetWeakPtr()));
+
+    // Observe the file path parent directory for changes - this reduces the
+    // number of inotify requests, and works well enough for detecting file
+    // deletion.
+    const base::FilePath path_to_watch = file_path.DirName();
+
+    if (!base::Contains(watchers_, path_to_watch)) {
+      watchers_[path_to_watch] = std::make_unique<base::FilePathWatcher>();
+      watchers_[path_to_watch]->Watch(
+          path_to_watch, base::FilePathWatcher::Type::kNonRecursive,
+          base::Bind(&FileSystemWatcher::OnFilePathChanged,
+                     weak_factory_.GetWeakPtr()));
+    }
+
+    // If the target path got deleted while request to add a watcher was in
+    // flight, notify observers of path change immediately.
+    if (!base::PathExists(file_path))
+      OnFilePathChanged(path_to_watch, /*error=*/false);
   }
 
   void RemoveWatch(const base::FilePath& file_path) {
@@ -109,7 +121,7 @@ void HoldingSpaceFileSystemDelegate::OnHoldingSpaceItemAdded(
   if (item->IsFinalized()) {
     // Watch the directory containing `items`'s backing file. If the directory
     // is already being watched, this will no-op.
-    AddWatch(item->file_path().DirName());
+    AddWatchForParent(item->file_path());
     return;
   }
 
@@ -158,7 +170,7 @@ void HoldingSpaceFileSystemDelegate::OnHoldingSpaceItemRemoved(
 
 void HoldingSpaceFileSystemDelegate::OnHoldingSpaceItemFinalized(
     const HoldingSpaceItem* item) {
-  AddWatch(item->file_path().DirName());
+  AddWatchForParent(item->file_path());
 }
 
 void HoldingSpaceFileSystemDelegate::OnVolumeMounted(
@@ -271,10 +283,11 @@ void HoldingSpaceFileSystemDelegate::OnFilePathValidityChecksComplete(
   }
 }
 
-void HoldingSpaceFileSystemDelegate::AddWatch(const base::FilePath& file_path) {
+void HoldingSpaceFileSystemDelegate::AddWatchForParent(
+    const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   file_system_watcher_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&FileSystemWatcher::AddWatch,
+      FROM_HERE, base::BindOnce(&FileSystemWatcher::AddWatchForParent,
                                 file_system_watcher_->GetWeakPtr(), file_path));
 }
 

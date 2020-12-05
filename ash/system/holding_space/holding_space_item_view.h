@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
@@ -20,8 +21,10 @@ namespace ash {
 class HoldingSpaceItem;
 class HoldingSpaceItemViewDelegate;
 
-// Base class for HoldingSpaceItemChipView and
-// HoldingSpaceItemScreenCaptureView.
+// Base class for `HoldingSpaceItemChipView` and
+// `HoldingSpaceItemScreenCaptureView`. Note that `HoldingSpaceItemView` may
+// temporarily outlive its associated `HoldingSpaceItem` when it is being
+// animated out.
 class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
  public:
   METADATA_HEADER(HoldingSpaceItemView);
@@ -57,12 +60,18 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
                  ui::mojom::DragEventSource source);
 
   const HoldingSpaceItem* item() const { return item_; }
+  const std::string& item_id() const { return item_id_; }
 
   void SetSelected(bool selected);
   bool selected() const { return selected_; }
 
+  views::View* play_icon() { return play_icon_; }
+
  protected:
   views::ToggleImageButton* AddPin(views::View* parent);
+  // Creates a View consisting of a play icon.
+  views::View* CreatePlayIcon(views::View* parent);
+
   virtual void OnPinVisiblityChanged(bool pin_visible) {}
 
  private:
@@ -73,7 +82,14 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
 
   HoldingSpaceItemViewDelegate* const delegate_;
   const HoldingSpaceItem* const item_;
-  views::ToggleImageButton* pin_ = nullptr;
+
+  // Cache the id of the associated holding space item so that it can be
+  // accessed even after `item_` has been destroyed. Note that `item_` may be
+  // destroyed if this view is in the process of animating out.
+  const std::string item_id_;
+
+  views::ToggleImageButton* pin_ = nullptr;  // Owned by view hierarchy.
+  views::ImageView* play_icon_ = nullptr;    // Owned by view hierarchy.
 
   // Owners for the layers used to paint focused and selected states.
   std::unique_ptr<ui::LayerOwner> selected_layer_owner_;

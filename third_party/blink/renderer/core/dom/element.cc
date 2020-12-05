@@ -2880,7 +2880,7 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
   if (HasCustomStyleCallbacks())
     WillRecalcStyle(change);
 
-  StyleRecalcChange child_change = change.ForChildren();
+  StyleRecalcChange child_change = change.ForChildren(*this);
   if (change.ShouldRecalcStyleFor(*this)) {
     child_change = RecalcOwnStyle(change);
     if (GetStyleChangeType() == kSubtreeStyleChange)
@@ -3029,7 +3029,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
   scoped_refptr<ComputedStyle> new_style;
   scoped_refptr<const ComputedStyle> old_style = GetComputedStyle();
 
-  StyleRecalcChange child_change = change.ForChildren();
+  StyleRecalcChange child_change = change.ForChildren(*this);
 
   if (ParentComputedStyle()) {
     if (old_style && change.IndependentInherit()) {
@@ -4958,6 +4958,32 @@ bool Element::ShouldStoreComputedStyle(const ComputedStyle& style) const {
       return true;
   }
   return style.Display() == EDisplay::kContents;
+}
+
+bool Element::ComputeInheritedDirPseudoClass(TextDirection direction) const {
+  const Node* n = this;
+  // The dir property is inherited, so we iterate over the parents to find
+  // the first dir attribute.
+  do {
+    if (auto* element_node = DynamicTo<Element>(n)) {
+      AtomicString dir_attribute_value =
+          element_node->FastGetAttribute(html_names::kDirAttr);
+      if ((IsA<HTMLBDIElement>(*element_node) && !dir_attribute_value) ||
+          (IsHTMLElement() &&
+           EqualIgnoringASCIICase(dir_attribute_value, "auto"))) {
+        return element_node->MatchesDirPseudoClassForDirAutoAttribute(
+            direction);
+      }
+
+      if (EqualIgnoringASCIICase(dir_attribute_value, "ltr"))
+        return IsLtr(direction);
+      else if (EqualIgnoringASCIICase(dir_attribute_value, "rtl"))
+        return IsRtl(direction);
+    }
+    n = n->ParentOrShadowHostNode();
+  } while (n);
+
+  return IsLtr(direction);
 }
 
 AtomicString Element::ComputeInheritedLanguage() const {

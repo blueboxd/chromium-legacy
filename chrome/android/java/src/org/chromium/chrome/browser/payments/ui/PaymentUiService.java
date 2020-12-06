@@ -321,9 +321,13 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         };
     }
 
-    /** @return The PaymentRequestUI. */
-    public PaymentRequestUI getPaymentRequestUI() {
-        return mPaymentRequestUI;
+    /**
+     * @return Whether the PaymentRequest UI is alive. The UI comes to live when
+     *         buildPaymentRequestUi() has been called to create it; it stops being alive when
+     *         close() is called to destroy it.
+     */
+    public boolean isPaymentRequestUiAlive() {
+        return mPaymentRequestUI != null;
     }
 
     /**
@@ -380,16 +384,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         updateAppModifiedTotals();
     }
 
-    /** Get the ShippingAddressesSection of the PaymentRequest UI. */
-    public SectionInformation getShippingAddressesSection() {
-        return mShippingAddressesSection;
-    }
-
-    /** Get the ContactSection of the PaymentRequest UI. */
-    public ContactDetailsSection getContactSection() {
-        return mContactSection;
-    }
-
     /** Set the AutofillPaymentAppCreator. */
     public void setAutofillPaymentAppCreator(AutofillPaymentAppCreator autofillPaymentAppCreator) {
         mAutofillPaymentAppCreator = autofillPaymentAppCreator;
@@ -414,14 +408,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         mHandler.post(callback.bind(mUiShoppingCart));
     }
 
-    /**
-     * The UI model for the shipping options. Includes the label and sublabel for each shipping
-     * option. Also keeps track of the selected shipping option. This data is passed to the UI.
-     */
-    public SectionInformation getUiShippingOptions() {
-        return mUiShippingOptions;
-    }
-
     /** @return The selected contact, can be null. */
     @Nullable
     public AutofillContact getSelectedContact() {
@@ -443,9 +429,20 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         return mHaveRequestedAutofillData;
     }
 
-    /** @return The minimal UI coordinator. */
-    public MinimalUICoordinator getMinimalUI() {
-        return mMinimalUi;
+    /**
+     * Closes the minimal UI and shows an error message, called only when isShowingMinimalUi()
+     * returns true.
+     * @param onClosed Called when the minimal UI is closed.
+     */
+    public void closeMinimalUiOnError(Runnable onClosed) {
+        assert mMinimalUi != null;
+        mMinimalUi.showErrorAndClose(
+                /*observer=*/onClosed::run, R.string.payments_error_message);
+    }
+
+    /** @return Whether the minimal UI is showing. */
+    public boolean isShowingMinimalUi() {
+        return mMinimalUi != null;
     }
 
     // Implements PaymentUiServiceTestInterface:
@@ -1129,6 +1126,53 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                 if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
             }
         });
+    }
+
+    /**
+     * Dims the background of the payment UIs. Precondition: isPaymentRequestUiAlive() needs to be
+     * true for the method to take effect.
+     */
+    public void dimBackground() {
+        if (mPaymentRequestUI == null) return;
+        mPaymentRequestUI.dimBackground();
+    }
+
+    /**
+     * Shows the app selector UI. Precondition: isPaymentRequestUiAlive() needs to be true for
+     * the method to take effect.
+     * @param isShowWaitingForUpdatedDetails
+     *        Whether showing payment app or the app selector is blocked on the updated payment
+     *        details.
+     */
+    public void showAppSelector(boolean isShowWaitingForUpdatedDetails) {
+        if (mPaymentRequestUI == null) return;
+        mPaymentRequestUI.show(isShowWaitingForUpdatedDetails);
+    }
+
+    /**
+     * Shows the processing message. Precondition: isPaymentRequestUiAlive() needs to be true for
+     * the method to take effect.
+     */
+    public void showProcessingMessage() {
+        if (mPaymentRequestUI == null) return;
+        mPaymentRequestUI.showProcessingMessage();
+    }
+
+    /**
+     *  Shows the processing message after payment details have been loaded in the case the
+     *  app selector UI has been skipped. Precondition: isPaymentRequestUiAlive() needs to be
+     *  true for the method to take effect.
+     */
+    public void showProcessingMessageAfterUiSkip() {
+        if (mPaymentRequestUI != null) mPaymentRequestUI.showProcessingMessageAfterUiSkip();
+    }
+
+    /**
+     * Called when user cancelled out of the UI that was shown after they clicked [PAY] button.
+     * Precondition: isPaymentRequestUiAlive() needs to be true for the method to take effect.
+     */
+    public void onPayButtonProcessingCancelled() {
+        if (mPaymentRequestUI != null) mPaymentRequestUI.onPayButtonProcessingCancelled();
     }
 
     /**

@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f326e4faef66d529904a7b53eb931fd576c82887',
+  'skia_revision': 'd67df01dcf3a4658e138a0e2af8e9d7303c2784c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -1545,7 +1545,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3c2fe3888658d82b47ca831d59a2e07579619c2d',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '6c80aebd00360ee00c84c7b14422c5fe475d8916',
+    Var('webrtc_git') + '/src.git' + '@' + '393159147685c9294e423eb8b2bdc92dc78acfd4',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1617,7 +1617,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@be1d125a8b0666e93878cd2501f6f7a9f5f4f523',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@731e67da36209850977ceb500266c4baf8006377',
     'condition': 'checkout_src_internal',
   },
 
@@ -1636,7 +1636,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '9Aak3tK4oVEWWOriZzuRXEUPGWU0lUrVTTcsG4FucPgC',
+        'version': '1JjkFXZ1s86iBnYJ0jMS5E5alylmWh3-mz4jCYL3szkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

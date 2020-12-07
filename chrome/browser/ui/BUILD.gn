@@ -2212,6 +2212,8 @@ static_library("ui") {
       "webui/chromeos/edu_coexistence_login_handler_chromeos.h",
       "webui/chromeos/edu_coexistence_state_tracker.cc",
       "webui/chromeos/edu_coexistence_state_tracker.h",
+      "webui/chromeos/emoji/emoji_picker.cc",
+      "webui/chromeos/emoji/emoji_picker.h",
       "webui/chromeos/image_source.cc",
       "webui/chromeos/image_source.h",
       "webui/chromeos/in_session_password_change/confirm_password_change_handler.cc",
@@ -4363,6 +4365,7 @@ static_library("ui") {
       "//chrome/browser/apps/platform_apps",  # TODO(loyso): Remove this dep.
       "//chrome/browser/apps/platform_apps/api",
       "//chrome/browser/extensions",
+      "//chrome/browser/web_share_target",
       "//chrome/common/extensions/api",
       "//components/drive",
       "//components/guest_view/browser",

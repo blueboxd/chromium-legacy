@@ -2227,7 +2227,7 @@ const char kStoragePressureEventDescription[] =
 
 const char kSuggestedContentToggleName[] = "Enable Suggested Content toggle";
 const char kSuggestedContentToggleDescription[] =
-    "Enables a settings UI toggle that controls Suggested Content status. Also"
+    "Enables a settings UI toggle that controls Suggested Content status. Also "
     "enables a corresponding notice in the Launcher about Suggested Content.";
 
 const char kSuggestionsWithSubStringMatchName[] =
@@ -4356,6 +4356,11 @@ const char kImeServiceDecoderName[] = "ChromeOS IME Service Decoder";
 const char kImeServiceDecoderDescription[] =
     "Controls whether ChromeOS system IME works with the NaCl decoders or "
     "the decoders loaded in the IME service.";
+
+const char kImeSystemEmojiPickerName[] = "System emoji picker";
+const char kImeSystemEmojiPickerDescription[] =
+    "Controls whether a System emoji picker, or the virtual keyboard is used "
+    "for inserting emoji.";
 
 const char kIntentHandlingSharingName[] = "Intent handling for sharing";
 const char kIntentHandlingSharingDescription[] =

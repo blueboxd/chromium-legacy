@@ -28107,7 +28107,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1431" label="PointerEventSetCapture"/>
   <int value="1432" label="PointerEventDispatch"/>
   <int value="1433" label="MIDIMessageEventReceivedTime"/>
-  <int value="1434" label="SummaryElementWithDisplayBlockAuthorRule"/>
+  <int value="1434" label="OBSOLETE_SummaryElementWithDisplayBlockAuthorRule"/>
   <int value="1435" label="V8MediaStream_Active_AttributeGetter"/>
   <int value="1436" label="BeforeInstallPromptEvent"/>
   <int value="1437" label="BeforeInstallPromptEventUserChoice"/>
@@ -30110,7 +30110,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3334" label="ContentVisibilityHiddenMatchable"/>
   <int value="3335" label="InlineOverflowAutoWithInlineEndPadding"/>
   <int value="3336" label="InlineOverflowScrollWithInlineEndPadding"/>
-  <int value="3337" label="CSSSelectorPseudoWebKitDetailsMarker"/>
+  <int value="3337" label="OBSOLETE_CSSSelectorPseudoWebKitDetailsMarker"/>
   <int value="3338" label="SerialPortGetInfo"/>
   <int value="3339" label="FileSystemPickerMethod"/>
   <int value="3340" label="V8Window_ShowOpenFilePicker_Method"/>
@@ -30522,6 +30522,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3740" label="CrossOriginStrictNosniffWouldBlock"/>
   <int value="3741" label="CSSSelectorPseudoDir"/>
   <int value="3742" label="CrossOriginSubframeWithoutEmbeddingControl"/>
+  <int value="3743" label="ReadableStreamWithByteSource"/>
+  <int value="3744" label="ReadableStreamBYOBReader"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42533,6 +42535,7 @@ from previous Chrome versions.
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460598402"
       label="EnterpriseReportingApiKeychainRecreation:disabled"/>
+  <int value="-1460561942" label="SystemEmojiPicker:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1457775295" label="PasswordSearchMobile:disabled"/>
   <int value="-1456789591" label="MediaFoundationVideoCapture:enabled"/>
@@ -44571,6 +44574,7 @@ from previous Chrome versions.
   <int value="500947367"
       label="WebAuthenticationCrosPlatformAuthenticator:disabled"/>
   <int value="501477022" label="DrawOcclusion:enabled"/>
+  <int value="501899677" label="SystemEmojiPicker:enabled"/>
   <int value="502551931" label="IncognitoStrings:enabled"/>
   <int value="503189154" label="ViewsBrowserWindows:disabled"/>
   <int value="503245473" label="disable-translate-new-ux"/>

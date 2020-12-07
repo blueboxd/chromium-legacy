@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd67df01dcf3a4658e138a0e2af8e9d7303c2784c',
+  'skia_revision': 'f3b959c000718c55800fd5232cdff6a650478316',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '251ba5cb119ff2fed0e861cbc9b096c45004c1fa',
+  'angle_revision': 'cf023b3a8cd1fdeba958849517eee411023c6ae8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -255,7 +255,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '8cc4d0dc32a1f8734e77266bb6abdd11f18a631c',
+  'freetype_revision': '9f94d8533cefa8a023a0b81633032fe0aaea08fb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -279,7 +279,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '48576261660b05a86df4b9b079ad81e474b8786c',
+  'devtools_frontend_revision': '698d1c0a0acb6282818c8eafcba805a4f97580e2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -567,7 +567,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '0118f4a52f8cd03bb95f888a57e064f01096ff2e',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '1d2349b616ed4d24b5a66aadbfeb11d52849d9a1',
       'condition': 'checkout_ios',
   },
 
@@ -923,7 +923,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e602c60a2b59e4a74033fe7580e50d9de9f5753e',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '55e9ddf21994663b4564ae7fff33238e84a5ba23',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1295,7 +1295,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0fdb2247e82e7f60e5391c674ce7267019a5692d',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c56ea91f6bd1b910be1ba373b950c04f72595bd9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1545,7 +1545,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3c2fe3888658d82b47ca831d59a2e07579619c2d',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '393159147685c9294e423eb8b2bdc92dc78acfd4',
+    Var('webrtc_git') + '/src.git' + '@' + 'ea969d287bfe6634c8925f34f9e7997d168dfca1',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1617,7 +1617,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@731e67da36209850977ceb500266c4baf8006377',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@682b3e2b91af9ad3c9b2ee6057b447e210c5a015',
     'condition': 'checkout_src_internal',
   },
 

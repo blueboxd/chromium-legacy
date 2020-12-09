@@ -19,6 +19,7 @@ typedef enum {
   kCATransactionPhasePostCommit,
 } CATransactionPhase;
 
+API_AVAILABLE(macos(10.11))
 @interface CATransaction ()
 + (void)addCommitHandler:(void (^)(void))block
                 forPhase:(CATransactionPhase)phase;
@@ -115,7 +116,8 @@ CATransactionCoordinator::~CATransactionCoordinator() = default;
 void CATransactionCoordinator::Synchronize() {
   if (disabled_for_testing_)
     return;
-  SynchronizeImpl();
+  if (@available(macos 10.11, *))
+    SynchronizeImpl();
 }
 
 void CATransactionCoordinator::AddPreCommitObserver(

@@ -322,7 +322,7 @@ bool InitializeVideoToolboxInternal() {
   session.reset();
 
   if (__builtin_available(macOS 11.0, *)) {
-    VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
+//    VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
 
     // Create a VP9 decoding session.
     if (!CreateVideoToolboxSession(

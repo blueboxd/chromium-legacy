@@ -45,7 +45,8 @@ using base::ASCIIToUTF16;
 @property BOOL animatesToDestination;
 @property NSInteger numberOfValidItemsForDrop;
 @property NSDraggingFormation draggingFormation;
-@property(readonly) NSSpringLoadingHighlight springLoadingHighlight;
+@property(readonly)
+    NSSpringLoadingHighlight springLoadingHighlight API_AVAILABLE(macos(10.11));
 
 @end
 

@@ -2185,7 +2185,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // committed navigation.
   network::mojom::URLLoaderFactoryParamsPtr
   CreateURLLoaderFactoryParamsForMainWorld(
-      NavigationRequest* navigation_request);
+      NavigationRequest* navigation_request,
+      base::StringPiece debug_tag);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
@@ -2570,6 +2571,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RecordDocumentCreatedUkmEvent(const url::Origin& origin,
                                      const ukm::SourceId document_ukm_source_id,
                                      ukm::UkmRecorder* ukm_recorder);
+
+  // TODO(https://crbug.com/1146573): Remove this when the bug is closed.
+  void ValidateStateForBug1146573();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

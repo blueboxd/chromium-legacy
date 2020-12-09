@@ -2146,7 +2146,6 @@
 <translation id="3441653493275994384">ეკრანი</translation>
 <translation id="3441663102605358937">ამ ანგარიშის დასადასტურებლად ხელახლა შედით <ph name="ACCOUNT" />-ში</translation>
 <translation id="3445047461171030979">Google ასისტენტის სწრაფი პასუხები</translation>
-<translation id="3445770710327978113">დააინსტალირეთ ეს აპი, აქ უფრო სწრაფად რომ დაბრუნდეთ ხოლმე</translation>
 <translation id="3445925074670675829">USB-C მოწყობილობა</translation>
 <translation id="3446274660183028131">Windows-ის ინსტალაციისთვის გაუშვით Parallels Desktop.</translation>
 <translation id="344630545793878684">წაიკითხეთ თქვენი მონაცემები რამდენიმე ვებსაიტზე</translation>
@@ -2630,7 +2629,6 @@
 <translation id="3955163004258753966">შეცდომა ახალ ვერსიაზე გადასვლისას</translation>
 <translation id="3955193568934677022">ვებსაიტებისთვის დაცული კონტენტის დაკვრის დაშვება (რეკომენდებული)</translation>
 <translation id="3955896417885489542">დაყენების შემდეგ Google Play ვარიანტების გადახედვა</translation>
-<translation id="3956702100721821638">Google Play-თან დაკავშირება ვერ მოხერხდა</translation>
 <translation id="3957079323242030166">სარეზერვო მონაცემები არ იქონიებს გავლენას Google Drive-ში თქვენთვის გამოყოფილ მეხსიერების კვოტაზე.</translation>
 <translation id="3957844511978444971">შეეხეთ „მიღებას“ Google-ის სერვისების პარამეტრების თქვენი არჩევანის დასადასტურებლად.</translation>
 <translation id="3958088479270651626">სანიშნეების და პარამეტრების იმპორტი</translation>
@@ -4689,7 +4687,6 @@
 <translation id="642469772702851743">ეს მოწყობილობა (ს/ნ: <ph name="SERIAL_NUMBER" />) ჩაკეტილია მფლობელის მიერ.</translation>
 <translation id="6425556984042222041">ტექსტის გახმოვანების სიჩქარე</translation>
 <translation id="6426200009596957090">ChromeVox-ის პარამეტრების გახსნა</translation>
-<translation id="642654727595919401"><ph name="DOMAIN" /> ითხოვს თქვენი მონაცემების სარეზერვო ასლების შექმნას და ამ <ph name="DEVICE_TYPE" />-ის დაბრუნებას 1 კვირის განმავლობაში. <ph name="LINK_BEGIN" />დეტალურად<ph name="LINK_END" /></translation>
 <translation id="642729974267661262">ხმის დაკვრა დაუშვებელია</translation>
 <translation id="6428982734197629783">მიმდინარეობს იმიჯის დამუშავება</translation>
 <translation id="6429384232893414837">განახლებისას წარმოიქმნა შეცდომა</translation>
@@ -5565,7 +5562,6 @@
 <translation id="7457384018036134905">ენების მართვა Chrome OS-ის პარამეტრებიდან</translation>
 <translation id="7458168200501453431">იყენებს მართლწერის იმ შემმოწმებელს, რომელიც გამოიყენება Google Search-ში. ბრაუზერში თქვენ მიერ აკრეფილი ტექსტი ეგზავნება Google-ს.</translation>
 <translation id="7460045493116006516">თქვენ მიერ ამჟამად დაინსტალირებული თემა</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> დღესვე ითხოვს თქვენი მონაცემების სარეზერვო ასლების შექმნას და ამ <ph name="DEVICE_TYPE" />-ის დაბრუნებას. <ph name="LINK_BEGIN" />დეტალურად<ph name="LINK_END" />}other{<ph name="DOMAIN" /> {NUM_DAYS} დღის განმავლობაში ითხოვს თქვენი მონაცემების სარეზერვო ასლების შექმნას და ამ <ph name="DEVICE_TYPE" />-ის დაბრუნებას. <ph name="LINK_BEGIN" />დეტალურად<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">პინი</translation>
 <translation id="746216226901520237">შემდეგში <ph name="DEVICE_TYPE" /> განიბლოკება თქვენი ტელეფონის მეშვეობით. Smart Lock-ის გამორთვა შესაძლებელია პარამეტრებიდან.</translation>
 <translation id="7463006580194749499">მომხმარებლის დამატება</translation>
@@ -6255,7 +6251,6 @@
 <translation id="8226619461731305576">რიგი</translation>
 <translation id="8226628635270268143">აირჩიეთ თქვენი რჩეული ფოტოები და ალბომები</translation>
 <translation id="8227119283605456246">ფაილის მიმაგრება</translation>
-<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230134520748321204">გსურთ, <ph name="ORIGIN" />-ის პაროლის შენახვა?</translation>
 <translation id="8234795456569844941">დაეხმარეთ ჩვენს ინჟინრებს ამ პრობლემის მოგვარებაში. გვიამბეთ, რა უძღვოდა წინ პროფილთან დაკავშირებული შეცდომის გამოჩენას:</translation>
 <translation id="8236917170563564587">სანაცვლოდ, ამ ჩანართის გაზიარება</translation>
@@ -7150,7 +7145,6 @@
 <translation id="952992212772159698">არ არის გააქტიურებული</translation>
 <translation id="956500788634395331">თქვენ დაცული ხართ პოტენციურად საზიანო გაფართოებებისგან</translation>
 <translation id="957960681186851048">ამ საიტმა ცადა, ავტომატურად ჩამოეტვირთა რამდენიმე ფაილი</translation>
-<translation id="9580706199804957">Google-ის სერვისებთან დაკავშირება ვერ მოხერხდა</translation>
 <translation id="958329785990007682">JavaScript-ის დაბლოკვა</translation>
 <translation id="960719561871045870">ოპერატორის კოდი</translation>
 <translation id="960987915827980018">დარჩა დაახლოებით 1 საათი</translation>

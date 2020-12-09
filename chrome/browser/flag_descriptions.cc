@@ -22,6 +22,10 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
+const char kEnableMediaInternalsName[] = "Media-internals page";
+const char kEnableMediaInternalsDescription[] =
+    "Enables the chrome://media-internals debug page.";
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char kAccessiblePDFFormName[] = "Accessible PDF Forms";
 const char kAccessiblePDFFormDescription[] =
@@ -3271,7 +3275,8 @@ const char kAndroidNightModeTabReparentingDescription[] =
 
 const char kSwipeToMoveCursorName[] = "Swipe to move cursor";
 const char kSwipeToMoveCursorDescription[] =
-    "Allows user to use touch gestures to move the text cursor around.";
+    "Allows user to use touch gestures to move the text cursor around. This "
+    "flag will only take effect on Android 11 and above.";
 
 const char kTabbedAppOverflowMenuIconsName[] =
     "Android tabbed app overflow menu icons";
@@ -4375,6 +4380,14 @@ const char kInteractiveWindowCycleList[] =
 const char kInteractiveWindowCycleListDescription[] =
     "Adds mouse behavior, three-finger touchpad swipe, left/right "
     "arrow navigation, and space/enter confirmation to Alt-Tab.";
+
+const char kLacrosStabilityName[] = "Lacros stability";
+const char kLacrosStabilityDescription[] = "Frequency of Lacros updates.";
+
+const char kLacrosStabilityLessStableDescription[] =
+    "More frequent updates / less stable";
+const char kLacrosStabilityMoreStableDescription[] =
+    "Less frequent updates / more stable";
 
 const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =

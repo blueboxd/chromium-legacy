@@ -16,6 +16,7 @@
  *   device: (boolean|undefined),
  *   downloads: (DownloadsPageVisibility|undefined),
  *   internet: (boolean|undefined),
+ *   kerberos: (boolean|undefined),
  *   languages: (LanguagesPageVisibility|undefined),
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
@@ -86,6 +87,9 @@ cr.define('settings', function() {
       loadTimeData.getBoolean('isAccountManagerEnabled');
   const isKerberosEnabled = loadTimeData.valueExists('isKerberosEnabled') &&
       loadTimeData.getBoolean('isKerberosEnabled');
+  const isKerberosSettingsSectionEnabled =
+      loadTimeData.valueExists('isKerberosSettingsSectionEnabled') &&
+      loadTimeData.getBoolean('isKerberosSettingsSectionEnabled');
 
   if (loadTimeData.getBoolean('isGuest')) {
     osPageVisibility = {
@@ -94,6 +98,7 @@ cr.define('settings', function() {
       multidevice: false,
       autofill: false,
       people: false,
+      kerberos: isKerberosEnabled && isKerberosSettingsSectionEnabled,
       onStartup: false,
       reset: false,
       appearance: {
@@ -132,10 +137,12 @@ cr.define('settings', function() {
       autofill: true,
       people: {
         lockScreen: true,
-        kerberosAccounts: isKerberosEnabled,
+        kerberosAccounts:
+            isKerberosEnabled && !isKerberosSettingsSectionEnabled,
         googleAccounts: isAccountManagerEnabled,
         manageUsers: true,
       },
+      kerberos: isKerberosEnabled && isKerberosSettingsSectionEnabled,
       onStartup: true,
       reset: true,
       appearance: {

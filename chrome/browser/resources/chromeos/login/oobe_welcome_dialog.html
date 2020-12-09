@@ -153,5 +153,19 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
+    <oobe-modal-dialog id="chromeVoxHint">
+      <div slot="title">
+        <p>[[i18nDynamic(locale, 'chromeVoxHintText')]]</p>
+      </div>
+      <div slot="buttons">
+        <oobe-text-button id="dismissChromeVoxButton"
+            on-click="dismissChromeVoxHint_"
+            text-key="continueWithoutChromeVox">
+        </oobe-text-button>
+        <oobe-text-button id="activateChromeVoxButton" inverse
+            on-click="activateChromeVox_" text-key="activateChromeVox">
+        </oobe-text-button>
+      </div>
+    </oobe-modal-dialog>
   </template>
 </dom-module>

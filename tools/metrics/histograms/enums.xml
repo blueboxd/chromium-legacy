@@ -41068,6 +41068,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Tab crash"/>
   <int value="9" label="Unknown"/>
   <int value="10" label="Iframe"/>
+  <int value="11" label="Timeout"/>
 </enum>
 
 <enum name="LinkMonitorFailureType">
@@ -41794,6 +41795,7 @@ from previous Chrome versions.
       label="AutofillUseImprovedLabelDisambiguation:enabled"/>
   <int value="-2129940395" label="WebAssemblySimd:disabled"/>
   <int value="-2128705444" label="AssistantAppSupport:enabled"/>
+  <int value="-2127319228" label="enable-media-internals:disabled"/>
   <int value="-2126697213" label="EnablePalmSuppression:disabled"/>
   <int value="-2124839789"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
@@ -44037,6 +44039,7 @@ from previous Chrome versions.
   <int value="-32385086" label="NtpRecipeTasksModule:disabled"/>
   <int value="-31444029" label="MediaInspectorLogging:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
+  <int value="-30208692" label="webview-enable-modern-cookie-same-site"/>
   <int value="-29877377" label="TabHoverCardImages:disabled"/>
   <int value="-29847483" label="MemoryAblation:enabled"/>
   <int value="-29507521" label="ContextualNudges:disabled"/>
@@ -45074,6 +45077,7 @@ from previous Chrome versions.
   <int value="998748600" label="SyncErrorInfoBarAndroid:disabled"/>
   <int value="1000045846" label="OverlayNewLayout:disabled"/>
   <int value="1000587036" label="OfflinePagesDescriptiveFailStatus:disabled"/>
+  <int value="1000630368" label="lacros-stability"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1003002105" label="MaterialDesignBookmarks:disabled"/>
@@ -45540,6 +45544,7 @@ from previous Chrome versions.
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
   <int value="1428221397" label="QueryTilesInNTP:enabled"/>
+  <int value="1429923065" label="enable-media-internals:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>

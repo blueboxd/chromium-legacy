@@ -29,6 +29,10 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/policy/proto/record.pb.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -74,6 +78,11 @@ class POLICY_EXPORT CloudPolicyClient {
   // Should be called once per registration.
   using DeviceDMTokenCallback = base::RepeatingCallback<std::string(
       const std::vector<std::string>& user_affiliation_ids)>;
+
+  // A callback that processes response value received from the server,
+  // or nullopt, if there was a failure.
+  using ResponseCallback =
+      base::OnceCallback<void(base::Optional<base::Value>)>;
 
   using ClientCertProvisioningStartCsrCallback = base::OnceCallback<void(
       DeviceManagementStatus,
@@ -304,9 +313,10 @@ class POLICY_EXPORT CloudPolicyClient {
       StatusCallback callback);
 
   // Uploads a report containing enterprise connectors real-time security
-  // events. As above, the client must be in a registered state.  The |callback|
-  // will be called when the operation completes.
-  virtual void UploadSecurityEventReport(base::Value report,
+  // events for |context|. As above, the client must be in a registered state.
+  // The |callback| will be called when the operation completes.
+  virtual void UploadSecurityEventReport(content::BrowserContext* context,
+                                         base::Value report,
                                          StatusCallback callback);
 
   // Uploads a report containing an EncryptedRecord. The client must be in a
@@ -314,7 +324,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // completes.
   virtual void UploadEncryptedReport(const ::reporting::EncryptedRecord& record,
                                      base::Optional<base::Value> context,
-                                     StatusCallback callback);
+                                     ResponseCallback callback);
 
   // Uploads a report on the status of app push-installs. The client must be in
   // a registered state. The |callback| will be called when the operation
@@ -642,7 +652,7 @@ class POLICY_EXPORT CloudPolicyClient {
                                        const base::Value& response);
 
   // Callback for encrypted report upload requests.
-  void OnEncryptedReportUploadCompleted(StatusCallback callback,
+  void OnEncryptedReportUploadCompleted(ResponseCallback callback,
                                         DeviceManagementService::Job* job,
                                         DeviceManagementStatus status,
                                         int net_error,

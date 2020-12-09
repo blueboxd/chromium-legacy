@@ -2147,7 +2147,6 @@
 <translation id="3441653493275994384">Έλεγχος</translation>
 <translation id="3441663102605358937">Συνδεθείτε ξανά στον λογαριασμό <ph name="ACCOUNT" /> για να τον επαληθεύσετε</translation>
 <translation id="3445047461171030979">Γρήγορες απαντήσεις Βοηθού Google</translation>
-<translation id="3445770710327978113">Εγκαταστήστε αυτήν την εφαρμογή για γρήγορη επιστροφή.</translation>
 <translation id="3445925074670675829">Συσκευή USB-C</translation>
 <translation id="3446274660183028131">Εκκινήστε το Parallels Desktop για να εγκαταστήσετε τα Windows.</translation>
 <translation id="344630545793878684">Ανάγνωση των δεδομένων σας σε ορισμένους ιστότοπους</translation>
@@ -2631,7 +2630,6 @@
 <translation id="3955163004258753966">Σφάλμα κατά την έναρξη της αναβάθμισης</translation>
 <translation id="3955193568934677022">Να επιτρέπεται στους ιστοτόπους να αναπαράγουν προστατευμένο περιεχόμενο (συνιστάται)</translation>
 <translation id="3955896417885489542">Έλεγχος επιλογών Google Play μετά τη ρύθμιση</translation>
-<translation id="3956702100721821638">Δεν ήταν δυνατή η επικοινωνία με το Google Play</translation>
 <translation id="3957079323242030166">Τα δεδομένα του αντιγράφου ασφαλείας δεν θα υπολογίζονται στο όριο του αποθηκευτικού χώρου στο Drive.</translation>
 <translation id="3957844511978444971">Πατήστε "Αποδοχή" για να επιβεβαιώσετε την επιλογή αυτών των ρυθμίσεων υπηρεσιών Google.</translation>
 <translation id="3958088479270651626">Εισαγωγή σελιδοδεικτών και ρυθμίσεων</translation>
@@ -4692,7 +4690,6 @@
 <translation id="642469772702851743">Αυτή η συσκευή (σειριακός αριθμός: <ph name="SERIAL_NUMBER" />) κλειδώθηκε από τον κάτοχο.</translation>
 <translation id="6425556984042222041">Ρυθμός μετατροπής κειμένου σε ομιλία</translation>
 <translation id="6426200009596957090">Άνοιγμα ρυθμίσεων ChromeVox</translation>
-<translation id="642654727595919401">Ο τομέας <ph name="DOMAIN" /> απαιτεί τη δημιουργία αντιγράφων ασφαλείας για τα δεδομένα σας και την επιστροφή αυτής της συσκευής (<ph name="DEVICE_TYPE" />) εντός 1 εβδομάδας.<ph name="LINK_BEGIN" />Δείτε λεπτομέρειες.<ph name="LINK_END" /></translation>
 <translation id="642729974267661262">Δεν επιτρέπεται να αναπαράγουν ήχο</translation>
 <translation id="6428982734197629783">Επεξεργασία εικόνας</translation>
 <translation id="6429384232893414837">Σφάλμα ενημέρωσης</translation>
@@ -5568,7 +5565,6 @@
 <translation id="7457384018036134905">Διαχείριση γλωσσών στις ρυθμίσεις του Chrome OS</translation>
 <translation id="7458168200501453431">Χρησιμοποιεί το ίδιο εργαλείο ορθογραφικού ελέγχου που χρησιμοποιείται στην Αναζήτηση Google. Το κείμενο που πληκτρολογείτε στο πρόγραμμα περιήγησης αποστέλλεται στην Google.</translation>
 <translation id="7460045493116006516">Τρέχον θέμα που έχετε εγκαταστήσει</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{Ο τομέας <ph name="DOMAIN" /> απαιτεί τη δημιουργία αντιγράφων ασφαλείας για τα δεδομένα σας και την επιστροφή αυτής της συσκευής (<ph name="DEVICE_TYPE" />) σήμερα.<ph name="LINK_BEGIN" />Δείτε λεπτομέρειες.<ph name="LINK_END" />}other{Ο τομέας <ph name="DOMAIN" /> απαιτεί τη δημιουργία αντιγράφων ασφαλείας για τα δεδομένα σας και την επιστροφή αυτής της συσκευής (<ph name="DEVICE_TYPE" />) εντός {NUM_DAYS} ημερών.<ph name="LINK_BEGIN" />Δείτε λεπτομέρειες.<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">Καρφίτσωμα</translation>
 <translation id="746216226901520237">Την επόμενη φορά, το τηλέφωνό σας θα ξεκλειδώσει τη συσκευή <ph name="DEVICE_TYPE" />. Μπορείτε να απενεργοποιήσετε το Smart Lock στις Ρυθμίσεις.</translation>
 <translation id="7463006580194749499">Προσθήκη χρήστη</translation>
@@ -6260,7 +6256,6 @@
 <translation id="8226619461731305576">Ουρά</translation>
 <translation id="8226628635270268143">Επιλέξτε τις αγαπημένες σας φωτογραφίες και λευκώματα.</translation>
 <translation id="8227119283605456246">Επισύναψη αρχείου</translation>
-<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230134520748321204">Αποθήκευση κωδικού πρόσβασης για <ph name="ORIGIN" />;</translation>
 <translation id="8234795456569844941">Βοηθήστε τους μηχανικούς μας να επιδιορθώσουν αυτό το πρόβλημα. Πείτε μας τι συνέβη ακριβώς πριν από τη λήψη του μηνύματος σφάλματος προφίλ:</translation>
 <translation id="8236917170563564587">Εναλλακτικά, μοιραστείτε αυτήν την καρτέλα</translation>
@@ -7153,7 +7148,6 @@
 <translation id="952992212772159698">Μη ενεργοποιημένο</translation>
 <translation id="956500788634395331">Είστε προστατευμένοι από δυνητικά επιβλαβείς επεκτάσεις.</translation>
 <translation id="957960681186851048">Αυτός ο ιστότοπος επιχείρησε να κατεβάσει αυτόματα πολλά αρχεία</translation>
-<translation id="9580706199804957">Δεν ήταν δυνατή η σύνδεση με τις υπηρεσίες Google</translation>
 <translation id="958329785990007682">Αποκλεισμός JavaScript</translation>
 <translation id="960719561871045870">Κωδικός τελεστή</translation>
 <translation id="960987915827980018">Απομένει περίπου 1 ώρα</translation>

@@ -133,6 +133,12 @@ PinnedFilesContainer::PinnedFilesContainer(
 
 PinnedFilesContainer::~PinnedFilesContainer() = default;
 
+void PinnedFilesContainer::Init() {
+  HoldingSpaceModel* model = HoldingSpaceController::Get()->model();
+  if (model)
+    OnHoldingSpaceModelAttached(model);
+}
+
 void PinnedFilesContainer::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   // We only care about `item_chips_container_` becoming empty and non-empty.
@@ -180,14 +186,16 @@ void PinnedFilesContainer::RemoveAllHoldingSpaceItemViews() {
   item_chips_container_->RemoveAllChildViews(true);
 }
 
-// TODO(dmblack): Implement.
-void PinnedFilesContainer::AnimateIn(ui::ImplicitAnimationObserver* observer) {
-  NOTIMPLEMENTED();
+// TODO(dmblack): Handle grow/shrink of container.
+void PinnedFilesContainer::AnimateIn(ui::LayerAnimationObserver* observer) {
+  for (auto& view_by_item_id : views_by_item_id_)
+    view_by_item_id.second->AnimateIn(observer);
 }
 
-// TODO(dmblack): Implement.
-void PinnedFilesContainer::AnimateOut(ui::ImplicitAnimationObserver* observer) {
-  NOTIMPLEMENTED();
+// TODO(dmblack): Handle animate out of `empty_prompt_label_`.
+void PinnedFilesContainer::AnimateOut(ui::LayerAnimationObserver* observer) {
+  for (auto& view_by_item_id : views_by_item_id_)
+    view_by_item_id.second->AnimateOut(observer);
 }
 
 }  // namespace ash

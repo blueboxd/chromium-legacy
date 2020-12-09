@@ -2139,7 +2139,6 @@
 <translation id="3441653493275994384">स्क्रिन</translation>
 <translation id="3441663102605358937">यो खाता पुष्टि गर्न <ph name="ACCOUNT" /> मा फेरि साइन इन गर्नुहोस्</translation>
 <translation id="3445047461171030979">Google सहायकका द्रुत जवाफहरू</translation>
-<translation id="3445770710327978113">यही पेजमा छिटोछरितो रूपमा जान यो एप इन्स्टल गर्नुहोस्</translation>
 <translation id="3445925074670675829">USB-C यन्त्र</translation>
 <translation id="3446274660183028131">कृपया Windows इन्स्टल गर्न Parallels Desktop खोल्नुहोस्।</translation>
 <translation id="344630545793878684">विभिन्न वेबसाइटहरूमा तपाईँको डेटा पढ्नुहोस्</translation>
@@ -2619,7 +2618,6 @@
 <translation id="3955163004258753966">स्तरवृद्धि गर्ने कार्य सुरु गर्दा त्रुटि भयो</translation>
 <translation id="3955193568934677022">साइटहरूलाई सुरक्षित सामग्री प्ले गर्न अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
 <translation id="3955896417885489542">सेटअप गरिसकेपछि Google Play सम्बन्धी विकल्पहरूको समीक्षा गर्नुहोस्</translation>
-<translation id="3956702100721821638">Google Play उपलब्ध हुन सकेन</translation>
 <translation id="3957079323242030166">डेटा ब्याकअप गर्दा तपाईंको ड्राइभको भण्डारण कोटा प्रयोग हुने छैन।</translation>
 <translation id="3957844511978444971">आफूले गरेका Google का सेवाहरूसम्बन्धी यी सेटिङहरूको चयनको पनि पुष्टि गर्न “स्वीकार गर्नुहोस्” नामक बटनमा ट्याप गर्नुहोस्।</translation>
 <translation id="3958088479270651626">पृष्ठमञ्जूषाहरू र सेटिङहरू आयात गर्नुहोस्</translation>
@@ -4670,7 +4668,6 @@
 <translation id="642469772702851743">मालिकले यो यन्त्र (SN: <ph name="SERIAL_NUMBER" />) लक गर्नुभएको हो।</translation>
 <translation id="6425556984042222041">टेक्स्ट-टू-स्पिचको दर</translation>
 <translation id="6426200009596957090">ChromeVox सेटिङहरू खोल्नुहोस्</translation>
-<translation id="642654727595919401"><ph name="DOMAIN" /> का अनुसार तपाईंले एक हप्ताभित्र आफ्ना डेटा ब्याकअप गरी यो <ph name="DEVICE_TYPE" /> फिर्ता गर्नु पर्ने हुन्छ। <ph name="LINK_BEGIN" />विवरण हेर्नुहोस्<ph name="LINK_END" /></translation>
 <translation id="642729974267661262">ध्वनि प्ले गर्न अनुमति नदिइएका साइटहरू</translation>
 <translation id="6428982734197629783">छवि प्रशोधन गर्दै</translation>
 <translation id="6429384232893414837">अद्यावधिकसम्बन्धी त्रुटि</translation>
@@ -5544,7 +5541,6 @@
 <translation id="7457384018036134905">Chrome OS का सेटिङमा गई भाषाहरू व्यवस्थापन गर्नुहोस्</translation>
 <translation id="7458168200501453431">Google खोजमा प्रयोग हुने हिज्जे-जाँचकर्ता नै प्रयोग गर्छ। तपाईंले ब्राउजरमा टाइप गर्नुभएको पाठ Google लाई पठाइन्छ।</translation>
 <translation id="7460045493116006516">तपाईंले स्थापना गर्नुभएको हालको विषयवस्तु</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> का अनुसार तपाईंले आजै आफ्ना डेटा ब्याकअप गरी यो <ph name="DEVICE_TYPE" /> फिर्ता गर्नु पर्ने हुन्छ। <ph name="LINK_BEGIN" />विवरण हेर्नुहोस्<ph name="LINK_END" />}other{<ph name="DOMAIN" /> का अनुसार तपाईंले {NUM_DAYS} दिनभित्र आफ्ना डेटा ब्याकअप गरी यो <ph name="DEVICE_TYPE" /> फिर्ता गर्नु पर्ने हुन्छ। <ph name="LINK_BEGIN" />विवरण हेर्नुहोस्<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">पिन</translation>
 <translation id="746216226901520237">अर्को पटकदेखि, तपाईंको फोनले तपाईंको <ph name="DEVICE_TYPE" /> अनलक गर्ने छ। तपाईं सेटिङहरूमा गई Smart Lock निष्क्रिय पार्न सक्नुहुन्छ।</translation>
 <translation id="7463006580194749499">व्यक्ति थप्नुहोस्</translation>
@@ -6231,7 +6227,6 @@
 <translation id="8226619461731305576">लाइन</translation>
 <translation id="8226628635270268143">आफूलाई मन पर्ने फोटो र एल्बमहरू छनौट गर्नुहोस्</translation>
 <translation id="8227119283605456246">फाइल समावेश गर्नुहोस्</translation>
-<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> को पासवर्ड सुरक्षित गर्ने हो?</translation>
 <translation id="8234795456569844941">कृपया यो समस्या समाधान गर्ने काममा हाम्रा इन्जिनियरहरूलाई मद्दत गर्नुहोस्। तपाईंले प्रोफाइल सम्बन्धी त्रुटिको यो सन्देश पाउनुभन्दा ठ्याक्कै अगाडि के भयो, हामीलाई बताउनुहोस्:</translation>
 <translation id="8236917170563564587">बरु यो ट्याब सेयर गर्नुहोस्</translation>
@@ -7125,7 +7120,6 @@
 <translation id="952992212772159698">सक्रिय छैन</translation>
 <translation id="956500788634395331">तपाईं हानिकारक हुन सक्ने एक्स्टेन्सनहरूबाट सुरक्षित हुनुहुन्छ</translation>
 <translation id="957960681186851048">यो साइटले स्वतः एकभन्दा बढी फाइलहरू डाउनलोड गर्ने प्रयास गर्‍यो</translation>
-<translation id="9580706199804957">Google का सेवाहरूसँग जडान गर्न सकिएन</translation>
 <translation id="958329785990007682">JavaScript ब्लक गर्नुहोस्</translation>
 <translation id="960719561871045870">अपरेटरको कोड</translation>
 <translation id="960987915827980018">लगभग 1 घन्टा बाँकी</translation>

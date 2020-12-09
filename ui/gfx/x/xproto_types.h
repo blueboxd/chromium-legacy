@@ -16,11 +16,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "ui/gfx/x/error.h"
 
 namespace x11 {
 
-class Connection;
+class Error;
 
 constexpr uint8_t kSendEventMask = 0x80;
 
@@ -134,131 +133,6 @@ struct Response<void> {
 
   explicit Response(std::unique_ptr<Error> error) : error(std::move(error)) {}
 };
-
-class COMPONENT_EXPORT(X11) FutureBase {
- public:
-  using RawReply = scoped_refptr<base::RefCountedMemory>;
-  using RawError = scoped_refptr<base::RefCountedMemory>;
-  using ResponseCallback =
-      base::OnceCallback<void(RawReply reply, RawError error)>;
-
-  FutureBase(const FutureBase&) = delete;
-  FutureBase& operator=(const FutureBase&) = delete;
-
- protected:
-  FutureBase(Connection* connection,
-             base::Optional<unsigned int> sequence,
-             const char* request_name);
-  ~FutureBase();
-
-  FutureBase(FutureBase&& future);
-  FutureBase& operator=(FutureBase&& future);
-
-  void SyncImpl(RawError* raw_error, RawReply* raw_reply);
-  void SyncImpl(RawError* raw_error);
-
-  void OnResponseImpl(ResponseCallback callback);
-
-  x11::Connection* connection() { return connection_; }
-
-  static std::unique_ptr<Error> ParseErrorImpl(x11::Connection* connection,
-                                               RawError raw_error);
-
- private:
-  void Reset();
-
-  Connection* connection_ = nullptr;
-  base::Optional<unsigned int> sequence_;
-  const char* request_name_ = nullptr;
-};
-
-// An x11::Future wraps an asynchronous response from the X11 server.  The
-// response may be waited-for with Sync(), or asynchronously handled by
-// installing a response handler using OnResponse().
-template <typename Reply>
-class Future : public FutureBase {
- public:
-  using Callback = base::OnceCallback<void(Response<Reply> response)>;
-
-  Future() : FutureBase(nullptr, base::nullopt, nullptr) {}
-
-  // Blocks until we receive the response from the server. Returns the response.
-  Response<Reply> Sync() {
-    RawError raw_error;
-    RawReply raw_reply;
-    SyncImpl(&raw_error, &raw_reply);
-
-    std::unique_ptr<Reply> reply;
-    if (raw_reply) {
-      auto buf = ReadBuffer(raw_reply);
-      reply = detail::ReadReply<Reply>(&buf);
-    }
-
-    std::unique_ptr<Error> error = ParseErrorImpl(connection(), raw_error);
-
-    return {std::move(reply), std::move(error)};
-  }
-
-  // Installs |callback| to be run when the response is received.
-  void OnResponse(Callback callback) {
-    // This intermediate callback handles the conversion from |raw_reply| to a
-    // real Reply object before feeding the result to |callback|.  This means
-    // |callback| must be bound as the first argument of the intermediate
-    // function.
-    auto wrapper = [](x11::Connection* connection, Callback callback,
-                      RawReply raw_reply, RawError raw_error) {
-      std::unique_ptr<Reply> reply;
-      if (raw_reply) {
-        ReadBuffer buf(raw_reply);
-        reply = detail::ReadReply<Reply>(&buf);
-      }
-      std::unique_ptr<Error> error = ParseErrorImpl(connection, raw_error);
-      std::move(callback).Run({std::move(reply), std::move(error)});
-    };
-    OnResponseImpl(base::BindOnce(wrapper, connection(), std::move(callback)));
-  }
-
-  void IgnoreError() {
-    OnResponse(base::BindOnce([](Response<Reply>) {}));
-  }
-
- private:
-  template <typename R>
-  friend Future<R> SendRequest(Connection*, WriteBuffer*, bool, const char*);
-
-  Future(Connection* connection,
-         base::Optional<unsigned int> sequence,
-         const char* request_name)
-      : FutureBase(connection, sequence, request_name) {}
-};
-
-// Sync() specialization for requests that don't generate replies.  The returned
-// response will only contain an error if there was one.
-template <>
-inline Response<void> Future<void>::Sync() {
-  RawError raw_error;
-  SyncImpl(&raw_error);
-  return Response<void>{ParseErrorImpl(connection(), raw_error)};
-}
-
-// OnResponse() specialization for requests that don't generate replies.  The
-// response argument to |callback| will only contain an error if there was one.
-template <>
-inline void Future<void>::OnResponse(Callback callback) {
-  // See Future<Reply>::OnResponse() for an explanation of why
-  // this wrapper is necessary.
-  auto wrapper = [](x11::Connection* connection, Callback callback,
-                    RawReply reply, RawError error) {
-    DCHECK(!reply);
-    std::move(callback).Run(Response<void>{ParseErrorImpl(connection, error)});
-  };
-  OnResponseImpl(base::BindOnce(wrapper, connection(), std::move(callback)));
-}
-
-template <>
-inline void Future<void>::IgnoreError() {
-  OnResponse(base::BindOnce([](Response<void>) {}));
-}
 
 }  // namespace x11
 

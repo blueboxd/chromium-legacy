@@ -1599,7 +1599,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
   NavigationRequest* navigation_request = nullptr;
 
   return CreateNetworkServiceDefaultFactoryAndObserve(
-      CreateURLLoaderFactoryParamsForMainWorld(navigation_request),
+      CreateURLLoaderFactoryParamsForMainWorld(
+          navigation_request, "RFHI::CreateNetworkServiceDefaultFactory"),
       ukm::SourceIdObj::FromInt64(GetPageUkmSourceId()),
       std::move(default_factory_receiver));
 }
@@ -1639,12 +1640,6 @@ void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
 }
 
 bool RenderFrameHostImpl::IsSandboxed(network::mojom::WebSandboxFlags flags) {
-  if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox)) {
-    blink::mojom::FeaturePolicyFeature feature =
-        blink::FeaturePolicy::FeatureForSandboxFlag(flags);
-    if (feature != blink::mojom::FeaturePolicyFeature::kNotFound)
-      return !IsFeatureEnabled(feature);
-  }
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 
@@ -2052,6 +2047,23 @@ RenderFrameHostImpl::AccessibilityGetWebContentsAccessibility() {
   return view->GetWebContentsAccessibility();
 }
 
+void RenderFrameHostImpl::ValidateStateForBug1146573() {
+  // This implies that a crashed frame has been reinitialized instead of
+  // replaced. The only time this should happen is
+  // InitializeMainRenderFrameForImmediateUse and it resets must_be_replaced_ so
+  // should not trigger this.
+  if (must_be_replaced_ && render_frame_created_) {
+    SCOPED_CRASH_KEY_BOOL(ValidateStateForBug1146573, IsMainFrame,
+                          is_main_frame());
+    SCOPED_CRASH_KEY_BOOL(ValidateStateForBug1146573, ProcessID,
+                          GetProcess()->GetID());
+    SCOPED_CRASH_KEY_BOOL(ValidateStateForBug1146573, RoutingID,
+                          GetRoutingID());
+    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
+  }
+}
+
 void RenderFrameHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
@@ -2071,6 +2083,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   web_bundle_handle_.reset();
 
   must_be_replaced_ = true;
+  ValidateStateForBug1146573();
   has_committed_any_navigation_ = false;
 
 #if defined(OS_ANDROID)
@@ -2393,6 +2406,7 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
 
   bool was_created = render_frame_created_;
   render_frame_created_ = created;
+  ValidateStateForBug1146573();
 
   // Clear all the user data associated with this RenderFrameHost when its
   // RenderFrame is recreated after a crash. Checking
@@ -3212,6 +3226,9 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
     // TODO(https://crbug.com/1146573): Delete this.
     SCOPED_CRASH_KEY_BOOL(Bug1146573, Live, IsRenderFrameLive());
     SCOPED_CRASH_KEY_BOOL(Bug1146573, MustBeReplaced, must_be_replaced());
+    SCOPED_CRASH_KEY_BOOL(Bug1146573, IsMainFrame, is_main_frame());
+    SCOPED_CRASH_KEY_BOOL(Bug1146573, ProcessID, GetProcess()->GetID());
+    SCOPED_CRASH_KEY_BOOL(Bug1146573, RoutingID, GetRoutingID());
     CHECK(ShouldCreateNewHostForSameSiteSubframe());
 
     // The unload handlers already ran for this document during the
@@ -3994,7 +4011,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         CreateURLLoaderFactoryParamsForMainWorld(
-            latest_nav_request_still_committing),
+            latest_nav_request_still_committing,
+            "RFHI::UpdateSubresourceLoaderFactories"),
         ukm::SourceIdObj::FromInt64(
             latest_nav_request_still_committing
                 ? latest_nav_request_still_committing->GetNextPageUkmSourceId()
@@ -6357,7 +6375,8 @@ void RenderFrameHostImpl::CommitNavigation(
       // appropriate NetworkContext.
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              CreateURLLoaderFactoryParamsForMainWorld(navigation_request),
+              CreateURLLoaderFactoryParamsForMainWorld(
+                  navigation_request, "RFHI::CommitNavigation"),
               next_page_ukm_source_id,
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
@@ -6639,7 +6658,8 @@ void RenderFrameHostImpl::FailedNavigation(
       subresource_loader_factories;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      CreateURLLoaderFactoryParamsForMainWorld(navigation_request),
+      CreateURLLoaderFactoryParamsForMainWorld(navigation_request,
+                                               "RFHI::FailedNavigation"),
       ukm::kInvalidSourceIdObj,
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
@@ -7299,7 +7319,8 @@ void RenderFrameHostImpl::
 
 network::mojom::URLLoaderFactoryParamsPtr
 RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
-    NavigationRequest* navigation_request) {
+    NavigationRequest* navigation_request,
+    base::StringPiece debug_tag) {
   url::Origin main_world_origin;
   network::mojom::ClientSecurityStatePtr client_security_state;
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
@@ -7313,7 +7334,7 @@ RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
   return URLLoaderFactoryParamsHelper::CreateForFrame(
       this, main_world_origin, std::move(client_security_state),
       std::move(coep_reporter_remote), GetProcess(),
-      trust_token_redemption_policy);
+      trust_token_redemption_policy, debug_tag);
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -7335,6 +7356,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryParamsPtr monitoring_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     monitoring_factory_params->process_id = GetProcess()->GetID();
+    monitoring_factory_params->debug_tag = "RFHI - monitoring_factory_params";
 
     // This factory should never be used to issue actual requests (i.e. it
     // should only be used to monitor for Network Service crashes).  Below is an
@@ -7577,14 +7599,6 @@ void RenderFrameHostImpl::CreateWebUsbService(
 
 void RenderFrameHostImpl::ResetFeaturePolicy() {
   RenderFrameHostImpl* parent_frame_host = GetParent();
-  if (!parent_frame_host && !frame_tree_node_->current_replication_state()
-                                 .opener_feature_state.empty()) {
-    DCHECK(base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox));
-    feature_policy_ = blink::FeaturePolicy::CreateWithOpenerPolicy(
-        frame_tree_node_->current_replication_state().opener_feature_state,
-        last_committed_origin_);
-    return;
-  }
   const blink::FeaturePolicy* parent_policy =
       parent_frame_host ? parent_frame_host->feature_policy() : nullptr;
   blink::ParsedFeaturePolicy container_policy =
@@ -9437,11 +9451,26 @@ bool CalculateURLIsUnreachable(
   return net_error_code != net::OK || has_history_url_for_data_url;
 }
 
+bool ShouldVerify(const std::string& param) {
+#if DCHECK_IS_ON()
+  return true;
+#else
+  return GetFieldTrialParamByFeatureAsBool(features::kVerifyDidCommitParams,
+                                           param, false);
+#endif
+}
+
 void RenderFrameHostImpl::
     VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch(
         NavigationRequest* request,
         const mojom::DidCommitProvisionalLoadParams& params,
         bool is_same_document_navigation) {
+#if !DCHECK_IS_ON()
+  // Only check for the flag if DCHECK is not enabled, so that we will always
+  // verify the params for tests.
+  if (!base::FeatureList::IsEnabled(features::kVerifyDidCommitParams))
+    return;
+#endif
   // Check if these values from DidCommitProvisionalLoadParams sent by the
   // renderer can be calculated entirely in the browser side:
   // - intended_as_new_entry
@@ -9474,12 +9503,18 @@ void RenderFrameHostImpl::
       is_same_document_navigation ? is_overriding_user_agent_
                                   : (request->IsOverridingUserAgent() &&
                                      frame_tree_node_->IsMainFrame());
-  if (request->commit_params().intended_as_new_entry ==
-          params.intended_as_new_entry &&
-      request->common_params().method == params.method &&
-      browser_url_is_unreachable == params.url_is_unreachable &&
-      base_url_expectations_match && browser_post_id == params.post_id &&
-      browser_is_overriding_user_agent == params.is_overriding_user_agent) {
+
+  if ((!ShouldVerify("intended_as_new_entry") ||
+       request->commit_params().intended_as_new_entry ==
+           params.intended_as_new_entry) &&
+      (!ShouldVerify("method") ||
+       request->common_params().method == params.method) &&
+      (!ShouldVerify("url_is_unreachable") ||
+       browser_url_is_unreachable == params.url_is_unreachable) &&
+      (!ShouldVerify("base_url") || base_url_expectations_match) &&
+      (!ShouldVerify("post_id") || browser_post_id == params.post_id) &&
+      (!ShouldVerify("is_overriding_user_agent") ||
+       browser_is_overriding_user_agent == params.is_overriding_user_agent)) {
     return;
   }
 

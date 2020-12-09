@@ -2035,6 +2035,21 @@
             ]
         }
     ],
+    "CriticalPersistedTabData": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CriticalPersistedTabData"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrosSchedulerCore": [
         {
             "platforms": [
@@ -2299,6 +2314,25 @@
                     },
                     "enable_features": [
                         "HappinessTrackingSurveysForDesktop"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopNtpShoppingTasksModule": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NtpModules",
+                        "NtpShoppingTasksModule"
                     ]
                 }
             ]
@@ -4580,28 +4614,6 @@
             ]
         }
     ],
-    "NavigationPredictorPreconnectSocketCompletionTime": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "preconnect_socket_completion_time_msec": "3000"
-                    },
-                    "enable_features": [
-                        "NavigationPredictorPreconnectSocketCompletionTime"
-                    ]
-                }
-            ]
-        }
-    ],
     "NewUsbBackend": [
         {
             "platforms": [
@@ -4828,6 +4840,7 @@
                 {
                     "name": "AndroidExperiments",
                     "params": {
+                        "OmniboxLocalZeroSuggestAgeThreshold": "7",
                         "OmniboxMaxURLMatches": "7",
                         "OmniboxMaxZeroSuggestMatches": "15",
                         "UIMaxAutocompleteMatches": "8",
@@ -4836,6 +4849,8 @@
                     "enable_features": [
                         "OmniboxAdaptiveSuggestionsCount",
                         "OmniboxCompactSuggestions",
+                        "OmniboxLocalZeroSuggestAgeThreshold",
+                        "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
@@ -6151,24 +6166,6 @@
             ]
         }
     ],
-    "SafeBrowsingNetworkContexts": [
-        {
-            "platforms": [
-                "windows",
-                "linux",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingRemoveCookies",
-                        "SafeBrowsingSeparateNetworkContexts"
-                    ]
-                }
-            ]
-        }
-    ],
     "SafeBrowsingPasswordProtectionForSavedPasswords": [
         {
             "platforms": [
@@ -6235,6 +6232,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingPerProfileNetworkContexts": [
+        {
+            "platforms": [
+                "windows",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRemoveCookies",
+                        "SafeBrowsingSeparateNetworkContexts"
                     ]
                 }
             ]
@@ -7685,11 +7700,9 @@
             ],
             "experiments": [
                 {
-                    "name": "VizForWebView",
+                    "name": "Enabled",
                     "enable_features": [
                         "EnableSharedImageForWebview",
-                        "UseSkiaForGLReadback",
-                        "UseSkiaRenderer",
                         "VizForWebView"
                     ]
                 }

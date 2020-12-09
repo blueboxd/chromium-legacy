@@ -9,8 +9,11 @@
 
 #include "ash/ash_export.h"
 #include "ui/views/animation/ink_drop_host_view.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/metadata/metadata_header_macros.h"
+
+namespace ui {
+class LayerAnimationObserver;
+}  // namespace ui
 
 namespace views {
 class ToggleImageButton;
@@ -53,6 +56,11 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
 
+  // Invoked to initiate animate in/out of this view. Any animations created
+  // will be associated with the specified `observer`.
+  void AnimateIn(ui::LayerAnimationObserver* observer);
+  void AnimateOut(ui::LayerAnimationObserver* observer);
+
   // Starts a drag from this view at the location specified by the given `event`
   // and with the specified `source`. Note that this method copies the logic of
   // `views::View::DoDrag()` as a workaround to that API being private.
@@ -65,13 +73,8 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   void SetSelected(bool selected);
   bool selected() const { return selected_; }
 
-  views::View* play_icon() { return play_icon_; }
-
  protected:
   views::ToggleImageButton* AddPin(views::View* parent);
-  // Creates a View consisting of a play icon.
-  views::View* CreatePlayIcon(views::View* parent);
-
   virtual void OnPinVisiblityChanged(bool pin_visible) {}
 
  private:
@@ -79,6 +82,13 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   void OnPaintSelect(gfx::Canvas* canvas, gfx::Size size);
   void OnPinPressed();
   void UpdatePin();
+
+  // Animates this view to the specified `opacity` and `transform`, preempting
+  // any in-progress animations. Any animations created will be associated with
+  // the specified `observer`.
+  void AnimateImmediatelyTo(float opacity,
+                            const gfx::Transform& transform,
+                            ui::LayerAnimationObserver* observer);
 
   HoldingSpaceItemViewDelegate* const delegate_;
   const HoldingSpaceItem* const item_;
@@ -89,7 +99,6 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   const std::string item_id_;
 
   views::ToggleImageButton* pin_ = nullptr;  // Owned by view hierarchy.
-  views::ImageView* play_icon_ = nullptr;    // Owned by view hierarchy.
 
   // Owners for the layers used to paint focused and selected states.
   std::unique_ptr<ui::LayerOwner> selected_layer_owner_;

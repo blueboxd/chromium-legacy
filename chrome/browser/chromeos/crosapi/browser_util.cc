@@ -43,10 +43,6 @@ namespace crosapi {
 namespace browser_util {
 namespace {
 
-// When this feature is enabled, Lacros will be available on stable channel.
-const base::Feature kLacrosAllowOnStableChannel{
-    "LacrosAllowOnStableChannel", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Some account types require features that aren't yet supported by lacros.
 // See https://crbug.com/1080693
 bool IsUserTypeAllowed(const User* user) {
@@ -92,6 +88,14 @@ mojom::LacrosInitParamsPtr GetLacrosInitParams(
 }
 
 }  // namespace
+
+// When this feature is enabled, Lacros will be available on stable channel.
+const base::Feature kLacrosAllowOnStableChannel{
+    "LacrosAllowOnStableChannel", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kLacrosStabilitySwitch[] = "lacros-stability";
+const char kLacrosStabilityLessStable[] = "less-stable";
+const char kLacrosStabilityMoreStable[] = "more-stable";
 
 const char kLaunchOnLoginPref[] = "lacros.launch_on_login";
 
@@ -157,7 +161,7 @@ bool IsLacrosWindow(const aura::Window* window) {
 
 base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
   static_assert(
-      crosapi::mojom::AshChromeService::Version_ == 7,
+      crosapi::mojom::AshChromeService::Version_ == 8,
       "if you add a new crosapi, please add it to the version map here");
   InterfaceVersions versions;
   AddVersion<crosapi::mojom::AccountManager>(&versions);
@@ -167,6 +171,7 @@ base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
   AddVersion<crosapi::mojom::FileManager>(&versions);
   AddVersion<crosapi::mojom::KeystoreService>(&versions);
   AddVersion<crosapi::mojom::MessageCenter>(&versions);
+  AddVersion<crosapi::mojom::MetricsReporting>(&versions);
   AddVersion<crosapi::mojom::ScreenManager>(&versions);
   AddVersion<crosapi::mojom::SnapshotCapturer>(&versions);
   AddVersion<device::mojom::HidConnection>(&versions);

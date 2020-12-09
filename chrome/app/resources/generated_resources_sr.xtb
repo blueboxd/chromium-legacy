@@ -2146,7 +2146,6 @@
 <translation id="3441653493275994384">Екран</translation>
 <translation id="3441663102605358937">Поново се пријавите на <ph name="ACCOUNT" /> да бисте верификовали овај налог</translation>
 <translation id="3445047461171030979">Брзи одговори Google помоћника</translation>
-<translation id="3445770710327978113">Да бисте се овде брзо враћали, инсталирајте ову апликацију</translation>
 <translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3446274660183028131">Покрените Parallels Desktop да бисте инсталирали Windows.</translation>
 <translation id="344630545793878684">Читање ваших података на више веб-сајтова</translation>
@@ -2630,7 +2629,6 @@
 <translation id="3955163004258753966">Грешка при покретању надоградње</translation>
 <translation id="3955193568934677022">Дозволи сајтовима да пуштају заштићени садржај (препоручено)</translation>
 <translation id="3955896417885489542">Прегледајте Google Play опције после подешавања</translation>
-<translation id="3956702100721821638">Google Play није доступан</translation>
 <translation id="3957079323242030166">Резервне копије података не улазе у квоту простора на диску.</translation>
 <translation id="3957844511978444971">Додирните „Прихвати“ да бисте потврдили избор подешавања ових Google услуга.</translation>
 <translation id="3958088479270651626">Увезите обележиваче и подешавања</translation>
@@ -4691,7 +4689,6 @@
 <translation id="642469772702851743">Овај уређај (СБ: <ph name="SERIAL_NUMBER" />) је закључао власник.</translation>
 <translation id="6425556984042222041">Брзина претварања текста у говор</translation>
 <translation id="6426200009596957090">Отвори подешавања ChromeVox-а</translation>
-<translation id="642654727595919401"><ph name="DOMAIN" /> захтева да направите резервну копију података и да вратите овај <ph name="DEVICE_TYPE" /> у року од недељу дана.<ph name="LINK_BEGIN" />Погледајте детаље<ph name="LINK_END" /></translation>
 <translation id="642729974267661262">Није им дозвољено да пуштају звук</translation>
 <translation id="6428982734197629783">Слика се обрађује</translation>
 <translation id="6429384232893414837">Грешка при ажурирању</translation>
@@ -5567,7 +5564,6 @@
 <translation id="7457384018036134905">Управљајте језицима у подешавањима Chrome ОС-а</translation>
 <translation id="7458168200501453431">Користи исту проверу правописа као Google претрага. Текст који унесете у прегледач се шаље Google-у.</translation>
 <translation id="7460045493116006516">Актуелна тема коју сте инсталирали</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> захтева да направите резервну копију података и да вратите овај <ph name="DEVICE_TYPE" /> данас.<ph name="LINK_BEGIN" />Погледајте детаље<ph name="LINK_END" />}one{<ph name="DOMAIN" /> захтева да направите резервну копију података и да вратите овај <ph name="DEVICE_TYPE" /> року од {NUM_DAYS} дана.<ph name="LINK_BEGIN" />Погледајте детаље<ph name="LINK_END" />}few{<ph name="DOMAIN" /> захтева да направите резервну копију података и да вратите овај <ph name="DEVICE_TYPE" /> року од {NUM_DAYS} дана.<ph name="LINK_BEGIN" />Погледајте детаље<ph name="LINK_END" />}other{<ph name="DOMAIN" /> захтева да направите резервну копију података и да вратите овај <ph name="DEVICE_TYPE" /> року од {NUM_DAYS} дана.<ph name="LINK_BEGIN" />Погледајте детаље<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">Закачи</translation>
 <translation id="746216226901520237">Следећи пут ће телефон откључати <ph name="DEVICE_TYPE" />. Можете да искључите Smart Lock у подешавањима.</translation>
 <translation id="7463006580194749499">Додај особу</translation>
@@ -6259,7 +6255,6 @@
 <translation id="8226619461731305576">Ред</translation>
 <translation id="8226628635270268143">Одаберите омиљене слике и албуме</translation>
 <translation id="8227119283605456246">Приложи датотеку</translation>
-<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230134520748321204">Желите ли да сачувате лозинку за <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Помозите нашим инжењерима да реше проблем. Реците нам шта се догодило непосредно пре него што сте добили поруку о грешци на профилу:</translation>
 <translation id="8236917170563564587">Дели ову картицу</translation>
@@ -7156,7 +7151,6 @@
 <translation id="952992212772159698">Није активирано</translation>
 <translation id="956500788634395331">Штитимо вас од потенцијално штетних додатака</translation>
 <translation id="957960681186851048">Овај сајт је покушао да аутоматски преузме више датотека</translation>
-<translation id="9580706199804957">Повезивање са Google услугама није успело</translation>
 <translation id="958329785990007682">Блокирај JavaScript</translation>
 <translation id="960719561871045870">Кôд мобилног оператера</translation>
 <translation id="960987915827980018">Остало је око сат времена</translation>

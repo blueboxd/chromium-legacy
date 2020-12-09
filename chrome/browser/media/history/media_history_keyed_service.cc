@@ -352,12 +352,15 @@ void MediaHistoryKeyedService::GetURLsInTableForTest(
       std::move(callback));
 }
 
-void MediaHistoryKeyedService::DiscoverMediaFeed(const GURL& url,
-                                                 base::OnceClosure callback) {
+void MediaHistoryKeyedService::DiscoverMediaFeed(
+    const GURL& url,
+    const base::Optional<GURL>& favicon,
+    base::OnceClosure callback) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&MediaHistoryStore::DiscoverMediaFeed, store, url),
+        base::BindOnce(&MediaHistoryStore::DiscoverMediaFeed, store, url,
+                       favicon),
         std::move(callback));
   } else {
     std::move(callback).Run();
@@ -427,6 +430,13 @@ MediaHistoryKeyedService::GetMediaFeedsRequest
 MediaHistoryKeyedService::GetMediaFeedsRequest::CreateSelectedFeedsForFetch() {
   GetMediaFeedsRequest request;
   request.type = Type::kSelectedFeedsForFetch;
+  return request;
+}
+
+MediaHistoryKeyedService::GetMediaFeedsRequest
+MediaHistoryKeyedService::GetMediaFeedsRequest::CreateNewFeeds() {
+  GetMediaFeedsRequest request;
+  request.type = Type::kNewFeeds;
   return request;
 }
 

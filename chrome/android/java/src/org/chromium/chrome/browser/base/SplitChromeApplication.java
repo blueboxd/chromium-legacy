@@ -75,12 +75,16 @@ public class SplitChromeApplication extends SplitCompatApplication {
         // this in the background allows us to do this in parallel with startup tasks which do
         // not depend on code in the chrome split.
         mSplitPreloader = new SplitPreloader(context);
+        // If the chrome module is not enabled or isolated splits are not supported (e.g. in Android
+        // N), the onComplete function will run immediately so it must handle the case where the
+        // base context of the application has not been set yet.
         mSplitPreloader.preload(CHROME_SPLIT_NAME, (chromeContext) -> {
             // When installed, the vr module is always loaded on startup, so preload here.
             mSplitPreloader.preload("vr", null);
-            // If the chrome module is not enabled, chromeContext will have the same ClassLoader as
-            // the base context, so no need to replace the ClassLoaders here.
-            if (!getClassLoader().equals(chromeContext.getClassLoader())) {
+            // If the chrome module is not enabled or isolated splits are not supported,
+            // chromeContext will have the same ClassLoader as the base context, so no need to
+            // replace the ClassLoaders here.
+            if (!context.getClassLoader().equals(chromeContext.getClassLoader())) {
                 replaceClassLoader(this, chromeContext.getClassLoader());
                 JNIUtils.setClassLoader(chromeContext.getClassLoader());
             }

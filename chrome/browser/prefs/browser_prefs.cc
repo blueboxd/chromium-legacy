@@ -504,6 +504,15 @@ const char kSettingsLaunchedPasswordChecks[] =
 // Deprecated 11/2020
 const char kDRMSalt[] = "settings.privacy.drm_salt";
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated 12/2020
+const char kAssistantPrivacyInfoShownInLauncher[] =
+    "ash.launcher.assistant_privacy_info_shown";
+
+const char kAssistantPrivacyInfoDismissedInLauncher[] =
+    "ash.launcher.assistant_privacy_info_dismissed";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -518,6 +527,13 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kRegisteredSupervisedUserAllowlists);
   registry->RegisterIntegerPref(kSupervisedUsersNextId, 0);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !defined(OS_ANDROID)
+  registry->RegisterListPref(enterprise_connectors::kOnFileAttachedPref);
+  registry->RegisterListPref(enterprise_connectors::kOnFileDownloadedPref);
+  registry->RegisterListPref(enterprise_connectors::kOnBulkDataEntryPref);
+  registry->RegisterListPref(enterprise_connectors::kOnSecurityEventPref);
+#endif  // !defined(OS_ANDROID)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -584,6 +600,12 @@ void RegisterProfilePrefsForMigration(
 
   registry->RegisterIntegerPref(kSettingsLaunchedPasswordChecks, 0);
   registry->RegisterStringPref(kDRMSalt, "");
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kAssistantPrivacyInfoShownInLauncher, 0);
+  registry->RegisterBooleanPref(kAssistantPrivacyInfoDismissedInLauncher,
+                                false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -662,7 +684,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
   registry->RegisterIntegerPref(first_run::kTosDialogBehavior, 0);
 #else  // defined(OS_ANDROID)
-  enterprise_connectors::RegisterLocalStatePrefs(registry);
   enterprise_reporting::RegisterLocalStatePrefs(registry);
   gcm::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
@@ -928,6 +949,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   captions::CaptionController::RegisterProfilePrefs(registry);
   ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
+  enterprise_connectors::RegisterProfilePrefs(registry);
   enterprise_reporting::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
@@ -1108,6 +1130,14 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kRegisteredSupervisedUserAllowlists);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if !defined(OS_ANDROID)
+  // Added 11/2020
+  local_state->ClearPref(enterprise_connectors::kOnFileAttachedPref);
+  local_state->ClearPref(enterprise_connectors::kOnFileDownloadedPref);
+  local_state->ClearPref(enterprise_connectors::kOnBulkDataEntryPref);
+  local_state->ClearPref(enterprise_connectors::kOnSecurityEventPref);
+#endif  // !defined(OS_ANDROID)
+
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
 }
@@ -1211,6 +1241,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Added 11/2020.
   profile_prefs->ClearPref(kSupervisedUserAllowlists);
+
+  // Added 12/2020
+  profile_prefs->ClearPref(kAssistantPrivacyInfoShownInLauncher);
+  profile_prefs->ClearPref(kAssistantPrivacyInfoDismissedInLauncher);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

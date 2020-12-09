@@ -1869,6 +1869,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-media-internals",
+    "owners": [ "tmathmeyer", "videostack-eng@google.com" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-media-session-notifications",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -3105,9 +3110,20 @@
     "expiry_milestone": 92
   },
   {
+    "name": "lacros-stability",
+    "owners": [ "jamescook", "erikchen", "lacros-team@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
     "name": "lacros-support",
     "owners": [ "jamescook", "erikchen", "lacros-team@google.com" ],
-    "expiry_milestone": 92
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
   },
   {
     "name": "launcher-settings-search",
@@ -4032,7 +4048,7 @@
   {
     "name": "read-later",
     "owners": [ "chrome-desktop-ui-sea@google.com", "corising" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 94
   },
   {
     "name": "reader-mode-heuristics",
@@ -4580,12 +4596,12 @@
   {
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "tab-hover-cards",
     "owners": [ "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "tab-outlines-in-low-contrast-themes",

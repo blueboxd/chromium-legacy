@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="MultiDevice.BetterTogetherSuite.MultiDeviceFeatureState"
-    enum="MultiDevice_FeatureState" expires_after="2021-04-04">
+    enum="MultiDevice_FeatureState" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -33,7 +33,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.DeviceSyncService.FindEligibleDevices.Result"
-    enum="BooleanSuccess" expires_after="2021-04-04">
+    enum="BooleanSuccess" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Result of trying to find eligible devices.</summary>
@@ -42,7 +42,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="MultiDevice.DeviceSyncService.FindEligibleDevices.Result.FailureReason"
     enum="MultiDevice_DeviceSyncService_DeviceSyncRequestFailureReason"
-    expires_after="2021-04-04">
+    expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -115,7 +115,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.PostOOBESetupFlow.PageShown"
-    enum="MultiDevice_PostOOBESetupFlow_Page" expires_after="2021-04-04">
+    enum="MultiDevice_PostOOBESetupFlow_Page" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -161,7 +161,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.ReceiveAdvertisementToConnectionDuration.Background"
-    units="ms" expires_after="2021-04-04">
+    units="ms" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -177,7 +177,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.StartScanToAuthenticationDuration.Background"
-    units="ms" expires_after="2021-04-04">
+    units="ms" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -210,7 +210,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.StartScanToReceiveAdvertisementDuration.Background"
-    units="ms" expires_after="2021-04-04">
+    units="ms" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -248,6 +248,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="MultiDevice.SecureChannel.Nearby.ConnectionResult"
+    enum="MultiDeviceNearbyConnectionsInitiatorResult"
+    expires_after="2021-11-30">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Emitted the result of attempting to establish a connection when the Nearby
+    Connections library finishes trying to connect. This measures the success
+    rate of establishing a connection via the Nearby Connections library.
+  </summary>
+</histogram>
+
 <histogram name="MultiDevice.SecureChannel.Nearby.MessageAction"
     enum="MultiDeviceNearbyMessageAction" expires_after="2021-11-30">
   <owner>khorimoto@chromium.org</owner>
@@ -271,7 +283,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.Setup.HostStatus"
-    enum="MultiDevice_Setup_HostStatus" expires_after="2021-04-04">
+    enum="MultiDevice_Setup_HostStatus" expires_after="2021-06-06">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -282,7 +294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.Setup.HostVerifier.DoesHostHaveCryptoData"
-    enum="Boolean" expires_after="2021-04-04">
+    enum="Boolean" expires_after="2021-06-06">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>

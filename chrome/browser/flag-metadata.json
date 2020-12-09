@@ -400,7 +400,7 @@
   {
     "name": "back-forward-cache",
     "owners": [ "bfcache-dev@chromium.org" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 95
   },
   {
     "name": "background-task-component-update",
@@ -487,6 +487,11 @@
     "owners": ["rainhard", "msramek",
       "chrome-friendly-settings@google.com"],
     "expiry_milestone": 92
+  },
+  {
+    "name": "chrome-labs",
+    "owners": ["elainechien", "robliao"],
+    "expiry_milestone": 96
   },
   {
     "name": "chrome-share-highlights-android",
@@ -749,6 +754,11 @@
   },
   {
     "name": "cryptauth-v2-device-activity-status",
+    "owners": [ "khorimoto", "nohle", "themaxli" ],
+    "expiry_milestone": 93
+  },
+  {
+    "name": "cryptauth-v2-device-activity-status-use-connectivity",
     "owners": [ "khorimoto", "nohle", "themaxli" ],
     "expiry_milestone": 93
   },
@@ -1245,7 +1255,7 @@
   {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "enable-autofill-cache-server-card-info",
@@ -1506,6 +1516,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "enable-desktop-pwas-flash-app-name-instead-of-origin",
+    "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "enable-desktop-pwas-local-updating",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 88
@@ -1564,6 +1579,11 @@
     "name": "enable-experimental-accessibility-cursor-colors",
     "owners": [ "katie" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "enable-experimental-accessibility-labels",
+    "owners": [ "dmazzoni", "mschillaci" ],
+    "expiry_milestone": 99
   },
   {
     "name": "enable-experimental-accessibility-language-detection",
@@ -3619,6 +3639,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "omnibox-native-voice-suggestions-provider",
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "omnibox-on-device-head-suggestions-incognito",
     "owners": [ "cechen", "suggest-2g@google.com" ],
     "expiry_milestone": 90
@@ -4262,7 +4287,11 @@
   {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
-    "expiry_milestone": 88
+    // This flag never expires because some users need to override CPU security
+    // settings for performance gains, at their own risk. Chrome OS users cannot
+    // modify the command line, so a flag is the publicly documented mechanism
+    // exposed to users.
+    "expiry_milestone": -1
   },
   {"name": "schemeful-same-site",
     "owners": [ "bingler", "chlily" ],
@@ -4378,7 +4407,7 @@
   {
     "name": "sharing-qr-code-generator",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "sharing-send-via-sync",

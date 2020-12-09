@@ -26,7 +26,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
@@ -64,6 +63,7 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_error_dialog.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #endif
 
 namespace printing {
@@ -441,8 +441,9 @@ void PrintViewManagerBase::DidGetPrintedPagesCount(int32_t cookie,
 void PrintViewManagerBase::SetAccessibilityTree(
     int32_t cookie,
     const ui::AXTreeUpdate& accessibility_tree) {
-  PrintCompositeClient::FromWebContents(web_contents())
-      ->SetAccessibilityTree(cookie, accessibility_tree);
+  auto* client = PrintCompositeClient::FromWebContents(web_contents());
+  if (client)
+    client->SetAccessibilityTree(cookie, accessibility_tree);
 }
 #endif
 

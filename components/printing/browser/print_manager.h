@@ -60,9 +60,16 @@ class PrintManager : public content::WebContentsObserver,
   void DidShowPrintDialog() override;
   void ShowInvalidPrinterSettingsError() override;
   void PrintingFailed(int32_t cookie) override;
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void ShowScriptedPrintPreview(bool source_is_modifiable) override;
+#endif
 
  protected:
   explicit PrintManager(content::WebContents* contents);
+
+  // Helper method to determine if PrintRenderFrame associated remote interface
+  // is still connected.
+  bool IsPrintRenderFrameConnected(content::RenderFrameHost* rfh);
 
   // Helper method to fetch the PrintRenderFrame associated remote interface
   // pointer.

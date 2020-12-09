@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
@@ -51,8 +52,6 @@
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebAXObject;
-using blink::WebAXObjectAttribute;
-using blink::WebAXObjectVectorAttribute;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;
@@ -81,56 +80,6 @@ void AddIntListAttributeFromWebObjects(ax::mojom::IntListAttribute attr,
   if (!ids.empty())
     dst->AddIntListAttribute(attr, ids);
 }
-
-class AXNodeDataSparseAttributeAdapter
-    : public blink::WebAXSparseAttributeClient {
- public:
-  explicit AXNodeDataSparseAttributeAdapter(ui::AXNodeData* dst) : dst_(dst) {
-    DCHECK(dst_);
-  }
-  ~AXNodeDataSparseAttributeAdapter() override = default;
-
- private:
-  ui::AXNodeData* dst_;
-
-  void AddObjectAttribute(WebAXObjectAttribute attribute,
-                          const WebAXObject& value) override {
-    switch (attribute) {
-      case WebAXObjectAttribute::kAriaActiveDescendant:
-        // TODO(dmazzoni): WebAXObject::ActiveDescendant currently returns
-        // more information than the sparse interface does.
-        // ******** Why is this a TODO? ********
-        break;
-      case WebAXObjectAttribute::kAriaErrorMessage:
-        // Use WebAXObject::ErrorMessage(), which provides both ARIA error
-        // messages as well as built-in HTML form validation messages.
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void AddObjectVectorAttribute(
-      WebAXObjectVectorAttribute attribute,
-      const blink::WebVector<WebAXObject>& value) override {
-    switch (attribute) {
-      case WebAXObjectVectorAttribute::kAriaControls:
-        AddIntListAttributeFromWebObjects(
-            ax::mojom::IntListAttribute::kControlsIds, value, dst_);
-        break;
-      case WebAXObjectVectorAttribute::kAriaDetails:
-        AddIntListAttributeFromWebObjects(
-            ax::mojom::IntListAttribute::kDetailsIds, value, dst_);
-        break;
-      case WebAXObjectVectorAttribute::kAriaFlowTo:
-        AddIntListAttributeFromWebObjects(
-            ax::mojom::IntListAttribute::kFlowtoIds, value, dst_);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-};
 
 WebAXObject ParentObjectUnignored(WebAXObject child) {
   WebAXObject parent = child.ParentObject();
@@ -581,7 +530,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   SerializeBoundingBoxAttributes(src, dst);
   cached_bounding_boxes_[dst->id] = dst->relative_bounds;
 
-  SerializeSparseAttributes(src, dst);
   SerializeChooserPopupAttributes(src, dst);
 
   if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
@@ -649,12 +597,6 @@ void BlinkAXTreeSource::SerializeBoundingBoxAttributes(
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                           true);
   }
-}
-
-void BlinkAXTreeSource::SerializeSparseAttributes(WebAXObject src,
-                                                  ui::AXNodeData* dst) const {
-  AXNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
-  src.GetSparseAXAttributes(sparse_attribute_adapter);
 }
 
 void BlinkAXTreeSource::SerializeNameAndDescriptionAttributes(
@@ -1039,7 +981,7 @@ void BlinkAXTreeSource::SerializeHTMLAttributes(WebAXObject src,
 
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
 // and remove ifdef.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
   if (dst->role == ax::mojom::Role::kMath && element.InnerHTML().length()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kInnerHtml,
                                   element.InnerHTML().Utf8());

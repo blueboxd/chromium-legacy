@@ -12,11 +12,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -109,15 +107,6 @@ using password_manager::CompromiseType;
 using password_manager::TestPasswordStore;
 using l10n_util::GetNSString;
 
-// Sets test sync setup service and returns pointer to it.
-std::unique_ptr<KeyedService> BuildMockSyncSetupService(
-    web::BrowserState* context) {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<SyncSetupServiceMock>(
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state));
-}
-
 // Sets test password store and returns pointer to it.
 scoped_refptr<TestPasswordStore> BuildTestPasswordStore(
     ChromeBrowserState* _browserState) {
@@ -143,9 +132,6 @@ PrefService* SetPrefService() {
 class SafetyCheckMediatorTest : public PlatformTest {
  public:
   SafetyCheckMediatorTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kPasswordCheck);
-
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
@@ -153,7 +139,7 @@ class SafetyCheckMediatorTest : public PlatformTest {
             &AuthenticationServiceFake::CreateAuthenticationService));
     test_cbs_builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockSyncSetupService));
+        base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     browser_state_ = test_cbs_builder.Build();
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
@@ -211,12 +197,9 @@ class SafetyCheckMediatorTest : public PlatformTest {
   password_manager::CompromisedCredentials MakeCompromised(
       base::StringPiece signon_realm,
       base::StringPiece username) {
-    return {
-        std::string(signon_realm),
-        base::ASCIIToUTF16(username),
-        base::Time::Now(),
-        CompromiseType::kLeaked,
-    };
+    return password_manager::CompromisedCredentials(
+        std::string(signon_realm), base::ASCIIToUTF16(username),
+        base::Time::Now(), CompromiseType::kLeaked, false);
   }
 
   TestPasswordStore& GetTestStore() {
@@ -234,7 +217,6 @@ class SafetyCheckMediatorTest : public PlatformTest {
 
  protected:
   web::WebTaskEnvironment environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   scoped_refptr<TestPasswordStore> store_;
   AuthenticationServiceFake* auth_service_;

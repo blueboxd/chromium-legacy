@@ -211,6 +211,12 @@ const base::Feature kCrostiniEnableDlc{"CrostiniEnableDlc",
 const base::Feature kCryptAuthV2DeviceActivityStatus{
     "CryptAuthV2DeviceActivityStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables use of the connectivity status from Cryptauth's
+// GetDevicesActivityStatus API to sort devices.
+const base::Feature kCryptAuthV2DeviceActivityStatusUseConnectivity{
+    "CryptAuthV2DeviceActivityStatusUseConnectivity",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Disable idle sockets closing on memory pressure for NetworkContexts that
 // belong to Profiles. It only applies to Profiles because the goal is to
 // improve perceived performance of web browsing within the Chrome OS user
@@ -267,8 +273,8 @@ const base::Feature kEnableHostnameSetting{"EnableHostnameSetting",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables LocalSearchService to be initialized.
-const base::Feature kEnableLocalSearchService{
-    "EnableLocalSearchService", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the OOBE ChromeVox hint dialog and announcement feature.
 const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
@@ -337,6 +343,10 @@ const base::Feature kFilesZipPack{"FilesZipPack",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFilesZipUnpack{"FilesZipUnpack",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the Gaia reauth endpoint with deleted user customization page.
+const base::Feature kGaiaReauthEndpoint{"GaiaReauthEndpoint",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls gamepad vibration in Exo.
 const base::Feature kGamepadVibration{"ExoGamepadVibration",
@@ -750,6 +760,10 @@ bool IsLocalSearchServiceEnabled() {
 
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
   return base::FeatureList::IsEnabled(kFamilyLinkOnSchoolDevice);
+}
+
+bool IsGaiaReauthEndpointEnabled() {
+  return base::FeatureList::IsEnabled(kGaiaReauthEndpoint);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

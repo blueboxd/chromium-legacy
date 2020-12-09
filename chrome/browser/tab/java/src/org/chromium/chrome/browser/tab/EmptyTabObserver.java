@@ -15,6 +15,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetError;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * An implementation of the {@link TabObserver} which has empty implementations of all methods.
@@ -24,7 +25,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class EmptyTabObserver implements TabObserver {
     @Override
-    public void onInitialized(Tab tab, String appId, Boolean hasThemeColor, int themeColor) {}
+    public void onInitialized(Tab tab, String appId) {}
 
     @Override
     public void onShown(Tab tab, @TabSelectionType int type) {}
@@ -45,10 +46,10 @@ public class EmptyTabObserver implements TabObserver {
     public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {}
 
     @Override
-    public void onPageLoadStarted(Tab tab, String url) {}
+    public void onPageLoadStarted(Tab tab, GURL url) {}
 
     @Override
-    public void onPageLoadFinished(Tab tab, String url) {}
+    public void onPageLoadFinished(Tab tab, GURL url) {}
 
     @Override
     public void onPageLoadFailed(Tab tab, @NetError int errorCode) {}

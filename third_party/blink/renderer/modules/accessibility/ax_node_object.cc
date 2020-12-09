@@ -471,6 +471,11 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   DCHECK(initialized_);
 #endif
 
+  // If we don't have a node, then ignore the node object.
+  // TODO(vmpstr/aleventhal): Investigate how this can happen.
+  if (!GetNode())
+    return true;
+
   // All nodes must have an unignored parent within their tree under
   // kRootWebArea, so force kRootWebArea to always be unignored.
   if (role_ == ax::mojom::blink::Role::kRootWebArea)
@@ -3078,6 +3083,14 @@ int AXNodeObject::TextOffsetInFormattingContext(int offset) const {
   if (!is_atomic_inline_level && !layout_obj->IsText()) {
     // Not in a formatting context in which text offsets are meaningful.
     return AXObject::TextOffsetInFormattingContext(offset);
+  }
+
+  // TODO(crbug.com/1149171): NGInlineOffsetMappingBuilder does not properly
+  // compute offset mappings for empty LayoutText objects. Other text objects
+  // (such as some list markers) are not affected.
+  if (const LayoutText* layout_text = DynamicTo<LayoutText>(layout_obj)) {
+    if (layout_text->GetText().IsEmpty())
+      return AXObject::TextOffsetInFormattingContext(offset);
   }
 
   LayoutBlockFlow* formatting_context =

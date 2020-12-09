@@ -19,10 +19,19 @@
  * TrashEntry combines both files for display.
  */
 
+// clang-format off
+// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {util} from './util.m.js';
+// #import {FakeEntryImpl, CombinedReaders} from './files_app_entry_types.m.js';
+// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// clang-format on
+
 /**
  * Configuration for where Trash is stored in a volume.
  */
-class TrashConfig {
+/* #export */ class TrashConfig {
   /**
    * @param {VolumeManagerCommon.VolumeType} volumeType
    * @param {string} topDir Top directory of volume. Must end with a slash to
@@ -65,7 +74,7 @@ TrashConfig.CONFIG = [
 /**
  * Wrapper for /.Trash/files and /.Trash/info directories.
  */
-class TrashDirs {
+/* #export */ class TrashDirs {
   /**
    * @param {!DirectoryEntry} files /.Trash/files directory entry.
    * @param {!DirectoryEntry} info /.Trash/info directory entry.
@@ -76,17 +85,17 @@ class TrashDirs {
   }
 
   /**
-   * Promise wrapper for FileSystemDirectoryEntry.getDirectory(). Creates dir if
-   * it does not exist.
+   * Promise wrapper for FileSystemDirectoryEntry.getDirectory().
    *
    * @param {!DirectoryEntry} dirEntry current directory.
    * @param {string} path name of directory within dirEntry.
-   * @return {!Promise<!DirectoryEntry>} Promise which resolves with
-   *     <dirEntry>/<path>.
+   * @param {boolean} create if true, directory is created if it does not exist.
+   * @return {!Promise<?DirectoryEntry>} Promise which resolves with
+   *     <dirEntry>/<path> or null if entry does not exist and create is false.
    */
-  static getDirectory(dirEntry, path) {
+  static getDirectory(dirEntry, path, create) {
     return new Promise((resolve, reject) => {
-      dirEntry.getDirectory(path, {create: true}, resolve, reject);
+      dirEntry.getDirectory(path, {create}, resolve, () => resolve(null));
     });
   }
 
@@ -95,19 +104,24 @@ class TrashDirs {
    *
    * @param {!FileSystem} fileSystem File system from volume with trash.
    * @param {!TrashConfig} config Config specifying trash dir location.
-   * @return {!Promise<!TrashDirs>} Promise which resolves with trash dirs.
+   * @param {boolean} create if true, dirs are created if they do not exist.
+   * @return {!Promise<?TrashDirs>} Promise which resolves with trash dirs, or
+   *     null if dirs do not exist and create is false.
    */
-  static async getTrashDirs(fileSystem, config) {
+  static async getTrashDirs(fileSystem, config, create) {
     let trashRoot = fileSystem.root;
     const parts = config.trashDir.split('/');
     for (const part of parts) {
       if (part) {
-        trashRoot = await TrashDirs.getDirectory(trashRoot, part);
+        trashRoot = await TrashDirs.getDirectory(trashRoot, part, create);
+        if (!trashRoot) {
+          return null;
+        }
       }
     }
-    const trashFiles = await TrashDirs.getDirectory(trashRoot, 'files');
-    const trashInfo = await TrashDirs.getDirectory(trashRoot, 'info');
-    return new TrashDirs(trashFiles, trashInfo);
+    const files = await TrashDirs.getDirectory(trashRoot, 'files', create);
+    const info = await TrashDirs.getDirectory(trashRoot, 'info', create);
+    return files && info ? new TrashDirs(files, info) : null;
   }
 }
 
@@ -117,7 +131,7 @@ class TrashDirs {
  *
  * @implements {FilesAppEntry}
  */
-class TrashEntry {
+/* #export */ class TrashEntry {
   /**
    * @param {string} name Name of the file deleted.
    * @param {!Date} deletionDate DeletionDate of deleted file from infoEntry.
@@ -174,9 +188,7 @@ class TrashEntry {
   }
 
   /** @override Entry */
-  getParent() {
-    return null;
-  }
+  getParent() {}
 
   /**
    * Remove filesEntry first, then remove infoEntry. Overrides Entry.
@@ -390,8 +402,12 @@ class TrashDirectoryReader {
 
     // Read all of .Trash/files on first call.
     if (!this.infoReader_) {
-      const trashDirs =
-          await TrashDirs.getTrashDirs(this.fileSystem_, this.config_);
+      const trashDirs = await TrashDirs.getTrashDirs(
+          this.fileSystem_, this.config_, /*create=*/ false);
+      // If trash dirs do not yet exist, then return succesful empty read.
+      if (!trashDirs) {
+        return success([]);
+      }
 
       // Get all entries in trash/files.
       const filesReader = trashDirs.files.createReader();
@@ -447,7 +463,7 @@ class TrashDirectoryReader {
  * Root Trash entry sits inside "My files". It shows the combined entries of
  * trashes defined in TrashConfig.
  */
-class TrashRootEntry extends FakeEntryImpl {
+/* #export */ class TrashRootEntry extends FakeEntryImpl {
   /**
    * @param {!VolumeManager} volumeManager
    */

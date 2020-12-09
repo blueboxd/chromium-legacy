@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
@@ -134,7 +135,7 @@
 #include "printing/metafile_skia.h"          // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #endif
 
@@ -323,7 +324,7 @@ std::unique_ptr<const char* []> StringVectorToArgArray(
 // all keys sent to them. This can prevent keystrokes from working for things
 // like screen brightness and volume control.
 bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (event.GetType() != WebInputEvent::Type::kKeyDown &&
       event.GetType() != WebInputEvent::Type::kKeyUp)
     return false;
@@ -341,7 +342,7 @@ bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
     default:
       return false;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 }
 
@@ -2380,8 +2381,10 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
 PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
   if (!render_frame_)
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(
-      render_frame_->render_view()->GetBlinkPreferences().default_encoding);
+  return StringVar::StringToPPVar(render_frame_->GetWebFrame()
+                                      ->View()
+                                      ->GetWebPreferences()
+                                      .default_encoding);
 }
 
 void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(

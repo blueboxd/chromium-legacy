@@ -772,6 +772,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="autofill_assistant" label="Assistant-in-Chrome Module"/>
   <suffix name="cablev2_authenticator" label="caBLEv2 Authenticator Module"/>
   <suffix name="chime" label="Chime Notification Module"/>
+  <suffix name="chrome" label="Chrome Module"/>
   <suffix name="dev_ui" label="Developer UI Module"/>
   <suffix name="extra_icu" label="Extra ICU Module"/>
   <suffix name="image_editor" label="Image Editor Module"/>
@@ -827,6 +828,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       name="Android.FeatureModules.UncachedInstallDuration.PendingDownload"/>
   <affected-histogram
       name="Android.FeatureModules.UncachedInstallDuration.PendingInstall"/>
+  <affected-histogram name="Android.IsolatedSplits.ContextCreateTime"/>
+  <affected-histogram name="Android.IsolatedSplits.PreloadWaitTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidGATTEvents" separator=".">
@@ -3308,8 +3311,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="CompromisedCredentialsAction" separator=".">
-  <suffix name="Remove" label="Saved password is removed from the database"/>
-  <suffix name="Update" label="Saved password is updated in the database"/>
+  <suffix name="Add" label="Insecure password is added to the database"/>
+  <suffix name="Remove" label="Insecure password is removed from the database"/>
+  <suffix name="Update" label="Insecure password is updated in the database">
+    <obsolete>
+      Deprecated December 2020 because it isn't recorded.
+    </obsolete>
+  </suffix>
   <affected-histogram name="PasswordManager.CompromisedCredentials"/>
 </histogram_suffixes>
 
@@ -18419,6 +18427,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Sync.ModelTypeMemoryKB"/>
   <affected-histogram name="Sync.ModelTypeStoreCommitWriteBatchOutcome"/>
   <affected-histogram name="Sync.ModelTypeTimeUntilEncryptionKeyFound"/>
+  <affected-histogram name="Sync.ModelTypeUndecryptablePendingUpdatesDropped"/>
   <affected-histogram name="Sync.NonReflectionUpdateFreshnessPossiblySkewed">
     <obsolete>
       Deprecated 06/2019. Replaced by
@@ -18524,6 +18533,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="DecryptionPending"
       label="Decryption keys are missing at the moment (it is queued for
              later decryption which may or may not happen)."/>
+  <suffix name="DecryptionPendingForTooLong"
+      label="Decryption keys were missing for so long that the update was
+             ignored."/>
   <suffix name="FailedToDecrypt"
       label="Decryption is not successful (maybe the data is corrupt)."/>
   <suffix name="InconsistentClientTag"

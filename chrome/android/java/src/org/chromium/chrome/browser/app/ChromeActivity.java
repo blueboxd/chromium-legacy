@@ -202,6 +202,7 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
@@ -669,7 +670,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
+            public void onPageLoadFinished(Tab tab, GURL url) {
                 postDeferredStartupIfNeeded();
                 OfflinePageUtils.showOfflineSnackbarIfNecessary(tab);
             }
@@ -866,7 +867,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     DeviceFormFactor.isNonMultiDisplayContextOnTablet(/* Context */ this),
                     getResources(),
                     /* StatusBarColorProvider */ this, getOverviewModeBehaviorSupplier(),
-                    getLifecycleDispatcher(), getActivityTabProvider());
+                    getLifecycleDispatcher(), getActivityTabProvider(),
+                    mRootUiCoordinator.getTopUiThemeColorProvider());
         }
 
         return mStatusBarColorController;
@@ -1027,13 +1029,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public boolean isCustomTab() {
         return getActivityType() == ActivityType.CUSTOM_TAB
                 || getActivityType() == ActivityType.TRUSTED_WEB_ACTIVITY;
-    }
-
-    /**
-     * @return Whether the given activity can show the publisher URL from a trusted CDN.
-     */
-    public boolean canShowTrustedCdnPublisherUrl() {
-        return false;
     }
 
     /**
@@ -1764,6 +1759,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mCompositorViewHolder.setBrowserControlsManager(getBrowserControlsManager());
         mCompositorViewHolder.setUrlBar(urlBar);
         mCompositorViewHolder.setInsetObserverView(getInsetObserverView());
+        mCompositorViewHolder.setTopUiThemeColorProvider(
+                mRootUiCoordinator.getTopUiThemeColorProvider());
         mCompositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this);
 
         if (controlContainer != null && DeviceClassManager.enableToolbarSwipe()

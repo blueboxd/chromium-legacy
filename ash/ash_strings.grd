@@ -303,7 +303,7 @@ This file contains the strings for ash.
         All available users have already been added to this session.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle Nearby Share high visibility mode, which makes the device visible to all nearby devices for file sharing. [CHAR_LIMIT=14]">
-        Nearby Share
+        Nearby visibility
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_OFF_STATE" desc="Sub-label for the Nearby Share system tray button." meaning="Nearby Share high visibility mode is currently inactive. [CHAR_LIMIT=14]">
         Off
@@ -1207,7 +1207,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_CONNECTED_DEVICE_SETTINGS_LABEL" desc="Label for the settings button in the Phone Hub UI that lets users know that the button routes to the Chrome OS Settings app page for connected devices (e.g. to disable Phone Hub features, enable/disable Smartlock, etc)">
         Connected devices settings
       </message>
-      <message name="IDS_ASH_PHONE_HUB_SILENCE_BUTTON_NOT_AVAILABLE_TOOLTIP" translateable="false" desc="Tooltip message that indicates to the user that the Silence Phone feature is disabled because their phone is on a work profile.">
+      <message name="IDS_ASH_PHONE_HUB_SILENCE_BUTTON_NOT_AVAILABLE_TOOLTIP" desc="Tooltip message that indicates to the user that the Silence Phone feature is disabled because their phone is on a work profile.">
         Silence phone is not available on work profile
       </message>
 
@@ -1351,16 +1351,16 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_DESK_4_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
         Desk 4
       </message>
-      <message name="IDS_ASH_DESKS_DESK_5_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+      <message name="IDS_ASH_DESKS_DESK_5_MINI_VIEW_TITLE" desc="The label of the fifth virtual desk thumbnail.">
         Desk 5
       </message>
-      <message name="IDS_ASH_DESKS_DESK_6_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+      <message name="IDS_ASH_DESKS_DESK_6_MINI_VIEW_TITLE" desc="The label of the sixth virtual desk thumbnail.">
         Desk 6
       </message>
-      <message name="IDS_ASH_DESKS_DESK_7_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+      <message name="IDS_ASH_DESKS_DESK_7_MINI_VIEW_TITLE" desc="The label of the seventh virtual desk thumbnail.">
         Desk 7
       </message>
-      <message name="IDS_ASH_DESKS_DESK_8_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+      <message name="IDS_ASH_DESKS_DESK_8_MINI_VIEW_TITLE" desc="The label of the eighth virtual desk thumbnail.">
         Desk 8
       </message>
       <message name="IDS_ASH_DESKS_MAX_NUM_REACHED" desc="Message shown to users when they attempt to add a new virtual desk when the maximum number of desks has been reached.">

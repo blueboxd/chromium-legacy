@@ -59,7 +59,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
-#include "chrome/browser/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -84,7 +83,7 @@
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/user_education/feature_promo_snooze_service.h"
-#include "chrome/browser/ui/webui/flags_ui.h"
+#include "chrome/browser/ui/webui/flags/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
@@ -132,6 +131,7 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -184,6 +184,7 @@
 #include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -992,6 +993,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::FamilyUserChromeActivityMetrics::RegisterProfilePrefs(registry);
   chromeos::FamilyUserMetricsService::RegisterProfilePrefs(registry);
   chromeos::FamilyUserSessionMetrics::RegisterProfilePrefs(registry);
+  chromeos::InlineLoginHandlerChromeOS::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::full_restore::RegisterProfilePrefs(registry);

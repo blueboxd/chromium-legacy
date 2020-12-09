@@ -68,6 +68,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.contextual_search.mojom.OverlayPosition;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.touch_selection.SelectionEventType;
+import org.chromium.url.GURL;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -105,8 +106,8 @@ public class ContextualSearchManager
 
     private static final String INTENT_URL_PREFIX = "intent:";
 
-    // We blacklist this URL because malformed URLs may bring up this page.
-    private static final String BLACKLISTED_URL = ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL;
+    // We denylist this URL because malformed URLs may bring up this page.
+    private static final String DENYLISTED_URL = ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL;
 
     // How long to wait for a tap near a previous tap before hiding the UI or showing a re-Tap.
     // This setting is not critical: in practice it determines how long to wait after an invalid
@@ -580,7 +581,7 @@ public class ContextualSearchManager
         };
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
+            public void onPageLoadStarted(Tab tab, GURL url) {
                 // Detects navigation of the base page for crbug.com/428368 (navigation-detection).
                 hideContextualSearch(StateChangeReason.UNKNOWN);
             }
@@ -830,7 +831,7 @@ public class ContextualSearchManager
         mLoadedSearchUrlTimeMs = System.currentTimeMillis();
         mLastSearchRequestLoaded = mSearchRequest;
         String searchUrl = mSearchRequest.getSearchUrl();
-        ContextualSearchManagerJni.get().whitelistContextualSearchJsApiUrl(
+        ContextualSearchManagerJni.get().allowlistContextualSearchJsApiUrl(
                 mNativeContextualSearchManagerPtr, this, searchUrl);
         mSearchPanel.loadUrlInPanel(searchUrl);
         mDidStartLoadingResolvedSearchRequest = true;
@@ -1191,7 +1192,7 @@ public class ContextualSearchManager
      * @param url The URL we are navigating to.
      */
     public void onExternalNavigation(String url) {
-        if (!mDidPromoteSearchNavigation && mSearchPanel != null && !BLACKLISTED_URL.equals(url)
+        if (!mDidPromoteSearchNavigation && mSearchPanel != null && !DENYLISTED_URL.equals(url)
                 && !url.startsWith(INTENT_URL_PREFIX) && shouldPromoteSearchNavigation()) {
             // Do not promote to a regular tab if we're loading our Resolved Search
             // URL, otherwise we'll promote it when prefetching the Serp.
@@ -1936,7 +1937,7 @@ public class ContextualSearchManager
         void gatherSurroundingText(long nativeContextualSearchManager,
                 ContextualSearchManager caller, ContextualSearchContext contextualSearchContext,
                 WebContents baseWebContents);
-        void whitelistContextualSearchJsApiUrl(
+        void allowlistContextualSearchJsApiUrl(
                 long nativeContextualSearchManager, ContextualSearchManager caller, String url);
         void enableContextualSearchJsApiForWebContents(long nativeContextualSearchManager,
                 ContextualSearchManager caller, WebContents overlayWebContents);

@@ -305,13 +305,6 @@ static void PartitionDumpBucketStats(
 
 }  // namespace internal
 
-// TODO(lizeb): Consider making this constexpr. Without C++17 std::array, this
-// requires some template magic, only do it if it helps performance.
-template <bool thread_safe>
-uint16_t PartitionRoot<thread_safe>::bucket_index_lookup[((kBitsPerSizeT + 1) *
-                                                          kNumBucketsPerOrder) +
-                                                         1];
-
 template <bool thread_safe>
 NOINLINE void PartitionRoot<thread_safe>::OutOfMemory(size_t size) {
 #if !defined(ARCH_CPU_64_BITS)
@@ -621,6 +614,12 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
 
   {
     ScopedGuard guard{lock_};
+    // Avoid purging if there is PCScan task currently scheduled. Since pcscan
+    // takes snapshot of all allocated pages, decommitting pages here (even
+    // under the lock) is racy.
+    // TODO(bikineev): Consider rescheduling the purging after PCScan.
+    if (PCScan::Instance().IsInProgress())
+      return;
     if (flags & PartitionPurgeDecommitEmptySlotSpans)
       DecommitEmptySlotSpans();
     if (flags & PartitionPurgeDiscardUnusedSystemPages) {

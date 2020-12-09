@@ -501,7 +501,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.EventRecordingState"
-    enum="StructuredMetricsEventRecordingState" expires_after="2021-04-04">
+    enum="StructuredMetricsEventRecordingState" expires_after="2021-06-06">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -524,7 +524,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.KeyValidationState"
-    enum="StructuredMetricsKeyValidationState" expires_after="2021-04-04">
+    enum="StructuredMetricsKeyValidationState" expires_after="2021-06-06">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -536,7 +536,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.NumEventsInUpload" units="count"
-    expires_after="2021-04-04">
+    expires_after="2021-06-06">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -547,7 +547,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.PrefReadError"
-    enum="PrefServiceReadError" expires_after="2021-04-04">
+    enum="PrefServiceReadError" expires_after="2021-06-06">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -571,7 +571,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2021-05-30">
+    expires_after="2021-06-06">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -666,6 +666,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     histogram UMA.TruncatedEvents.UserAction.
 
     There may be other ways user actions are dropped too.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UserDemographics.IsNoisedAgeOver21Under85"
+    enum="BooleanNoisedAgeOver21Under85" expires_after="2021-11-04">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <summary>
+    True indicates that the current user is over the age of 21 and under the age
+    of 85 inclusive, and unknown otherwise. Specifically, this histogram can't
+    identify users under 21 and over 85. The user's age includes a random offset
+    for privacy. This metric is logged periodically through
+    ProvideCurrentSessionData().
   </summary>
 </histogram>
 

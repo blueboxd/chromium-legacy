@@ -110,6 +110,8 @@ extern const base::Feature kDisableCryptAuthV1DeviceSync;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceActivityStatus;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kCryptAuthV2DeviceActivityStatusUseConnectivity;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniWebUIUpgrader;
@@ -168,6 +170,8 @@ extern const base::Feature kEnableFilesAppCopyImage;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kHandwritingGestureEditing;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kGaiaReauthEndpoint;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGamepadVibration;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -331,6 +335,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDeepLinkingEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDiagnosticsAppEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsHostnameSettingEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaReauthEndpointEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeSandboxEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();

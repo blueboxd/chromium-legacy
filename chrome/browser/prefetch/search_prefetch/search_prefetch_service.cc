@@ -51,8 +51,7 @@ SearchPrefetchService::SearchPrefetchService(Profile* profile)
 SearchPrefetchService::~SearchPrefetchService() = default;
 
 void SearchPrefetchService::Shutdown() {
-  if (observer_.IsObserving())
-    observer_.RemoveObservation();
+  observer_.Reset();
 }
 
 bool SearchPrefetchService::MaybePrefetchURL(const GURL& url) {
@@ -127,9 +126,11 @@ bool SearchPrefetchService::MaybePrefetchURL(const GURL& url) {
   }
 
   DCHECK(prefetch_request);
+  if (!prefetch_request->StartPrefetchRequest(profile_)) {
+    return false;
+  }
 
   prefetches_.emplace(search_terms, std::move(prefetch_request));
-  prefetches_[search_terms]->StartPrefetchRequest(profile_);
   prefetch_expiry_timers_.emplace(search_terms,
                                   std::make_unique<base::OneShotTimer>());
   prefetch_expiry_timers_[search_terms]->Start(

@@ -720,10 +720,9 @@ void LocalFrame::PrintNavigationErrorMessage(const Frame& target_frame,
                     ->GetSecurityOrigin()
                     ->ToString() +
                 "'";
-  String message =
-      "Unsafe JavaScript attempt to initiate navigation for frame " +
-      target_frame_description + " from frame with URL '" +
-      GetDocument()->Url().GetString() + "'. " + reason + "\n";
+  String message = "Unsafe attempt to initiate navigation for frame " +
+                   target_frame_description + " from frame with URL '" +
+                   GetDocument()->Url().GetString() + "'. " + reason + "\n";
 
   DomWindow()->PrintErrorMessage(message);
 }
@@ -2110,15 +2109,6 @@ bool LocalFrame::IsProvisional() const {
   // Calling this after the frame is marked as completely detached is a bug, as
   // this state can no longer be accurately calculated.
   CHECK(!IsDetached());
-
-  // TODO(https://crbug.com/838348): Sadly, there are situations where Blink may
-  // attempt to detach a main frame twice due to a bug. That rewinds
-  // FrameLifecycle from kDetached to kDetaching, but GetPage() will already be
-  // null. Early returning false in that case is "safe enough", as the frame has
-  // already been detached, so any detach work gated on IsProvisional() has
-  // already been done.
-  if (!GetPage())
-    return false;
 
   if (IsMainFrame()) {
     return GetPage()->MainFrame() != this;

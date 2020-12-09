@@ -163,8 +163,11 @@ void PrintViewManager::PrintPreviewDone() {
   // dispatch 'afterprint' event.
   bool send_message = !is_switching_to_system_dialog_;
 #endif
-  if (send_message)
-    GetPrintRenderFrame(print_preview_rfh_)->OnPrintPreviewDialogClosed();
+  if (send_message) {
+    // Only send a message about having closed if it is still connected.
+    if (IsPrintRenderFrameConnected(print_preview_rfh_))
+      GetPrintRenderFrame(print_preview_rfh_)->OnPrintPreviewDialogClosed();
+  }
   is_switching_to_system_dialog_ = false;
 
   if (print_preview_state_ == SCRIPTED_PREVIEW) {
@@ -295,13 +298,13 @@ void PrintViewManager::OnSetupScriptedPrintPreview(
   }
 }
 
-void PrintViewManager::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
-                                                  bool source_is_modifiable) {
+void PrintViewManager::ShowScriptedPrintPreview(bool source_is_modifiable) {
   if (print_preview_state_ != SCRIPTED_PREVIEW)
     return;
 
   DCHECK(print_preview_rfh_);
-  if (rfh != print_preview_rfh_)
+  if (print_manager_host_receivers_.GetCurrentTargetFrame() !=
+      print_preview_rfh_)
     return;
 
   PrintPreviewDialogController* dialog_controller =
@@ -337,8 +340,6 @@ bool PrintViewManager::OnMessageReceived(
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_SetupScriptedPrintPreview, &helper,
         FrameDispatchHelper::OnSetupScriptedPrintPreview)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
-                        OnShowScriptedPrintPreview)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

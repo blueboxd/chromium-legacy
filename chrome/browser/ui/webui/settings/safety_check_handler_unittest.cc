@@ -163,10 +163,11 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
 
   void InvokeOnCompromisedCredentialsChanged() {
     // Credentials have to be unique, so the callback is always invoked.
-    store_->AddCompromisedCredentials(
-        {"test.com",
-         base::ASCIIToUTF16("test" +
-                            base::NumberToString(test_credential_counter_++))});
+    store_->AddCompromisedCredentials(password_manager::CompromisedCredentials(
+        "test.com",
+        base::ASCIIToUTF16("test" +
+                           base::NumberToString(test_credential_counter_++)),
+        base::Time(), password_manager::CompromiseType::kLeaked, false));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -885,7 +886,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_Safe) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kSafe));
   EXPECT_TRUE(event);
-  VerifyDisplayString(event, "No security issues found");
+  VerifyDisplayString(event, "No compromised passwords found");
   histogram_tester_.ExpectBucketCount(
       "Settings.SafetyCheck.PasswordsResult",
       SafetyCheckHandler::PasswordsStatus::kSafe, 1);

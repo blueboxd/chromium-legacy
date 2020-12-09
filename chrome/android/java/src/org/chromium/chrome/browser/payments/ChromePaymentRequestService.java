@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.ui.PaymentUiService;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.AbortReason;
+import org.chromium.components.payments.AndroidPaymentApp;
 import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.Event;
@@ -48,6 +50,7 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -282,9 +285,9 @@ public class ChromePaymentRequestService
             assert mPaymentUiService.isPaymentRequestUiAlive();
 
             if (isMinimalUiApplicable(isUserGestureShow)) {
-                ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
-                if (chromeActivity == null) return ErrorStrings.ACTIVITY_NOT_FOUND;
-                if (mPaymentUiService.triggerMinimalUI(chromeActivity, mSpec.getRawTotal(),
+                WindowAndroid windowAndroid = mDelegate.getWindowAndroid(mRenderFrameHost);
+                if (windowAndroid == null) return ErrorStrings.WINDOW_NOT_FOUND;
+                if (mPaymentUiService.triggerMinimalUI(windowAndroid, mSpec.getRawTotal(),
                             this::onMinimalUIReady, this::onMinimalUiConfirmed,
                             /*dismissObserver=*/
                             ()
@@ -406,8 +409,8 @@ public class ChromePaymentRequestService
     // Implements BrowserPaymentRequest:
     @Override
     public String continueShow(boolean isFinishedQueryingPaymentApps) {
-        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
-        if (chromeActivity == null) return ErrorStrings.ACTIVITY_NOT_FOUND;
+        Context context = mDelegate.getContext(mRenderFrameHost);
+        if (context == null) return ErrorStrings.CONTEXT_NOT_FOUND;
 
         mPaymentUiService.updateDetailsOnPaymentRequestUI(mSpec.getPaymentDetails());
 
@@ -415,7 +418,7 @@ public class ChromePaymentRequestService
         // promise gets resolved before all apps are ready.
         if (mPaymentUiService.isPaymentRequestUiAlive()
                 && mPaymentUiService.shouldShowShippingSection()) {
-            mPaymentUiService.createShippingSectionForPaymentRequestUI(chromeActivity);
+            mPaymentUiService.createShippingSectionForPaymentRequestUI(context);
         }
 
         // Triggered transaction amount gets recorded when both of the following conditions are met:
@@ -542,7 +545,12 @@ public class ChromePaymentRequestService
     @Override
     public void onRetry(PaymentValidationErrors errors) {
         mWasRetryCalled = true;
-        mPaymentUiService.onRetry(errors);
+        Context context = mDelegate.getContext(mRenderFrameHost);
+        if (context == null) {
+            disconnectFromClientWithDebugMessage(ErrorStrings.CONTEXT_NOT_FOUND);
+            return;
+        }
+        mPaymentUiService.onRetry(context, errors);
     }
 
     // Implements BrowserPaymentRequest:
@@ -722,5 +730,12 @@ public class ChromePaymentRequestService
         if (mPaymentRequestService == null) return;
         // This updates the line items and the shipping options asynchronously.
         mPaymentRequestService.onShippingAddressChange(address);
+    }
+
+    // Implement PaymentUiService.Delegate:
+    @Override
+    @Nullable
+    public Context getContext() {
+        return mDelegate.getContext(mRenderFrameHost);
     }
 }

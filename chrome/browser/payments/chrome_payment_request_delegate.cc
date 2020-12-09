@@ -9,6 +9,7 @@
 #include "base/check_op.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -42,9 +43,9 @@
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace payments {
 
@@ -261,9 +262,17 @@ bool ChromePaymentRequestDelegate::SkipUiForBasicCard() const {
 }
 
 std::string ChromePaymentRequestDelegate::GetTwaPackageName() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
   if (!rfh || !rfh->IsCurrent())
+    return "";
+
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return "";
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser || !browser->app_controller())
     return "";
 
   auto* apk_web_app_service = chromeos::ApkWebAppService::Get(
@@ -273,13 +282,12 @@ std::string ChromePaymentRequestDelegate::GetTwaPackageName() const {
 
   base::Optional<std::string> twa_package_name =
       apk_web_app_service->GetPackageNameForWebApp(
-          content::WebContents::FromRenderFrameHost(rfh)
-              ->GetLastCommittedURL());
+          web_contents->GetLastCommittedURL());
 
   return twa_package_name.has_value() ? twa_package_name.value() : "";
 #else
   return "";
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 PaymentRequestDialog* ChromePaymentRequestDelegate::GetDialogForTesting() {

@@ -14,6 +14,8 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 
 class InlineLoginHandlerChromeOS : public InlineLoginHandler {
@@ -21,6 +23,8 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   explicit InlineLoginHandlerChromeOS(
       const base::RepeatingClosure& close_dialog_closure);
   ~InlineLoginHandlerChromeOS() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // InlineLoginHandler overrides.
   void RegisterMessages() override;
@@ -41,6 +45,7 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   void GetAccountsInSession(const base::ListValue* args);
   void OnGetAccounts(const std::string& callback_id,
                      const std::vector<::account_manager::Account>& accounts);
+  void HandleSkipWelcomePage(const base::ListValue* args);
 
   base::RepeatingClosure close_dialog_closure_;
   base::WeakPtrFactory<InlineLoginHandlerChromeOS> weak_factory_{this};

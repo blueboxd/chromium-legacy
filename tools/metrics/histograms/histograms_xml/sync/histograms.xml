@@ -95,8 +95,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.BookmarksModelMetadataCorruptionReason"
-    enum="SyncBookmarkModelMetadataCorruptionReason" expires_after="M89">
-  <owner>mamir@chromium.org</owner>
+    enum="SyncBookmarkModelMetadataCorruptionReason" expires_after="M92">
+  <owner>rushans@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
     The reason why the persisted metadata for a bookmark model is considered
@@ -152,7 +152,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.ConfigureDataTypes" enum="SyncModelTypes"
-    expires_after="2021-04-04">
+    expires_after="2021-06-06">
   <owner>mastiz@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -378,7 +378,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.InitialState" enum="SyncInitialState"
-    expires_after="2021-04-04">
+    expires_after="2021-06-06">
   <owner>treib@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -540,7 +540,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Sync.ModelTypeErrorSite"
-    enum="SyncModelTypeErrorSite" expires_after="2021-04-04">
+    enum="SyncModelTypeErrorSite" expires_after="2021-06-06">
 <!-- Name completed by histogram_suffixes name="SyncModelType" -->
 
   <owner>jkrcal@chromium.org</owner>
@@ -574,7 +574,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Sync.ModelTypeStoreCommitWriteBatchOutcome"
-    enum="LevelDBStatus" expires_after="2021-04-04">
+    enum="LevelDBStatus" expires_after="2021-06-06">
 <!-- Name completed by histogram_suffixes name="SyncModelType" -->
 
   <owner>qjw@chromium.org</owner>
@@ -597,6 +597,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     available to the Cryptographer. The time is measured by the number of
     GetUpdatesResponse received by the worker *while* the Cryptographer didn't
     have pending keys (and thus the key should have been known in theory).
+  </summary>
+</histogram>
+
+<histogram base="true" name="Sync.ModelTypeUndecryptablePendingUpdatesDropped"
+    units="SyncEntity" expires_after="2021-06-05">
+  <owner>victorvianna@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Records the number of entities dropped when the data type decided that a
+    certain encryption key was lost and dropped all pending updates encrypted
+    with it. Future updates encrypted with such key will also be ignored by the
+    data type, but those are *not* counted in this metric.
   </summary>
 </histogram>
 
@@ -716,7 +728,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.PostedClientToServerMessage"
-    enum="SyncClientToServerMessageContents" expires_after="2021-04-04">
+    enum="SyncClientToServerMessageContents" expires_after="2021-06-06">
   <owner>mastiz@chromium.org</owner>
   <summary>
     Number of network requests issued by sync to the sync server, grouped by
@@ -725,7 +737,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.PostedClientToServerMessageError" enum="SyncErrorType"
-    expires_after="2021-04-04">
+    expires_after="2021-06-06">
   <owner>mastiz@chromium.org</owner>
   <summary>
     A sync error code received from the sync server as a result of a
@@ -829,7 +841,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.SharingMessage.CommitResult"
-    enum="SyncSharingMessageCommitErrorCode" expires_after="2021-04-04">
+    enum="SyncSharingMessageCommitErrorCode" expires_after="2021-06-06">
   <owner>rushans@google.com</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -929,7 +941,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.SyncEverything2" enum="Boolean"
-    expires_after="2021-04-04">
+    expires_after="2021-06-06">
   <owner>treib@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -988,7 +1000,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Sync.UndecryptedEntitiesOnDataTypeDisabled"
-    units="sync entities" expires_after="2021-04-04">
+    units="sync entities" expires_after="2021-06-06">
   <owner>victorvianna@google.com</owner>
   <owner>treib@chromium.org</owner>
   <summary>

@@ -19,6 +19,7 @@
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/primary_account_policy_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -28,15 +29,11 @@ PrimaryAccountManager::PrimaryAccountManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    signin::AccountConsistencyMethod account_consistency,
     std::unique_ptr<PrimaryAccountPolicyManager> policy_manager)
     : client_(client),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       initialized_(false),
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-      account_consistency_(account_consistency),
-#endif
       policy_manager_(std::move(policy_manager)) {
   DCHECK(client_);
   DCHECK(account_tracker_service_);
@@ -273,16 +270,6 @@ void PrimaryAccountManager::RemoveObserver(Observer* observer) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-void PrimaryAccountManager::SignOut(
-    signin_metrics::ProfileSignout signout_source_metric,
-    signin_metrics::SignoutDelete signout_delete_metric) {
-  RemoveAccountsOption remove_option =
-      (account_consistency_ == signin::AccountConsistencyMethod::kDice)
-          ? RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError
-          : RemoveAccountsOption::kRemoveAllAccounts;
-  StartSignOut(signout_source_metric, signout_delete_metric, remove_option);
-}
-
 void PrimaryAccountManager::SignOutAndRemoveAllAccounts(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
@@ -290,24 +277,14 @@ void PrimaryAccountManager::SignOutAndRemoveAllAccounts(
                RemoveAccountsOption::kRemoveAllAccounts);
 }
 
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
 void PrimaryAccountManager::SignOutAndKeepAllAccounts(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
                RemoveAccountsOption::kKeepAllAccounts);
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void PrimaryAccountManager::RevokeSyncConsent() {
-  DCHECK(HasPrimaryAccount(signin::ConsentLevel::kSync));
-  // TODO(https://crbug.com/1046746): Don't record metrics here.
-  StartSignOut(signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
-               signin_metrics::SignoutDelete::KEEPING,
-               RemoveAccountsOption::kKeepAllAccounts,
-               /*assert_signout_allowed=*/true);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void PrimaryAccountManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
@@ -374,15 +351,6 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
       token_service_->RevokeAllCredentials(
           signin_metrics::SourceForRefreshTokenOperation::
               kPrimaryAccountManager_ClearAccount);
-      break;
-    case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
-      if (token_service_->RefreshTokenHasError(account_info.account_id)) {
-        SetUnconsentedPrimaryAccountInfo(CoreAccountInfo());
-        token_service_->RevokeCredentials(
-            account_info.account_id,
-            signin_metrics::SourceForRefreshTokenOperation::
-                kPrimaryAccountManager_ClearAccount);
-      }
       break;
     case RemoveAccountsOption::kKeepAllAccounts:
       // Do nothing.

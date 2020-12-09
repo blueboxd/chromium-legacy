@@ -1183,6 +1183,9 @@
   <message name="IDS_APP_START_APP_WAIT_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
     Initializing application...
   </message>
+  <message name="IDS_APP_START_EXTENSION_WAIT_MESSAGE" desc="Message displayed while installing and/or launching extensions in kiosk mode.">
+    Initializing extensions...
+  </message>
   <message name="IDS_APP_START_WAIT_FOR_APP_WINDOW_MESSAGE" desc="Message displayed while waiting for the application to create its window in kiosk mode.">
     Waiting for application window...
   </message>
@@ -2131,7 +2134,7 @@
     SIM Card is locked
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
-    Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlock Key.
+    If you fail to verify, your network access will be disabled.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PIN.">
     Enter PIN
@@ -2148,17 +2151,29 @@
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PUK.">
     Enter PIN Unlock Key
   </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered.">
-    Incorrect PIN. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered and there is only a single retry attempt remaining.">
+    Incorrect PIN. You have 1 remaining attempt.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered and there are multiple retry attempts remaining.">
+    Incorrect PIN. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered.">
-    Incorrect PUK. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    Incorrect PUK. You have 1 remaining attempt before you must contact your carrier to regain network access.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered and there is only a single retry attempte remaining.">
+    Incorrect PUK. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts before you must contact your carrier to regain network access.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered.">
-    Invalid PIN. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    Invalid PIN. You have 1 remaining attempt.
   </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered.">
-    Invalid PUK. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered and there are multiple retry attempts remaining.">
+    Invalid PIN. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered and there is only a single retry attempt remaining.">
+      Invalid PUK. You have 1 remaining attempt.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered and there are multiple retry attempts remaining.">
+      Invalid PUK. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when PIN values do not match.">
     PIN values do not match.
@@ -5447,17 +5462,23 @@
   </message>
 
   <!-- Strings for camera/mic permission -->
-  <message name="IDS_CAMERA_NOTIFICATION_SOURCE" desc="The name of the source of a camera notification ">
+  <message name="IDS_CAMERA_NOTIFICATION_SOURCE" desc="The name of the source of a camera notification">
     Camera
   </message>
-  <message name="IDS_MIC_NOTIFICATION_SOURCE" desc="The name of the source of a mic notification ">
+  <message name="IDS_MIC_NOTIFICATION_SOURCE" desc="The name of the source of a mic notification">
     Microphone
+  </message>
+  <message name="IDS_CAMERA_MIC_NOTIFICATION_SOURCE" desc="The name of the source of a 'camera and mic' notification">
+    Camera &amp; microphone
   </message>
   <message name="IDS_APP_USING_CAMERA_NOTIFICATION_MESSAGE" desc="Message shown in notification when an app is using the camera">
     <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is using your camera
   </message>
   <message name="IDS_APP_USING_MIC_NOTIFICATION_MESSAGE" desc="Message shown in notification when an app is using the microphone">
     <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is using your microphone
+  </message>
+  <message name="IDS_APP_USING_CAMERA_MIC_NOTIFICATION_MESSAGE" desc="Message shown in notification when an app is using both the camera and microphone">
+    <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is using your camera and microphone
   </message>
 
   <!-- Strings for Account Manager error screen -->
@@ -5486,6 +5507,9 @@
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_TITLE" desc="Title for the Welcome screen in Chrome OS 'Add account' dialog.">
     Add a secondary Google Account for <ph name="USER_NAME">$1<ex>John</ex></ph>
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_CHECKBOX" desc="Checkbox text for the Welcome screen in Chrome OS 'Add account' dialog. If user checks this checkbox, this screen will not be shown the next time they open the dialog.">
+    Don't remind me next time
   </message>
   <message name="IDS_ACCOUNT_MANAGER_ERROR_NO_INTERNET_TITLE" desc="Title for the network error screen.">
     No Internet

@@ -151,7 +151,8 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
 
   std::vector<std::string> Dump(std::vector<std::string>& unused) override {
     std::unique_ptr<AXTreeFormatter> formatter(CreateFormatter());
-    formatter->SetPropertyFilters(property_filters_);
+    formatter->SetPropertyFilters(property_filters_,
+                                  AXTreeFormatter::kFiltersDefaultSet);
     formatter->SetNodeFilters(node_filters_);
     std::string actual_contents =
         formatter->Format(GetRootAccessibilityNode(shell()->web_contents()));
@@ -274,6 +275,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCSSContentVisibilityAutoCrash) {
   RunCSSTest(FILE_PATH_LITERAL("content-visibility-auto-crash.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSContentVisibilityHiddenCheckFailure) {
+  RunCSSTest(FILE_PATH_LITERAL("content-visibility-hidden-check-failure.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSFontStyle) {
@@ -2120,6 +2126,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityNavigation) {
   RunHtmlTest(FILE_PATH_LITERAL("navigation.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityNextOnLineCheckFailure) {
+  RunCSSTest(FILE_PATH_LITERAL("next-on-line-check-failure.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityNoscript) {

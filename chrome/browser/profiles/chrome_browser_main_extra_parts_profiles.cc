@@ -113,6 +113,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/reading_list/reading_list_manager_factory.h"
+#include "chrome/browser/android/reading_list/reading_list_notification_service_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/thin_webview/chrome_thin_webview_initializer.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
@@ -189,7 +190,7 @@
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #endif
 
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/cert_db_initializer_factory.h"
 #endif
 
@@ -372,6 +373,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 
 #if defined(OS_ANDROID)
     ReadingListManagerFactory::GetInstance();
+    ReadingListNotificationServiceFactory::GetInstance();
 #endif
   }
 
@@ -437,7 +439,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   WebDataServiceFactory::GetInstance();
   webrtc_event_logging::WebRtcEventLogManagerKeyedServiceFactory::GetInstance();
 
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   CertDbInitializerFactory::GetInstance();
 #endif
 }

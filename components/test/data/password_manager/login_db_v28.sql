@@ -120,4 +120,19 @@ CREATE TABLE sync_model_metadata (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   metadata VARCHAR NOT NULL
 );
+CREATE TABLE compromised_credentials (
+  url VARCHAR NOT NULL,
+  username VARCHAR NOT NULL,
+  create_time INTEGER NOT NULL,
+  compromise_type INTEGER NOT NULL,
+  UNIQUE (url, username, compromise_type));
+CREATE INDEX compromised_credentials_index ON compromised_credentials (url,
+  username, compromise_type);
+INSERT INTO "compromised_credentials"
+ (url,username,create_time,compromise_type) VALUES(
+'http://example.com', /* url */
+'user', /* username */
+13047423600000000, /* create_time */
+0 /* compromise_type */
+);
 COMMIT;

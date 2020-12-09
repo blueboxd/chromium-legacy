@@ -168,7 +168,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
 // TODO(crbug.com/1147032): The certificates settings page is temporarily
 // disabled for Lacros-Chrome until a better solution is found.
-#if !BUILDFLAG(IS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 #if defined(USE_NSS_CERTS)
   AddSettingsPageUIHandler(
       std::make_unique<certificate_manager::CertificatesHandler>());
@@ -179,8 +179,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       chromeos::cert_provisioning::CertificateProvisioningUiHandler::
           CreateForProfile(profile));
-#endif  // defined(OS_CHROMEOS)
-#endif  // !BUILDFLAG(IS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
   AddSettingsPageUIHandler(std::make_unique<AccessibilityMainHandler>());
   AddSettingsPageUIHandler(std::make_unique<BrowserLifetimeHandler>());
@@ -317,6 +317,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                                                   features::kNewProfilePicker));
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+  html_source->AddBoolean(
+      "safetyCheckWeakPasswordsEnabled",
+      base::FeatureList::IsEnabled(features::kSafetyCheckWeakPasswords));
+
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 
@@ -333,6 +337,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "movePasswordsToAccount",
       IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT_COUNT);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckPasswordsCompromised",
+      IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT_SHORT);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckPasswordsWeak", IDS_SETTINGS_WEAK_PASSWORDS_COUNT_SHORT);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.

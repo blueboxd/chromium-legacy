@@ -182,7 +182,13 @@
 
   <!-- High Visibility Page Strings -->
   <message name="IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE" desc="Describes to the user that their device is visible to nearby devices with a specific device name. This is used on the sub-title of the of high visibility receive dialog for the Nearby Share feature.">
-    Visible to nearby devices as <ph name="DEVICE_NAME">$1<ex>Rea’s Chromebook</ex></ph>
+    Visible to nearby devices as <ph name="DEVICE_NAME">$1<ex>Rea’s Chromebook</ex></ph> for <ph name="REMAINING_TIME">$2<ex>5 min</ex></ph>...
+  </message>
+  <message name="IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE_MINUTES" desc="A short string showing the nearest number of whole minutes until Nearby Share high visibility turns off. To be used with IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE. [CHAR_LIMIT=7]">
+    <ph name="MINUTES">$1<ex>2</ex></ph> min
+  </message>
+  <message name="IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE_SECONDS" desc="A short string showing the nearest number of whole seconds until Nearby Share high visibility turns off. To be used with IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE. [CHAR_LIMIT=7]">
+    <ph name="SECONDS">$1<ex>40</ex></ph> sec
   </message>
   <message name="IDS_NEARBY_HIGH_VISIBILITY_HELP_TEXT" desc="Describes to the user that their device is visible to nearby devices with a specific device name. This is used on the sub-title of the of high visibility receive dialog for the Nearby Share feature.">
     Make sure both devices are unlocked, close together, and have Bluetooth turned on. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
@@ -201,6 +207,9 @@
   <!-- Settings Strings -->
   <message name="IDS_NEARBY_ACCOUNT_ROW_LABEL" desc="Label to describe the account row which displays the user's full name and their email which will identify them when using the Nearby Share feature." is_accessibility_with_no_ui="true">
       Nearby Share settings for <ph name="USER_NAME">$1<ex>Jane Doe</ex></ph>'s device, sharing under the account <ph name="USER_EMAIL">$2<ex>example@gmail.com</ex></ph>.
+  </message>
+  <message name="IDS_NEARBY_SETTINGS_HELP_CAPTION" desc="Brief explanation shown at the bottom of the settings page. Meant to give context on what conditions have to be met to use Nearby Share, and how to toggle the high visibility state in the system tray. Provides a link with more detailed information.">
+    To use Nearby Share, make sure both devices are unlocked, close together, and have Bluetooth turned on. If you’re sharing with a Chromebook that is not in your contacts, make sure it has Nearby visibility turned on (open the status area by selecting the time, then turn on Nearby visibility) <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_NEARBY_VISIBLITY_ALL_CONTACTS" desc="Describes the user preference state for the user to be visibile to all their contacts in the Nearby Share feature.">
     All contacts

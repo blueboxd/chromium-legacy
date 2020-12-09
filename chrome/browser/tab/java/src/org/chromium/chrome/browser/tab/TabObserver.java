@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * An observer that is notified of changes to a {@link Tab} object.
@@ -24,11 +25,8 @@ public interface TabObserver {
      * if not {@code null}, various states that a Tab should restore itself from.
      * @param tab The notifying {@link Tab}.
      * @param appId ID of the external app that opened this tab.
-     * @param hasThemeColor {@code true} if the tab has a theme color set. {@code null}
-     *        if theme color info is not available from TabState.
-     * @param themeColor Theme color.
      */
-    void onInitialized(Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor);
+    void onInitialized(Tab tab, String appId);
 
     /**
      * Called when a {@link Tab} is shown.
@@ -86,19 +84,17 @@ public interface TabObserver {
      * <p>
      * For visual loading indicators/throbbers, {@link #onLoadStarted(Tab)} and
      * {@link #onLoadStopped(Tab)} should be used to drive updates.
-     *
-     * @param tab The notifying {@link Tab}.
+     *  @param tab The notifying {@link Tab}.
      * @param url The committed URL being navigated to.
      */
-    void onPageLoadStarted(Tab tab, String url);
+    void onPageLoadStarted(Tab tab, GURL url);
 
     /**
      * Called when a tab has finished loading a page.
-     *
-     * @param tab The notifying {@link Tab}.
+     *  @param tab The notifying {@link Tab}.
      * @param url The committed URL that was navigated to.
      */
-    void onPageLoadFinished(Tab tab, String url);
+    void onPageLoadFinished(Tab tab, GURL url);
 
     /**
      * Called when a tab has failed loading a page.
@@ -182,9 +178,9 @@ public interface TabObserver {
 
     /**
      * Called when the WebContents starts loading. Different from
-     * {@link #onPageLoadStarted(Tab, String)}, if the user is navigated to a different url while
+     * {@link #onPageLoadStarted(Tab, GURL)}, if the user is navigated to a different url while
      * staying in the same html document, {@link #onLoadStarted(Tab)} will be called, while
-     * {@link #onPageLoadStarted(Tab, String)} will not.
+     * {@link #onPageLoadStarted(Tab, GURL)} will not.
      * @param tab The notifying {@link Tab}.
      * @param toDifferentDocument Whether this navigation will transition between
      * documents (i.e., not a fragment navigation or JS History API call).

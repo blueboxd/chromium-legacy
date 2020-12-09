@@ -206,17 +206,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
             }));
   }
 
-  bool CanUserUninstallFromSync(const AppId& app_id) const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  void UninstallWebAppFromSyncByUser(
-      const AppId& app_dd,
-      UninstallWebAppCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
   bool CanUserUninstallExternalApp(const AppId& app_id) const override {
     NOTIMPLEMENTED();
     return false;
@@ -413,7 +402,7 @@ TEST_F(PendingAppInstallTaskTest,
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
 
         EXPECT_FALSE(web_app_info().open_as_window);
-        EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
+        EXPECT_EQ(webapps::WebappInstallSource::INTERNAL_DEFAULT,
                   finalize_options().install_source);
 
         run_loop.Quit();
@@ -599,7 +588,7 @@ TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_DefaultApp) {
         EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(app_id.has_value());
 
-        EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
+        EXPECT_EQ(webapps::WebappInstallSource::INTERNAL_DEFAULT,
                   finalize_options().install_source);
         run_loop.Quit();
       }));
@@ -621,7 +610,7 @@ TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_AppFromPolicy) {
         EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(app_id.has_value());
 
-        EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
+        EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_POLICY,
                   finalize_options().install_source);
         run_loop.Quit();
       }));
@@ -647,7 +636,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
 
         EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
         EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
-        EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
+        EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_POLICY,
                   finalize_options().install_source);
         const WebApplicationInfo& web_app_info =
             finalizer()->web_app_info_list().at(0);
@@ -684,7 +673,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
 
         EXPECT_EQ(0u, os_integration_manager()->num_create_shortcuts_calls());
         EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
-        EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
+        EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_POLICY,
                   finalize_options().install_source);
         const WebApplicationInfo& web_app_info =
             finalizer()->web_app_info_list().at(0);

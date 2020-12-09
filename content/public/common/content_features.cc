@@ -6,6 +6,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "content/common/buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -217,13 +218,7 @@ const base::Feature kEnumerateDevicesHideDeviceIDs{
 // When a screen reader is detected, allow users the option of letting
 // Google provide descriptions for unlabeled images.
 const base::Feature kExperimentalAccessibilityLabels{
-  "ExperimentalAccessibilityLabels",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "ExperimentalAccessibilityLabels", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
@@ -368,13 +363,30 @@ const base::Feature kLogJsConsoleMessages {
 // creation. This will break ordering guarantees between different agent
 // scheduling groups (ordering withing a group is still preserved).
 // DO NOT USE! The feature is not yet fully implemented. See crbug.com/1111231.
-const base::Feature kMBIMode{"MBIMode", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMBIMode {
+  "MBIMode",
+#if BUILDFLAG(MBI_MODE_PER_RENDER_PROCESS_HOST) || \
+    BUILDFLAG(MBI_MODE_PER_SITE_INSTANCE)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 const base::FeatureParam<MBIMode>::Option mbi_mode_types[] = {
     {MBIMode::kLegacy, "legacy"},
     {MBIMode::kEnabledPerRenderProcessHost, "per_render_process_host"},
     {MBIMode::kEnabledPerSiteInstance, "per_site_instance"}};
 const base::FeatureParam<MBIMode> kMBIModeParam{
-    &kMBIMode, "mode", MBIMode::kLegacy, &mbi_mode_types};
+  &kMBIMode, "mode",
+#if BUILDFLAG(MBI_MODE_PER_RENDER_PROCESS_HOST)
+      MBIMode::kEnabledPerRenderProcessHost,
+#elif BUILDFLAG(MBI_MODE_PER_SITE_INSTANCE)
+      MBIMode::kEnabledPerSiteInstance,
+#else
+      MBIMode::kLegacy,
+#endif
+      &mbi_mode_types
+};
 
 // If this feature is enabled, media-device enumerations use a cache that is
 // invalidated upon notifications sent by base::SystemMonitor. If disabled, the
@@ -608,6 +620,12 @@ const base::Feature kSharedArrayBuffer {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+// Convenience feature for developers testing SABs and Cross-origin Isolation.
+// Disables both SharedArrayBuffer and WebAssemblyThreads features, so SABs
+// require COOP+COEP isolation.
+// TODO(bbudge) Remove after reverse origin trial. See https://crbug.com/923807
+const base::Feature kRestrictSharedArrayBuffer{
+    "RestrictSharedArrayBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Signed HTTP Exchange prefetch cache for navigations
 // https://crbug.com/968427

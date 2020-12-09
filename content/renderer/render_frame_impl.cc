@@ -2648,6 +2648,11 @@ void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
                                 save_with_empty_url);
 }
 
+void RenderFrameImpl::SetWantErrorMessageStackTrace() {
+  want_error_message_stack_trace_ = true;
+  v8::Isolate::GetCurrent()->SetCaptureStackTraceForUncaughtExceptions(true);
+}
+
 #if defined(OS_ANDROID)
 void RenderFrameImpl::ExtractSmartClipData(
     const gfx::Rect& rect,
@@ -2706,7 +2711,7 @@ blink::WebLocalFrame* RenderFrameImpl::GetWebFrame() {
 }
 
 const blink::web_pref::WebPreferences& RenderFrameImpl::GetBlinkPreferences() {
-  return render_view_->GetBlinkPreferences();
+  return GetWebFrame()->View()->GetWebPreferences();
 }
 
 const blink::RendererPreferences& RenderFrameImpl::GetRendererPreferences()
@@ -2761,7 +2766,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
       return new PepperWebPluginImpl(pepper_module.get(), params, this);
     }
   }
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   LOG(WARNING) << "Pepper module/plugin creation failed.";
 #endif
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
@@ -3398,6 +3403,12 @@ void RenderFrameImpl::CommitFailedNavigation(
   WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",
                                           "UTF-8", error_html);
   navigation_params->unreachable_url = error.url();
+  if (commit_params->redirects.size()) {
+    navigation_params->pre_redirect_url_for_failed_navigations =
+        commit_params->redirects[0];
+  } else {
+    navigation_params->pre_redirect_url_for_failed_navigations = error.url();
+  }
 
   // The error page load (not to confuse with a failed load of original page)
   // was not initiated through BeginNavigation, therefore
@@ -4021,8 +4032,13 @@ void RenderFrameImpl::DidMatchCSS(
     observer.DidMatchCSS(newly_matching_selectors, stopped_matching_selectors);
 }
 
-bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
+bool RenderFrameImpl::ShouldReportDetailedMessageForSourceAndSeverity(
+    blink::mojom::ConsoleMessageLevel log_level,
     const blink::WebString& source) {
+  if (want_error_message_stack_trace_ &&
+      log_level == blink::mojom::ConsoleMessageLevel::kError) {
+    return true;
+  }
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(
       source.Utf16());
 }
@@ -4032,7 +4048,8 @@ void RenderFrameImpl::DidAddMessageToConsole(
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
-  if (ShouldReportDetailedMessageForSource(source_name)) {
+  if (ShouldReportDetailedMessageForSourceAndSeverity(message.level,
+                                                      source_name)) {
     for (auto& observer : observers_) {
       observer.DetailedConsoleMessageAdded(
           message.text.Utf16(), source_name.Utf16(), stack_trace.Utf16(),
@@ -4725,7 +4742,7 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
                                    .user_agent_override.ua_string_override);
   }
 
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   // TODO(https://crbug.com/1114866): Implement proper L3 CDM support for
   // Lacros. This is scheduled for Q2 2021. After that we can remove this hack.
   WebSecurityOrigin frame_origin = frame_->GetDocument().GetSecurityOrigin();
@@ -5019,11 +5036,10 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // This check is very similar to RenderFrameHostImpl::CanCommitOrigin, but
   // adapted to the renderer process side.
   if (!params->origin.opaque() && params->url.IsStandard() &&
-      render_view_->GetBlinkPreferences().web_security_enabled) {
+      GetBlinkPreferences().web_security_enabled) {
     // Exclude file: URLs when settings allow them access any origin.
     if (params->origin.scheme() != url::kFileScheme ||
-        !render_view_->GetBlinkPreferences()
-             .allow_universal_access_from_file_urls) {
+        !GetBlinkPreferences().allow_universal_access_from_file_urls) {
       if (!params->origin.IsSameOriginWith(url::Origin::Create(params->url))) {
         base::debug::CrashKeyString* url = base::debug::AllocateCrashKeyString(
             "mismatched_url", base::debug::CrashKeySize::Size256);

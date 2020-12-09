@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -156,14 +157,8 @@ ChromeTranslateClient::per_frame_translate_driver() {
 // static
 std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
-#if defined(OS_CHROMEOS)
-  const char* preferred_languages_prefs = language::prefs::kPreferredLanguages;
-#else
-  const char* preferred_languages_prefs = NULL;
-#endif
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
-      new translate::TranslatePrefs(prefs, language::prefs::kAcceptLanguages,
-                                    preferred_languages_prefs));
+      new translate::TranslatePrefs(prefs));
 
   // We need to obtain the country here, since it comes from VariationsService.
   // components/ does not have access to that.

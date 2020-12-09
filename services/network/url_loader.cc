@@ -46,7 +46,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
-#include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
@@ -586,10 +585,6 @@ URLLoader::URLLoader(
   url_request_->SetUserData(kUserDataKey,
                             std::make_unique<UnownedPointer>(this));
 
-  is_nocors_corb_excluded_request_ =
-      request.corb_excluded && request.mode == mojom::RequestMode::kNoCors &&
-      CrossOriginReadBlockingExceptionForPlugin::ShouldAllowForPlugin(
-          factory_params_->process_id);
   request_mode_ = request.mode;
 
   if (request.trusted_params) {
@@ -1127,6 +1122,18 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
               coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
                             blocked_reason);
+    // TODO(https://crbug.com/1154250):  Close the socket here.
+    // For more details see https://crbug.com/1154250#c17.
+    // Item 2 discusses redirect handling.
+    //
+    // "url_request_->AbortAndCloseConnection()" should ideally close the
+    // socket, but unfortunately, URLRequestHttpJob caches redirects in a way
+    // that ignores their response bodies, since they'll never be read. It does
+    // this by calling HttpCache::Transaction::StopCaching(), which also has the
+    // effect of detaching the HttpNetworkTransaction, which owns the socket,
+    // from the HttpCache::Transaction. To fix this, we'd either need to call
+    // StopCaching() later in the process, or make the HttpCache::Transaction
+    // continue to hang onto the HttpNetworkTransaction after this call.
     DeleteSelf();
     return;
   }
@@ -1357,13 +1364,16 @@ void URLLoader::ContinueOnResponseStarted() {
               coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
                             blocked_reason);
+    // Close the socket associated with the request, to prevent leaking
+    // information.
+    url_request_->AbortAndCloseConnection();
     DeleteSelf();
     return;
   }
 
   // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
   // Read Blocking / CORB).
-  if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {
+  if (factory_params_->is_corb_enabled) {
     CrossOriginReadBlocking::LogAction(
         CrossOriginReadBlocking::Action::kResponseStarted);
 
@@ -2075,6 +2085,11 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
     // Ask the caller to continue processing the request.
     return kContinueRequest;
   }
+
+  // Close the socket associated with the request, to prevent leaking
+  // information.
+  url_request_->AbortAndCloseConnection();
+
   // Delete self and cancel the request - the caller doesn't need to continue.
   //
   // DeleteSelf is posted asynchronously, to make sure that the callers (e.g.

@@ -42,6 +42,7 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.url.GURL;
 
 /**
  * A helper class for IPH shown on the toolbar.
@@ -84,13 +85,13 @@ public class ToolbarButtonInProductHelpController
             private long mDataSavedOnStartPageLoad;
 
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
+            public void onPageLoadStarted(Tab tab, GURL url) {
                 mDataSavedOnStartPageLoad = DataReductionProxySettings.getInstance()
                                                     .getContentLengthSavedInHistorySummary();
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
+            public void onPageLoadFinished(Tab tab, GURL url) {
                 if (tab.isShowingErrorPage()) {
                     handleIPHForErrorPageShown(tab);
                     return;

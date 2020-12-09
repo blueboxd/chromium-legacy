@@ -9,6 +9,8 @@ import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("./nearby_shared.gni")
 
+assert(is_chromeos, "Nearby Share is CrOS only")
+
 os_settings_dir = "$root_gen_dir/chrome/browser/resources/settings/chromeos"
 preprocess_v2_manifest = "preprocessed_v2_manifest.json"
 preprocess_v3_manifest = "preprocessed_v3_manifest.json"
@@ -38,10 +40,18 @@ preprocess_if_expr("preprocess_v2") {
     "nearby_contact_manager.js",
     "nearby_contact_visibility.html",
     "nearby_contact_visibility.js",
+    "nearby_device_icon.html",
+    "nearby_device_icon.js",
+    "nearby_device.html",
+    "nearby_device.js",
     "nearby_onboarding_page.html",
     "nearby_onboarding_page.js",
     "nearby_page_template.html",
     "nearby_page_template.js",
+    "nearby_preview.html",
+    "nearby_preview.js",
+    "nearby_progress.html",
+    "nearby_progress.js",
     "nearby_share_settings.html",
     "nearby_share_settings.js",
     "nearby_share_settings_behavior.html",
@@ -61,8 +71,12 @@ preprocess_if_expr("preprocess_v3") {
   in_files = [
     "nearby_contact_manager.m.js",
     "nearby_contact_visibility.m.js",
+    "nearby_device_icon.m.js",
+    "nearby_device.m.js",
     "nearby_onboarding_page.m.js",
     "nearby_page_template.m.js",
+    "nearby_preview.m.js",
+    "nearby_progress.m.js",
     "nearby_share_settings.m.js",
     "nearby_share_settings_behavior.m.js",
     "nearby_shared_icons.m.js",
@@ -75,8 +89,12 @@ js_type_check("closure_compile") {
   deps = [
     ":nearby_contact_manager",
     ":nearby_contact_visibility",
+    ":nearby_device_icon",
+    ":nearby_device",
     ":nearby_onboarding_page",
     ":nearby_page_template",
+    ":nearby_preview",
+    ":nearby_progress",
     ":nearby_share_settings",
     ":nearby_share_settings_behavior",
     ":nearby_visibility_page",
@@ -109,7 +127,39 @@ js_library("nearby_contact_visibility") {
   ]
 }
 
+js_library("nearby_device_icon") {
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chromeos/services/nearby/public/mojom:nearby_share_target_types_js_library_for_compile",
+    "//third_party/polymer/v1_0/components-chromium/iron-icon:iron-icon-extracted",
+  ]
+}
+
+js_library("nearby_device") {
+  deps = [
+    ":nearby_device_icon",
+    "//third_party/polymer/v1_0/components-chromium/iron-icon:iron-icon-extracted",
+  ]
+}
+
 js_library("nearby_page_template") {
+}
+
+js_library("nearby_preview") {
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chromeos/services/nearby/public/mojom:nearby_share_target_types_js_library_for_compile",
+    "//third_party/polymer/v1_0/components-chromium/iron-icon:iron-icon-extracted",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("nearby_progress") {
+  deps = [
+    ":nearby_device_icon",
+    "//third_party/polymer/v1_0/components-chromium/iron-icon:iron-icon-extracted",
+  ]
 }
 
 js_library("nearby_onboarding_page") {
@@ -157,8 +207,12 @@ js_type_check("closure_compile_module") {
   deps = [
     ":nearby_contact_manager.m",
     ":nearby_contact_visibility.m",
+    ":nearby_device_icon.m",
+    ":nearby_device.m",
     ":nearby_onboarding_page.m",
     ":nearby_page_template.m",
+    ":nearby_preview.m",
+    ":nearby_progress.m",
     ":nearby_share_settings.m",
     ":nearby_share_settings_behavior.m",
     ":nearby_visibility_page.m",
@@ -169,12 +223,18 @@ group("polymer3_elements") {
   public_deps = [
     ":modulize",
     ":nearby_contact_visibility_module",
+    ":nearby_device_icon_module",
+    ":nearby_device_module",
     ":nearby_onboarding_page_module",
     ":nearby_page_template_module",
+    ":nearby_preview_module",
+    ":nearby_progress_module",
     ":nearby_shared_icons_module",
     ":nearby_shared_share_type_icons_module",
     ":nearby_visibility_page_module",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js",
     "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js",
+    "//chromeos/services/nearby/public/mojom:nearby_share_target_types_js",
   ]
 }
 
@@ -203,6 +263,25 @@ js_library("nearby_contact_visibility.m") {
   extra_deps = [ ":nearby_contact_visibility_module" ]
 }
 
+js_library("nearby_device_icon.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_device_icon.m.js" ]
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chromeos/services/nearby/public/mojom:nearby_share_target_types_js_library_for_compile",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":nearby_device_icon_module" ]
+}
+
+js_library("nearby_device.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_device.m.js" ]
+  deps = [
+    ":nearby_device_icon.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":nearby_device_module" ]
+}
+
 js_library("nearby_onboarding_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_onboarding_page.m.js" ]
   deps = [
@@ -218,6 +297,27 @@ js_library("nearby_onboarding_page.m") {
 js_library("nearby_page_template.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_page_template.m.js" ]
   extra_deps = [ ":nearby_page_template_module" ]
+}
+
+js_library("nearby_preview.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_preview.m.js" ]
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chromeos/services/nearby/public/mojom:nearby_share_target_types_js_library_for_compile",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+  ]
+  extra_deps = [ ":nearby_preview_module" ]
+}
+
+js_library("nearby_progress.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_progress.m.js" ]
+  deps = [
+    ":nearby_device_icon.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":nearby_progress_module" ]
 }
 
 js_library("nearby_share_settings_behavior.m") {
@@ -259,6 +359,22 @@ polymer_modulizer("nearby_contact_visibility") {
   namespace_rewrites = nearby_shared_namespace_rewrites
 }
 
+polymer_modulizer("nearby_device_icon") {
+  js_file = "nearby_device_icon.js"
+  html_file = "nearby_device_icon.html"
+  html_type = "dom-module"
+  auto_imports = nearby_shared_auto_imports
+  namespace_rewrites = nearby_shared_namespace_rewrites
+}
+
+polymer_modulizer("nearby_device") {
+  js_file = "nearby_device.js"
+  html_file = "nearby_device.html"
+  html_type = "dom-module"
+  auto_imports = nearby_shared_auto_imports
+  namespace_rewrites = nearby_shared_namespace_rewrites
+}
+
 polymer_modulizer("nearby_onboarding_page") {
   js_file = "nearby_onboarding_page.js"
   html_file = "nearby_onboarding_page.html"
@@ -270,6 +386,22 @@ polymer_modulizer("nearby_onboarding_page") {
 polymer_modulizer("nearby_page_template") {
   js_file = "nearby_page_template.js"
   html_file = "nearby_page_template.html"
+  html_type = "dom-module"
+  auto_imports = nearby_shared_auto_imports
+  namespace_rewrites = nearby_shared_namespace_rewrites
+}
+
+polymer_modulizer("nearby_preview") {
+  js_file = "nearby_preview.js"
+  html_file = "nearby_preview.html"
+  html_type = "dom-module"
+  auto_imports = nearby_shared_auto_imports
+  namespace_rewrites = nearby_shared_namespace_rewrites
+}
+
+polymer_modulizer("nearby_progress") {
+  js_file = "nearby_progress.js"
+  html_file = "nearby_progress.html"
   html_type = "dom-module"
   auto_imports = nearby_shared_auto_imports
   namespace_rewrites = nearby_shared_namespace_rewrites

@@ -205,6 +205,8 @@ public abstract class ChromeFeatureList {
             "AutofillEnablePasswordInfoBarAccountIndicationFooter";
     public static final String AUTOFILL_ENABLE_SAVE_CARD_INFO_BAR_ACCOUNT_INDICATION_FOOTER =
             "AutofillEnableSaveCardInfoBarAccountIndicationFooter";
+    public static final String AUTOFILL_ENABLE_UI_FOR_HONORIFIC_PREFIXES_IN_SETTINGS =
+            "AutofillEnableUIForHonorificPrefixesInSettings";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_DEFAULT_BROWSER_PROMO = "AndroidDefaultBrowserPromo";
     public static final String ANDROID_LAYOUT_CHANGE_TAB_REPARENT =
@@ -362,6 +364,8 @@ public abstract class ChromeFeatureList {
             "OmniboxEnableClipboardProviderImageSuggestions";
     public static final String OMNIBOX_HIDE_VISITS_FROM_CCT = "OmniboxHideVisitsFromCct";
     public static final String OMNIBOX_MOST_VISITED_TILES = "OmniboxMostVisitedTiles";
+    public static final String OMNIBOX_NATIVE_VOICE_SUGGEST_PROVIDER =
+            "OmniboxNativeVoiceSuggestProvider";
     public static final String OMNIBOX_SEARCH_ENGINE_LOGO = "OmniboxSearchEngineLogo";
     public static final String OMNIBOX_SEARCH_READY_INCOGNITO = "OmniboxSearchReadyIncognito";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
@@ -370,7 +374,6 @@ public abstract class ChromeFeatureList {
     public static final String PAGE_INFO_PERFORMANCE_HINTS = "PageInfoPerformanceHints";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
-    public static final String PASSWORD_CHECK = "PasswordCheck";
     public static final String PASSWORD_SCRIPTS_FETCHING = "PasswordScriptsFetching";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
     public static final String PHOTO_PICKER_VIDEO_SUPPORT = "PhotoPickerVideoSupport";

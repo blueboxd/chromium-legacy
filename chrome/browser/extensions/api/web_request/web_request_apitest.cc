@@ -119,6 +119,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/ui_base_features.h"
@@ -1297,6 +1298,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   auto make_browser_request = [this](const GURL& url) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
+    request->destination = network::mojom::RequestDestination::kEmpty;
     request->resource_type =
         static_cast<int>(blink::mojom::ResourceType::kSubResource);
 
@@ -3033,7 +3035,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, AppCacheRequests) {
 // Regression test for http://crbug.com/996940. Requests that redirected to an
 // appcache handled URL could have request ID collisions.
 // This test is flaky on Linux: https://crbug.com/1094834.
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_RedirectToAppCacheRequest DISABLED_RedirectToAppCacheRequest
 #else
 #define MAYBE_RedirectToAppCacheRequest RedirectToAppCacheRequest

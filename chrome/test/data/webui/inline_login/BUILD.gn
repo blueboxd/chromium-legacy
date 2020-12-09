@@ -3,6 +3,13 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/preprocess_if_expr.gni")
+
+preprocess_if_expr("preprocess") {
+  in_folder = "./"
+  out_folder = "$target_gen_dir"
+  in_files = [ "inline_login_test_util.js" ]
+}
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -23,8 +30,22 @@ js_library("inline_login_test") {
   deps = [
     ":inline_login_test_util",
     "..:chai_assert",
+    "..:test_util.m",
     "//chrome/browser/resources/inline_login:inline_login_app",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("inline_login_welcome_page_test") {
+  deps = [
+    ":inline_login_test_util",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/inline_login:inline_login_app",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

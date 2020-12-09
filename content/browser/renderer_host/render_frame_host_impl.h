@@ -578,11 +578,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
-  // Return the http method of the last committed navigation.
+  // Returns the http method of the last committed navigation.
   const std::string& last_http_method() { return last_http_method_; }
 
-  // Return the http status code of the last committed navigation.
+  // Returns the http status code of the last committed navigation.
   int last_http_status_code() { return last_http_status_code_; }
+
+  // Returns the POST ID of the last committed navigation.
+  int64_t last_post_id() { return last_post_id_; }
 
   // Returns true if |dest_url_info| should be considered the same site as the
   // current contents of this frame. This is the primary entry point for
@@ -929,6 +932,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void set_no_create_browser_accessibility_manager_for_testing(bool flag) {
     no_create_browser_accessibility_manager_for_testing_ = flag;
   }
+
+  // Indicates that this process wants the |untrusted_stack_trace| parameter of
+  // FrameHost.DidAddMessageToConsole() to be filled in as much as possible for
+  // log_level == kError messages.
+  void SetWantErrorMessageStackTrace();
 
   // Indicates that a navigation is ready to commit and can be
   // handled by this RenderFrame.
@@ -2518,7 +2526,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch(
       NavigationRequest* navigation_request,
       const mojom::DidCommitProvisionalLoadParams& params,
-      bool is_same_document_navigation);
+      mojom::DidCommitSameDocumentNavigationParamsPtr same_document_params);
 
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
@@ -2651,6 +2659,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The http status code of the last committed navigation.
   int last_http_status_code_ = 0;
+
+  // The POST ID of the last committed navigation.
+  int64_t last_post_id_ = 0;
 
   // Local root subframes directly own their RenderWidgetHost.
   // Please see comments about the GetLocalRenderWidgetHost() function.

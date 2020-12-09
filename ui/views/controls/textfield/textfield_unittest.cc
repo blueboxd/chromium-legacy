@@ -194,7 +194,9 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
   if (client) {
     if (handled) {
       if (result_text_.length())
-        client->InsertText(result_text_);
+        client->InsertText(result_text_,
+                           ui::TextInputClient::InsertTextCursorBehavior::
+                               kMoveCursorAfterText);
       if (composition_.text.length())
         client->SetCompositionText(composition_);
       else
@@ -3121,7 +3123,9 @@ TEST_F(TextfieldTest,
 TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
   InitTextfield();
 
-  textfield_->InsertText(UTF8ToUTF16("hello placeholder text"));
+  textfield_->InsertText(
+      UTF8ToUTF16("hello placeholder text"),
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   textfield_->SetAutocorrectRange(gfx::Range(3, 10));
 
   EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 10));
@@ -3131,7 +3135,9 @@ TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
   // Clear the text
   textfield_->DeleteRange(gfx::Range(0, 99));
 
-  textfield_->InsertText(UTF8ToUTF16("hello placeholder text"));
+  textfield_->InsertText(
+      UTF8ToUTF16("hello placeholder text"),
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   textfield_->SetAutocorrectRange(gfx::Range(3, 8));
 
   EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 8));
@@ -4093,9 +4099,52 @@ TEST_F(TextfieldTest, TextChangedCallbackTest) {
 TEST_F(TextfieldTest, InsertInvalidCharsTest) {
   InitTextfield();
 
-  textfield_->InsertText(ASCIIToUTF16("\babc\ndef\t"));
+  textfield_->InsertText(
+      ASCIIToUTF16("\babc\ndef\t"),
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
 
   EXPECT_EQ(textfield_->GetText(), ASCIIToUTF16("abcdef"));
 }
 
+TEST_F(TextfieldTest, ScrollCommands) {
+  InitTextfield();
+
+  // Scroll commands are only available on Mac.
+#if defined(OS_APPLE)
+  textfield_->SetText(ASCIIToUTF16("12 34567 89"));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
+
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_PAGE_UP));
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_PAGE_DOWN));
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_TO_BEGINNING_OF_DOCUMENT));
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_TO_END_OF_DOCUMENT));
+
+  test_api_->ExecuteTextEditCommand(ui::TextEditCommand::SCROLL_PAGE_UP);
+  EXPECT_EQ(textfield_->GetCursorPosition(), 0u);
+
+  test_api_->ExecuteTextEditCommand(ui::TextEditCommand::SCROLL_PAGE_DOWN);
+  EXPECT_EQ(textfield_->GetCursorPosition(), 11u);
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::SCROLL_TO_BEGINNING_OF_DOCUMENT);
+  EXPECT_EQ(textfield_->GetCursorPosition(), 0u);
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::SCROLL_TO_END_OF_DOCUMENT);
+  EXPECT_EQ(textfield_->GetCursorPosition(), 11u);
+#else
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_PAGE_UP));
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_PAGE_DOWN));
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_TO_BEGINNING_OF_DOCUMENT));
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::SCROLL_TO_END_OF_DOCUMENT));
+#endif
+}
 }  // namespace views

@@ -8,7 +8,6 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
-
 import {isChromeOS} from '//resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
@@ -67,6 +66,7 @@ Polymer({
       value: null,
     },
 
+    // <if expr="chromeos">
     /**
      * True if redesign of account management flows is enabled.
      * @private
@@ -74,11 +74,23 @@ Polymer({
     isAccountManagementFlowsV2Enabled_: {
       type: Boolean,
       value() {
-        return isChromeOS &&
-            loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
+        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
       },
       readOnly: true,
     },
+
+    /*
+     * True if welcome page should not be shown.
+     * @private
+     */
+    shouldSkipWelcomePage_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('shouldSkipWelcomePage');
+      },
+      readOnly: true,
+    },
+    // </if>
 
     /**
      * Id of the screen that is currently displayed.
@@ -166,11 +178,13 @@ Polymer({
   onNewWindow_(e) {
     window.open(e.detail.targetUrl, '_blank');
     e.detail.window.discard();
+    // <if expr="chromeos">
     if (this.isAccountManagementFlowsV2Enabled_) {
       // On Chrome OS this dialog is always-on-top, so we have to close it if
       // user opens a link in a new window.
       this.closeDialog_();
     }
+    // </if>
   },
 
   /** @private */
@@ -252,6 +266,9 @@ Polymer({
     if (this.$.signinFrame.canGoBack()) {
       this.$.signinFrame.back();
       this.$.signinFrame.focus();
+    } else if (this.isWelcomePageEnabled_()) {
+      // Allow user go back to the welcome page, if it's enabled.
+      this.switchView_(View.welcome);
     } else {
       this.closeDialog_();
     }
@@ -312,13 +329,23 @@ Polymer({
    * @private
    */
   isWelcomePageEnabled_() {
-    return this.isAccountManagementFlowsV2Enabled_;
+    if (!isChromeOS) {
+      return false;
+    }
+    return this.isAccountManagementFlowsV2Enabled_ &&
+        !this.shouldSkipWelcomePage_;
   },
 
+  // <if expr="chromeos">
   /** @private */
   onOkButtonClick_() {
     this.switchView_(View.addAccount);
+    const skipChecked =
+        /** @type {WelcomePageAppElement} */ (this.$$('welcome-page-app'))
+            .isSkipCheckboxChecked();
+    this.browserProxy_.skipWelcomePage(skipChecked);
   },
+  // </if>
 
   /** @param {Object} authExtHost */
   setAuthExtHostForTest(authExtHost) {

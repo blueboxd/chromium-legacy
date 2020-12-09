@@ -60,7 +60,7 @@
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/previews/resource_loading_hints_agent.h"
-#include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
+#include "chrome/renderer/subresource_redirect/public_image_hints_decider_agent.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/sync_encryption_keys_extension.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
@@ -607,7 +607,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new previews::ResourceLoadingHintsAgent(associated_interfaces, render_frame);
 
   if (subresource_redirect::IsPublicImageHintsBasedCompressionEnabled())
-    new subresource_redirect::SubresourceRedirectHintsAgent(
+    new subresource_redirect::PublicImageHintsDeciderAgent(
         associated_interfaces, render_frame);
 
   if (translate::IsSubFrameTranslationEnabled()) {
@@ -1340,7 +1340,26 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
 
 bool ChromeContentRendererClient::IsOriginIsolatedPepperPlugin(
     const base::FilePath& plugin_path) {
-  return plugin_path.value() == ChromeContentClient::kPDFPluginPath;
+  // Hosting plugins in-process is inherently incompatible with attempting to
+  // process-isolate plugins from different origins.
+  auto* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kPpapiInProcess)) {
+    // The kPpapiInProcess switch should only be used by tests.  In particular,
+    // we expect that the PDF plugin should always be isolated in the product
+    // (and that the switch won't interfere with PDF isolation).
+    CHECK_NE(ChromeContentClient::kPDFPluginPath, plugin_path.value());
+
+    return false;
+  }
+
+#if BUILDFLAG(ENABLE_NACL)
+  // Don't isolate the NaCl plugin (preserving legacy behavior).
+  if (plugin_path.value() == ChromeContentClient::kNaClPluginFileName)
+    return false;
+#endif
+
+  // Isolate all the other plugins (including the PDF plugin + test plugins).
+  return true;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)

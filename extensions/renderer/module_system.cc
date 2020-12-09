@@ -326,7 +326,7 @@ void ModuleSystem::CallModuleMethodSafe(
     const std::string& method_name,
     int argc,
     v8::Local<v8::Value> argv[],
-    const ScriptInjectionCallback::CompleteCallback& callback) {
+    ScriptInjectionCallback::CompleteCallback callback) {
   TRACE_EVENT2("v8", "v8.callModuleMethodSafe", "module_name", module_name,
                "method_name", method_name);
 
@@ -349,7 +349,7 @@ void ModuleSystem::CallModuleMethodSafe(
   {
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
-    context_->SafeCallFunction(function, argc, argv, callback);
+    context_->SafeCallFunction(function, argc, argv, std::move(callback));
     if (try_catch.HasCaught())
       HandleException(try_catch);
   }
@@ -580,8 +580,8 @@ v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
                                              v8::Local<v8::String> name) {
   return context_->RunScript(
       name, code,
-      base::Bind(&ExceptionHandler::HandleUncaughtException,
-                 base::Unretained(exception_handler_.get())),
+      base::BindOnce(&ExceptionHandler::HandleUncaughtException,
+                     base::Unretained(exception_handler_.get())),
       v8::ScriptCompiler::NoCacheReason::kNoCacheBecauseExtensionModule);
 }
 

@@ -23,7 +23,6 @@
 #include "components/arc/enterprise/arc_data_remove_requested_pref_handler.h"
 #include "components/arc/enterprise/arc_data_snapshotd_bridge.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -242,6 +241,15 @@ void ArcDataSnapshotdManager::Snapshot::OnSnapshotTaken() {
   started_ = false;
 }
 
+ArcDataSnapshotdManager::SnapshotInfo*
+ArcDataSnapshotdManager::Snapshot::GetCurrentSnapshot() {
+  if (last_)
+    return last_.get();
+
+  DCHECK(previous_);
+  return previous_.get();
+}
+
 ArcDataSnapshotdManager::Snapshot::Snapshot(
     PrefService* local_state,
     bool blocked_ui_mode,
@@ -295,7 +303,8 @@ ArcDataSnapshotdManager::~ArcDataSnapshotdManager() {
   DCHECK(g_arc_data_snapshotd_manager);
   g_arc_data_snapshotd_manager = nullptr;
 
-  session_manager::SessionManager::Get()->RemoveObserver(this);
+  if (session_controller_)
+    session_controller_->RemoveObserver(this);
 
   snapshot_.Sync();
   EnsureDaemonStopped(base::DoNothing());
@@ -364,40 +373,54 @@ bool ArcDataSnapshotdManager::IsAutoLoginAllowed() {
   }
 }
 
-void ArcDataSnapshotdManager::OnSessionStateChanged() {
+void ArcDataSnapshotdManager::OnSnapshotSessionStarted() {
+  if (state_ != State::kMgsToLaunch)
+    return;
+  state_ = State::kMgsLaunched;
+}
+
+void ArcDataSnapshotdManager::OnSnapshotSessionStopped() {
+  if (state_ != State::kRunning)
+    NOTREACHED();
+  state_ = State::kNone;
+
+  snapshot_.GetCurrentSnapshot()->set_verified(true);
+  snapshot_.Sync();
+
+  session_controller_->RemoveObserver(this);
+  session_controller_.reset();
+}
+
+void ArcDataSnapshotdManager::OnSnapshotSessionFailed() {
+  session_controller_->RemoveObserver(this);
+  session_controller_.reset();
+
   switch (state_) {
     case State::kMgsLaunched:
-      if (user_manager::UserManager::Get() &&
-          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
-        return;
-      }
-      LOG(ERROR) << "MGS has failed.";
       state_ = State::kNone;
-      apps_tracker_->StopTracking();
       OnSnapshotTaken(false /* success */);
       break;
-    case State::kMgsToLaunch:
-      if (user_manager::UserManager::Get() &&
-          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
-        state_ = State::kMgsLaunched;
-        apps_tracker_->StartTracking(base::BindRepeating(
-            &ArcDataSnapshotdManager::Update, weak_ptr_factory_.GetWeakPtr()));
-        return;
-      }
-      break;
     case State::kRunning:
-      if (user_manager::UserManager::Get() &&
-          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
-        return;
-      }
-      // It is a correct state. Exit MGS withg loaded snapshot.
       state_ = State::kNone;
-      return;
+
+      snapshot_.ClearSnapshot(snapshot_.GetCurrentSnapshot()->is_last());
+      snapshot_.Sync();
+
+      DCHECK(!attempt_user_exit_callback_.is_null());
+      EnsureDaemonStopped(std::move(attempt_user_exit_callback_));
+      break;
     case State::kBlockedUi:
     case State::kNone:
     case State::kRestored:
-      break;
+    case State::kMgsToLaunch:
+      NOTREACHED();
   }
+}
+
+void ArcDataSnapshotdManager::OnSnapshotAppInstalled(int percent) {
+  if (state_ != State::kMgsLaunched)
+    return;
+  Update(percent);
 }
 
 void ArcDataSnapshotdManager::StopDaemon(base::OnceClosure callback) {
@@ -479,6 +502,15 @@ void ArcDataSnapshotdManager::LoadSnapshot(const std::string& account_id,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void ArcDataSnapshotdManager::UpdateUi(int percent) {
+  if (!bridge_) {
+    OnUiUpdated(false /* success */);
+    return;
+  }
+  bridge_->Update(percent, base::BindOnce(&ArcDataSnapshotdManager::OnUiUpdated,
+                                          weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ArcDataSnapshotdManager::OnSnapshotsCleared(bool success) {
   switch (state_) {
     case State::kBlockedUi:
@@ -502,9 +534,13 @@ void ArcDataSnapshotdManager::OnKeyPairGenerated(bool success) {
   if (success) {
     VLOG(1) << "Managed Guest Session is ready to be started with blocked UI.";
     state_ = State::kMgsToLaunch;
-    session_manager::SessionManager::Get()->AddObserver(this);
+    session_controller_ =
+        SnapshotSessionController::Create(apps_tracker_.get());
+    session_controller_->AddObserver(this);
+
     // Move last to previous snapshot:
     snapshot_.StartNewSnapshot();
+    snapshot_.Sync();
 
     if (!reset_autologin_callback_.is_null())
       std::move(reset_autologin_callback_).Run();
@@ -554,14 +590,18 @@ void ArcDataSnapshotdManager::OnDaemonStopped(base::OnceClosure callback,
 void ArcDataSnapshotdManager::Update(int percent) {
   DCHECK_EQ(state_, State::kMgsLaunched);
 
-  // TODO(pbond): wire up to arc-data-snapshotd.
+  EnsureDaemonStarted(base::BindOnce(&ArcDataSnapshotdManager::UpdateUi,
+                                     weak_ptr_factory_.GetWeakPtr(), percent));
+
   if (percent == 100) {
     // Stop tracking apps, 100% of required apps got installed.
     // The snapshot can be taken right away.
     // If the policy changes or an app gets uninstalled, the compliance with the
     // required apps list will be fixed automatically on the next session
     // startup.
-    apps_tracker_->StopTracking();
+    session_controller_->RemoveObserver(this);
+    session_controller_.reset();
+
     delegate_->RequestStopArcInstance(
         base::BindOnce(&ArcDataSnapshotdManager::OnArcInstanceStopped,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -624,9 +664,15 @@ void ArcDataSnapshotdManager::OnSnapshotLoaded(base::OnceClosure callback,
           << " snapshot";
   state_ = State::kRunning;
   // Clear last snapshot if the previous one was loaded.
-  if (!last && snapshot_.last())
+  if (!last && snapshot_.last()) {
     snapshot_.ClearSnapshot(true /* last */);
+    snapshot_.Sync();
+  }
   EnsureDaemonStopped(base::DoNothing());
+
+  session_controller_ = SnapshotSessionController::Create(apps_tracker_.get());
+  session_controller_->AddObserver(this);
+
   std::move(callback).Run();
 }
 
@@ -635,6 +681,11 @@ void ArcDataSnapshotdManager::OnUnexpectedArcDataRemoveRequested() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   OnSnapshotTaken(false /* success */);
+}
+
+void ArcDataSnapshotdManager::OnUiUpdated(bool success) {
+  if (!success)
+    LOG(ERROR) << "Failed to update UI progress bar.";
 }
 
 std::string ArcDataSnapshotdManager::GetCryptohomeAccountId() {

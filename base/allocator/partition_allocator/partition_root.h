@@ -161,13 +161,6 @@ struct BASE_EXPORT PartitionRoot {
   // path of the central allocator.
   internal::MaybeSpinLock<thread_safe> lock_;
 
-  // The bucket lookup table lets us map a size_t to a bucket quickly.
-  // The trailing +1 caters for the overflow case for very large allocation
-  // sizes.  It is one flat array instead of a 2D array because in the 2D
-  // world, we'd need to index array[blah][max+1] which risks undefined
-  // behavior.
-  static uint16_t
-      bucket_index_lookup[((kBitsPerSizeT + 1) * kNumBucketsPerOrder) + 1];
   Bucket buckets[kNumBuckets] = {};
   Bucket sentinel_bucket;
 
@@ -1027,9 +1020,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
       tcache = internal::ThreadCache::Create(this);
       with_thread_cache = true;
     }
-    ret = tcache->GetFromCache(bucket_index);
+    ret = tcache->GetFromCache(bucket_index, &utilized_slot_size);
     is_already_zeroed = false;
-    utilized_slot_size = bucket_at(bucket_index).slot_size;
 
 #if DCHECK_IS_ON()
     // Make sure that the allocated pointer comes from the same place it would

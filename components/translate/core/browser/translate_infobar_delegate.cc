@@ -191,12 +191,12 @@ void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
   ui_delegate_.SetLanguageBlocked(!ui_delegate_.IsLanguageBlocked());
 }
 
-bool TranslateInfoBarDelegate::IsSiteBlacklisted() const {
-  return ui_delegate_.IsSiteBlacklisted();
+bool TranslateInfoBarDelegate::IsSiteOnNeverPromptList() const {
+  return ui_delegate_.IsSiteOnNeverPromptList();
 }
 
-void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  ui_delegate_.SetSiteBlacklist(!ui_delegate_.IsSiteBlacklisted());
+void TranslateInfoBarDelegate::ToggleNeverPrompt() {
+  ui_delegate_.SetNeverPrompt(!ui_delegate_.IsSiteOnNeverPromptList());
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() const {

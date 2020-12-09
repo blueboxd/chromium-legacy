@@ -46,7 +46,8 @@ class Extension;
 // functionality as those bound to the main RenderThread.
 class ScriptContext {
  public:
-  using RunScriptExceptionHandler = base::Callback<void(const v8::TryCatch&)>;
+  using RunScriptExceptionHandler =
+      base::OnceCallback<void(const v8::TryCatch&)>;
 
   ScriptContext(const v8::Local<v8::Context>& context,
                 blink::WebLocalFrame* frame,
@@ -118,11 +119,10 @@ class ScriptContext {
   void SafeCallFunction(const v8::Local<v8::Function>& function,
                         int argc,
                         v8::Local<v8::Value> argv[]);
-  void SafeCallFunction(
-      const v8::Local<v8::Function>& function,
-      int argc,
-      v8::Local<v8::Value> argv[],
-      const ScriptInjectionCallback::CompleteCallback& callback);
+  void SafeCallFunction(const v8::Local<v8::Function>& function,
+                        int argc,
+                        v8::Local<v8::Value> argv[],
+                        ScriptInjectionCallback::CompleteCallback callback);
 
   // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
@@ -263,7 +263,7 @@ class ScriptContext {
   v8::Local<v8::Value> RunScript(
       v8::Local<v8::String> name,
       v8::Local<v8::String> code,
-      const RunScriptExceptionHandler& exception_handler,
+      RunScriptExceptionHandler exception_handler,
       v8::ScriptCompiler::NoCacheReason no_cache_reason =
           v8::ScriptCompiler::NoCacheReason::kNoCacheNoReason);
 

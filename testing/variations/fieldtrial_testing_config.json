@@ -758,6 +758,27 @@
             ]
         }
     ],
+    "AutofillEnableCardLinkedOffer": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncAutofillWalletOfferData",
+                        "kAutofillEnableOffersInDownstream"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableStickyBubbleAndUpdatedLogging": [
         {
             "platforms": [
@@ -1743,7 +1764,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_16K",
+                    "params": {
+                        "size": "16384"
+                    },
                     "enable_features": [
                         "CodeCacheDeduplicationStudy"
                     ]
@@ -3028,10 +3052,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20201207",
                     "enable_features": [
-                        "InterestFeedV1ClickAndViewActionsConditionalUpload",
-                        "InterestFeedV2ClickAndViewActionsConditionalUpload"
+                        "InterestFeedV1ClickAndViewActionsConditionalUpload"
                     ]
                 }
             ]
@@ -4491,6 +4514,24 @@
             ]
         }
     ],
+    "MuteNotifications": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MuteNotificationsDuringScreenShare"
+                    ]
+                }
+            ]
+        }
+    ],
     "MyChromeEverywhere": [
         {
             "platforms": [
@@ -4639,6 +4680,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "NotificationDurationLongForRequireInteraction"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NtpRepeatableQueriesDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "NtpRepeatableQueriesAgeThresholdDays": "180",
+                        "NtpRepeatableQueriesFrequencyExponent": "2",
+                        "NtpRepeatableQueriesInsertPosition": "start",
+                        "NtpRepeatableQueriesRecencyHalfLifeSeconds": "604800"
+                    },
+                    "enable_features": [
+                        "NtpRepeatableQueries"
                     ]
                 }
             ]
@@ -4813,7 +4878,6 @@
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxLocalZeroSuggestAgeThreshold",
-                        "OmniboxLocalZeroSuggestForAuthenticatedUsers",
                         "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
@@ -4825,9 +4889,12 @@
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "OmniboxZeroSuggestCaching",
                         "QueryInOmnibox",
                         "SearchSuggestChips"
+                    ],
+                    "disable_features": [
+                        "OmniboxLocalZeroSuggestForAuthenticatedUsers",
+                        "OmniboxZeroSuggestCaching"
                     ]
                 }
             ]
@@ -4855,7 +4922,10 @@
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
-                        "OmniboxUIExperimentMaxAutocompleteMatches",
+                        "OmniboxUIExperimentMaxAutocompleteMatches"
+                    ],
+                    "disable_features": [
+                        "OmniboxLocalZeroSuggestForAuthenticatedUsers",
                         "OmniboxZeroSuggestCaching"
                     ]
                 }
@@ -5764,6 +5834,90 @@
             ],
             "experiments": [
                 {
+                    "name": "EnabledNTPWithExploreAndTrending_20201207",
+                    "params": {
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "experiment_tag": "{maxLevels : 1, enableTrending : true}",
+                        "image_prefetch_mode": "top",
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "1",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
+                    },
+                    "enable_features": [
+                        "QueryTiles",
+                        "QueryTilesInNTP",
+                        "QueryTilesLocalOrdering"
+                    ],
+                    "disable_features": [
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesInOmnibox"
+                    ]
+                },
+                {
+                    "name": "EnabledNTPWithExplore_20201207",
+                    "params": {
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "experiment_tag": "{maxLevels : 1}",
+                        "image_prefetch_mode": "top",
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "1",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
+                    },
+                    "enable_features": [
+                        "QueryTiles",
+                        "QueryTilesInNTP",
+                        "QueryTilesLocalOrdering"
+                    ],
+                    "disable_features": [
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesInOmnibox"
+                    ]
+                },
+                {
+                    "name": "EnabledNTPWithStitchAndTrending_20201207",
+                    "params": {
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "experiment_tag": "{enableTrending : true}",
+                        "image_prefetch_mode": "top",
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "1",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
+                    },
+                    "enable_features": [
+                        "QueryTiles",
+                        "QueryTilesInNTP",
+                        "QueryTilesLocalOrdering"
+                    ],
+                    "disable_features": [
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesInOmnibox"
+                    ]
+                },
+                {
+                    "name": "EnabledNTPWithStitch_20201207",
+                    "params": {
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "experiment_tag": "",
+                        "image_prefetch_mode": "top",
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "1",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
+                    },
+                    "enable_features": [
+                        "QueryTiles",
+                        "QueryTilesInNTP",
+                        "QueryTilesLocalOrdering"
+                    ],
+                    "disable_features": [
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesInOmnibox"
+                    ]
+                },
+                {
                     "name": "EnabledStitch",
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
@@ -6297,7 +6451,6 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "PasswordCheck",
                         "SafetyCheckAndroid"
                     ]
                 }
@@ -8064,6 +8217,21 @@
             ]
         }
     ],
+    "WebRTC-Video-QualityScaling": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-29,95,149,205,24,37,26,36,0.9995,0.9999,1"
+                }
+            ]
+        }
+    ],
     "WebRTC-Vp9ExternalRefCtrl": [
         {
             "platforms": [
@@ -8097,8 +8265,15 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "saturation_margin": "5",
-                        "use_peaks_not_rms": "false"
+                        "avx2_allowed": "true",
+                        "extra_saturation_margin": "5",
+                        "gain_applier_speech_frames_threshold": "6",
+                        "initial_saturation_margin": "20",
+                        "level_estimator_speech_frames_threshold": "6",
+                        "max_gain_change_db_per_second": "3",
+                        "max_output_noise_level_dbfs": "-55",
+                        "use_peaks_not_rms": "false",
+                        "vad_probability_attack": "0.3"
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"

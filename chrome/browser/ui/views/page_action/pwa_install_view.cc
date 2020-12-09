@@ -11,9 +11,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/user_education/feature_promo_text_replacements.h"
@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/webapps/installable/installable_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -48,7 +49,8 @@ constexpr base::FeatureParam<ExperimentIcon> kInstallIconParam{
 // Add x_ prefix so the IPH feature engagement tracker can ignore this.
 constexpr base::FeatureParam<int> kIphSiteEngagementThresholdParam{
     &feature_engagement::kIPHDesktopPwaInstallFeature,
-    "x_site_engagement_threshold", 10};
+    "x_site_engagement_threshold",
+    web_app::kIphFieldTrialParamDefaultSiteEngagementThreshold};
 
 }  // namespace
 
@@ -127,8 +129,8 @@ void PwaInstallView::OnIphClosed() {
           ->GetPrefs();
   base::UmaHistogramEnumeration("WebApp.InstallIphPromo.Result",
                                 web_app::InstallIphResult::kIgnored);
-  web_app::RecordInstallIphIgnored(prefs,
-                                   web_app::GenerateAppIdFromURL(start_url));
+  web_app::RecordInstallIphIgnored(
+      prefs, web_app::GenerateAppIdFromURL(start_url), base::Time::Now());
 }
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
@@ -148,10 +150,11 @@ void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
     controller->CloseBubble(feature_engagement::kIPHDesktopPwaInstallFeature);
   }
 
-  web_app::CreateWebAppFromManifest(GetWebContents(),
-                                    /*bypass_service_worker_check=*/false,
-                                    WebappInstallSource::OMNIBOX_INSTALL_ICON,
-                                    base::DoNothing(), iph_state);
+  web_app::CreateWebAppFromManifest(
+      GetWebContents(),
+      /*bypass_service_worker_check=*/false,
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON, base::DoNothing(),
+      iph_state);
 }
 
 views::BubbleDialogDelegate* PwaInstallView::GetBubble() const {

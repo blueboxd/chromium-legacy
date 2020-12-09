@@ -25,7 +25,6 @@
 #include "chrome/common/channel_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_internals_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/engine_impl/net/url_translator.h"
@@ -244,9 +243,7 @@ void ProfileSyncServiceHarness::ResetSyncForPrimaryAccount() {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void ProfileSyncServiceHarness::SignOutPrimaryAccount() {
   DCHECK(!username_.empty());
-  signin::ClearPrimaryAccount(
-      IdentityManagerFactory::GetForProfile(profile_),
-      signin::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
+  signin::ClearPrimaryAccount(IdentityManagerFactory::GetForProfile(profile_));
 }
 #endif  // !OS_CHROMEOS
 
@@ -259,10 +256,8 @@ void ProfileSyncServiceHarness::EnterSyncPausedStateForPrimaryAccount() {
 void ProfileSyncServiceHarness::ExitSyncPausedStateForPrimaryAccount() {
   signin::SetRefreshTokenForPrimaryAccount(
       IdentityManagerFactory::GetForProfile(profile_));
-  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
-    // The engine was off in the sync-paused state, so wait for it to start.
-    AwaitSyncSetupCompletion();
-  }
+  // The engine was off in the sync-paused state, so wait for it to start.
+  AwaitSyncSetupCompletion();
 }
 
 bool ProfileSyncServiceHarness::SetupSync() {

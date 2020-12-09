@@ -17,7 +17,16 @@ class Profile;
 namespace chromeos {
 namespace full_restore {
 
-class NewUserRestorePrefHanlder;
+class NewUserRestorePrefHandler;
+
+extern const char kRestoreForCrashNotificationId[];
+extern const char kRestoreNotificationId[];
+
+// The restore notification button index.
+enum class RestoreNotificationButtonIndex {
+  kRestore = 0,
+  kCancel,
+};
 
 // The FullRestoreService class calls AppService and Window Management
 // interfaces to restore the app launchings and app windows.
@@ -54,7 +63,7 @@ class FullRestoreService : public KeyedService {
 
   bool is_shut_down_ = false;
 
-  std::unique_ptr<NewUserRestorePrefHanlder> new_user_pref_handler_;
+  std::unique_ptr<NewUserRestorePrefHandler> new_user_pref_handler_;
 
   base::WeakPtrFactory<FullRestoreService> weak_ptr_factory_{this};
 };

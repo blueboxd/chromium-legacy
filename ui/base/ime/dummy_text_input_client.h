@@ -16,6 +16,7 @@
 namespace ui {
 
 // Dummy implementation of TextInputClient. All functions do nothing.
+// TODO(crbug.com/1148157): Replace this class with FakeTextInputClient.
 class DummyTextInputClient : public TextInputClient {
  public:
   DummyTextInputClient();
@@ -28,7 +29,8 @@ class DummyTextInputClient : public TextInputClient {
   void SetCompositionText(const CompositionText& composition) override;
   uint32_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
-  void InsertText(const base::string16& text) override;
+  void InsertText(const base::string16& text,
+                  InsertTextCursorBehavior cursor_behavior) override;
   void InsertChar(const KeyEvent& event) override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;

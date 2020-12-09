@@ -37,6 +37,9 @@ import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ConfirmObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.DismissObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ReadyObserver;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.FocusChangedObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -79,6 +82,7 @@ import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -210,6 +214,13 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
          * @param error The diagnostic message that's exposed to developers.
          */
         void onUiServiceError(String error);
+
+        /**
+         * @return The context of the current activity, can be null when WebContents has been
+         *         destroyed, the activity is gone, the window is closed, etc.
+         */
+        @Nullable
+        Context getContext();
     }
 
     /**
@@ -404,7 +415,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
      * The UI model of the shopping cart, including the total. Each item includes a label and a
      * price string. This data is passed to the UI.
      */
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public void getShoppingCart(Callback<ShoppingCart> callback) {
         mHandler.post(callback.bind(mUiShoppingCart));
@@ -467,24 +478,25 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
 
     /**
      * Triggers the minimal UI.
-     * @param chromeActivity The Android activity for the Chrome UI that will host the minimal UI.
+     * @param windowAndroid The window of the main activity.
      * @param mRawTotal The raw total of the payment item.
      * @param readyObserver The onMinimalUIReady function.
      * @param confirmObserver The onMinimalUiConfirmed function.
      * @param dismissObserver The onMinimalUiDismissed function.
+     * @return Whether the triggering is successful.
      */
-    public boolean triggerMinimalUI(ChromeActivity chromeActivity, PaymentItem mRawTotal,
-            MinimalUICoordinator.ReadyObserver readyObserver,
-            MinimalUICoordinator.ConfirmObserver confirmObserver,
-            MinimalUICoordinator.DismissObserver dismissObserver) {
+    public boolean triggerMinimalUI(WindowAndroid windowAndroid, PaymentItem mRawTotal,
+            ReadyObserver readyObserver, ConfirmObserver confirmObserver,
+            DismissObserver dismissObserver) {
+        Context context = windowAndroid.getContext().get();
+        if (context == null) return false;
         // Do not show the Payment Request UI dialog even if the minimal UI is suppressed.
         mPaymentUisShowStateReconciler.onBottomSheetShown();
         mMinimalUi = new MinimalUICoordinator();
         PaymentApp selectedApp = getSelectedPaymentApp();
-        return mMinimalUi.show(chromeActivity,
-                BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()), selectedApp,
-                mCurrencyFormatterMap.get(mRawTotal.amount.currency), mUiShoppingCart.getTotal(),
-                readyObserver, confirmObserver, dismissObserver);
+        return mMinimalUi.show(context, BottomSheetControllerProvider.from(windowAndroid),
+                selectedApp, mCurrencyFormatterMap.get(mRawTotal.amount.currency),
+                mUiShoppingCart.getTotal(), readyObserver, confirmObserver, dismissObserver);
     }
 
     /**
@@ -647,9 +659,10 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
     /**
      * Called after {@link PaymentRequest#retry} is invoked.
+     * @param context The context of the main activity.
      * @param errors The payment validation errors.
      */
-    public void onRetry(PaymentValidationErrors errors) {
+    public void onRetry(Context context, PaymentValidationErrors errors) {
         // Remove all payment apps except the selected one.
         assert mPaymentMethodsSection != null;
         PaymentApp selectedApp = getSelectedPaymentApp();
@@ -666,9 +679,8 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         if (!TextUtils.isEmpty(errors.error)) {
             mPaymentRequestUI.setRetryErrorMessage(errors.error);
         } else {
-            ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
             mPaymentRequestUI.setRetryErrorMessage(
-                    activity.getResources().getString(R.string.payments_error_message));
+                    context.getResources().getString(R.string.payments_error_message));
         }
 
         if (shouldShowShippingSection() && hasShippingAddressError(errors.shippingAddress)) {
@@ -931,7 +943,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         }
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public boolean shouldShowShippingSection() {
         if (mParams.hasClosed() || !mParams.getPaymentOptions().requestShipping) return false;
@@ -940,7 +952,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         return selectedApp == null || !selectedApp.handlesShippingAddress();
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public boolean shouldShowContactSection() {
         PaymentApp selectedApp = getSelectedPaymentApp();
@@ -985,9 +997,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     @Nullable
     public WebContents showPaymentHandlerUI(GURL url, boolean isOffTheRecord) {
         if (mPaymentHandlerUi != null) return null;
-        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
-        if (chromeActivity == null) return null;
-
         PaymentHandlerCoordinator paymentHandlerUi = new PaymentHandlerCoordinator();
         WebContents paymentHandlerWebContents = paymentHandlerUi.show(
                 /*paymentRequestWebContents=*/mWebContents, url, isOffTheRecord,
@@ -1419,7 +1428,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                 PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public boolean onPayClicked(EditableOption selectedShippingAddress,
             EditableOption selectedShippingOption, EditableOption selectedPaymentMethod) {
@@ -1427,7 +1436,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                 (PaymentApp) selectedPaymentMethod);
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public int onSectionAddOption(
             @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
@@ -1446,7 +1455,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         return PaymentRequestUI.SelectionResult.NONE;
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     @PaymentRequestUI.SelectionResult
     public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, EditableOption option,
@@ -1543,7 +1552,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
      * @param callback The callback after an asynchronous check has completed.
      * @return The result of the selection.
      */
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     @PaymentRequestUI.SelectionResult
     public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
@@ -1607,18 +1616,18 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         return PaymentRequestUI.SelectionResult.NONE;
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public void onDismiss() {
         mDelegate.onUiAborted(AbortReason.ABORTED_BY_USER, ErrorStrings.USER_CANCELLED);
     }
 
-    // Implements PaymentUiService.Delegate:
+    // Implements PaymentRequestUI.Delegate:
     @Override
     public void onCardAndAddressSettingsClicked() {
-        Context context = ChromeActivity.fromWebContents(mWebContents);
+        Context context = mDelegate.getContext();
         if (context == null) {
-            mDelegate.onUiAborted(AbortReason.OTHER, ErrorStrings.ACTIVITY_NOT_FOUND);
+            mDelegate.onUiAborted(AbortReason.OTHER, ErrorStrings.CONTEXT_NOT_FOUND);
             return;
         }
 
@@ -1629,16 +1638,16 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     // Implements PersonalDataManager.NormalizedAddressRequestDelegate:
     @Override
     public void onAddressNormalized(AutofillProfile profile) {
-        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
+        Context context = mDelegate.getContext();
 
         // Can happen if the tab is closed during the normalization process.
-        if (chromeActivity == null) {
-            mDelegate.onUiServiceError(ErrorStrings.ACTIVITY_NOT_FOUND);
+        if (context == null) {
+            mDelegate.onUiServiceError(ErrorStrings.CONTEXT_NOT_FOUND);
             return;
         }
 
         // Don't reuse the selected address because it is formatted for display.
-        AutofillAddress shippingAddress = new AutofillAddress(chromeActivity, profile);
+        AutofillAddress shippingAddress = new AutofillAddress(context, profile);
         mDelegate.onShippingAddressChange(shippingAddress.toPaymentAddress());
     }
 

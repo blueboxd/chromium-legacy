@@ -4,6 +4,8 @@
 
 #include "chrome/browser/flag_descriptions.h"
 
+#include "build/chromeos_buildflags.h"
+
 // Keep in identical order as the header file, see the comment at the top
 // for formatting rules.
 
@@ -319,6 +321,11 @@ const char kCheckOfflineCapabilityName[] = "Check offline capability for PWAs";
 const char kCheckOfflineCapabilityDescription[] =
     "Use advanced offline capability check to decide whether the browser "
     "displays install prompts for PWAs.";
+
+const char kChromeLabsName[] = "Chrome Labs";
+const char kChromeLabsDescription[] =
+    "Access Chrome Labs through the toolbar menu to see featured user-facing "
+    "experimental features.";
 
 const char kContextMenuGoogleLensChipName[] =
     "Google Lens powered image search for surfaced as a chip below the context "
@@ -671,6 +678,12 @@ const char kDesktopPWAsElidedExtensionsMenuName[] =
 const char kDesktopPWAsElidedExtensionsMenuDescription[] =
     "Moves the Extensions \"puzzle piece\" icon from the title bar into the "
     "app menu for web app windows.";
+
+const char kDesktopPWAsFlashAppNameInsteadOfOriginName[] =
+    "Desktop PWAs flash app name instead of origin";
+const char kDesktopPWAsFlashAppNameInsteadOfOriginDescription[] =
+    "Replaces the origin flash with an app name flash when launching a web app "
+    "window.";
 
 const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 const char kDesktopPWAsTabStripDescription[] =
@@ -1057,6 +1070,12 @@ const char kExpensiveBackgroundTimerThrottlingName[] =
     "Throttle expensive background timers";
 const char kExpensiveBackgroundTimerThrottlingDescription[] =
     "Enables intervention to limit CPU usage of background timers to 1%.";
+
+const char kExperimentalAccessibilityLabelsName[] =
+    "Experimental Accessibility Labels";
+const char kExperimentalAccessibilityLabelsDescription[] =
+    "Enables experimental accessibility labels feature. Note that this only "
+    "enables the feature, and enabling the service is a profile preference.";
 
 const char kExperimentalExtensionApisName[] = "Experimental Extension APIs";
 const char kExperimentalExtensionApisDescription[] =
@@ -1547,6 +1566,12 @@ const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frquently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
+
+const char kOmniboxNativeVoiceSuggestProviderName[] =
+    "Native Voice Suggest Provider";
+const char kOmniboxNativeVoiceSuggestProviderDescription[] =
+    "When selected, collects voice suggestions with the help of native (c++) "
+    "voice suggestions provider.";
 
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
     "Omnibox Trending Zero Prefix Suggestions";
@@ -3005,10 +3030,6 @@ const char kPageInfoV2Name[] = "Page info version two";
 const char kPageInfoV2Description[] =
     "Enable the second version of the page info menu.";
 
-const char kPasswordCheckName[] = "Bulk Password Check";
-const char kPasswordCheckDescription[] =
-    "Enables the Bulk Password Check feature for signed-in users.";
-
 const char kPhotoPickerVideoSupportName[] = "Photo Picker Video Support";
 const char kPhotoPickerVideoSupportDescription[] =
     "Enables video files to be shown in the Photo Picker dialog";
@@ -3650,7 +3671,7 @@ const char kVideoToolboxVp9DecodingDescription[] =
 
 // Chrome OS -------------------------------------------------------------------
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 const char kAccountManagementFlowsV2Name[] =
     "Enable redesign of account management flows";
@@ -3845,6 +3866,12 @@ const char kCryptAuthV2DeviceActivityStatusName[] =
     "CryptAuth Device Activity Status";
 const char kCryptAuthV2DeviceActivityStatusDescription[] =
     "Use the CryptAuth GetDevicesActivityStatus API to sort devices.";
+
+const char kCryptAuthV2DeviceActivityStatusUseConnectivityName[] =
+    "CryptAuth Device Activity Status: Use connectivity status";
+const char kCryptAuthV2DeviceActivityStatusUseConnectivityDescription[] =
+    "Utilize the connectivity status from the CryptAuth "
+    "GetDevicesActivityStatus API to sort devices.";
 
 const char kCryptAuthV2DeviceSyncName[] = "CryptAuth v2 DeviceSync";
 const char kCryptAuthV2DeviceSyncDescription[] =
@@ -4679,7 +4706,7 @@ const char kZeroCopyVideoCaptureDescription[] =
 
 // Prefer keeping this section sorted to adding new definitions down here.
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // All views-based platforms --------------------------------------------------
 
@@ -4773,14 +4800,14 @@ const char kDirectManipulationStylusDescription[] =
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 const char kWebContentsOcclusionName[] = "Enable occlusion of web contents";
 const char kWebContentsOcclusionDescription[] =
     "If enabled, web contents will behave as hidden when it is occluded by "
     "other windows.";
 
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
@@ -4791,28 +4818,30 @@ const char kDynamicTcmallocDescription[] =
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kUserDataSnapshotName[] = "Enable user data snapshots";
 const char kUserDataSnapshotDescription[] =
     "Enables taking snapshots of the user data directory after a Chrome "
     "update and restoring them after a version rollback.";
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 const char kWebShareName[] = "Web Share";
 const char kWebShareDescription[] =
     "Enables the Web Share (navigator.share) APIs on experimentally supported "
     "platforms.";
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || \
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
     defined(OS_MAC)
 const char kEnableEphemeralGuestProfilesOnDesktopName[] =
     "Enable ephemeral Guest profiles on Desktop";
 const char kEnableEphemeralGuestProfilesOnDesktopDescription[] =
     "Enables ephemeral Guest profiles on Windows, Linux, and Mac.";
-#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) ||
-        // defined(OS_MAC)
+#endif  // defined(OS_WIN) || (defined(OS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC)
 
 // Feature flags --------------------------------------------------------------
 
@@ -4881,13 +4910,13 @@ const char kWebUITabStripDescription[] =
     "When enabled makes use of a WebUI-based tab strip.";
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && BUILDFLAG(IS_CHROMEOS_ASH)
 const char kWebUITabStripTabDragIntegrationName[] =
     "ChromeOS drag-drop extensions for WebUI tab strip";
 const char kWebUITabStripTabDragIntegrationDescription[] =
     "Enables special handling in ash for WebUI tab strip tab drags. Allows "
     "dragging tabs out to new windows.";
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 

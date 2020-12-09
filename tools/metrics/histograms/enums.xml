@@ -8281,6 +8281,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="NSObject is nil"/>
 </enum>
 
+<enum name="BooleanNoisedAgeOver21Under85">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Noised age between 21 and 85 inclusive"/>
+</enum>
+
 <enum name="BooleanNull">
   <int value="0" label="Is not a nullptr"/>
   <int value="1" label="Is a nullptr"/>
@@ -8933,9 +8938,10 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BrowserProfileType">
   <int value="0" label="Regular"/>
   <int value="1" label="Incognito"/>
-  <int value="2" label="Guest"/>
+  <int value="2" label="Guest (OTR)"/>
   <int value="3" label="System"/>
   <int value="4" label="Other Off The Record"/>
+  <int value="5" label="Guest (Ephemeral)"/>
 </enum>
 
 <enum name="BrowserServicesVerificationResult">
@@ -11831,13 +11837,6 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="deflate"/>
 </enum>
 
-<enum name="CompromiseType">
-  <int value="0"
-      label="Leaked - If the credentials was leaked by a data breach."/>
-  <int value="1"
-      label="Phished - If the credentials was reused on a phishing site."/>
-</enum>
-
 <enum name="ComputeCurrentSigninStatus">
   <obsolete>
     Deprecated as of Jun 2016. The enum was added for debugging purpose and is
@@ -12621,6 +12620,7 @@ Called by update_net_error_codes.py.-->
   <int value="31" label="Shop image with Google Lens"/>
   <int value="32" label="Search Similar Products"/>
   <int value="33" label="Read later"/>
+  <int value="34" label="Shop with Google Lens Chip"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -16423,6 +16423,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="37" label="YouTube"/>
   <int value="38" label="YouTube Music"/>
   <int value="40" label="Stadia"/>
+  <int value="41" label="ScanningApp"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -16891,6 +16892,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="38" label="recorder"/>
   <int value="39" label="APCA"/>
   <int value="40" label="cspViolationsView"/>
+  <int value="41" label="fontEditor"/>
+  <int value="42" label="fullAccessibilityTree"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -17844,6 +17847,7 @@ Called by update_document_policy_enum.py.-->
   <int value="8" label="LayoutAnimations"/>
   <int value="9" label="DocumentWrite"/>
   <int value="10" label="SyncScript"/>
+  <int value="11" label="JSProfiling"/>
 </enum>
 
 <enum name="DocumentScanSaneBackend">
@@ -32458,6 +32462,15 @@ Called by update_feature_policy_enum.py.-->
   <int value="642" label="NSFileWriteVolumeReadOnlyError"/>
 </enum>
 
+<enum name="FoundBuyableProductAnnotation">
+  <summary>
+    Whether a buyable product annotation was found in the response from an
+    endpoint which provides page metadata in ShoppingPersistedTabData.
+  </summary>
+  <int value="0" label="NotFound"/>
+  <int value="1" label="Found"/>
+</enum>
+
 <enum name="FramebustInterventionOutcome">
   <int value="0" label="Accepted"/>
   <int value="1" label="Declined and navigated"/>
@@ -38281,6 +38294,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="35" label="Ran by google.com/intl/ (deprecated)"/>
 </enum>
 
+<enum name="InsecureCredentialsType">
+  <int value="0" label="Leaked"/>
+  <int value="1" label="Phished"/>
+  <int value="2" label="Weak"/>
+  <int value="3" label="Reused"/>
+</enum>
+
 <enum name="InsecureDownloadExtensions">
   <int value="0" label="kUnknown"/>
   <int value="1" label="kNone"/>
@@ -40922,6 +40942,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Error: early terminated"/>
 </enum>
 
+<enum name="LensSdkError">
+  <int value="1" label="Internal Error"/>
+  <int value="2" label="Session already started"/>
+  <int value="3" label="Session not started"/>
+  <int value="4" label="Query missing payload"/>
+  <int value="5" label="Query payload missing image"/>
+  <int value="6" label="Query image failed to resolve"/>
+  <int value="7" label="Classification error"/>
+</enum>
+
 <enum name="LevelDBCorruptionRestoreValue">
   <int value="0" label="Database Delete Success"/>
   <int value="1" label="Database Delete Failure"/>
@@ -42040,6 +42070,7 @@ from previous Chrome versions.
   <int value="-1919683750" label="EnableOopPrintDrivers:disabled"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
+  <int value="-1917031398" label="OmniboxNativeVoiceSuggestProvider:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
   <int value="-1915854488" label="enable-offline-pages"/>
   <int value="-1913801713"
@@ -42801,6 +42832,7 @@ from previous Chrome versions.
   <int value="-1236065190" label="HardwareMediaKeyHandling:disabled"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1234740672" label="UsePdfCompositorServiceForPrint:disabled"/>
+  <int value="-1234518922" label="ChromeLabs:disabled"/>
   <int value="-1232629319" label="ResamplingScrollEvents:disabled"/>
   <int value="-1231507397" label="NtpZeroSuggest:enabled"/>
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
@@ -42890,6 +42922,8 @@ from previous Chrome versions.
   <int value="-1159154050" label="FilesSinglePartitionFormat:enabled"/>
   <int value="-1159151875" label="RecordWebAppDebugInfo:disabled"/>
   <int value="-1158993534" label="PrintScaling:enabled"/>
+  <int value="-1156950420"
+      label="CryptAuthV2DeviceActivityStatusUseConnectivity:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
   <int value="-1154834060" label="OmniboxRichAutocompletion:disabled"/>
@@ -43560,6 +43594,8 @@ from previous Chrome versions.
       label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
   <int value="-498740735" label="ArcUsbHost:disabled"/>
   <int value="-498463128" label="MacSystemShareMenu:enabled"/>
+  <int value="-496989565"
+      label="DesktopPWAsFlashAppNameInsteadOfOrigin:disabled"/>
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
@@ -43806,6 +43842,7 @@ from previous Chrome versions.
   <int value="-263645996" label="InteractiveWindowCycleList:enabled"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
+  <int value="-261398170" label="ChromeLabs:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
   <int value="-257478609" label="TextfieldFocusOnTapUp:enabled"/>
   <int value="-256940675" label="HelpAppSearchServiceIntegration:disabled"/>
@@ -45539,6 +45576,8 @@ from previous Chrome versions.
   <int value="1414918327" label="enable-accelerated-video-decode"/>
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
   <int value="1418054870" label="SpecialLocale:enabled"/>
+  <int value="1419984081"
+      label="DesktopPWAsFlashAppNameInsteadOfOrigin:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1424775876" label="ToolbarIphAndroid:enabled"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
@@ -45596,6 +45635,7 @@ from previous Chrome versions.
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
+  <int value="1482245628" label="OmniboxNativeVoiceSuggestProvider:enabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
   <int value="1483980996" label="MacSyscallSandbox:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
@@ -46216,6 +46256,8 @@ from previous Chrome versions.
   <int value="2077917024"
       label="enable-supervised-user-managed-bookmarks-folder"/>
   <int value="2078599705" label="ShelfAppScaling:enabled"/>
+  <int value="2078879219"
+      label="CryptAuthV2DeviceActivityStatusUseConnectivity:disabled"/>
   <int value="2079672348" label="ExperimentalKeyboardLockUI:disabled"/>
   <int value="2081154375" label="AssistantKeyRemapping:disabled"/>
   <int value="2084477383" label="CrostiniDiskResizing:enabled"/>
@@ -49864,6 +49906,15 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Completed Setup"/>
 </enum>
 
+<enum name="MultiDeviceNearbyConnectionsInitiatorResult">
+  <int value="0" label="Connection Success"/>
+  <int value="1" label="Timeout Discovering Device"/>
+  <int value="2" label="Nearby Api Error"/>
+  <int value="3" label="Connection Rejected"/>
+  <int value="4" label="Connectivity Error"/>
+  <int value="5" label="Authentication Error"/>
+</enum>
+
 <enum name="MultiDeviceNearbyMessageAction">
   <int value="0" label="Message Sent"/>
   <int value="1" label="Message Received"/>
@@ -50455,7 +50506,7 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Disallowed by policy"/>
 </enum>
 
-<enum name="NearbyShareFinalPayloadStatus">
+<enum name="NearbyShareFinalStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Canceled"/>
@@ -55138,6 +55189,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="1101" label="Verified Access"/>
   <int value="1102" label="Keep Wi-Fi On During Sleep (Deprecated)"/>
   <int value="1103" label="Usage Stats And Crash Reports"/>
+  <int value="1104" label="Privacy: Guest Browsing V2"/>
+  <int value="1105" label="Privacy: Show Usernames And Photos At Sign In V2"/>
+  <int value="1106" label="Privacy: Restrict Sign In V2"/>
+  <int value="1107" label="Privacy: Add To User Allowlist V2"/>
+  <int value="1108" label="Privacy: Remove From User Allowlist V2"/>
+  <int value="1109" label="Privacy: Lock Screen V2"/>
+  <int value="1110" label="Privacy: Change Auth Pin V2"/>
+  <int value="1111" label="Privacy: Add Fingerprint V2"/>
+  <int value="1112" label="Privacy: Remove Fingerprint V2"/>
   <int value="1200" label="Add Language"/>
   <int value="1201" label="Show Input Options In Shelf"/>
   <int value="1202" label="Show Personal Information Suggestions"/>
@@ -55301,6 +55361,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="804" label="Crostini Develop Android Apps"/>
   <int value="805" label="Crostini Port Forwarding"/>
   <int value="1000" label="Time Zone"/>
+  <int value="1100" label="Manage Other People V2"/>
+  <int value="1101" label="Security And Sign In V2"/>
+  <int value="1102" label="Fingerprint V2"/>
   <int value="1200" label="Languages And Input Details"/>
   <int value="1201" label="Manage Input Methods"/>
   <int value="1202" label="Smart Inputs"/>
@@ -64175,6 +64238,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="ExcludedCorbForPlugin">
     Requests from a renderer process that embeds a plugin (e.g. Flash) that
     needs to disable CORB and request_initiator_origin_lock enforcement.
+
+    Obsolete - this enum value was removed in Nov 2020 (M89).
   </int>
   <int value="7" label="AllowedRequestInitiatorForPlugin">
     Requests from a renderer process that embeds a plugin (e.g. PDF) that needs
@@ -65793,6 +65858,16 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Page text not loaded"/>
   <int value="3" label="Url should not be classified"/>
   <int value="4" label="Phishing classifier was destructed"/>
+</enum>
+
+<enum name="ScanAppEntryPoint">
+<!-- This must be kept current with ScanAppEntryPoint in
+     chromeos/components/scanning/scanning_uma.h.
+-->
+
+  <int value="0" label="Settings"/>
+  <int value="1" label="Launcher"/>
+  <int value="2" label="Browser"/>
 </enum>
 
 <enum name="ScheduledNavigationType">
@@ -77082,6 +77157,13 @@ others/histograms.xml -->
   <int value="2" label="MediaPlayerRendererClientFactory"/>
   <int value="3" label="CourierRendererFactory"/>
   <int value="4" label="FlingingRendererClientFactory"/>
+</enum>
+
+<enum name="WebOTPBackendAvailability">
+  <int value="0" label="Available"/>
+  <int value="1" label="API not connected"/>
+  <int value="2" label="Platform not supported"/>
+  <int value="3" label="API not available"/>
 </enum>
 
 <enum name="WebOTPServiceDestroyedReason">

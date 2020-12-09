@@ -301,7 +301,7 @@ IdentityTestEnvironment::FinishBuildIdentityManagerForTests(
   std::unique_ptr<PrimaryAccountManager> primary_account_manager =
       std::make_unique<PrimaryAccountManager>(
           signin_client, token_service.get(), account_tracker_service.get(),
-          account_consistency, std::move(policy_manager));
+          std::move(policy_manager));
   primary_account_manager->Initialize(pref_service);
 
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service =
@@ -309,9 +309,9 @@ IdentityTestEnvironment::FinishBuildIdentityManagerForTests(
                                                  signin_client);
 
   init_params.primary_account_mutator =
-      std::make_unique<PrimaryAccountMutatorImpl>(account_tracker_service.get(),
-                                                  primary_account_manager.get(),
-                                                  pref_service);
+      std::make_unique<PrimaryAccountMutatorImpl>(
+          account_tracker_service.get(), token_service.get(),
+          primary_account_manager.get(), pref_service, account_consistency);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   init_params.accounts_mutator = std::make_unique<AccountsMutatorImpl>(
@@ -421,9 +421,12 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
   return account_info;
 }
 
-void IdentityTestEnvironment::ClearPrimaryAccount(
-    ClearPrimaryAccountPolicy policy) {
-  signin::ClearPrimaryAccount(identity_manager(), policy);
+void IdentityTestEnvironment::RevokeSyncConsent() {
+  signin::RevokeSyncConsent(identity_manager());
+}
+
+void IdentityTestEnvironment::ClearPrimaryAccount() {
+  signin::ClearPrimaryAccount(identity_manager());
 }
 
 AccountInfo IdentityTestEnvironment::MakeAccountAvailable(

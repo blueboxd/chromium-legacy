@@ -355,7 +355,7 @@ void ScriptContext::SafeCallFunction(
     const v8::Local<v8::Function>& function,
     int argc,
     v8::Local<v8::Value> argv[],
-    const ScriptInjectionCallback::CompleteCallback& callback) {
+    ScriptInjectionCallback::CompleteCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope scope(v8_context());
@@ -366,7 +366,7 @@ void ScriptContext::SafeCallFunction(
     ScriptInjectionCallback* wrapper_callback = nullptr;
     if (!callback.is_null()) {
       // ScriptInjectionCallback manages its own lifetime.
-      wrapper_callback = new ScriptInjectionCallback(callback);
+      wrapper_callback = new ScriptInjectionCallback(std::move(callback));
     }
     web_frame_->RequestExecuteV8Function(v8_context(), function, global, argc,
                                          argv, wrapper_callback);
@@ -376,7 +376,7 @@ void ScriptContext::SafeCallFunction(
     v8::Local<v8::Value> result;
     if (!callback.is_null() && maybe_result.ToLocal(&result)) {
       std::vector<v8::Local<v8::Value>> results(1, result);
-      callback.Run(results);
+      std::move(callback).Run(results);
     }
   }
 }
@@ -599,7 +599,7 @@ std::string ScriptContext::GetStackTraceAsString() const {
 v8::Local<v8::Value> ScriptContext::RunScript(
     v8::Local<v8::String> name,
     v8::Local<v8::String> code,
-    const RunScriptExceptionHandler& exception_handler,
+    RunScriptExceptionHandler exception_handler,
     v8::ScriptCompiler::NoCacheReason no_cache_reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   v8::EscapableHandleScope handle_scope(isolate());
@@ -627,13 +627,13 @@ v8::Local<v8::Value> ScriptContext::RunScript(
                                    v8::ScriptCompiler::kNoCompileOptions,
                                    no_cache_reason)
            .ToLocal(&script)) {
-    exception_handler.Run(try_catch);
+    std::move(exception_handler).Run(try_catch);
     return v8::Undefined(isolate());
   }
 
   v8::Local<v8::Value> result;
   if (!script->Run(v8_context()).ToLocal(&result)) {
-    exception_handler.Run(try_catch);
+    std::move(exception_handler).Run(try_catch);
     return v8::Undefined(isolate());
   }
 

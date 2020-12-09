@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/common/features.gni")
@@ -85,8 +86,6 @@ target(link_target_type, "renderer") {
     "loader/resource_dispatcher.h",
     "loader/sync_load_context.cc",
     "loader/sync_load_context.h",
-    "loader/url_loader_client_impl.cc",
-    "loader/url_loader_client_impl.h",
     "loader/web_url_loader_impl.cc",
     "loader/web_url_loader_impl.h",
     "loader/web_worker_fetch_context_impl.cc",
@@ -554,15 +553,10 @@ target(link_target_type, "renderer") {
     deps += [ "//sandbox:sandbox_buildflags" ]
   }
 
-  if (is_chromeos) {
-    sources += [
-      "performance_manager/mechanisms/userspace_swap_renderer_initialization_impl.cc",
-      "performance_manager/mechanisms/userspace_swap_renderer_initialization_impl.h",
-    ]
+  if (is_chromeos_ash) {
     deps += [
       "//chromeos:chromeos_export",
       "//chromeos/memory/userspace_swap",
-      "//chromeos/memory/userspace_swap:mojom",
       "//chromeos/system:system",
     ]
   }

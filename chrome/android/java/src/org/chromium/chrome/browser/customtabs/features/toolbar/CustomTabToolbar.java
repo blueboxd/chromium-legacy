@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
+import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
@@ -71,6 +72,7 @@ import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -167,8 +169,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     public CustomTabToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mDarkModeTint = ToolbarColors.getThemedToolbarIconTint(context, false);
-        mLightModeTint = ToolbarColors.getThemedToolbarIconTint(context, true);
+        mDarkModeTint = ThemeUtils.getThemedToolbarIconTint(context, false);
+        mLightModeTint = ThemeUtils.getThemedToolbarIconTint(context, true);
     }
 
     @Override
@@ -243,6 +245,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
      * passed LocationBarModel.
      * @param locationBarModel {@link LocationBarModel} to be used for accessing LocationBar
      *         state.
+     * @param actionModeCallback Callback to handle changes in contextual action Modes.
      * @return The LocationBar implementation for this CustomTabToolbar.
      */
     public LocationBar createLocationBar(
@@ -605,6 +608,32 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mCustomActionButtons.setLayoutParams(p);
     }
 
+    private static class NoOpkeyboardVisibilityDelegate extends KeyboardVisibilityDelegate {
+        @Override
+        public void showKeyboard(View view) {}
+
+        @Override
+        public boolean hideKeyboard(View view) {
+            return false;
+        }
+
+        @Override
+        public int calculateKeyboardHeight(View view) {
+            return 0;
+        }
+
+        @Override
+        public boolean isKeyboardShowing(Context context, View view) {
+            return false;
+        }
+
+        @Override
+        public void addKeyboardVisibilityListener(KeyboardVisibilityListener listener) {}
+
+        @Override
+        public void removeKeyboardVisibilityListener(KeyboardVisibilityListener listener) {}
+    }
+
     /**
      * Custom tab-specific implementation of the LocationBar interface.
      */
@@ -617,8 +646,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 ActionMode.Callback actionModeCallback, UrlBar urlBar) {
             mLocationBarDataProvider = locationBarDataProvider;
             mLocationBarDataProvider.addObserver(this);
-            mUrlCoordinator = new UrlBarCoordinator(urlBar, /*windowDelegate=*/null,
-                    actionModeCallback, /*focusChangeCallback=*/(unused) -> {}, this);
+            mUrlCoordinator =
+                    new UrlBarCoordinator(urlBar, /*windowDelegate=*/null, actionModeCallback,
+                            /*focusChangeCallback=*/
+                            (unused) -> {}, this, new NoOpkeyboardVisibilityDelegate());
             onPrimaryColorChanged();
         }
 

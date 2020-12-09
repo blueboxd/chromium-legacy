@@ -29,6 +29,7 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.ChromeBulletSpan;
+import org.chromium.url.GURL;
 
 /**
  * Represent the sad tab displayed in place of a crashed renderer. Instantiated on the first
@@ -139,12 +140,12 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
     }
 
     @Override
-    public void onPageLoadStarted(Tab tab, String url) {
+    public void onPageLoadStarted(Tab tab, GURL url) {
         removeIfPresent();
     }
 
     @Override
-    public void onPageLoadFinished(Tab tab, String url) {
+    public void onPageLoadFinished(Tab tab, GURL url) {
         // Reset the succressiveRefresh counter after successfully loading a page.
         mSadTabSuccessiveRefreshCounter = 0;
         removeIfPresent();

@@ -634,6 +634,9 @@ component("features") {
     "//base",
     "//build:chromeos_buildflags",
   ]
+  if (!is_ios) {
+    deps += [ "//media:media_buildflags" ]
+  }
 }
 
 # TODO(crbug.com/1091985): Support CrOS.
@@ -773,6 +776,8 @@ static_library("test_support") {
       "ime/dummy_input_method.h",
       "ime/dummy_text_input_client.cc",
       "ime/dummy_text_input_client.h",
+      "ime/fake_text_input_client.cc",
+      "ime/fake_text_input_client.h",
     ]
 
     deps += [

@@ -36,6 +36,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -78,6 +79,7 @@
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
+#include "content/renderer/media/media_interface_factory.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -101,9 +103,11 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/base/decoder_factory.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "media/renderers/default_decoder_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -706,20 +710,16 @@ void RenderThreadImpl::Init() {
   DCHECK(parsed_num_raster_threads) << string_value;
   DCHECK_GT(num_raster_threads, 0);
 
+  {
+    base::PlatformThreadHandle background_worker_handle;
+    categorized_worker_pool_->Start(num_raster_threads,
+                                    &background_worker_handle);
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  categorized_worker_pool_->SetBackgroundingCallback(
-      main_thread_scheduler_->DefaultTaskRunner(),
-      base::BindOnce(
-          [](base::WeakPtr<RenderThreadImpl> render_thread,
-             base::PlatformThreadId thread_id) {
-            if (!render_thread)
-              return;
-            render_thread->render_message_filter()->SetThreadPriority(
-                thread_id, base::ThreadPriority::BACKGROUND);
-          },
-          weak_factory_.GetWeakPtr()));
+    int32_t ns_tid = background_worker_handle.platform_handle();
+    render_message_filter()->SetThreadPriority(
+        ns_tid, base::ThreadPriority::BACKGROUND);
 #endif
-  categorized_worker_pool_->Start(num_raster_threads);
+  }
 
   discardable_memory_allocator_ = CreateDiscardableMemoryAllocator();
 
@@ -1151,6 +1151,28 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       std::move(vea_provider)));
   gpu_factories_.back()->SetRenderingColorSpace(rendering_color_space_);
   return gpu_factories_.back().get();
+}
+
+media::DecoderFactory* RenderThreadImpl::GetMediaDecoderFactory() {
+  DCHECK(IsMainThread());
+  // Note that we don't reset this, ever.  We hand it out to WebRTC once, and it
+  // never asks for another one, even if the gpu process restarts.
+  DCHECK(!media_decoder_factory_);
+
+  // MediaInterfaceFactory guarantees that the media::InterfaceFactory is
+  // accessed from the current (main) thread.
+  mojo::PendingRemote<media::mojom::InterfaceFactory> interface_factory;
+  BindHostReceiver(interface_factory.InitWithNewPipeAndPassReceiver());
+  media_interface_factory_ = std::make_unique<MediaInterfaceFactory>(
+      base::ThreadTaskRunnerHandle::Get(), std::move(interface_factory));
+  // TODO(liberato): Should destruction of `media_decoder_factory_` be posted
+  // to the media thread?  I don't think it's needed, since it's owned by us
+  // rather than tied to a particular frame.  Calls into it might happen on
+  // the media thread, but we own the media thread.
+  media_decoder_factory_ =
+      MediaFactory::CreateDecoderFactory(media_interface_factory_.get());
+
+  return media_decoder_factory_.get();
 }
 
 scoped_refptr<viz::RasterContextProvider>

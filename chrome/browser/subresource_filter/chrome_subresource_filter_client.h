@@ -22,6 +22,7 @@ class WebContents;
 
 namespace subresource_filter {
 class ContentSubresourceFilterThrottleManager;
+class ProfileInteractionManager;
 class SubresourceFilterProfileContext;
 }  // namespace subresource_filter
 
@@ -47,8 +48,6 @@ class ChromeSubresourceFilterClient
       content::WebContents* web_contents);
 
   // content::WebContentsObserver:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
@@ -70,12 +69,7 @@ class ChromeSubresourceFilterClient
   // attached.
   void ToggleForceActivationInCurrentWebContents(bool force_activation);
 
-  bool did_show_ui_for_navigation() const {
-    return did_show_ui_for_navigation_;
-  }
-
  private:
-  void AllowlistByContentSettings(const GURL& url);
   void ShowUI(const GURL& url);
 
   std::unique_ptr<subresource_filter::ContentSubresourceFilterThrottleManager>
@@ -85,7 +79,8 @@ class ChromeSubresourceFilterClient
   subresource_filter::SubresourceFilterProfileContext* profile_context_ =
       nullptr;
 
-  bool did_show_ui_for_navigation_ = false;
+  std::unique_ptr<subresource_filter::ProfileInteractionManager>
+      profile_interaction_manager_;
 
   bool ads_violation_triggered_for_last_committed_navigation_ = false;
 

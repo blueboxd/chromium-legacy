@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as dom from './dom.js';
+import * as snackbar from './snackbar.js';
 import * as toast from './toast.js';
 import * as util from './util.js';
 
@@ -29,15 +30,25 @@ function isSafeUrl(s) {
  * @param {string} url
  */
 function showUrl(url) {
-  const el = dom.get('.barcode-chip-container', HTMLDivElement);
-  const anchor = dom.getFrom(el, 'a', HTMLAnchorElement);
+  const container = dom.get('.barcode-chip-container', HTMLDivElement);
+
+  const anchor = dom.getFrom(container, 'a', HTMLAnchorElement);
   Object.assign(anchor, {
     href: url,
     textContent: url,
   });
+
+  // TODO(b/172879638): Extract a common implementation for both URL and Text
+  // barcodes.
+  const copyButton =
+      dom.getFrom(container, '.barcode-copy-button', HTMLButtonElement);
+  copyButton.onclick = async () => {
+    await navigator.clipboard.writeText(url);
+    snackbar.show('snackbar_link_copied');
+  };
+
   // TODO(b/172879638): Handle a11y.
-  util.animateOnce(el);
-  // TODO(b/172879638): Show copy button.
+  util.animateOnce(container);
 }
 
 /**

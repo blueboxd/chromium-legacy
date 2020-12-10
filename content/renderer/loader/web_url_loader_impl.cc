@@ -124,6 +124,7 @@ network::mojom::LoadTimingInfo ToMojoLoadTiming(
       load_timing.proxy_resolve_start, load_timing.proxy_resolve_end,
       load_timing.connect_timing, load_timing.send_start, load_timing.send_end,
       load_timing.receive_headers_start, load_timing.receive_headers_end,
+      load_timing.receive_non_informational_headers_start,
       load_timing.first_early_hints_time, load_timing.push_start,
       load_timing.push_end, load_timing.service_worker_start_time,
       load_timing.service_worker_ready_time,
@@ -410,7 +411,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(mojo_base::BigBuffer data);
   void OnCompletedRequest(const network::URLLoaderCompletionStatus& status);
-  void EvictFromBackForwardCache();
+  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason);
 
  private:
   friend class base::RefCounted<Context>;
@@ -485,7 +486,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public blink::WebRequestPeer {
   void OnReceivedCachedMetadata(mojo_base::BigBuffer data) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
-  void EvictFromBackForwardCache() override;
+  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
 
  private:
   scoped_refptr<Context> context_;
@@ -832,8 +833,9 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
   context_->OnCompletedRequest(status);
 }
 
-void WebURLLoaderImpl::RequestPeerImpl::EvictFromBackForwardCache() {
-  context_->EvictFromBackForwardCache();
+void WebURLLoaderImpl::RequestPeerImpl::EvictFromBackForwardCache(
+    blink::mojom::RendererEvictionReason reason) {
+  context_->EvictFromBackForwardCache(reason);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------
@@ -1241,8 +1243,9 @@ void WebURLLoaderImpl::Context::AppendVariationsThrottles(
   VariationsRenderThreadObserver::AppendThrottleIfNeeded(origin, throttles);
 }
 
-void WebURLLoaderImpl::Context::EvictFromBackForwardCache() {
-  client()->EvictFromBackForwardCache();
+void WebURLLoaderImpl::Context::EvictFromBackForwardCache(
+    blink::mojom::RendererEvictionReason reason) {
+  client()->EvictFromBackForwardCache(reason);
 }
 
 }  // namespace content

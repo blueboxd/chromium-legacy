@@ -21,6 +21,7 @@
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/subresource_filter/content/browser/ads_intervention_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/content/browser/profile_interaction_manager.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
@@ -43,6 +44,9 @@ ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
   DCHECK(web_contents);
   profile_context_ = SubresourceFilterProfileContextFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  profile_interaction_manager_ =
+      std::make_unique<subresource_filter::ProfileInteractionManager>(
+          web_contents, profile_context_);
 }
 
 ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() = default;
@@ -75,16 +79,6 @@ ChromeSubresourceFilterClient* ChromeSubresourceFilterClient::FromWebContents(
       throttle_manager->client());
 }
 
-void ChromeSubresourceFilterClient::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() &&
-      !navigation_handle->IsSameDocument()) {
-    // TODO(csharrison): This should probably be reset at commit time, not at
-    // navigation start.
-    did_show_ui_for_navigation_ = false;
-  }
-}
-
 void ChromeSubresourceFilterClient::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame() &&
@@ -95,19 +89,13 @@ void ChromeSubresourceFilterClient::DidFinishNavigation(
 
 void ChromeSubresourceFilterClient::OnReloadRequested() {
   // TODO(crbug.com/1116095): Once ContentSubresourceFilterThrottleManager knows
-  // about content settings, this method can move entirely into
+  // about ProfileInteractionManager, this method can move entirely into
   // ContentSubresourceFilterThrottleManager::OnReloadRequested() and
   // SubresourceFilterClient::OnReloadRequested() can be eliminated.
-  subresource_filter::ContentSubresourceFilterThrottleManager::LogAction(
-      subresource_filter::SubresourceFilterAction::kAllowlistedSite);
-  AllowlistByContentSettings(web_contents()->GetLastCommittedURL());
-  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
+  profile_interaction_manager_->OnReloadRequested();
 }
 
 void ChromeSubresourceFilterClient::ShowNotification() {
-  if (did_show_ui_for_navigation_)
-    return;
-
   const GURL& top_level_url = web_contents()->GetLastCommittedURL();
   if (profile_context_->settings_manager()->ShouldShowUIForSite(
           top_level_url)) {
@@ -204,11 +192,6 @@ void ChromeSubresourceFilterClient::OnAdsViolationTriggered(
   ads_violation_triggered_for_last_committed_navigation_ = true;
 }
 
-void ChromeSubresourceFilterClient::AllowlistByContentSettings(
-    const GURL& top_level_url) {
-  profile_context_->settings_manager()->AllowlistSite(top_level_url);
-}
-
 const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
 ChromeSubresourceFilterClient::GetSafeBrowsingDatabaseManager() {
   safe_browsing::SafeBrowsingService* safe_browsing_service =
@@ -243,6 +226,5 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
 
   subresource_filter::ContentSubresourceFilterThrottleManager::LogAction(
       subresource_filter::SubresourceFilterAction::kUIShown);
-  did_show_ui_for_navigation_ = true;
   profile_context_->settings_manager()->OnDidShowUI(url);
 }

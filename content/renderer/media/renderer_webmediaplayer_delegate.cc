@@ -123,13 +123,6 @@ void RendererWebMediaPlayerDelegate::DidPlayerMutedStatusChange(int delegate_id,
                                                            delegate_id, muted));
 }
 
-void RendererWebMediaPlayerDelegate::DidPlayerMediaPositionStateChange(
-    int delegate_id,
-    const media_session::MediaPosition& position) {
-  Send(new MediaPlayerDelegateHostMsg_OnMediaPositionStateChanged(
-      routing_id(), delegate_id, position));
-}
-
 void RendererWebMediaPlayerDelegate::DidPause(int player_id,
                                               bool reached_end_of_stream) {
   DVLOG(2) << __func__ << "(" << player_id << ", " << reached_end_of_stream
@@ -280,10 +273,6 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateVolumeMultiplierUpdate)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_BecamePersistentVideo,
                         OnMediaDelegateBecamePersistentVideo)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_EnterPictureInPicture,
-                        OnMediaDelegateEnterPictureInPicture)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ExitPictureInPicture,
-                        OnMediaDelegateExitPictureInPicture)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SetAudioSinkId,
                         OnMediaDelegateSetAudioSink)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
@@ -340,20 +329,6 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegateBecamePersistentVideo(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnBecamePersistentVideo(value);
-}
-
-void RendererWebMediaPlayerDelegate::OnMediaDelegateEnterPictureInPicture(
-    int player_id) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnEnterPictureInPicture();
-}
-
-void RendererWebMediaPlayerDelegate::OnMediaDelegateExitPictureInPicture(
-    int player_id) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnExitPictureInPicture();
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSetAudioSink(

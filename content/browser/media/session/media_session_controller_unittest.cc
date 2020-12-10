@@ -81,6 +81,9 @@ class MockMediaPlayerReceiverForTesting : public media::mojom::MediaPlayer {
   }
 
   // media::mojom::MediaPlayer implementation.
+  void SetMediaPlayerObserver(
+      mojo::PendingRemote<media::mojom::MediaPlayerObserver>) override {}
+
   void RequestPlay() override {
     received_play_ = true;
     run_loop_->Quit();
@@ -102,6 +105,10 @@ class MockMediaPlayerReceiverForTesting : public media::mojom::MediaPlayer {
     received_seek_backward_time_ = seek_time;
     run_loop_->Quit();
   }
+
+  void RequestEnterPictureInPicture() override {}
+
+  void RequestExitPictureInPicture() override {}
 
   // Getters used from MediaSessionControllerTest.
   bool received_play() const { return received_play_; }

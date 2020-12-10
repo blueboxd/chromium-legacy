@@ -206,7 +206,7 @@ class CORE_EXPORT LocalFrame final
       Frame* child) override;
   void DidFocus() override;
 
-  void EvictFromBackForwardCache();
+  void EvictFromBackForwardCache(mojom::blink::RendererEvictionReason reason);
 
   void DidChangeThemeColor();
   void DidChangeBackgroundColor(SkColor background_color, bool color_adjust);
@@ -457,7 +457,7 @@ class CORE_EXPORT LocalFrame final
   // |mime_type| and populated with the contents of |data|. Only intended for
   // use in internal-implementation LocalFrames that aren't in the frame tree.
   void ForceSynchronousDocumentInstall(const AtomicString& mime_type,
-                                       scoped_refptr<SharedBuffer> data);
+                                       scoped_refptr<const SharedBuffer> data);
 
   bool should_send_resource_timing_info_to_parent() const {
     return should_send_resource_timing_info_to_parent_;

@@ -9,6 +9,7 @@ import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/webui_features.gni")
 
 js_library("module_descriptor") {
+  deps = [ "..:browser_proxy" ]
 }
 
 js_library("modules") {
@@ -29,6 +30,12 @@ js_library("module_wrapper") {
   ]
 }
 
+js_library("module_header") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("module_registry") {
   deps = [
     ":module_descriptor",
@@ -37,13 +44,17 @@ js_library("module_registry") {
 }
 
 html_to_js("web_components_local") {
-  js_files = [ "module_wrapper.js" ]
+  js_files = [
+    "module_header.js",
+    "module_wrapper.js",
+  ]
 }
 
 group("web_components") {
   public_deps = [
     ":web_components_local",
     "dummy:web_components",
+    "kaleidoscope:web_components",
     "task_module:web_components",
   ]
 }
@@ -59,7 +70,6 @@ if (optimize_webui) {
 
     out_folder = "$target_gen_dir/$preprocess_folder"
     in_files = [
-      "kaleidoscope/module.js",
       "module_descriptor.js",
       "modules.js",
       "module_registry.js",
@@ -76,8 +86,10 @@ if (optimize_webui) {
     in_folder = target_gen_dir
     out_folder = "$target_gen_dir/$preprocess_folder"
     in_files = [
+      "module_header.js",
       "module_wrapper.js",
       "dummy/module.js",
+      "kaleidoscope/module.js",
       "task_module/module.js",
     ]
   }

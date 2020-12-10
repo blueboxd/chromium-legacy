@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/base_i18n_switches.h"
@@ -25,7 +26,6 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -103,6 +103,7 @@
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -320,7 +321,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
@@ -4805,6 +4805,33 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   }
 
   return interceptors;
+}
+
+content::ContentBrowserClient::URLLoaderRequestHandler
+ChromeContentBrowserClient::
+    CreateURLLoaderHandlerForServiceWorkerNavigationPreload(
+        int frame_tree_node_id,
+        const network::ResourceRequest& resource_request) {
+  content::ContentBrowserClient::URLLoaderRequestHandler callback;
+
+  // If search prefetch is disabled, nothing needs to be handled.
+  if (!SearchPrefetchServiceIsEnabled()) {
+    return callback;
+  }
+
+  std::unique_ptr<SearchPrefetchURLLoader> loader =
+      SearchPrefetchURLLoaderInterceptor::MaybeCreateLoaderForRequest(
+          resource_request, frame_tree_node_id);
+  if (!loader) {
+    return callback;
+  }
+
+  auto* raw_loader = loader.get();
+
+  // Hand ownership of the loader to the callback, when it runs, mojo will
+  // manage it. If the callback is deleted, the loader will be deleted.
+  callback = raw_loader->ServingResponseHandler(std::move(loader));
+  return callback;
 }
 
 bool ChromeContentBrowserClient::WillInterceptWebSocket(

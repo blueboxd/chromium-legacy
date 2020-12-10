@@ -167,7 +167,7 @@ class CORE_EXPORT LocalFrameView final
   void UpdateLayout();
   bool DidFirstLayout() const;
   bool LifecycleUpdatesActive() const;
-  void SetLifecycleUpdatesThrottledForTesting();
+  void SetLifecycleUpdatesThrottledForTesting(bool throttled = true);
   void ScheduleRelayout();
   void ScheduleRelayoutOfSubtree(LayoutObject*);
   bool LayoutPending() const;
@@ -349,8 +349,7 @@ class CORE_EXPORT LocalFrameView final
   void WillBeRemovedFromFrame();
 
   bool IsUpdatingLifecycle() {
-    return current_update_lifecycle_phases_target_state_ !=
-           DocumentLifecycle::kUninitialized;
+    return target_state_ != DocumentLifecycle::kUninitialized;
   }
 
   // Run all needed lifecycle stages. After calling this method, all frames will
@@ -402,7 +401,9 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean(DocumentUpdateReason reason);
 
-  void SetInLifecycleUpdateForTest(bool val) { in_lifecycle_update_ = val; }
+  void SetTargetStateForTest(DocumentLifecycle::LifecycleState state) {
+    target_state_ = state;
+  }
 
   // This for doing work that needs to run synchronously at the end of lifecyle
   // updates, but needs to happen outside of the lifecycle code. It's OK to
@@ -619,6 +620,21 @@ class CORE_EXPORT LocalFrameView final
                                     bool recurse = false) override;
 
   void BeginLifecycleUpdates();
+
+  // Records a timestamp in PaintTiming when the frame is first not
+  // render-throttled (since it last was throttled if applicable).
+  void MarkFirstEligibleToPaint();
+
+  // Resets the optional timestamp in PaintTiming to null to indicate
+  // that the frame is now render-throttled, unless the frame already has
+  // a first contentful paint. This is a necessary workaround, as when
+  // constructing the frame, HTMLConstructionSite::InsertHTMLBodyElement
+  // initiates a call via Document::WillInsertBody to begin lifecycle
+  // updates, and hence |lifecycle_updates_throttled_| is set to false, which
+  // can cause the frame to be briefly unthrottled and receive a paint
+  // eligibility timestamp, even if the frame is throttled shortly thereafter
+  // and not actually painted.
+  void MarkIneligibleToPaint();
 
   // Shorthands of LayoutView's corresponding methods.
   void SetNeedsPaintPropertyUpdate();
@@ -974,21 +990,6 @@ class CORE_EXPORT LocalFrameView final
   // StyleEngine instead of the base background color.
   bool ShouldUseColorAdjustBackground() const;
 
-  // Records a timestamp in PaintTiming when the frame is first not
-  // render-throttled (since it last was throttled if applicable).
-  void MarkFirstEligibleToPaint();
-
-  // Resets the optional timestamp in PaintTiming to null to indicate
-  // that the frame is now render-throttled, unless the frame already has
-  // a first contentful paint. This is a necessary workaround, as when
-  // constructing the frame, HTMLConstructionSite::InsertHTMLBodyElement
-  // initiates a call via Document::WillInsertBody to begin lifecycle
-  // updates, and hence |lifecycle_updates_throttled_| is set to false, which
-  // can cause the frame to be briefly unthrottled and receive a paint
-  // eligibility timestamp, even if the frame is throttled shortly thereafter
-  // and not actually painted.
-  void MarkIneligibleToPaint();
-
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -1072,8 +1073,7 @@ class CORE_EXPORT LocalFrameView final
   bool allow_throttling_ = false;
 
   // This is set on the local root frame view only.
-  DocumentLifecycle::LifecycleState
-      current_update_lifecycle_phases_target_state_;
+  DocumentLifecycle::LifecycleState target_state_;
   bool past_layout_lifecycle_update_;
 
   using AnchoringAdjustmentQueue =
@@ -1092,7 +1092,6 @@ class CORE_EXPORT LocalFrameView final
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
-  bool in_lifecycle_update_;
 
   // True if the frame has deferred commits at least once per document load.
   // We won't defer again for the same document.

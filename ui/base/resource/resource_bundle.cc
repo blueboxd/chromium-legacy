@@ -12,6 +12,7 @@
 
 #include "base/big_endian.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -20,7 +21,6 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -55,7 +55,7 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "ui/gfx/platform_font_skia.h"
 #endif
 
@@ -970,7 +970,7 @@ void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
 }
 
 void ResourceBundle::InitDefaultFontList() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // InitDefaultFontList() is called earlier than overriding the locale strings.
   // So we call the |GetLocalizedStringImpl()| which doesn't set the flag
   // |can_override_locale_string_resources_| to false. This is okay, because the

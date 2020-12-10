@@ -2377,6 +2377,9 @@ extern const char kEnableGoogleAssistantAecDescription[];
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 
+extern const char kEnableLauncherSearchNormalizationName[];
+extern const char kEnableLauncherSearchNormalizationDescription[];
+
 extern const char kNewDragSpecInLauncherName[];
 extern const char kNewDragSpecInLauncherDescription[];
 
@@ -2569,6 +2572,9 @@ extern const char kIntentPickerPWAPersistenceDescription[];
 
 extern const char kInteractiveWindowCycleList[];
 extern const char kInteractiveWindowCycleListDescription[];
+
+extern const char kKeyboardBasedDisplayArrangementInSettingsName[];
+extern const char kKeyboardBasedDisplayArrangementInSettingsDescription[];
 
 extern const char kLacrosStabilityName[];
 extern const char kLacrosStabilityDescription[];

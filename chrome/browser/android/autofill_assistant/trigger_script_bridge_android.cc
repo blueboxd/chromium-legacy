@@ -6,7 +6,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantTriggerScriptBridge_jni.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_model.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
@@ -54,9 +54,9 @@ void TriggerScriptBridgeAndroid::StartTriggerScript(
   } else if (trigger_context->GetBase64TriggerScriptsResponseProto()
                  .has_value()) {
     std::string response;
-    if (!base::Base64Decode(
+    if (!base::Base64UrlDecode(
             trigger_context->GetBase64TriggerScriptsResponseProto().value(),
-            &response)) {
+            base::Base64UrlDecodePolicy::IGNORE_PADDING, &response)) {
       LOG(ERROR) << "Failed to base64-decode trigger scripts response";
       Metrics::RecordLiteScriptFinished(
           ukm::UkmRecorder::Get(), client->GetWebContents(),
@@ -123,6 +123,16 @@ bool TriggerScriptBridgeAndroid::OnBackButtonPressed(
     return false;
   }
   return trigger_script_coordinator_->OnBackButtonPressed();
+}
+
+void TriggerScriptBridgeAndroid::OnTabInteractabilityChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean jinteractable) {
+  if (!trigger_script_coordinator_) {
+    return;
+  }
+  trigger_script_coordinator_->OnTabInteractabilityChanged(jinteractable);
 }
 
 void TriggerScriptBridgeAndroid::OnKeyboardVisibilityChanged(
@@ -220,7 +230,7 @@ void TriggerScriptBridgeAndroid::OnTriggerScriptFinished(
   StopTriggerScript();
 }
 
-void TriggerScriptBridgeAndroid::OnWebContentsVisibilityChanged(bool visible) {
+void TriggerScriptBridgeAndroid::OnVisibilityChanged(bool visible) {
   if (!visible || !trigger_script_coordinator_) {
     return;
   }

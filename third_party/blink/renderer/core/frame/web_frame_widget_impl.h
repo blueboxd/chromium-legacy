@@ -104,8 +104,7 @@ class CORE_EXPORT WebFrameWidgetImpl
       public PageWidgetEventHandler {
  public:
   WebFrameWidgetImpl(
-      base::PassKey<WebFrameWidget>,
-      WebWidgetClient&,
+      base::PassKey<WebLocalFrame>,
       CrossVariantMojoAssociatedRemote<
           mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
       CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
@@ -177,7 +176,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   HitTestResult CoreHitTestResultAt(const gfx::PointF&);
 
   // FrameWidget overrides.
-  WebWidgetClient* Client() const final { return client_; }
   cc::AnimationHost* AnimationHost() const final;
   void SetOverscrollBehavior(
       const cc::OverscrollBehavior& overscroll_behavior) final;
@@ -275,12 +273,15 @@ class CORE_EXPORT WebFrameWidgetImpl
                               const gfx::Range& replacement_range,
                               int relative_cursor_pos) override;
   void ImeFinishComposingTextForPlugin(bool keep_selection) override;
+  float GetCompositingScaleFactor() override;
 
   // WebFrameWidget overrides.
+  void InitializeNonCompositing(WebNonCompositedWidgetClient* client) override;
   WebLocalFrame* LocalRoot() const override;
   void UpdateCompositorScrollState(
       const cc::CompositorCommitData& commit_data) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
+  void DisableDragAndDrop() override;
   WebLocalFrameImpl* FocusedWebLocalFrameInWidget() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   void ApplyViewportChangesForTesting(
@@ -466,7 +467,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& state);
 
   // Return the compositor LayerTreeHost.
-  cc::LayerTreeHost* LayerTreeHostForTesting();
+  cc::LayerTreeHost* LayerTreeHostForTesting() const;
   // Ask compositor to composite a frame for testing. This will generate a
   // BeginMainFrame, and update the document lifecycle.
   void SynchronouslyCompositeForTesting(base::TimeTicks frame_time);
@@ -570,6 +571,14 @@ class CORE_EXPORT WebFrameWidgetImpl
  protected:
   // WidgetBaseClient overrides:
   void ScheduleAnimation() override;
+  void DidBeginMainFrame() override;
+  std::unique_ptr<cc::LayerTreeFrameSink> AllocateNewLayerTreeFrameSink()
+      override;
+  const ScreenInfo& GetOriginalScreenInfo() override;
+
+  // Whether compositing to LCD text should be auto determined. This can be
+  // overridden by tests to disable this.
+  virtual bool ShouldAutoDetermineCompositingToLCDTextSetting();
 
   bool doing_drag_and_drop_ = false;
 
@@ -594,12 +603,9 @@ class CORE_EXPORT WebFrameWidgetImpl
   void BeginUpdateLayers() override;
   void EndUpdateLayers() override;
   void DidCommitAndDrawCompositorFrame() override;
-  std::unique_ptr<cc::LayerTreeFrameSink> AllocateNewLayerTreeFrameSink()
-      override;
   void DidObserveFirstScrollDelay(
       base::TimeDelta first_scroll_delay,
       base::TimeTicks first_scroll_timestamp) override;
-  void DidBeginMainFrame() override;
   void DidCompletePageScaleAnimation() override;
   void FocusChangeComplete() override;
   bool WillHandleGestureEvent(const WebGestureEvent& event) override;
@@ -624,7 +630,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   void DidUpdateSurfaceAndScreen(
       const ScreenInfo& previous_original_screen_info) override;
   gfx::Rect ViewportVisibleRect() override;
-  const ScreenInfo& GetOriginalScreenInfo() override;
   base::Optional<blink::mojom::ScreenOrientation> ScreenOrientationOverride()
       override;
   void WasHidden() override;
@@ -799,6 +804,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   // The fullscreen granted status from the most recent VisualProperties update.
   bool IsFullscreenGranted();
 
+  // Set the compositing scale factor for this widget and notify remote frames
+  // to update their compositing scale factor.
+  void NotifyCompositingScaleFactorChanged(float compositing_scale_factor);
+
   void NotifyPageScaleFactorChanged(float page_scale_factor,
                                     bool is_pinch_gesture_active);
 
@@ -843,6 +852,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   // complicated inheritance structures.
   std::unique_ptr<WidgetBase> widget_base_;
 
+  // Compositing scale factor for all frames attached to this widget sent from
+  // the remote parent frame.
+  float compositing_scale_factor_ = 1.f;
+
   // The last seen page scale state, which comes from the main frame if we're
   // in a child frame. This state is propagated through the RenderWidget tree
   // passed to any new child RenderWidget.
@@ -859,8 +872,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   base::Optional<gfx::Size> size_;
 
   static bool ignore_input_events_;
-
-  WebWidgetClient* client_;
 
   const viz::FrameSinkId frame_sink_id_;
 
@@ -930,6 +941,13 @@ class CORE_EXPORT WebFrameWidgetImpl
   // keyPress events to be suppressed if the associated keyDown event was
   // handled.
   bool suppress_next_keypress_event_ = false;
+
+  // Whether drag and drop is supported by this widget. When disabled
+  // any drag operation that is started will be canceled immediately.
+  bool drag_and_drop_disabled_ = false;
+
+  // A callback client for non-composited frame widgets.
+  WebNonCompositedWidgetClient* non_composited_client_ = nullptr;
 
   // This struct contains data that is only valid for child local root widgets.
   // You should use `child_data()` to access it.

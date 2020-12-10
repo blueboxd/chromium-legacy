@@ -11,8 +11,6 @@ static_library("browser") {
     "content_settings_default_provider.h",
     "content_settings_details.cc",
     "content_settings_details.h",
-    "content_settings_ephemeral_provider.cc",
-    "content_settings_ephemeral_provider.h",
     "content_settings_global_value_map.cc",
     "content_settings_global_value_map.h",
     "content_settings_info.cc",
@@ -52,6 +50,7 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//components/content_settings/core/common",
     "//components/keyed_service/core",
     "//components/pref_registry:pref_registry",
@@ -91,7 +90,6 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "content_settings_ephemeral_provider_unittest.cc",
     "content_settings_pref_unittest.cc",
     "content_settings_registry_unittest.cc",
     "content_settings_rule_unittest.cc",
@@ -108,6 +106,7 @@ source_set("unit_tests") {
     ":browser",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//components/content_settings/core/common",
     "//components/content_settings/core/test:test_support",
     "//components/pref_registry:pref_registry",

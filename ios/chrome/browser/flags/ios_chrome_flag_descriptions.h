@@ -11,11 +11,6 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to add a custom drop interaction to web
-// content.
-extern const char kAddWebContentDropInteractionName[];
-extern const char kAddWebContentDropInteractionDescription[];
-
 // Title and description for the flag to control the autofill query cache.
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];
@@ -146,10 +141,6 @@ extern const char kDisableProgressBarAnimationDescription[];
 // Discover feed in the Bling NTP.
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
-
-// Title and description for the flag to enable drag and drop.
-extern const char kDragAndDropName[];
-extern const char kDragAndDropDescription[];
 
 // Title and description for the flag to enable EditBookmarks enterprise
 // policy on iOS.
@@ -306,12 +297,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
-#if defined(__IPHONE_13_4)
-// Title and description for the flag to enable pointer support on tablets.
-extern const char kPointerSupportName[];
-extern const char kPointerSupportDescription[];
-#endif  // defined(__IPHONE_13_4)
-
 // Title and description for the flag that enables the refactored new tab page.
 extern const char kRefactoredNTPName[];
 extern const char kRefactoredNTPDescription[];
@@ -421,6 +406,9 @@ extern const char kWebViewNativeContextMenuDescription[];
 
 extern const char kRestoreGaiaCookiesIfDeletedName[];
 extern const char kRestoreGaiaCookiesIfDeletedDescription[];
+
+extern const char kRecordSnapshotSizeName[];
+extern const char kRecordSnapshotSizeDescription[];
 
 // Please add names and descriptions above in alphabetical order.
 

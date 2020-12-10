@@ -2629,8 +2629,8 @@ if (!is_android) {
         "../browser/chromeos/login/test/login_manager_mixin.h",
         "../browser/chromeos/login/test/network_portal_detector_mixin.cc",
         "../browser/chromeos/login/test/network_portal_detector_mixin.h",
-        "../browser/chromeos/login/test/offline_gaia_test_mixin.cc",
-        "../browser/chromeos/login/test/offline_gaia_test_mixin.h",
+        "../browser/chromeos/login/test/offline_login_test_mixin.cc",
+        "../browser/chromeos/login/test/offline_login_test_mixin.h",
         "../browser/chromeos/login/test/oobe_base_test.cc",
         "../browser/chromeos/login/test/oobe_base_test.h",
         "../browser/chromeos/login/test/oobe_screens_utils.cc",
@@ -3214,6 +3214,8 @@ if (is_chromeos_lacros) {
     ]
 
     sources = [
+      "../browser/lacros/browser_test_util.cc",
+      "../browser/lacros/browser_test_util.h",
       "../browser/lacros/file_manager_lacros_browsertest.cc",
       "../browser/lacros/keystore_service_lacros_browsertest.cc",
       "../browser/lacros/media_session_lacros_browsertest.cc",
@@ -5050,6 +5052,7 @@ test("unit_tests") {
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.h",
       "../browser/ui/webui/chromeos/sync/os_sync_handler_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_chromeos_unittest.cc",
+      "../browser/webshare/chromeos/sharesheet_client_unittest.cc",
     ]
     deps += [
       "//ash:test_support",

@@ -376,12 +376,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
         mStatusCoordinator.updateStatusIcon();
     }
 
-    public View getViewForUrlBackFocus() {
-        Tab tab = getCurrentTab();
-        if (tab == null) return null;
-        return tab.getView();
-    }
-
     /* package */ void setUrlBarFocus(
             boolean shouldBeFocused, @Nullable String pastedText, @OmniboxFocusReason int reason) {
         if (shouldBeFocused) {
@@ -965,9 +959,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener {
      * change.  This will be called after any animations are performed to transition from one
      * focus state to the other.
      * @param hasFocus Whether the URL field has gained focus.
+     * @param shouldShowKeyboard Whether the keyboard should be shown. This value should be the same
+     *         as hasFocus by default.
      */
-    protected void finishUrlFocusChange(boolean hasFocus) {
-        mUrlCoordinator.setKeyboardVisibility(hasFocus, true);
+    protected void finishUrlFocusChange(boolean hasFocus, boolean shouldShowKeyboard) {
+        mUrlCoordinator.setKeyboardVisibility(hasFocus && shouldShowKeyboard, true);
         setUrlFocusChangeInProgress(false);
         updateShouldAnimateIconChanges();
     }

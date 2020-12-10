@@ -247,7 +247,13 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTestWithoutInternalMediaSession,
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
+// Flaky on Linux. http://crbug.com/1157239
+#if defined(OS_LINUX)
+#define MAYBE_SimplePlayPause DISABLED_SimplePlayPause
+#else
+#define MAYBE_SimplePlayPause SimplePlayPause
+#endif
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MAYBE_SimplePlayPause) {
   EXPECT_TRUE(NavigateToURL(shell(),
                             GetTestUrl("media/session", "media-session.html")));
 
@@ -265,7 +271,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
+// Flaky on Linux. http://crbug.com/1157241
+#if defined(OS_LINUX)
+#define MAYBE_MultiplePlayersPlayPause DISABLED_MultiplePlayersPlayPause
+#else
+#define MAYBE_MultiplePlayersPlayPause MultiplePlayersPlayPause
+#endif
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       MAYBE_MultiplePlayersPlayPause) {
   EXPECT_TRUE(NavigateToURL(shell(),
                             GetTestUrl("media/session", "media-session.html")));
 
@@ -317,7 +330,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MAYBE_WebContents_Muted) {
 
 #if !defined(OS_ANDROID)
 // On Android, System Audio Focus would break this test.
-IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultipleTabsPlayPause) {
+
+// Flaky on Linux (at least). http://crbug.com/1157263
+#if defined(OS_LINUX)
+#define MAYBE_MultipleTabsPlayPause DISABLED_MultipleTabsPlayPause
+#else
+#define MAYBE_MultipleTabsPlayPause MultipleTabsPlayPause
+#endif
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MAYBE_MultipleTabsPlayPause) {
   Shell* other_shell = CreateBrowser();
 
   EXPECT_TRUE(NavigateToURL(shell(),

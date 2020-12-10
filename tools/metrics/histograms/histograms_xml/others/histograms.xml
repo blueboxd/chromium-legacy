@@ -1496,6 +1496,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.BottomSheet.DestinationFolder" enum="BookmarkType"
+    expires_after="M91">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Logs the destination directory chosen by the user when saving a bookmark via
+    bottom sheet on Android.
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.Count.OnProfileLoad" units="bookmarks"
     expires_after="2021-06-06">
   <owner>supertri@chromium.org</owner>
@@ -1687,6 +1697,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Logs whether the bookmark entry is a user bookmark or a partner bookmark
     when it is opened.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.ReadingList.NumberOfReadItems" units="bookmarks"
+    expires_after="M91">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Logs the number of read items shown in the reading list on the Android
+    Bookmarks page when it is opened.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.ReadingList.NumberOfUnreadItems" units="bookmarks"
+    expires_after="M91">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Logs the number of unread items shown in the reading list on the Android
+    Bookmarks page when it is opened.
   </summary>
 </histogram>
 
@@ -4403,6 +4433,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Downgrade.TakeSnapshot.ProfileDirectoryCreation.Result"
     enum="BooleanSuccess" expires_after="2020-12-31">
+  <obsolete>
+    Removed in M89.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -8500,7 +8533,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="MachineLearningService.CpuTimeMicrosec"
-    units="microseconds" expires_after="2021-01-01">
+    units="microseconds" expires_after="2021-07-01">
 <!-- Name completed by histogram_suffixes
      name="MachineLearningServiceRequests" -->
 
@@ -8630,7 +8663,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="MachineLearningService.TotalMemoryDeltaKb"
-    units="KB" expires_after="2021-01-01">
+    units="KB" expires_after="2021-07-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -9524,6 +9557,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Nearby.Connections.InstantMessaging.{Direction}Express.Result"
+    enum="BooleanSuccess" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records whether an HTTPS call to {Direction} the Instant Messaging API
+    succeeds or fails. Emitted when the HTTPS call succeeds or fails.
+  </summary>
+  <token key="Direction">
+    <variant name="Receive" summary="receive a message from"/>
+    <variant name="Send" summary="send a message to"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.InstantMessaging.{Direction}Express.Result.FailureReason"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the network error code or HTTPS response code from a failed HTTPS
+    call to {Direction} the Instant Messaging API. Emitted when the HTTPS call
+    fails.
+  </summary>
+  <token key="Direction">
+    <variant name="Receive" summary="receive a message from"/>
+    <variant name="Send" summary="send a message to"/>
+  </token>
+</histogram>
+
 <histogram
     name="Nearby.Share.Certificates.Manager.BluetoothMacAddressSetInPrivateCertificate"
     enum="BooleanSet" expires_after="2021-08-19">
@@ -9763,36 +9826,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Nearby.Share.InstantMessaging.{Direction}Express.Result"
-    enum="BooleanSuccess" expires_after="2021-08-19">
-  <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
-  <summary>
-    Records whether an HTTPS call to {Direction} the Instant Messaging API
-    succeeds or fails. Emitted when the HTTPS call succeeds or fails.
-  </summary>
-  <token key="Direction">
-    <variant name="Receive" summary="receive a message from"/>
-    <variant name="Send" summary="send a message to"/>
-  </token>
-</histogram>
-
-<histogram
-    name="Nearby.Share.InstantMessaging.{Direction}Express.Result.FailureReason"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-08-19">
-  <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
-  <summary>
-    Records the network error code or HTTPS response code from a failed HTTPS
-    call to {Direction} the Instant Messaging API. Emitted when the HTTPS call
-    fails.
-  </summary>
-  <token key="Direction">
-    <variant name="Receive" summary="receive a message from"/>
-    <variant name="Send" summary="send a message to"/>
-  </token>
-</histogram>
-
 <histogram name="Nearby.Share.LocalDeviceData.DeviceDataUpdater.HttpResult"
     enum="NearbyShareHttpResult" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
@@ -9817,6 +9850,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Nearby.Share.Medium.FinalPayloadStatus.{UpgradedMedium}"
     enum="NearbyShareFinalStatus" expires_after="2021-08-19">
+  <obsolete>
+    Replaced 12/2020 with Nearby.Share.Payload.FinalStatus[...].
+  </obsolete>
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -9855,6 +9891,101 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     bandwidth upgrade request from the client. Emitted when the transfer channel
     is disconnected after a bandwidth upgrade request was made by the client.
   </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Payload.FinalStatus{UpgradedMedium}"
+    enum="NearbyShareFinalStatus" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records whether a payload transfer succeeded, failed, or was cancelled when
+    transmitted over {UpgradedMedium}. Emitted when the payload transfer
+    finishes, independent of whether the transfer was successful.
+  </summary>
+  <token key="UpgradedMedium">
+    <variant name="" summary="any medium"/>
+    <variant name=".NoMediumUpgrade" summary="the initial bandwidth medium"/>
+    <variant name=".UnknownMediumUpgrade"
+        summary="an unknown bandwidth-upgraded medium"/>
+    <variant name=".WebRtcUpgrade" summary="an upgraded WebRTC medium"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Payload.NumAttachments{Type}" units="attachments"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the number of {Type} attachments intended to be sent in a Nearby
+    Share transfer. Emitted when the transfer concludes, successfully or not.
+  </summary>
+  <token key="Type">
+    <variant name="" summary="text or file"/>
+    <variant name=".File" summary="file"/>
+    <variant name=".Text" summary="text"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Payload.TotalSize{Variation}" units="KB"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the total payload size of a Nearby Share transfer {Variation}.
+    Emitted when the transfer concludes.
+  </summary>
+  <token key="Variation">
+    <variant name=""
+        summary="for all sharing scenarios, agnostic of final result, device
+                 type, or transfer medium"/>
+    <variant name=".Cancelled" summary="when the transfer is cancelled"/>
+    <variant name=".Failed" summary="when the transfer fails"/>
+    <variant name=".Laptop" summary="when sharing with a laptop"/>
+    <variant name=".NoMediumUpgrade"
+        summary="when using the initial bandwidth medium"/>
+    <variant name=".Phone" summary="when sharing with a phone"/>
+    <variant name=".Receive" summary="when receiving"/>
+    <variant name=".Send" summary="when sending"/>
+    <variant name=".Succeeded" summary="when the transfer succeeds"/>
+    <variant name=".Tablet" summary="when sharing with a tablet"/>
+    <variant name=".UnknownDeviceType"
+        summary="when sharing with an unknown device type"/>
+    <variant name=".UnknownMediumUpgrade"
+        summary="when using an unknown bandwidth-upgraded medium"/>
+    <variant name=".WebRtcUpgrade"
+        summary="when using an upgraded WebRTC medium"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Payload.TransferRate{Variation}" units="KB/s"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
+  <summary>
+    Records the payload transfer rate of a Nearby Share transfer {Variation}.
+    Emitted when the transfer concludes.
+  </summary>
+  <token key="Variation">
+    <variant name=""
+        summary="for all sharing scenarios, agnostic of final result, device
+                 type, or transfer medium"/>
+    <variant name=".Cancelled" summary="when the transfer is cancelled"/>
+    <variant name=".Failed" summary="when the transfer fails"/>
+    <variant name=".Laptop" summary="when sharing with a laptop"/>
+    <variant name=".NoMediumUpgrade"
+        summary="when using the initial bandwidth medium"/>
+    <variant name=".Phone" summary="when sharing with a phone"/>
+    <variant name=".Receive" summary="when receiving"/>
+    <variant name=".Send" summary="when sending"/>
+    <variant name=".Succeeded" summary="when the transfer succeeds"/>
+    <variant name=".Tablet" summary="when sharing with a tablet"/>
+    <variant name=".UnknownDeviceType"
+        summary="when sharing with an unknown device type"/>
+    <variant name=".UnknownMediumUpgrade"
+        summary="when using an unknown bandwidth-upgraded medium"/>
+    <variant name=".WebRtcUpgrade"
+        summary="when using an upgraded WebRTC medium"/>
+  </token>
 </histogram>
 
 <histogram name="Nearby.Share.StartAdvertising.Result.FailureReason{Mode}"
@@ -9905,7 +10036,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Laptop" summary="a laptop"/>
     <variant name=".Phone" summary="a phone"/>
     <variant name=".Tablet" summary="a tablet"/>
-    <variant name=".Unknown" summary="an unknown device type"/>
+    <variant name=".Unknown" summary="an unknown device type">
+      <obsolete>
+        Renamed 12/2020 to UnknownDeviceType.
+      </obsolete>
+    </variant>
+    <variant name=".UnknownDeviceType" summary="an unknown device type"/>
   </token>
 </histogram>
 
@@ -9932,12 +10068,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Laptop" summary="a laptop"/>
     <variant name=".Phone" summary="a phone"/>
     <variant name=".Tablet" summary="a tablet"/>
-    <variant name=".Unknown" summary="an unknown device type"/>
+    <variant name=".Unknown" summary="an unknown device type">
+      <obsolete>
+        Renamed 12/2020 to UnknownDeviceType.
+      </obsolete>
+    </variant>
+    <variant name=".UnknownDeviceType" summary="an unknown device type"/>
   </token>
 </histogram>
 
 <histogram name="Nearby.Share.Transfer.NumAttachments{Type}"
     units="attachments" expires_after="2021-08-19">
+  <obsolete>
+    Renamed 12/2020 to Nearby.Share.Payload.NumAttachments[...].
+  </obsolete>
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -9954,6 +10098,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Nearby.Share.Transfer.Rate{Direction}{ShareTargetType}{UpgradedMedium}{PayloadStatus}"
     units="KB/s" expires_after="2021-08-19">
+  <obsolete>
+    Renamed 12/2020 to Nearby.Share.Payload.TransferRate[...].
+  </obsolete>
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -9991,6 +10138,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Nearby.Share.Transfer.TotalSize{Direction}{ShareTargetType}{UpgradedMedium}{PayloadStatus}"
     units="KB" expires_after="2021-08-19">
+  <obsolete>
+    Renamed 12/2020 to Nearby.Share.Payload.TotalSize[...].
+  </obsolete>
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -16091,6 +16241,16 @@ should be kept until we use this API.  -->
   <summary>
     Records state of the Background Tracing system, from when scenarios are
     attempted to be activated until they're completed (successfully or failed)
+  </summary>
+</histogram>
+
+<histogram name="Tracing.ProducerHostInitializationResult"
+    enum="TracingProducerHostInitializationResult" expires_after="2021-12-09">
+  <owner>eseckler@chromium.org</owner>
+  <owner>tracing@chromium.org</owner>
+  <summary>
+    Whenever a producer connects to the tracing service, records the
+    success/failure result of the connection.
   </summary>
 </histogram>
 

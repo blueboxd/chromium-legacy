@@ -1540,19 +1540,6 @@ crbug.com/1129522 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outs
 crbug.com/1129522 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-005.html [ Failure ]
 crbug.com/1129522 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-007.html [ Failure ]
 
-# Fix once top-level-await is enabled
-crbug.com/1022182 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-4-tla.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-delayed.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-immediate-promise.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-import.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-promise.html [ Skip ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-4-tla.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-delayed.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-immediate-promise.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-import.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-promise.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
-
 crbug.com/1024331 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-001.html [ Failure ]
 crbug.com/1024331 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-002.html [ Failure ]
 crbug.com/1140728 external/wpt/css/css-text/hyphens/hyphens-span-002.html [ Failure ]
@@ -1616,7 +1603,7 @@ crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Time
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
 
 # crbug.com/1095379: These fail with a timeout, even when they're given extra time (via SlowTests)
-crbug.com/846656 external/wpt/css/selectors/focus-visible-002-manual.html [ Pass Timeout ]
+crbug.com/846656 external/wpt/css/selectors/focus-visible-002.html [ Pass Timeout ]
 crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Timeout ]
 crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Pass Timeout ]
 crbug.com/1150992 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
@@ -2344,6 +2331,9 @@ crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element
 # css-pseudo-4 opacity not applied to ::first-line
 crbug.com/1085772 external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
 
+# Disabling test to checkin associated frontend changes on DevTools
+crbug.com/1136655 http/tests/devtools/throttling/mobile-throttling.js [ Failure Pass Timeout ]
+
 # motion-1 issues
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-002.html [ Failure ]
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-003.html [ Failure ]
@@ -2527,7 +2517,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/css/selectors/focus-visible-002.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection-no-sink.https.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
@@ -3125,8 +3114,9 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
 
-# Changed error messages, rebaselining after v8 roll
-crbug.com/v8/6513 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
+# Synthetic modules report the wrong location in errors
+crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
+crbug.com/994315 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
 
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Timeout Crash ]
@@ -3272,12 +3262,13 @@ crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection.html [ Skip ]
 
 # [composite-bgcolor-animation]
-crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure ]
-crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure ]
-crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure ]
-crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure ]
-crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-left-radius-010.xht [ Failure ]
-crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-right-radius-010.xht [ Failure ]
+crbug.com/1139008 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/one-element-animation.html [ Failure ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure Pass ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure Pass ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure Pass ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure Pass ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-left-radius-010.xht [ Failure Pass ]
+crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-right-radius-010.xht [ Failure Pass ]
 
 # [css-grid]
 crbug.com/921722 external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
@@ -5792,6 +5783,8 @@ crbug.com/1123116 external/wpt/feature-policy/reporting/serial-reporting.https.h
 crbug.com/1123116 external/wpt/feature-policy/reporting/sync-xhr-reporting.html [ Timeout ]
 crbug.com/1123116 external/wpt/feature-policy/reporting/usb-reporting.https.html [ Timeout ]
 crbug.com/1123116 external/wpt/feature-policy/reporting/xr-reporting.https.html [ Timeout ]
+
+crbug.com/1151954 http/tests/permissions-policy/permissions-policy-javascript-navigation.php [ Failure ]
 
 crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout Failure ]
 crbug.com/1140329 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]

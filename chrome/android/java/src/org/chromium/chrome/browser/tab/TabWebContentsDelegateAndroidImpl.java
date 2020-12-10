@@ -25,6 +25,7 @@ import org.chromium.components.find_in_page.FindNotificationDetails;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.url.GURL;
 
 /**
  * Implementation class of {@link TabWebContentsDelegateAndroid}.
@@ -137,7 +138,7 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     }
 
     @Override
-    public void onUpdateUrl(String url) {
+    public void onUpdateUrl(GURL url) {
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) observers.next().onUpdateUrl(mTab, url);
         mDelegate.onUpdateUrl(url);
@@ -211,11 +212,6 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     public void webContentsCreated(WebContents sourceWebContents, long openerRenderProcessId,
             long openerRenderFrameId, String frameName, String targetUrl,
             WebContents newWebContents) {
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().webContentsCreated(mTab, sourceWebContents, openerRenderProcessId,
-                    openerRenderFrameId, frameName, targetUrl, newWebContents);
-        }
         mDelegate.webContentsCreated(sourceWebContents, openerRenderProcessId, openerRenderFrameId,
                 frameName, targetUrl, newWebContents);
     }

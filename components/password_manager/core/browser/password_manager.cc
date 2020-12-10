@@ -64,8 +64,8 @@ using autofill::UNKNOWN_TYPE;
 using autofill::USERNAME;
 using autofill::mojom::SubmissionIndicatorEvent;
 using base::NumberToString;
-using BlacklistedStatus =
-    password_manager::OriginCredentialStore::BlacklistedStatus;
+using BlocklistedStatus =
+    password_manager::OriginCredentialStore::BlocklistedStatus;
 using password_manager::metrics_util::GaiaPasswordHashChange;
 
 namespace password_manager {
@@ -311,15 +311,15 @@ void PasswordManager::SetGenerationElementAndTypeForForm(
   }
 }
 
-void PasswordManager::MarkWasUnblacklistedInFormManagers(
+void PasswordManager::MarkWasUnblocklistedInFormManagers(
     CredentialCache* credential_cache) {
   if (owned_submitted_form_manager_) {
     const OriginCredentialStore& credential_store =
         credential_cache->GetCredentialStore(
             url::Origin::Create(owned_submitted_form_manager_->GetURL()));
-    if (credential_store.GetBlacklistedStatus() ==
-        BlacklistedStatus::kWasBlacklisted) {
-      owned_submitted_form_manager_->MarkWasUnblacklisted();
+    if (credential_store.GetBlocklistedStatus() ==
+        BlocklistedStatus::kWasBlocklisted) {
+      owned_submitted_form_manager_->MarkWasUnblocklisted();
     }
   }
 
@@ -327,9 +327,9 @@ void PasswordManager::MarkWasUnblacklistedInFormManagers(
     const OriginCredentialStore& credential_store =
         credential_cache->GetCredentialStore(
             url::Origin::Create(form_manager->GetURL()));
-    if (credential_store.GetBlacklistedStatus() ==
-        BlacklistedStatus::kWasBlacklisted) {
-      form_manager->MarkWasUnblacklisted();
+    if (credential_store.GetBlocklistedStatus() ==
+        BlocklistedStatus::kWasBlocklisted) {
+      form_manager->MarkWasUnblocklisted();
     }
   }
 }

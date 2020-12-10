@@ -270,6 +270,7 @@ _CONFIG = [
             'gfx::Vector2dF',
 
             # Chromium geometry operations.
+            'cc::MathUtil',
             'gfx::ToFlooredPoint',
 
             # Range type.
@@ -353,6 +354,9 @@ _CONFIG = [
             'gfx::RectToSkIRect',
             'gfx::ScrollOffset',
             'ui::ScrollGranularity',
+
+            # Document transitions
+            'cc::DocumentTransitionRequest',
 
             # base/types/strong_alias.h
             'base::StrongAlias',

@@ -3190,6 +3190,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"keyboard-based-display-arrangement-in-settings",
+     flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
+     flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         ash::features::kKeyboardBasedDisplayArrangementInSettings)},
     {"enable-lock-screen-notification",
      flag_descriptions::kLockScreenNotificationName,
      flag_descriptions::kLockScreenNotificationDescription, kOsCrOS,
@@ -6953,6 +6959,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-labs", flag_descriptions::kChromeLabsName,
      flag_descriptions::kChromeLabsDescription, kOsLinux | kOsMac | kOsWin,
      FEATURE_VALUE_TYPE(features::kChromeLabs)},
+
+#if defined(OS_CHROMEOS)
+    {"launcher-search-normalization",
+     flag_descriptions::kEnableLauncherSearchNormalizationName,
+     flag_descriptions::kEnableLauncherSearchNormalizationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableLauncherSearchNormalization)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

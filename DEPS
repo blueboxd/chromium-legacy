@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5e744acfad58f24b1e2887d08954a42b0765338c',
+  'skia_revision': 'c2a1746b42d96f6ec6d8af6bec2b86a5439101f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,15 +211,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f0f79e08366208f15f05c909bc7b81a1198e261f',
+  'angle_revision': '067a12f059511ead6e91ab9e91af1d180ad9c144',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '84b9bb6621c7eae8da034d31aceab780d8b1abdc',
+  'swiftshader_revision': '83498ed6d22854cd2433e2411e67298e4d2cc0cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'e2c30849a21d0f849e7196402c267d66551d48a3',
+  'pdfium_revision': 'dc85f867055279c2f56031b0f30bed50679c49d1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e43bd0925d7649a96737a4cfbb38de543c83a8ec',
+  'catapult_revision': 'd5e21940e048558fb675d0f14b49d638430c8279',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '34e5f31b2cb0d26d21c47577cc11d328cb0009eb',
+  'devtools_frontend_revision': '3c56ca23d926d0389d41e976caaad2ec2f8a6e98',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -322,15 +322,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '702723ac7599d229195aabfee0b61954ad087140',
+  'shaderc_revision': '4089217d30c1f035c44a08255b875b5fea4f4bc5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '30805557e65102253a77aadb93ea02fd62dde142',
+  'dawn_revision': '29fd62989338a0d5812bc654a3afee6dc684bfc4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '330a1eec8132c5a11f43b3f1a09ee48540dfa425',
+  'quiche_revision': 'a9b70f03e7a9de45e38417c72839c47f5eb5692c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -365,7 +365,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '195917c0be32942769106bb4ae35194b23921664',
+  'tint_revision': 'c82eeeef07833bf1d4ed5f3aefbcbef317fd014d',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -898,7 +898,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2a46c6172edb5e89f4732b3aa1a226f44694d79f',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'ed88fdb2f824859bcf914d8b2739ce2436135e4b',
       'condition': 'checkout_chromeos',
   },
 
@@ -913,12 +913,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '642f74bf3abe12d19b681fa85a44f1a74d59f9b2',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '11ce1d136747ef4a89e34dc17da7446235192b78',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0e323e7bff966ea51d9886d5f0a0f8266ab6c2a5',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd79114a2ed63efaef78e2e2b5e8c7d200836e89b',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1065,7 +1065,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '18e09b9197a3b1d771c077c530d1a4ebad04c167',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '8bb622d674ec356faae54fbd1cb50f429cd5e02a',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '5c3a0b95802abf409c686ed3534dd46296c1dfb5',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1290,7 +1290,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b5c844554e30ce25914f44b608533e94223c22ab',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '81356f4bf38c08e23def869529621875ae4958a3',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1368,7 +1368,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'FZmiNfUmb6lJR28DxZkS03xoY4oJh4177LjCbVwbpCMC'
+              'version': 'w2tmEpHxQbVXMuQIrFN5FkGhC4pfYGtlSmR55s_lo9cC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1415,7 +1415,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'GXNupZ4wd3_EsDohjcNOss3iuVb5gcv0rAeHUiH05JkC',
+              'version': 'DR3nwJggFDcmTDz7P8fJQCtRLO1nxDt26czkOqhtZJ8C',
           },
       ],
       'condition': 'checkout_android',
@@ -1578,7 +1578,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'U9IAKman_wN6alsQfNAUzIasErQFGDvx3wn9o0AQBlEC',
+          'version': 'bTvIvWnbZxg0-7ukJDOeVphyUCuVIkxtui-gilfeBScC',
         },
       ],
       'dep_type': 'cipd',
@@ -1588,7 +1588,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'HYgBDvuNpEKiDYuVIssmP2wgCGe0FS-XKCe18wxZWKwC',
+          'version': '4UEZlBTjAOzFCQchRqtALQwJDyYXa9Sj_52oUhXmNkoC',
         },
       ],
       'dep_type': 'cipd',
@@ -1598,7 +1598,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'xF94ClStkjWlYHAlxYXSOCFYEGhzEgxZEwB4zirJIjUC',
+          'version': '6s5TRj110nqaPlBS8YO4HN2dRmhheX7a-pp3YWURcnoC',
         },
       ],
       'dep_type': 'cipd',
@@ -1612,7 +1612,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4c146388478543eb513b7de76a61675daadcdeaf',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a6fc821995dc4cba558eda8ff433bfaea5e641e3',
     'condition': 'checkout_src_internal',
   },
 
@@ -4833,43 +4833,6 @@ hooks = [
     ],
   },
   # Download AFDO profiles for Chrome OS for each architecture.
-  # TODO(crbug/1135245): silvermont, airmont, broadwell to be replaced by atom and bigcore
-  {
-    'name': 'Fetch Chrome OS AFDO profiles (silvermont)',
-    'pattern': '.',
-    'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'vpython',
-                'src/tools/download_optimization_profile.py',
-                '--newest_state=src/chromeos/profiles/silvermont.afdo.newest.txt',
-                '--local_state=src/chromeos/profiles/silvermont.afdo.local.txt',
-                '--output_name=src/chromeos/profiles/silvermont.afdo.prof',
-                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
-    ],
-  },
-  {
-    'name': 'Fetch Chrome OS AFDO profiles (airmont)',
-    'pattern': '.',
-    'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'vpython',
-                'src/tools/download_optimization_profile.py',
-                '--newest_state=src/chromeos/profiles/airmont.afdo.newest.txt',
-                '--local_state=src/chromeos/profiles/airmont.afdo.local.txt',
-                '--output_name=src/chromeos/profiles/airmont.afdo.prof',
-                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
-    ],
-  },
-  {
-    'name': 'Fetch Chrome OS AFDO profiles (broadwell)',
-    'pattern': '.',
-    'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'vpython',
-                'src/tools/download_optimization_profile.py',
-                '--newest_state=src/chromeos/profiles/broadwell.afdo.newest.txt',
-                '--local_state=src/chromeos/profiles/broadwell.afdo.local.txt',
-                '--output_name=src/chromeos/profiles/broadwell.afdo.prof',
-                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
-    ],
-  },
   {
     'name': 'Fetch Chrome OS AFDO profiles (from Intel Atom cores)',
     'pattern': '.',

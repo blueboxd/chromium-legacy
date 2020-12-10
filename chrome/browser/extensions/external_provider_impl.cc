@@ -12,11 +12,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -706,9 +706,11 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   // Extensions provided by recommended policies.
   if (external_recommended_loader.get()) {
-    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
+    auto recommended_provider = std::make_unique<ExternalProviderImpl>(
         service, external_recommended_loader, profile, crx_location,
-        Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS));
+        Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS);
+    recommended_provider->set_auto_acknowledge(true);
+    provider_list->push_back(std::move(recommended_provider));
   }
 
   // In tests don't install extensions from default external sources.

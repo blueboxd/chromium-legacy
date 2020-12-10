@@ -56,10 +56,10 @@ class PasswordFormManagerForUI {
       const = 0;
 
   // Determines if the user opted to 'never remember' passwords for this form.
-  virtual bool IsBlacklisted() const = 0;
+  virtual bool IsBlocklisted() const = 0;
 
-  // Checks if the user unblacklisted the origin of the form for saving.
-  virtual bool WasUnblacklisted() const = 0;
+  // Checks if the user unblocklisted the origin of the form for saving.
+  virtual bool WasUnblocklisted() const = 0;
 
   // Determines whether the submitted credentials returned by
   // GetPendingCredentials() can be moved to the signed in account store.
@@ -99,8 +99,8 @@ class PasswordFormManagerForUI {
   virtual void OnNoInteraction(bool is_update) = 0;
 
   // A user opted to 'never remember' passwords for this form.
-  // Blacklist it so that from now on when it is seen we ignore it.
-  virtual void PermanentlyBlacklist() = 0;
+  // Blocklist it so that from now on when it is seen we ignore it.
+  virtual void Blocklist() = 0;
 
   // Called when the passwords were shown on on the bubble without obfuscation.
   virtual void OnPasswordsRevealed() = 0;

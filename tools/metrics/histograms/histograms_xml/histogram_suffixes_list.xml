@@ -7885,6 +7885,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="In-product help for password autofill suggestions."/>
   <suffix name="IPH_KeyboardAccessoryPaymentFilling"
       label="In-product help for payments autofill suggestions."/>
+  <suffix name="IPH_LiveCaption" label="In product help for Live Caption."/>
   <suffix name="IPH_LongPressToolbarTip"
       label="In product help LongPress toolbar."/>
   <suffix name="IPH_NewIncognitoTabTip"
@@ -11983,6 +11984,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Multidevice-setup-screen" label=""/>
   <suffix name="Network" label=""/>
   <suffix name="Network-selection" label=""/>
+  <suffix name="Offline-login" label=""/>
   <suffix name="Packaged-license" label=""/>
   <suffix name="Parental-handoff" label=""/>
   <suffix name="Recommend-apps" label=""/>
@@ -12049,6 +12051,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Network-selection.OfflineDemoSetup" label=""/>
   <suffix name="Oauth-enrollment.Back" label=""/>
   <suffix name="Oauth-enrollment.Completed" label=""/>
+  <suffix name="Offline-login.Back" label=""/>
+  <suffix name="Offline-login.ReloadOnlineLogin" label=""/>
   <suffix name="Packaged-license.DontEnroll" label=""/>
   <suffix name="Packaged-license.Enroll" label=""/>
   <suffix name="Parental-Handoff.Done" label=""/>
@@ -12071,6 +12075,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="OptimizationGuide_OptimizationTargets" separator=".">
+  <suffix name="LanguageDetection" label="Language detection"/>
   <suffix name="PainfulPageLoad" label="Painful page load"/>
   <affected-histogram name="OptimizationGuide.IsPredictionModelValid"/>
   <affected-histogram

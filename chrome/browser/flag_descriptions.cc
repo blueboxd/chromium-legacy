@@ -4110,6 +4110,12 @@ const char kEnableHeuristicStylusPalmRejectionDescription[] =
     "Enable additional heuristic palm rejection logic when interacting with "
     "stylus usage. Not intended for all devices.";
 
+const char kEnableLauncherSearchNormalizationName[] =
+    "Enable normalization of launcher search results";
+const char kEnableLauncherSearchNormalizationDescription[] =
+    "Enable normalization of scores from different providers to the "
+    "launcher.";
+
 const char kNewDragSpecInLauncherName[] = "Enable Launcher App Paging";
 const char kNewDragSpecInLauncherDescription[] =
     "Show visual affordance of launcher app pages and enable page previews "
@@ -4407,6 +4413,12 @@ const char kInteractiveWindowCycleList[] =
 const char kInteractiveWindowCycleListDescription[] =
     "Adds mouse behavior, three-finger touchpad swipe, left/right "
     "arrow navigation, and space/enter confirmation to Alt-Tab.";
+
+const char kKeyboardBasedDisplayArrangementInSettingsName[] =
+    "Keyboard-based Display Arrangement in Settings";
+const char kKeyboardBasedDisplayArrangementInSettingsDescription[] =
+    "Enables using arrow keys to rearrange displays on Settings > Device > "
+    "Displays page.";
 
 const char kLacrosStabilityName[] = "Lacros stability";
 const char kLacrosStabilityDescription[] = "Frequency of Lacros updates.";

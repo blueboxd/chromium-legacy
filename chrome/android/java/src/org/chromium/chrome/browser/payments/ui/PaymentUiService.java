@@ -333,6 +333,16 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
 
     /**
+     * Creates the shipping section for the app selector UI if needed. This method should be called
+     * when UI has been built and payment details has been finalized.
+     * @param context The activity context.
+     */
+    public void createShippingSectionIfNeeded(Context context) {
+        if (!shouldShowShippingSection()) return;
+        createShippingSectionForPaymentRequestUI(context);
+    }
+
+    /**
      * @return Whether the PaymentRequest UI is alive. The UI comes to live when
      *         buildPaymentRequestUi() has been called to create it; it stops being alive when
      *         close() is called to destroy it.
@@ -1236,10 +1246,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
 
-        if (shouldShowShippingSection() && !isShowWaitingForUpdatedDetails) {
-            createShippingSectionForPaymentRequestUI(activity);
-        }
-
         if (shouldShowContactSection()) {
             mContactSection = new ContactDetailsSection(
                     activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
@@ -1282,7 +1288,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
 
     /** Create a shipping section for PaymentRequest UI. */
-    public void createShippingSectionForPaymentRequestUI(Context context) {
+    private void createShippingSectionForPaymentRequestUI(Context context) {
         List<AutofillAddress> addresses = new ArrayList<>();
 
         for (int i = 0; i < mAutofillProfiles.size(); i++) {
@@ -1557,6 +1563,9 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     @PaymentRequestUI.SelectionResult
     public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
             EditableOption option, Callback<PaymentInformation> callback) {
+        Context context = mDelegate.getContext();
+        if (context == null) return PaymentRequestUI.SelectionResult.NONE;
+
         boolean wasRetryCalled = mDelegate.wasRetryCalled();
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
             AutofillAddress address = (AutofillAddress) option;
@@ -1588,15 +1597,11 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.PAYMENT_METHODS) {
             if (shouldShowShippingSection() && mShippingAddressesSection == null) {
-                ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-                assert activity != null;
-                createShippingSectionForPaymentRequestUI(activity);
+                createShippingSectionForPaymentRequestUI(context);
             }
             if (shouldShowContactSection() && mContactSection == null) {
-                ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-                assert activity != null;
                 mContactSection = new ContactDetailsSection(
-                        activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
+                        context, mAutofillProfiles, mContactEditor, mJourneyLogger);
             }
             onSelectedPaymentMethodUpdated();
             PaymentApp paymentApp = (PaymentApp) option;

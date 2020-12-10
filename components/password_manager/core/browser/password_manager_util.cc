@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
@@ -312,7 +313,7 @@ const PasswordForm* GetMatchForUpdating(
   return credentials.empty() ? nullptr : credentials.front();
 }
 
-PasswordForm MakeNormalizedBlacklistedForm(
+PasswordForm MakeNormalizedBlocklistedForm(
     password_manager::PasswordStore::FormDigest digest) {
   PasswordForm result;
   result.blocked_by_user = true;

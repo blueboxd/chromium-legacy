@@ -209,7 +209,7 @@ const base::Feature kCrostiniEnableDlc{"CrostiniEnableDlc",
 
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{
-    "CryptAuthV2DeviceActivityStatus", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CryptAuthV2DeviceActivityStatus", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables use of the connectivity status from Cryptauth's
 // GetDevicesActivityStatus API to sort devices.
@@ -361,7 +361,7 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 // Enables pasting a few recently copied items in a menu when pressing search +
 // v.
 const base::Feature kClipboardHistory{"ClipboardHistory",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the clipboard nudge shown prefs will be reset at the start of
 // each new user session.

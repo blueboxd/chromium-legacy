@@ -52,8 +52,8 @@ void SavePasswordInfoBarDelegate::Create(
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogSaveUIDismissalReason(
       infobar_response_, /*user_state=*/base::nullopt);
-  if (form_to_save_->WasUnblacklisted()) {
-    password_manager::metrics_util::LogSaveUIDismissalReasonAfterUnblacklisting(
+  if (form_to_save_->WasUnblocklisted()) {
+    password_manager::metrics_util::LogSaveUIDismissalReasonAfterUnblocklisting(
         infobar_response_);
   }
   if (auto* recorder = form_to_save_->GetMetricsRecorder()) {
@@ -114,7 +114,7 @@ bool SavePasswordInfoBarDelegate::Accept() {
 
 bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
-  form_to_save_->PermanentlyBlacklist();
+  form_to_save_->Blocklist();
   infobar_response_ = password_manager::metrics_util::CLICKED_NEVER;
   return true;
 }

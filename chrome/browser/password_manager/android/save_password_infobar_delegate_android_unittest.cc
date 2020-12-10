@@ -41,8 +41,8 @@ namespace {
 // TODO(crbug.com/1086479): Replace this with MockPasswordFormManagerForUI.
 class MockPasswordFormManager : public PasswordFormManager {
  public:
-  MOCK_METHOD(bool, WasUnblacklisted, (), (const, override));
-  MOCK_METHOD(void, PermanentlyBlacklist, (), (override));
+  MOCK_METHOD(bool, WasUnblocklisted, (), (const, override));
+  MOCK_METHOD(void, Blocklist, (), (override));
 
   MockPasswordFormManager(
       password_manager::PasswordManagerClient* client,
@@ -188,7 +188,7 @@ void SavePasswordInfoBarDelegateTest::TearDown() {
 TEST_F(SavePasswordInfoBarDelegateTest, CancelTest) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager(nullptr, false /* with_federation_origin */));
-  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
+  EXPECT_CALL(*password_form_manager.get(), Blocklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
                      true /* is_smartlock_branding_enabled */));
@@ -239,7 +239,7 @@ TEST_F(SavePasswordInfoBarDelegateTest,
 TEST_F(SavePasswordInfoBarDelegateTest, RecordsSaveAfterUnblacklisting) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager(nullptr, false /* with_federation_origin */));
-  ON_CALL(*password_form_manager, WasUnblacklisted)
+  ON_CALL(*password_form_manager, WasUnblocklisted)
       .WillByDefault(testing::Return(true));
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
@@ -255,7 +255,7 @@ TEST_F(SavePasswordInfoBarDelegateTest, RecordsSaveAfterUnblacklisting) {
 TEST_F(SavePasswordInfoBarDelegateTest, RecordNeverAfterUnblacklisting) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager(nullptr, false /* with_federation_origin */));
-  ON_CALL(*password_form_manager, WasUnblacklisted)
+  ON_CALL(*password_form_manager, WasUnblocklisted)
       .WillByDefault(testing::Return(true));
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
@@ -271,7 +271,7 @@ TEST_F(SavePasswordInfoBarDelegateTest, RecordNeverAfterUnblacklisting) {
 TEST_F(SavePasswordInfoBarDelegateTest, RecordDismissAfterUnblacklisting) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager(nullptr, false /* with_federation_origin */));
-  ON_CALL(*password_form_manager, WasUnblacklisted)
+  ON_CALL(*password_form_manager, WasUnblocklisted)
       .WillByDefault(testing::Return(true));
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
@@ -287,7 +287,7 @@ TEST_F(SavePasswordInfoBarDelegateTest, RecordDismissAfterUnblacklisting) {
 TEST_F(SavePasswordInfoBarDelegateTest, DontRecordIfNotUnblacklisted) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager(nullptr, false /* with_federation_origin */));
-  ON_CALL(*password_form_manager, WasUnblacklisted)
+  ON_CALL(*password_form_manager, WasUnblocklisted)
       .WillByDefault(testing::Return(false));
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
@@ -332,7 +332,7 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
     std::unique_ptr<MockPasswordFormManager> password_form_manager(
         CreateMockFormManager(recorder, false /* with_federation_origin */));
     if (dismissal_reason == BubbleDismissalReason::kDeclined)
-      EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
+      EXPECT_CALL(*password_form_manager.get(), Blocklist());
     std::unique_ptr<ConfirmInfoBarDelegate> infobar(
         CreateDelegate(std::move(password_form_manager),
                        true /* is_smartlock_branding_enabled */));

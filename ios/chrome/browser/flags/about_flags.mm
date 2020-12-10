@@ -59,7 +59,6 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/features.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/open_in/features.h"
 #include "ios/chrome/browser/policy/policy_features.h"
@@ -255,9 +254,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
-    {"drag_and_drop", flag_descriptions::kDragAndDropName,
-     flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDragAndDrop)},
     {"enable-autofill-credit-card-upload",
      flag_descriptions::kAutofillCreditCardUploadName,
      flag_descriptions::kAutofillCreditCardUploadDescription, flags_ui::kOsIos,
@@ -458,11 +454,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
      flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
-#if defined(__IPHONE_13_4)
-    {"pointer-support", flag_descriptions::kPointerSupportName,
-     flag_descriptions::kPointerSupportDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kPointerSupport)},
-#endif  // defined(__IPHONE_13_4)
     {"autofill-enable-google-issued-card",
      flag_descriptions::kAutofillEnableGoogleIssuedCardName,
      flag_descriptions::kAutofillEnableGoogleIssuedCardDescription,
@@ -516,11 +507,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
-    {"add-web-content-drop-interaction",
-     flag_descriptions::kAddWebContentDropInteractionName,
-     flag_descriptions::kAddWebContentDropInteractionDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kAddWebContentDropInteraction)},
     {"enable-fullpage-screenshot",
      flag_descriptions::kEnableFullPageScreenshotName,
      flag_descriptions::kEnableFullPageScreenshotDescription, flags_ui::kOsIos,
@@ -600,6 +586,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLocationPermissionsPromptName,
      flag_descriptions::kLocationPermissionsPromptDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kLocationPermissionsPrompt)},
+    {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
+     flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

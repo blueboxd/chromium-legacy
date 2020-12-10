@@ -39,6 +39,7 @@ source_set("patch_impl") {
   ]
   deps = [
     ":update_client",
+    "//build:chromeos_buildflags",
     "//components/services/patch/public/cpp",
     "//components/services/patch/public/mojom",
     "//mojo/public/cpp/bindings",
@@ -127,6 +128,7 @@ static_library("update_client") {
   deps = [
     "//base",
     "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//components/client_update_protocol",
     "//components/crx_file",
     "//components/prefs",
@@ -154,6 +156,8 @@ static_library("test_support") {
   sources = [
     "net/url_loader_post_interceptor.cc",
     "net/url_loader_post_interceptor.h",
+    "test_activity_data_service.cc",
+    "test_activity_data_service.h",
     "test_configurator.cc",
     "test_configurator.h",
     "test_installer.cc",

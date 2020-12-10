@@ -256,14 +256,12 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       // updates. We can't throttle it here or it seems the root compositor
       // doesn't get setup properly.
       lifecycle_updates_throttled_(!GetFrame().IsMainFrame()),
-      current_update_lifecycle_phases_target_state_(
-          DocumentLifecycle::kUninitialized),
+      target_state_(DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
       suppress_adjust_view_size_(false),
       intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
-      in_lifecycle_update_(false),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
       forced_layout_start_time_(base::TimeTicks()),
@@ -461,18 +459,8 @@ bool LocalFrameView::LifecycleUpdatesActive() const {
   return !lifecycle_updates_throttled_;
 }
 
-void LocalFrameView::SetLifecycleUpdatesThrottledForTesting() {
-  if (lifecycle_updates_throttled_)
-    return;
-
-  lifecycle_updates_throttled_ = true;
-  // In real world we never set lifecycle_updates_throttled_ to true after
-  // StartLifecycleUpdates(). For testing, we need to schedule updates for the
-  // change.
-  ScheduleAnimation();
-  // We may record fewer pre-composited layers under the frame.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    SetPaintArtifactCompositorNeedsUpdate();
+void LocalFrameView::SetLifecycleUpdatesThrottledForTesting(bool throttled) {
+  lifecycle_updates_throttled_ = throttled;
 }
 
 void LocalFrameView::InvalidateRect(const IntRect& rect) {
@@ -1104,6 +1092,9 @@ DocumentLifecycle& LocalFrameView::Lifecycle() const {
 void LocalFrameView::RunPostLifecycleSteps() {
   AllowThrottlingScope allow_throttling(*this);
   RunIntersectionObserverSteps();
+  ForAllRemoteFrameViews([](RemoteFrameView& frame_view) {
+    frame_view.UpdateCompositingScaleFactor();
+  });
 }
 
 void LocalFrameView::RunIntersectionObserverSteps() {
@@ -2307,8 +2298,7 @@ bool LocalFrameView::UpdateLifecycleToLayoutClean(DocumentUpdateReason reason) {
 void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
   LocalFrame& local_frame_root = GetFrame().LocalFrameRoot();
   // We need a full lifecycle update to clear pending paint invalidations.
-  if (local_frame_root.View()->current_update_lifecycle_phases_target_state_ <
-          DocumentLifecycle::kPaintClean ||
+  if (local_frame_root.View()->target_state_ < DocumentLifecycle::kPaintClean ||
       Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean) {
     // Schedule visual update to process the paint invalidation in the next
     // cycle.
@@ -2419,7 +2409,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // with the current lifecycle state to determine which phases are yet to run
   // in this cycle.
   base::AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
-      &current_update_lifecycle_phases_target_state_, target_state);
+      &target_state_, target_state);
   // This is used to check if we're within a lifecycle update but have passed
   // the layout update phase. Note there is a bit of a subtlety here: it's not
   // sufficient for us to check the current lifecycle state, since it can be
@@ -2429,7 +2419,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // separate bool.
   base::AutoReset<bool> past_layout_lifecycle_resetter(
       &past_layout_lifecycle_update_, false);
-  base::AutoReset<bool> in_lifecycle_scope(&in_lifecycle_update_, true);
 
   // If we're throttling, then we don't need to update lifecycle phases. The
   // throttling status will get updated in RunPostLifecycleSteps().
@@ -2680,7 +2669,6 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     return false;
 
   // This will be reset by AutoReset in the calling function
-  // (UpdateLifecyclePhases()).
   past_layout_lifecycle_update_ = true;
 
   // After layout and the |past_layout_lifecycle_update_| update, the value of
@@ -4438,7 +4426,7 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   } else if (GetFrame().IsLocalRoot()) {
     // By this point, every frame in the local frame tree has become throttled,
     // so painting the tree should just clear the previous painted output.
-    DCHECK(!in_lifecycle_update_);
+    DCHECK(!IsUpdatingLifecycle());
     AllowThrottlingScope allow_throtting(*this);
     RunPaintLifecyclePhase();
   }
@@ -4532,7 +4520,7 @@ bool LocalFrameView::ShouldThrottleRendering() const {
     // throttle lifecycle states after layout. Outside of lifecycle updates,
     // the frame should be considered throttled because it is not fully updating
     // the lifecycle.
-    return !local_frame_root_view->in_lifecycle_update_ ||
+    return !local_frame_root_view->IsUpdatingLifecycle() ||
            local_frame_root_view->past_layout_lifecycle_update_;
   }
 
@@ -4575,7 +4563,6 @@ void LocalFrameView::BeginLifecycleUpdates() {
   if (GetFrame().GetDocument()->IsInitialEmptyDocument())
     return;
   lifecycle_updates_throttled_ = false;
-  RenderThrottlingStatusChanged();
 
   LayoutView* layout_view = GetLayoutView();
   bool layout_view_is_empty = layout_view && !layout_view->FirstChild();
@@ -4584,6 +4571,9 @@ void LocalFrameView::BeginLifecycleUpdates() {
     layout_view->SetNeedsLayout(layout_invalidation_reason::kAddedToLayout,
                                 kMarkOnlyThis);
   }
+
+  ScheduleAnimation();
+  SetIntersectionObservationState(kRequired);
 
   // Non-main-frame lifecycle and commit deferral are controlled by their
   // main frame.

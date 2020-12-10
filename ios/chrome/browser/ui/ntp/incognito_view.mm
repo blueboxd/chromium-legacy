@@ -4,16 +4,13 @@
 
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
 
-#include "base/feature_list.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -157,12 +154,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (self) {
     _URLLoader = URLLoader;
 
-    if (DragAndDropIsEnabled()) {
       _dragDropHandler = [[URLDragDropHandler alloc] init];
       _dragDropHandler.dropDelegate = self;
       [self addInteraction:[[UIDropInteraction alloc]
                                initWithDelegate:_dragDropHandler]];
-    }
 
     self.alwaysBounceVertical = YES;
     // The bottom safe area is taken care of with the bottomUnsafeArea guides.
@@ -412,10 +407,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
             forControlEvents:UIControlEventTouchUpInside];
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       // TODO(crbug.com/1075616): Style as a link rather than a button.
       learnMoreButton.pointerInteractionEnabled = YES;
-    }
   }
 #endif  // defined(__IPHONE_13_4)
 

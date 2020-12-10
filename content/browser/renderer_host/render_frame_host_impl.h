@@ -69,6 +69,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
+#include "media/mojo/mojom/media_player.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -314,6 +315,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const url::Origin& GetLastCommittedOrigin() override;
   const net::NetworkIsolationKey& GetNetworkIsolationKey() override;
   const net::IsolationInfo& GetIsolationInfoForSubresources() override;
+  net::IsolationInfo GetPendingIsolationInfoForSubresources() override;
   gfx::NativeView GetNativeView() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
@@ -606,6 +608,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Computes the IsolationInfo this frame to |destination|.
   net::IsolationInfo ComputeIsolationInfoForNavigation(
       const GURL& destination) const;
+
+  // Computes the IsolationInfo that should be used for subresources, if
+  // |main_world_origin_for_url_loader_factory| is committed to this frame.
+  net::IsolationInfo ComputeIsolationInfoForSubresourcesForPendingCommit(
+      const url::Origin& main_world_origin_for_url_loader_factory) const;
 
   net::IsolationInfo GetIsolationInfoForViewSource() const;
 
@@ -1443,6 +1450,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindMediaMetricsProviderReceiver(
       mojo::PendingReceiver<media::mojom::MediaMetricsProvider> receiver);
 
+  void CreateMediaPlayerHost(
+      mojo::PendingReceiver<media::mojom::MediaPlayerHost> receiver);
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void BindMediaRemoterFactoryReceiver(
       mojo::PendingReceiver<media::mojom::RemoterFactory> receiver);
@@ -2182,6 +2192,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExtractFactoryParamsFromNavigationRequestOrLastCommittedNavigation(
       NavigationRequest* navigation_request,
       url::Origin* out_main_world_origin,
+      net::IsolationInfo* out_isolation_info,
       network::mojom::ClientSecurityStatePtr* out_client_security_state,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>*
           coep_reporter_pending_remote,

@@ -351,6 +351,11 @@ ci.console_view(
     },
 )
 
+ci.console_view(
+    name = "metadata.exporter",
+    header = None,
+)
+
 # The chromium.clang console includes some entries for builders from the chrome project
 [branches.console_view_entry(
     builder = "chrome:ci/{}".format(name),
@@ -413,6 +418,7 @@ ci.builder(
     properties = {
         "avd_configs": [
             "tools/android/avd/proto/creation/generic_android23.textpb",
+            "tools/android/avd/proto/creation/generic_android27.textpb",
             "tools/android/avd/proto/creation/generic_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_android30.textpb",
@@ -991,14 +997,6 @@ ci.android_builder(
     console_view_entry = ci.console_view_entry(
         category = "builder_tester|x86",
         short_name = "P",
-    ),
-)
-
-ci.android_fyi_builder(
-    name = "android-inverse-fieldtrials-pie-x86-fyi-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "builder_tester|x86",
-        short_name = "P-IFT",
     ),
 )
 
@@ -2600,13 +2598,6 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "linux-inverse-fieldtrials-fyi-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "linux",
-    ),
-)
-
-ci.fyi_builder(
     name = "linux-fieldtrial-rel",
     console_view_entry = ci.console_view_entry(
         category = "linux",
@@ -3305,16 +3296,6 @@ ci.fyi_windows_builder(
     ),
     execution_timeout = 16 * time.hour,
     notifies = ["annotator-rel"],
-)
-
-ci.fyi_windows_builder(
-    name = "win10-inverse-fieldtrials-fyi-rel",
-    builderless = True,
-    console_view_entry = ci.console_view_entry(
-        category = "win10",
-        short_name = "IFT",
-    ),
-    os = os.WINDOWS_10,
 )
 
 ci.gpu_linux_builder(
@@ -4513,6 +4494,8 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = "metadata-exporter",
+    console_view = "metadata.exporter",
+    console_view_entry = ci.console_view_entry(),
     executable = "recipe:chromium_export_metadata",
     service_account = "component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com",
     notifies = ["metadata-mapping"],

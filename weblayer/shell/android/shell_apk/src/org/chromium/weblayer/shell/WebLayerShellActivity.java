@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -48,6 +49,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.compat.ApiHelperForR;
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.BrowsingDataType;
 import org.chromium.weblayer.ContextMenuParams;
@@ -96,12 +98,17 @@ public class WebLayerShellActivity extends AppCompatActivity {
             implements View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
         private static final int MENU_ID_COPY_LINK_URI = 1;
         private static final int MENU_ID_COPY_LINK_TEXT = 2;
+        private static final int MENU_ID_DOWNLOAD_IMAGE = 3;
+        private static final int MENU_ID_DOWNLOAD_VIDEO = 4;
+        private static final int MENU_ID_DOWNLOAD_LINK = 5;
 
         private ContextMenuParams mParams;
+        private Tab mTab;
         private Context mContext;
 
-        public ContextMenuCreator(ContextMenuParams params) {
+        public ContextMenuCreator(ContextMenuParams params, Tab tab) {
             mParams = params;
+            mTab = tab;
         }
 
         @Override
@@ -118,6 +125,21 @@ public class WebLayerShellActivity extends AppCompatActivity {
                 MenuItem copyLinkTextItem =
                         menu.add(Menu.NONE, MENU_ID_COPY_LINK_TEXT, Menu.NONE, "Copy link text");
                 copyLinkTextItem.setOnMenuItemClickListener(this);
+            }
+            if (mParams.canDownload) {
+                if (mParams.isImage) {
+                    MenuItem downloadImageItem = menu.add(
+                            Menu.NONE, MENU_ID_DOWNLOAD_IMAGE, Menu.NONE, "Download image");
+                    downloadImageItem.setOnMenuItemClickListener(this);
+                } else if (mParams.isVideo) {
+                    MenuItem downloadVideoItem = menu.add(
+                            Menu.NONE, MENU_ID_DOWNLOAD_VIDEO, Menu.NONE, "Download video");
+                    downloadVideoItem.setOnMenuItemClickListener(this);
+                } else if (mParams.linkUri != null) {
+                    MenuItem downloadVideoItem =
+                            menu.add(Menu.NONE, MENU_ID_DOWNLOAD_LINK, Menu.NONE, "Download link");
+                    downloadVideoItem.setOnMenuItemClickListener(this);
+                }
             }
             if (!TextUtils.isEmpty(mParams.titleOrAltText)) {
                 TextView altTextView = new TextView(mContext);
@@ -138,6 +160,11 @@ public class WebLayerShellActivity extends AppCompatActivity {
                     break;
                 case MENU_ID_COPY_LINK_TEXT:
                     clipboard.setPrimaryClip(ClipData.newPlainText("link text", mParams.linkText));
+                    break;
+                case MENU_ID_DOWNLOAD_IMAGE:
+                case MENU_ID_DOWNLOAD_VIDEO:
+                case MENU_ID_DOWNLOAD_LINK:
+                    mTab.download(mParams);
                     break;
                 default:
                     break;
@@ -435,7 +462,7 @@ public class WebLayerShellActivity extends AppCompatActivity {
         // when the shell is rotated in the foreground).
         fragment.setRetainInstance(true);
         mBrowser = Browser.fromFragment(fragment);
-        Display display = getDisplay();
+        Display display = getDefaultDisplay();
         Point point = new Point();
         display.getRealSize(point);
         mBrowser.setMinimumSurfaceSize(point.x, point.y);
@@ -629,7 +656,7 @@ public class WebLayerShellActivity extends AppCompatActivity {
             @Override
             public void showContextMenu(ContextMenuParams params) {
                 View webLayerView = getSupportFragmentManager().getFragments().get(0).getView();
-                webLayerView.setOnCreateContextMenuListener(new ContextMenuCreator(params));
+                webLayerView.setOnCreateContextMenuListener(new ContextMenuCreator(params, tab));
                 webLayerView.showContextMenu();
             }
 
@@ -791,5 +818,13 @@ public class WebLayerShellActivity extends AppCompatActivity {
                     .setImageBitmap(mTabToPerTabState.get(tab)
                                             .mFaviconFetcher.getFaviconForCurrentNavigation());
         }
+    }
+
+    private Display getDefaultDisplay() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return ApiHelperForR.getDisplay(this);
+        }
+        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        return windowManager.getDefaultDisplay();
     }
 }

@@ -48,44 +48,17 @@ namespace blink {
 
 class FrameWidgetTestHelper;
 class WebDragData;
-class WebLocalFrame;
 class WebInputMethodController;
-class WebWidgetClient;
+class WebLocalFrame;
+class WebNonCompositedWidgetClient;
 
 class WebFrameWidget : public WebWidget {
  public:
-  // Makes a WebFrameWidget that wraps a pre-existing WebWidget from the
-  // RenderView/WebView, for a new local main frame.
-  // Main frames can be nested in cases like Portals or GuestViews.
-  BLINK_EXPORT static WebFrameWidget* CreateForMainFrame(
-      WebWidgetClient*,
-      WebLocalFrame* main_frame,
-      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
-          frame_widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
-          frame_widget,
-      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
-          widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
-      const viz::FrameSinkId& frame_sink_id,
-      bool is_for_nested_main_frame = false,
-      bool hidden = false,
-      bool never_composited = false);
-  // Makes a WebFrameWidget that wraps a WebLocalFrame that is not a main frame,
-  // providing a WebWidget to interact with the child local root frame.
-  BLINK_EXPORT static WebFrameWidget* CreateForChildLocalRoot(
-      WebWidgetClient*,
-      WebLocalFrame* local_root,
-      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
-          frame_widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
-          frame_widget,
-      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
-          widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
-      const viz::FrameSinkId& frame_sink_id,
-      bool hidden = false,
-      bool never_composited = false);
+  // Similiar to `InitializeCompositing()` but for non-compositing widgets.
+  // Exactly one of either `InitializeCompositing()` or this method must
+  // be called before using the widget.
+  virtual void InitializeNonCompositing(
+      WebNonCompositedWidgetClient* client) = 0;
 
   // Returns the local root of this WebFrameWidget.
   virtual WebLocalFrame* LocalRoot() const = 0;
@@ -132,6 +105,10 @@ class WebFrameWidget : public WebWidget {
   // Notifies the WebFrameWidget that the system drag and drop operation has
   // ended.
   virtual void DragSourceSystemDragEnded() = 0;
+
+  // Disables Drag and drop on this widget. Any drag activity will be
+  // immediately canceled.
+  virtual void DisableDragAndDrop() = 0;
 
   // Sets the inherited effective touch action on an out-of-process iframe.
   virtual void SetInheritedEffectiveTouchAction(WebTouchAction) {}
@@ -238,29 +215,27 @@ class WebFrameWidget : public WebWidget {
 
 // Convenience type for creation method taken by
 // InstallCreateWebFrameWidgetHook(). The method signature matches the
-// WebFrameWidgetImpl constructor.
-using CreateWebFrameWidgetFunction =
-    WebFrameWidget* (*)(base::PassKey<WebFrameWidget>,
-                        WebWidgetClient&,
-                        CrossVariantMojoAssociatedRemote<
-                            mojom::FrameWidgetHostInterfaceBase>
-                            frame_widget_host,
-                        CrossVariantMojoAssociatedReceiver<
-                            mojom::FrameWidgetInterfaceBase> frame_widget,
-                        CrossVariantMojoAssociatedRemote<
-                            mojom::WidgetHostInterfaceBase> widget_host,
-                        CrossVariantMojoAssociatedReceiver<
-                            mojom::WidgetInterfaceBase> widget,
-                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        const viz::FrameSinkId& frame_sink_id,
-                        bool hidden,
-                        bool never_composited,
-                        bool is_for_child_local_root,
-                        bool is_for_nested_main_frame);
+// WebFrameWidgetImpl constructor and must return a subclass of
+// WebFrameWidgetImpl, though we do not expose that type here.
+using CreateWebFrameWidgetCallback = base::RepeatingCallback<WebFrameWidget*(
+    base::PassKey<WebLocalFrame>,
+    CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
+        frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
+        frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const viz::FrameSinkId& frame_sink_id,
+    bool hidden,
+    bool never_composited,
+    bool is_for_child_local_root,
+    bool is_for_nested_main_frame)>;
 // Allows tests to inject their own type of WebFrameWidget in order to
 // override methods of the WebFrameWidgetImpl.
 void BLINK_EXPORT
-InstallCreateWebFrameWidgetHook(CreateWebFrameWidgetFunction create_widget);
+InstallCreateWebFrameWidgetHook(CreateWebFrameWidgetCallback* create_widget);
 
 }  // namespace blink
 

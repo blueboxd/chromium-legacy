@@ -12,7 +12,6 @@ import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindNotificationDetails;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetError;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
@@ -97,10 +96,10 @@ public class EmptyTabObserver implements TabObserver {
     public void onLoadProgressChanged(Tab tab, float progress) {}
 
     @Override
-    public void onUpdateUrl(Tab tab, String url) {}
+    public void onUpdateUrl(Tab tab, GURL url) {}
 
     @Override
-    public void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String failingUrl) {}
+    public void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, GURL failingUrl) {}
 
     @Override
     public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {}
@@ -119,11 +118,6 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onBackgroundColorChanged(Tab tab, int color) {}
-
-    @Override
-    public void webContentsCreated(Tab tab, WebContents sourceWebContents,
-            long openerRenderProcessId, long openerRenderFrameId, String frameName,
-            String targetUrl, WebContents newWebContents) {}
 
     @Override
     public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {}

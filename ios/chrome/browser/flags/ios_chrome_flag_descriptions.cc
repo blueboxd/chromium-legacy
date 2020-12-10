@@ -11,12 +11,6 @@
 
 namespace flag_descriptions {
 
-const char kAddWebContentDropInteractionName[] =
-    "Add Web Content Drop Interaction";
-const char kAddWebContentDropInteractionDescription[] =
-    "When enabled, adds ability to drop a URL on the web content area to "
-    "navigate to that URL.";
-
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =
@@ -164,9 +158,6 @@ const char kDiscoverFeedInNtpName[] = "Enable new content Suggestion Feed";
 const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
-
-const char kDragAndDropName[] = "Drag and Drop";
-const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
 const char kEditBookmarksIOSName[] = "Edit Bookmarks IOS";
 const char kEditBookmarksIOSDescription[] =
@@ -344,12 +335,6 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "before the user has typed any input. This provides overrides for the "
     "default suggestion locations.";
 
-#if defined(__IPHONE_13_4)
-const char kPointerSupportName[] = "Enables pointer support on tablets";
-const char kPointerSupportDescription[] =
-    "Enables pointer support on tablets on iOS 13.4 and above.";
-#endif  // defined(__IPHONE_13_4)
-
 const char kRefactoredNTPName[] = "Enables refactored new tab page";
 const char kRefactoredNTPDescription[] =
     "When enabled, the new tab page is replaced with the refactored version, "
@@ -468,6 +453,13 @@ const char kWebViewNativeContextMenuName[] =
 const char kWebViewNativeContextMenuDescription[] =
     "When enabled, the native context menu are displayed when the user long "
     "press on a link or an image.";
+
+const char kRecordSnapshotSizeName[] =
+    "Record the size of image and PDF snapshots in UMA histograms";
+const char kRecordSnapshotSizeDescription[] =
+    "When enabled, the app will record UMA histograms for image and PDF "
+    "snapshots. PDF snaphot will be taken just for the purpose of the "
+    "histogram recording.";
 
 // Please insert your name/description above in alphabetical order.
 

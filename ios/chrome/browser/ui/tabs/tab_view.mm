@@ -7,17 +7,12 @@
 
 #import <MaterialComponents/MaterialActivityIndicator.h>
 
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
-#include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
-#include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -68,7 +63,7 @@ UIImage* DefaultFaviconImage() {
 @end
 #endif  // defined(__IPHONE_13_4)
 
-@interface TabView ()<DropAndNavigateDelegate> {
+@interface TabView () {
   __weak id<TabViewDelegate> _delegate;
 
   // Close button for this tab.
@@ -91,8 +86,6 @@ UIImage* DefaultFaviconImage() {
   BOOL _collapsed;
 
   MDCActivityIndicator* _activityIndicator;
-
-  API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
 
 #if defined(__IPHONE_13_4)
   // Adds hover interaction to background tabs.
@@ -137,15 +130,6 @@ UIImage* DefaultFaviconImage() {
     [self addTarget:self
                   action:@selector(tabWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
-
-    // TODO(crbug.com/1101363): A new and improved drop interaction in the tab
-    // strip controller supercedes this interaction. Remove this codepath once
-    // the experimental flag is removed.
-    if (!DragAndDropIsEnabled()) {
-      _dropInteraction =
-          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-      [self addInteraction:_dropInteraction];
-    }
   }
   return self;
 }
@@ -314,9 +298,7 @@ UIImage* DefaultFaviconImage() {
 
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       _closeButton.pointerInteractionEnabled = YES;
-    }
   }
 #endif  // defined(__IPHONE_13_4)
 
@@ -401,8 +383,6 @@ UIImage* DefaultFaviconImage() {
 
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (!base::FeatureList::IsEnabled(kPointerSupport))
-      return;
     if (selected) {
       if (_pointerInteraction)
         [self removeInteraction:_pointerInteraction];
@@ -499,12 +479,6 @@ UIImage* DefaultFaviconImage() {
                clockwise:NO];
   [path closePath];
   return path;
-}
-
-#pragma mark - DropAndNavigateDelegate
-
-- (void)URLWasDropped:(GURL const&)url {
-  [_delegate tabView:self receivedDroppedURL:url];
 }
 
 #pragma mark UIPointerInteractionDelegate

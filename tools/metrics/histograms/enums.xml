@@ -8990,6 +8990,9 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BubbleDismissalReason">
+  <obsolete>
+    Deprecated 12/2020 as it is no longer used for analysis.
+  </obsolete>
   <int value="0" label="The timer dismissed the bubble."/>
   <int value="1" label="A tap inside the bubble caused dismissal."/>
   <int value="2" label="A tap outside the bubble caused dismissal."/>
@@ -13651,6 +13654,8 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="CRAS_CLIENT_TYPE_ARC"/>
   <int value="6" label="CRAS_CLIENT_TYPE_CROSVM"/>
   <int value="7" label="CRAS_CLIENT_TYPE_SERVER_STREAM"/>
+  <int value="8" label="CRAS_CLIENT_TYPE_LACROS"/>
+  <int value="9" label="CRAS_CLIENT_TYPE_PLUGIN"/>
 </enum>
 
 <enum name="CrasDeviceType">
@@ -16844,6 +16849,13 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="1" label="Grouping disabled"/>
 </enum>
 
+<enum name="DevToolsCssEditorOpened">
+  <int value="0" label="Color Picker opened"/>
+  <int value="1" label="Shadow Editor opened"/>
+  <int value="2" label="Bezier Editor opened"/>
+  <int value="3" label="Font Editor opened"/>
+</enum>
+
 <enum name="DevToolsDualScreenDeviceEmulated">
   <int value="0" label="Dual-screen or fold device selected"/>
   <int value="1" label="Dual-screen span mode selected"/>
@@ -19602,6 +19614,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="DragContent">
+  <obsolete>
+    Deprecated 12/2020.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Image"/>
   <int value="2" label="URL"/>
@@ -22778,6 +22793,7 @@ Called by update_document_policy_enum.py.-->
   <int value="808" label="IntegratedWebAuthenticationAllowed"/>
   <int value="809" label="ClearBrowsingDataOnExitList"/>
   <int value="810" label="ProfilePickerOnStartupAvailability"/>
+  <int value="811" label="SigninInterceptionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25609,6 +25625,9 @@ Called by update_extension_histograms.py.-->
   <int value="1533" label="DECLARATIVENETREQUEST_UPDATESESSIONRULES"/>
   <int value="1534" label="DECLARATIVENETREQUEST_GETSESSIONRULES"/>
   <int value="1535" label="SCRIPTING_INSERTCSS"/>
+  <int value="1536" label="VIRTUALKEYBOARDPRIVATE_PASTECLIPBOARDITEM"/>
+  <int value="1537" label="VIRTUALKEYBOARDPRIVATE_GETCLIPBOARDHISTORY"/>
+  <int value="1538" label="VIRTUALKEYBOARDPRIVATE_DELETECLIPBOARDITEM"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -39283,6 +39302,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IOSWKWebViewLinkPreviewAction">
+  <obsolete>
+    Deprecated 12/2020 as it is no longer used for analysis.
+  </obsolete>
   <summary>
     This enum is used to track the user actions that occur when previewing links
     using the WKWebView 3D touch API. This feature is not currently supported,
@@ -42612,6 +42634,7 @@ from previous Chrome versions.
   <int value="-1426817842" label="BlockTabUnders:enabled"/>
   <int value="-1426150007" label="ignore-previews-blacklist"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
+  <int value="-1425919952" label="EnableLauncherSearchNormalization:enabled"/>
   <int value="-1423348289" label="NupPrinting:disabled"/>
   <int value="-1423193305"
       label="AutofillRationalizeRepeatedServerPredictions:enabled"/>
@@ -44930,6 +44953,8 @@ from previous Chrome versions.
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
+  <int value="792307132"
+      label="KeyboardBasedDisplayArrangementInSettings:enabled"/>
   <int value="792884862" label="EnableSharedImageForWebview:enabled"/>
   <int value="798696013" label="ImeInputLogicMozc:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
@@ -46063,6 +46088,7 @@ from previous Chrome versions.
   <int value="1898231011" label="enable-native-notifications"/>
   <int value="1899248188" label="MediaApp:disabled"/>
   <int value="1900529524" label="disable-touch-drag-drop"/>
+  <int value="1901640438" label="EnableLauncherSearchNormalization:disabled"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1907273605" label="NtpZeroSuggest:disabled"/>
@@ -46259,6 +46285,8 @@ from previous Chrome versions.
   <int value="2078879219"
       label="CryptAuthV2DeviceActivityStatusUseConnectivity:disabled"/>
   <int value="2079672348" label="ExperimentalKeyboardLockUI:disabled"/>
+  <int value="2080666644"
+      label="KeyboardBasedDisplayArrangementInSettings:disabled"/>
   <int value="2081154375" label="AssistantKeyRemapping:disabled"/>
   <int value="2084477383" label="CrostiniDiskResizing:enabled"/>
   <int value="2084638930"
@@ -57527,7 +57555,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Clicked 'Never'"/>
   <int value="4" label="Clicked 'Manage passwords'"/>
   <int value="5" label="Clicked 'Done' (obsolete)"/>
-  <int value="6" label="Clicked 'Unblacklist' (obsolete)"/>
+  <int value="6" label="Clicked 'Unblocklist' (obsolete)"/>
   <int value="7" label="Clicked 'OK' (obsolete)"/>
   <int value="8" label="Clicked on a credential (obsolete)"/>
   <int value="9" label="Auto-signin toast timeout"/>
@@ -64544,6 +64572,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="NoDataWithFin"/>
 </enum>
 
+<enum name="RTCVideoDecoderFallbackReason">
+  <int value="0" label="SpatialLayers"/>
+  <int value="1" label="ConsecutivePendingBufferOverflow"/>
+  <int value="2" label="ReinitializationFailed"/>
+  <int value="3" label="PreviousErrorOnDecode"/>
+  <int value="4" label="PreviousErrorOnRegisterCallback"/>
+</enum>
+
 <enum name="RulesetVerificationStatus">
   <int value="0" label="Not verified"/>
   <int value="1" label="Intact"/>
@@ -67947,6 +67983,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="12" label="Abort: password update"/>
   <int value="13" label="Abort: password update pending"/>
   <int value="14" label="Abort: user declined new profile for this account"/>
+  <int value="15" label="Abort: signin interception disabled by policy"/>
 </enum>
 
 <enum name="SigninInterceptResult">
@@ -73516,6 +73553,13 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Last session crashed"/>
   <int value="4" label="Metrics reporting disabled"/>
   <int value="5" label="Recently uploaded another trace"/>
+</enum>
+
+<enum name="TracingProducerHostInitializationResult">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kSmbMappingFailed"/>
+  <int value="2" label="kSmbNotAdopted"/>
+  <int value="3" label="kProducerEndpointConstructionFailed"/>
 </enum>
 
 <enum name="TrackedPreference">

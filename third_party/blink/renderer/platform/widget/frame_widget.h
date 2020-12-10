@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_FRAME_WIDGET_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_FRAME_WIDGET_H_
 
+#include "cc/input/layer_selection_bound.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
@@ -12,19 +13,25 @@
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_swap_result.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h"
 
 namespace cc {
 class AnimationHost;
+enum class EventListenerClass;
+enum class EventListenerProperties;
 class Layer;
 class LayerTreeSettings;
 class PaintImage;
 }  // namespace cc
 
+namespace ui {
+class Cursor;
+}  // namespace ui
+
 namespace blink {
+struct ScreenInfo;
 
 // In interface exposed within Blink from local root frames that provides
 // local-root specific things related to compositing and input. This
@@ -35,9 +42,6 @@ namespace blink {
 class PLATFORM_EXPORT FrameWidget {
  public:
   virtual ~FrameWidget();
-
-  // Returns the WebWidgetClient, which is implemented outside of blink.
-  virtual WebWidgetClient* Client() const = 0;
 
   // Returns the compositors's AnimationHost for the widget.
   virtual cc::AnimationHost* AnimationHost() const = 0;
@@ -119,7 +123,7 @@ class PLATFORM_EXPORT FrameWidget {
   // ScrollableArea identified by |scrollable_area_element_id| by the given
   // delta + granularity.
   virtual void InjectGestureScrollEvent(
-      WebGestureDevice device,
+      mojom::blink::GestureDevice device,
       const gfx::Vector2dF& delta,
       ui::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
@@ -249,6 +253,10 @@ class PLATFORM_EXPORT FrameWidget {
   // Returns the FrameSinkId for this widget which is used for identifying
   // frames submitted from the compositor.
   virtual const viz::FrameSinkId& GetFrameSinkId() = 0;
+
+  // Returns the raster scale factor for the local root frame associated with
+  // this widget, taking into account its transform to main frame space.
+  virtual float GetCompositingScaleFactor() = 0;
 };
 
 }  // namespace blink

@@ -13,6 +13,8 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/audio/audio_device_description.h"
+#include "media/mojo/mojom/media_player.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -45,6 +47,85 @@ class FakeAudioFocusDelegate : public content::AudioFocusDelegate {
   AudioFocusResult audio_focus_result_ = AudioFocusResult::kSuccess;
 };
 
+// Helper class that provides an implementation of the media::mojom::MediaPlayer
+// mojo interface to allow checking that messages sent over mojo are received
+// with the right values in the other end.
+//
+// Note this relies on MediaSessionController::BindMediaPlayer() to provide the
+// MediaSessionController instance owned by the test with a valid mojo remote,
+// that will be bound to the mojo receiver provided by this class instead of the
+// real one used in production which would be owned by HTMLMediaElement instead.
+class MockMediaPlayerReceiverForTesting : public media::mojom::MediaPlayer {
+ public:
+  enum class PauseRequestType {
+    kNone,
+    kTriggeredByUser,
+    kNotTriggeredByUser,
+  };
+
+  explicit MockMediaPlayerReceiverForTesting(
+      MediaWebContentsObserver* media_web_contents_observer,
+      const MediaPlayerId& player_id) {
+    // Bind the remote to the receiver, so that we can intercept incoming
+    // messages sent via the different methods that use the remote.
+    media_web_contents_observer->OnMediaPlayerAdded(
+        receiver_.BindNewPipeAndPassRemote(), player_id);
+  }
+
+  // Needs to be called from tests after invoking a method from the MediaPlayer
+  // mojo interface, so that we have enough time to process the message.
+  void WaitUntilReceivedMessage() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  // media::mojom::MediaPlayer implementation.
+  void RequestPlay() override {
+    received_play_ = true;
+    run_loop_->Quit();
+  }
+
+  void RequestPause(bool triggered_by_user) override {
+    received_pause_type_ = triggered_by_user
+                               ? PauseRequestType::kTriggeredByUser
+                               : PauseRequestType::kNotTriggeredByUser;
+    run_loop_->Quit();
+  }
+
+  void RequestSeekForward(base::TimeDelta seek_time) override {
+    received_seek_forward_time_ = seek_time;
+    run_loop_->Quit();
+  }
+
+  void RequestSeekBackward(base::TimeDelta seek_time) override {
+    received_seek_backward_time_ = seek_time;
+    run_loop_->Quit();
+  }
+
+  // Getters used from MediaSessionControllerTest.
+  bool received_play() const { return received_play_; }
+
+  PauseRequestType received_pause() const { return received_pause_type_; }
+
+  const base::TimeDelta& received_seek_forward_time() const {
+    return received_seek_forward_time_;
+  }
+
+  const base::TimeDelta& received_seek_backward_time() const {
+    return received_seek_backward_time_;
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+  mojo::Receiver<media::mojom::MediaPlayer> receiver_{this};
+
+  bool received_play_{false};
+  PauseRequestType received_pause_type_{PauseRequestType::kNone};
+  base::TimeDelta received_seek_forward_time_;
+  base::TimeDelta received_seek_backward_time_;
+};
+
 class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
@@ -52,6 +133,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 
     id_ = MediaPlayerId(contents()->GetMainFrame(), 0);
     controller_ = CreateController();
+    media_player_receiver_ = CreateMediaPlayerReceiver(controller_.get());
 
     auto delegate = std::make_unique<FakeAudioFocusDelegate>();
     audio_focus_delegate_ = delegate.get();
@@ -62,6 +144,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     // Destruct the controller prior to any other teardown to avoid out of order
     // destruction relative to the MediaSession instance.
     controller_.reset();
+    media_player_receiver_.reset();
 
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -69,6 +152,15 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
  protected:
   std::unique_ptr<MediaSessionController> CreateController() {
     return std::make_unique<MediaSessionController>(id_, contents());
+  }
+
+  std::unique_ptr<MockMediaPlayerReceiverForTesting> CreateMediaPlayerReceiver(
+      MediaSessionController* controller) {
+    MediaWebContentsObserver* media_web_contents_observer =
+        contents()->media_web_contents_observer();
+    DCHECK(media_web_contents_observer);
+    return std::make_unique<MockMediaPlayerReceiverForTesting>(
+        media_web_contents_observer, id_);
   }
 
   MediaSessionImpl* media_session() {
@@ -79,20 +171,24 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 
   void Suspend() {
     controller_->OnSuspend(controller_->get_player_id_for_testing());
+    media_player_receiver_->WaitUntilReceivedMessage();
   }
 
   void Resume() {
     controller_->OnResume(controller_->get_player_id_for_testing());
+    media_player_receiver_->WaitUntilReceivedMessage();
   }
 
   void SeekForward(base::TimeDelta seek_time) {
     controller_->OnSeekForward(controller_->get_player_id_for_testing(),
                                seek_time);
+    media_player_receiver_->WaitUntilReceivedMessage();
   }
 
   void SeekBackward(base::TimeDelta seek_time) {
     controller_->OnSeekBackward(controller_->get_player_id_for_testing(),
                                 seek_time);
+    media_player_receiver_->WaitUntilReceivedMessage();
   }
 
   void SetVolumeMultiplier(double multiplier) {
@@ -100,59 +196,30 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
                                        multiplier);
   }
 
-  template <typename T>
-  bool ReceivedMessagePlay() {
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
-    if (!msg)
-      return false;
+  // Helpers to check the results of using the basic controls.
+  bool ReceivedMessagePlay() { return media_player_receiver_->received_play(); }
 
-    std::tuple<int> result;
-    if (!T::Read(msg, &result))
-      return false;
-
-    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
-    test_sink().ClearMessages();
-    return id_.delegate_id == std::get<0>(result);
-  }
-
-  template <typename T>
   bool ReceivedMessagePause(bool triggered_by_user) {
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
-    if (!msg)
-      return false;
-
-    std::tuple<int, bool> result;
-    if (!T::Read(msg, &result))
-      return false;
-
-    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
-    test_sink().ClearMessages();
-    if (id_.delegate_id != std::get<0>(result))
-      return false;
-
-    EXPECT_EQ(triggered_by_user, std::get<1>(result));
-    test_sink().ClearMessages();
-    return triggered_by_user == std::get<1>(result);
+    MockMediaPlayerReceiverForTesting::PauseRequestType expected_pause_request =
+        triggered_by_user ? MockMediaPlayerReceiverForTesting::
+                                PauseRequestType::kTriggeredByUser
+                          : MockMediaPlayerReceiverForTesting::
+                                PauseRequestType::kNotTriggeredByUser;
+    return media_player_receiver_->received_pause() == expected_pause_request;
   }
 
-  template <typename T>
-  bool ReceivedMessageSeek(base::TimeDelta expected_seek_time) {
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
-    if (!msg)
-      return false;
-
-    std::tuple<int, base::TimeDelta> result;
-    if (!T::Read(msg, &result))
-      return false;
-
-    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
-    if (id_.delegate_id != std::get<0>(result))
-      return false;
-
-    EXPECT_EQ(expected_seek_time, std::get<1>(result));
-    test_sink().ClearMessages();
-    return expected_seek_time == std::get<1>(result);
+  bool ReceivedMessageSeekForward(base::TimeDelta expected_seek_time) {
+    return expected_seek_time ==
+           media_player_receiver_->received_seek_forward_time();
   }
+
+  bool ReceivedMessageSeekBackward(base::TimeDelta expected_seek_time) {
+    return expected_seek_time ==
+           media_player_receiver_->received_seek_backward_time();
+  }
+
+  // Legacy IPC-based helpers to check the results of using the basic controls.
+  // TODO: Remove these ones as more legacy IPC messages get migrated to mojo.
 
   template <typename T>
   bool ReceivedMessageVolumeMultiplierUpdate(double expected_multiplier) {
@@ -175,6 +242,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 
   MediaPlayerId id_ = MediaPlayerId::CreateMediaPlayerIdForTests();
   std::unique_ptr<MediaSessionController> controller_;
+  std::unique_ptr<MockMediaPlayerReceiverForTesting> media_player_receiver_;
   FakeAudioFocusDelegate* audio_focus_delegate_ = nullptr;
 };
 
@@ -200,22 +268,19 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
 
   // Verify suspend notifies the renderer and maintains its session.
   Suspend();
-  EXPECT_TRUE(ReceivedMessagePause<MediaPlayerDelegateMsg_Pause>(
-      true /* triggered_by_user */));
+  EXPECT_TRUE(ReceivedMessagePause(/*triggered_by_user=*/true));
 
   // Likewise verify the resume behavior.
   Resume();
-  EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
+  EXPECT_TRUE(ReceivedMessagePlay());
 
   // ...as well as the seek behavior.
   const base::TimeDelta kTestSeekForwardTime = base::TimeDelta::FromSeconds(1);
   SeekForward(kTestSeekForwardTime);
-  EXPECT_TRUE(ReceivedMessageSeek<MediaPlayerDelegateMsg_SeekForward>(
-      kTestSeekForwardTime));
+  EXPECT_TRUE(ReceivedMessageSeekForward(kTestSeekForwardTime));
   const base::TimeDelta kTestSeekBackwardTime = base::TimeDelta::FromSeconds(2);
   SeekBackward(kTestSeekBackwardTime);
-  EXPECT_TRUE(ReceivedMessageSeek<MediaPlayerDelegateMsg_SeekBackward>(
-      kTestSeekBackwardTime));
+  EXPECT_TRUE(ReceivedMessageSeekBackward(kTestSeekBackwardTime));
 
   // Verify destruction of the controller removes its session.
   controller_.reset();
@@ -278,12 +343,11 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
 
   // Verify suspend notifies the renderer and maintains its session.
   Suspend();
-  EXPECT_TRUE(ReceivedMessagePause<MediaPlayerDelegateMsg_Pause>(
-      true /* triggered_by_user */));
+  EXPECT_TRUE(ReceivedMessagePause(/*triggered_by_user=*/true));
 
   // Likewise verify the resume behavior.
   Resume();
-  EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
+  EXPECT_TRUE(ReceivedMessagePlay());
 }
 
 TEST_F(MediaSessionControllerTest, PositionState) {

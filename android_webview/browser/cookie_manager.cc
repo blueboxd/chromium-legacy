@@ -206,7 +206,8 @@ CookieManager::CookieManager()
     : allow_file_scheme_cookies_(kDefaultFileSchemeAllowed),
       cookie_store_created_(false),
       workaround_http_secure_cookies_(
-          !base::android::BuildInfo::GetInstance()->targets_at_least_r()),
+          base::android::BuildInfo::GetInstance()->target_sdk_version() <
+          base::android::SDK_VERSION_R),
       cookie_store_client_thread_("CookieMonsterClient"),
       cookie_store_backend_thread_("CookieMonsterBackend"),
       setting_new_mojo_cookie_manager_(false) {
@@ -357,8 +358,7 @@ net::CookieStore* CookieManager::GetCookieStore() {
             : network::mojom::CookieAccessDelegateType::ALWAYS_LEGACY;
     cookie_store_->SetCookieAccessDelegate(
         std::make_unique<network::CookieAccessDelegateImpl>(
-            cookie_access_delegate_type,
-            nullptr /* preloaded_first_party_sets */));
+            cookie_access_delegate_type, nullptr /* first_party_sets */));
   }
 
   return cookie_store_.get();

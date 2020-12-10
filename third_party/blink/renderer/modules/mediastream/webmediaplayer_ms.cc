@@ -1084,24 +1084,6 @@ void WebMediaPlayerMS::OnFrameShown() {
 
 void WebMediaPlayerMS::OnIdleTimeout() {}
 
-void WebMediaPlayerMS::OnPlay() {
-  // TODO(perkj, magjed): It's not clear how WebRTC should work with an
-  // MediaSession, until these issues are resolved, disable session controls.
-  // https://crbug.com/595297.
-}
-
-void WebMediaPlayerMS::OnPause() {
-  // TODO(perkj, magjed): See TODO in OnPlay().
-}
-
-void WebMediaPlayerMS::OnSeekForward(double seconds) {
-  // TODO(perkj, magjed): See TODO in OnPlay().
-}
-
-void WebMediaPlayerMS::OnSeekBackward(double seconds) {
-  // TODO(perkj, magjed): See TODO in OnPlay().
-}
-
 void WebMediaPlayerMS::OnEnterPictureInPicture() {
   client_->RequestEnterPictureInPicture();
 }

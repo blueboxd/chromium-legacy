@@ -326,7 +326,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     return false;
 
 #if defined(OS_ANDROID)
-  if (form_to_save->IsBlacklisted())
+  if (form_to_save->IsBlocklisted())
     return false;
 
   if (update_password) {
@@ -542,10 +542,10 @@ void ChromePasswordManagerClient::NotifyStorePasswordCalled() {
 void ChromePasswordManagerClient::UpdateCredentialCache(
     const url::Origin& origin,
     const std::vector<const PasswordForm*>& best_matches,
-    bool is_blacklisted) {
+    bool is_blocklisted) {
 #if defined(OS_ANDROID)
-  credential_cache_.SaveCredentialsAndBlacklistedForOrigin(
-      best_matches, CredentialCache::IsOriginBlacklisted(is_blacklisted),
+  credential_cache_.SaveCredentialsAndBlocklistedForOrigin(
+      best_matches, CredentialCache::IsOriginBlocklisted(is_blocklisted),
       origin);
 
 #endif
@@ -1257,11 +1257,11 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   AddToWidgetInputEventObservers(
       web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget(), this);
 #if defined(OS_ANDROID)
-  // This unblacklisted info is only used after form submission to determine
+  // This unblocklisted info is only used after form submission to determine
   // whether to record PasswordManager.SaveUIDismissalReasonAfterUnblacklisting.
   // Therefore it is sufficient to save it only once on navigation and not
   // every time the user changes the UI toggle.
-  password_manager_.MarkWasUnblacklistedInFormManagers(&credential_cache_);
+  password_manager_.MarkWasUnblocklistedInFormManagers(&credential_cache_);
   credential_cache_.ClearCredentials();
 #endif  // defined(OS_ANDROID)
 

@@ -66,6 +66,11 @@ gfx::Transform CreateTransformFromOffset(SkScalar x, SkScalar y) {
   return transform;
 }
 
+// Schedules repaint of `layer`.
+void InvalidateLayer(ui::Layer* layer) {
+  layer->SchedulePaint(gfx::Rect(layer->size()));
+}
+
 // CallbackPainter -------------------------------------------------------------
 
 // A painter which delegates painting to a callback.
@@ -186,8 +191,7 @@ bool HoldingSpaceItemView::HandleAccessibleAction(
 void HoldingSpaceItemView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   gfx::Rect bounds = GetLocalBounds();
   selected_layer_owner_->layer()->SetBounds(bounds);
-  selected_layer_owner_->layer()->SchedulePaint(
-      selected_layer_owner_->layer()->bounds());
+  InvalidateLayer(selected_layer_owner_->layer());
 
   // The focus ring is painted just outside the bounds for this view.
   const float kFocusInsets =
@@ -195,18 +199,15 @@ void HoldingSpaceItemView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
   bounds.Inset(gfx::Insets(kFocusInsets));
   focused_layer_owner_->layer()->SetBounds(bounds);
-  focused_layer_owner_->layer()->SchedulePaint(
-      focused_layer_owner_->layer()->bounds());
+  InvalidateLayer(focused_layer_owner_->layer());
 }
 
 void HoldingSpaceItemView::OnFocus() {
-  focused_layer_owner_->layer()->SchedulePaint(
-      focused_layer_owner_->layer()->bounds());
+  InvalidateLayer(focused_layer_owner_->layer());
 }
 
 void HoldingSpaceItemView::OnBlur() {
-  focused_layer_owner_->layer()->SchedulePaint(
-      focused_layer_owner_->layer()->bounds());
+  InvalidateLayer(focused_layer_owner_->layer());
 }
 
 void HoldingSpaceItemView::OnGestureEvent(ui::GestureEvent* event) {
@@ -273,9 +274,7 @@ void HoldingSpaceItemView::SetSelected(bool selected) {
     return;
 
   selected_ = selected;
-
-  selected_layer_owner_->layer()->SchedulePaint(
-      selected_layer_owner_->layer()->bounds());
+  InvalidateLayer(selected_layer_owner_->layer());
 }
 
 views::ToggleImageButton* HoldingSpaceItemView::AddPin(views::View* parent) {
@@ -349,9 +348,9 @@ void HoldingSpaceItemView::OnPaintSelect(gfx::Canvas* canvas, gfx::Size size) {
 }
 
 void HoldingSpaceItemView::OnPinPressed() {
-  const bool is_item_pinned = HoldingSpaceController::Get()->model()->GetItem(
-      HoldingSpaceItem::GetFileBackedItemId(HoldingSpaceItem::Type::kPinnedFile,
-                                            item()->file_path()));
+  const bool is_item_pinned =
+      HoldingSpaceController::Get()->model()->ContainsItem(
+          HoldingSpaceItem::Type::kPinnedFile, item()->file_path());
 
   // Unpinning `item()` may result in the destruction of this view.
   auto weak_ptr = weak_factory_.GetWeakPtr();
@@ -371,9 +370,9 @@ void HoldingSpaceItemView::UpdatePin() {
     return;
   }
 
-  const bool is_item_pinned = HoldingSpaceController::Get()->model()->GetItem(
-      HoldingSpaceItem::GetFileBackedItemId(HoldingSpaceItem::Type::kPinnedFile,
-                                            item()->file_path()));
+  const bool is_item_pinned =
+      HoldingSpaceController::Get()->model()->ContainsItem(
+          HoldingSpaceItem::Type::kPinnedFile, item()->file_path());
 
   pin_->SetToggled(!is_item_pinned);
   pin_->SetVisible(true);

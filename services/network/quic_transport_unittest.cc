@@ -7,8 +7,9 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -293,8 +294,9 @@ class QuicTransportTest : public testing::Test {
   }
 
   GURL GetURL(base::StringPiece suffix) {
-    return GURL(quiche::QuicheStrCat("quic-transport://test.example.com:",
-                                     server_.server_address().port(), suffix));
+    return GURL(base::StrCat(
+        {"quic-transport://test.example.com:",
+         base::NumberToString(server_.server_address().port()), suffix}));
   }
 
   const url::Origin& origin() const { return origin_; }

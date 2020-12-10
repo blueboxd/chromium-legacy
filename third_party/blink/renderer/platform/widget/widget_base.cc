@@ -280,6 +280,10 @@ cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
   return layer_tree_view_->layer_tree_host();
 }
 
+bool WidgetBase::IsComposited() const {
+  return !!layer_tree_view_;
+}
+
 cc::AnimationHost* WidgetBase::AnimationHost() const {
   return layer_tree_view_->animation_host();
 }
@@ -393,13 +397,6 @@ void WidgetBase::UpdateVisualProperties(
       visual_properties.screen_info.device_scale_factor));
 
   client_->UpdateVisualProperties(visual_properties);
-
-  // FrameWidgets have custom code for external page scale factor.
-  if (!client_->FrameWidget()) {
-    LayerTreeHost()->SetExternalPageScaleFactor(
-        visual_properties.page_scale_factor,
-        visual_properties.is_pinch_gesture_active);
-  }
 }
 
 void WidgetBase::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
@@ -950,7 +947,10 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // new RenderFrameMetadata, as the IME will need this info to be updated.
     // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
     // https://crbug.com/912309
-    LayerTreeHost()->RequestForceSendMetadata();
+    // Compositing might not be initialized but input can still be dispatched
+    // to non-composited widgets so LayerTreeHost may be null.
+    if (IsComposited())
+      LayerTreeHost()->RequestForceSendMetadata();
 #endif
   }
 }
@@ -1251,9 +1251,7 @@ void WidgetBase::ImeFinishComposingText(bool keep_selection) {
 
 void WidgetBase::QueueSyntheticEvent(
     std::unique_ptr<WebCoalescedInputEvent> event) {
-  FrameWidget* frame_widget = client_->FrameWidget();
-  if (frame_widget)
-    frame_widget->Client()->WillQueueSyntheticEvent(*event);
+  client_->WillQueueSyntheticEvent(*event);
 
   // TODO(acomminos): If/when we add support for gesture event attribution on
   //                  the impl thread, have the caller provide attribution.

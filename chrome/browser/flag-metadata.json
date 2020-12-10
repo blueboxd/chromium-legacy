@@ -49,11 +49,6 @@
     "expiry_milestone": 91
   },
   {
-    "name": "add-web-content-drop-interaction",
-    "owners": [ "edchin", "bling-flags@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "aggregated-ml-app-ranking",
     "owners": [ "pdyson", "jiameng" ],
     "expiry_milestone": 81
@@ -1064,11 +1059,6 @@
     "name": "download-later-debug-on-wifi",
     "owners": [ "xingliu", "dtrainor" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "drag_and_drop",
-    "owners": [ "//ios/chrome/browser/drag_and_drop/OWNERS", "bling-flags@google.com" ],
-    "expiry_milestone": 90
   },
   {
     "name": "drag-to-snap-in-clamshell-mode",
@@ -3130,6 +3120,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "keyboard-based-display-arrangement-in-settings",
+    "owners": [ "czajka", "cros-peripherals@google.com"],
+    "expiry_milestone": 94
+  },
+  {
     "name": "lacros-stability",
     "owners": [ "jamescook", "erikchen", "lacros-team@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
@@ -3144,6 +3139,11 @@
     // absolutely must not expire. We do not yet have a launch milestone.
     // TODO(https://crbug.com/1148474).
     "expiry_milestone": 130
+  },
+  {
+    "name": "launcher-search-normalization",
+    "owners": ["adafang", "wrong", "tby"],
+    "expiry_milestone": 92
   },
   {
     "name": "launcher-settings-search",
@@ -3920,11 +3920,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "pointer-support",
-    "owners": [ "edchin", "bling-flags@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
     "expiry_milestone": 86
@@ -4081,6 +4076,11 @@
     // This flag is a utility for testing Reader Mode heuristics or force
     // enabling the feature on every page.
     "expiry_milestone": -1
+  },
+  {
+    "name": "record-snapshot-size",
+    "owners": ["eugenebut","bling-flags@google.com"],
+    "expiry_milestone": 91
   },
   {
     "name": "record-web-app-debug-info",
@@ -4309,7 +4309,7 @@
   },
   {
     "name": "screen-time-integration-ios",
-    "owners": [ "edchin", "bling-flags@google.com@google.com" ],
+    "owners": [ "edchin", "bling-flags@google.com" ],
     "expiry_milestone": 92
   },
   {
@@ -4977,22 +4977,22 @@
   },
   {
     "name": "web-view-native-context-menu",
-    "owners": ["gambard","bling-flags@google.com@google.com"],
+    "owners": ["gambard","bling-flags@google.com"],
     "expiry_milestone": 90
   },
   {
     "name": "webpage-alternative-text-zoom",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com@google.com" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 86
   },
   {
     "name": "webpage-default-zoom-from-dynamic-type",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com@google.com" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 87
   },
   {
     "name": "webpage-text-accessibility",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com@google.com" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 86
   },
   {

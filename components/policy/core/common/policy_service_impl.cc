@@ -10,12 +10,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -153,6 +153,18 @@ void RemapRenamedPolicies(PolicyMap* policies) {
         !policy_lists_to_merge.contains(policy_pair.second)) {
       merge_list->Append(base::Value(policy_pair.second));
     }
+  }
+}
+
+// Metrics should not be enforced so if this policy is set as mandatory
+// downgrade it to a recommended level policy.
+void DowngradeMetricsReportingToRecommendedPolicy(PolicyMap* policies) {
+  PolicyMap::Entry* policy =
+      policies->GetMutable(policy::key::kMetricsReportingEnabled);
+  if (policy && policy->level != POLICY_LEVEL_RECOMMENDED && policy->value() &&
+      policy->value()->is_bool() && policy->value()->GetBool()) {
+    policy->level = POLICY_LEVEL_RECOMMENDED;
+    policy->AddError(IDS_POLICY_IGNORED_MANDATORY_REPORTING_POLICY);
   }
 }
 
@@ -357,6 +369,8 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     provided_bundle.CopyFrom(provider->policies());
     RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
     RemapRenamedPolicies(&provided_bundle.Get(chrome_namespace));
+    DowngradeMetricsReportingToRecommendedPolicy(
+        &provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
   }
 

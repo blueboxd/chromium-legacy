@@ -69,36 +69,13 @@ IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnMediaMetadataChanged,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                     int /* delegate_id, distinguishes instances */)
 
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMutedStatusChanged,
-                    int /* delegate_id, distinguishes instances */,
-                    bool /* the new muted status */)
-
 IPC_MESSAGE_ROUTED2(
     MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChanged,
     int /* delegate_id, distinguishes instances */,
     blink::WebFullscreenVideoStatus /* fullscreen_video_status */)
 
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
-                    int /* delegate_id, distinguishes instances */,
-                    gfx::Size /* new size of video */)
-
-IPC_MESSAGE_ROUTED2(
-    MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged,
-    int /* delegate_id, distinguishes instances */,
-    bool /* picture-in-picture availability */)
-
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged,
                     int /* delegate_id, distinguishes instances */,
                     std::string /* hashed_device_id */)
-
-IPC_MESSAGE_ROUTED1(
-    MediaPlayerDelegateHostMsg_OnAudioOutputSinkChangingDisabled,
-    int /* delegate_id, distinguishes instances */)
-
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnBufferUnderflow,
-                    int /* delegate_id, distinguishes instances */)
-
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnSeek,
-                    int /* delegate_id, distinguishes instances */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

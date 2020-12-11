@@ -112,7 +112,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
         matching_reused_credentials,
     LoginReputationClientRequest::TriggerType type,
     bool password_field_exists,
-    PasswordProtectionService* pps,
+    PasswordProtectionServiceBase* pps,
     int request_timeout_in_ms)
     : web_contents_(web_contents),
       main_frame_url_(main_frame_url),
@@ -276,6 +276,12 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
     request_proto_->set_content_area_width(content_area_size.width());
   }
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+
+#if defined(OS_ANDROID)
+  LoginReputationClientRequest::ReferringAppInfo referring_app_info =
+      password_protection_service_->GetReferringAppInfo(web_contents_);
+  *request_proto_->mutable_referring_app_info() = std::move(referring_app_info);
+#endif  // defined(OS_ANDROID)
 
   switch (trigger_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
@@ -520,7 +526,7 @@ void PasswordProtectionRequest::SendRequest() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url =
-      PasswordProtectionService::GetPasswordProtectionRequestUrl();
+      PasswordProtectionServiceBase::GetPasswordProtectionRequestUrl();
   resource_request->method = "POST";
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
@@ -587,7 +593,7 @@ void PasswordProtectionRequest::Finish(
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   tracker_.TryCancelAll();
 
-  // If the request is canceled, the PasswordProtectionService is already
+  // If the request is canceled, the PasswordProtectionServiceBase is already
   // partially destroyed, and we won't be able to log accurate metrics.
   if (outcome != RequestOutcome::CANCELED) {
     ReusedPasswordAccountType password_account_type =

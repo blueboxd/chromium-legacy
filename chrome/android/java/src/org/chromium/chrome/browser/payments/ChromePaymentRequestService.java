@@ -85,12 +85,6 @@ public class ChromePaymentRequestService
     private boolean mHideServerAutofillCards;
     private PaymentHandlerHost mPaymentHandlerHost;
 
-    /**
-     * There are a few situations were the Payment Request can appear, from a code perspective, to
-     * be shown more than once. This boolean is used to make sure it is only logged once.
-     */
-    private boolean mDidRecordShowEvent;
-
     /** A helper to manage the Skip-to-GPay experimental flow. */
     private SkipToGPayHelper mSkipToGPayHelper;
     private boolean mIsGooglePayBridgeActivated;
@@ -151,6 +145,12 @@ public class ChromePaymentRequestService
     @Override
     public List<PaymentApp> getPaymentApps() {
         return mPaymentUiService.getPaymentApps();
+    }
+
+    // Implements BrowserPaymentRequest:
+    @Override
+    public boolean hasAnyCompleteApp() {
+        return mPaymentUiService.hasAnyCompleteAppSuggestion();
     }
 
     // Implements BrowserPaymentRequest:
@@ -296,7 +296,6 @@ public class ChromePaymentRequestService
                             ()
                                     -> onUiAborted(AbortReason.ABORTED_BY_USER,
                                             ErrorStrings.USER_CANCELLED))) {
-                    mDidRecordShowEvent = true;
                     mJourneyLogger.setEventOccurred(Event.SHOWN);
                     return null;
                 } else {
@@ -307,13 +306,7 @@ public class ChromePaymentRequestService
             assert !mPaymentUiService.getPaymentApps().isEmpty();
             PaymentApp selectedApp = mPaymentUiService.getSelectedPaymentApp();
             dimBackgroundIfNotBottomSheetPaymentHandler(selectedApp);
-            mDidRecordShowEvent = true;
             mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
-            assert mSpec.getRawTotal() != null;
-            // The total amount in details should be finalized at this point. So it is safe to
-            // record the triggered transaction amount.
-            mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
-                    mSpec.getRawTotal().amount.value, false /*completed*/);
             invokePaymentApp(null /* selectedShippingAddress */, null /* selectedShippingOption */,
                     selectedApp);
         } else {
@@ -346,8 +339,6 @@ public class ChromePaymentRequestService
     }
 
     private void onMinimalUiConfirmed(PaymentApp app) {
-        mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
-                mSpec.getRawTotal().amount.value, false /*completed*/);
         app.disableShowingOwnUI();
         invokePaymentApp(
                 null /* selectedShippingAddress */, null /* selectedShippingOption */, app);
@@ -405,10 +396,7 @@ public class ChromePaymentRequestService
 
         String detailsError = mSpec.getPaymentDetails().error;
         mPaymentUiService.showShippingAddressErrorIfApplicable(detailsError);
-
-        boolean providedInformationToPaymentRequestUI =
-                mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
-        if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
+        mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
     }
 
     // Implements BrowserPaymentRequest:
@@ -419,22 +407,8 @@ public class ChromePaymentRequestService
 
         mPaymentUiService.updateDetailsOnPaymentRequestUI(mSpec.getPaymentDetails());
 
-        // Triggered transaction amount gets recorded when both of the following conditions are met:
-        // 1- Either Event.Shown or Event.SKIPPED_SHOW bits are set showing that transaction is
-        // triggered (mDidRecordShowEvent == true). 2- The total amount in details won't change
-        // (mPaymentRequestService.isShowWaitingForUpdatedDetails() == false). Record the
-        // transaction amount only when the triggered condition is already met. Otherwise it will
-        // get recorded when triggered condition becomes true.
-        if (mDidRecordShowEvent) {
-            assert mSpec.getRawTotal() != null;
-            mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
-                    mSpec.getRawTotal().amount.value, /*completed=*/false);
-        }
-
         if (isFinishedQueryingPaymentApps && !mHasSkippedAppSelector) {
-            boolean providedInformationToPaymentRequestUI =
-                    mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
-            if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
+            mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
         }
         return null;
     }
@@ -443,33 +417,13 @@ public class ChromePaymentRequestService
     @Override
     public void onPaymentDetailsNotUpdated(@Nullable String selectedShippingOptionError) {
         mPaymentUiService.showShippingAddressErrorIfApplicable(selectedShippingOptionError);
-
-        boolean providedInformationToPaymentRequestUI =
-                mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
-        if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
+        mPaymentUiService.enableAndUpdatePaymentRequestUIWithPaymentInfo();
     }
 
     // Implements BrowserPaymentRequest:
     @Override
     public boolean parseAndValidateDetailsFurtherIfNeeded(PaymentDetails details) {
         return mSkipToGPayHelper == null || mSkipToGPayHelper.setShippingOptionIfValid(details);
-    }
-
-    // Implements PaymentUiService.Delegate:
-    @Override
-    public void recordShowEventAndTransactionAmount() {
-        if (mDidRecordShowEvent) return;
-        mDidRecordShowEvent = true;
-        mJourneyLogger.setEventOccurred(Event.SHOWN);
-        // Record the triggered transaction amount only when the total amount in details is
-        // finalized (i.e. mPaymentRequestService.isShowWaitingForUpdatedDetails() == false).
-        // Otherwise it will get recorded when the updated details become available.
-        if (mPaymentRequestService != null
-                && !mPaymentRequestService.isShowWaitingForUpdatedDetails()) {
-            assert mSpec.getRawTotal() != null;
-            mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
-                    mSpec.getRawTotal().amount.value, false /*completed*/);
-        }
     }
 
     // Implements BrowserPaymentRequest:

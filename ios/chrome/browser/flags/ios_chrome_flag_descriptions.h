@@ -117,12 +117,6 @@ extern const char kDefaultBrowserSettingsDescription[];
 extern const char kDefaultToDesktopOnIPadName[];
 extern const char kDefaultToDesktopOnIPadDescription[];
 
-// Title and description for the flag to show a fullscreen modal promo with a
-// button that would send the users in the Settings.app to update the default
-// browser.
-extern const char kDefaultBrowserFullscreenPromoName[];
-extern const char kDefaultBrowserFullscreenPromoDescription[];
-
 // Title and description for the flag to control the delay (in minutes) for
 // polling for the existence of Gaia cookies for google.com.
 extern const char kDelayThresholdMinutesToUpdateGaiaCookieName[];
@@ -297,6 +291,17 @@ extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
+// Title and description for the flag to control Omnibox Local zero-prefix
+// suggestions.
+extern const char kOmniboxLocalHistoryZeroSuggestName[];
+extern const char kOmniboxLocalHistoryZeroSuggestDescription[];
+
+#if defined(__IPHONE_13_4)
+// Title and description for the flag to enable pointer support on tablets.
+extern const char kPointerSupportName[];
+extern const char kPointerSupportDescription[];
+#endif  // defined(__IPHONE_13_4)
+
 // Title and description for the flag that enables the refactored new tab page.
 extern const char kRefactoredNTPName[];
 extern const char kRefactoredNTPDescription[];
@@ -409,6 +414,12 @@ extern const char kRestoreGaiaCookiesIfDeletedDescription[];
 
 extern const char kRecordSnapshotSizeName[];
 extern const char kRecordSnapshotSizeDescription[];
+
+// Title and description for the flag to show a modified fullscreen modal promo
+// with a button that would send the users in the Settings.app to update the
+// default browser.
+extern const char kDefaultBrowserFullscreenPromoExperimentName[];
+extern const char kDefaultBrowserFullscreenPromoExperimentDescription[];
 
 // Please add names and descriptions above in alphabetical order.
 

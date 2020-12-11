@@ -21,8 +21,6 @@ load("./builders.star", "builders")
 
 defaults = args.defaults(
     extends = builders.defaults,
-    add_to_console_view = False,
-    console_view = args.COMPUTE,
     header = None,
     main_console_view = None,
     cq_mirrors_console_view = None,
@@ -258,8 +256,8 @@ def console_view(*, name, branch_selector = branches.MAIN, ordering = None, **kw
             key in the dict. The ordering will be looked up by that key
             instead.
       kwargs - Additional keyword arguments to forward on to
-        `luci.console_view`. The header and repo arguments support
-         module-level defaults.
+        `luci.console_view`. The header, repo and refs arguments support
+        module-level defaults.
     """
     if not branches.matches(branch_selector):
         return
@@ -312,17 +310,40 @@ def overview_console_view(*, name, top_level_ordering, branch_selector = branche
         top_level_ordering = top_level_ordering,
     )
 
-def console_view_entry(*, category = None, short_name = None):
+def console_view_entry(
+        *,
+        branch_selector = branches.ALL_BRANCHES,
+        console_view = None,
+        category = None,
+        short_name = None):
     """Specifies the details of a console view entry.
 
     See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.console_view_entry
-    for details on the arguments.
+    for more details on the arguments.
+
+    Args:
+      branch_selector - A branch selector value controlling whether
+        console view entry definition is executed. The console view
+        entry is only defined if the associated builder is defined based
+        on its branch selector value. By default, the console view entry
+        will be defined whenever the associated builder is defined. See
+        branches.star for more information.
+      console_view - The console view to add an entry for the associated
+        builder to. By default, the entry will be for a console with the
+        same name as the builder's builder group, which the builder must
+        have. At most one `console_view_entry` for a builder can omit
+        the `console_view` value.
+      category - The category of the builder in the console.
+      short_name - The short name of the builder in the console.
 
     Returns:
-      A struct that can be passed to the `console_view_entry` argument of
-      `ci.builder` to add an entry to the console for the builder's group.
+      A struct that can be passed to the `console_view_entry` argument
+      of `ci.builder` in order to create a console view entry for the
+      builder.
     """
     return struct(
+        branch_selector = branch_selector,
+        console_view = console_view,
         category = category,
         short_name = short_name,
     )
@@ -331,11 +352,9 @@ def ci_builder(
         *,
         name,
         branch_selector = branches.MAIN,
-        add_to_console_view = args.DEFAULT,
-        console_view = args.DEFAULT,
+        console_view_entry = None,
         main_console_view = args.DEFAULT,
         cq_mirrors_console_view = args.DEFAULT,
-        console_view_entry = None,
         tree_closing = False,
         notifies = None,
         resultdb_bigquery_exports = None,
@@ -348,27 +367,19 @@ def ci_builder(
       branch_selector - A branch selector value controlling whether the
         builder definition is executed. See branches.star for more
         information.
-      add_to_console_view - A bool indicating whether an entry should be
-        created for the builder in the console identified by
-        `console_view`. Supports a module-level default that defaults to
-        False.
-      console_view - A string identifying the ID of the console view to
-        add an entry to. Supports a module-level default that defaults to
-        the group of the builder, if provided. An entry will be added
-        only if `add_to_console_view` is True and `console_view_entry` is
-        provided.
+      console_view_entry - A `ci.console_view_entry` struct or a list of
+        them describing console view entries to create for the builder.
+        See `ci.console_view_entry` for details.
       main_console_view - A string identifying the ID of the main console
         view to add an entry to. Supports a module-level default that
         defaults to None. An entry will be added only if
-        `console_view_entry` is provided. Note that `add_to_console_view`
-        has no effect on creating an entry to the main console view.
+        `console_view_entry` is provided and the first entry's branch
+        selector causes the entry to be defined.
       cq_mirrors_console_view - A string identifying the ID of the CQ
         mirrors console view to add an entry to. Supports a module-level
         default that defaults to None. An entry will be added only if
-        `console_view_entry` is provided. Note that `add_to_console_view`
-        has no effect on creating an entry to the main console view.
-      console_view_entry - A structure providing the details of the entry
-        to add to the console view. See `ci.console_view_entry` for details.
+        `console_view_entry` is provided and the first entry's branch
+        selector causes the entry to be defined.
       tree_closing - If true, failed builds from this builder that meet certain
         criteria will close the tree and email the sheriff. See the
         'chromium-tree-closer' config in notifiers.star for the full criteria.
@@ -422,36 +433,52 @@ def ci_builder(
     )
 
     if console_view_entry:
-        console_view = defaults.get_value("console_view", console_view)
-        if console_view == args.COMPUTE:
-            console_view = defaults.get_value_from_kwargs("builder_group", kwargs)
+        if type(console_view_entry) == type(struct()):
+            entries = [console_view_entry]
+        else:
+            entries = console_view_entry
+        entries_without_console_view = [
+            e
+            for e in entries
+            if e.console_view == None
+        ]
+        if len(entries_without_console_view) > 1:
+            fail("Multiple entries provided without console_view: {}"
+                .format(entries_without_console_view))
 
-        if console_view:
-            add_to_console_view = defaults.get_value(
-                "add_to_console_view",
-                add_to_console_view,
-            )
+        for idx, entry in enumerate(entries):
+            if not branches.matches(entry.branch_selector):
+                continue
+
+            console_view = entry.console_view
+            if console_view == None:
+                console_view = defaults.get_value_from_kwargs("builder_group", kwargs)
+                if not console_view:
+                    fail("Builder does not have builder group and " +
+                         "console_view_entry does not have console view: {}".format(entry))
 
             builder = "{}/{}".format(bucket, name)
 
-            if add_to_console_view:
-                luci.console_view_entry(
-                    builder = builder,
-                    console_view = console_view,
-                    category = console_view_entry.category,
-                    short_name = console_view_entry.short_name,
-                )
+            luci.console_view_entry(
+                builder = builder,
+                console_view = console_view,
+                category = entry.category,
+                short_name = entry.short_name,
+            )
+
+            if idx > 0:
+                continue
 
             overview_console_category = console_view
-            if console_view_entry.category:
-                overview_console_category = "|".join([console_view, console_view_entry.category])
+            if entry.category:
+                overview_console_category = "|".join([console_view, entry.category])
             main_console_view = defaults.get_value("main_console_view", main_console_view)
             if main_console_view:
                 luci.console_view_entry(
                     builder = builder,
                     console_view = main_console_view,
                     category = overview_console_category,
-                    short_name = console_view_entry.short_name,
+                    short_name = entry.short_name,
                 )
 
             cq_mirrors_console_view = defaults.get_value(
@@ -463,7 +490,7 @@ def ci_builder(
                     builder = builder,
                     console_view = cq_mirrors_console_view,
                     category = overview_console_category,
-                    short_name = console_view_entry.short_name,
+                    short_name = entry.short_name,
                 )
 
 def android_builder(

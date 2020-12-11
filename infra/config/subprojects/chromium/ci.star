@@ -12,7 +12,6 @@ def main_console_if_on_branch():
     return branches.value(for_branches = "main")
 
 ci.defaults.set(
-    add_to_console_view = True,
     bucket = "ci",
     build_numbers = True,
     configure_kitchen = True,
@@ -87,6 +86,10 @@ luci.gitiles_poller(
     ("main", "{} Main Console".format(settings.project_title)),
     ("mirrors", "{} CQ Mirrors Console".format(settings.project_title)),
 )]
+
+ci.console_view(
+    name = "android.packager",
+)
 
 ci.console_view(
     name = "chromium",
@@ -356,6 +359,17 @@ ci.console_view(
     header = None,
 )
 
+ci.console_view(
+    name = "sheriff.ios",
+    title = "iOS Sheriff Console",
+    ordering = {
+        "*type*": ci.ordering(short_names = ["dev", "sim"]),
+        None: ["chromium.mac", "chromium.fyi"],
+        "chromium.mac": "*type*",
+        "chromium.fyi|13": "*type*",
+    },
+)
+
 # The chromium.clang console includes some entries for builders from the chrome project
 [branches.console_view_entry(
     builder = "chrome:ci/{}".format(name),
@@ -406,6 +420,10 @@ ci.console_view(
 
 ci.builder(
     name = "android-androidx-packager",
+    console_view_entry = ci.console_view_entry(
+        console_view = "android.packager",
+        short_name = "androidx",
+    ),
     executable = "recipe:android/androidx_packager",
     schedule = "0 7,14,22 * * * *",
     service_account = "chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com",
@@ -414,6 +432,10 @@ ci.builder(
 
 ci.builder(
     name = "android-avd-packager",
+    console_view_entry = ci.console_view_entry(
+        console_view = "android.packager",
+        short_name = "avd",
+    ),
     executable = "recipe:android/avd_packager",
     properties = {
         "avd_configs": [
@@ -433,6 +455,10 @@ ci.builder(
 
 ci.builder(
     name = "android-sdk-packager",
+    console_view_entry = ci.console_view_entry(
+        console_view = "android.packager",
+        short_name = "sdk",
+    ),
     executable = "recipe:android/sdk_packager",
     schedule = "0 7 * * 0 *",
     service_account = "chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com",
@@ -1146,8 +1172,8 @@ ci.chromium_builder(
     builderless = False,
     # TODO(https://crbug.com/1072012) Use the default console view and add
     # main_console_view = 'main' once the build is green
-    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
+        console_view = "chromium.fyi",
         category = "linux",
         short_name = "off",
     ),
@@ -1186,8 +1212,8 @@ ci.chromium_builder(
     builderless = False,
     # TODO(https://crbug.com/1072012) Use the default console view and add
     # main_console_view = 'main' once the build is green
-    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
+        console_view = "chromium.fyi",
         category = "mac",
         short_name = "off",
     ),
@@ -2493,6 +2519,7 @@ ci.fyi_builder(
     goma_backend = None,
     properties = {
         "builder_to_warm": "linux-warmed",
+        "trigger_count": 2,
     },
     schedule = "with 2m interval",
     service_account = "chromium-led-tot-warmer@chops-service-accounts.iam.gserviceaccount.com",
@@ -3152,28 +3179,52 @@ ci.fyi_ios_builder(
 
 ci.fyi_ios_builder(
     name = "ios13-beta-simulator",
-    console_view_entry = ci.console_view_entry(
-        category = "iOS|iOS13",
-        short_name = "ios13",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "iOS|iOS13",
+            short_name = "ios13",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.fyi|13",
+            short_name = "ios13",
+        ),
+    ],
     schedule = "0 0,12 * * *",
     triggered_by = [],
 )
 
 ci.fyi_ios_builder(
     name = "ios13-sdk-device",
-    console_view_entry = ci.console_view_entry(
-        category = "iOS|iOS13",
-        short_name = "dev",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "iOS|iOS13",
+            short_name = "dev",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.fyi|13",
+            short_name = "dev",
+        ),
+    ],
 )
 
 ci.fyi_ios_builder(
     name = "ios13-sdk-simulator",
-    console_view_entry = ci.console_view_entry(
-        category = "iOS|iOS13",
-        short_name = "sdk13",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "iOS|iOS13",
+            short_name = "sdk13",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.fyi|13",
+            short_name = "sim",
+        ),
+    ],
     schedule = "0 6,18 * * *",
     triggered_by = [],
 )
@@ -4250,8 +4301,8 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = "Leak Detection Linux",
-    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
+        console_view = "chromium.fyi",
         category = "linux",
         short_name = "lk",
     ),
@@ -4404,8 +4455,8 @@ ci.linux_builder(
 ci.linux_builder(
     name = "Linux Ozone Tester (Headless)",
     branch_selector = branches.STANDARD_MILESTONE,
-    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
+        console_view = "chromium.fyi",
         category = "linux",
         short_name = "loh",
     ),
@@ -4417,8 +4468,8 @@ ci.linux_builder(
 ci.linux_builder(
     name = "Linux Ozone Tester (Wayland)",
     branch_selector = branches.STANDARD_MILESTONE,
-    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
+        console_view = "chromium.fyi",
         category = "linux",
         short_name = "low",
     ),
@@ -4430,8 +4481,8 @@ ci.linux_builder(
 ci.linux_builder(
     name = "Linux Ozone Tester (X11)",
     branch_selector = branches.STANDARD_MILESTONE,
-    console_view = "chromium.fyi",
     console_view_entry = ci.console_view_entry(
+        console_view = "chromium.fyi",
         category = "linux",
         short_name = "lox",
     ),
@@ -4494,8 +4545,9 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = "metadata-exporter",
-    console_view = "metadata.exporter",
-    console_view_entry = ci.console_view_entry(),
+    console_view_entry = ci.console_view_entry(
+        console_view = "metadata.exporter",
+    ),
     executable = "recipe:chromium_export_metadata",
     service_account = "component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com",
     notifies = ["metadata-mapping"],
@@ -4632,10 +4684,18 @@ ci.thin_tester(
 
 ci.mac_ios_builder(
     name = "ios-device",
-    console_view_entry = ci.console_view_entry(
-        category = "ios|default",
-        short_name = "dev",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "ios|default",
+            short_name = "dev",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.mac",
+            short_name = "dev",
+        ),
+    ],
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
@@ -4644,10 +4704,18 @@ ci.mac_ios_builder(
 ci.mac_ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = ci.console_view_entry(
-        category = "ios|default",
-        short_name = "sim",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "ios|default",
+            short_name = "sim",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.mac",
+            short_name = "sim",
+        ),
+    ],
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
 )
@@ -4655,20 +4723,36 @@ ci.mac_ios_builder(
 ci.mac_ios_builder(
     name = "ios-simulator-full-configs",
     branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = ci.console_view_entry(
-        category = "ios|default",
-        short_name = "ful",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "ios|default",
+            short_name = "ful",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.mac",
+            short_name = "ful",
+        ),
+    ],
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
 )
 
 ci.mac_ios_builder(
     name = "ios-simulator-noncq",
-    console_view_entry = ci.console_view_entry(
-        category = "ios|default",
-        short_name = "non",
-    ),
+    console_view_entry = [
+        ci.console_view_entry(
+            category = "ios|default",
+            short_name = "non",
+        ),
+        ci.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.ios",
+            category = "chromium.mac",
+            short_name = "non",
+        ),
+    ],
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
@@ -4676,10 +4760,10 @@ ci.mac_ios_builder(
 
 ci.memory_builder(
     name = "Android CFI",
-    # TODO(https://crbug.com/1008094) When this builder is not consistently
-    # failing, remove the console_view value
-    console_view = "chromium.android.fyi",
     console_view_entry = ci.console_view_entry(
+        # TODO(https://crbug.com/1008094) When this builder is not consistently
+        # failing, remove the console_view value
+        console_view = "chromium.android.fyi",
         category = "memory",
         short_name = "cfi",
     ),

@@ -27,11 +27,12 @@ import './source_select.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getScanService} from './mojo_interface_provider.js';
 import {AppState, ScannerArr} from './scanning_app_types.js';
 import {colorModeFromString, fileTypeFromString, pageSizeFromString, tokenToString} from './scanning_app_util.js';
+import {ScanningBrowserProxyImpl} from './scanning_browser_proxy.js';
 
 /**
  * The default save directory for completed scans.
@@ -141,9 +142,6 @@ Polymer({
       computed: 'computePageSizes_(selectedSource)',
     },
 
-    /** @private {string} */
-    statusText_: String,
-
     /**
      * Determines whether settings should be disabled based on the current app
      * state. Settings should be disabled until after the selected scanner's
@@ -214,6 +212,8 @@ Polymer({
   created() {
     this.scanService_ = getScanService();
     this.selectedFilePath = DEFAULT_SAVE_DIRECTORY;
+
+    ScanningBrowserProxyImpl.getInstance().initialize();
   },
 
   /** @override */
@@ -235,7 +235,6 @@ Polymer({
 
   /** @override */
   detached() {
-    // TODO(jschettler): Cancel any ongoing scan jobs.
     if (this.scanJobObserverReceiver_) {
       this.scanJobObserverReceiver_.$.close();
     }
@@ -319,11 +318,7 @@ Polymer({
    */
   onCapabilitiesReceived_(response) {
     this.capabilities_ = response.capabilities;
-
-    // TODO(jschettler): Change default file type back to PDF when it's
-    // supported.
-    this.selectedFileType = chromeos.scanning.mojom.FileType.kPng.toString();
-
+    this.selectedFileType = chromeos.scanning.mojom.FileType.kPdf.toString();
     this.setAppState_(AppState.READY);
   },
 
@@ -370,15 +365,6 @@ Polymer({
       this.showToast_('startScanFailedToast');
       return;
     }
-
-    // TODO(jschettler): Remove this once ScanService supports PDF.
-    if (this.selectedFileType ==
-        chromeos.scanning.mojom.FileType.kPdf.toString()) {
-      this.statusText_ = 'PDF is not a supported file type.';
-      return;
-    }
-
-    this.statusText_ = '';
 
     const settings = {
       'sourceName': this.selectedSource,
@@ -522,6 +508,18 @@ Polymer({
         this.appState_ === AppState.CANCELING;
     this.cancelButtonDisabled_ = this.appState_ === AppState.CANCELING;
     this.showDoneSection_ = this.appState_ === AppState.DONE;
+
+    // Need to wait for elements to render after updating their disabled and
+    // hidden attributes before they can be focused.
+    afterNextRender(this, () => {
+      if (this.appState_ === AppState.READY) {
+        this.$$('#scannerSelect').$$('#scannerSelect').focus();
+      } else if (this.appState_ === AppState.SCANNING) {
+        this.$$('#cancelButton').focus();
+      } else if (this.appState_ === AppState.DONE) {
+        this.$$('#scanPreview').$$('#previewDiv').focus();
+      }
+    });
   },
 
   /**

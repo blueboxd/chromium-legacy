@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/queue.h"
@@ -17,6 +18,7 @@
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
+#include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
@@ -37,9 +39,12 @@ class RecordHandlerImpl::ReportUploader
     : public TaskRunnerContext<DmServerUploadService::CompletionResponse> {
  public:
   ReportUploader(
+      bool need_encryption_key,
       std::unique_ptr<std::vector<EncryptedRecord>> records,
       policy::CloudPolicyClient* client,
       DmServerUploadService::CompletionCallback upload_complete_cb,
+      DmServerUploadService::EncryptionKeyAttachedCallback
+          encryption_key_attached_cb,
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
 
  private:
@@ -47,15 +52,27 @@ class RecordHandlerImpl::ReportUploader
 
   void OnStart() override;
 
-  void StartUpload(const EncryptedRecord& encrypted_record);
+  void StartUpload(bool need_encryption_key,
+                   const EncryptedRecord& encrypted_record);
   void OnUploadComplete(base::Optional<base::Value> response);
   void HandleFailedUpload();
   void HandleSuccessfulUpload();
 
+  // Populates upload request. Returns JSON request base::Value or nullopt,
+  // if an error was detected.
+  base::Optional<base::Value> PopulateRequest(
+      bool need_encryption_key,
+      const EncryptedRecord& encrypted_record);
+
   void Complete(DmServerUploadService::CompletionResponse result);
 
+  const bool need_encryption_key_;
   std::unique_ptr<std::vector<EncryptedRecord>> records_;
   policy::CloudPolicyClient* client_;
+
+  // Encryption key delivery callback.
+  DmServerUploadService::EncryptionKeyAttachedCallback
+      encryption_key_attached_cb_;
 
   // Last successful response to be processed.
   // Note: I could not find a way to pass it as a parameter,
@@ -68,15 +85,20 @@ class RecordHandlerImpl::ReportUploader
 };
 
 RecordHandlerImpl::ReportUploader::ReportUploader(
+    bool need_encryption_key,
     std::unique_ptr<std::vector<EncryptedRecord>> records,
     policy::CloudPolicyClient* client,
     DmServerUploadService::CompletionCallback client_cb,
+    DmServerUploadService::EncryptionKeyAttachedCallback
+        encryption_key_attached_cb,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
     : TaskRunnerContext<DmServerUploadService::CompletionResponse>(
           std::move(client_cb),
           sequenced_task_runner),
+      need_encryption_key_(need_encryption_key),
       records_(std::move(records)),
-      client_(client) {}
+      client_(client),
+      encryption_key_attached_cb_(encryption_key_attached_cb) {}
 
 RecordHandlerImpl::ReportUploader::~ReportUploader() = default;
 
@@ -106,24 +128,38 @@ void RecordHandlerImpl::ReportUploader::OnStart() {
   // We'll be popping records off the back.
   std::reverse(records_->begin(), records_->end());
 
-  StartUpload(records_->back());
+  StartUpload(need_encryption_key_, records_->back());
 }
 
 void RecordHandlerImpl::ReportUploader::StartUpload(
+    bool need_encryption_key,
     const EncryptedRecord& encrypted_record) {
-  auto cb = base::BindOnce(&RecordHandlerImpl::ReportUploader::OnUploadComplete,
-                           base::Unretained(this));
+  auto response_cb =
+      base::BindOnce(&RecordHandlerImpl::ReportUploader::OnUploadComplete,
+                     base::Unretained(this));
+
+  auto request_result =
+      UploadEncryptedReportingRequestBuilder(need_encryption_key)
+          .AddRecord(encrypted_record)
+          .Build();
+  if (!request_result.has_value()) {
+    std::move(response_cb).Run(base::nullopt);
+    return;
+  }
+  base::Value request = std::move(request_result.value());
+
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
-          [](policy::CloudPolicyClient* client, const EncryptedRecord& record,
-             base::OnceCallback<void(base::Optional<base::Value>)> cb) {
+          [](policy::CloudPolicyClient* client, base::Value request,
+             base::OnceCallback<void(base::Optional<base::Value>)>
+                 response_cb) {
             client->UploadEncryptedReport(
-                record,
+                std::move(request),
                 reporting::GetContext(ProfileManager::GetPrimaryUserProfile()),
-                std::move(cb));
+                std::move(response_cb));
           },
-          client_, encrypted_record, std::move(cb)));
+          client_, std::move(request), std::move(response_cb)));
 }
 
 void RecordHandlerImpl::ReportUploader::OnUploadComplete(
@@ -161,29 +197,65 @@ void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload() {
   //      "failedUploadedRecord": ... // SequencingInformation proto
   //      "failureStatus": ... // Status proto
   //    }
+  //    "encryptionSettings": ... // EncryptionSettings proto
   //  }
   // TODO(b/169883262): Factor out the decoding into a separate class.
 
   const base::Value* last_succeed_uploaded_record =
       last_response_.FindDictKey("lastSucceedUploadedRecord");
   if (last_succeed_uploaded_record != nullptr) {
-    SequencingInformation seq_info;
     // Note: Fields below are 'int', should be converted into 'uint64_t'.
-    const auto sequencing_id =
-        last_succeed_uploaded_record->FindIntKey("sequencingId");
-    const auto generation_id =
-        last_succeed_uploaded_record->FindIntKey("generationId");
+    const std::string* sequencing_id_str =
+        last_succeed_uploaded_record->FindStringKey("sequencingId");
+    const std::string* generation_id_str =
+        last_succeed_uploaded_record->FindStringKey("generationId");
     const auto priority = last_succeed_uploaded_record->FindIntKey("priority");
-    if (sequencing_id.has_value() && generation_id.has_value() &&
+    uint64_t sequencing_id = 0;
+    uint64_t generation_id = 0;
+    if (sequencing_id_str &&
+        base::StringToUint64(*sequencing_id_str, &sequencing_id) &&
+        generation_id_str &&
+        base::StringToUint64(*generation_id_str, &generation_id) &&
         priority.has_value() && Priority_IsValid(priority.value())) {
-      seq_info.set_sequencing_id(sequencing_id.value());
-      seq_info.set_generation_id(generation_id.value());
+      SequencingInformation seq_info;
+      seq_info.set_sequencing_id(sequencing_id);
+      seq_info.set_generation_id(generation_id);
       seq_info.set_priority(Priority(priority.value()));
       highest_sequencing_information_ = std::move(seq_info);
     }
   }
   // TODO(b/169883262): Decode and handle failure information.
-  // TODO(b/170054326): Handle the encryption settings.
+
+  // Handle the encryption settings.
+  // Note: server can attach it to response regardless of whether
+  // the response indicates success or failure, and whether the client
+  // set attach_encryption_settings to true in request.
+  const base::Value* signed_encryption_key_record =
+      last_response_.FindDictKey("encryptionSettings");
+  if (signed_encryption_key_record != nullptr) {
+    const std::string* public_key_str =
+        signed_encryption_key_record->FindStringKey("publicKey");
+    const auto public_key_id_result =
+        signed_encryption_key_record->FindIntKey("publicKeyId");
+    // TODO(b/170054326): Make signature mandatory too.
+    // const std::string* public_key_signature_str =
+    //     signed_encryption_key_record->FindStringKey("publicKeySignature");
+    std::string public_key;
+    std::string public_key_signature;
+    if (public_key_str != nullptr &&
+        base::Base64Decode(*public_key_str, &public_key) &&
+        // TODO(b/170054326): Make signature mandatory too.
+        // public_key_signature_str != nullptr
+        // base::Base64Decode(*public_key_signature_str,
+        //                    &public_key_signature) &&
+        public_key_id_result.has_value()) {
+      SignedEncryptionInfo signed_encryption_key;
+      signed_encryption_key.set_public_asymmetric_key(public_key);
+      signed_encryption_key.set_public_key_id(public_key_id_result.value());
+      signed_encryption_key.set_signature(public_key_signature);
+      encryption_key_attached_cb_.Run(signed_encryption_key);
+    }
+  }
 
   // Pop the last record that was processed.
   records_->pop_back();
@@ -193,7 +265,8 @@ void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload() {
     return;
   }
 
-  StartUpload(records_->back());
+  // Upload the next record but do not request encryption key again.
+  StartUpload(/*need_encryption_key=*/false, records_->back());
 }
 
 void RecordHandlerImpl::ReportUploader::Complete(
@@ -209,11 +282,15 @@ RecordHandlerImpl::RecordHandlerImpl(policy::CloudPolicyClient* client)
 RecordHandlerImpl::~RecordHandlerImpl() = default;
 
 void RecordHandlerImpl::HandleRecords(
+    bool need_encryption_key,
     std::unique_ptr<std::vector<EncryptedRecord>> records,
-    DmServerUploadService::CompletionCallback upload_complete_cb) {
-  Start<RecordHandlerImpl::ReportUploader>(std::move(records), GetClient(),
-                                           std::move(upload_complete_cb),
-                                           sequenced_task_runner_);
+    DmServerUploadService::CompletionCallback upload_complete_cb,
+    DmServerUploadService::EncryptionKeyAttachedCallback
+        encryption_key_attached_cb) {
+  Start<RecordHandlerImpl::ReportUploader>(
+      need_encryption_key, std::move(records), GetClient(),
+      std::move(upload_complete_cb), encryption_key_attached_cb,
+      sequenced_task_runner_);
 }
 
 }  // namespace reporting

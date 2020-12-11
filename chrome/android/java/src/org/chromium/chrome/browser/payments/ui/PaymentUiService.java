@@ -59,6 +59,7 @@ import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.BasicCardUtils;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.Event;
 import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppType;
@@ -156,8 +157,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     public interface Delegate {
         /** Dispatch the payer detail change event if needed. */
         void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail);
-        /** Record the show event to the journey logger and record the transaction amount. */
-        void recordShowEventAndTransactionAmount();
+
         /**
          * @return Whether {@link ChromePaymentRequestService#onRetry} has been
          *         called.
@@ -371,6 +371,17 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
     }
 
     /**
+     * Whether the payment apps includes at least one that is "complete" which is defined
+     * by {@link PaymentApp#isComplete()}. This method can be called only after
+     * {@link #setPaymentApps}.
+     * @return The result.
+     */
+    public boolean hasAnyCompleteAppSuggestion() {
+        List<PaymentApp> apps = getPaymentApps();
+        return !apps.isEmpty() && apps.get(0).isComplete();
+    }
+
+    /**
      * Returns the selected payment app, if any.
      * @return The selected payment app or null if none selected.
      */
@@ -394,13 +405,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         // The list of payment apps is ready to display.
         mPaymentMethodsSection = new SectionInformation(
                 PaymentRequestUI.DataType.PAYMENT_METHODS, selection, new ArrayList<>(apps));
-
-        // Record the number suggested payment methods and whether at least one of them was
-        // complete.
-        // TODO(crbug.com/1152498): move this into PaymentRequestService because the WebLayer
-        // payment request needs to record this as well.
-        mJourneyLogger.setNumberOfSuggestionsShown(
-                Section.PAYMENT_METHOD, apps.size(), !apps.isEmpty() && apps.get(0).isComplete());
 
         updateAppModifiedTotals();
 
@@ -921,14 +925,10 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
      * Update Payment Request UI with the update event's information and enable the UI. This method
      * should be called when the user interface is disabled with a "↻" spinner being displayed. The
      * user is unable to interact with the user interface until this method is called.
-     * @return Whether this is the first time that payment information has been provided to the user
-     *         interface, which indicates that the "UI shown" event should be recorded now.
      */
-    public boolean enableAndUpdatePaymentRequestUIWithPaymentInfo() {
-        boolean isFirstUpdate = false;
+    public void enableAndUpdatePaymentRequestUIWithPaymentInfo() {
         if (mPaymentInformationCallback != null && mPaymentMethodsSection != null) {
             providePaymentInformationToPaymentRequestUI();
-            isFirstUpdate = true;
         } else {
             mPaymentRequestUI.updateOrderSummarySection(mUiShoppingCart);
             if (shouldShowShippingSection()) {
@@ -936,7 +936,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                         PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
             }
         }
-        return isFirstUpdate;
     }
 
     /**
@@ -1051,6 +1050,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                 new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
+        mJourneyLogger.setEventOccurred(Event.SHOWN);
     }
 
     /**
@@ -1120,7 +1120,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                         mShippingAddressesSection.setSelectedItemIndex(
                                 SectionInformation.NO_SELECTION);
                         providePaymentInformationToPaymentRequestUI();
-                        mDelegate.recordShowEventAndTransactionAmount();
                     } else {
                         if (toEdit == null) {
                             // Address is complete and user was in the "Add flow": add an item to
@@ -1141,7 +1140,6 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
                     }
                 } else {
                     providePaymentInformationToPaymentRequestUI();
-                    mDelegate.recordShowEventAndTransactionAmount();
                 }
 
                 if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
@@ -1544,10 +1542,7 @@ public class PaymentUiService implements SettingsAutofillAndPaymentsObserver.Obs
         if (isShowWaitingForUpdatedDetails) return;
 
         mHandler.post(() -> {
-            if (mPaymentRequestUI != null) {
-                providePaymentInformationToPaymentRequestUI();
-                mDelegate.recordShowEventAndTransactionAmount();
-            }
+            if (mPaymentRequestUI != null) providePaymentInformationToPaymentRequestUI();
         });
     }
 

@@ -18,7 +18,9 @@ enum class BrowserSigninMode {
   kForced = 2,
 };
 
-// ConfigurationPolicyHandler for the RoamingProfileLocation policy.
+// ConfigurationPolicyHandler for the BrowserSignin policy. This handles all
+// non-iOS platforms. The iOS equivalent handler is at
+// ios/chrome/browser/policy/browser_signin_policy_handler.h
 class BrowserSigninPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
   explicit BrowserSigninPolicyHandler(Schema chrome_schema);

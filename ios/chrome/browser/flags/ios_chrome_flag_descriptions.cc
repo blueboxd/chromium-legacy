@@ -131,12 +131,11 @@ const char kDefaultToDesktopOnIPadDescription[] =
     "By default, on iPad, the desktop version of the web sites will be "
     "requested";
 
-const char kDefaultBrowserFullscreenPromoName[] =
-    "Fullscreen modal promo about the default browser feature";
-const char kDefaultBrowserFullscreenPromoDescription[] =
-    "When enabled, will allow for a fullscreen modal promo to be shown to "
-    "users informing them about the default browser feature and providing a "
-    "button that takes users to Settings.app to update their default browser.";
+const char kDefaultBrowserFullscreenPromoExperimentName[] =
+    "Default Browser Fullscreen modal experiment";
+const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
+    "When enabled, will show a modified default browser fullscreen modal promo "
+    "UI.";
 
 const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
     "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
@@ -334,6 +333,12 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
     "before the user has typed any input. This provides overrides for the "
     "default suggestion locations.";
+
+const char kOmniboxLocalHistoryZeroSuggestName[] =
+    "Omnibox local zero-prefix suggestions";
+const char kOmniboxLocalHistoryZeroSuggestDescription[] =
+    "Configures the omnibox zero-prefix suggestion to use local search "
+    "history.";
 
 const char kRefactoredNTPName[] = "Enables refactored new tab page";
 const char kRefactoredNTPDescription[] =

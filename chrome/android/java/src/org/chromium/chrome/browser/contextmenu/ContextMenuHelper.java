@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.contextmenu;
 import android.util.Pair;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.TimeUtilsJni;
@@ -32,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * A helper class that handles generating context menus for {@link WebContents}s.
  */
 public class ContextMenuHelper {
-    public static Callback<RevampedContextMenuCoordinator> sRevampedContextMenuShownCallback;
+    private static Callback<RevampedContextMenuCoordinator> sMenuShownCallbackForTests;
 
     private static final String TAG = "ContextMenuHelper";
 
@@ -69,7 +72,6 @@ public class ContextMenuHelper {
     @CalledByNative
     private void destroy() {
         if (mCurrentContextMenu != null) {
-            Thread.dumpStack();
             Log.i(TAG, "Dismissing context menu " + mCurrentContextMenu);
             mDismissedFromHere = true;
             mCurrentContextMenu.dismiss();
@@ -85,7 +87,6 @@ public class ContextMenuHelper {
         if (mCurrentContextMenu != null) {
             // TODO(crbug.com/1154731): Clean the debugging statements once we figure out the cause
             // of the crash.
-            Thread.dumpStack();
             Log.i(TAG, "Dismissing context menu " + mCurrentContextMenu);
             mDismissedFromHere = true;
 
@@ -138,6 +139,11 @@ public class ContextMenuHelper {
                                                 ? ""
                                                 : "NOT")
                                 + " dismissed.");
+                Log.i(TAG, "Activity: " + mWindow.getActivity().get());
+                Log.i(TAG,
+                        "Activity state: "
+                                + ApplicationStatus.getStateForActivity(
+                                        mWindow.getActivity().get()));
 
                 Throwable throwable = new Throwable(
                         "This is not a crash. See https://crbug.com/1153706 for details."
@@ -173,6 +179,9 @@ public class ContextMenuHelper {
         mOnMenuClosed = () -> {
             Log.i(TAG, "mCurrentPopulator was " + mCurrentPopulator + " when the menu closed.");
             Log.i(TAG, "mCurrentContextMenu was " + mCurrentContextMenu + " when the menu closed.");
+            Log.i(TAG,
+                    "Activity: " + mWindow.getActivity().get() + ", activity state: "
+                            + ApplicationStatus.getStateForActivity(mWindow.getActivity().get()));
 
             recordTimeToTakeActionHistogram(mSelectedItemBeforeDismiss);
             mCurrentContextMenu = null;
@@ -201,6 +210,9 @@ public class ContextMenuHelper {
         List<Pair<Integer, ModelList>> items = mCurrentPopulator.buildContextMenu();
         if (items.isEmpty()) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
+            if (sMenuShownCallbackForTests != null) {
+                sMenuShownCallbackForTests.onResult(null);
+            }
             return;
         }
 
@@ -208,6 +220,10 @@ public class ContextMenuHelper {
                 new RevampedContextMenuCoordinator(topContentOffsetPx, mCurrentNativeDelegate);
         mCurrentContextMenu = menuCoordinator;
         mChipDelegate = mCurrentPopulator.getChipDelegate();
+
+        Log.i(TAG, "Created mCurrentContextMenu: " + mCurrentContextMenu);
+        Log.i(TAG, "Activity was " + mWindow.getActivity().get() + " when the menu was created.");
+
         if (mChipDelegate != null) {
             menuCoordinator.displayMenuWithChip(mWindow, mWebContents, mCurrentContextMenuParams,
                     items, mCallback, mOnMenuShown, mOnMenuClosed, mChipDelegate);
@@ -216,8 +232,8 @@ public class ContextMenuHelper {
                     mCallback, mOnMenuShown, mOnMenuClosed);
         }
 
-        if (sRevampedContextMenuShownCallback != null) {
-            sRevampedContextMenuShownCallback.onResult(menuCoordinator);
+        if (sMenuShownCallbackForTests != null) {
+            sMenuShownCallbackForTests.onResult(menuCoordinator);
         }
     }
 
@@ -235,6 +251,12 @@ public class ContextMenuHelper {
             RecordHistogram.recordTimesHistogram(
                     histogramName + ".PerformanceClassFast", timeToTakeActionMs);
         }
+    }
+
+    @VisibleForTesting
+    public static void setMenuShownCallbackForTests(
+            Callback<RevampedContextMenuCoordinator> callback) {
+        sMenuShownCallbackForTests = callback;
     }
 
     @NativeMethods

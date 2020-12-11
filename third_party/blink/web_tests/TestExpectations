@@ -47,6 +47,11 @@ crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-http.sub.html [ 
 # WPT Test harness doesn't deal with finding an about:blank ref test
 crbug.com/1066130 external/wpt/infrastructure/assumptions/blank.html [ Failure ]
 
+# When running under Python 3 on Windows, this test fails to activate backpressure.
+crbug.com/1155106 external/wpt/websockets/stream/tentative/backpressure-receive.any.html [ Failure ]
+crbug.com/1155106 external/wpt/websockets/stream/tentative/backpressure-receive.any.worker.html [ Failure ]
+crbug.com/1155106 external/wpt/websockets/stream/tentative/backpressure-receive.any.sharedworker.html [ Failure ]
+
 # Favicon is not supported by run_web_tests.
 external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
 
@@ -738,7 +743,6 @@ crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Fai
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-001.html [ Failure ]
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
-crbug.com/1111708 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/1111128 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
 crbug.com/1128262 external/wpt/css/css-flexbox/table-as-item-specified-width.html [ Failure ]
 
@@ -807,7 +811,6 @@ crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-c
 crbug.com/1123457 external/wpt/css/css-lists/counter-list-item-2.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
-crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 
 # [css-overflow]
 # Incorrect WPT tests.
@@ -1020,8 +1023,7 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-edge.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pass ]
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
-crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure Crash ]
 crbug.com/1113911 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/1154585 virtual/layout_ng_block_frag/external/wpt/css/css-break/ink-overflow-002.html [ Failure ]
 crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-009.html [ Failure ]
@@ -1068,6 +1070,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/forced-break-too-sho
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/hit-test-above-or-below.html [ Failure ]
 crbug.com/1066629 virtual/layout_ng_block_frag/fast/multicol/hit-test-translate-z.html [ Failure ]
 crbug.com/829181 virtual/layout_ng_block_frag/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/insane-column-count-and-padding-nested-crash.html [ Skip ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/insane-column-gap.html [ Failure ]
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/layers-split-across-columns.html [ Failure ]
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
@@ -1100,7 +1103,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/transform-with-fixe
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/widows.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/auto-scrollbar-shrink-to-fit.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html [ Failure ]
 
@@ -2743,7 +2745,6 @@ crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-siz
 crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.any.worker.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-lists/li-list-item-counter.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-007.html [ Failure ]
@@ -5788,8 +5789,6 @@ crbug.com/1123116 external/wpt/feature-policy/reporting/serial-reporting.https.h
 crbug.com/1123116 external/wpt/feature-policy/reporting/sync-xhr-reporting.html [ Timeout ]
 crbug.com/1123116 external/wpt/feature-policy/reporting/usb-reporting.https.html [ Timeout ]
 crbug.com/1123116 external/wpt/feature-policy/reporting/xr-reporting.https.html [ Timeout ]
-
-crbug.com/1151954 http/tests/permissions-policy/permissions-policy-javascript-navigation.php [ Failure ]
 
 crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout Failure ]
 crbug.com/1140329 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "chromeos/components/phonehub/connection_scheduler.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
+#include "chromeos/components/phonehub/user_action_recorder.h"
 
 using FeatureStatus = chromeos::phonehub::FeatureStatus;
 
@@ -37,6 +38,7 @@ void PhoneHubUiController::SetPhoneHubManager(
   if (phone_hub_manager_) {
     phone_hub_manager_->GetFeatureStatusProvider()->AddObserver(this);
     phone_hub_manager_->GetOnboardingUiTracker()->AddObserver(this);
+    phone_hub_manager_->GetPhoneModel()->AddObserver(this);
   }
 
   UpdateUiState(GetUiStateFromPhoneHubManager());
@@ -75,15 +77,16 @@ std::unique_ptr<PhoneHubContentView> PhoneHubUiController::CreateContentView(
   }
 }
 
-void PhoneHubUiController::MaybeRequestConnection() {
+void PhoneHubUiController::HandleBubbleOpened() {
   if (!phone_hub_manager_)
     return;
 
   auto feature_status =
       phone_hub_manager_->GetFeatureStatusProvider()->GetStatus();
-
   if (feature_status == FeatureStatus::kEnabledButDisconnected)
     phone_hub_manager_->GetConnectionScheduler()->ScheduleConnectionNow();
+
+  phone_hub_manager_->GetUserActionRecorder()->RecordUiOpened();
 }
 
 void PhoneHubUiController::AddObserver(Observer* observer) {
@@ -99,6 +102,10 @@ void PhoneHubUiController::OnFeatureStatusChanged() {
 }
 
 void PhoneHubUiController::OnShouldShowOnboardingUiChanged() {
+  UpdateUiState(GetUiStateFromPhoneHubManager());
+}
+
+void PhoneHubUiController::OnModelChanged() {
   UpdateUiState(GetUiStateFromPhoneHubManager());
 }
 
@@ -121,6 +128,7 @@ PhoneHubUiController::GetUiStateFromPhoneHubManager() {
       phone_hub_manager_->GetFeatureStatusProvider()->GetStatus();
 
   auto* tracker = phone_hub_manager_->GetOnboardingUiTracker();
+  auto* phone_model = phone_hub_manager_->GetPhoneModel();
   bool should_show_onboarding_ui = tracker->ShouldShowOnboardingUi();
 
   switch (feature_status) {
@@ -141,7 +149,11 @@ PhoneHubUiController::GetUiStateFromPhoneHubManager() {
     case FeatureStatus::kEnabledAndConnecting:
       return UiState::kPhoneConnecting;
     case FeatureStatus::kEnabledAndConnected:
-      return UiState::kPhoneConnected;
+      // Delay displaying the connected view until the phone model is ready.
+      if (phone_model->phone_status_model().has_value())
+        return UiState::kPhoneConnected;
+      else
+        return UiState::kPhoneConnecting;
     case FeatureStatus::kLockOrSuspended:
       return UiState::kHidden;
   }
@@ -153,6 +165,7 @@ void PhoneHubUiController::CleanUpPhoneHubManager() {
 
   phone_hub_manager_->GetFeatureStatusProvider()->RemoveObserver(this);
   phone_hub_manager_->GetOnboardingUiTracker()->RemoveObserver(this);
+  phone_hub_manager_->GetPhoneModel()->RemoveObserver(this);
 }
 
 }  // namespace ash

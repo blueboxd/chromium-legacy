@@ -7,29 +7,27 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/logging.h"
+#include "chromeos/services/libassistant/service_controller.h"
 
 namespace chromeos {
 namespace libassistant {
 
 LibassistantService::LibassistantService(
-    mojo::PendingReceiver<mojom::LibassistantService> receiver)
-    : receiver_(this, std::move(receiver)) {}
+    mojo::PendingReceiver<mojom::LibassistantService> receiver,
+    assistant_client::PlatformApi* platform_api,
+    assistant::AssistantManagerServiceDelegate* delegate)
+    : receiver_(this, std::move(receiver)),
+      service_controller_(
+          std::make_unique<ServiceController>(delegate, platform_api)) {}
 
 LibassistantService::~LibassistantService() = default;
 
 void LibassistantService::BindServiceController(
     mojo::PendingReceiver<mojom::ServiceController> receiver) {
-  DCHECK(!service_controller_);
-  service_controller_ =
-      std::make_unique<ServiceController>(std::move(receiver));
+  service_controller_->Bind(std::move(receiver));
 }
-
-ServiceController::ServiceController(
-    mojo::PendingReceiver<mojom::ServiceController> receiver)
-    : receiver_(this, std::move(receiver)) {}
-
-ServiceController::~ServiceController() = default;
 
 }  // namespace libassistant
 }  // namespace chromeos

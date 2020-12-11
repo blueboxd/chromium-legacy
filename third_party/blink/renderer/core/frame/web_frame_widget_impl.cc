@@ -245,8 +245,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(
                                                 never_composited,
                                                 is_for_child_local_root)),
       frame_sink_id_(frame_sink_id),
-      is_for_child_local_root_(is_for_child_local_root),
-      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
+      is_for_child_local_root_(is_for_child_local_root) {
   DCHECK(task_runner);
   if (is_for_nested_main_frame)
     main_data().is_for_nested_main_frame = is_for_nested_main_frame;
@@ -303,7 +302,6 @@ void WebFrameWidgetImpl::Close() {
   input_handler_weak_ptr_factory_.InvalidateWeakPtrs();
   receiver_.reset();
   input_target_receiver_.reset();
-  self_keep_alive_.Clear();
 }
 
 WebLocalFrame* WebFrameWidgetImpl::LocalRoot() const {
@@ -3926,6 +3924,20 @@ WebPlugin* WebFrameWidgetImpl::GetFocusedPluginContainer() {
   if (auto* container = focused_frame->GetWebPluginContainer())
     return container->Plugin();
   return nullptr;
+}
+
+bool WebFrameWidgetImpl::HasPendingPageScaleAnimation() {
+  return LayerTreeHost()->HasPendingPageScaleAnimation();
+}
+
+void WebFrameWidgetImpl::SetSourceURLForCompositor(ukm::SourceId source_id,
+                                                   const KURL& url) {
+  LayerTreeHost()->SetSourceURL(source_id, url);
+}
+
+base::ReadOnlySharedMemoryRegion
+WebFrameWidgetImpl::CreateSharedMemoryForSmoothnessUkm() {
+  return LayerTreeHost()->CreateSharedMemoryForSmoothnessUkm();
 }
 
 bool WebFrameWidgetImpl::CanComposeInline() {

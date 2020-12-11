@@ -191,8 +191,14 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     BindMediaPlayerObserverReceiverAndPassRemote();
 
     // media::mojom::MediaPlayerObserver implementation.
+    void OnMutedStatusChanged(bool muted) override;
     void OnMediaPositionStateChanged(
         const media_session::MediaPosition& media_position) override;
+    void OnMediaSizeChanged(const ::gfx::Size& size) override;
+    void OnPictureInPictureAvailabilityChanged(bool available) override;
+    void OnAudioOutputSinkChangingDisabled() override;
+    void OnBufferUnderflow() override;
+    void OnSeek() override;
 
    private:
     MediaPlayerId media_player_id_;
@@ -227,22 +233,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       int delegate_id,
       blink::WebFullscreenVideoStatus fullscreen_status);
-  void OnMediaSizeChanged(RenderFrameHost* render_frame_host,
-                          int delegate_id,
-                          const gfx::Size& size);
-  void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
-                                 int delegate_id,
-                                 bool muted);
-  void OnPictureInPictureAvailabilityChanged(RenderFrameHost* render_frame_host,
-                                             int delegate_id,
-                                             bool available);
   void OnAudioOutputSinkChanged(RenderFrameHost* render_frame_host,
                                 int delegate_id,
                                 std::string hashed_device_id);
-  void OnAudioOutputSinkChangingDisabled(RenderFrameHost* render_frame_host,
-                                         int delegate_id);
-  void OnBufferUnderflow(RenderFrameHost* render_frame_host, int delegate_id);
-  void OnSeek(RenderFrameHost* render_frame_host, int delegate_id);
 
   // Used to notify when the renderer -> browser mojo connection via the
   // interface media::mojom::MediaPlayerHost gets disconnected.

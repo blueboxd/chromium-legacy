@@ -39,7 +39,6 @@
 #import "components/password_manager/ios/js_password_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/navigation/navigation_context.h"
@@ -410,6 +409,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       }
 
       [self.formHelper fillPasswordFormWithFillData:*fillData
+                                   triggeredOnField:uniqueFieldID
                                   completionHandler:^(BOOL success) {
                                     completion();
                                   }];

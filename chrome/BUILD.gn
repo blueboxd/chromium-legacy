@@ -492,7 +492,7 @@ if (is_win) {
   }
 
   compiled_action("chrome_app_strings") {
-    tool = "//chrome/tools/build/mac:infoplist_strings_tool"
+    tool = "//chrome/tools/build/mac:infoplist_strings_util"
 
     inputs = []
 
@@ -1248,6 +1248,7 @@ group("browser_dependencies") {
       "//chrome/browser/chromeos",
       "//chromeos",
       "//chromeos/constants",
+      "//chromeos/dbus/constants",
       "//chromeos/memory",
     ]
   }

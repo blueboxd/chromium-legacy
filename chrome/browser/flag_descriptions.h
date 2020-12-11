@@ -244,6 +244,9 @@ extern const char kDnsOverHttpsDescription[];
 extern const char kDnsHttpssvcName[];
 extern const char kDnsHttpssvcDescription[];
 
+extern const char kEnableFirstPartySetsName[];
+extern const char kEnableFirstPartySetsDescription[];
+
 extern const char kEnablePasswordsAccountStorageName[];
 extern const char kEnablePasswordsAccountStorageDescription[];
 
@@ -2660,6 +2663,9 @@ extern const char kSelectToSpeakNavigationControlDescription[];
 
 extern const char kSeparatePointingStickSettingsName[];
 extern const char kSeparatePointingStickSettingsDescription[];
+
+extern const char kSharesheetContentPreviewsName[];
+extern const char kSharesheetContentPreviewsDescription[];
 
 extern const char kSharesheetName[];
 extern const char kSharesheetDescription[];

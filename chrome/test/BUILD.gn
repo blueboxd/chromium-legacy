@@ -3824,6 +3824,8 @@ test("unit_tests") {
     "../renderer/media/flash_embed_rewrite_unittest.cc",
     "../renderer/net/net_error_helper_core_unittest.cc",
     "../renderer/plugins/plugin_uma_unittest.cc",
+    "../renderer/subresource_redirect/login_robots_decider_test_util.cc",
+    "../renderer/subresource_redirect/login_robots_decider_test_util.h",
     "../renderer/subresource_redirect/robots_rules_parser_unittest.cc",
     "../renderer/subresource_redirect/subresource_redirect_util_unittest.cc",
     "../renderer/v8_unwinder_unittest.cc",
@@ -4905,10 +4907,16 @@ test("unit_tests") {
   if (is_chromeos_lacros) {
     assert(enable_native_notifications)
     sources += [
+      "../browser/lacros/account_manager_facade_lacros_unittest.cc",
       "../browser/lacros/lacros_chrome_service_delegate_impl_unittest.cc",
       "../browser/lacros/metrics_reporting_observer_unittest.cc",
       "../browser/notifications/notification_platform_bridge_lacros_unittest.cc",
       "../common/chrome_paths_lacros_unittest.cc",
+    ]
+
+    deps += [
+      "//components/account_manager_core",
+      "//components/account_manager_core:test_support",
     ]
   }
 

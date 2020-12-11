@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
@@ -30,11 +31,13 @@
 namespace reporting {
 namespace {
 
-using policy::MockCloudPolicyClient;
-using testing::_;
-using testing::Invoke;
-using testing::InvokeArgument;
-using testing::WithArgs;
+using ::policy::MockCloudPolicyClient;
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::InvokeArgument;
+using ::testing::MockFunction;
+using ::testing::StrictMock;
+using ::testing::WithArgs;
 
 MATCHER_P(EqualsProto,
           message,
@@ -120,21 +123,48 @@ class TestCallbackWaiterWithCounter : public TestCallbackWaiter {
 };
 
 // Helper function composes JSON represented as base::Value from Sequencing
-// information.
+// information in request.
 base::Value ValueFromSucceededSequencingInfo(
-    const SequencingInformation& sequencing_information) {
-  base::Value sequencing_info(base::Value::Type::DICTIONARY);
-  sequencing_info.SetIntKey("sequencingId",
-                            sequencing_information.sequencing_id());
-  sequencing_info.SetIntKey("generationId",
-                            sequencing_information.generation_id());
-  sequencing_info.SetIntKey("priority", sequencing_information.priority());
-  base::Value result(base::Value::Type::DICTIONARY);
-  result.SetPath("lastSucceedUploadedRecord", std::move(sequencing_info));
-  return result;
+    const base::Optional<base::Value> request) {
+  EXPECT_TRUE(request.has_value());
+  EXPECT_TRUE(request.value().is_dict());
+  base::Value response(base::Value::Type::DICTIONARY);
+
+  // Retrieve and process data
+  const base::Value* const encrypted_record_list =
+      request.value().FindListKey("encryptedRecord");
+  EXPECT_TRUE(encrypted_record_list != nullptr);
+  EXPECT_FALSE(encrypted_record_list->GetList().empty());
+
+  // Retrieve and process sequencing information
+  const base::Value* seq_info =
+      encrypted_record_list->GetList().rbegin()->FindDictKey(
+          "sequencingInformation");
+  EXPECT_TRUE(seq_info != nullptr);
+  response.SetPath("lastSucceedUploadedRecord", seq_info->Clone());
+
+  // If attach_encryption_settings it true, process that.
+  const auto attach_encryption_settings =
+      request.value().FindBoolKey("attachEncryptionSettings");
+  if (attach_encryption_settings.has_value() &&
+      attach_encryption_settings.value()) {
+    base::Value encryption_settings{base::Value::Type::DICTIONARY};
+    std::string public_key;
+    base::Base64Encode("PUBLIC KEY", &public_key);
+    encryption_settings.SetStringKey("publicKey", public_key);
+    encryption_settings.SetIntKey("publicKeyId", 12345);
+    std::string public_key_signature;
+    // TODO(b/170054326): Generate signature.
+    base::Base64Encode("PUBLIC KEY SIG", &public_key_signature);
+    encryption_settings.SetStringKey("publicKeySignature",
+                                     public_key_signature);
+    response.SetPath("encryptionSettings", std::move(encryption_settings));
+  }
+
+  return response;
 }
 
-class UploadClientTest : public ::testing::Test {
+class UploadClientTest : public ::testing::TestWithParam<bool> {
  public:
   UploadClientTest() = default;
 
@@ -165,6 +195,8 @@ class UploadClientTest : public ::testing::Test {
 #endif  // OS_CHROMEOS
   }
 
+  bool need_encryption_key() const { return GetParam(); }
+
   content::BrowserTaskEnvironment task_envrionment_;
 #ifdef OS_CHROMEOS
   std::unique_ptr<TestingProfile> profile_;
@@ -172,7 +204,9 @@ class UploadClientTest : public ::testing::Test {
 #endif  // OS_CHROMEOS
 };
 
-TEST_F(UploadClientTest, CreateUploadClientAndUploadRecords) {
+using TestEncryptionKeyAttached = MockFunction<void(SignedEncryptionInfo)>;
+
+TEST_P(UploadClientTest, CreateUploadClientAndUploadRecords) {
   const int kExpectedCallTimes = 10;
   const uint64_t kGenerationId = 1234;
 
@@ -205,16 +239,23 @@ TEST_F(UploadClientTest, CreateUploadClientAndUploadRecords) {
 
   TestCallbackWaiterWithCounter waiter(kExpectedCallTimes);
 
+  StrictMock<TestEncryptionKeyAttached> encryption_key_attached;
+  EXPECT_CALL(encryption_key_attached, Call(_))
+      .Times(need_encryption_key() ? 1 : 0);
+  auto encryption_key_attached_cb =
+      base::BindRepeating(&TestEncryptionKeyAttached::Call,
+                          base::Unretained(&encryption_key_attached));
+
   auto client = std::make_unique<MockCloudPolicyClient>();
   client->SetDMToken(
       policy::DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN").value());
 
   EXPECT_CALL(*client, UploadEncryptedReport(_, _, _))
       .WillRepeatedly(WithArgs<0, 2>(Invoke(
-          [&waiter](const ::reporting::EncryptedRecord& record,
-                    policy::CloudPolicyClient::ResponseCallback callback) {
-            std::move(callback).Run(ValueFromSucceededSequencingInfo(
-                record.sequencing_information()));
+          [&waiter](base::Value request,
+                    policy::CloudPolicyClient::ResponseCallback response_cb) {
+            std::move(response_cb)
+                .Run(ValueFromSucceededSequencingInfo(std::move(request)));
             base::ThreadPool::PostTask(
                 FROM_HERE, {base::TaskPriority::BEST_EFFORT},
                 base::BindOnce(&TestCallbackWaiterWithCounter::Signal,
@@ -229,17 +270,21 @@ TEST_F(UploadClientTest, CreateUploadClientAndUploadRecords) {
           records->back().sequencing_information());
 
   TestEvent<StatusOr<std::unique_ptr<UploadClient>>> e;
-  UploadClient::Create(client.get(), completion_cb, e.cb());
+  UploadClient::Create(client.get(), completion_cb, encryption_key_attached_cb,
+                       e.cb());
   StatusOr<std::unique_ptr<UploadClient>> upload_client_result = e.result();
   ASSERT_OK(upload_client_result) << upload_client_result.status();
 
   auto upload_client = std::move(upload_client_result.ValueOrDie());
-  auto enqueue_result = upload_client->EnqueueUpload(std::move(records));
+  auto enqueue_result =
+      upload_client->EnqueueUpload(need_encryption_key(), std::move(records));
   EXPECT_TRUE(enqueue_result.ok());
 
   waiter.Wait();
   completion_callback_waiter.Wait();
 }
+
+INSTANTIATE_TEST_SUITE_P(NeedOrNoNeedKey, UploadClientTest, testing::Bool());
 
 }  // namespace
 }  // namespace reporting

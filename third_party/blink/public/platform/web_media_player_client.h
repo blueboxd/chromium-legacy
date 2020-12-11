@@ -166,10 +166,26 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Request the player to pause playback.
   virtual void PausePlayback() = 0;
 
+  // Notify the client that the muted status of the media player has changed.
+  virtual void DidPlayerMutedStatusChange(bool muted) = 0;
+
   // Notify the client that the playback position has changed.
   virtual void DidPlayerMediaPositionStateChange(double playback_rate,
                                                  base::TimeDelta duration,
                                                  base::TimeDelta position) = 0;
+
+  // Notify the client that the audio sink cannot be changed.
+  virtual void DidDisableAudioOutputSinkChanges() = 0;
+
+  // Notify the client that the size of the media player has changed.
+  // TODO(crbug.com/1039252): Remove by merging this method into SizeChanged().
+  virtual void DidPlayerSizeChange(const gfx::Size& size) = 0;
+
+  // Notify the client that a buffer underflow happened for the media player.
+  virtual void DidBufferUnderflow() = 0;
+
+  // Notify that a playback seek event happened for the media player.
+  virtual void DidSeek() = 0;
 
   // Notify the client that one of the state used by Picture-in-Picture has
   // changed. The client will then have to poll the states from the associated

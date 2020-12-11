@@ -414,6 +414,8 @@ void ReportingClient::InitializingContext::CreateUploadClient() {
       std::move(client_config_->cloud_policy_client),
       base::BindRepeating(&StorageModule::ReportSuccess,
                           client_config_->storage),
+      base::BindRepeating(&StorageModule::UpdateEncryptionKey,
+                          client_config_->storage),
       base::BindOnce(&InitializingContext::OnUploadClientCreated,
                      base::Unretained(this)));
 }
@@ -571,7 +573,8 @@ ReportingClient::BuildUploader(Priority priority) {
   DCHECK(instance->upload_client_);
   return Uploader::Create(
       base::BindOnce(&UploadClient::EnqueueUpload,
-                     base::Unretained(instance->upload_client_.get())));
+                     base::Unretained(instance->upload_client_.get()),
+                     !instance->config_->storage->has_encryption_key()));
 }
 
 ReportingClient::TestEnvironment::TestEnvironment(

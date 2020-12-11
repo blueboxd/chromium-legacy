@@ -5125,10 +5125,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableMediaSessionIntegration)},
 
-    {"enable-bloom", flag_descriptions::kEnableBloomName,
-     flag_descriptions::kEnableBloomDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::assistant::features::kEnableBloom)},
-
     {"enable-quick-answers", flag_descriptions::kEnableQuickAnswersName,
      flag_descriptions::kEnableQuickAnswersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswers)},
@@ -6544,6 +6540,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-sharesheet", flag_descriptions::kSharesheetName,
      flag_descriptions::kSharesheetDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSharesheet)},
+
+    {"enable-sharesheet-content-previews",
+     flag_descriptions::kSharesheetContentPreviewsName,
+     flag_descriptions::kSharesheetContentPreviewsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kSharesheetContentPreviews)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"schemeful-same-site", flag_descriptions::kSchemefulSameSiteName,
@@ -6966,6 +6967,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLauncherSearchNormalizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableLauncherSearchNormalization)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-first-party-sets", flag_descriptions::kEnableFirstPartySetsName,
+     flag_descriptions::kEnableFirstPartySetsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kFirstPartySets)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

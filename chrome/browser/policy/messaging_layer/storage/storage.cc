@@ -150,7 +150,6 @@ void Storage::Create(
    public:
     StorageInitContext(
         const std::vector<std::pair<Priority, QueueOptions>>& queues_options,
-        scoped_refptr<EncryptionModule> encryption_module,
         scoped_refptr<Storage> storage,
         base::OnceCallback<void(StatusOr<scoped_refptr<Storage>>)> callback)
         : TaskRunnerContext<StatusOr<scoped_refptr<Storage>>>(
@@ -158,7 +157,6 @@ void Storage::Create(
               base::ThreadPool::CreateSequencedTaskRunner(
                   {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
           queues_options_(queues_options),
-          encryption_module_(encryption_module),
           storage_(std::move(storage)),
           count_(queues_options_.size()) {}
 
@@ -168,13 +166,21 @@ void Storage::Create(
 
     void OnStart() override {
       CheckOnValidSequence();
+
+      // TODO(b/170054326): Locate the latest signed_encryption_key file with
+      // matching key signature after deserialization. Call
+      // storage_->encryption_module_->UpdateAsymmetricKey(...) with the key and
+      // id.
+      // DCHECK(storage_->encryption_module_->has_encryption_key());
+
+      // Construct all queues.
       for (const auto& queue_options : queues_options_) {
         StorageQueue::Create(
             /*options=*/queue_options.second,
             base::BindRepeating(&QueueUploaderInterface::ProvideUploader,
                                 /*priority=*/queue_options.first,
                                 storage_->start_upload_cb_),
-            encryption_module_,
+            storage_->encryption_module_,
             base::BindOnce(&StorageInitContext::ScheduleAddQueue,
                            base::Unretained(this),
                            /*priority=*/queue_options.first));
@@ -214,7 +220,6 @@ void Storage::Create(
     }
 
     const std::vector<std::pair<Priority, QueueOptions>> queues_options_;
-    scoped_refptr<EncryptionModule> encryption_module_;
     scoped_refptr<Storage> storage_;
     int32_t count_;
     Status final_status_;
@@ -222,17 +227,20 @@ void Storage::Create(
 
   // Create Storage object.
   // Cannot use base::MakeRefCounted<Storage>, because constructor is private.
-  scoped_refptr<Storage> storage =
-      base::WrapRefCounted(new Storage(options, std::move(start_upload_cb)));
+  scoped_refptr<Storage> storage = base::WrapRefCounted(
+      new Storage(options, encryption_module, std::move(start_upload_cb)));
 
   // Asynchronously run initialization.
   Start<StorageInitContext>(ExpectedQueues(storage->options_),
-                            encryption_module, std::move(storage),
-                            std::move(completion_cb));
+                            std::move(storage), std::move(completion_cb));
 }
 
-Storage::Storage(const StorageOptions& options, StartUploadCb start_upload_cb)
-    : options_(options), start_upload_cb_(std::move(start_upload_cb)) {}
+Storage::Storage(const StorageOptions& options,
+                 scoped_refptr<EncryptionModule> encryption_module,
+                 StartUploadCb start_upload_cb)
+    : options_(options),
+      encryption_module_(encryption_module),
+      start_upload_cb_(std::move(start_upload_cb)) {}
 
 Storage::~Storage() = default;
 
@@ -262,6 +270,28 @@ Status Storage::Flush(Priority priority) {
   ASSIGN_OR_RETURN(scoped_refptr<StorageQueue> queue, GetQueue(priority));
   queue->Flush();
   return Status::StatusOK();
+}
+
+void Storage::UpdateEncryptionKey(SignedEncryptionInfo signed_encryption_key) {
+  // TODO(b/170054326): Verify received key signature. Bail out if failed.
+
+  // TODO(b/170054326): Serialize whole signed_encryption_key to a new file,
+  // discard the old one.
+
+  // Assign the received key to encryption module.
+  encryption_module_->UpdateAsymmetricKey(
+      signed_encryption_key.public_asymmetric_key(),
+      signed_encryption_key.public_key_id(), base::BindOnce([](Status status) {
+        if (!status.ok()) {
+          LOG(WARNING) << "Encryption key update failed, status=" << status;
+          return;
+        }
+        // Encryption key updated successfully.
+      }));
+}
+
+bool Storage::has_encryption_key() const {
+  return !encryption_module_->has_encryption_key();
 }
 
 StatusOr<scoped_refptr<StorageQueue>> Storage::GetQueue(Priority priority) {

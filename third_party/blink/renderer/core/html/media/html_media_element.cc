@@ -635,6 +635,13 @@ bool HTMLMediaElement::IsMouseFocusable() const {
   return !IsFullscreen() && SupportsFocus();
 }
 
+media::mojom::blink::MediaPlayerObserver*
+HTMLMediaElement::GetMediaPlayerObserverRemote() {
+  if (!media_player_observer_remote_.is_bound())
+    return nullptr;
+  return media_player_observer_remote_.get();
+}
+
 void HTMLMediaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
@@ -1460,6 +1467,11 @@ WebMediaPlayer::LoadType HTMLMediaElement::GetLoadType() const {
 bool HTMLMediaElement::PausedWhenVisible() const {
   return paused_ && GetWebMediaPlayer() &&
          !GetWebMediaPlayer()->PausedWhenHidden();
+}
+
+void HTMLMediaElement::SetMediaPlayerObserverForTesting(
+    mojo::PendingRemote<media::mojom::blink::MediaPlayerObserver> observer) {
+  SetMediaPlayerObserver(std::move(observer));
 }
 
 bool HTMLMediaElement::TextTracksAreReady() const {
@@ -4372,6 +4384,14 @@ void HTMLMediaElement::PausePlayback() {
   RequestPause(false);
 }
 
+void HTMLMediaElement::DidPlayerMutedStatusChange(bool muted) {
+  // The remote to the MediaPlayerObserver could be not set yet.
+  if (!media_player_observer_remote_.is_bound())
+    return;
+
+  media_player_observer_remote_->OnMutedStatusChanged(muted);
+}
+
 void HTMLMediaElement::DidPlayerMediaPositionStateChange(
     double playback_rate,
     base::TimeDelta duration,
@@ -4383,6 +4403,44 @@ void HTMLMediaElement::DidPlayerMediaPositionStateChange(
   media_player_observer_remote_->OnMediaPositionStateChanged(
       media_session::mojom::blink::MediaPosition::New(
           playback_rate, duration, position, base::TimeTicks::Now()));
+}
+
+void HTMLMediaElement::DidDisableAudioOutputSinkChanges() {
+  // The remote to the MediaPlayerObserver could be not set yet.
+  if (!media_player_observer_remote_.is_bound())
+    return;
+
+  media_player_observer_remote_->OnAudioOutputSinkChangingDisabled();
+}
+
+void HTMLMediaElement::DidPlayerSizeChange(const gfx::Size& size) {
+  // The remote to the MediaPlayerObserver could be not set yet.
+  if (!media_player_observer_remote_.is_bound())
+    return;
+
+  media_player_observer_remote_->OnMediaSizeChanged(size);
+}
+
+void HTMLMediaElement::DidBufferUnderflow() {
+  // The remote to the MediaPlayerObserver could be not set yet.
+  if (!media_player_observer_remote_.is_bound())
+    return;
+
+  media_player_observer_remote_->OnBufferUnderflow();
+}
+
+void HTMLMediaElement::DidSeek() {
+  // The remote to the MediaPlayerObserver could be not set yet.
+  if (!media_player_observer_remote_.is_bound())
+    return;
+
+  // Send the seek updates to the browser process only once per second.
+  if (last_seek_update_time_.is_null() ||
+      (base::TimeTicks::Now() - last_seek_update_time_ >=
+       base::TimeDelta::FromSeconds(1))) {
+    last_seek_update_time_ = base::TimeTicks::Now();
+    media_player_observer_remote_->OnSeek();
+  }
 }
 
 media::mojom::blink::MediaPlayerHost&

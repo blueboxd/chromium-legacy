@@ -41,6 +41,11 @@ void StorageModule::ReportSuccess(
       }));
 }
 
+void StorageModule::UpdateEncryptionKey(
+    SignedEncryptionInfo signed_encryption_key) {
+  storage_->UpdateEncryptionKey(std::move(signed_encryption_key));
+}
+
 // static
 void StorageModule::Create(
     const StorageOptions& options,
@@ -65,6 +70,10 @@ void StorageModule::Create(
             std::move(callback).Run(std::move(instance));
           },
           std::move(instance), std::move(callback)));
+}
+
+bool StorageModule::has_encryption_key() const {
+  return storage_->has_encryption_key();
 }
 
 }  // namespace reporting

@@ -2101,10 +2101,10 @@ void RenderFrameHostImpl::ValidateStateForBug1146573() {
   if (must_be_replaced_ && render_frame_created_) {
     SCOPED_CRASH_KEY_BOOL(ValidateStateForBug1146573, IsMainFrame,
                           is_main_frame());
-    SCOPED_CRASH_KEY_BOOL(ValidateStateForBug1146573, ProcessID,
-                          GetProcess()->GetID());
-    SCOPED_CRASH_KEY_BOOL(ValidateStateForBug1146573, RoutingID,
-                          GetRoutingID());
+    SCOPED_CRASH_KEY_NUMBER(ValidateStateForBug1146573, ProcessID,
+                            GetProcess()->GetID());
+    SCOPED_CRASH_KEY_NUMBER(alidateStateForBug1146573, RoutingID,
+                            GetRoutingID());
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
   }
@@ -3281,8 +3281,8 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
     SCOPED_CRASH_KEY_BOOL(Bug1146573, Live, IsRenderFrameLive());
     SCOPED_CRASH_KEY_BOOL(Bug1146573, MustBeReplaced, must_be_replaced());
     SCOPED_CRASH_KEY_BOOL(Bug1146573, IsMainFrame, is_main_frame());
-    SCOPED_CRASH_KEY_BOOL(Bug1146573, ProcessID, GetProcess()->GetID());
-    SCOPED_CRASH_KEY_BOOL(Bug1146573, RoutingID, GetRoutingID());
+    SCOPED_CRASH_KEY_NUMBER(Bug1146573, ProcessID, GetProcess()->GetID());
+    SCOPED_CRASH_KEY_NUMBER(Bug1146573, RoutingID, GetRoutingID());
     CHECK(ShouldCreateNewHostForSameSiteSubframe());
 
     // The unload handlers already ran for this document during the
@@ -4499,8 +4499,8 @@ void RenderFrameHostImpl::UpdateBrowserControlsState(
     bool animate) {
   DCHECK(frame_tree_node_->IsMainFrame());
 
-  // TODO(https://crbug.com/1154852): Don't update browser control state for a
-  // frame that hasn't been created yet.
+  // TODO(https://crbug.com/1154852): Asking for the LocalMainFrame interface
+  // before the RenderFrame is created is racy.
   if (!IsRenderFrameCreated())
     return;
 

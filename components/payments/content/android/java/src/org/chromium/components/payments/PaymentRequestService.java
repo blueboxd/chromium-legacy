@@ -771,6 +771,11 @@ public class PaymentRequestService
 
         mBrowserPaymentRequest.notifyPaymentUiOfPendingApps(mPendingApps);
         mPendingApps.clear();
+        // Record the number suggested payment methods and whether at least one of them was
+        // complete.
+        mJourneyLogger.setNumberOfSuggestionsShown(Section.PAYMENT_METHOD,
+                mBrowserPaymentRequest.getPaymentApps().size(),
+                mBrowserPaymentRequest.hasAnyCompleteApp());
         if (mIsShowCalled) {
             PaymentNotShownError notShownError = onShowCalledAndAppsQueried();
             if (notShownError != null) {
@@ -810,14 +815,23 @@ public class PaymentRequestService
         }
 
         if (mIsShowWaitingForUpdatedDetails) return null;
-        String error = mBrowserPaymentRequest.onShowCalledAndAppsQueriedAndDetailsFinalized(
-                mIsUserGestureShow);
+        String error = onShowCalledAndAppsQueriedAndDetailsFinalized();
         if (error != null) {
             return new PaymentNotShownError(
                     NotShownReason.OTHER, error, PaymentErrorReason.NOT_SUPPORTED);
         }
 
         return null;
+    }
+
+    // Returns the error if any.
+    @Nullable
+    private String onShowCalledAndAppsQueriedAndDetailsFinalized() {
+        assert mSpec.getRawTotal() != null;
+        mJourneyLogger.recordTransactionAmount(mSpec.getRawTotal().amount.currency,
+                mSpec.getRawTotal().amount.value, false /*completed*/);
+        return mBrowserPaymentRequest.onShowCalledAndAppsQueriedAndDetailsFinalized(
+                mIsUserGestureShow);
     }
 
     private void onShowFailed(String error) {
@@ -1187,8 +1201,7 @@ public class PaymentRequestService
         if (error != null) return error;
 
         if (!mIsFinishedQueryingPaymentApps) return null;
-        return mBrowserPaymentRequest.onShowCalledAndAppsQueriedAndDetailsFinalized(
-                mIsUserGestureShow);
+        return onShowCalledAndAppsQueriedAndDetailsFinalized();
     }
 
     /**

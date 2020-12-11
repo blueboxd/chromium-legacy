@@ -117,12 +117,6 @@ void RendererWebMediaPlayerDelegate::DidPlay(int player_id) {
   ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::DidPlayerMutedStatusChange(int delegate_id,
-                                                                bool muted) {
-  Send(new MediaPlayerDelegateHostMsg_OnMutedStatusChanged(routing_id(),
-                                                           delegate_id, muted));
-}
-
 void RendererWebMediaPlayerDelegate::DidPause(int player_id,
                                               bool reached_end_of_stream) {
   DVLOG(2) << __func__ << "(" << player_id << ", " << reached_end_of_stream
@@ -201,46 +195,11 @@ void RendererWebMediaPlayerDelegate::SetIsEffectivelyFullscreen(
       routing_id(), player_id, fullscreen_video_status));
 }
 
-void RendererWebMediaPlayerDelegate::DidPlayerSizeChange(
-    int delegate_id,
-    const gfx::Size& size) {
-  Send(new MediaPlayerDelegateHostMsg_OnMediaSizeChanged(routing_id(),
-                                                         delegate_id, size));
-}
-
-void RendererWebMediaPlayerDelegate::DidPictureInPictureAvailabilityChange(
-    int delegate_id,
-    bool available) {
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged(
-      routing_id(), delegate_id, available));
-}
-
 void RendererWebMediaPlayerDelegate::DidAudioOutputSinkChange(
     int delegate_id,
     const std::string& hashed_device_id) {
   Send(new MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged(
       routing_id(), delegate_id, hashed_device_id));
-}
-
-void RendererWebMediaPlayerDelegate::DidDisableAudioOutputSinkChanges(
-    int delegate_id) {
-  Send(new MediaPlayerDelegateHostMsg_OnAudioOutputSinkChangingDisabled(
-      routing_id(), delegate_id));
-}
-
-void RendererWebMediaPlayerDelegate::DidBufferUnderflow(int player_id) {
-  Send(new MediaPlayerDelegateHostMsg_OnBufferUnderflow(routing_id(),
-                                                        player_id));
-}
-
-void RendererWebMediaPlayerDelegate::DidSeek(int player_id) {
-  // Send the seek updates to delegate only once per second.
-  if (last_seek_update_time_.is_null() ||
-      (base::TimeTicks::Now() - last_seek_update_time_ >=
-       base::TimeDelta::FromSeconds(1))) {
-    last_seek_update_time_ = base::TimeTicks::Now();
-    Send(new MediaPlayerDelegateHostMsg_OnSeek(routing_id(), player_id));
-  }
 }
 
 void RendererWebMediaPlayerDelegate::WasHidden() {

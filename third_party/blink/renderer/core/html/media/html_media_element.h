@@ -348,6 +348,10 @@ class CORE_EXPORT HTMLMediaElement
 
   void SetCcLayerForTesting(cc::Layer* layer) { SetCcLayer(layer); }
 
+  // Required by tests set mock receivers to check that messages are delivered.
+  void SetMediaPlayerObserverForTesting(
+      mojo::PendingRemote<media::mojom::blink::MediaPlayerObserver> observer);
+
   bool IsShowPosterFlagSet() const { return show_poster_flag_; }
 
  protected:
@@ -357,6 +361,10 @@ class CORE_EXPORT HTMLMediaElement
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
   void Dispose();
+
+  // Returns a pointer to the media::mojom::blink::MediaPlayerObserver remote if
+  // already bound, or nullptr otherwise. Used from subclasses as well.
+  media::mojom::blink::MediaPlayerObserver* GetMediaPlayerObserverRemote();
 
   void ParseAttribute(const AttributeModificationParams&) override;
   void FinishParsingChildren() final;
@@ -385,8 +393,9 @@ class CORE_EXPORT HTMLMediaElement
  private:
   // Friend class for testing.
   friend class ContextMenuControllerTest;
-  friend class VideoWakeLockTest;
+  friend class HTMLMediaElementTest;
   friend class PictureInPictureControllerTest;
+  friend class VideoWakeLockTest;
 
   bool HasPendingActivityInternal() const;
 
@@ -461,9 +470,14 @@ class CORE_EXPORT HTMLMediaElement
   bool IsInAutoPIP() const override { return false; }
   void ResumePlayback() final;
   void PausePlayback() final;
+  void DidPlayerMutedStatusChange(bool muted) override;
   void DidPlayerMediaPositionStateChange(double playback_rate,
                                          base::TimeDelta duration,
                                          base::TimeDelta position) override;
+  void DidDisableAudioOutputSinkChanges() override;
+  void DidPlayerSizeChange(const gfx::Size& size) override;
+  void DidBufferUnderflow() override;
+  void DidSeek() override;
 
   // Returns a reference to the mojo remote for the MediaPlayerHost interface,
   // requesting it first from the BrowserInterfaceBroker if needed. It is an
@@ -709,6 +723,9 @@ class CORE_EXPORT HTMLMediaElement
   // Whether or not |web_media_player_| should apply pitch adjustments at
   // playback raters other than 1.0.
   bool preserves_pitch_ = true;
+
+  // Keeps track of when the player seek event was sent to the browser process.
+  base::TimeTicks last_seek_update_time_;
 
   Member<AudioTrackList> audio_tracks_;
   Member<VideoTrackList> video_tracks_;

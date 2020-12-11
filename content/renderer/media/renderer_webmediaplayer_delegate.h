@@ -65,15 +65,8 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void SetIsEffectivelyFullscreen(
       int player_id,
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
-  void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
-  void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
-  void DidPictureInPictureAvailabilityChange(int delegate_id,
-                                             bool available) override;
   void DidAudioOutputSinkChange(int delegate_id,
                                 const std::string& hashed_device_id) override;
-  void DidDisableAudioOutputSinkChanges(int delegate_id) override;
-  void DidBufferUnderflow(int player_id) override;
-  void DidSeek(int player_id) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -157,9 +150,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Keeps track of when the background video playback started for metrics.
   base::TimeTicks background_video_start_time_;
 #endif  // OS_ANDROID
-
-  // Keeps track of when the player seek event was sent to the delegate.
-  base::TimeTicks last_seek_update_time_;
 
   // Players with a video track.
   base::flat_set<int> players_with_video_;

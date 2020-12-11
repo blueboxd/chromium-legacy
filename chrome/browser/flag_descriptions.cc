@@ -176,6 +176,11 @@ const char kDnsHttpssvcDescription[] =
     "to HTTPS. If the records indicate support for QUIC, Chrome may attempt "
     "QUIC on the first connection.";
 
+const char kEnableFirstPartySetsName[] = "Enable First-Party Sets";
+const char kEnableFirstPartySetsDescription[] =
+    "When enabled, Chrome will apply First-Party Sets to features such as the "
+    "SameParty cookie attribute.";
+
 const char kDnsOverHttpsName[] = "Secure DNS lookups";
 const char kDnsOverHttpsDescription[] =
     "Enables DNS over HTTPS. When this feature is enabled, your browser may "
@@ -4552,6 +4557,10 @@ const char kSeparatePointingStickSettingsName[] =
 const char kSeparatePointingStickSettingsDescription[] =
     "Enables a separate group of settings (speed, button swap, and "
     "acceleration) for pointing sticks (such as TrackPoints).";
+
+const char kSharesheetContentPreviewsName[] = "Sharesheet Content Previews";
+const char kSharesheetContentPreviewsDescription[] =
+    "Chrome OS content previews for sharesheet.";
 
 const char kSharesheetName[] = "Sharesheet";
 const char kSharesheetDescription[] = "Chrome OS sharesheet.";

@@ -8,7 +8,6 @@ load("//lib/try.star", "try_")
 load("//project.star", "settings")
 
 try_.defaults.set(
-    add_to_list_view = True,
     bucket = "try",
     build_numbers = True,
     caches = [
@@ -984,6 +983,14 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "linux-mbi-mode-per-render-process-host-rel",
+)
+
+try_.chromium_linux_builder(
+    name = "linux-mbi-mode-per-site-instance-rel",
+)
+
+try_.chromium_linux_builder(
     name = "linux-lacros-fyi-rel",
 )
 
@@ -1059,8 +1066,21 @@ try_.chromium_linux_builder(
     name = "linux-warmed",
     builderless = False,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 5),
     use_clang_coverage = True,
+)
+
+# crbug.com/1149606: Experimental builder to test pre-warming
+try_.chromium_linux_builder(
+    name = "linux-warmed-orchestrator",
+    executable = "recipe:chromium/mini_orchestrator",
+    properties = {
+        "builder_to_trigger": {
+            "builder_group": "tryserver.chromium.linux",
+            "buildername": "linux-warmed",
+        },
+    },
+    service_account = "chromium-mini-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+    tryjob = try_.job(experiment_percentage = 5),
 )
 
 try_.chromium_linux_builder(
@@ -1169,6 +1189,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "linux_chromium_tsan_rel_ng",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_master,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),

@@ -81,6 +81,7 @@ import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
@@ -1082,6 +1083,29 @@ public class BookmarkTest {
     }
 
     @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
+    public void testReadingListDeletion() throws Exception {
+        addReadingListBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getReadingListItem(TEST_URL_A) != null);
+
+        // Open the "Reading list" folder.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getRootFolderId()));
+        onView(withText("Reading list")).perform(click());
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        // Delete the reading list page.
+        View readingListItem = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        View more = readingListItem.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
+        onView(withText("Delete")).check(matches(isDisplayed())).perform(click());
+        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getReadingListItem(TEST_URL_A) == null);
+    }
+
+    @Test
     @MediumTest
     public void testMoveUpMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
@@ -1649,6 +1673,38 @@ public class BookmarkTest {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.bookmark_this_page_id);
         waitForEditActivity().finish();
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.READ_LATER,
+            ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:three_button_action_bar/add_to_option"})
+    public void
+    testAddReadingListItemFromAddToOption() throws Exception {
+        mActivityTestRule.loadUrl(mTestPage);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting());
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.add_to_reading_list_menu_id);
+        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getReadingListItem(mTestPage) != null);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Check reading list item states.
+            BookmarkItem readingListItem = mBookmarkModel.getReadingListItem(mTestPage);
+            Assert.assertEquals(mTestPage, readingListItem.getUrl());
+            Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE, readingListItem.getTitle());
+            Assert.assertFalse(readingListItem.isRead());
+
+            // Reading list snackbar has shown.
+            SnackbarManager snackbarManager = mActivityTestRule.getActivity().getSnackbarManager();
+            Snackbar currentSnackbar = snackbarManager.getCurrentSnackbarForTesting();
+            Assert.assertEquals("Add to reading list snackbar not shown.",
+                    Snackbar.UMA_READING_LIST_BOOKMARK_ADDED,
+                    currentSnackbar.getIdentifierForTesting());
+        });
     }
 
     @Test

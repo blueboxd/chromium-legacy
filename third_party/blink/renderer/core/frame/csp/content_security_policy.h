@@ -375,6 +375,7 @@ class CORE_EXPORT ContentSecurityPolicy final
                                   const String& value,
                                   const char);
   void ReportInvalidPluginTypes(const String&);
+  void ReportInvalidRequireTrustedTypesFor(const String&);
   void ReportInvalidSandboxFlags(const String&);
   void ReportInvalidSourceExpression(const String& directive_name,
                                      const String& source);
@@ -550,15 +551,17 @@ class CORE_EXPORT ContentSecurityPolicy final
                        const IntegrityMetadataSet& = IntegrityMetadataSet(),
                        ParserDisposition = kParserInserted) const;
 
-  static void FillInCSPHashValues(const String& source,
-                                  uint8_t hash_algorithms_used,
-                                  Vector<CSPHashValue>* csp_hash_values);
+  static void FillInCSPHashValues(
+      const String& source,
+      uint8_t hash_algorithms_used,
+      Vector<network::mojom::blink::CSPHashSourcePtr>& csp_hash_values);
 
   // checks a vector of csp hashes against policy, probably a good idea
   // to use in tandem with FillInCSPHashValues.
-  static bool CheckHashAgainstPolicy(Vector<CSPHashValue>&,
-                                     const Member<CSPDirectiveList>&,
-                                     InlineType);
+  static bool CheckHashAgainstPolicy(
+      Vector<network::mojom::blink::CSPHashSourcePtr>&,
+      const Member<CSPDirectiveList>&,
+      InlineType);
 
   bool ShouldBypassContentSecurityPolicy(
       const KURL&,

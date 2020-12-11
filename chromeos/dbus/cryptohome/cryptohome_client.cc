@@ -299,53 +299,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmIsBeingOwned(DBusMethodCallback<bool> callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsBeingOwned);
-    CallBoolMethod(&method_call, std::move(callback));
-  }
-
-  // CryptohomeClient override.
-  // TODO(hashimoto): Remove this method. crbug.com/141011
-  bool CallTpmIsBeingOwnedAndBlock(bool* owning) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsBeingOwned);
-    return CallBoolMethodAndBlock(&method_call, owning);
-  }
-
-  // CryptohomeClient override.
-  void TpmCanAttemptOwnership(VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmCanAttemptOwnership);
-    CallVoidMethod(&method_call, std::move(callback));
-  }
-
-  // CryptohomeClient overrides.
-  void TpmClearStoredPassword(VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmClearStoredPassword);
-    CallVoidMethod(&method_call, std::move(callback));
-  }
-
-  // CryptohomeClient override.
-  // TODO(hashimoto): Remove this method. crbug.com/141010
-  bool CallTpmClearStoredPasswordAndBlock() override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmClearStoredPassword);
-
-    base::Time start_time = base::Time::Now();
-
-    std::unique_ptr<dbus::Response> response(
-        blocking_method_caller_->CallMethodAndBlock(&method_call));
-
-    UmaHistogramMediumTimes(
-        kCryptohomeClientUmaPrefix + method_call.GetMember(),
-        base::Time::Now() - start_time);
-
-    return response.get() != NULL;
-  }
-
-  // CryptohomeClient override.
   void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomePkcs11IsTpmTokenReady);
@@ -721,6 +674,41 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CryptohomeClientImpl::OnInt64DBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetCurrentSpaceForProjectId(
+      const int project_id,
+      DBusMethodCallback<int64_t> callback) override {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeGetCurrentSpaceForProjectId);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(project_id);
+
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnInt64DBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void SetProjectId(const int project_id,
+                    const cryptohome::SetProjectIdAllowedPathType parent_path,
+                    const std::string& child_path,
+                    const cryptohome::AccountIdentifier& account_id,
+                    DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeSetProjectId);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(project_id);
+    writer.AppendInt32(parent_path);
+    writer.AppendString(child_path);
+    writer.AppendProtoAsArrayOfBytes(account_id);
+
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 

@@ -231,26 +231,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
   // TODO(hashimoto): Remove this method. crbug.com/141012
   virtual bool CallTpmIsOwnedAndBlock(bool* owned) = 0;
 
-  // Calls TpmIsBeingOwned method.
-  virtual void TpmIsBeingOwned(DBusMethodCallback<bool> callback) = 0;
-
-  // Calls TpmIsBeingOwned method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  // TODO(hashimoto): Remove this method. crbug.com/141011
-  virtual bool CallTpmIsBeingOwnedAndBlock(bool* owning) = 0;
-
-  // Calls TpmCanAttemptOwnership method.
-  // This method tells the service that it is OK to attempt ownership.
-  virtual void TpmCanAttemptOwnership(VoidDBusMethodCallback callback) = 0;
-
-  // Calls TpmClearStoredPasswordMethod.
-  virtual void TpmClearStoredPassword(VoidDBusMethodCallback callback) = 0;
-
-  // Calls TpmClearStoredPassword method and returns true when the call
-  // succeeds.  This method blocks until the call returns.
-  // TODO(hashimoto): Remove this method. crbug.com/141010
-  virtual bool CallTpmClearStoredPasswordAndBlock() = 0;
-
   // Calls Pkcs11IsTpmTokenReady method.
   virtual void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) = 0;
 
@@ -465,6 +445,22 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
   // gid (a shifted gid).
   virtual void GetCurrentSpaceForGid(const gid_t android_gid,
                                      DBusMethodCallback<int64_t> callback) = 0;
+
+  // Calls GetCurrentSpaceForProjectId to get the current disk space for a
+  // project ID.
+  virtual void GetCurrentSpaceForProjectId(
+      const int project_id,
+      DBusMethodCallback<int64_t> callback) = 0;
+
+  // Calls SetProjectId to set the project ID to the file/directory pointed by
+  // path. |parent_path|, |child_path| and |account_id| are used for
+  // constructing the target path.
+  virtual void SetProjectId(
+      const int project_id,
+      const cryptohome::SetProjectIdAllowedPathType parent_path,
+      const std::string& child_path,
+      const cryptohome::AccountIdentifier& account_id,
+      DBusMethodCallback<bool> callback) = 0;
 
   // Calls CheckHealth to get current health state.
   virtual void CheckHealth(

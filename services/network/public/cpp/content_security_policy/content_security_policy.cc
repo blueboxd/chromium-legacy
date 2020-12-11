@@ -6,8 +6,10 @@
 
 #include <sstream>
 #include <string>
+#include "base/base64url.h"
 #include "base/containers/flat_set.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -563,7 +565,18 @@ bool ParseHash(base::StringPiece expression, mojom::CSPHashSource* hash) {
         return false;
 
       hash->algorithm = item.type;
-      hash->value = subexpression.as_string();
+
+      // We lazily accept both base64url and base64-encoded data.
+      std::string normalized_value;
+      base::ReplaceChars(subexpression, "+", "-", &normalized_value);
+      base::ReplaceChars(normalized_value, "/", "_", &normalized_value);
+
+      std::string out;
+      if (!base::Base64UrlDecode(normalized_value,
+                                 base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                 &out))
+        return false;
+      hash->value = std::vector<uint8_t>(out.begin(), out.end());
       return true;
     }
   }
@@ -732,17 +745,34 @@ std::vector<std::string> ParsePluginTypes(
 
 // Parse the 'required-trusted-types-for' directive.
 // https://w3c.github.io/webappsec-trusted-types/dist/spec/#require-trusted-types-for-csp-directive
-//
-// TODO(https://crbug.com/1149293): Add a warning when parsing invalid values.
 network::mojom::CSPRequireTrustedTypesFor ParseRequireTrustedTypesFor(
-    base::StringPiece value) {
+    base::StringPiece value,
+    std::vector<std::string>& parsing_errors) {
+  network::mojom::CSPRequireTrustedTypesFor out =
+      network::mojom::CSPRequireTrustedTypesFor::None;
   for (const auto expression : base::SplitStringPiece(
            value, base::kWhitespaceASCII, base::TRIM_WHITESPACE,
            base::SPLIT_WANT_NONEMPTY)) {
-    if (expression == "'script'")
-      return network::mojom::CSPRequireTrustedTypesFor::Script;
+    if (expression == "'script'") {
+      out = network::mojom::CSPRequireTrustedTypesFor::Script;
+    } else {
+      const char* hint = nullptr;
+      if (expression == "script" || expression == "scripts" ||
+          expression == "'scripts'") {
+        hint = " Did you mean 'script'?";
+      }
+
+      parsing_errors.emplace_back(base::StringPrintf(
+          "Invalid expression in 'require-trusted-types-for' "
+          "Content Security Policy directive: %s.%s\n",
+          expression.as_string().c_str(), hint));
+    }
   }
-  return network::mojom::CSPRequireTrustedTypesFor::None;
+  if (out == network::mojom::CSPRequireTrustedTypesFor::None)
+    parsing_errors.emplace_back(base::StringPrintf(
+        "'require-trusted-types-for' Content Security Policy "
+        "directive is empty; The directive has no effect.\n"));
+  return out;
 }
 
 // This implements tt-policy-name from
@@ -968,7 +998,7 @@ void AddContentSecurityPolicyFromHeader(base::StringPiece header,
 
       case CSPDirectiveName::RequireTrustedTypesFor:
         out->require_trusted_types_for =
-            ParseRequireTrustedTypesFor(directive.second);
+            ParseRequireTrustedTypesFor(directive.second, out->parsing_errors);
         break;
 
       case CSPDirectiveName::TrustedTypes:

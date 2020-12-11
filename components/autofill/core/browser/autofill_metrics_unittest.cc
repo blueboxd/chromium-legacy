@@ -66,6 +66,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
+#include "url/url_canon.h"
 
 #if !defined(OS_IOS)
 #include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
@@ -380,7 +381,7 @@ class AutofillMetricsTest : public testing::Test {
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestPersonalDataManager> personal_data_;
   std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
-  std::unique_ptr<AutofillExternalDelegate> external_delegate_;
+  AutofillExternalDelegate* external_delegate_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
@@ -430,9 +431,10 @@ void AutofillMetricsTest::SetUp() {
   autofill_manager_ = std::make_unique<TestAutofillManager>(
       autofill_driver_.get(), &autofill_client_, personal_data_.get(),
       autocomplete_history_manager_.get());
-  external_delegate_ = std::make_unique<AutofillExternalDelegate>(
+  auto external_delegate = std::make_unique<AutofillExternalDelegate>(
       autofill_manager_.get(), autofill_driver_.get());
-  autofill_manager_->SetExternalDelegate(external_delegate_.get());
+  external_delegate_ = external_delegate.get();
+  autofill_manager_->SetExternalDelegateForTest(std::move(external_delegate));
 
 #if !defined(OS_IOS)
   autofill_manager_->credit_card_access_manager()
@@ -3962,8 +3964,8 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   FormData form;
   form.unique_renderer_id = MakeFormRendererId();
   form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
   FormFieldData field;
@@ -4035,8 +4037,8 @@ TEST_F(AutofillMetricsTest, CompanyNameSuggestions) {
   FormData form;
   form.unique_renderer_id = MakeFormRendererId();
   form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
   FormFieldData field;
@@ -4076,8 +4078,8 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   FormData form;
   form.unique_renderer_id = MakeFormRendererId();
   form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
   FormFieldData field;
@@ -4294,8 +4296,8 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   FormData form;
   form.unique_renderer_id = MakeFormRendererId();
   form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
   FormFieldData field;
@@ -4518,6 +4520,15 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
     form.unique_renderer_id = MakeFormRendererId();
     form.url = GURL("http://example.com/form.html");
     form.action = GURL("http://example.com/submit.html");
+    // In order to test that the QueriedCreditCardFormIsSecure is logged as
+    // false, we need to set the main frame origin, otherwise this fill is
+    // skipped due to the form being detected as mixed content.
+    GURL client_form_origin = autofill_client_.form_origin();
+    GURL::Replacements replacements;
+    replacements.SetScheme(url::kHttpScheme,
+                           url::Component(0, strlen(url::kHttpScheme)));
+    autofill_client_.set_form_origin(
+        client_form_origin.ReplaceComponents(replacements));
     form.main_frame_origin =
         url::Origin::Create(autofill_client_.form_origin());
     autofill_manager_->AddSeenForm(form, field_types, field_types);
@@ -4530,6 +4541,8 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
         /*autoselect_first_suggestion=*/false);
     histogram_tester.ExpectUniqueSample(
         "Autofill.QueriedCreditCardFormIsSecure", false, 1);
+    // Reset the main frame origin to secure for other tests
+    autofill_client_.set_form_origin(client_form_origin);
   }
 
   {
@@ -4561,8 +4574,8 @@ TEST_F(AutofillMetricsTest, PolledProfileSuggestions_DebounceLogs) {
   FormData form;
   form.unique_renderer_id = MakeFormRendererId();
   form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
   FormFieldData field;
@@ -6397,8 +6410,8 @@ TEST_F(AutofillMetricsTest, LogServerOfferFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
   FormFieldData field;
@@ -9400,7 +9413,9 @@ TEST_F(AutofillMetricsTest,
   form.unique_renderer_id = MakeFormRendererId();
   form.name = ASCIIToUTF16("TestForm");
   form.url = GURL("https://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  // Form action needs to be secure on secure page, otherwise this triggers
+  // mixed form warnings and no suggestions are offered.
+  form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
 

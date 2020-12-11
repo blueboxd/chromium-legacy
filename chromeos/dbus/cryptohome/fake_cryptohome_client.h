@@ -75,11 +75,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   bool CallTpmIsEnabledAndBlock(bool* enabled) override;
   void TpmIsOwned(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsOwnedAndBlock(bool* owned) override;
-  void TpmIsBeingOwned(DBusMethodCallback<bool> callback) override;
-  bool CallTpmIsBeingOwnedAndBlock(bool* owning) override;
-  void TpmCanAttemptOwnership(VoidDBusMethodCallback callback) override;
-  void TpmClearStoredPassword(VoidDBusMethodCallback callback) override;
-  bool CallTpmClearStoredPasswordAndBlock() override;
   void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) override;
   void Pkcs11GetTpmTokenInfo(
       DBusMethodCallback<TpmTokenInfo> callback) override;
@@ -161,6 +156,14 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
                              DBusMethodCallback<int64_t> callback) override;
   void GetCurrentSpaceForGid(gid_t android_gid,
                              DBusMethodCallback<int64_t> callback) override;
+  void GetCurrentSpaceForProjectId(
+      int project_id,
+      DBusMethodCallback<int64_t> callback) override;
+  void SetProjectId(const int project_id,
+                    const cryptohome::SetProjectIdAllowedPathType parent_path,
+                    const std::string& child_path,
+                    const cryptohome::AccountIdentifier& account_id,
+                    DBusMethodCallback<bool> callback) override;
   void CheckHealth(const cryptohome::CheckHealthRequest& request,
                    DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void StartFingerprintAuthSession(

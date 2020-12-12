@@ -372,6 +372,12 @@ const base::Feature kBlockingFocusWithoutUserActivation{
 const base::Feature kAudioWorkletRealtimeThread{
     "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// A server-side switch for the REALTIME_AUDIO thread priority of
+// RealtimeAudioWorkletThread object. When disabled, it will use the NORMAL
+// priority thread.
+const base::Feature kAudioWorkletThreadRealtimePriority{
+    "AudioWorkletThreadRealtimePriority", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // A feature to reduce the set of resources fetched by No-State Prefetch.
 const base::Feature kLightweightNoStatePrefetch {
   "LightweightNoStatePrefetch",
@@ -855,7 +861,7 @@ const base::Feature kCloneSessionStorageForNoOpener{
 // When enabled, WebRTC's worker thread will run on a thread context distinct
 // from the WebRTC signaling and network threads.
 const base::Feature kWebRtcDistinctWorkerThread{
-    "WebRtcDistinctWorkerThread", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebRtcDistinctWorkerThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

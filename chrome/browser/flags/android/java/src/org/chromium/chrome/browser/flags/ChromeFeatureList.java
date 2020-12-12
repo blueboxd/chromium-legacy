@@ -244,6 +244,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
+    public static final String CCT_REMOVE_REMOTE_VIEW_IDS = "CCTRemoveRemoteViewIds";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
@@ -387,6 +388,7 @@ public abstract class ChromeFeatureList {
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PRIVACY_REORDERED_ANDROID = "PrivacyReorderedAndroid";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
+    public static final String PWA_INSTALL_USE_BOTTOMSHEET = "PwaInstallUseBottomSheet";
     public static final String QUERY_TILES_GEO_FILTER = "QueryTilesGeoFilter";
     public static final String QUERY_TILES = "QueryTiles";
     public static final String QUERY_TILES_IN_NTP = "QueryTilesInNTP";

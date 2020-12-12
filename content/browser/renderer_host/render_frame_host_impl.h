@@ -488,9 +488,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Postcondition: |IsPendingDeletion()| is true.
   void DeleteRenderFrame(FrameDeleteIntention intent);
 
-  // Tracks whether the RenderFrame for this RenderFrameHost has been created in
-  // the renderer process.
-  void SetRenderFrameCreated(bool created);
+  // Track whether the RenderFrame for this RenderFrameHost has been created in
+  // or destroyed in the renderer process.
+  void RenderFrameCreated();
+  void RenderFrameDeleted();
 
   // Called for renderer-created windows to resume requests from this frame,
   // after they are blocked in RenderWidgetHelper::CreateNewWindow.
@@ -2692,7 +2693,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Tracks whether the RenderFrame has ever been created for this
   // RenderFrameHost or not. This starts out as false, becomes true after the
-  // first call to SetRenderFrameCreated(true), and stays true thereafter.
+  // first call to RenderFrameCreated(), and stays true thereafter.
   bool was_render_frame_ever_created_ = false;
 
   // When the last BeforeUnload message was sent.
@@ -3281,6 +3282,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // explicitly cancels prerendering or the document gets destroyed.
   mojo::UniqueReceiverSet<blink::mojom::PrerenderProcessor>
       prerender_processor_receivers_;
+
+  // TODO(https://crbug.com/1146573): Remove this when the bug is closed.
+  // If >0, then we will DWOC if there is an attempt to mark the RenderFrame as
+  // created again.
+  int dump_on_render_frame_created_for_bug_1146573_ = 0;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

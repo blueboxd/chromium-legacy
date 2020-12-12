@@ -2425,6 +2425,36 @@
             ]
         }
     ],
+    "DesktopWebAppInstallIconExperiment": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithDownloadIcon",
+                    "params": {
+                        "shape": "download"
+                    },
+                    "enable_features": [
+                        "InstallIconExperiment"
+                    ]
+                },
+                {
+                    "name": "EnabledWithDownloadToDeviceIcon",
+                    "params": {
+                        "shape": "downloadToDevice"
+                    },
+                    "enable_features": [
+                        "InstallIconExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesynchronizedScrolling": [
         {
             "platforms": [
@@ -4533,26 +4563,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MetricsDownsampleConsistently"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MixedFormWarnings": [
-        {
-            "platforms": [
-                "windows",
-                "android",
-                "chromeos",
-                "linux",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillPreventMixedFormsFilling",
-                        "InsecureFormSubmissionInterstitial"
                     ]
                 }
             ]
@@ -8034,6 +8044,22 @@
                     "name": "Disabled_20200708",
                     "disable_features": [
                         "WebComponentsV0"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebOtpBackendAuto": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebOtpBackendAuto"
                     ]
                 }
             ]

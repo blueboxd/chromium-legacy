@@ -25,6 +25,7 @@ import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//media/gpu/args.gni")
 import("//net/features.gni")
 import("//pdf/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -2859,6 +2860,7 @@ static_library("browser") {
       "android/shortcut_helper.h",
       "android/signin/signin_manager_android.cc",
       "android/signin/signin_manager_android.h",
+      "android/signin/signin_metrics_utils.cc",
       "android/signin/signin_promo_util_android.cc",
       "android/signin/signin_promo_util_android.h",
       "android/signin/signin_utils.cc",
@@ -2926,6 +2928,8 @@ static_library("browser") {
       "android/webapps/add_to_homescreen_mediator.h",
       "android/webapps/add_to_homescreen_params.cc",
       "android/webapps/add_to_homescreen_params.h",
+      "android/webapps/pwa_bottom_sheet_controller.cc",
+      "android/webapps/pwa_bottom_sheet_controller.h",
       "android/webapps/webapp_registry.cc",
       "android/webapps/webapp_registry.h",
       "android/webauth/fido2helper_native_android.cc",
@@ -5793,10 +5797,16 @@ static_library("browser") {
       }
       if (is_win) {
         sources += [
+          "media/widevine_hardware_caps.h",
           "media/widevine_hardware_caps_win.cc",
-          "media/widevine_hardware_caps_win.h",
         ]
         libs += [ "d3d11.lib" ]
+      }
+      if (use_chromeos_protected_media) {
+        sources += [
+          "media/widevine_hardware_caps.h",
+          "media/widevine_hardware_caps_chromeos.cc",
+        ]
       }
     }
 

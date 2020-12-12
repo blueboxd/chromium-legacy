@@ -1610,6 +1610,9 @@ While in incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_READING_LIST_UNREAD_HEADER" desc="Header for the list containing the unread reading list entries" meaning="The entries below this header are unread. [Length: 15em]">
         Unread
       </message>
+      <message name="IDS_IOS_RECENT_TABS_DISABLED_BY_ORGANIZATION" desc="This message is shown in the Other Devices section of the Recent Tabs view if browser sign-in is disabled via policy by the device's administrator / organization.">
+        Turned off by your organization.
+      </message>
       <message name="IDS_IOS_RECENT_TABS_DISCLOSURE_VIEW_COLLAPSED_HINT" desc="The accessibility hint spoken to signify that the given cell expands the given section when tapped.">
         Expands the section.
       </message>
@@ -1688,6 +1691,15 @@ While in incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE" desc="Text displayed to inform the user that the setting is managed by an Enterprise policy. [iOS only]">
         This setting is enforced by your administrator.
       </message>
+      <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT" desc="Text displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy. [iOS only]">
+        Your organization signed you out.
+      </message>
+      <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT_CONTINUE" desc="The text in the 'Continue' button, displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy.">
+        Continue
+      </message>
+      <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT_LEARN_MORE" desc="The text in the 'Learn More' button, displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy.">
+        Learn More
+      </message>
       <message name="IDS_IOS_EXPORT_PASSWORDS" desc="Button that the user can press to export passwords. [Length: 22em] [iOS only]">
         Export Passwords...
       </message>
@@ -1731,6 +1743,9 @@ Follow the steps below:
       </message>
       <message name="IDS_IOS_SETTINGS_SELECT_CHROME_STEP" desc="Text of the row indicating the third step of setting the default browser.">
         3. Select Chrome
+      </message>
+      <message name="IDS_IOS_SETTINGS_SIGNIN_DISABLED" desc="Subtext of the 'Sign in to Chrome' button in the settings. [iOS only]">
+        Turned off by your organization.
       </message>
       <message name="IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT" desc="Header text with link for the view in Settings for managing saved passwords. [Length: unlimited] [iOS only]">
         View and manage saved passwords at <ph name="BEGIN_LINK">BEGIN_LINK</ph>passwords.google.com<ph name="END_LINK">END_LINK</ph>

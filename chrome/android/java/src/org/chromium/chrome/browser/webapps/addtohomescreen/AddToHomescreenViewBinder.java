@@ -14,25 +14,23 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Binds an add-to-homescreen {@link PropertyModel} with a {@link AddToHomescreenDialogView}.
  */
 class AddToHomescreenViewBinder {
-    static void bind(PropertyModel model, AddToHomescreenDialogView addToHomescreenDialogView,
-            PropertyKey propertyKey) {
+    static void bind(PropertyModel model, AddToHomescreenDialogView view, PropertyKey propertyKey) {
         if (propertyKey.equals(AddToHomescreenProperties.TITLE)) {
-            addToHomescreenDialogView.setTitle(model.get(AddToHomescreenProperties.TITLE));
+            view.setTitle(model.get(AddToHomescreenProperties.TITLE));
         } else if (propertyKey.equals(AddToHomescreenProperties.URL)) {
-            addToHomescreenDialogView.setUrl(model.get(AddToHomescreenProperties.URL));
+            view.setUrl(model.get(AddToHomescreenProperties.URL));
         } else if (propertyKey.equals(AddToHomescreenProperties.ICON)) {
             Pair<Bitmap, Boolean> iconPair = model.get(AddToHomescreenProperties.ICON);
-            addToHomescreenDialogView.setIcon(iconPair.first, iconPair.second);
+            view.setIcon(iconPair.first, iconPair.second);
         } else if (propertyKey.equals(AddToHomescreenProperties.TYPE)) {
-            addToHomescreenDialogView.setType(model.get(AddToHomescreenProperties.TYPE));
+            view.setType(model.get(AddToHomescreenProperties.TYPE));
         } else if (propertyKey.equals(AddToHomescreenProperties.CAN_SUBMIT)) {
-            addToHomescreenDialogView.setCanSubmit(model.get(AddToHomescreenProperties.CAN_SUBMIT));
+            view.setCanSubmit(model.get(AddToHomescreenProperties.CAN_SUBMIT));
         } else if (propertyKey.equals(AddToHomescreenProperties.NATIVE_INSTALL_BUTTON_TEXT)) {
-            addToHomescreenDialogView.setNativeInstallButtonText(
+            view.setNativeInstallButtonText(
                     model.get(AddToHomescreenProperties.NATIVE_INSTALL_BUTTON_TEXT));
         } else if (propertyKey.equals(AddToHomescreenProperties.NATIVE_APP_RATING)) {
-            addToHomescreenDialogView.setNativeAppRating(
-                    model.get(AddToHomescreenProperties.NATIVE_APP_RATING));
+            view.setNativeAppRating(model.get(AddToHomescreenProperties.NATIVE_APP_RATING));
         }
     }
 }

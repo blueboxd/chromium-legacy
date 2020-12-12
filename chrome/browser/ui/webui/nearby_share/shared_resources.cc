@@ -15,6 +15,7 @@
 void RegisterNearbySharedStrings(content::WebUIDataSource* data_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"nearbyShareAccountRowLabel", IDS_NEARBY_ACCOUNT_ROW_LABEL},
+      {"nearbyShareActionsAccept", IDS_NEARBY_ACTIONS_ACCEPT},
       {"nearbyShareActionsCancel", IDS_NEARBY_ACTIONS_CANCEL},
       {"nearbyShareActionsClose", IDS_NEARBY_ACTIONS_CLOSE},
       {"nearbyShareActionsConfirm", IDS_NEARBY_ACTIONS_CONFIRM},
@@ -39,18 +40,12 @@ void RegisterNearbySharedStrings(content::WebUIDataSource* data_source) {
       {"nearbyShareContactVisibilityNone", IDS_NEARBY_VISIBLITY_HIDDEN},
       {"nearbyShareContactVisibilityNoneDescription",
        IDS_NEARBY_VISIBLITY_HIDDEN_DESCRIPTION},
-      {"nearbyShareContactVisibilityOthers",
-       IDS_NEARBY_CONTACT_VISIBILITY_OTHERS},
-      {"nearbyShareContactVisibilityOthersTitle",
-       IDS_NEARBY_CONTACT_VISIBILITY_OTHERS_TITLE},
       {"nearbyShareContactVisibilityOwnAll",
        IDS_NEARBY_CONTACT_VISIBILITY_OWN_ALL},
       {"nearbyShareContactVisibilityOwnNone",
        IDS_NEARBY_CONTACT_VISIBILITY_OWN_NONE},
       {"nearbyShareContactVisibilityOwnSome",
        IDS_NEARBY_CONTACT_VISIBILITY_OWN_SOME},
-      {"nearbyShareContactVisibilityOwnTitle",
-       IDS_NEARBY_CONTACT_VISIBILITY_OWN_TITLE},
       {"nearbyShareContactVisibilitySome", IDS_NEARBY_VISIBLITY_SOME_CONTACTS},
       {"nearbyShareContactVisibilitySomeDescription",
        IDS_NEARBY_VISIBLITY_SOME_CONTACTS_DESCRIPTION},
@@ -71,11 +66,15 @@ void RegisterNearbySharedStrings(content::WebUIDataSource* data_source) {
        IDS_NEARBY_DISCOVERY_PAGE_PLACEHOLDER},
       {"nearbyShareDiscoveryPageSubtitle", IDS_NEARBY_DISCOVERY_PAGE_SUBTITLE},
       {"nearbyShareDiscoveryPageTitle", IDS_NEARBY_DISCOVERY_PAGE_TITLE},
+      {"nearbyShareErrorCancelled", IDS_NEARBY_ERROR_CANCELLED},
+      {"nearbyShareErrorCantReceive", IDS_NEARBY_ERROR_CANT_RECEIVE},
       {"nearbyShareErrorCantShare", IDS_NEARBY_ERROR_CANT_SHARE},
       {"nearbyShareErrorNoResponse", IDS_NEARBY_ERROR_NO_RESPONSE},
+      {"nearbyShareErrorNotEnoughSpace", IDS_NEARBY_ERROR_NOT_ENOUGH_SPACE},
       {"nearbyShareErrorRejected", IDS_NEARBY_ERROR_REJECTED},
       {"nearbyShareErrorSomethingWrong", IDS_NEARBY_ERROR_SOMETHING_WRONG},
       {"nearbyShareErrorTimeOut", IDS_NEARBY_ERROR_TIME_OUT},
+      {"nearbyShareErrorTryAgain", IDS_NEARBY_ERROR_TRY_AGAIN},
       {"nearbyShareErrorUnsupportedFileType",
        IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE},
       {"nearbyShareFeatureName", IDS_NEARBY_SHARE_FEATURE_NAME},
@@ -104,6 +103,8 @@ void RegisterNearbySharedStrings(content::WebUIDataSource* data_source) {
       {"nearbyShareHighVisibilityHelpText",
        IDS_NEARBY_HIGH_VISIBILITY_HELP_TEXT},
       {"nearbyShareReceiveConfirmPageTitle",
-       IDS_NEARBY_RECEIVE_CONFIRM_PAGE_TITLE}};
+       IDS_NEARBY_RECEIVE_CONFIRM_PAGE_TITLE},
+      {"nearbyShareReceiveConfirmPageConnectionId",
+       IDS_NEARBY_RECEIVE_CONFIRM_PAGE_CONNECTION_ID}};
   webui::AddLocalizedStringsBulk(data_source, kLocalizedStrings);
 }

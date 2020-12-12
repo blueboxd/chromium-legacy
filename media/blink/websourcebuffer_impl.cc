@@ -146,6 +146,23 @@ bool WebSourceBufferImpl::Append(const unsigned char* data,
   return success;
 }
 
+bool WebSourceBufferImpl::AppendChunks(
+    std::unique_ptr<media::StreamParser::BufferQueue> buffer_queue,
+    double* timestamp_offset) {
+  base::TimeDelta old_offset = timestamp_offset_;
+  bool success =
+      demuxer_->AppendChunks(id_, std::move(buffer_queue), append_window_start_,
+                             append_window_end_, &timestamp_offset_);
+
+  // Like in ::Append, timestamp_offset may be updated by coded frame
+  // processing.
+  // TODO(crbug.com/1144908): Consider refactoring this common bit into helper.
+  if (timestamp_offset && old_offset != timestamp_offset_)
+    *timestamp_offset = timestamp_offset_.InSecondsF();
+
+  return success;
+}
+
 void WebSourceBufferImpl::ResetParserState() {
   demuxer_->ResetParserState(id_,
                              append_window_start_, append_window_end_,

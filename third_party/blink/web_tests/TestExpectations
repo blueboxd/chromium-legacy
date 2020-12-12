@@ -801,6 +801,7 @@ crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-022.
 
 # [css-lists]
 crbug.com/1123457 external/wpt/css/css-lists/counter-list-item-2.html [ Failure ]
+crbug.com/1157854 external/wpt/css/css-lists/counter-set-002.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 
@@ -2326,9 +2327,6 @@ crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element
 # css-pseudo-4 opacity not applied to ::first-line
 crbug.com/1085772 external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
 
-# Disabling test to checkin associated frontend changes on DevTools
-crbug.com/1136655 http/tests/devtools/throttling/mobile-throttling.js [ Failure Pass Timeout ]
-
 # motion-1 issues
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-002.html [ Failure ]
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-003.html [ Failure ]
@@ -2414,8 +2412,6 @@ crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ T
 ### external/wpt/css/CSS2/tables/
 crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-dynamic-row-002.xht [ Failure ]
 crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-dynamic-rowgroup-002.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-offset-001.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-offset-002.xht [ Failure ]
 crbug.com/958381 external/wpt/css/CSS2/tables/caption-side-applies-to-007.xht [ Failure ]
 crbug.com/958381 external/wpt/css/CSS2/tables/column-visibility-004.xht [ Failure ]
 crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-017.xht [ Failure ]
@@ -2512,6 +2508,14 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-paint-api/dynamic-import.html [ Failure ]
+crbug.com/626703 [ Win10 ] external/wpt/css/css-grid/grid-items/grid-auto-margin-and-replaced-item-001.html [ Failure ]
+crbug.com/626703 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/dynamic-import.html [ Failure ]
+crbug.com/626703 external/wpt/websockets/cookies/004.html [ Timeout ]
+crbug.com/626703 external/wpt/websockets/cookies/004.html?wss [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/server/http2-websocket.sub.h2.any.html [ Timeout ]
+crbug.com/626703 [ Win10 ] external/wpt/webcodecs/video-encoder.any.html [ Timeout ]
+crbug.com/626703 external/wpt/websockets/cookies/005.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection-no-sink.https.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
@@ -5021,10 +5025,42 @@ crbug.com/970285 [ Android ] virtual/forced-high-contrast-colors/* [ Pass ]
 crbug.com/1090660 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/svg-as-image.html [ Skip ]
 crbug.com/1090660 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/svg-as-image.html [ Pass ]
 
+# virtual/layout_ng_table
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/border-spacing-included-in-sizes-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/min-max-size-table-content-box.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-collapsed-borders-003.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-cell-height-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-cell-width-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-cell-width-002.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-width-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/toggle-row-display-property-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-002.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-003.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-004-dynamic.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-005.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-colspan-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-colspan-002.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-row-004.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-rowcol-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-rowcol-002.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-001.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-003.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children-005.html [ Pass ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/tentative/position-sticky-container.html [ Pass ]
+
+crbug.com/1157330 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/computing-row-measure-0.html [ Failure ]
+crbug.com/1157626 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-rowspan-005.html [ Failure ]
+
+# Works in main table patch, needs percentage sizing fix.
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/percent-width-ignored-001.tentative.html [ Failure ]
+crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/percent-width-ignored-003.tentative.html [ Failure ]
+
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
-
-#Sheriff 2019-08-12
 
 #Sherrif 2019-08-16
 crbug.com/994692 [ Linux ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
@@ -5867,3 +5903,24 @@ crbug.com/1156175 external/wpt/requestidlecallback/callback-iframe.html [ Pass T
 
 # Sheriff 2020-12-08
 crbug.com/1154178 external/wpt/webmessaging/broadcastchannel/basics.html [ Pass Failure ]
+
+# DevTools roll
+crbug.com/1024752 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Skip ]
+
+# Sheriff 2020-12-11
+# Flaking on Linux Trusty
+crbug.com/1157849 [ Linux Release ] external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Pass Timeout ]
+crbug.com/1157857 [ Mac10.14 ] virtual/compositor-threaded-percent-based-scrolling-dsf-2/virtual/percent-based-scrolling/max-percent-delta-cross-origin-iframes.html [ Pass Timeout ]
+crbug.com/1157861 http/tests/devtools/a11y-axe-core/sources/javascript-breakpoints-a11y-test.js [ Pass Failure ]
+crbug.com/1157861 http/tests/devtools/extensions/extensions-resources.js [ Pass Failure ]
+crbug.com/1157861 http/tests/devtools/console/paintworklet-console-selector.js [ Pass Failure ]
+
+# Wpt importer Sheriff 2020-12-11
+crbug.com/626703 [ Linux ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.html [ Pass Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mediacapture-image/MediaStreamTrack-getConstraints.https.html [ Pass Failure ]
+crbug.com/626703 [ Mac ] external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html [ Pass Failure ]
+crbug.com/626703 [ Mac ] external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=h2 [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=h2 [ Pass Failure ]
+crbug.com/626703 [ Mac ] external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=https [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=https [ Pass Failure ]

@@ -445,7 +445,7 @@ const base::Feature kNotificationTriggers{"NotificationTriggers",
 // Note that the origin policy-based variant of origin isolation is controlled
 // by kOriginPolicy, instead.
 const base::Feature kOriginIsolationHeader{"OriginIsolationHeader",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Origin Policy. See https://crbug.com/751996
 const base::Feature kOriginPolicy{"OriginPolicy",
@@ -859,10 +859,10 @@ const base::Feature kWebID{"WebID", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kExperimentalProductivityFeatures{
     "ExperimentalProductivityFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When this feature is enabled, the Web OTP API will use the User Consent
-// API to retrieve SMSes from the Android device.
-const base::Feature kWebOtpBackend{"WebOtpBackend",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls which backend is used to retrieve OTP on Android. When disabled
+// we use User Consent API.
+const base::Feature kWebOtpBackendAuto{"WebOtpBackendAuto",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The JavaScript API for payments on the web.
 const base::Feature kWebPayments{"WebPayments",

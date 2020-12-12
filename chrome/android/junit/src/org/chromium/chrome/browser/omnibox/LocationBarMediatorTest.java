@@ -24,8 +24,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,6 +61,7 @@ import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -111,9 +115,17 @@ public class LocationBarMediatorTest {
     @Mock
     private SearchEngineLogoUtils.Delegate mSearchEngineDelegate;
     @Mock
-    private View mView;
+    private TextView mView;
     @Mock
     private OneshotSupplier<TemplateUrlService> mTemplateUrlServiceSupplier;
+    @Mock
+    private KeyEvent mKeyEvent;
+    @Mock
+    private KeyEvent.DispatcherState mKeyDispatcherState;
+    @Mock
+    private TemplateUrl mGoogleSearchEngine;
+    @Mock
+    private TemplateUrl mNonGoogleSearchEngine;
 
     @Captor
     private ArgumentCaptor<Runnable> mRunnableCaptor;
@@ -372,6 +384,159 @@ public class LocationBarMediatorTest {
                         eq(UrlBar.ScrollType.NO_SCROLL), eq(SelectionState.SELECT_ALL));
         verify(mAutocompleteCoordinator).startAutocompleteForQuery(query);
         verify(mUrlCoordinator).setKeyboardVisibility(true, false);
+    }
+
+    @Test
+    public void testOnConfigurationChanged_qwertyKeyboard() {
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocused();
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocusedWithoutAnimations();
+        Configuration newConfig = new Configuration();
+        newConfig.keyboard = Configuration.KEYBOARD_QWERTY;
+        mMediator.onConfigurationChanged(newConfig);
+
+        verify(mLocationBarLayout, never()).setUrlBarFocus(anyBoolean(), anyString(), anyInt());
+    }
+
+    @Test
+    public void testOnConfigurationChanged_nonQwertyKeyboard() {
+        doReturn(false).when(mLocationBarLayout).isUrlBarFocused();
+        doReturn(false).when(mLocationBarLayout).isUrlBarFocusedWithoutAnimations();
+        Configuration newConfig = new Configuration();
+        newConfig.keyboard = Configuration.KEYBOARD_NOKEYS;
+        mMediator.onConfigurationChanged(newConfig);
+        verify(mLocationBarLayout, never()).setUrlBarFocus(anyBoolean(), anyString(), anyInt());
+
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocused();
+        mMediator.onConfigurationChanged(newConfig);
+        verify(mLocationBarLayout, never()).setUrlBarFocus(anyBoolean(), anyString(), anyInt());
+
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocusedWithoutAnimations();
+        mMediator.onConfigurationChanged(newConfig);
+        verify(mLocationBarLayout).setUrlBarFocus(false, null, OmniboxFocusReason.UNFOCUS);
+    }
+
+    @Test
+    public void testOnKey_autocompleteHandles() {
+        doReturn(true)
+                .when(mAutocompleteCoordinator)
+                .handleKeyEvent(KeyEvent.KEYCODE_BACK, mKeyEvent);
+        mMediator.onKey(mView, KeyEvent.KEYCODE_BACK, mKeyEvent);
+        verify(mAutocompleteCoordinator).handleKeyEvent(KeyEvent.KEYCODE_BACK, mKeyEvent);
+    }
+
+    @Test
+    public void testOnKey_back() {
+        doReturn(mKeyDispatcherState).when(mLocationBarLayout).getKeyDispatcherState();
+        doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
+        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_BACK, mKeyEvent));
+
+        verify(mKeyDispatcherState).startTracking(mKeyEvent, mMediator);
+
+        doReturn(true).when(mKeyEvent).isTracking();
+        doReturn(KeyEvent.ACTION_UP).when(mKeyEvent).getAction();
+
+        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_BACK, mKeyEvent));
+
+        verify(mKeyDispatcherState).handleUpEvent(mKeyEvent);
+        verify(mLocationBarLayout).backKeyPressed();
+    }
+
+    @Test
+    public void testOnKey_escape() {
+        doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
+        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_ESCAPE, mKeyEvent));
+        verify(mLocationBarLayout).setUrl(mLocationBarDataProvider.getCurrentUrl());
+    }
+
+    @Test
+    public void testOnKey_right() {
+        doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
+        doReturn(KeyEvent.KEYCODE_DPAD_RIGHT).when(mKeyEvent).getKeyCode();
+        doReturn("a").when(mView).getText();
+        doReturn(0).when(mView).getSelectionStart();
+        doReturn(1).when(mView).getSelectionEnd();
+
+        assertFalse(mMediator.onKey(mView, KeyEvent.KEYCODE_DPAD_RIGHT, mKeyEvent));
+
+        doReturn(1).when(mView).getSelectionStart();
+        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_DPAD_RIGHT, mKeyEvent));
+    }
+
+    @Test
+    public void testOnKey_leftRtl() {
+        doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
+        doReturn(KeyEvent.KEYCODE_DPAD_LEFT).when(mKeyEvent).getKeyCode();
+        doReturn("a").when(mView).getText();
+        doReturn(0).when(mView).getSelectionStart();
+        doReturn(1).when(mView).getSelectionEnd();
+        doReturn(View.LAYOUT_DIRECTION_RTL).when(mView).getLayoutDirection();
+
+        assertFalse(mMediator.onKey(mView, KeyEvent.KEYCODE_DPAD_LEFT, mKeyEvent));
+
+        doReturn(1).when(mView).getSelectionStart();
+        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_DPAD_LEFT, mKeyEvent));
+    }
+
+    @Test
+    public void testOnKey_unhandled() {
+        doReturn(KeyEvent.KEYCODE_BUTTON_14).when(mKeyEvent).getAction();
+        assertFalse(mMediator.onKey(mView, KeyEvent.KEYCODE_BACK, mKeyEvent));
+    }
+
+    @Test
+    public void testOnKey_triggersFocusAnimation() {
+        doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
+        doReturn(true).when(mAutocompleteCoordinator).handleKeyEvent(KeyEvent.KEYCODE_9, mKeyEvent);
+        doReturn(true).when(mKeyEvent).isPrintingKey();
+        doReturn(true).when(mKeyEvent).hasNoModifiers();
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocused();
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocusedWithoutAnimations();
+        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_9, mKeyEvent));
+
+        verify(mLocationBarLayout).handleUrlFocusAnimation(true);
+    }
+
+    @Test
+    public void testTemplateUrlServiceChanged() {
+        doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        doReturn(mNonGoogleSearchEngine)
+                .when(mTemplateUrlService)
+                .getDefaultSearchEngineTemplateUrl();
+        mMediator.onFinishNativeInitialization();
+        mMediator.registerTemplateUrlObserver();
+
+        verify(mLocationBarLayout)
+                .updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                                      mLocationBarDataProvider.isIncognito()),
+                        false, SearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
+
+        doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        doReturn(mGoogleSearchEngine).when(mTemplateUrlService).getDefaultSearchEngineTemplateUrl();
+        mMediator.onTemplateURLServiceChanged();
+
+        verify(mLocationBarLayout)
+                .updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                                      mLocationBarDataProvider.isIncognito()),
+                        true, SearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
+
+        // Calling onTemplateURLServiceChanged with the exact same data shouldn't trigger any calls.
+        mMediator.onTemplateURLServiceChanged();
+
+        verify(mLocationBarLayout, times(1))
+                .updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                                      mLocationBarDataProvider.isIncognito()),
+                        true, SearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
+
+        doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        doReturn(mNonGoogleSearchEngine)
+                .when(mTemplateUrlService)
+                .getDefaultSearchEngineTemplateUrl();
+        mMediator.onTemplateURLServiceChanged();
+
+        verify(mLocationBarLayout, times(2))
+                .updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                                      mLocationBarDataProvider.isIncognito()),
+                        false, SearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
     }
 
     private ArgumentMatcher<UrlBarData> matchesUrlBarDataForQuery(String query) {

@@ -140,6 +140,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
+    &kCCTRemoveRemoteViewIds,
     &kCCTReportParallelRequestStatus,
     &kCCTResourcePrefetch,
     &kDarkenWebsitesCheckboxInThemesSetting,
@@ -194,6 +195,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPhotoPickerVideoSupport,
     &kPhotoPickerZoom,
     &kProbabilisticCryptidRenderer,
+    &kPwaInstallUseBottomSheet,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kReengagementNotification,
@@ -384,6 +386,9 @@ const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
 const base::Feature kCCTRedirectPreconnect{"CCTRedirectPreconnect",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kCCTRemoveRemoteViewIds{"CCTRemoveRemoteViewIds",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kCCTReportParallelRequestStatus{
     "CCTReportParallelRequestStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -554,6 +559,9 @@ const base::Feature kPhotoPickerZoom{"PhotoPickerZoom",
 
 const base::Feature kProbabilisticCryptidRenderer{
     "ProbabilisticCryptidRenderer", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPwaInstallUseBottomSheet{
+    "PwaInstallUseBottomSheet", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

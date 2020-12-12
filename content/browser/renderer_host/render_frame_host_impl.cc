@@ -139,7 +139,6 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
-#include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
@@ -219,6 +218,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/loader/inter_process_time_ticks_converter.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -2122,7 +2122,15 @@ void RenderFrameHostImpl::RenderProcessExited(
 
   // Reset state for the current RenderFrameHost once the FrameTreeNode has been
   // reset.
-  SetRenderFrameCreated(false);
+  RenderFrameDeleted();
+  // In https://crbug.com/1146573 we see render_frame_created_ being true again
+  // by the time we reach `must_be_replaced_ = true` below. This should tell us
+  // how that is happening.
+  ++dump_on_render_frame_created_for_bug_1146573_;
+  if (render_frame_created_) {
+    base::debug::DumpWithoutCrashing();
+    NOTREACHED();
+  }
   InvalidateMojoConnection();
   broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
@@ -2130,6 +2138,7 @@ void RenderFrameHostImpl::RenderProcessExited(
 
   must_be_replaced_ = true;
   ValidateStateForBug1146573();
+  --dump_on_render_frame_created_for_bug_1146573_;
   has_committed_any_navigation_ = false;
 
 #if defined(OS_ANDROID)
@@ -2395,7 +2404,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   // this path is only used for out-of-process iframes.  Main frame RenderFrames
   // are created with their RenderView, and same-site iframes are created at the
   // time of OnCreateChildFrame.
-  SetRenderFrameCreated(true);
+  RenderFrameCreated();
 
   return true;
 }
@@ -2443,15 +2452,24 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
   SetLifecycleState(lifecycle_state);
 }
 
-void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
+void RenderFrameHostImpl::RenderFrameCreated() {
   // We should not create new RenderFrames while our delegate is being destroyed
   // (e.g., via a WebContentsObserver during WebContents shutdown).  This seems
   // to have caused crashes in https://crbug.com/717650.
-  if (created)
-    CHECK(!delegate_->IsBeingDestroyed());
+  CHECK(!delegate_->IsBeingDestroyed());
+
+  // TODO(https://crbug.com/1146573): Remove this when the bug is closed.
+  if (dump_on_render_frame_created_for_bug_1146573_) {
+    SCOPED_CRASH_KEY_NUMBER(Bug1146573, DumpNestCount,
+                            dump_on_render_frame_created_for_bug_1146573_);
+    SCOPED_CRASH_KEY_BOOL(Bug1146573, RenderFrameCreated,
+                          render_frame_created_);
+    base::debug::DumpWithoutCrashing();
+    NOTREACHED();
+  }
 
   bool was_created = render_frame_created_;
-  render_frame_created_ = created;
+  render_frame_created_ = true;
   ValidateStateForBug1146573();
 
   // Clear all the user data associated with this RenderFrameHost when its
@@ -2464,42 +2482,44 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   // Clearing of user data should be called before RenderFrameCreated to ensure:
   // - a) new new state set in RenderFrameCreated doesn't get deleted.
   // - b) the old state is not leaked to a new RenderFrameHost.
-  if (!was_created && created && was_render_frame_ever_created_)
+  if (!was_created && was_render_frame_ever_created_)
     document_associated_data_.ClearAllUserData();
 
-  if (created)
-    was_render_frame_ever_created_ = true;
+  was_render_frame_ever_created_ = true;
 
   // If the current status is different than the new status, the delegate
   // needs to be notified.
-  if (created != was_created) {
-    if (created) {
-      SetUpMojoIfNeeded();
-      delegate_->RenderFrameCreated(this);
-    } else {
-      delegate_->RenderFrameDeleted(this);
-    }
+  if (!was_created) {
+    SetUpMojoIfNeeded();
+    delegate_->RenderFrameCreated(this);
   }
   // TODO(http://crbug.com/1014212): Change to DCHECK.
-  if (created)
-    CHECK(frame_);
+  CHECK(frame_);
 
-  if (created && GetLocalRenderWidgetHost()) {
+  if (GetLocalRenderWidgetHost()) {
     GetLocalRenderWidgetHost()->input_router()->SetFrameTreeNodeId(
         frame_tree_node_->frame_tree_node_id());
     GetLocalRenderWidgetHost()->InitForFrame();
   }
 
-  if (enabled_bindings_ && created)
+  if (enabled_bindings_)
     GetFrameBindingsControl()->AllowBindings(enabled_bindings_);
 
+  if (web_ui_ && enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
+    web_ui_->SetupMojoConnection();
+}
+
+void RenderFrameHostImpl::RenderFrameDeleted() {
+  bool was_created = render_frame_created_;
+  render_frame_created_ = false;
+
+  // If the current status is different than the new status, the delegate
+  // needs to be notified.
+  if (was_created) {
+    delegate_->RenderFrameDeleted(this);
+  }
   if (web_ui_) {
-    if (created) {
-      if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
-        web_ui_->SetupMojoConnection();
-    } else {
-      web_ui_->InvalidateMojoConnection();
-    }
+    web_ui_->InvalidateMojoConnection();
   }
 }
 
@@ -3389,14 +3409,16 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
       // skew between the processes. Here we are converting the renderer's
       // notion of before_unload_end_time to TimeTicks in the browser process.
       // See comments in inter_process_time_ticks_converter.h for more.
-      InterProcessTimeTicksConverter converter(
-          LocalTimeTicks::FromTimeTicks(send_before_unload_start_time_),
-          LocalTimeTicks::FromTimeTicks(before_unload_completed_time),
-          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
-          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
-      LocalTimeTicks browser_before_unload_end_time =
-          converter.ToLocalTimeTicks(
-              RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+      blink::InterProcessTimeTicksConverter converter(
+          blink::LocalTimeTicks::FromTimeTicks(send_before_unload_start_time_),
+          blink::LocalTimeTicks::FromTimeTicks(before_unload_completed_time),
+          blink::RemoteTimeTicks::FromTimeTicks(
+              renderer_before_unload_start_time),
+          blink::RemoteTimeTicks::FromTimeTicks(
+              renderer_before_unload_end_time));
+      blink::LocalTimeTicks browser_before_unload_end_time =
+          converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
+              renderer_before_unload_end_time));
       before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
     }
 
@@ -3474,7 +3496,7 @@ void RenderFrameHostImpl::OnUnloadACK() {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
     // This RFH was unloaded while attaching an inner delegate. The RFH
     // will stay around but it will no longer be associated with a RenderFrame.
-    SetRenderFrameCreated(false);
+    RenderFrameDeleted();
     return;
   }
 
@@ -5319,7 +5341,8 @@ void RenderFrameHostImpl::CreateNewWindow(
     main_frame->set_coop_reporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
-            params->referrer->url, popup_coop));
+            params->referrer->url, popup_coop,
+            isolation_info_.network_isolation_key()));
   }
 
   if (main_frame->waiting_for_init_) {

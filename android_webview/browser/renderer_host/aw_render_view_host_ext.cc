@@ -25,7 +25,8 @@ AwRenderViewHostExt::AwRenderViewHostExt(AwRenderViewHostExtClient* client,
     : content::WebContentsObserver(contents),
       client_(client),
       background_color_(SK_ColorWHITE),
-      has_new_hit_test_data_(false) {
+      has_new_hit_test_data_(false),
+      frame_host_receivers_(contents, this) {
   DCHECK(client_);
 }
 
@@ -68,15 +69,15 @@ void AwRenderViewHostExt::RequestNewHitTestDataAt(
     local_main_frame_remote_->HitTest(touch_center, touch_area);
 }
 
-const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
+const mojom::HitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return last_hit_test_data_;
+  return *last_hit_test_data_;
 }
 
 void AwRenderViewHostExt::SetTextZoomFactor(float factor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SetTextZoomFactor(
-      web_contents()->GetMainFrame()->GetRoutingID(), factor));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->SetTextZoomFactor(factor);
 }
 
 void AwRenderViewHostExt::ResetScrollAndScaleState() {
@@ -151,8 +152,6 @@ bool AwRenderViewHostExt::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwRenderViewHostExt, message,
                                    render_frame_host)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
-                        OnUpdateHitTestData)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_OnContentsSizeChanged,
                         OnContentsSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -161,10 +160,10 @@ bool AwRenderViewHostExt::OnMessageReceived(
   return handled;
 }
 
-void AwRenderViewHostExt::OnUpdateHitTestData(
-    content::RenderFrameHost* render_frame_host,
-    const AwHitTestData& hit_test_data) {
-  content::RenderFrameHost* main_frame_host = render_frame_host;
+void AwRenderViewHostExt::UpdateHitTestData(
+    mojom::HitTestDataPtr hit_test_data) {
+  content::RenderFrameHost* main_frame_host =
+      frame_host_receivers_.GetCurrentTargetFrame();
   while (main_frame_host->GetParent())
     main_frame_host = main_frame_host->GetParent();
 
@@ -174,7 +173,7 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
     return;
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  last_hit_test_data_ = hit_test_data;
+  last_hit_test_data_ = std::move(hit_test_data);
   has_new_hit_test_data_ = true;
 }
 

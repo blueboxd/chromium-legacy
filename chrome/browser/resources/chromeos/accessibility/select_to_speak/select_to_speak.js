@@ -8,6 +8,8 @@ var RoleType = chrome.automation.RoleType;
 const AccessibilityFeature = chrome.accessibilityPrivate.AccessibilityFeature;
 const SelectToSpeakPanelAction =
     chrome.accessibilityPrivate.SelectToSpeakPanelAction;
+const FocusRingStackingOrder =
+    chrome.accessibilityPrivate.FocusRingStackingOrder;
 
 // This must be the same as in ash/system/accessibility/select_to_speak_tray.cc:
 // ash::kSelectToSpeakTrayClassName.
@@ -763,9 +765,15 @@ class SelectToSpeak {
     if (drawBackground && this.prefsManager_.backgroundShadingEnabled()) {
       color = DEFAULT_BACKGROUND_SHADING_COLOR;
     }
+    // If we're also showing a navigation panel, ensure the focus ring appears
+    // below the panel UI.
+    const stackingOrder = this.shouldShowNavigationControls_() ?
+        FocusRingStackingOrder.BELOW_ACCESSIBILITY_BUBBLES :
+        FocusRingStackingOrder.ABOVE_ACCESSIBILITY_BUBBLES;
     chrome.accessibilityPrivate.setFocusRings([{
       rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
+      stackingOrder,
       color: this.prefsManager_.focusRingColor(),
       backgroundColor: color,
     }]);
@@ -834,6 +842,8 @@ class SelectToSpeak {
       },
       // onRequestCancel: User requested canceling input/speech.
       onRequestCancel: () => {
+        // User manually requested cancel, so log cancel metric.
+        MetricsUtils.recordCancelIfSpeaking();
         this.cancelIfSpeaking_(true /* clear the focus ring */);
       },
       // onTextReceived: Text received from a 'paste' event to read aloud.
@@ -867,7 +877,8 @@ class SelectToSpeak {
             MetricsUtils.StateChangeEvent.START_SELECTION);
         break;
       case SelectToSpeakState.SPEAKING:
-        // Stop speaking.
+        // Stop speaking. User manually requested, so log cancel metric.
+        MetricsUtils.recordCancelIfSpeaking();
         this.cancelIfSpeaking_(true /* clear the focus ring */);
         MetricsUtils.recordSelectToSpeakStateChangeEvent(
             MetricsUtils.StateChangeEvent.CANCEL_SPEECH);
@@ -908,13 +919,19 @@ class SelectToSpeak {
         this.navigateToNextSentence_(constants.Dir.BACKWARD);
         break;
       case SelectToSpeakPanelAction.EXIT:
+        // User manually requested, so log cancel metric.
+        MetricsUtils.recordCancelIfSpeaking();
         this.stopAll_();
         break;
       case SelectToSpeakPanelAction.PAUSE:
+        MetricsUtils.recordPauseEvent();
         this.pause_();
         break;
       case SelectToSpeakPanelAction.RESUME:
-        this.resume_();
+        if (this.isPaused_()) {
+          MetricsUtils.recordResumeEvent();
+          this.resume_();
+        }
         break;
       case SelectToSpeakPanelAction.CHANGE_SPEED:
         if (!value) {
@@ -1465,16 +1482,12 @@ class SelectToSpeak {
   }
 
   /**
-   * Cancels the current speech queue after doing a callback to
-   * record a cancel event if speech was in progress. We must cancel
-   * before the callback (rather than in it) to avoid race conditions
-   * where cancel is called twice.
+   * Cancels the current speech queue.
    * @param {boolean} clearFocusRing Whether to clear the focus ring
    *    as well.
    * @private
    */
   cancelIfSpeaking_(clearFocusRing) {
-    chrome.tts.isSpeaking(MetricsUtils.recordCancelIfSpeaking);
     if (clearFocusRing) {
       this.stopAll_();
     } else {

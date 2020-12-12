@@ -2460,10 +2460,11 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
   std::string url;
-  if ([[self role] isEqualToString:@"AXWebArea"])
+  if ([[self role] isEqualToString:@"AXWebArea"]) {
     url = _owner->manager()->GetTreeData().url;
-  else
+  } else {
     url = _owner->GetStringAttribute(ax::mojom::StringAttribute::kUrl);
+  }
 
   if (url.empty())
     return nil;
@@ -3337,8 +3338,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if ([self internalRole] == ax::mojom::Role::kStaticText)
     [ret addObject:NSAccessibilityBoundsForRangeParameterizedAttribute];
 
-  if ([self internalRole] == ax::mojom::Role::kRootWebArea ||
-      [self internalRole] == ax::mojom::Role::kWebArea) {
+  if (_owner->IsPlatformDocument()) {
     [ret addObjectsFromArray:@[
       NSAccessibilityTextMarkerIsValidParameterizedAttribute,
       NSAccessibilityIndexForTextMarkerParameterizedAttribute,
@@ -3499,7 +3499,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   // Caret navigation and text selection attributes.
   if (_owner->HasState(ax::mojom::State::kEditable)) {
     // Add ancestor attributes if not a web area.
-    if (![role isEqualToString:@"AXWebArea"]) {
+    if (!_owner->IsPlatformDocument()) {
       [ret addObjectsFromArray:@[
         NSAccessibilityEditableAncestorAttribute,
         NSAccessibilityFocusableAncestorAttribute,

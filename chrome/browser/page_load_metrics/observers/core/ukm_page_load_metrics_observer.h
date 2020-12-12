@@ -141,9 +141,7 @@ class UkmPageLoadMetricsObserver
   void RecordRendererUsageMetrics();
 
   // Adds main resource timing metrics to |builder|.
-  void ReportMainResourceTimingMetrics(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      ukm::builders::PageLoad* builder);
+  void ReportMainResourceTimingMetrics(ukm::builders::PageLoad& builder);
 
   void ReportLayoutStability();
 
@@ -185,6 +183,10 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming* timing,
       base::TimeTicks page_end_time);
 
+  // Records a score from the SiteEngagementService. Called when the page
+  // becomes hidden, or at the end of the session if the page is never hidden.
+  void RecordSiteEngagement() const;
+
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
 
@@ -220,7 +222,8 @@ class UkmPageLoadMetricsObserver
   base::Optional<net::LoadTimingInfo> main_frame_timing_;
 
   // How the SiteInstance for the committed page was assigned a renderer.
-  content::SiteInstanceProcessAssignment render_process_assignment_;
+  base::Optional<content::SiteInstanceProcessAssignment>
+      render_process_assignment_;
 
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;

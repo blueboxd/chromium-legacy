@@ -5,40 +5,26 @@
 #ifndef ASH_SYSTEM_HOLDING_SPACE_DOWNLOADS_SECTION_H_
 #define ASH_SYSTEM_HOLDING_SPACE_DOWNLOADS_SECTION_H_
 
-#include <map>
+#include <memory>
 
-#include "ash/system/holding_space/holding_space_item_views_container.h"
+#include "ash/system/holding_space/holding_space_item_views_section.h"
 
 namespace ash {
 
-class HoldingSpaceItemChipsContainer;
-class HoldingSpaceItemView;
-
-// Section for downloads in the `RecentFilesContainer`.
-class DownloadsSection : public HoldingSpaceItemViewsContainer {
+// Section for downloads in the `RecentFilesBubble`.
+class DownloadsSection : public HoldingSpaceItemViewsSection {
  public:
   explicit DownloadsSection(HoldingSpaceItemViewDelegate* delegate);
   DownloadsSection(const DownloadsSection& other) = delete;
   DownloadsSection& operator=(const DownloadsSection& other) = delete;
   ~DownloadsSection() override;
 
-  // HoldingSpaceItemViewsContainer:
-  void ChildVisibilityChanged(views::View* child) override;
-  void ViewHierarchyChanged(const views::ViewHierarchyChangedDetails&) override;
-  bool ContainsHoldingSpaceItemView(const HoldingSpaceItem* item) override;
-  bool ContainsHoldingSpaceItemViews() override;
-  bool WillAddHoldingSpaceItemView(const HoldingSpaceItem* item) override;
-  void AddHoldingSpaceItemView(const HoldingSpaceItem* item) override;
-  void RemoveAllHoldingSpaceItemViews() override;
-  void AnimateIn(ui::LayerAnimationObserver* observer) override;
-  void AnimateOut(ui::LayerAnimationObserver* observer) override;
-
- private:
-  // Owned by view hierarchy.
-  HoldingSpaceItemChipsContainer* container_ = nullptr;
-  views::View* header_ = nullptr;
-
-  std::map<std::string, HoldingSpaceItemView*> views_by_item_id_;
+  // HoldingSpaceItemViewsSection:
+  const char* GetClassName() const override;
+  std::unique_ptr<views::View> CreateHeader() override;
+  std::unique_ptr<views::View> CreateContainer() override;
+  std::unique_ptr<HoldingSpaceItemView> CreateView(
+      const HoldingSpaceItem* item) override;
 };
 
 }  // namespace ash

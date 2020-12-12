@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ff44584b475b99e75bce4948c840abc67ebfb4f6',
+  'skia_revision': '346dd53ac087c37691edbba6923fe4ddaeaaa23a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4abdaef9a4ed49f097b3fd9514b8f21a25726636',
+  'v8_revision': 'da7e8b6d32ad49a5594c067d805edf9fdfc90f52',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -211,22 +211,22 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a77bc1f1e69056a533af0911d590538ae8900cdd',
+  'angle_revision': '8326b26a790f48a1d328413855e81cedeff1acc5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '0a64a974755521dbb2b16332002a927fb830a0d4',
+  'swiftshader_revision': '4f90750776f88d42c6ec2e5cef071d098fce3c15',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'dbfb3029b9fff176eef16a5871663965dfe1ce2a',
+  'pdfium_revision': '86263397d1497dcc189e474d1e6254d496ba4915',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '3094902fcdc2db2cc832fa854b9a6a8be383926c',
+  'boringssl_revision': '4ae71a4c7aea7287b7090dfa664bf9a1f30ea787',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'd5e21940e048558fb675d0f14b49d638430c8279',
+  'catapult_revision': '0991ca17bab38ad4d127abb3825c12849396ad24',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '549a44bb4574eb80884fdd3a9128ada54088ba19',
+  'devtools_frontend_revision': '6798d1b9dc149dfa31cea7feba6e59b6b6ed8cbb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -326,11 +326,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '6bcd4aceef100810284d61bd9dad0e9bd05e4c92',
+  'dawn_revision': 'ed883bc1d977e3c87579f206e094f36d443e1cfe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'a9b70f03e7a9de45e38417c72839c47f5eb5692c',
+  'quiche_revision': 'fc51e436c68ca83b495da0cc32996bd0dfc6dfe7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -354,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': '2097279b66bfec0f36970973d2b69357d2ff49b4',
+  'nearby_revision': '03db3f121129434cd1298c098b6d14444e488c01',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -365,7 +365,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'ccc67252ffa40dd723f0c114ac8906b3ad13b063',
+  'tint_revision': '4226b6a1d8bfa4add00f199c54a2c6d726a3ca57',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -898,7 +898,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '671ca647718ccfef15c28dbdf1f74cdd55902129',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '0a8e6d54fba6400d0f36eddf7923610b6da5b9e0',
       'condition': 'checkout_chromeos',
   },
 
@@ -918,7 +918,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c94b21d60ca4572c4f892a929f4ac0cff4af053f',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '99399caeacf6712571b3e188783e66aea517ae6f',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1290,7 +1290,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'fd5c6c03c06fe69a4f8ebd150a59934eee1e8e79',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '778b2c2169248818ce66d7f79d2e17280988689b',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1368,7 +1368,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'lqYVPTN0WyLejaaY--O8FXwWglNzfvEgJInJGg1I1RoC'
+              'version': 'VSu8Vtf9AtE1W0EtQ4GMhLufzBudMRrz3_8vRSuj0O4C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1612,7 +1612,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d8969b3b6ba6194569fad9b7307ba2e029f039e8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8093cb08ef8919c2e76eb383ae590b4ac09a5a45',
     'condition': 'checkout_src_internal',
   },
 
@@ -1620,7 +1620,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '154azMdJKklKh70adk32WF1u0WMDhj8zp2h72tYtSJgC',
+        'version': 'uy5XHEDp0PRtsgJbbd4msEw8daRlxeojctOjsJikhv8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1631,7 +1631,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'vOnUXWFNAfK7iM5OFR8VLHCr9MhWTjP6eAvxPYv4TjEC',
+        'version': 'oPbfH0SGPgdmwgZIaYCll3Gghrdsll3evPpO2h6YxXYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4350,6 +4350,14 @@ hooks = [
     'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
     'action': ['python', 'src/tools/clang/scripts/update.py',
                '--package=lld_mac'],
+  },
+  {
+    # Should run after the clang hook.
+    'name': 'objdump/mac',
+    'pattern': '.',
+    'condition': 'checkout_mac and host_os != "mac"',
+    'action': ['python', 'src/tools/clang/scripts/update.py',
+               '--package=objdump'],
   },
   {
     # Update LASTCHANGE.

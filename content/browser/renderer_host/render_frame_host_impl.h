@@ -590,6 +590,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the POST ID of the last committed navigation.
   int64_t last_post_id() { return last_post_id_; }
 
+  // Returns true if the last committed navigation is for an error page.
+  bool is_error_page() { return is_error_page_; }
+
   // Returns true if |dest_url_info| should be considered the same site as the
   // current contents of this frame. This is the primary entry point for
   // determining if a navigation to |dest_url_info| should stay in this
@@ -2306,6 +2309,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool should_replace_current_entry,
       const NavigationGesture& gesture,
       const std::vector<GURL>& redirects,
+      const GURL& original_request_url,
       const blink::PageState& page_state,
       bool is_same_document,
       bool is_same_document_history_api_navigation);
@@ -2667,13 +2671,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   GURL last_successful_url_;
 
   // The http method of the last committed navigation.
-  std::string last_http_method_;
+  std::string last_http_method_ = "GET";
 
   // The http status code of the last committed navigation.
   int last_http_status_code_ = 0;
 
   // The POST ID of the last committed navigation.
   int64_t last_post_id_ = 0;
+
+  // Whether the last committed navigation is to an error page.
+  bool is_error_page_ = false;
 
   // Local root subframes directly own their RenderWidgetHost.
   // Please see comments about the GetLocalRenderWidgetHost() function.
@@ -3105,6 +3112,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whether the currently committed document is a result of webview's
   // loadDataWithBaseURL API or not.
   bool is_loaded_from_load_data_with_base_url_ = false;
+
+  // Whether the currently committed document is a result of webview's
+  // loadDataWithBaseURL API and the renderer has a non-empty unreachable URL.
+  // See NavigationRequest::IsLoadDataWithBaseURLAndUnreachableURL for more
+  // details.
+  bool is_loaded_from_load_data_with_base_url_and_unreachable_url_ = false;
 
   // The last reported character encoding, not canonicalized.
   std::string last_reported_encoding_;

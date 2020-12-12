@@ -237,18 +237,6 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
   }
 }
 
-bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AwRenderFrameExt, message)
-    IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
-                        OnResetScrollAndScaleState)
-    IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
-    IPC_MESSAGE_HANDLER(AwViewMsg_SmoothScroll, OnSmoothScroll)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void AwRenderFrameExt::FocusedElementChanged(const blink::WebElement& element) {
   if (element.IsNull() || !render_frame() || !render_frame()->GetRenderView())
     return;
@@ -300,28 +288,20 @@ void AwRenderFrameExt::HitTest(const gfx::PointF& touch_center,
   GetFrameHost()->UpdateHitTestData(std::move(data));
 }
 
-void AwRenderFrameExt::OnResetScrollAndScaleState() {
-  blink::WebView* webview = GetWebView();
-  if (!webview)
-    return;
-
-  webview->ResetScrollAndScaleState();
-}
-
-void AwRenderFrameExt::OnSetInitialPageScale(double page_scale_factor) {
-  blink::WebView* webview = GetWebView();
-  if (!webview)
-    return;
-
-  webview->SetInitialPageScaleOverride(page_scale_factor);
-}
-
 void AwRenderFrameExt::SetBackgroundColor(SkColor c) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
   webview->SetBaseBackgroundColor(c);
+}
+
+void AwRenderFrameExt::SetInitialPageScale(double page_scale_factor) {
+  blink::WebView* webview = GetWebView();
+  if (!webview)
+    return;
+
+  webview->SetInitialPageScaleOverride(page_scale_factor);
 }
 
 void AwRenderFrameExt::SetTextZoomFactor(float zoom_factor) {
@@ -352,14 +332,22 @@ void AwRenderFrameExt::DocumentHasImage(DocumentHasImageCallback callback) {
   std::move(callback).Run(has_images);
 }
 
-void AwRenderFrameExt::OnSmoothScroll(int target_x,
-                                      int target_y,
-                                      base::TimeDelta duration) {
+void AwRenderFrameExt::SmoothScroll(int32_t target_x,
+                                    int32_t target_y,
+                                    base::TimeDelta duration) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
   webview->SmoothScroll(target_x, target_y, duration);
+}
+
+void AwRenderFrameExt::ResetScrollAndScaleState() {
+  blink::WebView* webview = GetWebView();
+  if (!webview)
+    return;
+
+  webview->ResetScrollAndScaleState();
 }
 
 blink::WebView* AwRenderFrameExt::GetWebView() {

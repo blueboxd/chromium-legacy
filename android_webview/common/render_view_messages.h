@@ -20,22 +20,6 @@
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
-// Resets WebKit WebView scrolling and scale state. We need to send this
-// message whenever we want to guarantee that page's scale will be
-// recalculated by WebKit.
-IPC_MESSAGE_ROUTED0(AwViewMsg_ResetScrollAndScaleState)
-
-// Sets the initial page scale. This overrides initial scale set by
-// the meta viewport tag.
-IPC_MESSAGE_ROUTED1(AwViewMsg_SetInitialPageScale,
-                    double /* page_scale_factor */)
-
-// Tells blink to smooth scroll to the specified location within |duration_ms|.
-IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,
-                    int /* target_x */,
-                    int /* target_y */,
-                    base::TimeDelta /* duration */)
-
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

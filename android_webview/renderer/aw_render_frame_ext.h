@@ -44,22 +44,20 @@ class AwRenderFrameExt : public content::RenderFrameObserver,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
 
-  bool OnMessageReceived(const IPC::Message& message) override;
   void FocusedElementChanged(const blink::WebElement& element) override;
   void OnDestruct() override;
 
-  void OnResetScrollAndScaleState();
-
-  void OnSetInitialPageScale(double page_scale_factor);
-
-  void OnSmoothScroll(int target_x, int target_y, base::TimeDelta duration);
-
   // mojom::LocalMainFrame overrides:
   void SetBackgroundColor(SkColor c) override;
+  void SetInitialPageScale(double page_scale_factor) override;
   void SetTextZoomFactor(float zoom_factor) override;
   void HitTest(const gfx::PointF& touch_center,
                const gfx::SizeF& touch_area) override;
   void DocumentHasImage(DocumentHasImageCallback callback) override;
+  void ResetScrollAndScaleState() override;
+  void SmoothScroll(int32_t target_x,
+                    int32_t target_y,
+                    base::TimeDelta duration) override;
 
   void BindLocalMainFrame(
       mojo::PendingAssociatedReceiver<mojom::LocalMainFrame> pending_receiver);

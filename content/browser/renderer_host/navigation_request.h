@@ -216,10 +216,13 @@ class CONTENT_EXPORT NavigationRequest
       bool should_replace_current_entry,
       const std::string& method,
       const NavigationGesture& gesture,
+      bool is_overriding_user_agent,
       const std::vector<GURL>& redirects,
+      const GURL& original_url,
       const blink::PageState& page_state,
       std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
-      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
+      int http_response_code);
 
   static NavigationRequest* From(NavigationHandle* handle);
 
@@ -703,6 +706,15 @@ class CONTENT_EXPORT NavigationRequest
   static bool IsLoadDataWithBaseURL(
       const mojom::CommonNavigationParams& common_params);
 
+  // Returns true if the params represent a WebView loadDataWithBaseUrl
+  // navigation that has a non-empty unreachable URL in the renderer. See
+  // https://crbug.com/522567 and handling of data: URLs in
+  // RenderFrameImpl::CommitNavigation() for more details.
+  static bool IsLoadDataWithBaseURLAndUnreachableURL(
+      bool is_main_frame,
+      const mojom::CommonNavigationParams& common_params,
+      const base::Optional<std::string>& data_url_as_string);
+
   // Will calculate an *approximation* of the origin that this NavigationRequest
   // will commit.  (An "approximation", because sandboxing is not taken into
   // account - see https://crbug.com/1041376.  The approximation is still good
@@ -740,6 +752,33 @@ class CONTENT_EXPORT NavigationRequest
   const net::IsolationInfo& isolation_info_for_subresources() const {
     return isolation_info_for_subresources_;
   }
+
+  // NeedsUrlLoader() returns true if the navigation needs to use the
+  // NavigationURLLoader for loading the document.
+  //
+  // A few types of navigations don't make any network requests. They can be
+  // committed immediately in BeginNavigation(). They self-contain the data
+  // needed for commit:
+  // - about:blank: The renderer already knows how to load the empty document.
+  // - about:srcdoc: The data is stored in the iframe srcdoc attribute.
+  // - same-document: Only the history and URL are updated, no new document.
+  // - MHTML subframe: The data is in the archive, owned by the main frame.
+  //
+  // Note #1: Even though "data:" URLs don't generate actual network requests,
+  // including within MHTML subframes, they are still handled by the network
+  // stack. The reason is that a few of them can't always be handled otherwise.
+  // For instance:
+  //  - the ones resulting in downloads.
+  //  - the "invalid" ones. An error page is generated instead.
+  //  - the ones with an unsupported MIME type.
+  //  - the ones targeting the top-level frame on Android.
+  //
+  // Note #2: Even though "javascript:" URL and RendererDebugURL fit very well
+  // in this category, they don't use the NavigationRequest.
+  //
+  // Note #3: Navigations that do not use a URL loader also bypass
+  //          NavigationThrottle.
+  bool NeedsUrlLoader();
 
  private:
   friend class NavigationRequestTest;
@@ -1008,33 +1047,6 @@ class CONTENT_EXPORT NavigationRequest
   // Updates the state of the navigation handle after encountering a server
   // redirect.
   void UpdateStateFollowingRedirect(const GURL& new_referrer_url);
-
-  // NeedsUrlLoader() returns true if the navigation needs to use the
-  // NavigationURLLoader for loading the document.
-  //
-  // A few types of navigations don't make any network requests. They can be
-  // committed immediately in BeginNavigation(). They self-contain the data
-  // needed for commit:
-  // - about:blank: The renderer already knows how to load the empty document.
-  // - about:srcdoc: The data is stored in the iframe srcdoc attribute.
-  // - same-document: Only the history and URL are updated, no new document.
-  // - MHTML subframe: The data is in the archive, owned by the main frame.
-  //
-  // Note #1: Even though "data:" URLs don't generate actual network requests,
-  // including within MHTML subframes, they are still handled by the network
-  // stack. The reason is that a few of them can't always be handled otherwise.
-  // For instance:
-  //  - the ones resulting in downloads.
-  //  - the "invalid" ones. An error page is generated instead.
-  //  - the ones with an unsupported MIME type.
-  //  - the ones targeting the top-level frame on Android.
-  //
-  // Note #2: Even though "javascript:" URL and RendererDebugURL fit very well
-  // in this category, they don't use the NavigationRequest.
-  //
-  // Note #3: Navigations that do not use a URL loader also bypass
-  //          NavigationThrottle.
-  bool NeedsUrlLoader();
 
   // Returns whether the ready-to-commit navigation will yield a secure context.
   //

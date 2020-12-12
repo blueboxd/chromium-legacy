@@ -82,14 +82,14 @@ void AwRenderViewHostExt::SetTextZoomFactor(float factor) {
 
 void AwRenderViewHostExt::ResetScrollAndScaleState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_ResetScrollAndScaleState(
-      web_contents()->GetMainFrame()->GetRoutingID()));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->ResetScrollAndScaleState();
 }
 
 void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SetInitialPageScale(
-      web_contents()->GetMainFrame()->GetRoutingID(), page_scale_factor));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->SetInitialPageScale(page_scale_factor);
 }
 
 void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
@@ -108,9 +108,8 @@ void AwRenderViewHostExt::SetWillSuppressErrorPage(bool suppress) {
 void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        int target_y,
                                        base::TimeDelta duration) {
-  web_contents()->GetMainFrame()->Send(
-      new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
-                                 target_x, target_y, duration));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->SmoothScroll(target_x, target_y, duration);
 }
 
 void AwRenderViewHostExt::RenderFrameCreated(

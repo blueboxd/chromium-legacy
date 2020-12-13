@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1aa1f5fcbac60351ea0a3cb76480c63a1b61f511',
+  'skia_revision': '5d8f55bfa851a55fa7e111b9a4f1fd063509eca5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -326,7 +326,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '9c52c2997c81ceb77bd014a1f7c0f6f22bdcfddb',
+  'dawn_revision': 'fb6c21547e6c5bc2053c15169769397e6584c9d2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -365,7 +365,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '4226b6a1d8bfa4add00f199c54a2c6d726a3ca57',
+  'tint_revision': '2abecbba167074d667e44ac66ee3989bd991de08',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1612,7 +1612,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5be39fb7861ccbc7d904d84dad087c281ebca661',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@81509ce93771412fbe35100540bc88495cafeaa0',
     'condition': 'checkout_src_internal',
   },
 
@@ -1631,7 +1631,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'oPbfH0SGPgdmwgZIaYCll3Gghrdsll3evPpO2h6YxXYC',
+        'version': 'albbsxhTIcFY3fFkiRZo0j9pwhGrurAcej5Lf_sNZgYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

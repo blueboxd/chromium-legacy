@@ -88,11 +88,16 @@ int SafeDMG::Main(int argc, const char* argv[]) {
   if (argc == 3 && !PrepareUnpack(argv[2]))
     return EXIT_FAILURE;
 
-  if (!EnableSandbox())
-    return EXIT_FAILURE;
+  if (__builtin_available(macOS 10.10, *)) {
+    if (!EnableSandbox())
+      return EXIT_FAILURE;
 
-  if (!ParseDMG())
+    if (!ParseDMG())
+      return EXIT_FAILURE;
+  } else {
+    LOG(ERROR) << "Requires 10.10 or higher";
     return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }

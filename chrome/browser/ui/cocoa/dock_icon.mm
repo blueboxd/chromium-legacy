@@ -136,8 +136,15 @@ constexpr int64_t kUpdateFrequencyMs = 200;
   NSSize countSize = NSZeroSize;
   base::scoped_nsobject<NSAttributedString> countAttrString;
   while (1) {
-    NSFont* countFont = [NSFont systemFontOfSize:countFontSize
-                                          weight:NSFontWeightMedium];
+    NSFont* countFont;
+    if (@available(macOS 10.11, *)) {
+      countFont =
+          [NSFont systemFontOfSize:countFontSize weight:NSFontWeightMedium];
+    } else {
+      countFont = [[NSFontManager sharedFontManager]
+          convertWeight:YES
+                 ofFont:[NSFont systemFontOfSize:countFontSize]];
+    }
 
     // This will generally be plain Helvetica.
     if (!countFont)

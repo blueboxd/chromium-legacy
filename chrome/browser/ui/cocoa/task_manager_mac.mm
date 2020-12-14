@@ -323,8 +323,13 @@ NSString* ColumnIdentifier(int id) {
   [dataCell setAlignment:textAlignment];
 
   const CGFloat smallSystemFontSize = [NSFont smallSystemFontSize];
-  NSFont* font = [NSFont monospacedDigitSystemFontOfSize:smallSystemFontSize
-                                                  weight:NSFontWeightRegular];
+  NSFont* font = nil;
+  if (@available(macOS 10.11, *)) {
+    font = [NSFont monospacedDigitSystemFontOfSize:smallSystemFontSize
+                                            weight:NSFontWeightRegular];
+  } else {
+    font = [NSFont systemFontOfSize:smallSystemFontSize];
+  }
   [dataCell setFont:font];
 
   [column.get() setHidden:!columnData.default_visibility];

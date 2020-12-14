@@ -38,6 +38,12 @@ constexpr base::TimeDelta kInitialRequestDelay =
     base::TimeDelta::FromMilliseconds(100);
 constexpr base::TimeDelta kMaxRequestDelay = base::TimeDelta::FromMinutes(5);
 
+#if BUILDFLAG(SYSTEM_SLOT_SOFTWARE_FALLBACK)
+constexpr bool kIsSystemSlotSoftwareFallbackAllowed = true;
+#else
+constexpr bool kIsSystemSlotSoftwareFallbackAllowed = false;
+#endif
+
 // Called on UI Thread when the system slot has been retrieved.
 void GotSystemSlotOnUIThread(
     base::OnceCallback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
@@ -83,15 +89,6 @@ bool ShallAttemptTpmOwnership() {
 #endif
 }
 
-// Checks if the build flag system_slot_software_fallback is enabled.
-bool IsSystemSlotSoftwareFallbackEnabled() {
-#if BUILDFLAG(SYSTEM_SLOT_SOFTWARE_FALLBACK)
-  return true;
-#else
-  return false;
-#endif
-}
-
 // Calculates the delay before running next attempt to get the TPM state
 // (enabled/disabled), if |last_delay| was the last or initial delay.
 base::TimeDelta GetNextRequestDelay(base::TimeDelta last_delay) {
@@ -110,7 +107,9 @@ constexpr base::TimeDelta
     SystemTokenCertDBInitializer::kMaxCertDbRetrievalDelay;
 
 SystemTokenCertDBInitializer::SystemTokenCertDBInitializer()
-    : tpm_request_delay_(kInitialRequestDelay) {
+    : tpm_request_delay_(kInitialRequestDelay),
+      is_system_slot_software_fallback_allowed_(
+          kIsSystemSlotSoftwareFallbackAllowed) {
   // Only start loading the system token once cryptohome is available and only
   // if the TPM is ready (available && owned && not being owned).
   CryptohomeClient::Get()->WaitForServiceToBeAvailable(
@@ -207,16 +206,10 @@ void SystemTokenCertDBInitializer::OnCryptohomeAvailable(bool available) {
 }
 
 void SystemTokenCertDBInitializer::CheckTpm() {
-  if (IsSystemSlotSoftwareFallbackEnabled()) {
-    TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
-        ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
-        base::BindOnce(&SystemTokenCertDBInitializer::OnGetTpmStatus,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    CryptohomeClient::Get()->TpmIsReady(
-        base::BindOnce(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
+  TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+      ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
+      base::BindOnce(&SystemTokenCertDBInitializer::OnGetTpmNonsensitiveStatus,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SystemTokenCertDBInitializer::RetryCheckTpmLater() {
@@ -228,7 +221,7 @@ void SystemTokenCertDBInitializer::RetryCheckTpmLater() {
   tpm_request_delay_ = GetNextRequestDelay(tpm_request_delay_);
 }
 
-void SystemTokenCertDBInitializer::OnGetTpmStatus(
+void SystemTokenCertDBInitializer::OnGetTpmNonsensitiveStatus(
     const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -238,39 +231,35 @@ void SystemTokenCertDBInitializer::OnGetTpmStatus(
     return;
   }
 
-  // When the software fallback flag is set and the TPM is disabled, we skip the
-  // TpmIsReady() call. Otherwise, because the TPM won't be ready and will never
-  // be signaled as such, we won't proceed to the database initialization.
-  if (!reply.is_enabled()) {
+  // There are 2 cases we start initializing the database at this point: 1. TPM
+  // is ready, i.e., owned, or 2. TPM is disabled but software fallback is
+  // allowed. Note that we don't fall back to software solution as long as TPM
+  // is enabled.
+  if (reply.is_owned() ||
+      (!reply.is_enabled() && is_system_slot_software_fallback_allowed_)) {
+    VLOG_IF(1, !reply.is_owned())
+        << "Initializing database when TPM is not owned.";
     MaybeStartInitializingDatabase();
     return;
   }
 
-  CryptohomeClient::Get()->TpmIsReady(
-      base::BindOnce(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void SystemTokenCertDBInitializer::OnGotTpmIsReady(
-    base::Optional<bool> tpm_is_ready) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!tpm_is_ready.has_value() || !tpm_is_ready.value()) {
+  // If the TPM is enabled but not owned yet, request taking TPM initialization;
+  // when it's done, the ownership taken signal triggers database
+  // initialization.
+  if (reply.is_enabled() && !reply.is_owned()) {
     VLOG(1) << "SystemTokenCertDBInitializer: TPM is not ready - not loading "
                "system token.";
     if (ShallAttemptTpmOwnership()) {
-      // Signal to cryptohome that it can attempt TPM ownership, if it
-      // haven't done that yet. The previous signal from EULA dialogue could
-      // have been lost if initialization was interrupted.
-      // We don't care about the result, and don't block waiting for it.
-      LOG(WARNING) << "Request attempting TPM ownership.";
+      // Requests tpm manager to initialize TPM, if it haven't done that yet.
+      // The previous request from EULA dialogue could have been lost if
+      // initialization was interrupted. We don't care about the result, and
+      // don't block waiting for it.
+      LOG(WARNING) << "Request taking TPM ownership.";
       TpmManagerClient::Get()->TakeOwnership(
           ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
     }
-
     return;
   }
-  MaybeStartInitializingDatabase();
 }
 
 void SystemTokenCertDBInitializer::MaybeStartInitializingDatabase() {

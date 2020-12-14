@@ -9,6 +9,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//chrome/browser/consent_auditor/android:java",
+    "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/signin/services/android:java",
     "//components/browser_ui/settings/android:java",
@@ -25,6 +26,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/signin/ui/ConfirmImportSyncDataDialog.java",
     "java/src/org/chromium/chrome/browser/signin/ui/ConfirmManagedSyncDataDialog.java",
+    "java/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachine.java",
     "java/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachineDelegate.java",
     "java/src/org/chromium/chrome/browser/signin/ui/ConsentTextTracker.java",
     "java/src/org/chromium/chrome/browser/signin/ui/GoogleActivityController.java",
@@ -32,6 +34,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/signin/ui/SigninActivityLauncher.java",
     "java/src/org/chromium/chrome/browser/signin/ui/SigninScrollView.java",
     "java/src/org/chromium/chrome/browser/signin/ui/SigninView.java",
+    "java/src/org/chromium/chrome/browser/signin/ui/account_picker/AccountPickerFeatureUtils.java",
   ]
   resources_package = "org.chromium.chrome.browser.signin.ui"
 }
@@ -59,10 +62,16 @@ android_resources("java_resources") {
 android_library("junit") {
   bypass_platform_checks = true
   testonly = true
-  sources = [ "junit/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachineDelegateTest.java" ]
+  sources = [
+    "junit/src/org/chromium/chrome/browser/signin/ui/ConfirmImportSyncDataDialogTest.java",
+    "junit/src/org/chromium/chrome/browser/signin/ui/ConfirmManagedSyncDataDialogTest.java",
+    "junit/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachineDelegateTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_junit_test_support",
+    "//chrome/browser/profiles/android:java",
+    "//chrome/browser/signin/services/android:java",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:robolectric_all_java",

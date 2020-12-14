@@ -989,6 +989,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-008
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-014.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-015.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-001.xht [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Pass ]
@@ -1036,7 +1037,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mul
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-003.xht [ Crash Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-009.html [ Crash Failure ]
 crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure Crash ]
-crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Crash Failure ]
 crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
 crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure Timeout ]
@@ -1095,7 +1095,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/transform-with-fixedpos.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/widows.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html [ Failure ]
 
@@ -1890,8 +1889,6 @@ crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-from-gu
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-connect-src-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/navigation/to-javascript-parent-initiated-child-csp.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/form-action/form-action-src-redirect-blocked.sub.html [ Skip ]
-crbug.com/694525 external/wpt/content-security-policy/script-src/worker-importscripts-blocked.sub.html [ Skip ]
-crbug.com/694525 external/wpt/content-security-policy/script-src/worker-set-timeout-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/unsafe-eval/eval-blocked-in-about-blank-iframe.sub.html [ Skip ]
 
 # These tests will be added back soon:
@@ -5777,10 +5774,6 @@ crbug.com/1042877 http/tests/security/mixedContent/strict-mode-via-pref-image-bl
 
 # Mixed content autoupgrades cause test to fail because test relied on http subresources to test a different origin, needs to be changed to not rely on HTTP URLs.
 crbug.com/1042877 http/tests/security/img-crossorigin-redirect-credentials.https.html [ Failure ]
-
-# Temporarily disable tests to land DevTools frontend changes
-crbug.com/1152082 http/tests/devtools/a11y-axe-core/sources/call-stack-a11y-test.js [ Pass Failure Timeout ]
-crbug.com/1152082 http/tests/devtools/tracing/timeline-js/timeline-js-blackboxing.js [ Pass Failure Timeout ]
 
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]

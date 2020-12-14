@@ -2688,7 +2688,7 @@ if (!is_android) {
         "../browser/chromeos/policy/display_rotation_default_handler_browsertest.cc",
         "../browser/chromeos/policy/dlp/data_transfer_dlp_controller_browsertest.cc",
         "../browser/chromeos/policy/dlp/dlp_content_manager_browsertest.cc",
-        "../browser/chromeos/policy/dlp/dlp_rules_manager_browsertest.cc",
+        "../browser/chromeos/policy/dlp/dlp_rules_manager_impl_browsertest.cc",
         "../browser/chromeos/policy/dlp/dlp_rules_manager_test_utils.cc",
         "../browser/chromeos/policy/dlp/dlp_rules_manager_test_utils.h",
         "../browser/chromeos/policy/dlp/mock_dlp_content_manager.cc",
@@ -5095,6 +5095,7 @@ test("unit_tests") {
       "//chromeos/services/machine_learning/public/cpp:test_support",
       "//chromeos/services/nearby/public/cpp:test_support",
       "//components/arc:arc_test_support",
+      "//components/full_restore:unit_tests",
     ]
   }
 

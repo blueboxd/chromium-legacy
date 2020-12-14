@@ -944,6 +944,13 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
 }
 
 // static
+RenderFrameHost* RenderFrameHost::FromFrameToken(
+    int process_id,
+    const base::UnguessableToken& token) {
+  return RenderFrameHostImpl::FromFrameToken(process_id, token);
+}
+
+// static
 void RenderFrameHost::AllowInjectingJavaScript() {
   g_allow_injecting_javascript = true;
 }
@@ -2110,6 +2117,13 @@ void RenderFrameHostImpl::ValidateStateForBug1146573() {
   }
 }
 
+void RenderFrameHostImpl::DumpWithoutCrashingIfRenderFrameCreatedBug1146573() {
+  if (render_frame_created_) {
+    base::debug::DumpWithoutCrashing();
+    NOTREACHED();
+  }
+}
+
 void RenderFrameHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
@@ -2120,17 +2134,14 @@ void RenderFrameHostImpl::RenderProcessExited(
   // that its child frames must be cleaned up as well.
   ResetChildren();
 
+  // In https://crbug.com/1146573 we see render_frame_created_ being true
+  // immediately after RenderFrameDeleted. This should tell us how it is being
+  // created.
+  ++dump_on_render_frame_created_for_bug_1146573_;
   // Reset state for the current RenderFrameHost once the FrameTreeNode has been
   // reset.
   RenderFrameDeleted();
-  // In https://crbug.com/1146573 we see render_frame_created_ being true again
-  // by the time we reach `must_be_replaced_ = true` below. This should tell us
-  // how that is happening.
-  ++dump_on_render_frame_created_for_bug_1146573_;
-  if (render_frame_created_) {
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED();
-  }
+  DumpWithoutCrashingIfRenderFrameCreatedBug1146573();
   InvalidateMojoConnection();
   broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
@@ -2512,15 +2523,18 @@ void RenderFrameHostImpl::RenderFrameCreated() {
 void RenderFrameHostImpl::RenderFrameDeleted() {
   bool was_created = render_frame_created_;
   render_frame_created_ = false;
+  DumpWithoutCrashingIfRenderFrameCreatedBug1146573();
 
   // If the current status is different than the new status, the delegate
   // needs to be notified.
   if (was_created) {
     delegate_->RenderFrameDeleted(this);
   }
+  DumpWithoutCrashingIfRenderFrameCreatedBug1146573();
   if (web_ui_) {
     web_ui_->InvalidateMojoConnection();
   }
+  DumpWithoutCrashingIfRenderFrameCreatedBug1146573();
 }
 
 void RenderFrameHostImpl::SwapIn() {
@@ -5097,12 +5111,15 @@ void RenderFrameHostImpl::OpenURL(mojom::OpenURLParamsPtr params) {
 
   frame_tree_node_->navigator().RequestOpenURL(
       this, validated_url,
-      GlobalFrameRoutingId(GetProcess()->GetID(), params->initiator_routing_id),
-      params->initiator_origin, params->post_body, params->extra_headers,
-      params->referrer.To<content::Referrer>(), params->disposition,
-      params->should_replace_current_entry, params->user_gesture,
-      params->triggering_event_info, params->href_translate,
-      std::move(blob_url_loader_factory), params->impression);
+      params->initiator_frame_token.has_value()
+          ? &(params->initiator_frame_token.value())
+          : nullptr,
+      GetProcess()->GetID(), params->initiator_origin, params->post_body,
+      params->extra_headers, params->referrer.To<content::Referrer>(),
+      params->disposition, params->should_replace_current_entry,
+      params->user_gesture, params->triggering_event_info,
+      params->href_translate, std::move(blob_url_loader_factory),
+      params->impression);
 }
 
 void RenderFrameHostImpl::DidStopLoading() {

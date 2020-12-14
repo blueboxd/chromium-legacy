@@ -2177,7 +2177,7 @@
   {
     "name": "enable-sharesheet",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 92
   },
   {
     "name": "enable-sharesheet-content-previews",
@@ -3832,7 +3832,7 @@
   {
     "name": "page-info-version-2",
     "owners": [ "eokoyomon", "dullweber" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "paint-preview-demo",
@@ -3997,6 +3997,7 @@
     "owners": [
       "harrisonsean",
       "sauski",
+      "andzaytsev",
       "msramek",
       "chrome-friendly-settings@google.com"],
     "expiry_milestone": 92

@@ -282,6 +282,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   static RenderFrameHostImpl* FromFrameToken(
       int process_id,
       const base::UnguessableToken& frame_token);
+
   static RenderFrameHostImpl* FromAXTreeID(ui::AXTreeID ax_tree_id);
   static RenderFrameHostImpl* FromOverlayRoutingToken(
       const base::UnguessableToken& token);
@@ -2598,6 +2599,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // TODO(https://crbug.com/1146573): Remove this when the bug is closed.
   void ValidateStateForBug1146573();
+  void DumpWithoutCrashingIfRenderFrameCreatedBug1146573();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

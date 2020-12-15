@@ -32,7 +32,7 @@ class AccessibilityWindowInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool IsVirtualNode() const override;
   bool IsIgnored() const override;
   bool IsImportantInAndroid() const override;
-  bool CanBeAccessibilityFocused() const override;
+  bool IsFocusableInFullFocusMode() const override;
   bool IsAccessibilityFocusableContainer() const override;
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
@@ -40,6 +40,7 @@ class AccessibilityWindowInfoDataWrapper : public AccessibilityInfoDataWrapper {
   std::string ComputeAXName(bool do_recursive) const override;
   void GetChildren(
       std::vector<AccessibilityInfoDataWrapper*>* children) const override;
+  int32_t GetWindowId() const override;
 
  private:
   bool GetProperty(mojom::AccessibilityWindowBooleanProperty prop) const;

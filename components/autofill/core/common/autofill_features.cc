@@ -46,9 +46,6 @@ const base::Feature kAutofillAllowDuplicateFormSubmissions{
 const base::Feature kAutofillAllowNonHttpActivation{
     "AutofillAllowNonHttpActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillAlwaysFillAddresses{
-    "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls the use of GET (instead of POST) to fetch cacheable autofill query
 // responses.
 const base::Feature kAutofillCacheQueryResponses{
@@ -81,6 +78,12 @@ const base::Feature kAutofillEnableAccountWalletStorage {
 // TODO(crbug.com/1150890) Remove once launched
 const base::Feature kAutofillEnableAugmentedPhoneCountryCode{
     "AutofillEnableAugmentedPhoneCountryCode",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls if Autofill parses ADDRESS_HOME_DEPENDENT_LOCALITY.
+// TODO(crbug.com/1157405): Remove once launched.
+const base::Feature kAutofillEnableDependentLocalityParsing{
+    "AutofillEnableDependentLocalityParsing",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether we show "Hide suggestions" item in the suggestions menu.
@@ -187,6 +190,11 @@ const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
 
 const base::Feature kAutofillOffNoServerData{"AutofillOffNoServerData",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Autofill will load remote patterns via the component updater.
+// TODO(crbug/1121990): Remove once launched.
+extern const base::Feature kAutofillParsingPatternsFromRemote{
+    "AutofillParsingPatternsFromRemote", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether negative patterns are used to parse the field type.
 // TODO(crbug.com/1132831): Remove once launched.
@@ -298,11 +306,6 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, Autofill will load remote patterns via the component updater.
-// TODO(crbug/1121990): Remove once launched.
-extern const base::Feature kAutofillParsingPatternsFromRemote{
-    "AutofillParsingPatternsFromRemote", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is

@@ -1079,22 +1079,29 @@ NavigationRequest::NavigationRequest(
 
   policy_container_host_ = std::make_unique<PolicyContainerHost>();
 
-  // If there is a history entry with some document policies, initialize the
-  // PolicyContainerHost with them, so that they will get applied to the
-  // document created by the navigation.
   if (frame_entry && frame_entry->document_policies()) {
+    // If there is a history entry with some document policies, initialize the
+    // PolicyContainerHost with them, so that they will get applied to the
+    // document created by the navigation.
     policy_container_host_ = std::make_unique<PolicyContainerHost>(
         *frame_entry->document_policies());
+  } else if (common_params_->url.IsAboutSrcdoc()) {
+    // Srcdoc iframes inherit their policies from their parent.
+    // If there is no parent, the navigation will be blocked in BeginNavigation.
+    if (frame_tree_node_->parent()) {
+      policy_container_host_ =
+          frame_tree_node_->parent()->policy_container_host()->Clone();
+    }
+  } else if (common_params_->url.SchemeIs(url::kAboutScheme) ||
+             common_params_->url.SchemeIs(url::kDataScheme) ||
+             common_params_->url.SchemeIs(url::kBlobScheme) ||
+             common_params_->url.SchemeIs(url::kFileSystemScheme)) {
     // Local schemes inherit the policy container  from the initiator.
     //
     // TODO(antoniosartori): Fill up the PolicyContainerHost and/or replace it
     // with a new one whenever needed (e.g. blob: or filesystem: URLs should get
     // the policy container from the document which created them and not from
     // the initiator of the navigation).
-  } else if (common_params_->url.SchemeIs(url::kAboutScheme) ||
-             common_params_->url.SchemeIs(url::kDataScheme) ||
-             common_params_->url.SchemeIs(url::kBlobScheme) ||
-             common_params_->url.SchemeIs(url::kFileSystemScheme)) {
     if (initiator_frame_token_) {
       RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
           initiator_process_id_, initiator_frame_token_.value());
@@ -1108,6 +1115,16 @@ NavigationRequest::NavigationRequest(
       }
     }
   }
+
+  // Initialize the ClientSecurityState's COEP to that of the current document.
+  // It will be updated when a network response is received. For navigations
+  // that do not result in a network request, the COEP of the current document
+  // is passed to the next one.
+  // TODO(pmeuleman, clamy): Should we take into account the initiator COEP
+  // instead?
+  client_security_state_->cross_origin_embedder_policy =
+      frame_tree_node_->current_frame_host()->cross_origin_embedder_policy();
+
   NavigationControllerImpl* controller = GetNavigationController();
 
   if (frame_entry) {
@@ -1428,7 +1445,7 @@ void NavigationRequest::BeginNavigation() {
     EnterChildTraceEvent("ResponseStarted", this);
 
     is_loaded_from_mhtml_archive_ = IsForMhtmlSubframe();
-    ComputeSandboxFlagsToCommit();
+    ComputeSandboxFlagsToCommit(/*response_head=*/nullptr);
 
     // Same-document navigations occur in the currently loaded document. See
     // also RenderFrameHostManager::DidCreateNavigationRequest() which will
@@ -2215,7 +2232,7 @@ void NavigationRequest::OnResponseStarted(
 
   is_loaded_from_mhtml_archive_ = is_mhtml_archive || IsForMhtmlSubframe();
 
-  ComputeSandboxFlagsToCommit();
+  ComputeSandboxFlagsToCommit(response_head_.get());
 
   // The navigation may have encountered an origin policy or Origin-Isolation
   // header that requests isolation for the url's origin. Before we pick the
@@ -2424,14 +2441,8 @@ void NavigationRequest::OnResponseStarted(
   if (!render_frame_host_)
     DCHECK(!response_should_be_rendered_);
 
-  if (render_frame_host_) {
+  if (render_frame_host_)
     DetermineOriginIsolationEndResult(IsOptInIsolationRequested(GetURL()));
-
-    // TODO(pmeuleman, ahemery): Only set COEP values on RenderFrameHost when
-    // the navigation commits. In the meantime, keep them in NavigationRequest.
-    render_frame_host_->set_cross_origin_embedder_policy(
-        cross_origin_embedder_policy);
-  }
   client_security_state_->cross_origin_embedder_policy =
       cross_origin_embedder_policy;
 
@@ -3202,7 +3213,12 @@ void NavigationRequest::CommitErrorPage(
 
   is_loaded_from_mhtml_archive_ = false;
   sandbox_flags_to_commit_.reset();
-  ComputeSandboxFlagsToCommit();
+  // TODO(https://crbug.com/1158370): Apparently, error pages inherit sandbox
+  // flags from their parent/opener. Document loaded from the network
+  // shouldn't have any influence over Chrome's internal error page. We should
+  // define our own flags, preferably the strictest ones instead.
+  ComputeSandboxFlagsToCommit(/*response_head=*/nullptr);
+
   ReadyToCommitNavigation(true);
   // Use a separate cache shard, and no cookies, for error pages.
   isolation_info_for_subresources_ = net::IsolationInfo::CreateTransient();
@@ -3263,6 +3279,13 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(sandbox_flags_to_commit_);
 
   AddOldPageInfoToCommitParamsIfNeeded();
+
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
+  isolation_info_for_subresources_ =
+      render_frame_host_->ComputeIsolationInfoForSubresourcesForPendingCommit(
+          GetOriginForURLLoaderFactory());
+  DCHECK(!isolation_info_for_subresources_.IsEmpty());
 
   if (IsServedFromBackForwardCache()) {
     // Navigations served from the back-forward cache must be a history
@@ -3348,13 +3371,6 @@ void NavigationRequest::CommitNavigation() {
     }
   }
 
-  // TODO(crbug.com/979296): Consider changing this code to copy an origin
-  // instead of creating one from a URL which lacks opacity information.
-  isolation_info_for_subresources_ =
-      render_frame_host_->ComputeIsolationInfoForSubresourcesForPendingCommit(
-          GetOriginForURLLoaderFactory());
-  DCHECK(!isolation_info_for_subresources_.IsEmpty());
-
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
   coop_status_.UpdateReporterStoragePartition(
       render_frame_host_->GetProcess()->GetStoragePartition());
@@ -3394,12 +3410,14 @@ void NavigationRequest::CommitNavigation() {
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         reporter_remote;
     coep_reporter()->Clone(reporter_remote.InitWithNewPipeAndPassReceiver());
+    network::CrossOriginEmbedderPolicy navigation_coep;
+    if (client_security_state_)
+      navigation_coep = client_security_state_->cross_origin_embedder_policy;
     // Notify the service worker navigation handle that navigation commit is
     // about to go.
     service_worker_handle_->OnBeginNavigationCommit(
         render_frame_host_->GetProcess()->GetID(),
-        render_frame_host_->GetRoutingID(),
-        render_frame_host_->cross_origin_embedder_policy(),
+        render_frame_host_->GetRoutingID(), navigation_coep,
         std::move(reporter_remote), &service_worker_container_info,
         commit_params_->document_ukm_source_id);
   }
@@ -5274,7 +5292,8 @@ NavigationRequest::TakeCookieObservers() {
   return cookie_observers_.TakeReceivers();
 }
 
-void NavigationRequest::ComputeSandboxFlagsToCommit() {
+void NavigationRequest::ComputeSandboxFlagsToCommit(
+    const network::mojom::URLResponseHead* response_head) {
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());
   DCHECK(!IsErrorPage());
@@ -5283,9 +5302,9 @@ void NavigationRequest::ComputeSandboxFlagsToCommit() {
   sandbox_flags_to_commit_ = commit_params_->frame_policy.sandbox_flags;
 
   // The response can also restrict the policy further.
-  if (response_head_) {
+  if (response_head) {
     for (const auto& csp :
-         response_head_->parsed_headers->content_security_policy) {
+         response_head->parsed_headers->content_security_policy) {
       *sandbox_flags_to_commit_ |= csp->sandbox;
     }
   }

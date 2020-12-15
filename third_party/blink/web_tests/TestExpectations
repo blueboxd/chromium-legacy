@@ -807,7 +807,6 @@ crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-022.
 
 # [css-lists]
 crbug.com/1123457 external/wpt/css/css-lists/counter-list-item-2.html [ Failure ]
-crbug.com/1157854 external/wpt/css/css-lists/counter-set-002.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 
@@ -2395,7 +2394,6 @@ crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ T
 crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
 crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failure ]
 crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
-crbug.com/1086855 external/wpt/css/css-pseudo/file-selector-button-001.html [ Failure ]
 crbug.com/1113004 external/wpt/css/css-pseudo/active-selection-043.html [ Failure ]
 crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-051.html [ Failure ]
 crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-052.html [ Failure ]
@@ -5784,6 +5782,12 @@ crbug.com/1042877 http/tests/security/mixedContent/strict-mode-via-pref-image-bl
 # Mixed content autoupgrades cause test to fail because test relied on http subresources to test a different origin, needs to be changed to not rely on HTTP URLs.
 crbug.com/1042877 http/tests/security/img-crossorigin-redirect-credentials.https.html [ Failure ]
 
+# Temporarily disable tests to land DevTools frontend changes
+crbug.com/1152082 http/tests/devtools/bindings/blackboxed-sourcemap-detach.js [ Pass Failure Timeout ]
+crbug.com/1152082 http/tests/devtools/console/console-linkify-message-location.js [ Pass Failure Timeout ]
+crbug.com/1152082 http/tests/devtools/sources/debugger-frameworks/frameworks-blackbox-by-source-code.js [ Pass Failure Timeout ]
+crbug.com/1152082 http/tests/devtools/sources/debugger-frameworks/frameworks-blackbox-patterns.js [ Pass Failure Timeout ]
+
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]
 crbug.com/1136726 [ Linux ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ]
@@ -5917,3 +5921,9 @@ crbug.com/1157861 http/tests/devtools/console/paintworklet-console-selector.js [
 # Wpt importer Sheriff 2020-12-11
 crbug.com/626703 [ Linux ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.html [ Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mediacapture-image/MediaStreamTrack-getConstraints.https.html [ Pass Failure ]
+
+# WPT importer Sheriff 2020-12-14
+crbug.com/1158672 [ Mac ] external/wpt/html/dom/idlharness.https.html?include=(Document|Window) [ Pass Failure ]
+
+# Sheriff 2020-12-14
+crbug.com/1046784 http/tests/devtools/console/console-context-selector.js [ Pass Timeout ]

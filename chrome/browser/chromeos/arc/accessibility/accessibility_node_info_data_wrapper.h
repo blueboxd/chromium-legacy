@@ -34,7 +34,7 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool IsVirtualNode() const override;
   bool IsIgnored() const override;
   bool IsImportantInAndroid() const override;
-  bool CanBeAccessibilityFocused() const override;
+  bool IsFocusableInFullFocusMode() const override;
   bool IsAccessibilityFocusableContainer() const override;
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
@@ -42,11 +42,10 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   std::string ComputeAXName(bool do_recursive) const override;
   void GetChildren(
       std::vector<AccessibilityInfoDataWrapper*>* children) const override;
+  int32_t GetWindowId() const override;
 
   mojom::AccessibilityNodeInfoData* node() { return node_ptr_; }
 
-  void set_role(ax::mojom::Role role) { role_ = role; }
-  void set_cached_name(const std::string& name) { cached_name_ = name; }
   void set_container_live_status(mojom::AccessibilityLiveRegionType status) {
     container_live_status_ = status;
   }
@@ -85,8 +84,6 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
 
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
 
-  base::Optional<ax::mojom::Role> role_;
-  base::Optional<std::string> cached_name_;
   mojom::AccessibilityLiveRegionType container_live_status_ =
       mojom::AccessibilityLiveRegionType::NONE;
 

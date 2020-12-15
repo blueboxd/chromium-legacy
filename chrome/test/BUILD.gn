@@ -872,6 +872,7 @@ if (!is_android) {
       "//ui/resources",
       "//ui/shell_dialogs:test_support",
       "//ui/web_dialogs:test_support",
+      "//ui/webui:test_support",
       "//v8",
     ]
 
@@ -1569,6 +1570,10 @@ if (!is_android) {
       "../renderer/chrome_content_settings_agent_delegate_browsertest.cc",
       "../renderer/chrome_render_frame_observer_browsertest.cc",
       "../renderer/lite_video/lite_video_hint_agent_browsertest.cc",
+      "../renderer/subresource_redirect/login_robots_decider_agent_browsertest.cc",
+      "../renderer/subresource_redirect/login_robots_decider_test_util.cc",
+      "../renderer/subresource_redirect/login_robots_decider_test_util.h",
+      "../renderer/subresource_redirect/login_robots_url_loader_throttle_browsertest.cc",
       "../renderer/subresource_redirect/public_image_hints_decider_agent_browsertest.cc",
       "../renderer/translate/per_frame_translate_agent_browsertest.cc",
       "../renderer/translate/translate_agent_browsertest.cc",
@@ -2540,6 +2545,7 @@ if (!is_android) {
         "../browser/chromeos/login/login_screen_extensions_lifetime_manager_browsertest.cc",
         "../browser/chromeos/login/login_screen_policy_browsertest.cc",
         "../browser/chromeos/login/login_ui_browsertest.cc",
+        "../browser/chromeos/login/login_ui_hide_supervised_users_browsertest.cc",
         "../browser/chromeos/login/login_ui_keyboard_browsertest.cc",
         "../browser/chromeos/login/login_ui_shelf_visibility_browsertest.cc",
         "../browser/chromeos/login/login_utils_browsertest.cc",

@@ -10,12 +10,11 @@
 
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
-#include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
+#include "chrome/browser/chromeos/arc/accessibility/auto_complete_handler.h"
+#include "chrome/browser/chromeos/arc/accessibility/drawer_layout_handler.h"
 #include "components/exo/input_method_surface.h"
 #include "components/exo/wm_helper.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
@@ -25,31 +24,14 @@
 
 namespace arc {
 
-using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventData = mojom::AccessibilityEventData;
-using AXEventIntListProperty = mojom::AccessibilityEventIntListProperty;
-using AXEventIntProperty = mojom::AccessibilityEventIntProperty;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntProperty = mojom::AccessibilityIntProperty;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
-using AXStringProperty = mojom::AccessibilityStringProperty;
+using AXWindowBooleanProperty = mojom::AccessibilityWindowBooleanProperty;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
-
-namespace {
-bool IsDrawerLayout(AXNodeInfoData* node) {
-  if (!node || !node->string_properties)
-    return false;
-
-  auto it = node->string_properties->find(AXStringProperty::CLASS_NAME);
-  if (it == node->string_properties->end())
-    return false;
-
-  return it->second == "androidx.drawerlayout.widget.DrawerLayout" ||
-         it->second == "android.support.v4.widget.DrawerLayout";
-}
-}  // namespace
 
 AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
@@ -152,6 +134,10 @@ void AXTreeSourceArc::SerializeNode(AccessibilityInfoDataWrapper* info_data,
     return;
 
   info_data->Serialize(out_data);
+
+  const auto& itr = hooks_.find(info_data->GetId());
+  if (itr != hooks_.end())
+    itr->second->PostSerializeNode(out_data);
 }
 
 aura::Window* AXTreeSourceArc::GetWindow() const {
@@ -249,15 +235,9 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
     return;
   }
 
-  if (event_data.event_type == AXEventType::WINDOW_STATE_CHANGED &&
-      event_data.event_text) {
-    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
-    if (IsValid(source_node))
-      UpdateAXNameCache(source_node, *event_data.event_text);
-  }
+  std::vector<int32_t> update_ids = ProcessHooksOnEvent(event_data);
 
-  ApplyCachedProperties();
-
+  // Bundle the event and send it to automation.
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = ax_tree_id();
 
@@ -281,8 +261,6 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
 
   HandleLiveRegions(&event_bundle.events);
 
-  event_bundle.updates.emplace_back();
-
   // Force the tree, to update, so unignored fields get updated.
   // On event type of WINDOW_STATE_CHANGED, update the entire tree so that
   // window location is correctly calculated.
@@ -290,11 +268,16 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
       (event_data.event_type == AXEventType::WINDOW_STATE_CHANGED)
           ? *root_id_
           : event_data.source_id;
-  event_bundle.updates[0].node_id_to_clear = node_id_to_clear;
-  current_tree_serializer_->InvalidateSubtree(GetFromId(node_id_to_clear));
 
-  current_tree_serializer_->SerializeChanges(GetFromId(node_id_to_clear),
-                                             &event_bundle.updates.back());
+  update_ids.push_back(node_id_to_clear);
+
+  for (const int32_t update_root : update_ids) {
+    event_bundle.updates.emplace_back();
+    event_bundle.updates.back().node_id_to_clear = update_root;
+    current_tree_serializer_->InvalidateSubtree(GetFromId(update_root));
+    current_tree_serializer_->SerializeChanges(GetFromId(update_root),
+                                               &event_bundle.updates.back());
+  }
 
   GetAutomationEventRouter()->DispatchAccessibilityEvents(event_bundle);
 }
@@ -328,7 +311,7 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
 
   if (!info_data->IsVisibleToUser())
     return;
-  if (info_data->CanBeAccessibilityFocused()) {
+  if (info_data->IsFocusableInFullFocusMode()) {
     // Only consider nodes that can possibly be accessibility focused.
     computed_bounds->Union(info_data->GetBounds());
     return;
@@ -342,18 +325,20 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
   return;
 }
 
-AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
+AccessibilityInfoDataWrapper*
+AXTreeSourceArc::FindFirstFocusableNodeInFullFocusMode(
     AccessibilityInfoDataWrapper* info_data) const {
   if (!IsValid(info_data))
     return nullptr;
 
-  if (info_data->IsVisibleToUser() && info_data->CanBeAccessibilityFocused())
+  if (info_data->IsVisibleToUser() && info_data->IsFocusableInFullFocusMode())
     return info_data;
 
   std::vector<AccessibilityInfoDataWrapper*> children;
   GetChildren(info_data, &children);
   for (AccessibilityInfoDataWrapper* child : children) {
-    AccessibilityInfoDataWrapper* candidate = FindFirstFocusableNode(child);
+    AccessibilityInfoDataWrapper* candidate =
+        FindFirstFocusableNodeInFullFocusMode(child);
     if (candidate)
       return candidate;
   }
@@ -361,79 +346,38 @@ AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
   return nullptr;
 }
 
-AccessibilityInfoDataWrapper*
-AXTreeSourceArc::GetSelectedNodeInfoFromAdapterView(
-    const AXEventData& event_data) const {
-  AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
-  if (!source_node || !source_node->IsNode())
-    return nullptr;
-
-  AXNodeInfoData* node_info = source_node->GetNode();
-  if (!node_info)
-    return nullptr;
-
-  AccessibilityInfoDataWrapper* selected_node = source_node;
-  if (!node_info->collection_item_info) {
-    // The event source is not an item of AdapterView. If the event source is
-    // AdapterView, select the child. Otherwise, this is an unrelated event.
-    int item_count, from_index, current_item_index;
-    if (!GetProperty(event_data.int_properties, AXEventIntProperty::ITEM_COUNT,
-                     &item_count) ||
-        !GetProperty(event_data.int_properties, AXEventIntProperty::FROM_INDEX,
-                     &from_index) ||
-        !GetProperty(event_data.int_properties,
-                     AXEventIntProperty::CURRENT_ITEM_INDEX,
-                     &current_item_index)) {
-      return nullptr;
-    }
-
-    int index = current_item_index - from_index;
-    if (index < 0)
-      return nullptr;
-
-    std::vector<AccessibilityInfoDataWrapper*> children;
-    source_node->GetChildren(&children);
-    if (index >= static_cast<int>(children.size()))
-      return nullptr;
-
-    selected_node = children[index];
-  }
-
-  // Sometimes a collection item is wrapped by a non-focusable node.
-  // Find a node with focusable property.
-  while (selected_node && !GetBooleanProperty(selected_node->GetNode(),
-                                              AXBooleanProperty::FOCUSABLE)) {
-    std::vector<AccessibilityInfoDataWrapper*> children;
-    selected_node->GetChildren(&children);
-    if (children.size() != 1)
-      break;
-    selected_node = children[0];
-  }
-  return selected_node;
-}
-
 bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
+  AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
+  if (source_node) {
+    AccessibilityInfoDataWrapper* source_window =
+        GetFromId(source_node->GetWindowId());
+    if (!source_window ||
+        !GetBooleanProperty(source_window->GetWindow(),
+                            AXWindowBooleanProperty::FOCUSED)) {
+      // Don't update focus in this task for events from non-focused window.
+      return true;
+    }
+  }
+
   // TODO(hirokisato): Handle CLEAR_ACCESSIBILITY_FOCUS event.
   if (event_data.event_type == AXEventType::VIEW_FOCUSED) {
-    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
     if (source_node && source_node->IsVisibleToUser()) {
       // Sometimes Android sets focus on unfocusable node, e.g. ListView.
       AccessibilityInfoDataWrapper* adjusted_node =
-          UseFullFocusMode() ? FindFirstFocusableNode(source_node)
-                             : source_node;
+          UseFullFocusMode()
+              ? FindFirstFocusableNodeInFullFocusMode(source_node)
+              : source_node;
       if (IsValid(adjusted_node))
         android_focused_id_ = adjusted_node->GetId();
     }
   } else if (event_data.event_type == AXEventType::VIEW_ACCESSIBILITY_FOCUSED &&
              UseFullFocusMode()) {
-    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
     if (source_node && source_node->IsVisibleToUser())
       android_focused_id_ = source_node->GetId();
   } else if (event_data.event_type == AXEventType::VIEW_SELECTED) {
     // In Android, VIEW_SELECTED event is dispatched in the two cases below:
     // 1. Changing a value in ProgressBar or TimePicker in ARC P.
     // 2. Selecting an item in the context of an AdapterView.
-    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
     if (!source_node || !source_node->IsNode())
       return false;
 
@@ -443,7 +387,7 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
     bool is_range_change = !node_info->range_info.is_null();
     if (!is_range_change) {
       AccessibilityInfoDataWrapper* selected_node =
-          GetSelectedNodeInfoFromAdapterView(event_data);
+          GetSelectedNodeInfoFromAdapterViewEvent(event_data, source_node);
       if (!selected_node || !selected_node->IsVisibleToUser())
         return false;
 
@@ -454,7 +398,6 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
     // is fired from Android multiple times.
     // The event of WINDOW_STATE_CHANGED is fired only once for each window
     // change and use it as a trigger to move the a11y focus to the first node.
-    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
     AccessibilityInfoDataWrapper* new_focus = nullptr;
 
     // If the current window has ever been visited in the current task, try
@@ -468,7 +411,8 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
 
     // Otherwise, try focus on the first focusable node.
     if (!IsValid(new_focus) && UseFullFocusMode())
-      new_focus = FindFirstFocusableNode(GetFromId(event_data.source_id));
+      new_focus = FindFirstFocusableNodeInFullFocusMode(
+          GetFromId(event_data.source_id));
 
     if (IsValid(new_focus))
       android_focused_id_ = new_focus->GetId();
@@ -505,51 +449,32 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
   return true;
 }
 
-void AXTreeSourceArc::UpdateAXNameCache(
-    AccessibilityInfoDataWrapper* source_node,
-    const std::vector<std::string>& event_text) {
-  if (IsDrawerLayout(source_node->GetNode())) {
-    // When drawer menu opened, make the menu title announced.
-    // When focus is changed, ChromeVox computes the diff in ancestry between
-    // the previously focused and new focused node.
-    // As the DrawerLayout is LCA of them, set the new title to be the first
-    // visible child node (which is usually drawer menu).
-    std::vector<AccessibilityInfoDataWrapper*> children;
-    source_node->GetChildren(&children);
-    for (auto* child : children) {
-      if (child->IsNode() && child->IsVisibleToUser() &&
-          GetBooleanProperty(child->GetNode(), AXBooleanProperty::IMPORTANCE)) {
-        cached_roles_[child->GetId()] = ax::mojom::Role::kMenu;
-        if (!event_text.empty())
-          cached_names_[child->GetId()] = base::JoinString(event_text, " ");
-        return;
-      }
-    }
-  }
-}
+std::vector<int32_t> AXTreeSourceArc::ProcessHooksOnEvent(
+    const AXEventData& event_data) {
+  base::EraseIf(hooks_, [this](const auto& it) {
+    return this->GetFromId(it.first) == nullptr;
+  });
 
-void AXTreeSourceArc::ApplyCachedProperties() {
-  for (auto it = cached_names_.begin(); it != cached_names_.end();) {
-    AccessibilityInfoDataWrapper* node = GetFromId(it->first);
-    if (node) {
-      static_cast<AccessibilityNodeInfoDataWrapper*>(node)->set_cached_name(
-          it->second);
-      it++;
-    } else {
-      it = cached_names_.erase(it);
-    }
+  std::vector<int32_t> serialization_needed_ids;
+  for (const auto& modifier : hooks_) {
+    if (modifier.second->PreDispatchEvent(this, event_data))
+      serialization_needed_ids.push_back(modifier.first);
   }
 
-  for (auto it = cached_roles_.begin(); it != cached_roles_.end();) {
-    AccessibilityInfoDataWrapper* node = GetFromId(it->first);
-    if (node) {
-      static_cast<AccessibilityNodeInfoDataWrapper*>(node)->set_role(
-          it->second);
-      it++;
-    } else {
-      it = cached_roles_.erase(it);
-    }
+  // Add new hook implementations if necessary.
+  auto drawer_layout_hook =
+      DrawerLayoutHandler::CreateIfNecessary(this, event_data);
+  if (drawer_layout_hook.has_value())
+    hooks_.insert(std::move(*drawer_layout_hook));
+
+  auto auto_complete_hooks =
+      AutoCompleteHandler::CreateIfNecessary(this, event_data);
+  for (auto& modifier : auto_complete_hooks) {
+    if (hooks_.count(modifier.first) == 0)
+      hooks_.insert(std::move(modifier));
   }
+
+  return serialization_needed_ids;
 }
 
 void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {

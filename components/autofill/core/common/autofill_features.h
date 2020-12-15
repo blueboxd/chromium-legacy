@@ -25,11 +25,11 @@ extern const base::Feature kAutofillAddressEnhancementVotes;
 extern const base::Feature kAutofillAddressProfileSavePrompt;
 extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
 extern const base::Feature kAutofillAllowNonHttpActivation;
-extern const base::Feature kAutofillAlwaysFillAddresses;
 extern const base::Feature kAutofillCacheQueryResponses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
 extern const base::Feature kAutofillEnableAugmentedPhoneCountryCode;
+extern const base::Feature kAutofillEnableDependentLocalityParsing;
 extern const base::Feature kAutofillEnableHideSuggestionsUI;
 extern const base::Feature
     kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers;

@@ -92,7 +92,7 @@ bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
   return IsVirtualNode() || GetProperty(AXBooleanProperty::IMPORTANCE);
 }
 
-bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
+bool AccessibilityNodeInfoDataWrapper::IsFocusableInFullFocusMode() const {
   if (!IsAccessibilityFocusableContainer() && !HasAccessibilityFocusableText())
     return false;
 
@@ -122,11 +122,6 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
   if (GetProperty(AXStringProperty::CLASS_NAME, &class_name)) {
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                                  class_name);
-  }
-
-  if (role_) {
-    out_data->role = *role_;
-    return;
   }
 
   if (GetProperty(AXBooleanProperty::EDITABLE)) {
@@ -326,7 +321,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   bool is_node_tree_root = tree_source_->IsRootOfNodeTree(GetId());
   // String properties that doesn't belong to any of existing chrome
   // automation string properties are pushed into description.
-  // TODO (sahok): Refactor this to make clear the functionality(b/158633575).
+  // TODO(sahok): Refactor this to make clear the functionality(b/158633575).
   std::vector<std::string> descriptions;
 
   // String properties.
@@ -539,8 +534,6 @@ std::string AccessibilityNodeInfoDataWrapper::ComputeAXName(
   }
   if (!hint_text.empty())
     names.push_back(hint_text);
-  if (cached_name_ && !(*cached_name_).empty())
-    names.push_back(*cached_name_);
 
   // If a node is accessibility focusable, but has no name, the name should be
   // computed from its descendants.
@@ -561,6 +554,10 @@ void AccessibilityNodeInfoDataWrapper::GetChildren(
     return;
   for (int32_t id : it->second)
     children->push_back(tree_source_->GetFromId(id));
+}
+
+int32_t AccessibilityNodeInfoDataWrapper::GetWindowId() const {
+  return node_ptr_->window_id;
 }
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(
@@ -748,8 +745,7 @@ bool AccessibilityNodeInfoDataWrapper::HasImportantPropertyInternal() const {
                                 AXStringProperty::CONTENT_DESCRIPTION) ||
       HasNonEmptyStringProperty(node_ptr_, AXStringProperty::TEXT) ||
       HasNonEmptyStringProperty(node_ptr_, AXStringProperty::PANE_TITLE) ||
-      HasNonEmptyStringProperty(node_ptr_, AXStringProperty::HINT_TEXT) ||
-      cached_name_.has_value()) {
+      HasNonEmptyStringProperty(node_ptr_, AXStringProperty::HINT_TEXT)) {
     return true;
   }
 

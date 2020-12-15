@@ -7650,7 +7650,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoepReporter) {
   GURL url_a(https_server()->GetURL("a.com",
                                     "/set-header?"
                                     "Cross-Origin-Embedder-Policy-Report-Only: "
-                                    "same-origin; report-to%3d\"a\""));
+                                    "require-corp; report-to%3d\"a\""));
   GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
 
   // Navigate to a document that set RenderFrameHostImpl::coep_reporter().
@@ -7696,6 +7696,35 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoopReporter) {
   EXPECT_EQ(rfh_a, current_frame_host());
 
   EXPECT_TRUE(rfh_a->coop_reporter());
+}
+
+// RenderFrameHostImpl::cross_origin_embedder_policy() must be preserved when
+// doing a back navigation using the BackForwardCache.
+// Regression test for https://crbug.com/1021846.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Coep) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  GURL url_a(https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Embedder-Policy: require-corp"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to a document that sets COEP.
+  network::CrossOriginEmbedderPolicy coep;
+  coep.value = network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_EQ(coep, rfh_a->cross_origin_embedder_policy());
+
+  // Navigate away and back using the BackForwardCache.
+  // RenderFrameHostImpl::cross_origin_embedder_policy() should return the same
+  // result.
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  EXPECT_EQ(coep, rfh_a->cross_origin_embedder_policy());
 }
 
 namespace {
@@ -8846,6 +8875,168 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFileSystemAPISupported,
   EXPECT_EQ(rfh_a, current_frame_host());
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       EnsureIsolationInfoForSubresourcesNotEmpty) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  NavigationControllerImpl& controller = web_contents()->GetController();
+  BackForwardCacheImpl& cache = controller.GetBackForwardCache();
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  cache.Flush();
+
+  // 2) Navigate to B. A should be stored in cache, count of entries should
+  // be 1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_EQ(1u, cache.GetEntries().size());
+
+  // 3) GoBack to A. RenderFrameHost of A should be restored and B should be
+  // stored in cache, count of entries should be 1. IsolationInfoForSubresources
+  // of rfh_a should not be empty.
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+  EXPECT_EQ(1u, cache.GetEntries().size());
+  EXPECT_FALSE(rfh_a->GetIsolationInfoForSubresources().IsEmpty());
+
+  // 4) GoForward to B. RenderFrameHost of B should be restored and A should be
+  // stored in cache, count of entries should be 1. IsolationInfoForSubresources
+  // of rfh_b should not be empty.
+  controller.GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_b, current_frame_host());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_EQ(1u, cache.GetEntries().size());
+  EXPECT_FALSE(rfh_b->GetIsolationInfoForSubresources().IsEmpty());
+}
+
+class BackForwardCacheBrowserTestWithSupportedFeatures
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(features::kBackForwardCache, "supported_features",
+                              "BroadcastChannel,KeyboardLock");
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithSupportedFeatures,
+                       CacheWithSpecifiedFeatures) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to the page A with BroadcastChannel.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted(rfh_a);
+  EXPECT_TRUE(ExecJs(rfh_a, "window.foo = new BroadcastChannel('foo');"));
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 3) Go back to the page A
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
+
+  // 4) Use KeyboardLock
+  EXPECT_EQ("DONE", EvalJs(rfh_a, R"(
+    new Promise(resolve => {
+      navigator.keyboard.lock();
+      resolve('DONE');
+    });
+  )"));
+
+  // 5) Navigate away again.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 6) Go back to the page A again.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
+}
+
+class BackForwardCacheBrowserTestWithNoSupportedFeatures
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Specify empty supported features explicitly.
+    EnableFeatureAndSetParams(features::kBackForwardCache, "supported_features",
+                              "");
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithNoSupportedFeatures,
+                       DontCache) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to the page A with BoradcastChannel.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  RenderFrameDeletedObserver deleted_a1(rfh_a1);
+  EXPECT_TRUE(ExecJs(rfh_a1, "window.foo = new BroadcastChannel('foo');"));
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  deleted_a1.WaitUntilDeleted();
+
+  // 3) Go back to the page A
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel,
+      FROM_HERE);
+
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  RenderFrameDeletedObserver deleted_a2(rfh_a2);
+
+  // 4) Use KeyboardLock
+  EXPECT_EQ("DONE", EvalJs(rfh_a2, R"(
+    new Promise(resolve => {
+      navigator.keyboard.lock();
+      resolve('DONE');
+    });
+  )"));
+
+  // 5) Navigate away again.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  deleted_a2.WaitUntilDeleted();
+
+  // 6) Go back to the page A again.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeatures(
+      {blink::scheduler::WebSchedulerTrackedFeature::kKeyboardLock}, FROM_HERE);
 }
 
 }  // namespace content

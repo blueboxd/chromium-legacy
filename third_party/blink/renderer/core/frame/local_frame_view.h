@@ -617,6 +617,7 @@ class CORE_EXPORT LocalFrameView final
   bool CanThrottleRendering() const override;
   void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                     bool subtree_throttled,
+                                    bool display_locked,
                                     bool recurse = false) override;
 
   void BeginLifecycleUpdates();
@@ -853,6 +854,8 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
+  void PrepareForLifecycleUpdateRecursive();
+
   // Returns whether the lifecycle was successfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
@@ -1074,7 +1077,6 @@ class CORE_EXPORT LocalFrameView final
 
   // This is set on the local root frame view only.
   DocumentLifecycle::LifecycleState target_state_;
-  bool past_layout_lifecycle_update_;
 
   using AnchoringAdjustmentQueue =
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;

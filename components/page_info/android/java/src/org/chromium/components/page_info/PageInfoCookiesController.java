@@ -73,6 +73,7 @@ public class PageInfoCookiesController
     public View createViewForSubpage(ViewGroup parent) {
         assert mSubPage == null;
         mSubPage = new PageInfoCookiesPreference();
+        mSubPage.setSiteSettingsClient(mDelegate.getSiteSettingsClient());
         mDelegate.getFragmentManager().beginTransaction().add(mSubPage, null).commitNow();
 
         PageInfoCookiesPreference.PageInfoCookiesViewParams params =
@@ -101,7 +102,9 @@ public class PageInfoCookiesController
 
         mWebsite = SingleWebsiteSettings.mergePermissionAndStorageInfoForTopLevelOrigin(
                 address, result);
-        mSubPage.setStorageUsage(mWebsite.getTotalUsage());
+        if (mSubPage != null) {
+            mSubPage.setStorageUsage(mWebsite.getTotalUsage());
+        }
     }
 
     private void onCheckedChangedCallback(boolean state) {

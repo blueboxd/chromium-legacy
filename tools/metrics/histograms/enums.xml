@@ -16648,6 +16648,7 @@ metrics consent we also won't be able to send UMA metrics. -->
 <enum name="DesksMoveWindowFromActiveDeskSource">
   <int value="0" label="Drag and drop"/>
   <int value="1" label="Move-window-to-desk keyboard shortcut"/>
+  <int value="2" label="Send to desk menu"/>
 </enum>
 
 <enum name="DesksSwitchSource">
@@ -39225,6 +39226,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Delete"/>
   <int value="9" label="Remove"/>
   <int value="10" label="Hide"/>
+  <int value="11" label="Mark as Read"/>
+  <int value="12" label="Mark as Unread"/>
+  <int value="13" label="View Offline"/>
+  <int value="14" label="Open (JavaScript evaluation)"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -39235,6 +39240,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Recent Tabs Entry"/>
   <int value="5" label="History Entry"/>
   <int value="6" label="Most Visited Entry"/>
+  <int value="7" label="Image on a Web page"/>
+  <int value="8" label="Image-Link on a Web page"/>
+  <int value="9" label="Link on a Web page"/>
 </enum>
 
 <enum name="IOSMultiWindowConfiguration">
@@ -42560,6 +42568,8 @@ from previous Chrome versions.
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1571525676" label="FilesSWA:disabled"/>
+  <int value="-1569571629"
+      label="AutofillEnableOffersInClankKeyboardAccessory:disabled"/>
   <int value="-1568737447" label="InsecureFormSubmissionInterstitial:enabled"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
@@ -43225,6 +43235,7 @@ from previous Chrome versions.
   <int value="-993476089" label="AutoScreenBrightness:disabled"/>
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
   <int value="-992554993" label="TemporaryHoldingSpacePreviews:disabled"/>
+  <int value="-991416218" label="PdfViewerPresentationMode:enabled"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
   <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
@@ -43849,6 +43860,7 @@ from previous Chrome versions.
   <int value="-374423260" label="OmniboxTabSwitchSuggestions:disabled"/>
   <int value="-373233195" label="SyncUSSAutofillWalletData:enabled"/>
   <int value="-372171039" label="BlinkGenPropertyTrees:disabled"/>
+  <int value="-370876369" label="ContextualSearchLiteralTapSearch:enabled"/>
   <int value="-367474066" label="DialogTouchBar:enabled"/>
   <int value="-366949535" label="KeyboardShortcutViewerApp:enabled"/>
   <int value="-365920680" label="ImageCaptureAPI:disabled"/>
@@ -44075,6 +44087,7 @@ from previous Chrome versions.
   <int value="-152632720" label="RuntimeHostPermissions:enabled"/>
   <int value="-152439608" label="download-later-debug-on-wifi"/>
   <int value="-150077791" label="FontAccessChooser:disabled"/>
+  <int value="-148356419" label="PdfViewerPresentationMode:disabled"/>
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-146315671" label="PrivacyAdvisor:enabled"/>
@@ -44474,6 +44487,7 @@ from previous Chrome versions.
   <int value="259021228" label="OffMainThreadFetch:disabled"/>
   <int value="259633436" label="AutofillDropdownLayout:disabled"/>
   <int value="259812169" label="OmniboxSuggestionsWrapAround:disabled"/>
+  <int value="261245835" label="ContextualSearchLiteralTapSearch:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
   <int value="265140282" label="Prerender2:disabled"/>
   <int value="265830810" label="BackgroundTaskComponentUpdate:enabled"/>
@@ -45770,6 +45784,8 @@ from previous Chrome versions.
   <int value="1482245628" label="OmniboxNativeVoiceSuggestProvider:enabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
   <int value="1483980996" label="MacSyscallSandbox:enabled"/>
+  <int value="1486092162"
+      label="AutofillEnableOffersInClankKeyboardAccessory:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1486784197" label="MouseSubframeNoImplicitCapture:disabled"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
@@ -74530,6 +74546,12 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UpdateEngineErrorCode">
+  <summary>
+    Tracks the Action exit codes of Update Engine.
+
+    Enum values need to ALWAYS be same as ErrorCode:
+    chromeos_public/src/aosp/system/update_engine/common/error_code.h
+  </summary>
   <int value="0" label="kErrorCodeSuccess"/>
   <int value="1" label="kErrorCodeError"/>
   <int value="2" label="kErrorCodeOmahaRequestError"/>
@@ -74590,11 +74612,9 @@ Full version information for the fingerprint enum values:
   <int value="57" label="kErrorCodeInternalLibCurlError"/>
   <int value="58" label="kErrorCodeUnresolvedHostError"/>
   <int value="59" label="kErrorCodeUnresolvedHostRecovered"/>
-  <int value="60" label="kErrorUnresolvedHostRecovered"/>
-  <int value="61" label="kErrorNotEnoughSpace"/>
-  <int value="62" label="kErrorDeviceCorrupted"/>
-  <int value="63" label="kErrorPackageExcludedFromUpdate"/>
-  <int value="64" label="kErrorDownloadCancelledPerPolicy"/>
+  <int value="60" label="kErrorCodeNotEnoughSpace"/>
+  <int value="61" label="kErrorCodeDeviceCorrupted"/>
+  <int value="62" label="kErrorCodePackageExcludedFromUpdate"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">
@@ -76095,6 +76115,52 @@ Full version information for the fingerprint enum values:
 <enum name="VideoPlayerPlayType">
   <int value="0" label="Local playback"/>
   <int value="1" label="Play on cast device"/>
+</enum>
+
+<enum name="VideoResolutionDesignation">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="QQVGA (160x120)"/>
+  <int value="2" label="HQVGA (240x160)"/>
+  <int value="3" label="QVGA (320x240)"/>
+  <int value="4" label="WQVGA (432x240)"/>
+  <int value="5" label="HVGA (480x320)"/>
+  <int value="6" label="VGA (640x480)"/>
+  <int value="7" label="WVGA (720x480)"/>
+  <int value="8" label="WSVGA (1024x576)"/>
+  <int value="9" label="SVGA (800x600)"/>
+  <int value="10" label="SXGA- (1280x960)"/>
+  <int value="11" label="UXGA (1600x1200)"/>
+  <int value="12" label="QXGA (2048x1536)"/>
+  <int value="13" label="QCIF (176x144)"/>
+  <int value="14" label="CIF (352x288)"/>
+  <int value="15" label="NHD (640x360)"/>
+  <int value="16" label="QHD (960x540)"/>
+  <int value="17" label="HD Fullscreen (960x720)"/>
+  <int value="18" label="HD (1280x720)"/>
+  <int value="19" label="HD_PLUS (1600x900)"/>
+  <int value="20" label="FHD (1920x1080)"/>
+  <int value="21" label="WQHD (2560x1440)"/>
+  <int value="22" label="QHD+ (3200x1800)"/>
+  <int value="23" label="4K UHD (3840x2160)"/>
+  <int value="24" label="DCI 4K (4096x2160)"/>
+  <int value="25" label="5K (5120x2880)"/>
+  <int value="26" label="8K UHD (7680x4320)"/>
+  <int value="27" label="160x90"/>
+  <int value="28" label="320x176"/>
+  <int value="29" label="320x180"/>
+  <int value="30" label="480x270"/>
+  <int value="31" label="544x288"/>
+  <int value="32" label="752x416"/>
+  <int value="33" label="864x480"/>
+  <int value="34" label="800x448"/>
+  <int value="35" label="960x544"/>
+  <int value="36" label="1184x656"/>
+  <int value="37" label="1392x768"/>
+  <int value="38" label="1504x832"/>
+  <int value="39" label="1600x896"/>
+  <int value="40" label="1712x960"/>
+  <int value="41" label="1792x1008"/>
+  <int value="42" label="2592x1944"/>
 </enum>
 
 <enum name="VideoRotation">

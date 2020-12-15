@@ -32,13 +32,13 @@
     }
   </message>
   <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_ALL" desc="Describes who can see the local device when the Nearby Share visibility setting is set to 'All contacts'.">
-    Your contacts can share with you when they are nearby. Transfer won't start until you accept.
+    Your contacts can share with you when they are nearby. Transfers won't start until you accept.
   </message>
   <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_NONE" desc="Describes who can see the local device when the Nearby Share visibility setting is set to 'Hidden'.">
     No one can share with you until you make yourself visible.<ph name="BR">&lt;br&gt;</ph><ph name="BR">&lt;br&gt;</ph>To make yourself visible temporarily, open the status area by selecting the time, then turn on Nearby visibility.
   </message>
   <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_SOME" desc="Describes who can see the local device when the Nearby Share visibility setting is set to 'Some contacts'.">
-    Selected contacts can share with you when nearby. Transfer won't start until you accept.
+    Selected contacts can share with you when nearby. Transfers won't start until you accept.
   </message>
   <message name="IDS_NEARBY_CONTACT_VISIBILITY_ZERO_STATE_INFO" desc="Help text to learn more about the privacy and visibility settings of the Nearby Share feature.">
     Learn more
@@ -195,6 +195,9 @@
   </message>
   <message name="IDS_NEARBY_HIGH_VISIBILITY_HELP_TEXT" desc="Describes to the user that their device is visible to nearby devices with a specific device name. This is used on the sub-title of the of high visibility receive dialog for the Nearby Share feature.">
     Make sure both devices are unlocked, close together, and have Bluetooth turned on. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_NEARBY_HIGH_VISIBILITY_TIMEOUT_TEXT" desc="Describes to the user that their device is visible to nearby devices with a specific device name. This is used on the sub-title of the of high visibility receive dialog for the Nearby Share feature.">
+    No available devices sharing nearby. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
 
   <!-- Receive Confirmation Page Strings -->

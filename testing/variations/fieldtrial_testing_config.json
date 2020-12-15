@@ -2470,6 +2470,26 @@
             ]
         }
     ],
+    "DetectFormSubmissionOnFormClear": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DetectFormSubmissionOnFormClear"
+                    ]
+                }
+            ]
+        }
+    ],
     "DirectActions": [
         {
             "platforms": [
@@ -5223,6 +5243,21 @@
             ]
         }
     ],
+    "OverlayPrioritizationTesting": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableOverlayPrioritization"
+                    ]
+                }
+            ]
+        }
+    ],
     "PDFViewerUpdate": [
         {
             "platforms": [
@@ -5268,7 +5303,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Disabled",
+                    "name": "Enabled_20201211",
                     "disable_features": [
                         "PaintHoldingCrossOrigin"
                     ]

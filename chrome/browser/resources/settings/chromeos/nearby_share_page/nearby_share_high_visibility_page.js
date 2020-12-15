@@ -23,21 +23,25 @@ Polymer({
     },
 
     /**
-     * Timestamp in milliseconds since unix epoch of when high visibility will
-     * be turned off.
+     * DOMHighResTimeStamp in milliseconds of when high visibility will be
+     * turned off.
      * @type {number}
      */
     shutoffTimestamp: {
       type: Number,
       value: 0,
     },
-  },
 
-  /**
-   * Calculated value of remaining seconds of high visibility mode.
-   * @private {number}
-   */
-  remainingTimeInSeconds_: 0,
+    /**
+     * Calculated value of remaining seconds of high visibility mode.
+     * Initialized to -1 to differentiate it from timed out state.
+     * @private {number}
+     */
+    remainingTimeInSeconds_: {
+      type: Number,
+      value: -1,
+    },
+  },
 
   /** @private {number} */
   remainingTimeIntervalId_: -1,
@@ -60,10 +64,21 @@ Polymer({
 
   /** @private */
   calculateRemainingTime_() {
-    const now = new Date().getTime();
+    const now = performance.now();
     const remainingTimeInMs =
         this.shutoffTimestamp > now ? this.shutoffTimestamp - now : 0;
     this.remainingTimeInSeconds_ = Math.trunc(remainingTimeInMs / 1000);
+  },
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  highVisibilityTimedOut_() {
+    // High visibility session is timed out only if remaining seconds is 0 AND
+    // timestamp is also set.
+    return (this.remainingTimeInSeconds_ === 0) &&
+        (this.shutoffTimestamp !== 0);
   },
 
   /**

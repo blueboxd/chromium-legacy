@@ -56,7 +56,7 @@ namespace {
 
 const char kOfflinePreviewsMimeType[] = "multipart/related";
 extern const base::Feature kLayoutShiftNormalizationRecordUKM{
-    "LayoutShiftNormalizationRecordUKM", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LayoutShiftNormalizationRecordUKM", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
   switch (protocol) {
@@ -1119,8 +1119,8 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore() const {
     return base::nullopt;
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
-  SiteEngagementService* engagement_service =
-      SiteEngagementService::Get(profile);
+  site_engagement::SiteEngagementService* engagement_service =
+      site_engagement::SiteEngagementService::Get(profile);
 
   // UKM privacy requires the engagement score be rounded to nearest
   // value of 10.

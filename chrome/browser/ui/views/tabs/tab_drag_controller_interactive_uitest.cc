@@ -1575,7 +1575,7 @@ class MaximizedBrowserWindowWaiter {
   BrowserWindow* window_;
 
   // The waiter's RunLoop quit closure.
-  base::Closure quit_;
+  base::RepeatingClosure quit_;
 };
 
 }  // namespace

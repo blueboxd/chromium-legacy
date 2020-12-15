@@ -257,7 +257,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       // doesn't get setup properly.
       lifecycle_updates_throttled_(!GetFrame().IsMainFrame()),
       target_state_(DocumentLifecycle::kUninitialized),
-      past_layout_lifecycle_update_(false),
       suppress_adjust_view_size_(false),
       intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
@@ -2220,6 +2219,7 @@ bool LocalFrameView::UpdateAllLifecyclePhases(DocumentUpdateReason reason) {
     // kLayoutClean.
     ForAllThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       DCHECK(frame_view.intersection_observation_state_ != kRequired ||
+             frame_view.IsDisplayLocked() ||
              frame_view.Lifecycle().GetState() >=
                  DocumentLifecycle::kLayoutClean);
     });
@@ -2359,6 +2359,18 @@ bool LocalFrameView::LocalFrameTreeAllowsThrottling() const {
   return false;
 }
 
+void LocalFrameView::PrepareForLifecycleUpdateRecursive() {
+  // We will run lifecycle phases for LocalFrameViews that are unthrottled; or
+  // are throttled but require IntersectionObserver steps to run.
+  if (!ShouldThrottleRendering() ||
+      intersection_observation_state_ == kRequired) {
+    Lifecycle().EnsureStateAtMost(DocumentLifecycle::kVisualUpdatePending);
+    ForAllChildLocalFrameViews([](LocalFrameView& child) {
+      child.PrepareForLifecycleUpdateRecursive();
+    });
+  }
+}
+
 // TODO(leviw): We don't assert lifecycle information from documents in child
 // WebPluginContainerImpls.
 bool LocalFrameView::UpdateLifecyclePhases(
@@ -2405,34 +2417,26 @@ bool LocalFrameView::UpdateLifecyclePhases(
   if (frame_->IsLocalRoot())
     UpdateLayerDebugInfoEnabled();
 
-  // This is used to guard against reentrance. It is also used in conjunction
-  // with the current lifecycle state to determine which phases are yet to run
-  // in this cycle.
-  base::AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
-      &target_state_, target_state);
-  // This is used to check if we're within a lifecycle update but have passed
-  // the layout update phase. Note there is a bit of a subtlety here: it's not
-  // sufficient for us to check the current lifecycle state, since it can be
-  // past kLayoutClean but the function to run style and layout phase has not
-  // actually been run yet. Since this bool affects throttling, and throttling,
-  // in turn, determines whether style and layout function will run, we need a
-  // separate bool.
-  base::AutoReset<bool> past_layout_lifecycle_resetter(
-      &past_layout_lifecycle_update_, false);
-
-  // If we're throttling, then we don't need to update lifecycle phases. The
-  // throttling status will get updated in RunPostLifecycleSteps().
-  if (ShouldThrottleRendering()) {
+  // If we're throttling and we aren't required to run the IntersectionObserver
+  // steps, then we don't need to update lifecycle phases. The throttling status
+  // will get updated in RunPostLifecycleSteps().
+  if (ShouldThrottleRendering() &&
+      intersection_observation_state_ < kRequired) {
     return Lifecycle().GetState() == target_state;
   }
 
+  PrepareForLifecycleUpdateRecursive();
+
+  // This is used to guard against reentrance. It is also used in conjunction
+  // with the current lifecycle state to determine which phases are yet to run
+  // in this cycle. Note that this may change the return value of
+  // ShouldThrottleRendering(), hence it cannot be moved before the preceeding
+  // code, which relies on the prior value of ShouldThrottleRendering().
+  base::AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
+      &target_state_, target_state);
+
   lifecycle_data_.start_time = base::TimeTicks::Now();
   ++lifecycle_data_.count;
-
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    frame_view.Lifecycle().EnsureStateAtMost(
-        DocumentLifecycle::kVisualUpdatePending);
-  });
 
   if (target_state == DocumentLifecycle::kPaintClean) {
     {
@@ -2666,17 +2670,6 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   }
 
   if (target_state == DocumentLifecycle::kLayoutClean)
-    return false;
-
-  // This will be reset by AutoReset in the calling function
-  past_layout_lifecycle_update_ = true;
-
-  // After layout and the |past_layout_lifecycle_update_| update, the value of
-  // ShouldThrottleRendering() can change. OOPIF local frame roots that are
-  // throttled can return now that layout is clean. This situation happens if
-  // the throttling was disabled due to required intersection observation, which
-  // can now be run.
-  if (ShouldThrottleRendering())
     return false;
 
   // Now we can run post layout steps in preparation for further phases.
@@ -3739,7 +3732,8 @@ void LocalFrameView::AttachToLayout() {
   if (parent_view->IsVisible())
     SetParentVisible(true);
   UpdateRenderThrottlingStatus(IsHiddenForThrottling(),
-                               parent_view->CanThrottleRendering());
+                               parent_view->CanThrottleRendering(),
+                               IsDisplayLocked());
 
   // We may have updated paint properties in detached frame subtree for
   // printing (see UpdateLifecyclePhasesForPrinting()). The paint properties
@@ -4331,7 +4325,7 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
   unsigned flags = GetIntersectionObservationFlags(parent_flags);
   bool needs_occlusion_tracking = false;
 
-  if (!NeedsLayout()) {
+  if (!NeedsLayout() || IsDisplayLocked()) {
     // Notify javascript IntersectionObservers
     if (IntersectionObserverController* controller =
             GetFrame().GetDocument()->GetIntersectionObserverController()) {
@@ -4375,13 +4369,13 @@ void LocalFrameView::CrossOriginToMainFrameChanged() {
   // If any of these conditions hold, then a change in cross-origin status does
   // not affect throttling.
   if (lifecycle_updates_throttled_ || IsSubtreeThrottled() ||
-      !IsHiddenForThrottling()) {
+      IsDisplayLocked() || !IsHiddenForThrottling()) {
     return;
   }
   RenderThrottlingStatusChanged();
   // Immediately propagate changes to children.
   UpdateRenderThrottlingStatus(IsHiddenForThrottling(), IsSubtreeThrottled(),
-                               true);
+                               IsDisplayLocked(), true);
 }
 
 void LocalFrameView::CrossOriginToParentFrameChanged() {
@@ -4514,14 +4508,38 @@ bool LocalFrameView::ShouldThrottleRendering() const {
   if (!throttled_for_global_reasons || needs_forced_compositing_update_)
     return false;
 
-  if (intersection_observation_state_ == kRequired) {
-    auto* local_frame_root_view = GetFrame().LocalFrameRoot().View();
-    // When doing a lifecycle update required by intersection observer, we can
-    // throttle lifecycle states after layout. Outside of lifecycle updates,
-    // the frame should be considered throttled because it is not fully updating
-    // the lifecycle.
-    return !local_frame_root_view->IsUpdatingLifecycle() ||
-           local_frame_root_view->past_layout_lifecycle_update_;
+  // If we're currently running a lifecycle update, and we are required to run
+  // the IntersectionObserver steps at the end of the update, then there are two
+  // courses of action, depending on whether this frame is display locked by its
+  // parent frame:
+  //
+  //   - If it is NOT display locked, then we suppress throttling to force the
+  // lifecycle update to proceed up to the state required to run
+  // IntersectionObserver.
+  //
+  //   - If it IS display locked, then we still need IntersectionObserver to
+  // run; but the display lock status will short-circuit the
+  // IntersectionObserver algorithm and create degenerate "not intersecting"
+  // notifications. Hence, we don't need to force lifecycle phases to run,
+  // because IntersectionObserver will not need access to up-to-date
+  // geometry. So there is no point in suppressing throttling here.
+  auto* local_frame_root_view = GetFrame().LocalFrameRoot().View();
+  if (local_frame_root_view->IsUpdatingLifecycle() &&
+      intersection_observation_state_ == kRequired && !IsDisplayLocked()) {
+    // IntersectionObserver may rely on sticky positioning, which is not
+    // resolved until compositing assignments are done. If the resolution of
+    // sticky positioning is refactored to occur during layout, then the
+    // required minimum lifecycle state will depend on whether this frame
+    // requires occlusion tracking, since determining occlusion state requires a
+    // hit test, which requires the document to be pre-paint clean.  So the code
+    // here would change to something like:
+    //
+    //   auto min_state = GetFrame().NeedsOcclusionTracking() ?
+    //       DocumentLifecycle::kPrePaintClean :
+    //       DocumentLifecycle::kLayoutClean;
+    //   return Lifecycle().GetState() >= min_state;
+    return Lifecycle().GetState() >=
+           DocumentLifecycle::kCompositingAssignmentsClean;
   }
 
   return true;
@@ -4533,10 +4551,10 @@ bool LocalFrameView::ShouldThrottleRenderingForTest() const {
 }
 
 bool LocalFrameView::CanThrottleRendering() const {
-  if (lifecycle_updates_throttled_)
+  if (lifecycle_updates_throttled_ || IsSubtreeThrottled() ||
+      IsDisplayLocked()) {
     return true;
-  if (IsSubtreeThrottled())
-    return true;
+  }
   // We only throttle hidden cross-origin frames. This is to avoid a situation
   // where an ancestor frame directly depends on the pipeline timing of a
   // descendant and breaks as a result of throttling. The rationale is that
@@ -4548,10 +4566,11 @@ bool LocalFrameView::CanThrottleRendering() const {
 
 void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                                   bool subtree_throttled,
+                                                  bool display_locked,
                                                   bool recurse) {
   bool was_throttled = CanThrottleRendering();
-  FrameView::UpdateRenderThrottlingStatus(hidden_for_throttling,
-                                          subtree_throttled, recurse);
+  FrameView::UpdateRenderThrottlingStatus(
+      hidden_for_throttling, subtree_throttled, display_locked, recurse);
   if (was_throttled != CanThrottleRendering())
     RenderThrottlingStatusChanged();
 }

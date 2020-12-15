@@ -86,11 +86,10 @@ double GetSiteEngagementScore(content::WebContents* contents) {
   auto* nav_entry = controller.GetEntryAtIndex(current_entry_index);
   DCHECK(nav_entry);
 
-  auto* engagement_svc = SiteEngagementService::Get(
+  auto* engagement_svc = site_engagement::SiteEngagementService::Get(
       Profile::FromBrowserContext(contents->GetBrowserContext()));
   return engagement_svc->GetDetails(nav_entry->GetURL()).total_score;
 }
-
 
 class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
  public:
@@ -236,7 +235,7 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
       {"chrome/browser/ui/webui/discards/site_data.mojom-webui.js",
        IDR_DISCARDS_SITE_DATA_MOJOM_WEBUI_JS},
   };
-  webui::SetupWebUIDataSource(source.get(), kResources, "", IDR_DISCARDS_HTML);
+  webui::SetupWebUIDataSource(source.get(), kResources, IDR_DISCARDS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());

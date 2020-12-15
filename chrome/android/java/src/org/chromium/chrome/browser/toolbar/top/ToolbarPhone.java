@@ -1789,7 +1789,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         // crbug.com/974745.
         requestLayout();
 
-        mLocationBar.getPhoneCoordinator().setUrlBarFocusable(false);
+        mLocationBar.setUrlBarFocusable(false);
 
         finishAnimations();
 
@@ -1880,7 +1880,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         // Detect what was being transitioned from and set the new state appropriately.
         if (mTabSwitcherState == EXITING_TAB_SWITCHER) {
-            mLocationBar.getPhoneCoordinator().setUrlBarFocusable(true);
+            mLocationBar.setUrlBarFocusable(true);
             mTabSwitcherState = STATIC_TAB;
             updateVisualsForLocationBarState();
         }
@@ -2831,9 +2831,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         float translation =
                 urlExpansionPercent * statusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
 
-        boolean scrollingOnNtp =
-                getToolbarDataProvider().getNewTabPageDelegate().isCurrentlyVisible() && !hasFocus
-                && statusCoordinator.isSearchEngineStatusIconVisible();
+        boolean scrollingOnNtp = !hasFocus && statusCoordinator.isSearchEngineStatusIconVisible()
+                && UrlUtilities.isNTPUrl(getToolbarDataProvider().getCurrentUrl());
         if (scrollingOnNtp) {
             // When:
             // 1. unfocusing the LocationBar on the NTP.

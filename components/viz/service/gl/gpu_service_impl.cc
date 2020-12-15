@@ -349,8 +349,8 @@ GpuServiceImpl::GpuServiceImpl(
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  GrContextOptions context_options = GetDefaultGrContextOptions(
-      gpu_preferences_.gr_context_type, gpu_preferences_);
+  GrContextOptions context_options =
+      GetDefaultGrContextOptions(gpu_preferences_.gr_context_type);
   if (gpu_preferences_.force_max_texture_size) {
     context_options.fMaxTextureSizeOverride =
         gpu_preferences_.force_max_texture_size;
@@ -430,22 +430,44 @@ GpuServiceImpl::~GpuServiceImpl() {
   GetLogMessageManager()->ShutdownLogging();
 
   // Destroy the receiver on the IO thread.
-  base::WaitableEvent wait;
-  auto destroy_receiver_task = base::BindOnce(
-      [](mojo::Receiver<mojom::GpuService>* receiver,
-         base::WaitableEvent* wait) {
-        receiver->reset();
-        wait->Signal();
-      },
-      &receiver_, &wait);
-  if (io_runner_->PostTask(FROM_HERE, std::move(destroy_receiver_task)))
-    wait.Wait();
+  {
+    base::WaitableEvent wait;
+    auto destroy_receiver_task = base::BindOnce(
+        [](mojo::Receiver<mojom::GpuService>* receiver,
+           base::WaitableEvent* wait) {
+          receiver->reset();
+          wait->Signal();
+        },
+        &receiver_, base::Unretained(&wait));
+    if (io_runner_->PostTask(FROM_HERE, std::move(destroy_receiver_task)))
+      wait.Wait();
+  }
 
   if (watchdog_thread_)
     watchdog_thread_->OnGpuProcessTearDown();
 
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
+
+  // Destroy |gpu_memory_buffer_factory_| on the IO thread since its weakptrs
+  // are checked there.
+  {
+    base::WaitableEvent wait;
+    auto destroy_gmb_factory = base::BindOnce(
+        [](std::unique_ptr<gpu::GpuMemoryBufferFactory> gmb_factory,
+           base::WaitableEvent* wait) {
+          gmb_factory.reset();
+          wait->Signal();
+        },
+        std::move(gpu_memory_buffer_factory_), base::Unretained(&wait));
+
+    if (io_runner_->PostTask(FROM_HERE, std::move(destroy_gmb_factory))) {
+      // |gpu_memory_buffer_factory_| holds a raw pointer to
+      // |vulkan_context_provider_|. Waiting here enforces the correct order
+      // of destruction.
+      wait.Wait();
+    }
+  }
 
   // Scheduler must be destroyed before sync point manager is destroyed.
   scheduler_.reset();

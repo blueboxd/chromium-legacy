@@ -2781,6 +2781,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Media.PeakWebMediaPlayerCount" units="players"
+    expires_after="M95">
+  <owner>dalecurtis@google.com</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records the peak number of WebMediaPlayer objects per RenderFrame upon
+    RenderFrame destruction (both cleanly and via render process termination).
+  </summary>
+</histogram>
+
 <histogram name="Media.Pepper.PlayedSound" enum="Boolean"
     expires_after="2021-03-01">
   <owner>mlamouri@google.com</owner>
@@ -3729,6 +3739,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Time it takes from the moment that a VideoCaptureController is requested to
     start to the moment the first video frame arrives at
     VideoCaptureController::OnFrameReadyInBuffer().
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Device.SupportedPixelFormat"
+    enum="VideoPixelFormatUnion" expires_after="M92">
+  <owner>eshr@google.com</owner>
+  <owner>handellm@google.com</owner>
+  <summary>
+    Counts each pixel format an enumerated video capture device supports. This
+    is recorded during the first device enumeration per Capture process launch.
+    (This is usually once per launch of Chrome unless the Capture process
+    crashes.)
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Device.SupportedResolution"
+    enum="VideoResolutionDesignation" expires_after="M92">
+  <owner>eshr@google.com</owner>
+  <owner>handellm@google.com</owner>
+  <summary>
+    Counts each resolution supported by an enumerated video capture device.
+    These are categorized by designation (eg. QVGA, HD, 4KUHD, etc) instead of
+    pixel count. This is recorded during the first device enumeration per
+    Capture process launch. (This is usually once per launch of Chrome unless
+    the Capture process crashes.)
   </summary>
 </histogram>
 

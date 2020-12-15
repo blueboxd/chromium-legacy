@@ -4683,6 +4683,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"pdf-viewer-update", flag_descriptions::kPdfViewerUpdateName,
      flag_descriptions::kPdfViewerUpdateDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFViewerUpdate)},
+
+    {"pdf-viewer-presentation-mode",
+     flag_descriptions::kPdfViewerPresentationModeName,
+     flag_descriptions::kPdfViewerPresentationModeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfViewerPresentationMode)},
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -6972,6 +6977,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-first-party-sets", flag_descriptions::kEnableFirstPartySetsName,
      flag_descriptions::kEnableFirstPartySetsDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kFirstPartySets)},
+
+#if defined(OS_ANDROID)
+    {"autofill-enable-offers-in-clank-keyboard-accessory",
+     flag_descriptions::kAutofillEnableOffersInClankKeyboardAccessoryName,
+     flag_descriptions::
+         kAutofillEnableOffersInClankKeyboardAccessoryDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableOffersInClankKeyboardAccessory)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

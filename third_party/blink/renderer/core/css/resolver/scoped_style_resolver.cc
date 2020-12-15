@@ -317,14 +317,14 @@ void ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules(
 void ScopedStyleResolver::CollectMatchingPartPseudoRules(
     ElementRuleCollector& collector,
     PartNames& part_names,
-    ShadowV0CascadeOrder cascade_order) {
+    bool for_shadow_pseudo) {
   wtf_size_t sheet_index = 0;
   for (auto sheet : style_sheets_) {
     DCHECK(sheet->ownerNode() || sheet->IsConstructed());
     MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
                                &scope_->RootNode(), sheet, sheet_index++);
     collector.CollectMatchingPartPseudoRules(match_request, part_names,
-                                             cascade_order);
+                                             for_shadow_pseudo);
   }
 }
 
@@ -346,8 +346,12 @@ void ScopedStyleResolver::Trace(Visitor* visitor) const {
 
 static void AddRules(RuleSet* rule_set,
                      const HeapVector<MinimalRuleData>& rules) {
-  for (const auto& info : rules)
-    rule_set->AddRule(info.rule_, info.selector_index_, info.flags_);
+  for (const auto& info : rules) {
+    // TODO(crbug.com/1145970): Store container_query on MinimalRuleData
+    // and propagate it here.
+    rule_set->AddRule(info.rule_, info.selector_index_, info.flags_,
+                      nullptr /* container_query */);
+  }
 }
 
 void ScopedStyleResolver::AddTreeBoundaryCrossingRules(

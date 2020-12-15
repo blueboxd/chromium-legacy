@@ -223,6 +223,12 @@ const char kAutofillEnableGoogleIssuedCardDescription[] =
     "When enabled, Google-issued cards will be available in the autofill "
     "suggestions.";
 
+const char kAutofillEnableOffersInClankKeyboardAccessoryName[] =
+    "Enable Autofill offers in keyboard accessory";
+const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[] =
+    "When enabled, offers will be displayed in the keyboard accessory when "
+    "available.";
+
 const char kAutofillEnableOffersInDownstreamName[] =
     "Enable Autofill offers in downstream";
 const char kAutofillEnableOffersInDownstreamDescription[] =
@@ -4923,6 +4929,11 @@ const char kPdfViewerUpdateName[] = "PDF Viewer Update";
 const char kPdfViewerUpdateDescription[] =
     "When enabled, the PDF viewer will display an updated UI with new "
     "options and features.";
+
+const char kPdfViewerPresentationModeName[] = "PDF Viewer Presentation Mode";
+const char kPdfViewerPresentationModeDescription[] =
+    "When enabled, the PDF viewer will include an option in the toolbar's "
+    "overflow menu to enter Presentation (full screen) Mode.";
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

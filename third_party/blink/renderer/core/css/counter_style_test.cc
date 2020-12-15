@@ -206,4 +206,154 @@ TEST_F(CounterStyleTest, CustomNegative) {
   EXPECT_EQ("99", extended.GenerateRepresentation(99));
 }
 
+TEST_F(CounterStyleTest, CustomPad) {
+  InsertStyleElement(R"CSS(
+    @counter-style financial-decimal-pad {
+      system: extends decimal;
+      negative: '(' ')';
+      pad: 4 '0';
+    }
+
+    @counter-style extended {
+      system: extends financial-decimal-pad;
+    }
+  )CSS");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Getting custom 'pad' directly from descriptor value.
+  const CounterStyle& financial_decimal_pad =
+      GetCounterStyle("financial-decimal-pad");
+  EXPECT_EQ("(99)", financial_decimal_pad.GenerateRepresentation(-99));
+  EXPECT_EQ("(01)", financial_decimal_pad.GenerateRepresentation(-1));
+  EXPECT_EQ("0000", financial_decimal_pad.GenerateRepresentation(0));
+  EXPECT_EQ("0001", financial_decimal_pad.GenerateRepresentation(1));
+  EXPECT_EQ("0099", financial_decimal_pad.GenerateRepresentation(99));
+
+  // Getting custom 'pad' indirectly by extending a counter style.
+  const CounterStyle& extended = GetCounterStyle("extended");
+  EXPECT_EQ("(99)", extended.GenerateRepresentation(-99));
+  EXPECT_EQ("(01)", extended.GenerateRepresentation(-1));
+  EXPECT_EQ("0000", extended.GenerateRepresentation(0));
+  EXPECT_EQ("0001", extended.GenerateRepresentation(1));
+  EXPECT_EQ("0099", extended.GenerateRepresentation(99));
+}
+
+TEST_F(CounterStyleTest, PadLengthLimit) {
+  InsertStyleElement(R"CSS(
+    @counter-style foo {
+      system: extends decimal;
+      pad: 1000 '0';
+    }
+  )CSS");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Pad length is too long. Fallback to 'decimal'.
+  const CounterStyle& foo = GetCounterStyle("foo");
+  EXPECT_EQ("0", foo.GenerateRepresentation(0));
+}
+
+TEST_F(CounterStyleTest, SymbolicWithExtendedRange) {
+  InsertStyleElement(R"CSS(
+    @counter-style base {
+      system: symbolic;
+      symbols: A B;
+    }
+
+    @counter-style custom {
+      system: extends base;
+      range: infinite -2, 0 infinite;
+    }
+
+    @counter-style extended {
+      system: extends custom;
+    }
+  )CSS");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Getting custom 'range' directly from descriptor value.
+  const CounterStyle& custom = GetCounterStyle("custom");
+  EXPECT_EQ("-AA", custom.GenerateRepresentation(-3));
+  EXPECT_EQ("-B", custom.GenerateRepresentation(-2));
+  // -1 is out of 'range' value. Fallback to 'decimal'
+  EXPECT_EQ("-1", custom.GenerateRepresentation(-1));
+  // 0 is within 'range' but not representable. Fallback to 'decimal'.
+  EXPECT_EQ("0", custom.GenerateRepresentation(0));
+  EXPECT_EQ("A", custom.GenerateRepresentation(1));
+
+  // Getting custom 'range' indirectly by extending a counter style.
+  const CounterStyle& extended = GetCounterStyle("extended");
+  EXPECT_EQ("-AA", extended.GenerateRepresentation(-3));
+  EXPECT_EQ("-B", extended.GenerateRepresentation(-2));
+  EXPECT_EQ("-1", extended.GenerateRepresentation(-1));
+  EXPECT_EQ("0", extended.GenerateRepresentation(0));
+  EXPECT_EQ("A", extended.GenerateRepresentation(1));
+}
+
+TEST_F(CounterStyleTest, AdditiveWithExtendedRange) {
+  InsertStyleElement(R"CSS(
+    @counter-style base {
+      system: additive;
+      additive-symbols: 2 B, 1 A;
+    }
+
+    @counter-style custom {
+      system: extends base;
+      range: infinite -2, 0 infinite;
+    }
+
+    @counter-style extended {
+      system: extends custom;
+    }
+  )CSS");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Getting custom 'range' directly from descriptor value.
+  const CounterStyle& custom = GetCounterStyle("custom");
+  EXPECT_EQ("-BA", custom.GenerateRepresentation(-3));
+  EXPECT_EQ("-B", custom.GenerateRepresentation(-2));
+  // -1 is out of 'range' value. Fallback to 'decimal'.
+  EXPECT_EQ("-1", custom.GenerateRepresentation(-1));
+  // 0 is within 'range' but not representable. Fallback to 'decimal'.
+  EXPECT_EQ("0", custom.GenerateRepresentation(0));
+  EXPECT_EQ("A", custom.GenerateRepresentation(1));
+
+  // Getting custom 'range' indirectly by extending a counter style.
+  const CounterStyle& extended = GetCounterStyle("extended");
+  EXPECT_EQ("-BA", extended.GenerateRepresentation(-3));
+  EXPECT_EQ("-B", extended.GenerateRepresentation(-2));
+  EXPECT_EQ("-1", extended.GenerateRepresentation(-1));
+  EXPECT_EQ("0", extended.GenerateRepresentation(0));
+  EXPECT_EQ("A", extended.GenerateRepresentation(1));
+}
+
+TEST_F(CounterStyleTest, CustomFirstSymbolValue) {
+  InsertStyleElement(R"CSS(
+    @counter-style base {
+      system: fixed 2;
+      symbols: A B C;
+    }
+
+    @counter-style extended {
+      system: extends base;
+    }
+  )CSS");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Getting custom first symbol value directly from descriptor value.
+  const CounterStyle& base = GetCounterStyle("base");
+  EXPECT_EQ("1", base.GenerateRepresentation(1));
+  EXPECT_EQ("A", base.GenerateRepresentation(2));
+  EXPECT_EQ("B", base.GenerateRepresentation(3));
+  EXPECT_EQ("C", base.GenerateRepresentation(4));
+  EXPECT_EQ("5", base.GenerateRepresentation(5));
+
+  // Getting custom first symbol value indirectly using 'extends'.
+  const CounterStyle& extended = GetCounterStyle("extended");
+  EXPECT_EQ("1", extended.GenerateRepresentation(1));
+  EXPECT_EQ("A", extended.GenerateRepresentation(2));
+  EXPECT_EQ("B", extended.GenerateRepresentation(3));
+  EXPECT_EQ("C", extended.GenerateRepresentation(4));
+  EXPECT_EQ("5", extended.GenerateRepresentation(5));
+}
+
 }  // namespace blink

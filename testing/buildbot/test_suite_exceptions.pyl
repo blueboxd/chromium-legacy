@@ -436,18 +436,6 @@
       },
     },
   },
-  'boringssl_crypto_tests': {
-    'remove_from': [
-      # https://crbug.com/1054545
-      'Fuchsia ARM64',
-    ],
-  },
-  'boringssl_ssl_tests': {
-    'remove_from': [
-      # https://crbug.com/1054545
-      'Fuchsia ARM64',
-    ],
-  },
   'breakpad_unittests': {
     'modifications': {
       'android-asan': {
@@ -462,7 +450,6 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
-      'Mac10.13 Tests',  # https://crbug.com/1042757
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
     ],
@@ -531,6 +518,9 @@
           ],
           'shards': 30,
         },
+      },
+      'Mac10.13 Tests':{
+        'experiment_percentage': 10 # https://crbug.com/1042757
       },
       'Mac10.13 Tests (dbg)': {
         'swarming': {
@@ -2704,12 +2694,6 @@
         ],
       },
     },
-  },
-  'url_unittests': {
-    'remove_from': [
-      # crbug.com/1054240
-      'Fuchsia ARM64',
-    ],
   },
   'video_decode_accelerator_gl_unittest': {
     'remove_from': [

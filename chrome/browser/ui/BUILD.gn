@@ -2067,6 +2067,8 @@ static_library("ui") {
       "settings_window_manager_chromeos.h",
       "settings_window_manager_observer_chromeos.h",
       "supervised_user/parent_permission_dialog.h",
+      "toolbar/assign_to_desks_menu_model.cc",
+      "toolbar/assign_to_desks_menu_model.h",
       "views/apps/app_dialog/app_block_dialog_view.cc",
       "views/apps/app_dialog/app_block_dialog_view.h",
       "views/apps/app_dialog/app_pause_dialog_view.cc",
@@ -2766,6 +2768,8 @@ static_library("ui") {
     sources += [
       "views/chrome_browser_main_extra_parts_views_lacros.cc",
       "views/chrome_browser_main_extra_parts_views_lacros.h",
+      "views/frame/browser_frame_lacros.cc",
+      "views/frame/browser_frame_lacros.h",
       "views/frame/immersive_mode_controller_chromeos.cc",
       "views/frame/immersive_mode_controller_chromeos.h",
       "window_sizer/window_sizer_chromeos.cc",
@@ -3337,7 +3341,7 @@ static_library("ui") {
       ]
     }
     if (use_ozone) {
-      if (!is_linux || is_chromeos_lacros) {
+      if (!is_linux && !is_chromeos_lacros) {
         sources += [
           "views/frame/browser_desktop_window_tree_host_platform.cc",
           "views/frame/browser_desktop_window_tree_host_platform.h",

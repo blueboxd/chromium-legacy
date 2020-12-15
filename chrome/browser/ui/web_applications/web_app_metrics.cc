@@ -39,22 +39,23 @@ constexpr base::TimeDelta max_valid_session_delta_ =
 
 void RecordEngagementHistogram(
     const std::string& histogram_name,
-    SiteEngagementService::EngagementType engagement_type) {
-  base::UmaHistogramEnumeration(histogram_name, engagement_type,
-                                SiteEngagementService::ENGAGEMENT_LAST);
+    site_engagement::SiteEngagementService::EngagementType engagement_type) {
+  base::UmaHistogramEnumeration(
+      histogram_name, engagement_type,
+      site_engagement::SiteEngagementService::ENGAGEMENT_LAST);
 }
 
 void RecordTabOrWindowHistogram(
     const std::string& histogram_prefix,
     bool in_window,
-    SiteEngagementService::EngagementType engagement_type) {
+    site_engagement::SiteEngagementService::EngagementType engagement_type) {
   RecordEngagementHistogram(
       histogram_prefix + (in_window ? ".InWindow" : ".InTab"), engagement_type);
 }
 
 void RecordUserInstalledHistogram(
     bool in_window,
-    SiteEngagementService::EngagementType engagement_type) {
+    site_engagement::SiteEngagementService::EngagementType engagement_type) {
   const std::string histogram_prefix = "WebApp.Engagement.UserInstalled";
   RecordTabOrWindowHistogram(histogram_prefix, in_window, engagement_type);
 }
@@ -77,7 +78,8 @@ WebAppMetrics* WebAppMetrics::Get(Profile* profile) {
 }
 
 WebAppMetrics::WebAppMetrics(Profile* profile)
-    : SiteEngagementObserver(SiteEngagementService::Get(profile)),
+    : SiteEngagementObserver(
+          site_engagement::SiteEngagementService::Get(profile)),
       profile_(profile),
       browser_tab_strip_tracker_(this, nullptr) {
   browser_tab_strip_tracker_.Init();
@@ -101,7 +103,7 @@ void WebAppMetrics::OnEngagementEvent(
     WebContents* web_contents,
     const GURL& url,
     double score,
-    SiteEngagementService::EngagementType engagement_type) {
+    site_engagement::SiteEngagementService::EngagementType engagement_type) {
   if (!web_contents)
     return;
 
@@ -304,7 +306,7 @@ void WebAppMetrics::UpdateUkmData(WebContents* web_contents,
     features.install_source =
         GetLatestWebAppInstallSource(app_id, profile_->GetPrefs());
     DisplayMode display_mode =
-        provider->registrar().GetAppUserDisplayMode(app_id);
+        provider->registrar().GetAppEffectiveDisplayMode(app_id);
     features.effective_display_mode = static_cast<int>(display_mode);
     // AppBannerManager treats already-installed web-apps as non-promotable, so
     // include already-installed findings as promotable.

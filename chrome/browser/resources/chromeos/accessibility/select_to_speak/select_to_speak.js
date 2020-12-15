@@ -8,6 +8,8 @@ var RoleType = chrome.automation.RoleType;
 const AccessibilityFeature = chrome.accessibilityPrivate.AccessibilityFeature;
 const SelectToSpeakPanelAction =
     chrome.accessibilityPrivate.SelectToSpeakPanelAction;
+const FocusRingStackingOrder =
+    chrome.accessibilityPrivate.FocusRingStackingOrder;
 
 // This must be the same as in ash/system/accessibility/select_to_speak_tray.cc:
 // ash::kSelectToSpeakTrayClassName.
@@ -763,9 +765,15 @@ class SelectToSpeak {
     if (drawBackground && this.prefsManager_.backgroundShadingEnabled()) {
       color = DEFAULT_BACKGROUND_SHADING_COLOR;
     }
+    // If we're also showing a navigation panel, ensure the focus ring appears
+    // below the panel UI.
+    const stackingOrder = this.shouldShowNavigationControls_() ?
+        FocusRingStackingOrder.BELOW_ACCESSIBILITY_BUBBLES :
+        FocusRingStackingOrder.ABOVE_ACCESSIBILITY_BUBBLES;
     chrome.accessibilityPrivate.setFocusRings([{
       rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
+      stackingOrder,
       color: this.prefsManager_.focusRingColor(),
       backgroundColor: color,
     }]);
@@ -1541,10 +1549,22 @@ class SelectToSpeak {
     if (!this.visible_) {
       return;
     }
-    const node = nodeGroupItem.hasInlineText && this.currentNodeWord_ ?
-        ParagraphUtils.findInlineTextNodeByCharacterIndex(
-            nodeGroupItem.node, this.currentNodeWord_.start) :
-        nodeGroupItem.node;
+    let node;
+    if (nodeGroupItem.hasInlineText && this.currentNodeWord_) {
+      node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
+          nodeGroupItem.node, this.currentNodeWord_.start);
+    } else if (
+        nodeGroupItem.hasInlineText && this.shouldShowNavigationControls_()) {
+      // If navigation controls are enabled, but word highlighting is disabled
+      // (currentNodeWord_ === null), still find the inline text node so the
+      // focus ring will highlight the whole block.
+      node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
+          nodeGroupItem.node, 0);
+    } else {
+      // No inline text or word highlighting and navigation controls are
+      // disabled.
+      node = nodeGroupItem.node;
+    }
     if (this.scrollToSpokenNode_ && node.state.offscreen) {
       node.makeVisible();
     }

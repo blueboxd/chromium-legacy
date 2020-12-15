@@ -91,8 +91,8 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
+import org.chromium.chrome.browser.browserservices.verification.OriginVerifier;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
@@ -2252,17 +2252,6 @@ public class CustomTabActivityTest {
 
     private void addColorSchemeToIntent(Intent intent, int colorScheme) {
         intent.putExtra(CustomTabsIntent.EXTRA_COLOR_SCHEME, colorScheme);
-    }
-
-    @Test
-    @MediumTest
-    public void testLaunchIncognitoCustomTabForPaymentRequest() {
-        Intent intent = createMinimalCustomTabIntent();
-        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-        CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-
-        Assert.assertTrue(mCustomTabActivityTestRule.getActivity().getActivityTab().isIncognito());
     }
 
     /** Maybe prerenders a URL with a referrer, then launch it with another one. */

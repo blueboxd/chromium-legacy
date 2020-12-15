@@ -283,6 +283,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "autofill-enable-offers-in-clank-keyboard-accessory",
+    "owners": [ "siyua", "siashah@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "autofill-enable-offers-in-downstream",
     "owners": [ "fiorito@google.com", "siyua" ],
     "expiry_milestone": 90
@@ -3898,6 +3903,11 @@
     "name": "pdf-honor-js-content-settings",
     "owners": [ "dhoss", "tsepez" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "pdf-viewer-presentation-mode",
+    "owners": [ "dpapad" ],
+    "expiry_milestone": 92
   },
   {
     "name": "pdf-viewer-update",

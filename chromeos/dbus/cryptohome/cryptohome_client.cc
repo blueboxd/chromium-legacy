@@ -262,43 +262,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmIsReady(DBusMethodCallback<bool> callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsReady);
-    CallBoolMethod(&method_call, std::move(callback));
-  }
-
-  // CryptohomeClient override.
-  void TpmIsEnabled(DBusMethodCallback<bool> callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsEnabled);
-    CallBoolMethod(&method_call, std::move(callback));
-  }
-
-  // CryptohomeClient override.
-  // TODO(hashimoto): Remove this method. crbug.com/141006
-  bool CallTpmIsEnabledAndBlock(bool* enabled) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsEnabled);
-    return CallBoolMethodAndBlock(&method_call, enabled);
-  }
-
-  // CryptohomeClient override.
-  void TpmIsOwned(DBusMethodCallback<bool> callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsOwned);
-    CallBoolMethod(&method_call, std::move(callback));
-  }
-
-  // CryptohomeClient override.
-  // TODO(hashimoto): Remove this method. crbug.com/141012
-  bool CallTpmIsOwnedAndBlock(bool* owned) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeTpmIsOwned);
-    return CallBoolMethodAndBlock(&method_call, owned);
-  }
-
-  // CryptohomeClient override.
   void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomePkcs11IsTpmTokenReady);
@@ -589,13 +552,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
       DBusMethodCallback<cryptohome::BaseReply> callback) override {
     CallCryptohomeMethod(cryptohome::kCryptohomeFlushAndSignBootAttributes,
                          request, std::move(callback));
-  }
-
-  void GetTpmStatus(
-      const cryptohome::GetTpmStatusRequest& request,
-      DBusMethodCallback<cryptohome::BaseReply> callback) override {
-    CallCryptohomeMethod(cryptohome::kCryptohomeGetTpmStatus, request,
-                         std::move(callback));
   }
 
   void RemoveFirmwareManagementParametersFromTpm(

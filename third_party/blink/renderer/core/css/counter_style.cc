@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -84,6 +85,27 @@ String SymbolToString(const CSSValue& value) {
   if (const CSSStringValue* string = DynamicTo<CSSStringValue>(value))
     return string->Value();
   return To<CSSCustomIdentValue>(value).Value();
+}
+
+std::pair<int, int> BoundsToIntegerPair(const CSSValuePair& bounds) {
+  int lower_bound, upper_bound;
+  if (bounds.First().IsIdentifierValue()) {
+    DCHECK_EQ(CSSValueID::kInfinite,
+              To<CSSIdentifierValue>(bounds.First()).GetValueID());
+    lower_bound = std::numeric_limits<int>::min();
+  } else {
+    DCHECK(bounds.First().IsPrimitiveValue());
+    lower_bound = To<CSSPrimitiveValue>(bounds.First()).GetIntValue();
+  }
+  if (bounds.Second().IsIdentifierValue()) {
+    DCHECK_EQ(CSSValueID::kInfinite,
+              To<CSSIdentifierValue>(bounds.Second()).GetValueID());
+    upper_bound = std::numeric_limits<int>::max();
+  } else {
+    DCHECK(bounds.Second().IsPrimitiveValue());
+    upper_bound = To<CSSPrimitiveValue>(bounds.Second()).GetIntValue();
+  }
+  return std::make_pair(lower_bound, upper_bound);
 }
 
 // https://drafts.csswg.org/css-counter-styles/#cyclic-system
@@ -216,6 +238,9 @@ CounterStyle::CounterStyle(const StyleRuleCounterStyle& rule)
     if (system_ == CounterStyleSystem::kUnresolvedExtends) {
       const auto& second = To<CSSValuePair>(system)->Second();
       extends_name_ = To<CSSCustomIdentValue>(second).Value();
+    } else if (system_ == CounterStyleSystem::kFixed && system->IsValuePair()) {
+      const auto& second = To<CSSValuePair>(system)->Second();
+      first_symbol_value_ = To<CSSPrimitiveValue>(second).GetIntValue();
     }
   }
 
@@ -246,7 +271,23 @@ CounterStyle::CounterStyle(const StyleRuleCounterStyle& rule)
     }
   }
 
-  // TODO(crbug.com/687225): Implement and populate other fields.
+  if (const CSSValue* pad = rule.GetPad()) {
+    const CSSValuePair& pair = To<CSSValuePair>(*pad);
+    pad_length_ = To<CSSPrimitiveValue>(pair.First()).GetIntValue();
+    pad_symbol_ = SymbolToString(pair.Second());
+  }
+
+  if (const CSSValue* range = rule.GetRange()) {
+    if (range->IsIdentifierValue()) {
+      DCHECK_EQ(CSSValueID::kAuto, To<CSSIdentifierValue>(range)->GetValueID());
+      // Empty |range_| already means 'auto'.
+    } else {
+      for (const CSSValue* bounds : To<CSSValueList>(*range))
+        range_.push_back(BoundsToIntegerPair(To<CSSValuePair>(*bounds)));
+    }
+  }
+
+  // TODO(crbug.com/687225): Implement 'prefix', 'suffix' and 'speak-as'.
 }
 
 void CounterStyle::ResolveExtends(const CounterStyle& extended) {
@@ -254,6 +295,9 @@ void CounterStyle::ResolveExtends(const CounterStyle& extended) {
   extended_style_ = extended;
 
   system_ = extended.system_;
+
+  if (system_ == CounterStyleSystem::kFixed)
+    first_symbol_value_ = extended.first_symbol_value_;
 
   if (!style_rule_->GetFallback()) {
     fallback_name_ = extended.fallback_name_;
@@ -269,7 +313,15 @@ void CounterStyle::ResolveExtends(const CounterStyle& extended) {
     negative_suffix_ = extended.negative_suffix_;
   }
 
-  // TODO(crbug.com/687225): Implement and populate other fields.
+  if (!style_rule_->GetPad()) {
+    pad_length_ = extended.pad_length_;
+    pad_symbol_ = extended.pad_symbol_;
+  }
+
+  if (!style_rule_->GetRange())
+    range_ = extended.range_;
+
+  // TODO(crbug.com/687225): Implement 'prefix', 'suffix' and 'speak-as'.
 }
 
 void CounterStyle::ResetExtends() {
@@ -287,7 +339,13 @@ void CounterStyle::ResetFallback() {
 }
 
 bool CounterStyle::RangeContains(int value) const {
-  // TODO(crbug.com/687225): Implement non-auto values of 'range'
+  if (range_.size()) {
+    for (const auto& bounds : range_) {
+      if (value >= bounds.first && value <= bounds.second)
+        return true;
+    }
+    return false;
+  }
 
   // 'range' value is auto
   switch (system_) {
@@ -324,23 +382,37 @@ bool CounterStyle::NeedsNegativeSign(int value) const {
   }
 }
 
-String CounterStyle::GenerateRepresentation(int value) const {
+String CounterStyle::GenerateFallbackRepresentation(int value) const {
   if (is_in_fallback_) {
     // We are in a fallback cycle. Use decimal instead.
     return GetDecimal().GenerateRepresentation(value);
   }
 
-  String initial_representation = GenerateInitialRepresentation(value);
-  if (initial_representation.IsNull()) {
-    base::AutoReset<bool> in_fallback_scope(&is_in_fallback_, true);
-    return fallback_style_->GenerateRepresentation(value);
-  }
+  base::AutoReset<bool> in_fallback_scope(&is_in_fallback_, true);
+  return fallback_style_->GenerateRepresentation(value);
+}
 
-  // TODO(crbug.com/687225): Implement non-default 'pad' value.
+String CounterStyle::GenerateRepresentation(int value) const {
+  if (pad_length_ > kCounterLengthLimit)
+    return GenerateFallbackRepresentation(value);
+
+  String initial_representation = GenerateInitialRepresentation(value);
+  if (initial_representation.IsNull())
+    return GenerateFallbackRepresentation(value);
+
+  wtf_size_t initial_length = NumGraphemeClusters(initial_representation);
+  if (NeedsNegativeSign(value)) {
+    initial_length += NumGraphemeClusters(negative_prefix_);
+    initial_length += NumGraphemeClusters(negative_suffix_);
+  }
+  wtf_size_t pad_copies =
+      pad_length_ > initial_length ? pad_length_ - initial_length : 0;
 
   StringBuilder result;
   if (NeedsNegativeSign(value))
     result.Append(negative_prefix_);
+  for (wtf_size_t i = 0; i < pad_copies; ++i)
+    result.Append(pad_symbol_);
   result.Append(initial_representation);
   if (NeedsNegativeSign(value))
     result.Append(negative_suffix_);
@@ -359,8 +431,8 @@ String CounterStyle::GenerateInitialRepresentation(int value) const {
       symbol_indexes = CyclicAlgorithm(value, symbols_.size());
       break;
     case CounterStyleSystem::kFixed:
-      // TODO(crbug.com/687225): Implement non-default first symbol values.
-      symbol_indexes = FixedAlgorithm(value - 1, symbols_.size());
+      symbol_indexes =
+          FixedAlgorithm(value - first_symbol_value_, symbols_.size());
       break;
     case CounterStyleSystem::kNumeric:
       symbol_indexes = NumericAlgorithm(value, symbols_.size());

@@ -73,6 +73,10 @@ class CORE_EXPORT CounterStyle final : public GarbageCollected<CounterStyle> {
   // 'system', 'range' and 'symbols'/'additive-symbols' descriptor values.
   String GenerateInitialRepresentation(int value) const;
 
+  // Uses the fallback counter style to generate a representation for the value.
+  // It may recurse, and if it enters a loop, it uses 'decimal' instead.
+  String GenerateFallbackRepresentation(int value) const;
+
   // The corresponding style rule in CSS.
   Member<const StyleRuleCounterStyle> style_rule_;
 
@@ -97,8 +101,17 @@ class CORE_EXPORT CounterStyle final : public GarbageCollected<CounterStyle> {
   // Additive weights, for the 'additive' system only.
   Vector<wtf_size_t> additive_weights_;
 
+  // Value of 'range' descriptor. Empty vector means 'auto'.
+  Vector<std::pair<int, int>> range_;
+
   String negative_prefix_ = "-";
   String negative_suffix_;
+
+  String pad_symbol_;
+  wtf_size_t pad_length_ = 0;
+
+  // First symbol value, for 'fixed' system only.
+  wtf_size_t first_symbol_value_ = 1;
 
   friend class CounterStyleMapTest;
 };

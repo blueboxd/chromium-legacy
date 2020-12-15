@@ -171,6 +171,28 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
 }  // namespace
 
+@interface NewTagAttachmentCell : NSTextAttachmentCell
+@end
+
+@implementation NewTagAttachmentCell
+
+- (instancetype)init {
+  if (self = [super init]) {
+    self.image = NewTagImage();
+  }
+  return self;
+}
+
+- (NSPoint)cellBaselineOffset {
+  return NSMakePoint(0, views::NewBadge::kNewBadgeBaselineOffsetMac);
+}
+
+- (NSSize)cellSize {
+  return [self.image size];
+}
+
+@end
+
 // --- Private API begin ---
 
 @interface NSCarbonMenuImpl : NSObject
@@ -203,14 +225,19 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
   static const bool newBadgeFeatureEnabled =
       base::FeatureList::IsEnabled(views::features::kEnableNewBadgeOnMenuItems);
   if (newBadgeFeatureEnabled && model->IsNewFeatureAt(index)) {
-    NSTextAttachment* attachment =
-        [[[NSTextAttachment alloc] initWithData:nil ofType:nil] autorelease];
-    attachment.image = NewTagImage();
-    NSSize newTagSize = attachment.image.size;
-    attachment.bounds =
-        NSMakeRect(0, views::NewBadge::kNewBadgeBaselineOffsetMac,
-                   newTagSize.width, newTagSize.height);
-
+  	NSTextAttachment* attachment;
+    if (@available(macOS 10.11, *)) {
+      attachment = [[[NSTextAttachment alloc] initWithData:nil ofType:nil] autorelease];
+      attachment.image = NewTagImage();
+      NSSize newTagSize = attachment.image.size;
+      attachment.bounds =
+      NSMakeRect(0, views::NewBadge::kNewBadgeBaselineOffsetMac,
+                 newTagSize.width, newTagSize.height);
+    } else {
+    	attachment = [[NSTextAttachment alloc] init];
+      attachment.attachmentCell = [[[NewTagAttachmentCell alloc] init] autorelease]; 
+ 		}
+  
     NSMutableAttributedString* attrTitle =
         MutableAttributedStringForMenuItemTitleString(menuItem.title);
     [attrTitle

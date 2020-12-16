@@ -56,7 +56,7 @@ namespace {
 
 const char kOfflinePreviewsMimeType[] = "multipart/related";
 extern const base::Feature kLayoutShiftNormalizationRecordUKM{
-    "LayoutShiftNormalizationRecordUKM", base::FEATURE_ENABLED_BY_DEFAULT};
+    "LayoutShiftNormalizationRecordUKM", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
   switch (protocol) {
@@ -1067,7 +1067,9 @@ void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
   ukm::builders::MobileFriendliness mf(GetDelegate().GetPageUkmSourceId());
   mf.SetViewportDeviceWidth(
         GetDelegate().GetMobileFriendliness().viewport_device_width)
-      .SetAllowUserZoom(GetDelegate().GetMobileFriendliness().allow_user_zoom);
+      .SetAllowUserZoom(GetDelegate().GetMobileFriendliness().allow_user_zoom)
+      .SetSmallTextRatio(ukm::GetExponentialBucketMin(
+          GetDelegate().GetMobileFriendliness().small_text_ratio, 1.2));
   const int initial_scale_x10 = std::floor(
       GetDelegate().GetMobileFriendliness().viewport_initial_scale * 10);
   if (initial_scale_x10 > 0) {

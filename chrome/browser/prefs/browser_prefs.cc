@@ -389,6 +389,10 @@
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/lacros_prefs.h"
+#endif
+
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/device_identity//device_oauth2_token_store_desktop.h"
 #include "chrome/browser/downgrade/downgrade_prefs.h"
@@ -465,6 +469,9 @@ const char kRegisteredSupervisedUserAllowlists[] =
 
 // Deprecated 11/2020
 const char kSupervisedUserAllowlists[] = "profile.managed.whitelists";
+
+// Deprecated 12/2020
+const char kFirstRunTrialGroup[] = "help_app_first_run.trial_group";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Deprecated 6/2020
@@ -527,6 +534,7 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterDictionaryPref(kRegisteredSupervisedUserAllowlists);
   registry->RegisterIntegerPref(kSupervisedUsersNextId, 0);
+  registry->RegisterStringPref(kFirstRunTrialGroup, std::string());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
@@ -780,6 +788,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
   AppShimRegistry::Get()->RegisterLocalPrefs(registry);
   registry->RegisterBooleanPref(kKeyCreated, false);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  lacros_prefs::RegisterLocalStatePrefs(registry);
 #endif
 
 #if defined(OS_WIN)
@@ -1130,6 +1142,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   // Added 11/2020.
   local_state->ClearPref(kRegisteredSupervisedUserAllowlists);
+
+  // Added 12/2020.
+  local_state->ClearPref(kFirstRunTrialGroup);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)

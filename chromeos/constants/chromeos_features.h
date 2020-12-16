@@ -179,8 +179,6 @@ extern const base::Feature kGesturePropertiesDBusService;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGuestOsExternalProtocol;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kHelpAppFirstRun;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kHelpAppSearchServiceIntegration;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeMojoDecoder;
@@ -224,6 +222,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kPhoneHub;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kPhoneHubUseBle;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kPinSetupForFamilyLink;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kPluginVmShowCameraPermissions;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -355,6 +355,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsOobeScreensPriorityEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsPhoneHubEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsPhoneHubUseBleEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsPinAutosubmitFeatureEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsPinSetupForFamilyLinkEnabled();
+
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsPinAutosubmitBackfillFeatureEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersDogfood();

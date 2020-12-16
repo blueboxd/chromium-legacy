@@ -104,8 +104,8 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
-#include "ui/base/ime/input_method_keyboard_controller.h"
-#include "ui/base/ime/input_method_keyboard_controller_observer.h"
+#include "ui/base/ime/virtual_keyboard_controller.h"
+#include "ui/base/ime/virtual_keyboard_controller_observer.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
@@ -122,7 +122,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "ui/base/ime/input_method_keyboard_controller.h"
+#include "ui/base/ime/virtual_keyboard_controller.h"
 #endif
 
 using gfx::RectToSkIRect;
@@ -1146,9 +1146,13 @@ void RenderWidgetHostViewAura::InsertText(
 
   if (text_input_manager_ && text_input_manager_->GetActiveWidget()) {
     if (text.length()) {
-      // TODO(crbug.com/1155331): Handle |cursor_behavior| correctly.
+      const int relative_cursor_position =
+          cursor_behavior == InsertTextCursorBehavior::kMoveCursorBeforeText
+              ? -text.length()
+              : 0;
       text_input_manager_->GetActiveWidget()->ImeCommitText(
-          text, std::vector<ui::ImeTextSpan>(), gfx::Range::InvalidRange(), 0);
+          text, std::vector<ui::ImeTextSpan>(), gfx::Range::InvalidRange(),
+          relative_cursor_position);
     } else if (has_composition_text_) {
       text_input_manager_->GetActiveWidget()->ImeFinishComposingText(false);
     }
@@ -1789,8 +1793,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 #elif defined(OS_FUCHSIA)
   if (!editable && window_) {
     if (input_method) {
-      input_method->GetInputMethodKeyboardController()
-          ->DismissVirtualKeyboard();
+      input_method->GetVirtualKeyboardController()->DismissVirtualKeyboard();
     }
   }
 #endif

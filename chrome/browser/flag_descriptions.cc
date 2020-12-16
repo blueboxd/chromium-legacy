@@ -313,6 +313,10 @@ const char kBackForwardCacheDescription[] =
     "To enable caching pages on same-site navigations too, choose 'enabled "
     "same-site support'.";
 
+const char kBentoName[] = "Virtual Desks enhancements";
+const char kBentoDescription[] =
+    "Enables a set of feature enhancements for Virtual Desks.";
+
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
@@ -659,11 +663,6 @@ const char kEnableDataReductionProxyServerExperimentName[] =
 const char kEnableDataReductionProxyServerExperimentDescription[] =
     "Enable a different approach to saving data by configuring the back end "
     "server";
-
-const char kDesktopPWAsLocalUpdatingName[] = "Desktop PWAs local updating";
-const char kDesktopPWAsLocalUpdatingDescription[] =
-    "Enable installed PWAs to update their app manifest data when the site "
-    "manifest data has changed.";
 
 const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[] =
     "Desktop PWAs local updating throttle persistence";
@@ -1856,6 +1855,11 @@ const char kPasswordImportDescription[] =
 const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
+
+const char kPdfXfaFormsName[] = "PDF XFA support";
+const char kPdfXfaFormsDescription[] =
+    "Enables support for XFA forms in PDFs. "
+    "Has no effect if Chrome was not built with XFA support.";
 
 const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
 const char kForceWebContentsDarkModeDescription[] =
@@ -4726,14 +4730,16 @@ const char kWifiSyncAndroidDescription[] =
     "Enables the option to sync Wi-Fi network configurations between Chrome OS "
     "devices and a connected Android phone";
 
+// Prefer keeping this section sorted to adding new definitions down here.
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
 const char kZeroCopyVideoCaptureName[] = "Enable Zero-Copy Video Capture";
 const char kZeroCopyVideoCaptureDescription[] =
     "Camera produces a gpu friendly buffer on capture and, if there is, "
     "hardware accelerated video encoder consumes the buffer";
-
-// Prefer keeping this section sorted to adding new definitions down here.
-
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
 
 // All views-based platforms --------------------------------------------------
 

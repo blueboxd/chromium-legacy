@@ -30,11 +30,6 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
     "AdaptiveScreenBrightnessLogging", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_ANDROID)
-const base::Feature kAddToHomescreenMessaging{
-    "AddToHomescreenMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows a setting that allows disabling mouse acceleration.
 const base::Feature kAllowDisableMouseAcceleration{
@@ -253,11 +248,6 @@ const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin{
     "DesktopPWAsFlashAppNameInsteadOfOrigin",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables local PWA installs to update their app manifest data if the site
-// changes its manifest.
-const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables the WebAppMigrationUserDisplayModeCleanUp code for
 // cleaning up the fallout of https://crbug.com/1125020.
 const base::Feature kDesktopPWAsMigrationUserDisplayModeCleanUp{
@@ -419,12 +409,17 @@ const base::Feature kFlocIdComputedEventLogging{
 const base::Feature kFlocIdSortingLshBasedComputation{
     "FlocIdSortingLshBasedComputation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the floc id will be updated regularly and the rate at which
-// they should be updated.
-const base::Feature kFlocIdScheduledUpdate{"FlocIdScheduledUpdate",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+// The main floc feature for all the subsidiary control and setting params. It's
+// controlling the floc update rate, and the minimum history domain size
+// required.
+// TODO(yaoxia): merge other floc features into this one.
+const base::Feature kFederatedLearningOfCohorts{
+    "FederatedLearningOfCohorts", base::FEATURE_ENABLED_BY_DEFAULT};
 constexpr base::FeatureParam<base::TimeDelta> kFlocIdScheduledUpdateInterval{
-    &kFlocIdScheduledUpdate, "update_interval", base::TimeDelta::FromDays(7)};
+    &kFederatedLearningOfCohorts, "update_interval",
+    base::TimeDelta::FromDays(7)};
+constexpr base::FeatureParam<int> kFlocIdMinimumHistoryDomainSizeRequired{
+    &kFederatedLearningOfCohorts, "minimum_history_domain_size_required", 3};
 
 // Enables Focus Mode which brings up a PWA-like window look.
 const base::Feature kFocusMode{"FocusMode", base::FEATURE_DISABLED_BY_DEFAULT};

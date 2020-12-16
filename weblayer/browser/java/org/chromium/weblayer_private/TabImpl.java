@@ -1106,8 +1106,8 @@ public final class TabImpl extends ITab.Stub {
     private void showContextMenu(ContextMenuParams params, long nativeContextMenuParams)
             throws RemoteException {
         if (WebLayerFactoryImpl.getClientMajorVersion() < 82) return;
-        if (WebLayerFactoryImpl.getClientMajorVersion() < 89) {
-            mClient.showContextMenu(ObjectWrapper.wrap(params.getPageUrl()),
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 88) {
+            mClient.showContextMenu(ObjectWrapper.wrap(params.getPageUrl().getSpec()),
                     ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl())),
                     ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkText())),
                     ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())),
@@ -1120,7 +1120,7 @@ public final class TabImpl extends ITab.Stub {
                 || (params.isVideo() && UrlUtilities.isDownloadableScheme(params.getSrcUrl())
                         && params.canSaveMedia())
                 || (params.isAnchor() && UrlUtilities.isDownloadableScheme(params.getLinkUrl()));
-        mClient.showContextMenu2(ObjectWrapper.wrap(params.getPageUrl()),
+        mClient.showContextMenu2(ObjectWrapper.wrap(params.getPageUrl().getSpec()),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl())),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkText())),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())),

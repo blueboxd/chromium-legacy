@@ -1203,6 +1203,19 @@
           'gtest_tests': 'android_weblayer_x86_gtests',
         }
       },
+      'android-weblayer-oreo-x86-rel-tests': {
+        'mixins': [
+          'enable_resultdb',
+          'oreo-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_gtests',
+        }
+      },
       'android-weblayer-pie-x86-rel-tests': {
         'mixins': [
           'enable_resultdb',
@@ -6039,6 +6052,11 @@
     'name': 'internal.chromeos.fyi',
     'mixins': ['chrome-tester-service-account'],
     'machines': {
+      'chromeos-amd64-generic-lacros-chrome': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
       'chromeos-betty-arc-r-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',

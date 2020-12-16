@@ -193,6 +193,9 @@ extern const char kAvatarToolbarButtonDescription[];
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
 
+extern const char kBentoName[];
+extern const char kBentoDescription[];
+
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
@@ -405,9 +408,6 @@ extern const char kEnableDataReductionProxyServerExperimentDescription[];
 
 extern const char kColorProviderRedirectionName[];
 extern const char kColorProviderRedirectionDescription[];
-
-extern const char kDesktopPWAsLocalUpdatingName[];
-extern const char kDesktopPWAsLocalUpdatingDescription[];
 
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[];
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[];
@@ -1079,6 +1079,9 @@ extern const char kPasswordImportDescription[];
 
 extern const char kPasswordScriptsFetchingName[];
 extern const char kPasswordScriptsFetchingDescription[];
+
+extern const char kPdfXfaFormsName[];
+extern const char kPdfXfaFormsDescription[];
 
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];
@@ -2758,12 +2761,14 @@ extern const char kWebuiDarkModeDescription[];
 extern const char kWifiSyncAndroidName[];
 extern const char kWifiSyncAndroidDescription[];
 
-extern const char kZeroCopyVideoCaptureName[];
-extern const char kZeroCopyVideoCaptureDescription[];
-
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+extern const char kZeroCopyVideoCaptureName[];
+extern const char kZeroCopyVideoCaptureDescription[];
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
 
 // All views-based platforms --------------------------------------------------
 

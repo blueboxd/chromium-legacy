@@ -14,6 +14,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-l
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import './shared/nearby_device.m.js';
 import './mojo/nearby_share_target_types.mojom-lite.js';
+import './mojo/nearby_share_share_type.mojom-lite.js';
 import './mojo/nearby_share.mojom-lite.js';
 import './shared/nearby_page_template.m.js';
 import './shared/nearby_preview.m.js';
@@ -53,9 +54,9 @@ Polymer({
   properties: {
     /**
      * Preview info for the file(s) to be shared.
-     * @type {?nearbyShare.mojom.SendPreview}
+     * @type {?nearbyShare.mojom.PayloadPreview}
      */
-    sendPreview: {
+    payloadPreview: {
       notify: true,
       type: Object,
       value: null,
@@ -197,19 +198,25 @@ Polymer({
           this.onShareTargetLost_.bind(this)),
     ];
 
-    getDiscoveryManager().getSendPreview().then(result => {
-      this.sendPreview = result.sendPreview;
-      // TODO (vecore): Setup icon and handle case of more than one attachment.
+    getDiscoveryManager().getPayloadPreview().then(result => {
+      this.payloadPreview = result.payloadPreview;
     });
 
     getDiscoveryManager()
         .startDiscovery(this.mojoEventTarget_.$.bindNewPipeAndPassRemote())
         .then(response => {
-          if (!response.success) {
-            this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
-            this.errorDescription_ =
-                this.i18n('nearbyShareErrorSomethingWrong');
-            return;
+          switch (response.result) {
+            case nearbyShare.mojom.StartDiscoveryResult.kErrorGeneric:
+              this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+              this.errorDescription_ =
+                  this.i18n('nearbyShareErrorSomethingWrong');
+              return;
+            case nearbyShare.mojom.StartDiscoveryResult
+                .kErrorInProgressTransferring:
+              this.errorTitle_ = this.i18n('nearbyShareErrorCantShare');
+              this.errorDescription_ =
+                  this.i18n('nearbyShareErrorTransferInProgress');
+              return;
           }
         });
   },

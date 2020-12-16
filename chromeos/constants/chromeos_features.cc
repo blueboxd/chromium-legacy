@@ -394,12 +394,6 @@ const base::Feature kGuestOsExternalProtocol{"GuestOsExternalProtocol",
 const base::Feature kHandwritingGestureEditing{
     "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the help app in the first run experience. This opens the help app
-// after the OOBE, and provides some extra functionality like a getting started
-// guide inside the app.
-const base::Feature kHelpAppFirstRun{"HelpAppFirstRun",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable the search service integration in the Help app.
 const base::Feature kHelpAppSearchServiceIntegration{
     "HelpAppSearchServiceIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -504,6 +498,11 @@ const base::Feature kPhoneHub{"PhoneHub", base::FEATURE_DISABLED_BY_DEFAULT};
 // the user's phone.
 const base::Feature kPhoneHubUseBle{"PhoneHubUseBle",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables PIN setup in OOBE for Family Link users on all devices supporting low
+// entropy credentials regardless the form factor.
+const base::Feature kPinSetupForFamilyLink{"PinSetupForFamilyLink",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the camera permissions should be shown in the Plugin
 // VM app settings.
@@ -815,6 +814,10 @@ bool IsPhoneHubEnabled() {
 
 bool IsPhoneHubUseBleEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHubUseBle) && IsPhoneHubEnabled();
+}
+
+bool IsPinSetupForFamilyLinkEnabled() {
+  return base::FeatureList::IsEnabled(kPinSetupForFamilyLink);
 }
 
 bool IsPinAutosubmitFeatureEnabled() {

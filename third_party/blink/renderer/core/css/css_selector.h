@@ -62,10 +62,8 @@ class Node;
 //   (http://www.w3.org/TR/css3-selectors/#combinators), such as descendant,
 //   sibling, etc., are parsed right-to-left (in the example above, this is why
 //   #c is earlier in the tagHistory() chain than .a.b).
-// * SubSelector relations are parsed left-to-right in most cases (such as the
-//   .a.b example above); a counter-example is the
-//   ::content pseudo-element. Most (all?) other pseudo elements and pseudo
-//   classes are parsed left-to-right.
+// * SubSelector relations are parsed left-to-right, such as the .a.b example
+//   above.
 // * ShadowPseudo relations are parsed right-to-left. Example:
 //   summary::-webkit-details-marker is parsed as: selectorText():
 //   summary::-webkit-details-marker --> (relation == ShadowPseudo)
@@ -146,17 +144,33 @@ class CORE_EXPORT CSSSelector {
   };
 
   enum RelationType {
-    kSubSelector,       // No combinator
-    kDescendant,        // "Space" combinator
-    kChild,             // > combinator
-    kDirectAdjacent,    // + combinator
-    kIndirectAdjacent,  // ~ combinator
-    // Special cases for shadow DOM related selectors.
-    kShadowDeep,                // /deep/ combinator
-    kShadowDeepAsDescendant,    // /deep/ as an alias for descendant
-    kShadowPseudo,              // ::shadow pseudo element
-    kShadowSlot,                // ::slotted() pseudo element
-    kShadowPart,                // ::part() pseudo element
+    // No combinator. Used between simple selectors within the same compound.
+    kSubSelector,
+    // "Space" combinator
+    kDescendant,
+    // > combinator
+    kChild,
+    // + combinator
+    kDirectAdjacent,
+    // ~ combinator
+    kIndirectAdjacent,
+    // The relation types below are implicit combinators inserted at parse time
+    // before pseudo elements which match another flat tree element than the
+    // rest of the compound.
+    //
+    // Implicit combinator inserted before pseudo elements matching an element
+    // inside a UA shadow tree. This combinator allows the selector matching to
+    // cross a shadow root.
+    //
+    // Examples:
+    // input::placeholder, video::cue(i), video::--webkit-media-controls-panel
+    kUAShadow,
+    // Implicit combinator inserted before ::slotted() selectors.
+    kShadowSlot,
+    // Implicit combinator inserted before ::part() selectors which allows
+    // matching a ::part in shadow-including descendant tree for #host in
+    // "#host::part(button)".
+    kShadowPart,
   };
 
   enum PseudoType {
@@ -256,13 +270,10 @@ class CORE_EXPORT CSSSelector {
     kPseudoCue,
     kPseudoFutureCue,
     kPseudoPastCue,
-    kPseudoUnresolved,
     kPseudoDefined,
-    kPseudoContent,
     kPseudoHasDatalist,
     kPseudoHost,
     kPseudoHostContext,
-    kPseudoShadow,
     kPseudoSpatialNavigationFocus,
     kPseudoSpatialNavigationInterest,
     kPseudoIsHtml,
@@ -345,9 +356,7 @@ class CORE_EXPORT CSSSelector {
   bool IsAdjacentSelector() const {
     return relation_ == kDirectAdjacent || relation_ == kIndirectAdjacent;
   }
-  bool IsShadowSelector() const {
-    return relation_ == kShadowPseudo || relation_ == kShadowDeep;
-  }
+  bool IsUAShadowSelector() const { return relation_ == kUAShadow; }
   bool IsAttributeSelector() const {
     return match_ >= kFirstAttributeSelectorMatch;
   }
@@ -355,9 +364,6 @@ class CORE_EXPORT CSSSelector {
     return pseudo_type_ == kPseudoHost || pseudo_type_ == kPseudoHostContext;
   }
   bool IsUserActionPseudoClass() const;
-  bool IsV0InsertionPointCrossing() const {
-    return pseudo_type_ == kPseudoHostContext || pseudo_type_ == kPseudoContent;
-  }
   bool IsIdClassOrAttributeSelector() const;
 
   RelationType Relation() const { return static_cast<RelationType>(relation_); }
@@ -402,23 +408,13 @@ class CORE_EXPORT CSSSelector {
   bool IsForPage() const { return is_for_page_; }
   void SetForPage() { is_for_page_ = true; }
 
-  bool RelationIsAffectedByPseudoContent() const {
-    return relation_is_affected_by_pseudo_content_;
-  }
-  void SetRelationIsAffectedByPseudoContent() {
-    relation_is_affected_by_pseudo_content_ = true;
-  }
-
   bool MatchesPseudoElement() const;
   bool IsTreeAbidingPseudoElement() const;
   bool IsAllowedAfterPart() const;
 
-  bool HasContentPseudo() const;
   bool HasSlottedPseudo() const;
-  bool HasDeepCombinatorOrShadowPseudo() const;
   // Returns true if the immediately preceeding simple selector is ::part.
   bool FollowsPart() const;
-  bool NeedsUpdatedDistribution() const;
 
   static String FormatPseudoTypeForDebugging(PseudoType);
 
@@ -431,7 +427,6 @@ class CORE_EXPORT CSSSelector {
   unsigned has_rare_data_ : 1;
   unsigned is_for_page_ : 1;
   unsigned tag_is_implicit_ : 1;
-  unsigned relation_is_affected_by_pseudo_content_ : 1;
   unsigned is_last_in_original_list_ : 1;
 
   void SetPseudoType(PseudoType pseudo_type) {
@@ -558,7 +553,6 @@ inline CSSSelector::CSSSelector()
       has_rare_data_(false),
       is_for_page_(false),
       tag_is_implicit_(false),
-      relation_is_affected_by_pseudo_content_(false),
       is_last_in_original_list_(false),
       data_(DataUnion::kConstructEmptyValue) {}
 
@@ -572,7 +566,6 @@ inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
       has_rare_data_(false),
       is_for_page_(false),
       tag_is_implicit_(tag_is_implicit),
-      relation_is_affected_by_pseudo_content_(false),
       is_last_in_original_list_(false),
       data_(tag_q_name) {}
 
@@ -585,8 +578,6 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
       has_rare_data_(o.has_rare_data_),
       is_for_page_(o.is_for_page_),
       tag_is_implicit_(o.tag_is_implicit_),
-      relation_is_affected_by_pseudo_content_(
-          o.relation_is_affected_by_pseudo_content_),
       is_last_in_original_list_(o.is_last_in_original_list_),
       data_(DataUnion::kConstructUninitialized) {
   if (o.match_ == kTag) {

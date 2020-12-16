@@ -128,40 +128,40 @@ Due to implementation difficulties,
 This means that the following code will not compile:
 
 ```cpp
-    void GetSomeClassPtr(SomeClass** out_arg) {
-      *out_arg = ...;
-    }
+void GetSomeClassPtr(SomeClass** out_arg) {
+  *out_arg = ...;
+}
 
-    struct MyStruct {
-      void Example() {
-        GetSomeClassPtr(&checked_ptr_);  // <- won't compile
-      }
+struct MyStruct {
+  void Example() {
+    GetSomeClassPtr(&checked_ptr_);  // <- won't compile
+  }
 
-      CheckedPtr<SomeClass> checked_ptr_;
-    };
+  CheckedPtr<SomeClass> checked_ptr_;
+};
 ```
 
 The typical fix is to change the type of the out argument:
 
 ```cpp
-    void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
-      *out_arg = ...;
-    }
+void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
+  *out_arg = ...;
+}
 ```
 
 If `GetSomeClassPtr` can be invoked _both_ with raw pointers
 and with `CheckedPtr`, then both overloads might be needed:
 
 ```cpp
-    void GetSomeClassPtr(SomeClass** out_arg) {
-      *out_arg = ...;
-    }
+void GetSomeClassPtr(SomeClass** out_arg) {
+  *out_arg = ...;
+}
 
-    void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
-      SomeClass* tmp = **out_arg;
-      GetSomeClassPtr(&tmp);
-      *out_arg = tmp;
-    }
+void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
+  SomeClass* tmp = **out_arg;
+  GetSomeClassPtr(&tmp);
+  *out_arg = tmp;
+}
 ```
 
 #### Global scope
@@ -209,6 +209,60 @@ field 'checked_ptr' has a non-trivial destructor
 
 
 ### Runtime errors
+
+#### Assignment via reinterpret_cast
+
+`CheckedPtr` maintains an internal ref-count associated with the piece of memory
+that it points to (see the `PartitionRefCount` class).  The assignment operator
+of `CheckedPtr` takes care to update the ref-count as needed, but the ref-count
+may become unbalanced if the `CheckedPtr` value is assigned to without going
+through the assignment operator.  An unbalanced ref-count may lead to crashes or
+memory leaks.
+
+One way to execute such an incorrect assignment is `reinterpret_cast`.
+For example, see https://crbug.com/1154799
+where the `reintepret_cast` is/was used in the `Extract` method
+[here](https://source.chromium.org/chromium/chromium/src/+/master:device/fido/cbor_extract.h;l=318;drc=16f9768803e17c90901adce97b3153cfd39fdde2)).
+Simplified example:
+
+```cpp
+CheckedPtr<int> checked_int_ptr;
+int** ptr_to_raw_int_ptr = reinterpret_cast<int**>(&checked_int_ptr);
+
+// Incorrect code: the assignment below won't update the ref-count internally
+// maintained by CheckedPtr.
+*ptr_to_raw_int_ptr = new int(123);
+```
+
+#### Fields order leading to dereferencing a destructed CheckedPtr
+
+Fields are destructed in the reverse order of their declarations:
+
+```cpp
+    struct S {
+      Bar bar_;  // Bar is destructed last.
+      CheckedPtr<Foo> foo_ptr_;  // CheckedPtr (not Foo) is destructed first.
+    };
+```
+
+If destructor of `Bar` has a pointer to `S`, then it may try to dereference
+`s->foo_ptr_` after `CheckedPtr` has been already destructed.
+In practice this will lead to a null dereference and a crash
+(e.g. see https://crbug.com/1157988).
+
+Note that this code pattern would have resulted in an Undefined Behavior,
+even if `foo_ptr_` was a raw `Foo*` pointer (see the
+[memory-safete-dev@ discussion](https://groups.google.com/a/chromium.org/g/memory-safety-dev/c/3sEmSnFc61I/m/Ng6PyqDiAAAJ)
+for more details).
+
+Possible solutions (in no particular order):
+- Declare the `bar_` field as the very last field.
+- Declare the `foo_` field (and other POD or raw-pointer-like fields)
+  before any other fields.
+- Avoid accessing `S` from the destructor of `Bar`
+  (and in general, avoid doing significant work from destructors).
+
+#### Other
 
 TODO(bartekn): Document runtime errors encountered by BackupRefPtr
 (they are more rare than for CheckedPtr2,

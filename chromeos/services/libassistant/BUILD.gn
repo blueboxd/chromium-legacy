@@ -10,6 +10,28 @@ component("libassistant") {
   sources = [
     "libassistant_service.cc",
     "libassistant_service.h",
+  ]
+
+  public_deps = [ "//chromeos/services/libassistant/public/mojom" ]
+
+  deps = [
+    ":internal",
+    "//chromeos/services/libassistant/public/mojom",
+  ]
+
+  defines = [ "IS_LIBASSISTANT_SERVICE_IMPL" ]
+
+  # The default output name of this service, `libassistant_service.so`, already
+  # exists (as build target of //chromeos/services/assistant), so we have to
+  # use `lib_libassistant_service.so`.
+  output_name = "lib_libassistant_service"
+}
+
+source_set("internal") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "assistant_manager_observer.h",
     "service_controller.cc",
     "service_controller.h",
   ]
@@ -22,11 +44,6 @@ component("libassistant") {
   ]
 
   defines = [ "IS_LIBASSISTANT_SERVICE_IMPL" ]
-
-  # The default output name of this service, `libassistant_service.so`, already
-  # exists (as build target of //chromeos/services/assistant), so we have to
-  # use `lib_libassistant_service.so`.
-  output_name = "lib_libassistant_service"
 }
 
 source_set("unit_tests") {
@@ -34,6 +51,7 @@ source_set("unit_tests") {
   sources = [ "service_controller_unittest.cc" ]
 
   deps = [
+    ":internal",
     ":libassistant",
     "//base",
     "//base/test:test_support",

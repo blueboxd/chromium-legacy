@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/frame/fragment_directive.h"
-#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -114,8 +113,6 @@ class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
 class CookieJar;
-class V0CustomElementMicrotaskRunQueue;
-class V0CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMWindow;
 class DocumentAnimations;
@@ -246,11 +243,7 @@ enum DocumentClass {
   kXMLDocumentClass = 1 << 6,
 };
 
-enum ShadowCascadeOrder {
-  kShadowCascadeNone,
-  kShadowCascadeV0,
-  kShadowCascadeV1
-};
+enum ShadowCascadeOrder { kShadowCascadeNone, kShadowCascade };
 
 using DocumentClassFlags = unsigned char;
 
@@ -1315,8 +1308,6 @@ class CORE_EXPORT Document : public ContainerNode,
                               const AtomicString& name,
                               const ElementRegistrationOptions*,
                               ExceptionState&);
-  V0CustomElementRegistrationContext* RegistrationContext() const;
-  V0CustomElementMicrotaskRunQueue* CustomElementMicrotaskRunQueue();
 
   void ClearImportsController();
   HTMLImportsController* EnsureImportsController();
@@ -1430,15 +1421,13 @@ class CORE_EXPORT Document : public ContainerNode,
   SnapCoordinator& GetSnapCoordinator();
   void PerformScrollSnappingTasks();
 
-  bool MayContainV0Shadow() const { return may_contain_v0_shadow_; }
-
   ShadowCascadeOrder GetShadowCascadeOrder() const {
     return shadow_cascade_order_;
   }
   void SetShadowCascadeOrder(ShadowCascadeOrder);
 
-  bool ContainsV1ShadowTree() const {
-    return shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV1;
+  bool ContainsShadowTree() const {
+    return shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascade;
   }
 
   RootScrollerController& GetRootScrollerController() const {
@@ -1620,15 +1609,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return use_count_fragment_directive_;
   }
 
-#if DCHECK_IS_ON()
-  bool AllowDirtyShadowV0Traversal() const {
-    return allow_dirty_shadow_v0_traversal_;
-  }
-  void SetAllowDirtyShadowV0Traversal(bool allow) {
-    allow_dirty_shadow_v0_traversal_ = allow;
-  }
-#endif
-
   void ApplyScrollRestorationLogic();
 
   void MarkHasFindInPageRequest();
@@ -1668,15 +1648,18 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetFindInPageActiveMatchNode(Node*);
   const Node* GetFindInPageActiveMatchNode() const;
 
-  class PaintPreviewScope {
+  class CORE_EXPORT PaintPreviewScope {
     STACK_ALLOCATED();
 
    public:
-    explicit PaintPreviewScope(Document& document)
-        : is_painting_preview_(&document.is_painting_preview_, true) {}
+    explicit PaintPreviewScope(Document& document);
+    ~PaintPreviewScope();
+
+    PaintPreviewScope(PaintPreviewScope&) = delete;
+    PaintPreviewScope& operator=(PaintPreviewScope&) = delete;
 
    private:
-    base::AutoReset<bool> is_painting_preview_;
+    Document& document_;
   };
 
  protected:
@@ -2048,9 +2031,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 
-  Member<V0CustomElementRegistrationContext> registration_context_;
-  Member<V0CustomElementMicrotaskRunQueue> custom_element_microtask_run_queue_;
-
   void ElementDataCacheClearTimerFired(TimerBase*);
   TaskRunnerTimer<Document> element_data_cache_clear_timer_;
 
@@ -2081,8 +2061,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<IntersectionObserverController> intersection_observer_controller_;
 
   int node_count_;
-
-  bool may_contain_v0_shadow_ = false;
 
   Member<SnapCoordinator> snap_coordinator_;
 
@@ -2146,12 +2124,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // counterpart to a PluginDocument except that it contains a FrameView as
   // opposed to a PluginView.
   bool is_for_external_handler_;
-
-#if DCHECK_IS_ON()
-  // Allow traversal of Shadow DOM V0 traversal with dirty distribution.
-  // Required for marking ancestors style-child-dirty.
-  bool allow_dirty_shadow_v0_traversal_ = false;
-#endif
 
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 

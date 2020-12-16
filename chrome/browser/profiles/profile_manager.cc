@@ -48,8 +48,6 @@
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -1407,20 +1405,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)->
       MaybeActivateDataReductionProxy(true);
 
-  auto* proto_db_provider =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetProtoDatabaseProvider();
-
-  // Creates the Optimization Guide Keyed Service and begins loading the
-  // hint cache from persistent memory.
-  auto* optimization_guide_keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  if (optimization_guide_keyed_service) {
-    optimization_guide_keyed_service->Initialize(
-        g_browser_process->optimization_guide_service(), proto_db_provider,
-        profile->GetPath());
-  }
-
   // Create the Previews Service and begin loading opt out history from
   // persistent memory.
   PreviewsServiceFactory::GetForProfile(profile)->Initialize(
@@ -1951,8 +1935,7 @@ void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (!chromeos::ProfileHelper::IsRegularProfile(profile)) {
     return true;
   }
 #endif

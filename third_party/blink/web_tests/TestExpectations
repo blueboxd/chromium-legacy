@@ -2512,8 +2512,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/css/css-conditional/css-supports-040.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/css-supports-042.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/css-supports-041.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-paint-api/dynamic-import.html [ Failure ]
-crbug.com/626703 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/dynamic-import.html [ Failure ]
 crbug.com/626703 external/wpt/websockets/cookies/004.html [ Timeout ]
 crbug.com/626703 external/wpt/websockets/cookies/004.html?wss [ Timeout ]
 crbug.com/626703 external/wpt/infrastructure/server/http2-websocket.sub.h2.any.html [ Timeout ]
@@ -3135,6 +3133,10 @@ crbug.com/1034807 [ Linux ] virtual/off-main-thread-css-paint/external/wpt/css/c
 crbug.com/1034807 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-gradient.https.html [ Failure ]
 crbug.com/1034807 [ Win ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-gradient.https.html [ Failure ]
 
+# WPT css-paint-api tests failing, possibly for the same reason as above
+crbug.com/1157960 external/wpt/css/css-paint-api/dynamic-import.html [ Failure ]
+crbug.com/1157960 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/dynamic-import.html [ Failure ]
+
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-001.html [ Failure ]
@@ -3263,7 +3265,6 @@ crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection.html [ Skip ]
 
 # [composite-bgcolor-animation]
-crbug.com/1139008 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/one-element-animation.html [ Failure ]
 crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure Pass ]
 crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure Pass ]
 crbug.com/1148369 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure Pass ]
@@ -5787,6 +5788,7 @@ crbug.com/1152082 http/tests/devtools/bindings/blackboxed-sourcemap-detach.js [ 
 crbug.com/1152082 http/tests/devtools/console/console-linkify-message-location.js [ Pass Failure Timeout ]
 crbug.com/1152082 http/tests/devtools/sources/debugger-frameworks/frameworks-blackbox-by-source-code.js [ Pass Failure Timeout ]
 crbug.com/1152082 http/tests/devtools/sources/debugger-frameworks/frameworks-blackbox-patterns.js [ Pass Failure Timeout ]
+crbug.com/1152082 http/tests/devtools/tracing/timeline-js/timeline-js-ignore-list.js [ Pass Failure Timeout ]
 
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]
@@ -5921,9 +5923,6 @@ crbug.com/1157861 http/tests/devtools/console/paintworklet-console-selector.js [
 # Wpt importer Sheriff 2020-12-11
 crbug.com/626703 [ Linux ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.html [ Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mediacapture-image/MediaStreamTrack-getConstraints.https.html [ Pass Failure ]
-
-# WPT importer Sheriff 2020-12-14
-crbug.com/1158672 [ Mac ] external/wpt/html/dom/idlharness.https.html?include=(Document|Window) [ Pass Failure ]
 
 # Sheriff 2020-12-14
 crbug.com/1046784 http/tests/devtools/console/console-context-selector.js [ Pass Timeout ]

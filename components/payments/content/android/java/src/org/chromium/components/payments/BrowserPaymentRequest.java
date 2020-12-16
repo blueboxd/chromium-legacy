@@ -25,18 +25,6 @@ import java.util.Map;
  * Android Chrome browser or the WebLayer "browser".
  */
 public interface BrowserPaymentRequest {
-    /** The factory that creates an instance of {@link BrowserPaymentRequest}. */
-    interface Factory {
-        /**
-         * Create an instance of {@link BrowserPaymentRequest}.
-         * @param paymentRequestService The PaymentRequestService to work together with
-         *         the BrowserPaymentRequest instance, cannot be null.
-         * @return An instance of BrowserPaymentRequest, cannot be null.
-         */
-        BrowserPaymentRequest createBrowserPaymentRequest(
-                PaymentRequestService paymentRequestService);
-    }
-
     /**
      * The client of the interface calls this when it has received the payment details update
      * from the merchant and has updated the PaymentRequestSpec.
@@ -210,12 +198,14 @@ public interface BrowserPaymentRequest {
     /**
      * Continues the unfinished part of show() that was blocked for the payment details that was
      * pending to be updated.
+     * @param details The updated payment details.
      * @param isFinishedQueryingPaymentApps Whether all payment app factories have been queried for
      *         their payment apps.
      * @return The error if it fails; null otherwise.
      */
     @Nullable
-    default String continueShow(boolean isFinishedQueryingPaymentApps) {
+    default String continueShowWithUpdatedDetails(
+            PaymentDetails details, boolean isFinishedQueryingPaymentApps) {
         return null;
     }
 

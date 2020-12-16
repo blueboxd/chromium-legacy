@@ -308,7 +308,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.DataTypeRunFailures2" enum="SyncModelTypes"
-    expires_after="2021-04-11">
+    expires_after="2021-06-13">
   <owner>jkrcal@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -319,7 +319,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.DataTypeStartFailures2" enum="SyncModelTypes"
-    expires_after="2021-04-11">
+    expires_after="2021-06-13">
   <owner>jkrcal@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -516,7 +516,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Sync.ModelTypeCount4" units="entries"
-    expires_after="2021-04-11">
+    expires_after="2021-06-13">
   <owner>jkrcal@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -529,7 +529,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Sync.ModelTypeEntityChange3"
-    enum="SyncEntityChange" expires_after="2021-04-11">
+    enum="SyncEntityChange" expires_after="2021-06-13">
   <owner>jkrcal@chromium.org</owner>
   <summary>
     Recorded once for every sync entity change (whenever it is commited to the
@@ -625,7 +625,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.NonReflectionUpdateFreshnessPossiblySkewed2" units="ms"
-    expires_after="2021-04-11">
+    expires_after="2021-06-13">
   <owner>mastiz@chromium.org</owner>
   <owner>melandory@chromium.org</owner>
   <summary>
@@ -842,7 +842,7 @@ can be compared for the same population). -->
 </histogram>
 
 <histogram name="Sync.RedundantInvalidationPerModelType" enum="SyncModelTypes"
-    expires_after="2021-01-31">
+    expires_after="2021-06-13">
   <owner>melandory@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -869,7 +869,7 @@ can be compared for the same population). -->
 </histogram>
 
 <histogram name="Sync.Startup.DeferredInitTrigger"
-    enum="SyncDeferredInitTrigger" expires_after="2021-04-11">
+    enum="SyncDeferredInitTrigger" expires_after="2021-06-13">
   <owner>mastiz@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>The type of event that triggered sync initialization.</summary>
@@ -905,7 +905,7 @@ can be compared for the same population). -->
 </histogram>
 
 <histogram name="Sync.Startup.TypeTriggeringInit" enum="SyncModelTypes"
-    expires_after="2021-04-11">
+    expires_after="2021-06-13">
   <owner>mastiz@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>Data type that first requests sync initialization.</summary>
@@ -1053,73 +1053,6 @@ can be compared for the same population). -->
   <summary>
     Whether a url fetch timed out or not. Timing out implies the fetch was
     stalled for an unknown reason.
-  </summary>
-</histogram>
-
-<histogram name="SyncFileSystem.ConflictResolutionPolicy"
-    enum="SyncFSConflictResolutionPolicy" expires_after="M85">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    Overridden conflict resolution policy of Sync FileSystem API. Recorded for
-    each API call to override the policy.
-  </summary>
-</histogram>
-
-<histogram name="SyncFileSystem.Database.Open" enum="LevelDBStatus"
-    expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>The result of opening the Sync FileSystem backend database.</summary>
-</histogram>
-
-<histogram name="SyncFileSystem.MetadataNumber" units="units"
-    expires_after="M85">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The number of cached backing remote file metadata in the Sync FileSystem
-    database. Recorded at the initialization phase of Sync FileSystem.
-  </summary>
-</histogram>
-
-<histogram name="SyncFileSystem.RegisteredAppNumber" units="units"
-    expires_after="M85">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The number of Chrome Apps that uses Sync FileSystem with V2 backend.
-    Recorded at the initialization phase of Sync FileSystem.
-  </summary>
-</histogram>
-
-<histogram name="SyncFileSystem.RegisterOriginResult"
-    enum="SyncFSRemoteServiceState" expires_after="2018-08-30">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The result of the registration of Chrome App to Sync FileSystem.
-  </summary>
-</histogram>
-
-<histogram name="SyncFileSystem.RegisterOriginTime" units="ms"
-    expires_after="M77">
-  <owner>peria@chromium.org</owner>
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    Time elapsed to register a Chrome App to SyncFilesystem. Recorded for each
-    registration request by apps.
-  </summary>
-</histogram>
-
-<histogram name="SyncFileSystem.TrackerDB.Open" enum="LevelDBStatus"
-    expires_after="2018-08-30">
-  <owner>tzik@chromium.org</owner>
-  <summary>The result of opening the Sync FileSystem tracker database.</summary>
-</histogram>
-
-<histogram name="SyncFileSystem.TrackerNumber" units="units"
-    expires_after="M85">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The number of the directory tree node that maps backing files to local files
-    in the Sync FileSystem database. Recorded at the initialization phase of
-    SyncFileSystem.
   </summary>
 </histogram>
 

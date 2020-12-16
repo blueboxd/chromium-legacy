@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "net/base/net_error_details.h"
+#include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -25,6 +26,26 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   DomainReliabilityBeacon();
   DomainReliabilityBeacon(const DomainReliabilityBeacon& other);
   ~DomainReliabilityBeacon();
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Outcome {
+    // Default value. This should not be recorded to the histogram.
+    kUnknown = 0,
+    // Successfully uploaded.
+    kUploaded = 1,
+    // Removed for being expired.
+    kExpired = 2,
+    // Evicted to make room for newer beacons.
+    kEvicted = 3,
+    // Deleted for user clearing browsing data.
+    kCleared = 5,
+    // Beacon was deleted upon context shutdown.
+    kContextShutDown = 5,
+
+    // Keep last.
+    kMaxValue = kContextShutDown,
+  };
 
   // Converts the Beacon to JSON format for uploading. Calculates the age
   // relative to an upload time of |upload_time|.
@@ -44,8 +65,10 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   // The URL that the beacon is reporting on, if included.
   // The scheme can be non-secure.
   GURL url;
-  // The resource name that the beacon is reporting on, if included.
-  std::string resource;
+  // The NetworkIsolationKey associated with the request being reported on. Must
+  // also be used to upload any report. This field does not appear in the
+  // uploaded report.
+  net::NetworkIsolationKey network_isolation_key;
   // Status string (e.g. "ok", "dns.nxdomain", "http.403").
   std::string status;
   // Granular QUIC error string (e.g. "quic.peer_going_away").
@@ -74,6 +97,9 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   int upload_depth;
   // The probability that this request had of being reported ("sample rate").
   double sample_rate;
+
+  // Records the ultimate outcome of this beacon, for metrics.
+  Outcome outcome = Outcome::kUnknown;
 
   // Okay to copy and assign.
 };

@@ -104,6 +104,11 @@ SkColor AppListColorProviderImpl::GetSuggestionChipTextColor() const {
       /*default_color*/ gfx::kGoogleGrey100);
 }
 
+SkColor AppListColorProviderImpl::GetSuggestionChipInkDropColor() const {
+  return DeprecatedGetInkDropRippleColor(
+      /*default_color*/ SkColorSetA(gfx::kGoogleGrey100, 0x0F));
+}
+
 SkColor AppListColorProviderImpl::GetAppListItemTextColor(
     bool is_in_folder) const {
   if (is_in_folder && !features::IsDarkLightModeEnabled())
@@ -226,6 +231,13 @@ SkColor AppListColorProviderImpl::GetPrimaryIconColor(
     SkColor default_color) const {
   return DeprecatedGetContentLayerColor(
       AshColorProvider::ContentLayerType::kIconColorPrimary, default_color);
+}
+
+SkColor AppListColorProviderImpl::GetContextMenuHighlightColor(
+    bool is_in_folder) const {
+  return DeprecatedGetInkDropRippleColor(
+      is_in_folder ? SkColorSetA(gfx::kGoogleGrey900, 21)
+                   : SkColorSetA(SK_ColorWHITE, 41));
 }
 
 float AppListColorProviderImpl::GetFolderBackgrounBlurSigma() const {

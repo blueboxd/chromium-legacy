@@ -10,7 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
+#include "components/webapps/android/installable/installable_ambient_badge_infobar_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
@@ -18,7 +18,7 @@ namespace content {
 class WebContents;
 }
 
-namespace banners {
+namespace webapps {
 
 // A Controller for the BottomSheet install UI for progressive web apps.
 // If successfully created, the lifetime of this object is tied to the lifetime
@@ -83,6 +83,6 @@ class PwaBottomSheetController {
   bool show_expanded_;
 };
 
-}  // namespace banners
+}  // namespace webapps
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPPS_PWA_BOTTOM_SHEET_CONTROLLER_H_

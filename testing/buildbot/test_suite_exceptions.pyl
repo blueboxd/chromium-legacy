@@ -2591,11 +2591,6 @@
   },
   'telemetry_unittests': {
     'modifications': {
-      'Mac10.14 Tests': {
-        'resultdb': {
-          'enable': False,  # crbug.com/1147992
-        },
-      },
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # crbug.com/870673
       },
@@ -2810,6 +2805,12 @@
       # Always fails on older cards, flaky on newer cards.
       'Win7 FYI Debug (AMD)',
       'Win7 FYI Release (AMD)',
+    ],
+  },
+  'webgl_conformance_metal_passthrough_tests': {
+    'remove_from': [
+      # crbug.com/1158857: re-enable if Metal shader cache workaround is added.
+      'Mac FYI Retina Release (NVIDIA)',
     ],
   },
   'webgl_conformance_tests': {

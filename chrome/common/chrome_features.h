@@ -37,11 +37,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAdaptiveScreenBrightnessLogging;
 #endif
 
-#if defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAddToHomescreenMessaging;
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAllowDisableMouseAcceleration;
@@ -183,9 +178,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsLocalUpdating;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsMigrationUserDisplayModeCleanUp;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -286,9 +278,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFlocIdSortingLshBasedComputation;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kFlocIdScheduledUpdate;
+extern const base::Feature kFederatedLearningOfCohorts;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<base::TimeDelta> kFlocIdScheduledUpdateInterval;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<int> kFlocIdMinimumHistoryDomainSizeRequired;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFocusMode;

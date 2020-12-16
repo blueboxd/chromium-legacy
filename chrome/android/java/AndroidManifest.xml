@@ -614,6 +614,7 @@ by a child template that "extends" this file.
         <!-- Activities for video tutorials. -->
         <activity android:name="org.chromium.chrome.browser.app.video_tutorials.VideoTutorialListActivity"
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:exported="false">
         </activity>
 
@@ -628,7 +629,11 @@ by a child template that "extends" this file.
         <!-- Activities for video tutorials. -->
         <activity android:name="org.chromium.chrome.browser.app.video_tutorials.VideoPlayerActivity"
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
-            android:exported="false">
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity">
+            <!-- We want to explicitly disallow landscape UI for video tutorials. -->
         </activity>
 
         <!-- Activities for history. -->
@@ -868,14 +873,6 @@ by a child template that "extends" this file.
             android:exported="false"
             android:isolatedProcess="true"
             android:process=":decoder_service" />
-
-        <!-- Providers for chrome data. -->
-        <provider android:name="org.chromium.chrome.browser.provider.ChromeBrowserProvider"
-            android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"
-            android:exported="true">
-            <path-permission android:path="/bookmarks/search_suggest_query"
-                    android:readPermission="android.permission.GLOBAL_SEARCH" />
-        </provider>
 
         <!-- Broadcast receiver that will be notified of account changes -->
         <receiver android:name="org.chromium.chrome.browser.services.AccountsChangedReceiver"
@@ -1244,6 +1241,15 @@ by a child template that "extends" this file.
           android:grantUriPermissions="true">
           <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
               android:resource="@xml/file_paths" />
+      </provider>
+
+      <!-- Provider for chrome data. -->
+      <provider android:name="org.chromium.chrome.browser.provider.ChromeBrowserProvider"
+          android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"
+          android:initOrder="10000"
+          android:exported="true">
+          <path-permission android:path="/bookmarks/search_suggest_query"
+                  android:readPermission="android.permission.GLOBAL_SEARCH" />
       </provider>
 
       {% block base_application_definitions %}

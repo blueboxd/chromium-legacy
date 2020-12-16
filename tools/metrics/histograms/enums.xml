@@ -4366,6 +4366,7 @@ others/histograms.xml -->
   <int value="2" label="Smartlock"/>
   <int value="3" label="Fingerprint"/>
   <int value="4" label="Challenge-response"/>
+  <int value="5" label="Nothing"/>
 </enum>
 
 <enum name="AuthMethodSwitchType">
@@ -4382,6 +4383,11 @@ others/histograms.xml -->
   <int value="10" label="Fingerprint to PIN"/>
   <int value="11" label="Fingerprint to Smartlock"/>
   <int value="12" label="Password to Challenge-response"/>
+  <int value="13" label="Nothing to Fingerprint"/>
+  <int value="14" label="Nothing to Password"/>
+  <int value="15" label="Nothing to PIN"/>
+  <int value="16" label="Nothing to Smartlock"/>
+  <int value="17" label="Nothing to Challenge-response"/>
 </enum>
 
 <enum name="AuthPolicyErrorType">
@@ -9989,7 +9995,8 @@ histogram as enum -->
     profile(s) is unset.
   </int>
   <int value="2" label="No loaded user profile is found">
-    Profile data was redacted since there is no user profile initialized.
+    Profile data was redacted since there is no user profile initialized. When
+    looking at user profile(s), the Default profile in Chrome OS is skipped.
   </int>
   <int value="3" label="App sync is disabled">
     Profile data was redacted since App Sync is disabled.
@@ -11023,6 +11030,7 @@ histogram as enum -->
   <int value="-1741747229" label="es-419"/>
   <int value="-1735828230" label="zh-TW"/>
   <int value="-1734070684" label="en-NZ"/>
+  <int value="-1731398502" label="wo"/>
   <int value="-1696927720" label="la"/>
   <int value="-1690250140" label="ja"/>
   <int value="-1683177340" label="qu"/>
@@ -11039,6 +11047,7 @@ histogram as enum -->
   <int value="-1284862637" label="ru"/>
   <int value="-1273588087" label="kn"/>
   <int value="-1242903543" label="es-UY"/>
+  <int value="-1230368678" label="kok"/>
   <int value="-1211529228" label="gd"/>
   <int value="-1159958698" label="tl"/>
   <int value="-1136256351" label="zh-HK"/>
@@ -11058,6 +11067,7 @@ histogram as enum -->
   <int value="-873154203" label="en-CA"/>
   <int value="-862298602" label="st"/>
   <int value="-851607677" label="sm"/>
+  <int value="-846401046" label="chr"/>
   <int value="-838275151" label="xh"/>
   <int value="-812926878" label="ug"/>
   <int value="-780984386" label="fr-CA"/>
@@ -11091,6 +11101,7 @@ histogram as enum -->
   <int value="-183664425" label="pt-PT"/>
   <int value="-181870943" label="bn"/>
   <int value="-110306666" label="sr"/>
+  <int value="-91748674" label="tn"/>
   <int value="-78164291" label="kk"/>
   <int value="-74147910" label="en"/>
   <int value="-35182995" label="fi"/>
@@ -11165,6 +11176,7 @@ histogram as enum -->
   <int value="2078974161" label="ast"/>
   <int value="2087142539" label="mn"/>
   <int value="2094171128" label="mo"/>
+  <int value="2098003573" label="as"/>
   <int value="2119087611" label="nl"/>
   <int value="2147270293" label="en-GB"/>
 </enum>
@@ -18203,6 +18215,15 @@ Called by update_document_policy_enum.py.-->
   <int value="1" label="Failed over to another collector"/>
 </enum>
 
+<enum name="DomainReliabilityBeaconOutcome">
+  <int value="0" label="Unknown (should not be recorded)"/>
+  <int value="1" label="Uploaded successfully"/>
+  <int value="2" label="Expired"/>
+  <int value="3" label="Evicted"/>
+  <int value="4" label="Browsing data cleared"/>
+  <int value="5" label="Deleted at shutdown"/>
+</enum>
+
 <enum name="DoodleConfigDownloadOutcome">
   <obsolete>
     Removed from code 2017-08.
@@ -22904,6 +22925,7 @@ Called by update_document_policy_enum.py.-->
   <int value="810" label="ProfilePickerOnStartupAvailability"/>
   <int value="811" label="SigninInterceptionEnabled"/>
   <int value="812" label="RemoteAccessHostAllowRemoteAccessConnections"/>
+  <int value="813" label="ManagedConfigurationsPerOrigin"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27238,7 +27260,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="WebkitEditableContentChangedOnContentEditableObsolete"/>
   <int value="454" label="WebkitEditableContentChangedOnNotNodeObsolete"/>
   <int value="455" label="HTMLImports"/>
-  <int value="456" label="ElementCreateShadowRoot"/>
+  <int value="456" label="OBSOLETE_ElementCreateShadowRoot"/>
   <int value="457" label="DocumentRegisterElement"/>
   <int value="458" label="EditingAppleInterchangeNewline"/>
   <int value="459" label="EditingAppleConvertedSpace"/>
@@ -27249,11 +27271,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="464" label="FontFaceSetReady"/>
   <int value="465" label="XMLHttpRequestSynchronous"/>
   <int value="466" label="CSSSelectorPseudoUnresolved"/>
-  <int value="467" label="CSSSelectorPseudoShadow"/>
-  <int value="468" label="CSSSelectorPseudoContent"/>
+  <int value="467" label="OBSOLETE_CSSSelectorPseudoShadow"/>
+  <int value="468" label="OBSOLETE_CSSSelectorPseudoContent"/>
   <int value="469" label="CSSSelectorPseudoHost"/>
   <int value="470" label="CSSSelectorPseudoHostContext"/>
-  <int value="471" label="CSSDeepCombinator"/>
+  <int value="471" label="OBSOLETE_CSSDeepCombinator"/>
   <int value="472" label="SyncXHRWithCredentials"/>
   <int value="473" label="UseAsm"/>
   <int value="474" label="KeyEventNotAllowedInFullScreen"/>
@@ -28116,7 +28138,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1306" label="MediaStreamTrackRemote"/>
   <int value="1307" label="V8Node_IsConnected_AttributeGetter"/>
   <int value="1308" label="ShadowRootDelegatesFocus"/>
-  <int value="1309" label="MixedShadowRootV0AndV1"/>
+  <int value="1309" label="OBSOLETE_MixedShadowRootV0AndV1"/>
   <int value="1310" label="ImageDocumentInFrame"/>
   <int value="1311" label="MediaDocument"/>
   <int value="1312" label="MediaDocumentInFrame"/>
@@ -28181,7 +28203,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1372" label="UntrustedEventDefaultHandled"/>
   <int value="1373" label="FixedRasterScaleBlurryContent"/>
   <int value="1374" label="FixedRasterScalePotentialPerformanceRegression"/>
-  <int value="1375" label="CSSDeepCombinatorAndShadow"/>
+  <int value="1375" label="OBSOLETE_CSSDeepCombinatorAndShadow"/>
   <int value="1376" label="OpacityWithPreserve3DQuirk"/>
   <int value="1377" label="CSSSelectorPseudoReadOnly"/>
   <int value="1378" label="CSSSelectorPseudoReadWrite"/>
@@ -28229,7 +28251,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1420" label="OBSOLETE_DocumentOpen"/>
   <int value="1421" label="ElementRequestPointerLockInShadow"/>
   <int value="1422" label="ShadowRootPointerLockElement"/>
-  <int value="1423" label="DocumentPointerLockElementInV0Shadow"/>
+  <int value="1423" label="OBSOLETE_DocumentPointerLockElementInV0Shadow"/>
   <int value="1424" label="TextAreaMaxLength"/>
   <int value="1425" label="TextAreaMinLength"/>
   <int value="1426" label="TopNavigationFromSubFrame"/>
@@ -28474,7 +28496,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1662" label="RTCConfigurationIceTransportPolicy"/>
   <int value="1663" label="RTCConfigurationIceTransportPolicyNone"/>
   <int value="1664" label="RTCConfigurationIceTransports"/>
-  <int value="1665" label="DocumentFullscreenElementInV0Shadow"/>
+  <int value="1665" label="OBSOLETE_DocumentFullscreenElementInV0Shadow"/>
   <int value="1666" label="ScriptWithCSPBypassingSchemeParserInserted"/>
   <int value="1667" label="ScriptWithCSPBypassingSchemeNotParserInserted"/>
   <int value="1668" label="DocumentCreateElement2ndArgStringHandling"/>
@@ -28711,8 +28733,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1893" label="WebBluetoothRemoteServerGetPrimaryServices"/>
   <int value="1894" label="WebBluetoothRemoteServiceGetCharacteristic"/>
   <int value="1895" label="WebBluetoothRemoteServiceGetCharacteristics"/>
-  <int value="1896" label="HTMLContentElement"/>
-  <int value="1897" label="HTMLShadowElement"/>
+  <int value="1896" label="OBSOLETE_HTMLContentElement"/>
+  <int value="1897" label="OBSOLETE_HTMLShadowElement"/>
   <int value="1898" label="HTMLSlotElement"/>
   <int value="1899" label="AccelerometerConstructor"/>
   <int value="1900" label="AbsoluteOrientationSensorConstructor"/>
@@ -28996,8 +29018,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2161"
       label="V8LineOrParagraphSeparatorAsLineTerminator (obsolete)"/>
   <int value="2162" label="AnimationSetPlaybackRateCompensatorySeek"/>
-  <int value="2163" label="DeepCombinatorInStaticProfile"/>
-  <int value="2164" label="PseudoShadowInStaticProfile"/>
+  <int value="2163" label="OBSOLETE_DeepCombinatorInStaticProfile"/>
+  <int value="2164" label="OBSOLETE_PseudoShadowInStaticProfile"/>
   <int value="2165" label="SchemeBypassesCSP"/>
   <int value="2166" label="InnerSchemeBypassesCSP"/>
   <int value="2167" label="SameOriginApplicationOctetStream"/>
@@ -29076,7 +29098,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2242" label="V8MediaCapabilitiesInfo_Smooth_AttributeGetter"/>
   <int value="2243"
       label="V8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter"/>
-  <int value="2244" label="WindowEventInV0ShadowTree"/>
+  <int value="2244" label="OBSOLETE_WindowEventInV0ShadowTree"/>
   <int value="2245"
       label="OBSOLETE_HTMLAnchorElementDownloadInSandboxWithUserGesture"/>
   <int value="2246"
@@ -42365,6 +42387,7 @@ from previous Chrome versions.
   <int value="-1791226955" label="BreakingNewsPush:enabled"/>
   <int value="-1790227231" label="show-autofill-signatures"/>
   <int value="-1789139269" label="SmbFs:disabled"/>
+  <int value="-1784831690" label="Bento:disabled"/>
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
   <int value="-1780306716"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
@@ -42546,6 +42569,7 @@ from previous Chrome versions.
   <int value="-1607691647" label="MojoVideoEncodeAccelerator:disabled"/>
   <int value="-1607297082" label="ash-enable-persistent-window-bounds"/>
   <int value="-1607175130" label="force-enable-metrics-reporting"/>
+  <int value="-1605920602" label="AVFoundationCaptureV2:disabled"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1603404046" label="V8VmFuture:disabled"/>
@@ -43585,6 +43609,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:disabled"/>
   <int value="-666508951" label="CrOSContainer:enabled"/>
   <int value="-665514294" label="FontAccess:disabled"/>
+  <int value="-665006585" label="Bento:enabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
   <int value="-662720891" label="PreviewsCoinFlipHoldback_UKMOnly:enabled"/>
   <int value="-662314979"
@@ -43703,6 +43728,7 @@ from previous Chrome versions.
   <int value="-534221085" label="LazyImageLoading:disabled"/>
   <int value="-533552313"
       label="AutofillUpstreamEditableCardholderName:enabled"/>
+  <int value="-532827723" label="AVFoundationCaptureV2:enabled"/>
   <int value="-531810064" label="saveas-menu-label"/>
   <int value="-531792555" label="UseModernMediaControls:disabled"/>
   <int value="-531651776" label="NewRemotePlaybackPipeline:enabled"/>
@@ -44360,6 +44386,7 @@ from previous Chrome versions.
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
   <int value="87886288" label="DiagnosticsApp:enabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
+  <int value="89357752" label="PdfXfaSupport:enabled"/>
   <int value="89758831" label="FontAccessChooser:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
@@ -44588,6 +44615,7 @@ from previous Chrome versions.
   <int value="330653520" label="ChromeShareHighlightsAndroid:enabled"/>
   <int value="331770879" label="CrostiniAppSearch:disabled"/>
   <int value="332391072" label="cs-contextual-cards-bar-integration"/>
+  <int value="332960119" label="PdfXfaSupport:disabled"/>
   <int value="334802038" label="OfflinePreviews:disabled"/>
   <int value="335976733" label="NotificationStackingBarRedesign:enabled"/>
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
@@ -61299,6 +61327,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="profileTypeChoice"/>
   <int value="2" label="localProfileCustomization"/>
   <int value="3" label="loadSignIn"/>
+  <int value="4" label="loadForceSignIn"/>
 </enum>
 
 <enum name="ProfileResetRequestOriginEnum">
@@ -66061,7 +66090,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
   <int value="0" label="Settings"/>
   <int value="1" label="Launcher"/>
-  <int value="2" label="Browser"/>
 </enum>
 
 <enum name="ScheduledNavigationType">

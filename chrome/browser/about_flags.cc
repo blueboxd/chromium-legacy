@@ -2789,6 +2789,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"dark-light-mode", flag_descriptions::kDarkLightTestName,
      flag_descriptions::kDarkLightTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
+    {"enhanced-desks", flag_descriptions::kBentoName,
+     flag_descriptions::kBentoDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kBento)},
     {"screen-capture", flag_descriptions::kScreenCaptureTestName,
      flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
@@ -2995,6 +2998,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUiShowCompositedLayerBordersDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kUiShowCompositedLayerBordersChoices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_MAC)
+    {
+        "zero-copy-video-capture",
+        flag_descriptions::kZeroCopyVideoCaptureName,
+        flag_descriptions::kZeroCopyVideoCaptureDescription,
+        kOsMac,
+        FEATURE_VALUE_TYPE(media::kAVFoundationCaptureV2),
+    },
+#endif  // defined(OS_MAC)
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
@@ -3342,10 +3354,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)},
-    {"enable-desktop-pwas-local-updating",
-     flag_descriptions::kDesktopPWAsLocalUpdatingName,
-     flag_descriptions::kDesktopPWAsLocalUpdatingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsLocalUpdating)},
     // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
     {"enable-desktop-pwas-app-icon-shortcuts-menu",
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
@@ -6987,6 +6995,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableOffersInClankKeyboardAccessory)},
 #endif
+
+#if BUILDFLAG(ENABLE_PDF)
+    {"pdf-xfa-forms", flag_descriptions::kPdfXfaFormsName,
+     flag_descriptions::kPdfXfaFormsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfXfaSupport)},
+#endif  // BUILDFLAG(ENABLE_PDF)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -41,7 +41,7 @@
   {
     "name": "account-id-migration",
     "owners": [ "msarda" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "account-management-flows-v2",
@@ -551,7 +551,7 @@
       "msramek",
       "chrome-friendly-settings@google.com"
     ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "collections-card-presentation-style",
@@ -1506,6 +1506,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-desktop-pwas-attention-badging-cros",
+    "owners": [ "loubrett@google.com", "chromeos-web-apps-platform-syd@google.com" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "enable-desktop-pwas-elided-extensions-menu",
     "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 91
@@ -1854,6 +1859,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-login-detection",
+    "owners": [ "rajendrant", "mcrouse", "tbansal" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-magnifier-new-focus-following",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 88
@@ -1907,11 +1917,6 @@
     "name": "enable-migrate-default-chrome-app-to-web-apps-non-gsuite",
     "owners": [ "alancutter", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "enable-mygoogle",
-    "owners": [ "fernandex", "chrome-signin-ios@google.com" ],
-    "expiry_milestone": 87
   },
   {
     "name": "enable-nacl",
@@ -3077,7 +3082,7 @@
   {
     "name": "intent-picker-pwa-persistence",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "interest-feed-notice-card-auto-dismiss",
@@ -4545,12 +4550,12 @@
   {
     "name": "smart-dim-model-v3",
     "owners": [ "alanlxl", "amoylan", "jiameng" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "smart-dim-new-ml-agent",
     "owners": [ "alanlxl", "amoylan" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -4890,7 +4895,7 @@
   {
     "name": "use-multilogin-endpoint",
     "owners": [ "droger", "msarda" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "use-of-hash-affiliation-fetcher",

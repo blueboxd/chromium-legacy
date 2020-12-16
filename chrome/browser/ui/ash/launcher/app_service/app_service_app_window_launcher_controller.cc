@@ -320,8 +320,7 @@ void AppServiceAppWindowLauncherController::OnWindowActivated(
 
 void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     const apps::InstanceUpdate& update) {
-  if (update.StateChanged() &&
-      update.State() == apps::InstanceState::kDestroyed) {
+  if (update.IsDestruction()) {
     // For Chrome apps edge case, it could be added for the inactive users, and
     // then removed. Since it is not registered we don't need to do anything
     // anyways. As such, all which is left to do here is to get rid of our own
@@ -340,9 +339,7 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
   ash::ShelfID shelf_id(update.AppId(), update.LaunchId());
 
   // This is the first update for the given window.
-  if (update.StateIsNull() &&
-      (update.State() & apps::InstanceState::kDestroyed) ==
-          apps::InstanceState::kUnknown) {
+  if (update.IsCreation()) {
     std::string app_id = update.AppId();
     if (GetAppType(app_id) == apps::mojom::AppType::kCrostini ||
         crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
@@ -556,25 +553,23 @@ void AppServiceAppWindowLauncherController::AddAppWindowToShelf(
 
   AppWindowLauncherItemController* item_controller =
       owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
-  if (item_controller) {
-    item_controller->AddWindow(app_window);
-    app_window->SetController(item_controller);
-    return;
+  if (item_controller == nullptr) {
+    auto controller =
+        std::make_unique<AppServiceAppWindowLauncherItemController>(shelf_id,
+                                                                    this);
+    item_controller = controller.get();
+    if (!owner()->GetItem(shelf_id)) {
+      owner()->CreateAppLauncherItem(std::move(controller),
+                                     ash::STATUS_RUNNING);
+    } else {
+      owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
+                                                   std::move(controller));
+      owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
+    }
   }
 
-  auto controller = std::make_unique<AppServiceAppWindowLauncherItemController>(
-      shelf_id, this);
-  item_controller = controller.get();
   item_controller->AddWindow(app_window);
   app_window->SetController(item_controller);
-
-  if (!owner()->GetItem(shelf_id)) {
-    owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
-  } else {
-    owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
-                                                 std::move(controller));
-    owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
-  }
 }
 
 void AppServiceAppWindowLauncherController::RemoveAppWindowFromShelf(

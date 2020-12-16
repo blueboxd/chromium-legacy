@@ -431,7 +431,6 @@ static void MatchElementScopeRules(const Element& element,
   if (element_scope_resolver) {
     collector.ClearMatchedRules();
     element_scope_resolver->CollectMatchingElementScopeRules(collector);
-    element_scope_resolver->CollectMatchingTreeBoundaryCrossingRules(collector);
     collector.SortAndTransferMatchedRules();
   }
 
@@ -1376,7 +1375,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     // earlier style object built using the same exact style declarations. We
     // then only need to apply the inherited properties, if any, as their values
     // can depend on the element context. This is fast and saves memory by
-    // reusing the style data structures.
+    // reusing the style data structures. Note that we cannot do this if the
+    // direct parent is a ShadowRoot.
     if (state.ParentStyle()->InheritedDataShared(
             *cached_matched_properties->parent_computed_style) &&
         !IsAtShadowBoundary(&element)) {

@@ -196,10 +196,9 @@ bool SyncEngineBackend::ShouldIgnoreRedundantInvalidation(
              << invalidation.version() << ", last seen version was "
              << last_invalidation->second;
     redundant_invalidation = true;
+    // TODO(crbug.com/1158476): ModelTypeHistogramValue() should be used instead
+    // of |type|, this is incorrect. Deprecate and add a new correct histogram.
     UMA_HISTOGRAM_ENUMERATION("Sync.RedundantInvalidationPerModelType", type,
-                              static_cast<int>(syncer::ModelType::NUM_ENTRIES));
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Sync.NonRedundantInvalidationPerModelType", type,
                               static_cast<int>(syncer::ModelType::NUM_ENTRIES));
   }
 
@@ -483,10 +482,9 @@ void SyncEngineBackend::DisableProtocolEventForwarding() {
 }
 
 void SyncEngineBackend::DoOnCookieJarChanged(bool account_mismatch,
-                                             bool empty_jar,
                                              base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_manager_->OnCookieJarChanged(account_mismatch, empty_jar);
+  sync_manager_->OnCookieJarChanged(account_mismatch);
   if (!callback.is_null()) {
     host_.Call(FROM_HERE, &SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop,
                std::move(callback));

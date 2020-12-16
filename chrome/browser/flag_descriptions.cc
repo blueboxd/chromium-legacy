@@ -683,6 +683,17 @@ const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
     "Enable installed PWAs to include a menu of shortcuts associated with the "
     "app icon in the taskbar on Windows, or the dock on macOS or Linux.";
 
+extern const char kDesktopPWAsAttentionBadgingCrOSName[] =
+    "Desktop PWAs Attention Badging";
+extern const char kDesktopPWAsAttentionBadgingCrOSDescription[] =
+    "Enable attention badging for PWA icons in the shelf and launcher.";
+extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] =
+    "Enable for Badging API and notifications";
+extern const char kDesktopPWAsAttentionBadgingCrOSApiOnly[] =
+    "Enable for Badging API only";
+extern const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] =
+    "Enable for notifications only";
+
 const char kDesktopPWAsElidedExtensionsMenuName[] =
     "Desktop PWAs elided extensions menu";
 const char kDesktopPWAsElidedExtensionsMenuDescription[] =
@@ -988,6 +999,10 @@ const char kMemlogStackModeMixed[] = "Mixed";
 const char kMemlogStackModeNative[] = "Native";
 const char kMemlogStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kMemlogStackModePseudo[] = "Trace events";
+
+const char kEnableLoginDetectionName[] = "Enable login detection";
+const char kEnableLoginDetectionDescription[] =
+    "Allow user sign-in to be detected based on heuristics.";
 
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =
@@ -1803,10 +1818,6 @@ const char kOverrideSitePrefsForHrefTranslateDescription[] =
     "When using hrefTranslate, ignore the user's blocklist of websites that "
     "shouldn't be translated.";
 
-const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
-const char kOverscrollHistoryNavigationDescription[] =
-    "History navigation in response to horizontal overscroll.";
-
 const char kParallelDownloadingName[] = "Parallel downloading";
 const char kParallelDownloadingDescription[] =
     "Enable parallel downloading to accelerate download speed.";
@@ -2595,7 +2606,6 @@ const char kWebXrForceRuntimeDescription[] =
 
 const char kWebXrRuntimeChoiceNone[] = "No Runtime";
 const char kWebXrRuntimeChoiceOpenXR[] = "OpenXR";
-const char kWebXrRuntimeChoiceWindowsMixedReality[] = "Windows Mixed Reality";
 
 const char kWebXrIncubationsName[] = "WebXR Incubations";
 const char kWebXrIncubationsDescription[] =

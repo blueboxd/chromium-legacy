@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
+#include "chrome/browser/login_detection/login_detection_util.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
 #include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
@@ -265,9 +266,9 @@ namespace {
 const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
-#if defined(USE_AURA) || defined(OS_ANDROID)
+#if defined(USE_AURA)
 const unsigned kOsAura = kOsWin | kOsLinux | kOsCrOS;
-#endif  // USE_AURA || OS_ANDROID
+#endif  // USE_AURA
 
 #if defined(USE_AURA)
 const FeatureEntry::Choice kPullToRefreshChoices[] = {
@@ -403,11 +404,6 @@ const FeatureEntry::Choice kWebXrForceRuntimeChoices[] = {
     {flag_descriptions::kWebXrRuntimeChoiceOpenXR, switches::kWebXrForceRuntime,
      switches::kWebXrRuntimeOpenXr},
 #endif  // ENABLE_OPENXR
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    {flag_descriptions::kWebXrRuntimeChoiceWindowsMixedReality,
-     switches::kWebXrForceRuntime, switches::kWebXrRuntimeWMR},
-#endif  // ENABLE_WINDOWS_MR
 };
 #endif  // ENABLE_VR
 
@@ -741,6 +737,19 @@ const FeatureEntry::Choice kForceTextDirectionChoices[] = {
      switches::kForceDirectionLTR},
     {flag_descriptions::kForceDirectionRtl, switches::kForceTextDirection,
      switches::kForceDirectionRTL},
+};
+
+const FeatureEntry::Choice kDesktopPWAsAttentionBadgingCrOSChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
+     switches::kDesktopPWAsAttentionBadgingCrOS,
+     switches::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications},
+    {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiOnly,
+     switches::kDesktopPWAsAttentionBadgingCrOS,
+     switches::kDesktopPWAsAttentionBadgingCrOSApiOnly},
+    {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly,
+     switches::kDesktopPWAsAttentionBadgingCrOS,
+     switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly},
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3036,18 +3045,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebBluetoothNewPermissionsBackendDescription,
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebBluetoothNewPermissionsBackend)},
-#if defined(USE_AURA) || defined(OS_ANDROID)
-    {"overscroll-history-navigation",
-     flag_descriptions::kOverscrollHistoryNavigationName,
-     flag_descriptions::kOverscrollHistoryNavigationDescription,
-     kOsAura | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
-#if !defined(OS_ANDROID)
+#if defined(USE_AURA)
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
      MULTI_VALUE_TYPE(kPullToRefreshChoices)},
-#endif  // OS_ANDROID
-#endif  // USE_AURA || OS_ANDROID
+#endif  // USE_AURA
     {"enable-touch-drag-drop", flag_descriptions::kTouchDragDropName,
      flag_descriptions::kTouchDragDropDescription, kOsWin | kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchDragDrop,
@@ -3298,6 +3300,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kSubresourceRedirect,
                                     kSubresourceRedirectVariations,
                                     "SubresourceRedirect")},
+    {"enable-login-detection", flag_descriptions::kEnableLoginDetectionName,
+     flag_descriptions::kEnableLoginDetectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(login_detection::kLoginDetection)},
 #if defined(OS_ANDROID)
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
@@ -3359,6 +3364,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenu)},
+    {"enable-desktop-pwas-attention-badging-cros",
+     flag_descriptions::kDesktopPWAsAttentionBadgingCrOSName,
+     flag_descriptions::kDesktopPWAsAttentionBadgingCrOSDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kDesktopPWAsAttentionBadgingCrOSChoices)},
     {"enable-desktop-pwas-elided-extensions-menu",
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuName,
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuDescription, kOsDesktop,

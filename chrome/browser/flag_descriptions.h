@@ -418,6 +418,12 @@ extern const char kDesktopPWAsMigrationUserDisplayModeCleanUpDescription[];
 extern const char kDesktopPWAsAppIconShortcutsMenuName[];
 extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
 
+extern const char kDesktopPWAsAttentionBadgingCrOSName[];
+extern const char kDesktopPWAsAttentionBadgingCrOSDescription[];
+extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[];
+extern const char kDesktopPWAsAttentionBadgingCrOSApiOnly[];
+extern const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[];
+
 extern const char kDesktopPWAsElidedExtensionsMenuName[];
 extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
 
@@ -556,6 +562,9 @@ extern const char kDownloadLaterDebugOnWifiNameDescription[];
 
 extern const char kDuetTabStripIntegrationAndroidName[];
 extern const char kDuetTabStripIntegrationAndroidDescription[];
+
+extern const char kEnableLoginDetectionName[];
+extern const char kEnableLoginDetectionDescription[];
 
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
@@ -1048,9 +1057,6 @@ extern const char kOverrideSitePrefsForHrefTranslateDescription[];
 extern const char kUpdateHoverAtBeginFrameName[];
 extern const char kUpdateHoverAtBeginFrameDescription[];
 
-extern const char kOverscrollHistoryNavigationName[];
-extern const char kOverscrollHistoryNavigationDescription[];
-
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
@@ -1501,7 +1507,6 @@ extern const char kWebXrForceRuntimeDescription[];
 
 extern const char kWebXrRuntimeChoiceNone[];
 extern const char kWebXrRuntimeChoiceOpenXR[];
-extern const char kWebXrRuntimeChoiceWindowsMixedReality[];
 
 extern const char kWebXrIncubationsName[];
 extern const char kWebXrIncubationsDescription[];

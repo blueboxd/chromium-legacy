@@ -5,39 +5,31 @@
 package org.chromium.chrome.browser.signin.account_picker;
 
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.ExistingAccountRowProperties;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
 /**
  * This class regroups the buildView and bindView util methods of the
  * existing account row.
  */
-class ExistingAccountRowViewBinder {
-    private ExistingAccountRowViewBinder() {}
-
-    static View buildView(ViewGroup parent) {
-        @LayoutRes
-        int layoutRes = ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-                ? R.layout.account_picker_row
-                : R.layout.account_picker_row_legacy;
-        return LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
-    }
-
-    static void bindView(PropertyModel model, View view, PropertyKey propertyKey) {
+class ExistingAccountRowViewBinder implements ViewBinder<PropertyModel, View, PropertyKey> {
+    /**
+     * View binder that associates an existing account view with the model of
+     * {@link ExistingAccountRowProperties}.
+     */
+    @Override
+    public void bind(PropertyModel model, View view, PropertyKey propertyKey) {
         DisplayableProfileData profileData = model.get(ExistingAccountRowProperties.PROFILE_DATA);
         if (propertyKey == ExistingAccountRowProperties.ON_CLICK_LISTENER) {
             view.setOnClickListener(v

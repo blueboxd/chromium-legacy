@@ -128,8 +128,8 @@ class CORE_EXPORT CSPDirectiveList final
 
   // Used to copy plugin-types into a plugin document in a nested
   // browsing context.
-  bool HasPluginTypes() const { return !!plugin_types_; }
-  const String& PluginTypesText() const;
+  bool HasPluginTypes() const { return plugin_types_.has_value(); }
+  String PluginTypesText() const;
 
   bool ShouldSendCSPHeader(ResourceType) const;
 
@@ -165,9 +165,8 @@ class CORE_EXPORT CSPDirectiveList final
   // this judgement.
   bool IsScriptRestrictionReasonable() const;
 
-  bool RequiresTrustedTypes() const {
-    return require_trusted_types_for_ && require_trusted_types_for_->require();
-  }
+  bool RequiresTrustedTypes() const;
+
   bool TrustedTypesAllowDuplicates() const {
     return trusted_types_ && trusted_types_->IsAllowDuplicates();
   }
@@ -193,7 +192,6 @@ class CORE_EXPORT CSPDirectiveList final
                                          const String& value);
   void EnableInsecureRequestsUpgrade(const String& name, const String& value);
   void AddTrustedTypes(const String& name, const String& value);
-  void RequireTrustedTypesFor(const String& name, const String& value);
 
   CSPDirectiveName FallbackDirective(CSPDirectiveName current_directive,
                                      CSPDirectiveName original_directive) const;
@@ -240,7 +238,7 @@ class CORE_EXPORT CSPDirectiveList final
   bool CheckSource(const network::mojom::blink::CSPSourceList*,
                    const KURL&,
                    ResourceRequest::RedirectStatus) const;
-  bool CheckMediaType(MediaListDirective*,
+  bool CheckMediaType(const Vector<String>& plugin_types,
                       const String& type,
                       const String& type_attribute) const;
 
@@ -269,7 +267,7 @@ class CORE_EXPORT CSPDirectiveList final
                                      CSPDirectiveName,
                                      const KURL& url_before_redirects,
                                      ResourceRequest::RedirectStatus) const;
-  bool CheckMediaTypeAndReportViolation(MediaListDirective*,
+  bool CheckMediaTypeAndReportViolation(const Vector<String>& plugin_types,
                                         const String& type,
                                         const String& type_attribute,
                                         const String& console_message) const;
@@ -301,7 +299,7 @@ class CORE_EXPORT CSPDirectiveList final
 
   bool upgrade_insecure_requests_;
 
-  Member<MediaListDirective> plugin_types_;
+  base::Optional<Vector<String>> plugin_types_;
   network::mojom::blink::CSPSourceListPtr base_uri_;
   network::mojom::blink::CSPSourceListPtr child_src_;
   network::mojom::blink::CSPSourceListPtr connect_src_;
@@ -324,7 +322,7 @@ class CORE_EXPORT CSPDirectiveList final
   network::mojom::blink::CSPSourceListPtr worker_src_;
   network::mojom::blink::CSPSourceListPtr navigate_to_;
   Member<StringListDirective> trusted_types_;
-  Member<RequireTrustedTypesForDirective> require_trusted_types_for_;
+  network::mojom::blink::CSPRequireTrustedTypesFor require_trusted_types_for_;
 
   // If a "report-to" directive is used:
   // - |report_endpoints_| is a list of token parsed from the "report-to"

@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b64da3907f7638c87967d60cd250a6b02c914251',
+  'skia_revision': '4052510f0b7a8821181b7e924593e70f61101342',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '804d2150372f0e8a19996e7152d984898e8cb85d',
+  'v8_revision': 'fc4ac7024d121a1fdc77cecab42defe4bd11a967',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'f6be92767d1d002f5e90a4673ee4e6d4f1e1744f',
+  'freetype_revision': '84b3616c94f48726c596ead4150218d4431b3412',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '3b535babbc7cb1df48838a9fe4a3b36fdb64f68f',
+  'devtools_frontend_revision': '25c49a45ff3993f32ce8645ae3823fd5adc01c51',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -326,7 +326,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'b31cd871ad1000a56302409b62d76e079f8a0b46',
+  'dawn_revision': '155241b665f8305d54145ca460e0b8cebe888336',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -901,7 +901,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'cfecd6b3e2e9744ab94908f51bc11b1573f0f960',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '36522931735d23b029d58b244ed8f4b90ce40260',
       'condition': 'checkout_chromeos',
   },
 
@@ -1293,7 +1293,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0da7da798b33eb8624ed09f0b50d83cbec80e0cb',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'cc9b7694ce3d8fbcc20b3492313923c7d392ac54',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1371,7 +1371,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'aVUjhhx6rvX82et0M0vk6jejLNbKQMZwukDovqaW3pgC'
+              'version': 'xbub5pS-4jut2bXIXFZ4xABfPqAJC0wMGX7DZaoMJNcC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1615,7 +1615,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6e2a61fd87c3105bd919346cd0dbf4c9ac1d8485',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f8ca67ef2d093330a31bf50ba38bc29afaafab82',
     'condition': 'checkout_src_internal',
   },
 
@@ -1634,7 +1634,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'F2qSaG03RybV34PPKgVY50FpLeJhLL-u5pz5Gmi9s9AC',
+        'version': 'Lqnbzl4-hoc2WrAL80TsiADU6Of1I2wk_-c35v-9vSkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

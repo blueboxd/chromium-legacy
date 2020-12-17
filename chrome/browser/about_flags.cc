@@ -1286,6 +1286,7 @@ const FeatureEntry::FeatureVariation kOmniboxBookmarkPathsVariations[] = {
 const FeatureEntry::FeatureVariation
     kOmniboxOnFocusSuggestionsContextualWebVariations[] = {
         {"GOC Only", {}, 0, "t3317583"},
+        {"pSuggest Only", {}, 0, "t3318055"},
         {"GOC, pSuggest Fallback", {}, 0, "t3317692"},
         {"GOC, pSuggest Backfill", {}, 0, "t3317694"},
         {"GOC, Default Hidden", {}, 0, "t3317834"},
@@ -5094,9 +5095,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDestroyProfileOnBrowserClose)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-usbguard", flag_descriptions::kUsbguardName,
-     flag_descriptions::kUsbguardDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kUsbguard)},
     {"enable-fs-nosymfollow", flag_descriptions::kFsNosymfollowName,
      flag_descriptions::kFsNosymfollowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFsNosymfollow)},

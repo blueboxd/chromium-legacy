@@ -6228,6 +6228,12 @@ others/histograms.xml -->
       label="BackForwardCache is disabled through command line (may include
              cases where the embedder disabled it due to, e.g., enterprise
              policy)"/>
+  <int value="36" label="kFrameTreeNodeStateReset (removed)"/>
+  <int value="37" label="Network request datapipe drained"/>
+  <int value="38" label="Network request redirected"/>
+  <int value="39" label="Network request timed out"/>
+  <int value="40" label="Network request exceeds buffer limit"/>
+  <int value="41" label="Navigation was cancelled while restoring"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -7204,6 +7210,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="10" label="Authentication cancelled"/>
   <int value="11" label="Authentication timeout"/>
   <int value="12" label="Unknown"/>
+  <int value="13" label="BT IO connection failed"/>
 </enum>
 
 <enum name="BlueZResultOfPerProfileConnection">
@@ -32409,6 +32416,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="4" label="Have SSO account, Successful"/>
   <int value="5" label="Have SSO account, Gave Up"/>
   <int value="6" label="Could not create FirstRun Sentinel - deprecated"/>
+  <int value="7" label="Skipped by policy"/>
 </enum>
 
 <enum name="FirstUserActionType">
@@ -41106,14 +41114,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="LensClassifyResultState">
   <int value="0" label="Unknown"/>
-  <int value="1" label="Success: the image is a shoppy image"/>
-  <int value="2" label="Success: the image is not a shoppy image"/>
-  <int value="3" label="Success: the Lens result is empty"/>
-  <int value="4" label="Success: the intent type is empty"/>
+  <int value="1" label="Success: shoppy image"/>
+  <int value="2" label="Success: not shoppy image - other intent type"/>
+  <int value="3" label="Success: not shoppy image - empty Lens result"/>
+  <int value="4" label="Success: not shoppy image - empty intent type"/>
   <int value="5" label="Error: invalid callback"/>
   <int value="6" label="Error: invalid package signature"/>
   <int value="7" label="Error: invalid image uri"/>
   <int value="8" label="Error: early terminated"/>
+  <int value="9" label="Disabled"/>
 </enum>
 
 <enum name="LensSdkError">
@@ -42213,7 +42222,6 @@ from previous Chrome versions.
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
   <int value="-1940377152" label="MacRTL:enabled"/>
   <int value="-1940291343" label="SpeculativeResourcePrefetching:enabled"/>
-  <int value="-1939533266" label="LauncherSettingsSearch:enabled"/>
   <int value="-1939525844" label="AssistantTimersV2:enabled"/>
   <int value="-1939016096"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:enabled"/>
@@ -42617,7 +42625,6 @@ from previous Chrome versions.
   <int value="-1564232131"
       label="OmniboxOnDeviceHeadProviderNonIncognito:enabled"/>
   <int value="-1562065709" label="ForceEnableDevicesPage:enabled"/>
-  <int value="-1561360053" label="LauncherSettingsSearch:disabled"/>
   <int value="-1561252720" label="AutofillCreditCardUploadFeedback:disabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1560650271" label="WasmCodeCache:disabled"/>
@@ -43770,7 +43777,6 @@ from previous Chrome versions.
   <int value="-505679399" label="FontCacheScaling:enabled"/>
   <int value="-503601144" label="UserDataSnapshot:disabled"/>
   <int value="-503430431" label="XRSandbox:enabled"/>
-  <int value="-502156595" label="AutofillCacheServerCardInfo:disabled"/>
   <int value="-499723386" label="EnableFilesAppCopyImage:disabled"/>
   <int value="-499186481"
       label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
@@ -43979,6 +43985,7 @@ from previous Chrome versions.
   <int value="-304886342" label="QuickAnswersTranslation:disabled"/>
   <int value="-304777110" label="PreconnectToSearch:disabled"/>
   <int value="-303992327" label="SwipeToMoveCursor:disabled"/>
+  <int value="-301228557" label="PageInfoDiscoverability:disabled"/>
   <int value="-300542825" label="ChromeShareQRCode:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
@@ -44197,6 +44204,7 @@ from previous Chrome versions.
   <int value="-89434839" label="SystemTrayMicGainSetting:enabled"/>
   <int value="-88822940" label="ssl-version-min"/>
   <int value="-88273414" label="ContentSuggestionsShowSummary:enabled"/>
+  <int value="-87405369" label="PageInfoDiscoverability:enabled"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
   <int value="-86243376" label="LayoutNG:enabled"/>
   <int value="-85706353" label="VirtualDesksGestures:enabled"/>
@@ -44690,7 +44698,6 @@ from previous Chrome versions.
   <int value="388328387" label="WindowsMixedReality:enabled"/>
   <int value="388786873" label="EnableUnifiedMultiDeviceSettings:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
-  <int value="389340238" label="AutofillCacheServerCardInfo:enabled"/>
   <int value="392782890" label="SafeBrowsingTelemetryForApkDownloads:enabled"/>
   <int value="393704200" label="account-consistency"/>
   <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
@@ -50745,6 +50752,7 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Out-of-order API call"/>
   <int value="3" label="Already stopped"/>
   <int value="4" label="Transfer already in progress"/>
+  <int value="5" label="No available connection medium"/>
 </enum>
 
 <enum name="NearbyShareStartAdvertisingFailureReason">
@@ -59689,6 +59697,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="Subresource throttled"/>
   <int value="26" label="Prediction position not eligible"/>
   <int value="27" label="Prefetch Not Eligible: Retry-After not elasped"/>
+  <int value="28" label="Connecting to the prefetch proxy previously failed"/>
 </enum>
 
 <enum name="PrefetchRedirect">
@@ -74060,6 +74069,12 @@ Full version information for the fingerprint enum values:
   <int value="13" label="Show UI"/>
   <int value="14" label="Automatic translation, by link"/>
   <int value="15" label="Automatic translation, by user preference"/>
+</enum>
+
+<enum name="TrendingTileEvent">
+  <int value="0" label="Tile was shown"/>
+  <int value="1" label="Tile was removed"/>
+  <int value="2" label="Tile was clicked"/>
 </enum>
 
 <enum name="TriggerHelpUIResult">

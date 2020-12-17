@@ -4501,14 +4501,16 @@ Element::EnsureResizeObserverData() {
   return EnsureElementRareData().EnsureResizeObserverData();
 }
 
-DisplayLockContext* Element::GetDisplayLockContext() const {
+DisplayLockContext* Element::GetDisplayLockContextFromRareData() const {
   if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return nullptr;
-  return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
-                       : nullptr;
+  DCHECK(HasDisplayLockContext());
+  DCHECK(HasRareData());
+  return GetElementRareData()->GetDisplayLockContext();
 }
 
 DisplayLockContext& Element::EnsureDisplayLockContext() {
+  SetHasDisplayLockContext();
   return *EnsureElementRareData().EnsureDisplayLockContext(this);
 }
 
@@ -5135,7 +5137,8 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
       result = GetDocument().GetStyleResolver().StyleForElement(
           this, parent_style, parent_style);
     }
-    result->SetStyleType(kPseudoIdFirstLineInherited);
+    if (result)
+      result->SetStyleType(kPseudoIdFirstLineInherited);
     return result;
   }
 

@@ -141,7 +141,7 @@ LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
       // This eliminates noise from the private Page object created by
       // SVGImage::DataChanged.
       is_active_(
-          !frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient()),
+          !frame_view->GetFrame().GetChromeClient().IsSVGImageChromeClient()),
       score_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
@@ -170,6 +170,11 @@ bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
   if (!object.IsBox())
     return false;
 
+  if (auto* display_lock_context = object.GetDisplayLockContext()) {
+    if (display_lock_context->IsAuto() && display_lock_context->IsLocked())
+      return false;
+  }
+
   // Don't report shift of anonymous objects. Will report the children because
   // we want report real DOM nodes.
   if (object.IsAnonymous())
@@ -178,7 +183,7 @@ bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
   if (object.StyleRef().Visibility() != EVisibility::kVisible)
     return false;
 
-  // Ignore sticky-positioend objects that move on scroll.
+  // Ignore sticky-positioned objects that move on scroll.
   // TODO(skobes): Find a way to detect when these objects shift.
   if (object.IsStickyPositioned())
     return false;
@@ -220,6 +225,11 @@ void LayoutShiftTracker::ObjectShifted(
       object.View()->FirstFragment().LocalBorderBoxProperties();
   FloatClipRect clip_rect =
       GeometryMapper::LocalToAncestorClipRect(property_tree_state, root_state);
+  if (frame_view_->GetFrame().IsMainFrame()) {
+    // Apply the visual viewport clip.
+    clip_rect.Intersect(FloatClipRect(
+        frame_view_->GetPage()->GetVisualViewport().VisibleRect()));
+  }
 
   // If the clip region is empty, then the resulting layout shift isn't visible
   // in the viewport so ignore it.
@@ -675,7 +685,8 @@ void ReattachHookScope::NotifyDetach(const Node& node) {
   if (!top_)
     return;
   auto* layout_object = node.GetLayoutObject();
-  if (!layout_object || !layout_object->IsBox())
+  if (!layout_object || layout_object->ShouldSkipNextLayoutShiftTracking() ||
+      !layout_object->IsBox())
     return;
 
   auto& map = top_->geometries_before_detach_;
@@ -708,6 +719,7 @@ void ReattachHookScope::NotifyAttach(const Node& node) {
       .SetPreviousGeometryForLayoutShiftTracking(
           iter->value.paint_offset, iter->value.size,
           iter->value.visual_overflow_rect);
+  layout_object->SetShouldSkipNextLayoutShiftTracking(false);
 }
 
 }  // namespace blink

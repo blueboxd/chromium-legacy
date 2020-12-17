@@ -27,8 +27,8 @@ browse:news:hackernews:2020,,desktop,2020
 browse:news:nytimes:2019,The third top website in http://www.alexa.com/topsites/category/News,mobile,2019
 browse:news:nytimes:2020,The third top website in http://www.alexa.com/topsites/category/News,desktop,2020
 browse:news:qq:2019,,mobile,"2019,international"
-browse:news:reddit:2018,The top website in http://www.alexa.com/topsites/category/News,desktop,2018
 browse:news:reddit:2019,,mobile,"2019,health_check"
+browse:news:reddit:2020,The top website in http://www.alexa.com/topsites/category/News,desktop,2020
 browse:news:toi:2019,,mobile,"2019,emerging_market"
 browse:news:washingtonpost:2019,Progressive website,mobile,2019
 browse:search:amp:2018,Story for Google's Accelerated Mobile Pages (AMP).,mobile,2018
@@ -80,7 +80,7 @@ load:media:youtube:2018,,"desktop,mobile","2018,emerging_market,health_check"
 load:media:youtubelivingroom:2020,,desktop,"2020,health_check"
 load:news:bbc:2018,,desktop,2018
 load:news:bbc:2019,,mobile,2019
-load:news:cnn:2018,,"desktop,mobile","2018,health_check,javascript_heavy"
+load:news:cnn:2020,,"desktop,mobile","2020,health_check,javascript_heavy"
 load:news:flipboard,,desktop,2016
 load:news:hackernews:2018,,desktop,2018
 load:news:irctc:2019,,mobile,"2019,emerging_market"

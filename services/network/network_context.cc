@@ -130,9 +130,9 @@
 #include "net/ftp/ftp_auth_cache.h"
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/network/cert_verifier_with_trust_anchors.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_IOS)
 #include "services/network/websocket_factory.h"
@@ -853,9 +853,9 @@ void NetworkContext::QueueReport(
     const net::NetworkIsolationKey& network_isolation_key,
     const base::Optional<std::string>& user_agent,
     base::Value body) {
-  // TODO(mmenke): Once all callers have been updated to send a
-  // NetworkIsolationKey, DCHECK network_isolation_key() is not null, when
-  // require_network_isolation_key() is set on the URLRequestContext.
+  if (url_request_context_->require_network_isolation_key())
+    DCHECK(!network_isolation_key.IsEmpty());
+
   DCHECK(body.is_dict());
   if (!body.is_dict())
     return;
@@ -885,18 +885,17 @@ void NetworkContext::QueueReport(
 void NetworkContext::QueueSignedExchangeReport(
     mojom::SignedExchangeReportPtr report,
     const net::NetworkIsolationKey& network_isolation_key) {
-  // TODO(mmenke): Once all callers have been updated to send a
-  // NetworkIsolationKey, DCHECK network_isolation_key() is not null, when
-  // require_network_isolation_key() is set on the URLRequestContext.
+  if (url_request_context_->require_network_isolation_key())
+    DCHECK(!network_isolation_key.IsEmpty());
 
-  net::URLRequestContext* request_context = url_request_context();
   net::NetworkErrorLoggingService* logging_service =
-      request_context->network_error_logging_service();
+      url_request_context_->network_error_logging_service();
   if (!logging_service)
     return;
   std::string user_agent;
-  if (request_context->http_user_agent_settings() != nullptr) {
-    user_agent = request_context->http_user_agent_settings()->GetUserAgent();
+  if (url_request_context_->http_user_agent_settings() != nullptr) {
+    user_agent =
+        url_request_context_->http_user_agent_settings()->GetUserAgent();
   }
   net::NetworkErrorLoggingService::SignedExchangeReportDetails details;
   details.network_isolation_key = network_isolation_key;
@@ -1034,7 +1033,7 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   network_delegate_->set_enable_referrers(enable_referrers);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
   if (!cert_verifier_with_trust_anchors_) {
@@ -1051,7 +1050,7 @@ void NetworkContext::UpdateAdditionalCertificates(
       additional_certificates->trust_anchors,
       additional_certificates->all_certificates);
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
@@ -1388,9 +1387,8 @@ void NetworkContext::VerifyCertForSignedExchange(
     const std::string& ocsp_result,
     const std::string& sct_list,
     VerifyCertForSignedExchangeCallback callback) {
-  // TODO(https://crbug.com/1087091): DCHECK that |network_isolation_key| is
-  // populated when |require_network_isolation_key| is true, once all consumers
-  // are passing in a NetworkIsolationKey.
+  if (url_request_context_->require_network_isolation_key())
+    DCHECK(!network_isolation_key.IsEmpty());
 
   int cert_verify_id = ++next_cert_verify_id_;
   auto pending_cert_verify = std::make_unique<PendingCertVerify>();
@@ -1758,7 +1756,7 @@ void NetworkContext::LookupServerBasicAuthCredentials(
     std::move(callback).Run(base::nullopt);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkContext::LookupProxyAuthCredentials(
     const net::ProxyServer& proxy_server,
     const std::string& auth_scheme,
@@ -1832,7 +1830,7 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
       http_auth_dynamic_network_service_params->android_negotiate_account_type);
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   http_auth_merged_preferences_.set_allow_gssapi_library_load(
       http_auth_dynamic_network_service_params->allow_gssapi_library_load);
 #endif
@@ -1912,7 +1910,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::make_unique<net::CoalescingCertVerifier>(
             std::move(cert_verifier)));
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     cert_verifier_with_trust_anchors_ =
         new CertVerifierWithTrustAnchors(base::BindRepeating(
             &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
@@ -1921,7 +1919,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(
         std::move(cert_verifier));
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
@@ -2037,11 +2035,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::move(params_->proxy_resolver_factory));
   }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (params_->dhcp_wpad_url_client) {
     builder.SetDhcpWpadUrlClient(std::move(params_->dhcp_wpad_url_client));
   }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (!params_->http_cache_enabled) {
     builder.DisableHttpCache();
@@ -2475,7 +2473,7 @@ void NetworkContext::OnVerifyCertForSignedExchangeComplete(int cert_verify_id,
       .Run(result, *pending_cert_verify->result.get());
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkContext::TrustAnchorUsed() {
   client_->OnTrustAnchorUsed();
 }

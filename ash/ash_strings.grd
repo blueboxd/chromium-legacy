@@ -1012,7 +1012,10 @@ This file contains the strings for ash.
         Pinned
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_PINNED_EMPTY_PROMPT" desc="Prompt shown in the pinned files area of the holding space bubble if the user has no pinned files.">
-        Quickly access your important files. Right-click or touch &amp; hold a file to pin it.
+        You can pin your important files here. Open Files app to get started.
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_PINNED_FILES_APP_CHIP_TEXT" desc="Text for chip which opens the Files app shown in the pinned files area of the holding space bubble if the user has no pinned files.">
+        Open Files
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_DOWNLOADS_TITLE" desc="Title of the downloads area in the holding space bubble.">
         Downloads
@@ -1205,7 +1208,16 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_SILENCE_BUTTON_NOT_AVAILABLE_TOOLTIP" desc="Tooltip message that indicates to the user that the Silence Phone feature is disabled because their phone is on a work profile.">
         Silence phone is not available on work profile
       </message>
-
+      
+      <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL">
+        Low
+      </message>
+      <message name="IDS_ASH_STYLUS_BATTERY_MED_LABEL">
+        Med
+      </message>
+      <message name="IDS_ASH_STYLUS_BATTERY_HI_LABEL">
+        Hi
+      </message>
       <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the stylus tools (a pop-up panel next to the status tray). This causes a partial screenshot to be taken (the user selects an area of the screen to take a screenshot of).">
         Capture region
       </message>

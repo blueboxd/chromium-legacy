@@ -494,9 +494,8 @@ void BluetoothSocketConnectFunction::ConnectToService(
     device::BluetoothDevice* device,
     const device::BluetoothUUID& uuid) {
   device->ConnectToService(
-      uuid,
-      base::Bind(&BluetoothSocketConnectFunction::OnConnect, this),
-      base::Bind(&BluetoothSocketConnectFunction::OnConnectError, this));
+      uuid, base::BindOnce(&BluetoothSocketConnectFunction::OnConnect, this),
+      base::BindOnce(&BluetoothSocketConnectFunction::OnConnectError, this));
 }
 
 BluetoothSocketDisconnectFunction::BluetoothSocketDisconnectFunction() {}
@@ -513,8 +512,8 @@ ExtensionFunction::ResponseAction BluetoothSocketDisconnectFunction::Run() {
   if (!socket)
     return RespondNow(Error(kSocketNotFoundError));
 
-  socket->Disconnect(base::Bind(&BluetoothSocketDisconnectFunction::OnSuccess,
-                                this));
+  socket->Disconnect(
+      base::BindOnce(&BluetoothSocketDisconnectFunction::OnSuccess, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
@@ -557,10 +556,9 @@ ExtensionFunction::ResponseAction BluetoothSocketSendFunction::Run() {
   if (!socket)
     return RespondNow(Error(kSocketNotFoundError));
 
-  socket->Send(io_buffer_,
-               io_buffer_size_,
-               base::Bind(&BluetoothSocketSendFunction::OnSuccess, this),
-               base::Bind(&BluetoothSocketSendFunction::OnError, this));
+  socket->Send(io_buffer_, io_buffer_size_,
+               base::BindOnce(&BluetoothSocketSendFunction::OnSuccess, this),
+               base::BindOnce(&BluetoothSocketSendFunction::OnError, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 

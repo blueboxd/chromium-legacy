@@ -29,12 +29,14 @@
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "mojo/public/cpp/system/functions.h"
+#include "net/base/features.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
 #include "net/base/port_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
+#include "net/cert/internal/system_trust_store.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/host_resolver.h"
@@ -71,7 +73,8 @@
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if (defined(OS_LINUX) || BUILDFLAG(IS_LACROS)) && !BUILDFLAG(IS_CHROMECAST)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+    !BUILDFLAG(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
@@ -322,6 +325,14 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+#if defined(OS_MAC)
+  if (!base::FeatureList::IsEnabled(network::features::kCertVerifierService) &&
+      base::FeatureList::IsEnabled(
+          net::features::kCertVerifierBuiltinFeature)) {
+    net::InitializeTrustStoreMacCache();
+  }
+#endif
+
   // Set-up the global port overrides.
   if (command_line->HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =
@@ -448,7 +459,7 @@ void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
   network_contexts_.erase(network_context);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = settings->logging_dest;
@@ -669,7 +680,7 @@ void NetworkService::OnCertDBChanged() {
   net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_LACROS)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 #if !BUILDFLAG(IS_CHROMECAST)
   DCHECK(!os_crypt_config_set_);

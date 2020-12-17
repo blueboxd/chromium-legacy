@@ -271,9 +271,9 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
       {"nearbyShareDataUsageWifiOnlyDescription",
        IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_DESCRIPTION},
       {"nearbyShareDataUsageDataLabel",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_LABEL},
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_LABEL},
       {"nearbyShareDataUsageDataDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_DESCRIPTION},
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_DESCRIPTION},
       {"nearbyShareDataUsageOfflineLabel",
        IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_LABEL},
       {"nearbyShareDataUsageOfflineDescription",
@@ -301,14 +301,10 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  html_source->AddString("nearbyShareManageContactsUrl",
-                         chrome::kNearbyShareManageContactsURL);
   html_source->AddBoolean(
       "nearbySharingFeatureFlag",
       base::FeatureList::IsEnabled(features::kNearbySharing));
 
-  html_source->AddString("nearbyShareLearnMoreLink",
-                         base::ASCIIToUTF16(chrome::kNearbyShareLearnMoreURL));
   // To use lottie, the worker-src CSP needs to be updated for the web ui that
   // is using it. Since as of now there are only a couple of webuis using
   // lottie animations, this update has to be performed manually. As the usage

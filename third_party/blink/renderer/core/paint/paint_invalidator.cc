@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -176,9 +175,16 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
   if (!object.ShouldCheckGeometryForPaintInvalidation())
     return;
 
-  auto& layout_shift_tracker = object.GetFrameView()->GetLayoutShiftTracker();
-  if (!layout_shift_tracker.NeedsToTrack(object))
+  if (tree_builder_context.this_or_ancestor_opacity_is_zero) {
+    object.GetMutableForPainting().SetShouldSkipNextLayoutShiftTracking(true);
     return;
+  }
+
+  auto& layout_shift_tracker = object.GetFrameView()->GetLayoutShiftTracker();
+  if (!layout_shift_tracker.NeedsToTrack(object)) {
+    object.GetMutableForPainting().SetShouldSkipNextLayoutShiftTracking(true);
+    return;
+  }
 
   PropertyTreeStateOrAlias property_tree_state(
       *tree_builder_context.current.transform,
@@ -216,6 +222,10 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
   PhysicalRect new_rect = box.PhysicalVisualOverflowRect();
   PhysicalRect old_rect = box.PreviousPhysicalVisualOverflowRect();
   bool should_report_layout_shift = [&]() -> bool {
+    if (box.ShouldSkipNextLayoutShiftTracking()) {
+      box.GetMutableForPainting().SetShouldSkipNextLayoutShiftTracking(false);
+      return false;
+    }
     // If the layout shift root has changed, LayoutShiftTracker can't use the
     // current paint property tree to map the old rect.
     if (tree_builder_context.current.layout_shift_root_changed)

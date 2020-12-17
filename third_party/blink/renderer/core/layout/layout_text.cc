@@ -63,8 +63,6 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -2313,7 +2311,7 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
           frame_selection.ComputeLayoutSelectionStatus(cursor);
       if (status.start == status.end)
         continue;
-      PhysicalRect item_rect = ComputeLocalSelectionRectForText(cursor, status);
+      PhysicalRect item_rect = cursor.CurrentLocalSelectionRectForText(status);
       item_rect.offset += cursor.Current().OffsetInContainerFragment();
       rect.Unite(item_rect);
     }

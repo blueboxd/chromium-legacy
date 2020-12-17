@@ -71,7 +71,7 @@
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 95
   },
   {
     "name": "allow-previews",
@@ -560,8 +560,8 @@
   },
   {
     "name": "color-picker-eye-dropper",
-    "owners": [ "iopopesc@microsoft.com", "masonfreed", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 88
+    "owners": [ "iopopesc@microsoft.com", "masonfreed" ],
+    "expiry_milestone": 90
   },
   {
     "name": "color-provider-redirection",
@@ -1253,11 +1253,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-autofill-cache-server-card-info",
-    "owners": [ "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "enable-autofill-credit-card-ablation-experiment",
     "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 96
@@ -1502,8 +1497,8 @@
   },
   {
     "name": "enable-desktop-pwas-app-icon-shortcuts-menu",
-    "owners": [ "rahsin@microsoft.com", "cmumford@google.com" ],
-    "expiry_milestone": 88
+    "owners": [ "johnjan@microsoft.com", "cmp@google.com" ],
+    "expiry_milestone": 93
   },
   {
     "name": "enable-desktop-pwas-attention-badging-cros",
@@ -1519,11 +1514,6 @@
     "name": "enable-desktop-pwas-flash-app-name-instead-of-origin",
     "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 91
-  },
-  {
-    "name": "enable-desktop-pwas-migration-user-display-mode-clean-up",
-    "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 89
   },
   {
     "name": "enable-desktop-pwas-run-on-os-login",
@@ -2108,7 +2098,9 @@
   {
     "name": "enable-quic",
     "owners": [ "//net/quic/OWNERS" ],
-    "expiry_milestone": 88
+    // This flag is used by network administrators to debug
+    // network issues related to QUIC. It must not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-quick-answers",
@@ -3235,8 +3227,8 @@
   },
   {
     "name": "mac-v2-gpu-sandbox",
-    "owners": [ "kerrnel@google.com" ],
-    "expiry_milestone": 88
+    "owners": [ "kerrnel@google.com", "rsesek" ],
+    "expiry_milestone": 93
   },
   {
     "name": "managed-bookmarks-ios",
@@ -3840,6 +3832,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "page-info-discoverability",
+    "owners": [ "eokoyomon", "dullweber" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "page-info-performance-hints",
     "owners": [ "jds" ],
     "expiry_milestone": 90
@@ -3963,7 +3960,7 @@
   {
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 100
   },
   {
     "name": "prefetch-notification-scheduling-integration",
@@ -4134,7 +4131,7 @@
   {
     "name": "recover-from-never-save-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "reduce-display-notifications",
@@ -4229,11 +4226,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "safe-browsing-available",
-    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS", "bling-flags@google.com" ],
-    "expiry_milestone": 87
-  },
-  {
     "name": "safe-browsing-client-side-detection-android",
     "owners": [
       "bdea",
@@ -4263,11 +4255,6 @@
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "safe-browsing-real-time",
-    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS", "bling-flags@google.com" ],
-    "expiry_milestone": 88
   },
   {
     "name": "safe-browsing-security-section-ui-android",

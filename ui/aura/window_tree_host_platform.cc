@@ -34,6 +34,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/platform_window/win/win_window.h"
 #endif
 
@@ -67,6 +68,11 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(std::unique_ptr<Window> window)
 
 void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
     ui::PlatformWindowInitProperties properties) {
+  // Cache initial bounds used to create |platform_window_| so that it does not
+  // end up propagating unneeded bounds change event when it is first notified
+  // through OnBoundsChanged, which may lead to unneeded re-layouts, etc.
+  bounds_in_pixels_ = properties.bounds;
+
 #if defined(USE_OZONE) || defined(USE_X11)
 #if defined(USE_OZONE)
   if (features::IsUsingOzonePlatform()) {
@@ -183,6 +189,11 @@ void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)
     return;
   current_cursor_ = cursor;
+
+#if defined(OS_WIN)
+  ui::CursorLoaderWin cursor_loader;
+  cursor_loader.SetPlatformCursor(&cursor);
+#endif
 
   platform_window_->SetCursor(cursor.platform());
 }

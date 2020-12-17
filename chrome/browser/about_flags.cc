@@ -3386,11 +3386,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsTabStripLinkCapturingDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStripLinkCapturing)},
-    {"enable-desktop-pwas-migration-user-display-mode-clean-up",
-     flag_descriptions::kDesktopPWAsMigrationUserDisplayModeCleanUpName,
-     flag_descriptions::kDesktopPWAsMigrationUserDisplayModeCleanUpDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsMigrationUserDisplayModeCleanUp)},
     {"enable-desktop-pwas-run-on-os-login",
      flag_descriptions::kDesktopPWAsRunOnOsLoginName,
      flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin | kOsLinux,
@@ -5998,10 +5993,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"launcher-settings-search", flag_descriptions::kLauncherSettingsSearchName,
-     flag_descriptions::kLauncherSettingsSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kLauncherSettingsSearch)},
-
     {"enable-suggested-files", flag_descriptions::kEnableSuggestedFilesName,
      flag_descriptions::kEnableSuggestedFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
@@ -6315,6 +6306,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"page-info-version-2", flag_descriptions::kPageInfoV2Name,
      flag_descriptions::kPageInfoV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoV2)},
+    {"page-info-discoverability",
+     flag_descriptions::kPageInfoDiscoverabilityName,
+     flag_descriptions::kPageInfoDiscoverabilityDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoDiscoverability)},
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6416,10 +6411,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"app-cache", flag_descriptions::kAppCacheName,
      flag_descriptions::kAppCacheDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAppCache)},
-    {"enable-autofill-cache-server-card-info",
-     flag_descriptions::kEnableAutofillCacheServerCardInfoName,
-     flag_descriptions::kEnableAutofillCacheServerCardInfoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheServerCardInfo)},
 
     {"autofill-enable-sticky-payments-bubble",
      flag_descriptions::kAutofillEnableStickyPaymentsBubbleName,

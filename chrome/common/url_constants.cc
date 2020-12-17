@@ -419,8 +419,8 @@ const char kTabletModeGesturesLearnMoreURL[] =
 const char kWifiSyncLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=wifisync";
 
-// TODO(michaelcheco): Update temporary url.
-const char kNearbyShareLearnMoreURL[] = "https://google.com/";
+const char kNearbyShareLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=nearby_share";
 
 extern const char kNearbyShareManageContactsURL[] =
     "https://contacts.google.com";
@@ -449,9 +449,6 @@ const char kChromeSyncLearnMoreURL[] =
 #endif  // BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-const char kBlockedPluginLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=ib_blocked_plugin";
-
 const char kOutdatedPluginLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_outdated_plugin";
 #endif

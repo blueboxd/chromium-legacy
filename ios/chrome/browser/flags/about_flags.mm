@@ -43,7 +43,6 @@
 #include "components/payments/core/features.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -435,19 +434,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          fullscreen::features::kFullscreenControllerBrowserScoped)},
-    {"safe-browsing-real-time",
-     flag_descriptions::kSafeBrowsingRealTimeLookupName,
-     flag_descriptions::kSafeBrowsingRealTimeLookupDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(safe_browsing::kRealTimeUrlLookupEnabled)},
     {"managed-bookmarks-ios", flag_descriptions::kManagedBookmarksIOSName,
      flag_descriptions::kManagedBookmarksIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kManagedBookmarksIOS)},
-    {"enable-autofill-cache-server-card-info",
-     flag_descriptions::kEnableAutofillCacheServerCardInfoName,
-     flag_descriptions::kEnableAutofillCacheServerCardInfoDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheServerCardInfo)},
     {"infobar-ui-reboot-only-ios13",
      flag_descriptions::kInfobarUIRebootOnlyiOS13Name,
      flag_descriptions::kInfobarUIRebootOnlyiOS13Description, flags_ui::kOsIos,

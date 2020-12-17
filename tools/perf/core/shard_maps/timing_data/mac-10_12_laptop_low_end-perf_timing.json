@@ -3388,10 +3388,6 @@
         "name": "system_health.common_desktop/browse:news:nytimes:2020"
     },
     {
-        "duration": "61.0",
-        "name": "system_health.common_desktop/browse:news:reddit:2018"
-    },
-    {
         "duration": "40.0",
         "name": "system_health.common_desktop/browse:search:google_india:2018"
     },
@@ -3526,10 +3522,6 @@
     {
         "duration": "25.0",
         "name": "system_health.common_desktop/load:news:bbc:2018"
-    },
-    {
-        "duration": "27.0",
-        "name": "system_health.common_desktop/load:news:cnn:2018"
     },
     {
         "duration": "25.0",
@@ -3696,10 +3688,6 @@
         "name": "system_health.memory_desktop/browse:news:nytimes:2020"
     },
     {
-        "duration": "49.0",
-        "name": "system_health.memory_desktop/browse:news:reddit:2018"
-    },
-    {
         "duration": "33.0",
         "name": "system_health.memory_desktop/browse:search:google_india:2018"
     },
@@ -3834,10 +3822,6 @@
     {
         "duration": "20.0",
         "name": "system_health.memory_desktop/load:news:bbc:2018"
-    },
-    {
-        "duration": "22.0",
-        "name": "system_health.memory_desktop/load:news:cnn:2018"
     },
     {
         "duration": "20.0",
@@ -4044,10 +4028,6 @@
         "name": "v8.browsing_desktop-future/browse:news:nytimes:2020"
     },
     {
-        "duration": "67.0",
-        "name": "v8.browsing_desktop-future/browse:news:reddit:2018"
-    },
-    {
         "duration": "51.0",
         "name": "v8.browsing_desktop-future/browse:search:google_india:2018"
     },
@@ -4142,10 +4122,6 @@
     {
         "duration": "19.0",
         "name": "v8.browsing_desktop/browse:news:nytimes:2020"
-    },
-    {
-        "duration": "76.0",
-        "name": "v8.browsing_desktop/browse:news:reddit:2018"
     },
     {
         "duration": "49.0",

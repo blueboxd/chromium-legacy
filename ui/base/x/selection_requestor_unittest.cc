@@ -21,6 +21,7 @@
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 
 namespace ui {
 
@@ -37,8 +38,8 @@ class SelectionRequestorTest : public testing::Test {
   void SendSelectionNotify(x11::Atom selection,
                            x11::Atom target,
                            const std::string& value) {
-    ui::SetStringProperty(x_window_, requestor_->x_property_,
-                          gfx::GetAtom("STRING"), value);
+    x11::SetStringProperty(x_window_, requestor_->x_property_,
+                           x11::GetAtom("STRING"), value);
 
     requestor_->OnSelectionNotify({
         .requestor = x_window_,
@@ -51,7 +52,7 @@ class SelectionRequestorTest : public testing::Test {
  protected:
   void SetUp() override {
     // Create a window for the selection requestor to use.
-    x_window_ = CreateDummyWindow();
+    x_window_ = x11::CreateDummyWindow();
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
@@ -93,7 +94,7 @@ void PerformBlockingConvertSelection(SelectionRequestor* requestor,
   EXPECT_EQ(expected_data.size(), out_data.size());
   EXPECT_EQ(expected_data, ui::RefCountedMemoryToString(
                                base::RefCountedBytes::TakeVector(&out_data)));
-  EXPECT_EQ(gfx::GetAtom("STRING"), out_type);
+  EXPECT_EQ(x11::GetAtom("STRING"), out_type);
 }
 
 }  // namespace
@@ -104,10 +105,10 @@ TEST_F(SelectionRequestorTest, NestedRequests) {
   // Assume that |selection| will have no owner. If there is an owner, the owner
   // will set the property passed into the XConvertSelection() request which is
   // undesirable.
-  x11::Atom selection = gfx::GetAtom("FAKE_SELECTION");
+  x11::Atom selection = x11::GetAtom("FAKE_SELECTION");
 
-  x11::Atom target1 = gfx::GetAtom("TARGET1");
-  x11::Atom target2 = gfx::GetAtom("TARGET2");
+  x11::Atom target1 = x11::GetAtom("TARGET1");
+  x11::Atom target2 = x11::GetAtom("TARGET2");
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&PerformBlockingConvertSelection,

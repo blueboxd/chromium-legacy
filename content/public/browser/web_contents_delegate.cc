@@ -347,8 +347,8 @@ bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
 }
 
 bool WebContentsDelegate::IsFrameLowPriority(
-    const WebContents* web_contents,
-    const RenderFrameHost* render_frame_host) {
+    WebContents* web_contents,
+    RenderFrameHost* render_frame_host) {
   return false;
 }
 
@@ -364,11 +364,6 @@ WebContentsDelegate::GetInstalledWebappGeolocationContext() {
 
 base::WeakPtr<WebContentsDelegate> WebContentsDelegate::GetDelegateWeakPtr() {
   return nullptr;
-}
-
-WebContentsDelegate::MediaMetricsSource
-WebContentsDelegate::GetMediaMetricsProviderSource(WebContents* web_contents) {
-  return WebContentsDelegate::MediaMetricsSource::kUnknown;
 }
 
 }  // namespace content

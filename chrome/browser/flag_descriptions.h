@@ -329,9 +329,6 @@ extern const char kEnableAudioFocusEnforcementDescription[];
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
 
-extern const char kEnableAutofillCacheServerCardInfoName[];
-extern const char kEnableAutofillCacheServerCardInfoDescription[];
-
 extern const char kEnableAutofillCreditCardAblationExperimentDisplayName[];
 extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 
@@ -411,9 +408,6 @@ extern const char kColorProviderRedirectionDescription[];
 
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[];
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[];
-
-extern const char kDesktopPWAsMigrationUserDisplayModeCleanUpName[];
-extern const char kDesktopPWAsMigrationUserDisplayModeCleanUpDescription[];
 
 extern const char kDesktopPWAsAppIconShortcutsMenuName[];
 extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
@@ -821,9 +815,6 @@ extern const char kKaleidoscopeModuleDescription[];
 
 extern const char kKerberosSettingsSectionName[];
 extern const char kKerberosSettingsSectionDescription[];
-
-extern const char kLauncherSettingsSearchName[];
-extern const char kLauncherSettingsSearchDescription[];
 
 extern const char kLegacyTLSEnforcedName[];
 extern const char kLegacyTLSEnforcedDescription[];
@@ -1764,6 +1755,9 @@ extern const char kOfflinePagesShowAlternateDinoPageDescription[];
 
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];
+
+extern const char kPageInfoDiscoverabilityName[];
+extern const char kPageInfoDiscoverabilityDescription[];
 
 extern const char kPageInfoPerformanceHintsName[];
 extern const char kPageInfoPerformanceHintsDescription[];

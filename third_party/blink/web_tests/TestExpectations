@@ -810,6 +810,11 @@ crbug.com/1123457 external/wpt/css/css-lists/counter-list-item-2.html [ Failure 
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 
+# [css-counter-styles]
+# Need to implement predefined counter style 'simp-chinese-informal' as a
+# custom counter style.
+crbug.com/687225 fast/css/content-counter-large-negative-cjk.html [ Failure ]
+
 # [css-overflow]
 # Incorrect WPT tests.
 crbug.com/993813 external/wpt/css/css-overflow/webkit-line-clamp-008.html [ Failure ]
@@ -997,6 +1002,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fie
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-001.xht [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-at-outer-boundary-as-fieldset.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Pass ]
@@ -1259,55 +1265,6 @@ crbug.com/1068610 external/wpt/css/css-color/predefined-010.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/predefined-003.html [ Failure ]
 
 # ====== Style team owned tests to here ======
-
-# ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
-
-# ======
-# From this point until the end of the Form Controls Refresh section, these are
-# in-progress rebaselines, tracked at crbug.com/1053725.
-#
-# PLEASE DO NOT PUT ANYTHING INSIDE THIS SECTION!!
-# ======
-
-
-# ====
-# These need additional triage:
-crbug.com/1053725 [ Mac ] paint/invalidation/repaint-overlay/layers-overlay.html [ Skip ]
-crbug.com/1053725 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-006.xht [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug45621.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug92647-1.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/collapsing_borders/bug41262-5.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/collapsing_borders/bug41262-6.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/core/captions1.html [ Skip ]
-crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/core/captions2.html [ Skip ]
-crbug.com/1053725 [ Mac ] transforms/transformed-caret.html [ Skip ]
-crbug.com/1053725 [ Mac ] transforms/transformed-focused-text-input.html [ Skip ]
-crbug.com/1053725 [ Mac ] transforms/2d/zoom-menulist.html [ Skip ]
-crbug.com/1053725 [ Mac ] transforms/3d/general/perspective-non-layer.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/forms/implicit-submission.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/forms/select/option-mouseevents.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/forms/select/menulist-popup-open-hide-using-keyboard.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/css/button-height.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/css-grid-layout/preferred-width-computed-after-layout.html [ Skip ]
-crbug.com/1053725 [ Mac ] editing/selection/replaced-boundaries-3.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/forms/textarea/textarea-metrics.html [ Skip ]
-
-# Flaky on Win7
-crbug.com/1053725 [ Win7 ] fast/forms/calendar-picker/date-picker-appearance-disabled-previous-month.html [ Pass Failure ]
-
-# ======
-# ====== End of rebaselines for crbug.com/1053725 ======
-# ======
-#
-# PLEASE put new 1053725-related files below this line (AND NOT ABOVE IT!!)...
-#
-#crbug.com/1053725 ...
-
-
-
-# ====== Form Controls Refresh failures until here ======
 
 
 # Bug in FormControlsRefresh <select multiple> tap behavior:
@@ -2065,6 +2022,7 @@ crbug.com/893480 external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/textEditCommands.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/input-events/input-events-get-target-ranges.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/input-events/input-events-cut-paste.html [ Failure Timeout ]
+crbug.com/893480 external/wpt/html/semantics/forms/the-input-element/checkable-active-onblur.html [ Timeout ]
 
 # isInputPending requires threaded compositing and layerized iframes
 crbug.com/910421 external/wpt/is-input-pending/* [ Skip ]
@@ -2509,6 +2467,13 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/interaction/focus/document-level-focus-apis/document-has-system-focus.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-backgrounds/box-shadow-radius-000.html [ Failure ]
+crbug.com/626703 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/box-shadow-radius-000.html [ Failure ]
+crbug.com/626703 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/box-shadow-radius-001.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-set-keyframes.https.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-backgrounds/box-shadow-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-images/image-orientation/image-orientation-exif-png.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/css-supports-040.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/css-supports-042.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/css-supports-041.xht [ Failure ]
@@ -3208,6 +3173,7 @@ crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-0
 crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/nested-at-outer-boundary-as-fieldset.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Failure ]
@@ -5265,17 +5231,6 @@ crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-dec
 # Sheriff 2020-01-20
 crbug.com/1043357 http/tests/credentialmanager/credentialscontainer-get-with-virtual-authenticator.html [ Pass Timeout Failure ]
 
-# Sheriff 2020-01-22
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-rtl.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-appearance-rtl.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-rtl.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] fast/forms/color-scheme/suggestion-picker/date-suggestion-picker-appearance.html [ Pass Failure ]
-
 # Ref_Tests which fail when SkiaRenderer is enable, and which cannot be
 # rebaselined. TODO(jonross): triage these into any existing bugs or file more
 # specific bugs.
@@ -5301,7 +5256,6 @@ crbug.com/989665 [ Mac ] external/wpt/resource-timing/resource_timing_buffer_ful
 crbug.com/989665 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
 
 # Sheriff 2020-01-23
-crbug.com/1043488 fast/forms/date/date-appearance-basic.html [ Pass Failure ]
 crbug.com/1044505 http/tests/devtools/tracing-session-id.js [ Pass Failure Timeout ]
 
 crbug.com/1045472 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/test_wrapKey_unwrapKey.https.html [ Pass Failure ]
@@ -5826,6 +5780,9 @@ crbug.com/1123116 external/wpt/feature-policy/reporting/sync-xhr-reporting.html 
 crbug.com/1123116 external/wpt/feature-policy/reporting/usb-reporting.https.html [ Timeout ]
 crbug.com/1123116 external/wpt/feature-policy/reporting/xr-reporting.https.html [ Timeout ]
 
+crbug.com/1159445 [ Mac ] paint/invalidation/repaint-overlay/layers-overlay.html [ Failure ]
+crbug.com/1159446 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-006.xht [ Failure ]
+
 crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout Failure ]
 crbug.com/1140329 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 
@@ -5889,6 +5846,26 @@ crbug.com/1134459 accessibility/aom-click-action.html [ Pass Timeout ]
 #Sheriff 2020-11-26
 crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/931646 [ Mac ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
+
+
+#Imperceptible image diffs after Skia change.
+skbug.com/11019 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-border-image.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+skbug.com/11019 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
+
 
 # These tests will only run in the virtual test suite where the frequency
 # capping for overlay popup detection is disabled. This eliminates the need

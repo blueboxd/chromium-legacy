@@ -1569,9 +1569,12 @@ interface DeviceOrientationEvent : Event
     getter beta
     getter gamma
     method constructor
-interface DeviceService
+interface DeviceService : EventTarget
     attribute @@toStringTag
+    getter onmanagedconfigurationchange
     method constructor
+    method getManagedConfiguration
+    setter onmanagedconfigurationchange
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -4541,7 +4544,7 @@ interface ImageData
     getter height
     getter width
     method constructor
-    method getColorSettings
+    method getSettings
 interface ImageDecoder
     static method canDecodeType
     attribute @@toStringTag
@@ -6635,6 +6638,13 @@ interface ReadableStreamBYOBRequest
     method constructor
     method respond
     method respondWithNewView
+interface ReadableStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method close
+    method constructor
+    method enqueue
+    method error
 interface ReadableStreamDefaultReader
     attribute @@toStringTag
     getter closed

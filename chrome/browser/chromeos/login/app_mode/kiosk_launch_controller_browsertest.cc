@@ -11,11 +11,14 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fake_app_launch_splash_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
@@ -30,10 +33,11 @@ using testing::_;
 
 namespace chromeos {
 
-const char kExtensionId1[] = "extensionId1";
-const char kExtensionId2[] = "extensionId2";
-const char kExtensionName1[] = "extensionName1";
-const char kExtensionName2[] = "extensionName2";
+const char kExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char kExtensionName[] = "extension_name";
+
+const char kInvalidExtensionId[] = "invalid_id";
+const char kInvalidExtensionName[] = "invalid_name";
 
 // URL of Chrome Web.
 const char kExtensionUpdateUrl[] =
@@ -98,6 +102,10 @@ class KioskLaunchControllerTest
     EXPECT_EQ(network_state, controller_->network_ui_state_);
   }
 
+  void ExpectViewState(AppLaunchSplashScreenView::AppLaunchState launch_state) {
+    EXPECT_EQ(launch_state, view_->GetAppLaunchState());
+  }
+
   void FireSplashScreenTimer() { controller_->OnTimerFire(); }
 
   void SetOnline(bool online) {
@@ -131,19 +139,27 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest, RegularFlow) {
 
   launch_controls()->InitializeNetwork();
   ExpectState(AppState::kInitNetwork, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_NETWORK);
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   SetOnline(true);
 
   launch_controls()->OnAppInstalling();
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
   launch_controls()->OnAppPrepared();
   ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
   FireSplashScreenTimer();
 
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
@@ -156,12 +172,16 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest, AlreadyInstalled) {
 
   launch_controls()->OnAppPrepared();
   ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
   FireSplashScreenTimer();
 
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
@@ -176,22 +196,32 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest,
 
   EXPECT_CALL(*launcher(), Initialize()).Times(1);
   profile_controls()->OnProfileLoaded(profile());
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI);
   // WebKioskAppLauncher::Initialize call is synchronous, we have to call the
   // response now.
   launch_controls()->InitializeNetwork();
 
   ExpectState(AppState::kInitNetwork, NetworkUIState::kShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_NETWORK);
   EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
   view_controls()->OnNetworkConfigFinished();
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_PROFILE);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
   launch_controls()->OnAppPrepared();
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   // Skipping INSTALLED state since there splash screen timer is stopped when
   // network configure ui was shown.
 
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
@@ -206,6 +236,8 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest,
 
   launch_controls()->InitializeNetwork();
   ExpectState(AppState::kInitNetwork, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_NETWORK);
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   SetOnline(true);
 
@@ -217,21 +249,31 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest,
   // Launcher restart causes network to be requested again.
   launch_controls()->InitializeNetwork();
   ExpectState(AppState::kInitNetwork, NetworkUIState::kShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_NETWORK);
 
   EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
   view_controls()->OnNetworkConfigFinished();
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_PROFILE);
 
   launch_controls()->OnAppInstalling();
   ExpectState(AppState::kInstallingApp, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
   launch_controls()->OnAppPrepared();
   ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
   FireSplashScreenTimer();
 
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
@@ -245,30 +287,43 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest,
 
   launch_controls()->InitializeNetwork();
   ExpectState(AppState::kInitNetwork, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_NETWORK);
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   SetOnline(true);
 
   launch_controls()->OnAppInstalling();
   ExpectState(AppState::kInstallingApp, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
   SetOnline(false);
   launch_controls()->InitializeNetwork();
   ExpectState(AppState::kInitNetwork, NetworkUIState::kShowing);
+  // view state?
 
   EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
   view_controls()->OnNetworkConfigFinished();
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_PREPARING_PROFILE);
 
   launch_controls()->OnAppInstalling();
   ExpectState(AppState::kInstallingApp, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
   launch_controls()->OnAppPrepared();
   ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
   FireSplashScreenTimer();
 
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
@@ -281,15 +336,10 @@ INSTANTIATE_TEST_SUITE_P(All,
 class KioskLaunchControllerWithExtensionTest
     : public KioskLaunchControllerTest {
  public:
-  void SetupForceList() {
+  void SetupForceList(const std::string& extension_id) {
     std::unique_ptr<base::Value> dict =
         extensions::DictionaryBuilder()
-            .Set(kExtensionId1,
-                 extensions::DictionaryBuilder()
-                     .Set(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                          kExtensionUpdateUrl)
-                     .Build())
-            .Set(kExtensionId2,
+            .Set(extension_id,
                  extensions::DictionaryBuilder()
                      .Set(extensions::ExternalProviderImpl::kExternalUpdateUrl,
                           kExtensionUpdateUrl)
@@ -299,11 +349,9 @@ class KioskLaunchControllerWithExtensionTest
         extensions::pref_names::kInstallForceList, std::move(*dict));
 
     base::Value list(base::Value::Type::LIST);
-    list.Append(base::StrCat({kExtensionId1, ";", kExtensionUpdateUrl}));
-    list.Append(base::StrCat({kExtensionId2, ";", kExtensionUpdateUrl}));
-
+    list.Append(base::StrCat({extension_id, ";", kExtensionUpdateUrl}));
     policy::PolicyMap map;
-    map.Set(extensions::pref_names::kInstallForceList,
+    map.Set(policy::key::kExtensionInstallForcelist,
             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
             policy::POLICY_SOURCE_CLOUD, std::move(list), nullptr);
 
@@ -316,7 +364,7 @@ class KioskLaunchControllerWithExtensionTest
   }
 
   void PreRunTestOnMainThread() override {
-    SetupForceList();
+    SetupForceList(kExtensionId);
     InProcessBrowserTest::PreRunTestOnMainThread();
   }
 
@@ -339,19 +387,26 @@ class KioskLaunchControllerWithExtensionTest
     SetOnline(true);
 
     launch_controls()->OnAppInstalling();
+    ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                        APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
     launch_controls()->OnAppPrepared();
   }
 
-  void SetExtensionLoaded() {
-    auto ext1 = extensions::ExtensionBuilder(kExtensionName1)
-                    .SetID(kExtensionId1)
-                    .Build();
-    auto ext2 = extensions::ExtensionBuilder(kExtensionName2)
-                    .SetID(kExtensionId2)
-                    .Build();
-    force_installed_tracker()->OnExtensionReady(profile(), ext1.get());
-    force_installed_tracker()->OnExtensionReady(profile(), ext2.get());
+  void SetExtensionLoaded(const std::string& extension_id,
+                          const std::string& extension_name) {
+    auto ext = extensions::ExtensionBuilder(extension_name)
+                   .SetID(extension_id)
+                   .Build();
+    force_installed_tracker()->OnExtensionLoaded(profile(), ext.get());
+  }
+
+  void SetExtensionReady(const std::string& extension_id,
+                         const std::string& extension_name) {
+    auto ext = extensions::ExtensionBuilder(extension_name)
+                   .SetID(extension_id)
+                   .Build();
+    force_installed_tracker()->OnExtensionReady(profile(), ext.get());
   }
 
   policy::MockConfigurationPolicyProvider policy_provider_;
@@ -359,15 +414,19 @@ class KioskLaunchControllerWithExtensionTest
 
 IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithExtensionTest,
                        ExtensionLoadedBeforeAppPrepared) {
-  SetExtensionLoaded();
+  SetExtensionReady(kExtensionId, kExtensionName);
   RunUntilAppPrepared();
   ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
   FireSplashScreenTimer();
 
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
@@ -375,8 +434,51 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithExtensionTest,
                        ExtensionLoadedAfterAppPrepared) {
   RunUntilAppPrepared();
   ExpectState(AppState::kInstallingExtensions, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_INSTALLING_EXTENSION);
 
-  SetExtensionLoaded();
+  SetExtensionReady(kExtensionId, kExtensionName);
+  ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
+
+  EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
+  FireSplashScreenTimer();
+
+  launch_controls()->OnAppLaunched();
+  ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::
+                      APP_LAUNCH_STATE_WAITING_APP_WINDOW);
+  EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         KioskLaunchControllerWithExtensionTest,
+                         testing::Values(KioskAppType::ARC_APP,
+                                         KioskAppType::CHROME_APP,
+                                         KioskAppType::WEB_APP));
+
+class KioskLaunchControllerWithInvalidExtensionTest
+    : public KioskLaunchControllerWithExtensionTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(policy_provider_, IsFirstPolicyLoadComplete(_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+  }
+
+  void PreRunTestOnMainThread() override {
+    SetupForceList(kInvalidExtensionId);
+    InProcessBrowserTest::PreRunTestOnMainThread();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithInvalidExtensionTest,
+                       InvalidExtensionInstallForceListPolicy) {
+  SetExtensionLoaded(kInvalidExtensionId, kInvalidExtensionName);
+  RunUntilAppPrepared();
   ExpectState(AppState::kInstalled, NetworkUIState::kNotShowing);
 
   EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
@@ -385,10 +487,12 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithExtensionTest,
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+  EXPECT_EQ(view()->GetErrorMessageType(),
+            KioskAppLaunchError::EXTENSIONS_POLICY_INVALID);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
-                         KioskLaunchControllerWithExtensionTest,
+                         KioskLaunchControllerWithInvalidExtensionTest,
                          testing::Values(KioskAppType::ARC_APP,
                                          KioskAppType::CHROME_APP,
                                          KioskAppType::WEB_APP));

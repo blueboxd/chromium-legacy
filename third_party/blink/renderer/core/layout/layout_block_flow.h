@@ -58,10 +58,8 @@ class LayoutMultiColumnFlowThread;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 class MarginInfo;
-class NGBlockBreakToken;
 class NGOffsetMapping;
 class NGPhysicalContainerFragment;
-class NGPhysicalFragment;
 
 struct NGInlineNodeData;
 
@@ -523,8 +521,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return false;
   }
   virtual void WillCollectInlines() { NOT_DESTROYED(); }
-  virtual void SetPaintFragment(const NGBlockBreakToken*,
-                                scoped_refptr<const NGPhysicalFragment>);
 
 #if DCHECK_IS_ON()
   void ShowLineTreeAndMark(const InlineBox* = nullptr,
@@ -1007,7 +1003,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   // LayoutRubyBase objects need to be able to split and merge, moving their
   // children around (calling makeChildrenNonInline).
-  // TODO(mstensho): Try to get rid of this friendship.
   friend class LayoutRubyBase;
 
   // FIXME-BLOCKFLOW: These methods have implementations in

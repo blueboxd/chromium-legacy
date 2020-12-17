@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_mathml_painter.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_table_painters.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -1387,7 +1386,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     return;
   }
 
-  DCHECK(children->IsItemCursor());
+  DCHECK(children->HasRoot());
   PaintLineBoxChildItems(children, paint_info, paint_offset);
 }
 
@@ -2073,7 +2072,7 @@ bool NGBoxFragmentPainter::HitTestChildren(
     const NGPhysicalBoxFragment& container,
     const NGInlineCursor& children,
     const PhysicalOffset& accumulated_offset) {
-  if (children.IsItemCursor())
+  if (children.HasRoot())
     return HitTestItemsChildren(hit_test, container, children);
   // Hits nothing if there were no children.
   return false;
@@ -2127,7 +2126,7 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
     const HitTestContext& hit_test,
     const NGPhysicalBoxFragment& container,
     const NGInlineCursor& children) {
-  DCHECK(children.IsItemCursor());
+  DCHECK(children.HasRoot());
   for (NGInlineBackwardCursor cursor(children); cursor;) {
     const NGFragmentItem* item = cursor.Current().Item();
     DCHECK(item);

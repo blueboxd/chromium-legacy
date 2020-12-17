@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <deque>
 #include <set>
@@ -90,6 +91,7 @@ constexpr base::TimeDelta kConnectSleepDurationInitial =
 
 base::Optional<base::TimeDelta> g_connect_timeout_limit_for_testing;
 base::Optional<base::TimeDelta> g_connect_sleep_duration_initial_for_testing;
+base::Optional<int> g_boot_notification_server_fd;
 bool g_enable_adb_over_usb_for_testing = false;
 
 chromeos::ConciergeClient* GetConciergeClient() {
@@ -144,6 +146,44 @@ ArcBinaryTranslationType IdentifyBinaryTranslationType(
     return ArcBinaryTranslationType::NDK_TRANSLATION;
 
   return ArcBinaryTranslationType::HOUDINI;
+}
+
+std::vector<std::string> GenerateUpgradeProps(
+    const UpgradeParams& upgrade_params,
+    const std::string& serial_number,
+    const std::string& prefix) {
+  std::vector<std::string> result = {
+      base::StringPrintf("%s.disable_boot_completed=%d", prefix.c_str(),
+                         upgrade_params.skip_boot_completed_broadcast),
+      base::StringPrintf("%s.enable_adb_sideloading=%d", prefix.c_str(),
+                         upgrade_params.is_adb_sideloading_enabled),
+      base::StringPrintf("%s.copy_packages_cache=%d", prefix.c_str(),
+                         static_cast<int>(upgrade_params.packages_cache_mode)),
+      base::StringPrintf("%s.skip_gms_core_cache=%d", prefix.c_str(),
+                         upgrade_params.skip_gms_core_cache),
+      base::StringPrintf("%s.arc_demo_mode=%d", prefix.c_str(),
+                         upgrade_params.is_demo_session),
+      base::StringPrintf(
+          "%s.supervision.transition=%d", prefix.c_str(),
+          static_cast<int>(upgrade_params.supervision_transition)),
+      base::StringPrintf("%s.serialno=%s", prefix.c_str(),
+                         serial_number.c_str()),
+  };
+  // Conditionally sets more properties based on |upgrade_params|.
+  if (!upgrade_params.locale.empty()) {
+    result.push_back(base::StringPrintf("%s.locale=%s", prefix.c_str(),
+                                        upgrade_params.locale.c_str()));
+    if (!upgrade_params.preferred_languages.empty()) {
+      result.push_back(base::StringPrintf(
+          "%s.preferred_languages=%s", prefix.c_str(),
+          base::JoinString(upgrade_params.preferred_languages, ",").c_str()));
+    }
+  }
+
+  // TODO(niwa): Handle |is_account_managed| and
+  // |is_managed_adb_sideloading_allowed| in |upgrade_params| when we
+  // implement apk sideloading for ARCVM.
+  return result;
 }
 
 std::vector<std::string> GenerateKernelCmdline(
@@ -300,6 +340,9 @@ const sockaddr_un* GetArcVmBootNotificationServerAddress() {
 // Returns the connected socket fd if successful, or else an invalid fd. This
 // function can only be called with base::MayBlock().
 base::ScopedFD ConnectToArcVmBootNotificationServer() {
+  if (g_boot_notification_server_fd)
+    return base::ScopedFD(HANDLE_EINTR(dup(*g_boot_notification_server_fd)));
+
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
@@ -358,8 +401,6 @@ bool SendUpgradePropsToArcVmBootNotificationServer(
     return false;
 
   if (!base::WriteFileDescriptor(fd.get(), props.c_str(), props.size())) {
-    // TODO(wvk): Add a unittest to cover this failure once the UpgradeArc flow
-    // requires this function to run successfully.
     PLOG(ERROR) << "Unable to write props to "
                 << kArcVmBootNotificationServerSocketPath;
     return false;
@@ -860,46 +901,19 @@ void SetArcVmBootNotificationServerAddressForTesting(
   g_connect_sleep_duration_initial_for_testing = connect_sleep_duration_initial;
 }
 
+void SetArcVmBootNotificationServerFdForTesting(base::Optional<int> fd) {
+  g_boot_notification_server_fd = fd;
+}
+
 void EnableAdbOverUsbForTesting() {
   g_enable_adb_over_usb_for_testing = true;
 }
 
-std::vector<std::string> GenerateUpgradeProps(
+std::vector<std::string> GenerateUpgradePropsForTesting(
     const UpgradeParams& upgrade_params,
     const std::string& serial_number,
     const std::string& prefix) {
-  std::vector<std::string> result = {
-      base::StringPrintf("%s.disable_boot_completed=%d", prefix.c_str(),
-                         upgrade_params.skip_boot_completed_broadcast),
-      base::StringPrintf("%s.enable_adb_sideloading=%d", prefix.c_str(),
-                         upgrade_params.is_adb_sideloading_enabled),
-      base::StringPrintf("%s.copy_packages_cache=%d", prefix.c_str(),
-                         static_cast<int>(upgrade_params.packages_cache_mode)),
-      base::StringPrintf("%s.skip_gms_core_cache=%d", prefix.c_str(),
-                         upgrade_params.skip_gms_core_cache),
-      base::StringPrintf("%s.arc_demo_mode=%d", prefix.c_str(),
-                         upgrade_params.is_demo_session),
-      base::StringPrintf(
-          "%s.supervision.transition=%d", prefix.c_str(),
-          static_cast<int>(upgrade_params.supervision_transition)),
-      base::StringPrintf("%s.serialno=%s", prefix.c_str(),
-                         serial_number.c_str()),
-  };
-  // Conditionally sets more properties based on |upgrade_params|.
-  if (!upgrade_params.locale.empty()) {
-    result.push_back(base::StringPrintf("%s.locale=%s", prefix.c_str(),
-                                        upgrade_params.locale.c_str()));
-    if (!upgrade_params.preferred_languages.empty()) {
-      result.push_back(base::StringPrintf(
-          "%s.preferred_languages=%s", prefix.c_str(),
-          base::JoinString(upgrade_params.preferred_languages, ",").c_str()));
-    }
-  }
-
-  // TODO(niwa): Handle |is_account_managed| and
-  // |is_managed_adb_sideloading_allowed| in |upgrade_params| when we
-  // implement apk sideloading for ARCVM.
-  return result;
+  return GenerateUpgradeProps(upgrade_params, serial_number, prefix);
 }
 
 }  // namespace arc

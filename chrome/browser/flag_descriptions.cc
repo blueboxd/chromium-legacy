@@ -527,12 +527,6 @@ const char kEnableAutofillAccountWalletStorageName[] =
 const char kEnableAutofillAccountWalletStorageDescription[] =
     "Enable the ephemeral storage for account data for autofill.";
 
-const char kEnableAutofillCacheServerCardInfoName[] =
-    "Enable Autofill to cache unmasked server card info";
-const char kEnableAutofillCacheServerCardInfoDescription[] =
-    "If enabled, when a server card is unmasked, its info will be cached until "
-    "page navigation to simplify consecutive fills on the same page.";
-
 const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
     "Credit card autofill ablation experiment.";
 const char kEnableAutofillCreditCardAblationExperimentDescription[] =
@@ -669,13 +663,6 @@ const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[] =
 const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[] =
     "Persist the throttling of local PWA manifest update checks across browser "
     "restarts.";
-
-const char kDesktopPWAsMigrationUserDisplayModeCleanUpName[] =
-    "Desktop PWAs migration user_display_mode clean up";
-const char kDesktopPWAsMigrationUserDisplayModeCleanUpDescription[] =
-    "Runs clean up code to fix web apps that had their window/browser tab "
-    "launch preference incorrectly migrated. See issue "
-    "https://crbug.com/1125020.";
 
 const char kDesktopPWAsAppIconShortcutsMenuName[] =
     "Desktop PWAs app icon shortcuts menu";
@@ -1389,10 +1376,6 @@ const char kKerberosSettingsSectionName[] = "Kerberos Settings Section";
 const char kKerberosSettingsSectionDescription[] =
     "Enables the Kerberos Section in ChromeOS settings. When disabled, "
     "Kerberos settings will stay under People Section.";
-
-const char kLauncherSettingsSearchName[] = "Launcher settings search";
-const char kLauncherSettingsSearchDescription[] =
-    "Enable search results for OS settings in the launcher.";
 
 const char kLegacyTLSEnforcedName[] =
     "Enforce deprecation of legacy TLS versions";
@@ -3046,6 +3029,12 @@ const char kAndroidPartnerCustomizationPhenotypeName[] =
 const char kAndroidPartnerCustomizationPhenotypeDescription[] =
     "This flag loads a new configuration source of the default homepage and "
     "bookmarks.";
+
+const char kPageInfoDiscoverabilityName[] = "Page info discoverability";
+const char kPageInfoDiscoverabilityDescription[] =
+    "Improve discoverability of permission controls in the page info bubble. "
+    "After a permission decision is made, the page info icon in the address "
+    "bar will show a brief animation.";
 
 const char kPageInfoPerformanceHintsName[] = "Page info performance hints";
 const char kPageInfoPerformanceHintsDescription[] =

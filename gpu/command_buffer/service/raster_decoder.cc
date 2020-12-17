@@ -642,11 +642,15 @@ class RasterDecoderImpl final : public RasterDecoder,
   void FlushAndSubmitIfNecessary(
       SkSurface* surface,
       std::vector<GrBackendSemaphore> signal_semaphores) {
+    bool sync_cpu = gpu::ShouldVulkanSyncCpuForSkiaSubmit(
+        shared_context_state_->vk_context_provider());
     if (signal_semaphores.empty()) {
       if (surface)
         surface->flush();
       else
         gr_context()->flush();
+      if (sync_cpu)
+        gr_context()->submit(sync_cpu);
       return;
     }
 
@@ -668,7 +672,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     // If the |signal_semaphores| is empty, we can deferred the queue
     // submission.
     DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
-    gr_context()->submit();
+    gr_context()->submit(sync_cpu);
   }
 
 #if defined(NDEBUG)
@@ -2201,7 +2205,7 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
       source_type, dest_target, dest_level, dest_internal_format, unpack_flip_y,
       NeedsUnpackPremultiplyAlpha(*source_shared_image),
       false /* unpack_unmultiply_alpha */, false /* dither */);
-#if BUILDFLAG(IS_ASH) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_X86_FAMILY)
   // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
   // although opposite in Android.
   // TODO(dshwang): After Mesa fixes this issue, remove this hack.

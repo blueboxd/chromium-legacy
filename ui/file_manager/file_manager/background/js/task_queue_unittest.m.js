@@ -2,19 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {!importer.TaskQueue} */
+import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
+
+import {reportPromise} from '../../../base/js/test_error_reporting.m.js';
+import {taskQueueInterfaces} from '../../../externs/background/task_queue.m.js';
+import {importer} from '../../common/js/importer_common.m.js';
+
+import {taskQueue} from './task_queue.m.js';
+
+/** @type {!taskQueueInterfaces.TaskQueue} */
 let queue;
 
-/** @type {!Object<importer.TaskQueue.UpdateType, number>} */
+/** @type {!Object<importer.UpdateType, number>} */
 const updates = {};
 
-function setUp() {
-  queue = new importer.TaskQueueImpl();
+export function setUp() {
+  queue = new taskQueue.TaskQueueImpl();
 
   // Set up a callback to log updates from running tasks.
-  for (const updateType in importer.TaskQueue.UpdateType) {
+  for (const updateType in importer.UpdateType) {
     // Reset counts for all update types.
-    updates[importer.TaskQueue.UpdateType[updateType]] = 0;
+    updates[importer.UpdateType[updateType]] = 0;
   }
 
   // Counts the number of updates of each type that have been received.
@@ -27,7 +35,7 @@ function setUp() {
 /**
  * A Task subclass for testing.
  */
-class TestTask extends importer.TaskQueue.BaseTaskImpl {
+class TestTask extends taskQueue.BaseTaskImpl {
   /**
    * @param {string} taskId
    */
@@ -55,22 +63,22 @@ class TestTask extends importer.TaskQueue.BaseTaskImpl {
 
   /** Sends a quick error notification. */
   notifyError() {
-    this.notify(importer.TaskQueue.UpdateType.ERROR);
+    this.notify(importer.UpdateType.ERROR);
   }
 
   /** Sends a quick completion notification. */
   notifyComplete() {
-    this.notify(importer.TaskQueue.UpdateType.COMPLETE);
+    this.notify(importer.UpdateType.COMPLETE);
   }
 
   /** Sends a quick cancelled notification. */
   notifyCanceled() {
-    this.notify(importer.TaskQueue.UpdateType.CANCELED);
+    this.notify(importer.UpdateType.CANCELED);
   }
 
   /** Sends a quick progress notification. */
   notifyProgress() {
-    this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+    this.notify(importer.UpdateType.PROGRESS);
   }
 
   /** @return {!Promise} A promise that settles once #run is called. */
@@ -80,14 +88,14 @@ class TestTask extends importer.TaskQueue.BaseTaskImpl {
 }
 
 // Verifies that a queued task gets run.
-function testRunsTask(callback) {
+export function testRunsTask(callback) {
   const task = new TestTask('task0');
   queue.queueTask(task);
   reportPromise(task.whenRun(), callback);
 }
 
 // Verifies that multiple queued tasks get run.
-function testRunsTasks(callback) {
+export function testRunsTasks(callback) {
   const task0 = new TestTask('task0');
   const task1 = new TestTask('task1');
 
@@ -106,7 +114,7 @@ function testRunsTasks(callback) {
 }
 
 // Verifies that the active callback triggers when the queue starts doing work
-function testOnActiveCalled(callback) {
+export function testOnActiveCalled(callback) {
   const task = new TestTask('task0');
 
   // Make a promise that resolves when the active callback is triggered.
@@ -124,7 +132,7 @@ function testOnActiveCalled(callback) {
 }
 
 // Verifies that the idle callback triggers when the queue is empty.
-function testOnIdleCalled(callback) {
+export function testOnIdleCalled(callback) {
   const task = new TestTask('task0');
 
   task.whenRun().then(task => {
@@ -147,7 +155,7 @@ function testOnIdleCalled(callback) {
 }
 
 // Verifies that the update callback is called when a task reports progress.
-function testProgressUpdate(callback) {
+export function testProgressUpdate(callback) {
   const task = new TestTask('task0');
 
   // Get the task to report some progress, then success, when it's run.
@@ -165,7 +173,7 @@ function testProgressUpdate(callback) {
   const whenDone = new Promise(resolve => {
     queue.setIdleCallback(() => {
       // Verify that progress was recorded.
-      assertEquals(1, updates[importer.TaskQueue.UpdateType.PROGRESS]);
+      assertEquals(1, updates[importer.UpdateType.PROGRESS]);
       resolve();
     });
   });
@@ -176,7 +184,7 @@ function testProgressUpdate(callback) {
 
 // Verifies that the update callback is called to report successful task
 // completion.
-function testSuccessUpdate(callback) {
+export function testSuccessUpdate(callback) {
   const task = new TestTask('task0');
 
   // Get the task to report success when it's run.
@@ -189,7 +197,7 @@ function testSuccessUpdate(callback) {
   const whenDone = new Promise(resolve => {
     queue.setIdleCallback(() => {
       // Verify that the done callback was called.
-      assertEquals(1, updates[importer.TaskQueue.UpdateType.COMPLETE]);
+      assertEquals(1, updates[importer.UpdateType.COMPLETE]);
       resolve();
     });
   });
@@ -198,7 +206,7 @@ function testSuccessUpdate(callback) {
 }
 
 // Verifies that the update callback is called to report task errors.
-function testErrorUpdate(callback) {
+export function testErrorUpdate(callback) {
   const task = new TestTask('task0');
 
   // Get the task to report an error when it's run.
@@ -214,7 +222,7 @@ function testErrorUpdate(callback) {
   const whenDone = new Promise(resolve => {
     queue.setIdleCallback(() => {
       // Verify that the done callback was called.
-      assertEquals(1, updates[importer.TaskQueue.UpdateType.ERROR]);
+      assertEquals(1, updates[importer.UpdateType.ERROR]);
       resolve();
     });
   });
@@ -222,7 +230,7 @@ function testErrorUpdate(callback) {
   reportPromise(whenDone, callback);
 }
 
-function testOnTaskCancelled(callback) {
+export function testOnTaskCancelled(callback) {
   const task0 = new TestTask('task0');
   const task1 = new TestTask('task1');
 

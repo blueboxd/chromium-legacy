@@ -127,23 +127,38 @@ suite('NearbyShare', function() {
     assertEquals('Off', onOffText.textContent.trim());
   });
 
-  test('Deep link to nearby share on/off toggle', async () => {
-    loadTimeData.overrideValues({
-      isDeepLinkingEnabled: true,
+  suite('Deeplinking', () => {
+    const deepLinkTestData = [
+      {settingId: '208', deepLinkElement: '#featureToggleButton'},
+      {settingId: '214', deepLinkElement: '#editDeviceNameButton'},
+      {settingId: '215', deepLinkElement: '#editVisibilityButton'},
+      {settingId: '216', deepLinkElement: '#manageContactsLinkRow'},
+      {settingId: '217', deepLinkElement: '#editDataUsageButton'},
+    ];
+
+    deepLinkTestData.forEach((testData) => {
+      test(
+          'Deep link to nearby setting element ' + testData.deepLinkElement,
+          async () => {
+            loadTimeData.overrideValues({
+              isDeepLinkingEnabled: true,
+            });
+
+            const params = new URLSearchParams;
+            params.append('settingId', testData.settingId);
+            settings.Router.getInstance().navigateTo(
+                settings.routes.NEARBY_SHARE, params);
+
+            Polymer.dom.flush();
+
+            const deepLinkElement = subpage.$$(testData.deepLinkElement);
+            await test_util.waitAfterNextRender(deepLinkElement);
+            assertEquals(
+                deepLinkElement, subpage.shadowRoot.activeElement,
+                'Nearby share setting element ' + testData.deepLinkElement +
+                    ' should be focused for settingId=' + testData.settingId);
+          });
     });
-
-    const params = new URLSearchParams;
-    params.append('settingId', '208');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.NEARBY_SHARE, params);
-
-    Polymer.dom.flush();
-
-    const deepLinkElement = featureToggleButton.$$('cr-toggle');
-    await test_util.waitAfterNextRender(deepLinkElement);
-    assertEquals(
-        deepLinkElement, getDeepActiveElement(),
-        'Nearby share on/off toggle should be focused for settingId=208.');
   });
 
   test('update device name preference', function() {
@@ -214,7 +229,7 @@ suite('NearbyShare', function() {
     dialog.$$('.action-button').click();
   });
 
-  test('toggle high visibility from UI', function() {
+  test('toggle high visibility from UI', async function() {
     subpage.$$('#highVisibilityToggle').click();
     Polymer.dom.flush();
     assertTrue(fakeReceiveManager.getInHighVisibilityForTest());
@@ -222,6 +237,7 @@ suite('NearbyShare', function() {
     const dialog = subpage.$$('nearby-share-receive-dialog');
     assertTrue(!!dialog);
 
+    await test_util.waitAfterNextRender(dialog);
     const highVisibilityDialog = dialog.$$('nearby-share-high-visibility-page');
     assertTrue(test_util.isVisible(highVisibilityDialog));
 
@@ -258,7 +274,7 @@ suite('NearbyShare', function() {
     assertTrue(!!dialog);
   });
 
-  test('show high visibility dialog', function() {
+  test('show high visibility dialog', async function() {
     // Mock performance.now to return a constant 0 for testing.
     const originalNow = performance.now;
     performance.now = () => {
@@ -278,6 +294,7 @@ suite('NearbyShare', function() {
     assertFalse(highVisibilityDialog.highVisibilityTimedOut_());
 
     Polymer.dom.flush();
+    await test_util.waitAfterNextRender(dialog);
 
     assertTrue(test_util.isVisible(highVisibilityDialog));
     assertEquals(highVisibilityDialog.shutoffTimestamp, 600 * 1000);
@@ -286,7 +303,7 @@ suite('NearbyShare', function() {
     performance.now = originalNow;
   });
 
-  test('high visibility dialog times out', function() {
+  test('high visibility dialog times out', async function() {
     // Mock performance.now to return a constant 0 for testing.
     const originalNow = performance.now;
     performance.now = () => {
@@ -313,6 +330,7 @@ suite('NearbyShare', function() {
     };
 
     highVisibilityDialog.calculateRemainingTime_();
+    await test_util.waitAfterNextRender(dialog);
     assertTrue(test_util.isVisible(highVisibilityDialog));
     assertTrue(highVisibilityDialog.highVisibilityTimedOut_());
 

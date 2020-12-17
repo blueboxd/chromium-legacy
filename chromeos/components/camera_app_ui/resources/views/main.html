@@ -75,6 +75,7 @@
                     data="/images/camera_focus_aim.svg"
                     tabindex="-1" hidden></object>
           </div>
+          <div class="barcode-scan-box centered-overlay"></div>
           <div class="snackbar"></div>
           <div id="camera-mode" class="centered-overlay"></div>
         </div>
@@ -403,9 +404,18 @@
       </div>
     </div>
     <div id="toast" class="centered-overlay" aria-live="polite"></div>
-    <div class="barcode-chip-container">
+    <div id="barcode-chip-url-container" class="barcode-chip-container">
       <div class="barcode-chip-url">
         <a target="_blank"></a>
+      </div>
+      <div class="circle">
+        <button class="barcode-copy-button" tabindex="0"></button>
+      </div>
+    </div>
+    <div id="barcode-chip-text-container" class="barcode-chip-container">
+      <div class="barcode-chip-text">
+        <div id="barcode-chip-text-content"></div>
+        <button id="barcode-chip-text-expand"></button>
       </div>
       <div class="circle">
         <button class="barcode-copy-button" tabindex="0"></button>

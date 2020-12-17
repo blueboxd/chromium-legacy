@@ -978,6 +978,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE},
       {"passwordMovePasswordsToAccount",
        IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT},
+      {"passwordMovePasswordsToAccountDialogFooter",
+       IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT_DIALOG_FOOTER},
       {"passwordMovePasswordsToAccountDialogTitle",
        IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT_DIALOG_TITLE},
       {"passwordMoveToAccountDialogTitle",
@@ -1450,6 +1452,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source) {
       {"privacySandboxPageHeading", IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_HEADING},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString("privacySandboxURL", chrome::kPrivacySandboxURL);
 }
 
 void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {

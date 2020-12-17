@@ -27,10 +27,10 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
      * Class providing loading of import history, used in
      * cloud import.
      *
-     * @type {!importer.HistoryLoader}
+     * @type {!importerHistoryInterfaces.HistoryLoader}
      */
     this.historyLoader =
-        new importer.SynchronizedHistoryLoader(importer.getHistoryFiles);
+        new importerHistory.SynchronizedHistoryLoader(importer.getHistoryFiles);
 
     /**
      * Event handler for progress center.
@@ -56,25 +56,26 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
     this.driveSyncHandler = new DriveSyncHandlerImpl(this.progressCenter);
 
     /**
-     * @type {!importer.DispositionChecker.CheckerFunction}
+     * @type {!duplicateFinderInterfaces.DispositionChecker.CheckerFunction}
      */
     this.dispositionChecker_ =
-        importer.DispositionCheckerImpl.createChecker(this.historyLoader);
+        duplicateFinder.DispositionCheckerImpl.createChecker(
+            this.historyLoader);
 
     /**
      * Provides support for scanning media devices as part of Cloud Import.
-     * @type {!importer.MediaScanner}
+     * @type {!mediaScannerInterfaces.MediaScanner}
      */
-    this.mediaScanner = new importer.DefaultMediaScanner(
-        importer.createMetadataHashcode, this.dispositionChecker_,
-        importer.DefaultDirectoryWatcher.create);
+    this.mediaScanner = new mediaScanner.DefaultMediaScanner(
+        importerHistory.createMetadataHashcode, this.dispositionChecker_,
+        mediaScanner.DefaultDirectoryWatcher.create);
 
     /**
      * Handles importing of user media (e.g. photos, videos) from removable
      * devices.
-     * @type {!importer.MediaImportHandler}
+     * @type {!mediaImportInterfaces.MediaImportHandler}
      */
-    this.mediaImportHandler = new importer.MediaImportHandlerImpl(
+    this.mediaImportHandler = new mediaImport.MediaImportHandlerImpl(
         this.progressCenter, this.historyLoader, this.dispositionChecker_,
         this.driveSyncHandler);
 

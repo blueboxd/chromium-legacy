@@ -206,6 +206,7 @@ body.tablet-landscape .actions-group {
     rgba(0, 0, 0, 0) 0,
     rgba(0, 0, 0, 1) var(--fade-padding) calc(100% - var(--fade-padding)),
     rgba(0, 0, 0, 0) 100%);
+  display: block;
   left: calc(var(--left-line) * 2);
   overflow: auto;
   padding: 5px 0;
@@ -1508,6 +1509,52 @@ body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {
   visibility: visible;
 }
 
+/* The container of scan box for layout and positioning. */
+.barcode-scan-box {
+  --border-distance: 8px;
+  --border-width: 4px;
+  --inner-border-radius: 16px;
+  /* Use padding-top instead of height to make a responsive square, since the
+   * percentage in padding-top is relative to the width of the containing
+   * block. */
+  padding-top: calc(100% / 3);
+  visibility: hidden;
+  width: calc(100% / 3);
+  z-index: 30;
+}
+
+body.photo.scan-barcode .barcode-scan-box {
+  visibility: visible;
+}
+
+/* The inner scan box with a translucent overlay. */
+.barcode-scan-box::before {
+  --offset: calc(var(--border-width) + var(--border-distance));
+  border-radius: var(--inner-border-radius);
+  bottom: var(--offset);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+  content: '';
+  left: var(--offset);
+  position: absolute;
+  right: var(--offset);
+  top: var(--offset);
+  z-index: -1;  /* This need to be lower than the corner borders */
+}
+
+/* The corner borders of the scan box. */
+.barcode-scan-box::after {
+  -webkit-mask: url(/images/barcode_scan_box_border_mask.svg);
+  border: var(--border-width) solid white;
+  border-radius: calc(var(--inner-border-radius) + var(--border-distance));
+  box-sizing: border-box;
+  content: '';
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
 /* TODO(b/172879638): Tune the position and layout after we finalized the
  * responsive window design. */
 .barcode-chip-container {
@@ -1515,14 +1562,15 @@ body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {
   left: 50%;
   opacity: 0;
   position: absolute;
-  top: 15%;
-  transform: translate(-50%, -50%);
+  top: 10%;
+  transform: translateX(-50%);
   visibility: hidden;
   z-index: 50;
 }
 
 /* TODO(b/172879638): Tune the animation according to the final motion spec. */
 .barcode-chip-container.animate {
+  /* TODO(b/172879638): This might be too short for long text. */
   animation: 8s show-barcode-chip ease-out;
   visibility: visible;
 }
@@ -1588,6 +1636,50 @@ body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {
   z-index: 50;
 }
 
+.barcode-chip-text {
+  align-items: center;
+  background: var(--grey-900);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  font: 400 15px Roboto;
+}
+
+#barcode-chip-text-content {
+  --line-height: 24px;
+  color: var(--grey-200);
+  line-height: var(--line-height);
+  margin: 8px 20px;
+  max-width: 416px;
+  overflow: hidden;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expanded #barcode-chip-text-content {
+  /* TODO(b/172879638): Make this responsive */
+  max-height: calc(var(--line-height) * 10);
+  white-space: normal;
+  width: 416px;
+}
+
+#barcode-chip-text-expand.hide {
+  display: none;
+}
+
+#barcode-chip-text-expand {
+  background: url(/images/barcode_chevron_down.svg) center no-repeat;
+  height: 40px;
+  width: 100%;
+}
+
+.expanded #barcode-chip-text-expand {
+  background: url(/images/barcode_chevron_up.svg) center no-repeat;
+}
+
 .snackbar {
   align-items: center;
   background: var(--grey-900);
@@ -1606,6 +1698,7 @@ body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {
   position: absolute;
   visibility: hidden;
   width: 256px;
+  z-index: 50;
 }
 
 .snackbar.animate {

@@ -2913,6 +2913,7 @@ if (!is_android) {
       ]
 
       deps += [
+        "//chromeos/components/media_app_ui:buildflags",
         "//chromeos/ui/frame:test_support",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
       ]
@@ -6540,6 +6541,7 @@ if (!is_android) {
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//third_party/tlslite/",
       "//tools/metrics/histograms/enums.xml",
+      "//ui/webui/resources/html/test_loader.html",
       "//ui/webui/resources/js/",
       "$root_out_dir/test_case.html",
       "$root_out_dir/test_case.html.mock-http-headers",

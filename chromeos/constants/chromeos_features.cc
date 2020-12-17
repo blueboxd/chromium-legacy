@@ -462,7 +462,7 @@ const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether image annotation is enabled in the ChromeOS media app.
 const base::Feature kMediaAppAnnotation{"MediaAppAnnotation",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether known extensions for RAW image formats are handled by the ChromeOS
 // Media App.
@@ -507,12 +507,12 @@ const base::Feature kPinSetupForFamilyLink{"PinSetupForFamilyLink",
 // Controls whether the camera permissions should be shown in the Plugin
 // VM app settings.
 const base::Feature kPluginVmShowCameraPermissions{
-    "PluginVmShowCameraPermissions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PluginVmShowCameraPermissions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the microphone permissions should be shown in the Plugin
 // VM app settings.
 const base::Feature kPluginVmShowMicrophonePermissions{
-    "PluginVmShowMicrophonePermissions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PluginVmShowMicrophonePermissions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to show printer statuses.
 const base::Feature kPrinterStatus{"PrinterStatus",

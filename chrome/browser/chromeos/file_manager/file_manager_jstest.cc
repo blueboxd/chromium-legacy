@@ -54,11 +54,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DriveSyncHandlerTest) {
-  RunTestURL("background/js/drive_sync_handler_unittest_gen.html");
+  RunTestURL("background/js/drive_sync_handler_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DuplicateFinderTest) {
-  RunTestURL("background/js/duplicate_finder_unittest_gen.html");
+  RunTestURL("background/js/duplicate_finder_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExifParser) {
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImporterCommonTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportHistoryTest) {
-  RunTestURL("background/js/import_history_unittest_gen.html");
+  RunTestURL("background/js/import_history_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, InstallLinuxPackageDialogTest) {
@@ -181,11 +181,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
-  RunTestURL("background/js/media_import_handler_unittest_gen.html");
+  RunTestURL("background/js/media_import_handler_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
-  RunTestURL("background/js/media_scanner_unittest_gen.html");
+  RunTestURL("background/js/media_scanner_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheItem) {
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
-  RunTestURL("background/js/task_queue_unittest_gen.html");
+  RunTestURL("background/js/task_queue_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {

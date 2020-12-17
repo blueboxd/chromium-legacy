@@ -10133,9 +10133,18 @@ histogram as enum -->
 
 <enum name="ChromeOSSharesheetAction">
   <summary>Defines Chrome OS sharesheet actions.</summary>
-  <int value="0" label="Cancelled by user"/>
+  <int value="0" label="Cancelled by user clicking outside bubble"/>
   <int value="1" label="Launch ARC app"/>
-  <int value="2" label="Launch share action"/>
+  <int value="2" label="Launch Nearby Share action"/>
+  <int value="3" label="Cancelled by user pressing Esc key"/>
+  <int value="4" label="Launch Web app"/>
+  <int value="5" label="Launch Drive share action"/>
+</enum>
+
+<enum name="ChromeOSSharesheetFormFactor">
+  <summary>Different form factors.</summary>
+  <int value="0" label="Tablet form factor"/>
+  <int value="1" label="Clamshell form factor"/>
 </enum>
 
 <enum name="ChromeOSUICommands">
@@ -25747,7 +25756,7 @@ Called by update_extension_histograms.py.-->
   <int value="1517" label="FILEMANAGERPRIVATEINTERNAL_GETPDFTHUMBNAIL"/>
   <int value="1518" label="AUTOTESTPRIVATE_REMOVEALLNOTIFICATIONS"/>
   <int value="1519" label="VIRTUALKEYBOARDPRIVATE_OPENSUGGESTIONSETTINGS"/>
-  <int value="1520" label="ACCESSIBILITY_PRIVATE_ACTIVATEPOINTSCAN"/>
+  <int value="1520" label="ACCESSIBILITY_PRIVATE_SETPOINTSCANSTATE"/>
   <int value="1521" label="AUTOTESTPRIVATE_ACTIVATEADJACENTDESKSTOTARGETINDEX"/>
   <int value="1522" label="DECLARATIVENETREQUEST_GETAVAILABLESTATICRULECOUNT"/>
   <int value="1523" label="CHROMEOSINFOPRIVATE_ISTABLETMODEENABLED"/>
@@ -55332,6 +55341,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="211" label="Phone Hub Notification Badge: On/Off (Deprecated)"/>
   <int value="212" label="Phone Hub Task Continuation: On/Off"/>
   <int value="213" label="Wifi Sync: On/Off"/>
+  <int value="214" label="Nearby Share: Device Name"/>
+  <int value="215" label="Nearby Share: Device Visibility"/>
+  <int value="216" label="Nearby Share: Contacts"/>
+  <int value="217" label="Nearby Share: Data Usage"/>
   <int value="300" label="Add Account"/>
   <int value="301" label="Remove Account"/>
   <int value="302" label="Split Sync On/Off"/>
@@ -74694,6 +74707,7 @@ Full version information for the fingerprint enum values:
   <int value="60" label="kErrorCodeNotEnoughSpace"/>
   <int value="61" label="kErrorCodeDeviceCorrupted"/>
   <int value="62" label="kErrorCodePackageExcludedFromUpdate"/>
+  <int value="63" label="kErrorCodeDownloadCancelledPerPolicy"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">

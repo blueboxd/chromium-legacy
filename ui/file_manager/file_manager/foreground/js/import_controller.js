@@ -26,8 +26,8 @@ importer.ImportController = class {
    * @param {!importer.ControllerEnvironment} environment The class providing
    *     access to runtime environmental information, like the current
    * directory, volume lookup and so-on.
-   * @param {!importer.MediaScanner} scanner
-   * @param {!importer.ImportRunner} importRunner
+   * @param {!mediaScannerInterfaces.MediaScanner} scanner
+   * @param {!mediaImportInterfaces.ImportRunner} importRunner
    * @param {!importer.CommandWidget} commandWidget
    */
   constructor(environment, scanner, importRunner, commandWidget) {
@@ -37,10 +37,10 @@ importer.ImportController = class {
     /** @private @const {!importer.ChromeLocalStorage} */
     this.storage_ = importer.ChromeLocalStorage.getInstance();
 
-    /** @private @const {!importer.ImportRunner} */
+    /** @private @const {!mediaImportInterfaces.ImportRunner} */
     this.importRunner_ = importRunner;
 
-    /** @private @const {!importer.MediaScanner} */
+    /** @private @const {!mediaScannerInterfaces.MediaScanner} */
     this.scanner_ = scanner;
 
     /** @private @const {!importer.CommandWidget} */
@@ -101,7 +101,7 @@ importer.ImportController = class {
 
   /**
    * @param {!importer.ScanEvent} event Command event.
-   * @param {importer.ScanResult} scan
+   * @param {mediaScannerInterfaces.ScanResult} scan
    * @private
    */
   onScanEvent_(event, scan) {
@@ -181,7 +181,7 @@ importer.ImportController = class {
   }
 
   /**
-   * @param {!importer.MediaImportHandler.ImportTask} task
+   * @param {!mediaImportInterfaces.MediaImportHandler.ImportTask} task
    * @private
    */
   onImportFinished_(task) {
@@ -305,7 +305,7 @@ importer.ImportController = class {
 
   /**
    * Checks the environment and updates UI as needed.
-   * @param {importer.ScanResult=} opt_scan If supplied,
+   * @param {mediaScannerInterfaces.ScanResult=} opt_scan If supplied,
    * @private
    */
   checkState_(opt_scan) {
@@ -414,7 +414,7 @@ importer.ImportController = class {
 
   /**
    * @param {importer.ActivityState} activityState
-   * @param {importer.ScanResult=} opt_scan
+   * @param {mediaScannerInterfaces.ScanResult=} opt_scan
    * @param {number=} opt_destinationSizeBytes specifies the destination size in
    *     bytes in case of space issues.
    * @private
@@ -439,7 +439,7 @@ importer.ImportController = class {
    * Attempts to scan the current context.
    *
    * @param {importer.ScanMode} mode How to detect new files.
-   * @return {importer.ScanResult} A scan object,
+   * @return {mediaScannerInterfaces.ScanResult} A scan object,
    *     or null if scan is not possible in current context.
    * @private
    */
@@ -462,8 +462,8 @@ importer.ImportController = class {
  * Collection of import task related details.
  *
  * @typedef {{
- *   scan: !importer.ScanResult,
- *   task: !importer.MediaImportHandler.ImportTask,
+ *   scan: !mediaScannerInterfaces.ScanResult,
+ *   task: !mediaImportInterfaces.MediaImportHandler.ImportTask,
  *   started: !Date
  * }}
  *
@@ -488,7 +488,7 @@ importer.CommandWidget = class {
 
   /**
    * @param {importer.ActivityState} activityState
-   * @param {importer.ScanResult=} opt_scan
+   * @param {mediaScannerInterfaces.ScanResult=} opt_scan
    * @param {number=} opt_destinationSizeBytes specifies the destination size in
    *     bytes in case of space issues.
    */
@@ -919,24 +919,24 @@ importer.RuntimeCommandWidget = class {
 importer.ScanManager = class {
   /**
    * @param {!importer.ControllerEnvironment} environment
-   * @param {!importer.MediaScanner} scanner
+   * @param {!mediaScannerInterfaces.MediaScanner} scanner
    */
   constructor(environment, scanner) {
     /** @private {!importer.ControllerEnvironment} */
     this.environment_ = environment;
 
-    /** @private @const {!importer.MediaScanner} */
+    /** @private @const {!mediaScannerInterfaces.MediaScanner} */
     this.scanner_ = scanner;
 
     /**
      * The active files scan, if any.
-     * @private {?importer.ScanResult}
+     * @private {?mediaScannerInterfaces.ScanResult}
      */
     this.selectionScan_ = null;
 
     /**
      * The active directory scan, if any.
-     * @private {?importer.ScanResult}
+     * @private {?mediaScannerInterfaces.ScanResult}
      */
     this.directoryScan_ = null;
   }
@@ -968,13 +968,16 @@ importer.ScanManager = class {
     this.directoryScan_ = null;
   }
 
-  /** @return {importer.ScanResult} Current active scan, or null if none. */
+  /**
+   * @return {mediaScannerInterfaces.ScanResult} Current active scan, or null
+   *     if none.
+   */
   getActiveScan() {
     return this.selectionScan_ || this.directoryScan_;
   }
 
   /**
-   * @param {importer.ScanResult} scan
+   * @param {mediaScannerInterfaces.ScanResult} scan
    * @return {boolean} True if scan is the active scan...meaning the current
    *     selection scan or the scan for the current directory.
    */
@@ -989,7 +992,7 @@ importer.ScanManager = class {
    * @param {!Array<!FileEntry>} entries
    * @param {!importer.ScanMode} mode
    *
-   * @return {!importer.ScanResult}
+   * @return {!mediaScannerInterfaces.ScanResult}
    */
   getSelectionScan(entries, mode) {
     console.assert(
@@ -1003,7 +1006,7 @@ importer.ScanManager = class {
    * Returns a scan for the directory.
    *
    * @param {!importer.ScanMode} mode
-   * @return {importer.ScanResult}
+   * @return {mediaScannerInterfaces.ScanResult}
    */
   getDirectoryScan(mode) {
     if (!this.directoryScan_) {

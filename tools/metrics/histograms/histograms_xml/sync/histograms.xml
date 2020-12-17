@@ -302,7 +302,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Sync.CustomSync2" enum="SyncModelTypes" expires_after="M90">
+<histogram name="Sync.CustomSync2" enum="SyncModelTypes"
+    expires_after="2020-12-16">
+  <obsolete>
+    Replaced with Sync.CustomSync3 in 12/2020 (M89) due to crbug.com/1154396.
+  </obsolete>
   <owner>treib@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -310,6 +314,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     this records all the data types they have selected to sync. Samples are
     taken every time the Sync data types are (re)configured, which typically
     happens during startup and when the user changes any Sync settings.
+  </summary>
+</histogram>
+
+<histogram name="Sync.CustomSync3" enum="SyncModelTypes"
+    expires_after="2021-12-16">
+  <owner>treib@chromium.org</owner>
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    For users who have *not* selected the &quot;Sync Everything&quot; option,
+    this records all the data types they have selected to sync. Samples are
+    taken every time the Sync data types are (re)configured, which typically
+    happens during startup and when the user changes any Sync settings.
+
+    NOTE: this may stop showing OS datatypes like WIFI_CONFIGURATIONS once the
+    SplitSettingsSync feature is enabled. New metrics will be added for those
+    (crbug.com/1105956).
   </summary>
 </histogram>
 
@@ -849,13 +869,28 @@ can be compared for the same population). -->
 </histogram>
 
 <histogram name="Sync.RedundantInvalidationPerModelType" enum="SyncModelTypes"
-    expires_after="2021-06-13">
+    expires_after="2020-12-16">
+  <obsolete>
+    Replaced with Sync.RedundantInvalidationPerModelType2 in M89 (12/2020).
+  </obsolete>
   <owner>melandory@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
-    WARNING: The recordings here are incorrect (crbug.com/1158476).
+    WARNING: The recordings here are incorrect (crbug.com/1158476), see
+    Sync.RedundantInvalidationPerModelType2 instead.
 
     The sync datatype of the received invalidation with not-fresh version.
+  </summary>
+</histogram>
+
+<histogram name="Sync.RedundantInvalidationPerModelType2" enum="SyncModelTypes"
+    expires_after="2021-12-16">
+  <owner>melandory@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Recorded whenever Sync receives an invalidation with a non-fresh version,
+    i.e. a smaller version number than Sync already knew about. The recorded
+    value is the data type of the invalidation.
   </summary>
 </histogram>
 

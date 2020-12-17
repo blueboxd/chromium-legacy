@@ -2,24 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Namespace
-window.importer = window.importer || {};
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {AsyncUtil} from '../../common/js/async_util.m.js';
+// #import {strf, util} from '../../common/js/util.m.js';
+// #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
+// #import {fileOperationUtil} from './file_operation_util.m.js';
+// #import {taskQueue} from './task_queue.m.js';
+// #import {metrics} from '../../common/js/metrics.m.js';
 
-importer.MediaImportHandler = importer.MediaImportHandler || {};
-importer.MediaImportHandler.ImportTask =
-    importer.MediaImportHandler.ImportTask || {};
+// #import {importer} from '../../common/js/importer_common.m.js';
+// #import {DriveSyncHandler} from '../../../externs/background/drive_sync_handler.m.js';
+// #import {importerHistoryInterfaces} from '../../../externs/background/import_history.m.js';
+// #import {duplicateFinderInterfaces} from '../../../externs/background/duplicate_finder.m.js';
+// #import {mediaScannerInterfaces} from '../../../externs/background/media_scanner.m.js';
+// #import {mediaImportInterfaces} from '../../../externs/background/media_import_handler.m.js';
+// #import {taskQueueInterfaces} from '../../../externs/background/task_queue.m.js';
+// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
+// clang-format on
+
+
+// Namespace
+/* #export */ const mediaImport = {};
 
 /**
  * Handler for importing media from removable devices into the user's Drive.
  *
- * @implements {importer.ImportRunner}
- * @implements {importer.MediaImportHandler}
+ * @implements {mediaImportInterfaces.ImportRunner}
+ * @implements {mediaImportInterfaces.MediaImportHandler}
  */
-importer.MediaImportHandlerImpl = class {
+mediaImport.MediaImportHandlerImpl = class {
   /**
    * @param {!ProgressCenter} progressCenter
-   * @param {!importer.HistoryLoader} historyLoader
-   * @param {!importer.DispositionChecker.CheckerFunction} dispositionChecker
+   * @param {!importerHistoryInterfaces.HistoryLoader} historyLoader
+   * @param {!duplicateFinderInterfaces.DispositionChecker.CheckerFunction}
+   *     dispositionChecker
    * @param {!DriveSyncHandler} driveSyncHandler
    */
   constructor(
@@ -27,11 +44,11 @@ importer.MediaImportHandlerImpl = class {
     /** @private {!ProgressCenter} */
     this.progressCenter_ = progressCenter;
 
-    /** @private {!importer.HistoryLoader} */
+    /** @private {!importerHistoryInterfaces.HistoryLoader} */
     this.historyLoader_ = historyLoader;
 
-    /** @private {!importer.TaskQueue} */
-    this.queue_ = new importer.TaskQueueImpl();
+    /** @private {!taskQueueInterfaces.TaskQueue} */
+    this.queue_ = new taskQueue.TaskQueueImpl();
 
     // Prevent the system from sleeping while imports are active.
     this.queue_.setActiveCallback(() => {
@@ -44,7 +61,9 @@ importer.MediaImportHandlerImpl = class {
     /** @private {number} */
     this.nextTaskId_ = 0;
 
-    /** @private {!importer.DispositionChecker.CheckerFunction} */
+    /**
+     * @private {!duplicateFinderInterfaces.DispositionChecker.CheckerFunction}
+     */
     this.getDisposition_ = dispositionChecker;
 
     /**
@@ -71,7 +90,7 @@ importer.MediaImportHandlerImpl = class {
 
   /** @override */
   importFromScanResult(scanResult, destination, directoryPromise) {
-    const task = new importer.MediaImportHandler.ImportTaskImpl(
+    const task = new mediaImport.ImportTaskImpl(
         this.generateTaskId_(), this.historyLoader_, scanResult,
         directoryPromise, destination, this.getDisposition_);
 
@@ -99,13 +118,11 @@ importer.MediaImportHandlerImpl = class {
   /**
    * Sends updates to the ProgressCenter when an import is happening.
    *
-   * @param {!importer.MediaImportHandler.ImportTaskImpl} task
+   * @param {!mediaImport.ImportTaskImpl} task
    * @param {string} updateType
    * @private
    */
   onTaskProgress_(task, updateType) {
-    const UpdateType = importer.TaskQueue.UpdateType;
-
     let item = this.progressCenter_.getItemById(task.taskId);
     if (!item) {
       item = new ProgressCenterItem();
@@ -120,7 +137,7 @@ importer.MediaImportHandlerImpl = class {
     }
 
     switch (updateType) {
-      case UpdateType.PROGRESS:
+      case importer.UpdateType.PROGRESS:
         item.message =
             strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
         item.progressValue = task.processedBytes;
@@ -131,7 +148,7 @@ importer.MediaImportHandlerImpl = class {
         item.remainingTime = this.speedometer_.getRemainingTime();
         break;
 
-      case UpdateType.COMPLETE:
+      case importer.UpdateType.COMPLETE:
         // Remove the event handler that gets attached for retries.
         this.driveSyncHandler_.removeEventListener(
             this.driveSyncHandler_.getCompletedEventName(),
@@ -166,7 +183,7 @@ importer.MediaImportHandlerImpl = class {
 
         break;
 
-      case UpdateType.CANCELED:
+      case importer.UpdateType.CANCELED:
         item.message = '';
         item.state = ProgressItemState.CANCELED;
         break;
@@ -177,7 +194,7 @@ importer.MediaImportHandlerImpl = class {
 
   /**
    * Restarts a task with failed entries.
-   * @param {!importer.MediaImportHandler.ImportTaskImpl} task
+   * @param {!mediaImport.ImportTaskImpl} task
    */
   retryTaskFailedEntries_(task) {
     // Reset the entry lists.
@@ -200,17 +217,17 @@ importer.MediaImportHandlerImpl = class {
  * the FileOperationManager (and thus *spawns* an associated
  * FileOperationManager.CopyTask) but this is a temporary state of affairs.
  *
- * @implements {importer.MediaImportHandler.ImportTask}
+ * @implements {mediaImportInterfaces.MediaImportHandler.ImportTask}
  */
-importer.MediaImportHandler.ImportTaskImpl =
-    class extends importer.TaskQueue.BaseTaskImpl {
+mediaImport.ImportTaskImpl = class extends taskQueue.BaseTaskImpl {
   /**
    * @param {string} taskId
-   * @param {!importer.HistoryLoader} historyLoader
-   * @param {!importer.ScanResult} scanResult
+   * @param {!importerHistoryInterfaces.HistoryLoader} historyLoader
+   * @param {!mediaScannerInterfaces.ScanResult} scanResult
    * @param {!Promise<!DirectoryEntry>} directoryPromise
    * @param {!importer.Destination} destination The logical destination.
-   * @param {!importer.DispositionChecker.CheckerFunction} dispositionChecker
+   * @param {!duplicateFinderInterfaces.DispositionChecker.CheckerFunction}
+   *     dispositionChecker
    */
   constructor(
       taskId, historyLoader, scanResult, directoryPromise, destination,
@@ -226,10 +243,10 @@ importer.MediaImportHandler.ImportTaskImpl =
     /** @private {!Promise<!DirectoryEntry>} */
     this.directoryPromise_ = directoryPromise;
 
-    /** @private {!importer.ScanResult} */
+    /** @private {!mediaScannerInterfaces.ScanResult} */
     this.scanResult_ = scanResult;
 
-    /** @private {!importer.HistoryLoader} */
+    /** @private {!importerHistoryInterfaces.HistoryLoader} */
     this.historyLoader_ = historyLoader;
 
     /** @private {number} */
@@ -256,7 +273,9 @@ importer.MediaImportHandler.ImportTaskImpl =
     /** @private {number} */
     this.errorCount_ = 0;
 
-    /** @private {!importer.DispositionChecker.CheckerFunction} */
+    /**
+     * @private {!duplicateFinderInterfaces.DispositionChecker.CheckerFunction}
+     */
     this.getDisposition_ = dispositionChecker;
 
     /**
@@ -331,7 +350,7 @@ importer.MediaImportHandler.ImportTaskImpl =
   requestCancel() {
     this.canceled_ = true;
     setTimeout(() => {
-      this.notify(importer.TaskQueue.UpdateType.CANCELED);
+      this.notify(importer.UpdateType.CANCELED);
       this.sendImportStats_();
     });
     if (this.cancelCallback_) {
@@ -377,13 +396,13 @@ importer.MediaImportHandler.ImportTaskImpl =
     this.historyLoader_.getHistory()
         .then(
             /**
-             * @param {!importer.ImportHistory} history
+             * @param {!importerHistoryInterfaces.ImportHistory} history
              */
             history => {
               this.scanResult_.getDuplicateFileEntries().forEach(
                   /**
                    * @param {!FileEntry} entry
-                   * @this {importer.MediaImportHandler.ImportTask}
+                   * @this {mediaImportInterfaces.MediaImportHandler.ImportTask}
                    */
                   entry => {
                     history.markImported(entry, this.destination_);
@@ -452,57 +471,57 @@ importer.MediaImportHandler.ImportTaskImpl =
      * Updates the task when the copy code reports progress.
      * @param {string} sourceUrl
      * @param {number} processedBytes
-     * @this {importer.MediaImportHandler.ImportTask}
+     * @this {mediaImportInterfaces.MediaImportHandler.ImportTask}
      */
     const onProgress = (sourceUrl, processedBytes) => {
       // Update the running total, then send a progress update.
       this.processedBytes_ -= currentBytes;
       this.processedBytes_ += processedBytes;
       currentBytes = processedBytes;
-      this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+      this.notify(importer.UpdateType.PROGRESS);
     };
 
     /**
      * Updates the task when the new file has been created.
      * @param {string} sourceUrl
      * @param {Entry} destinationEntry
-     * @this {importer.MediaImportHandler.ImportTask}
+     * @this {mediaImportInterfaces.MediaImportHandler.ImportTask}
      */
     const onEntryChanged = (sourceUrl, destinationEntry) => {
       this.processedBytes_ -= currentBytes;
       this.processedBytes_ += entry.size;
       destinationEntry.size = entry.size;
       this.notify(
-          /** @type {importer.TaskQueue.UpdateType} */
-          (importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED), {
+          /** @type {importer.UpdateType} */
+          (mediaImport.UpdateType.ENTRY_CHANGED), {
             sourceUrl: sourceUrl,
             destination: destinationEntry,
           });
-      this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+      this.notify(importer.UpdateType.PROGRESS);
     };
 
     /**
      * @param {Entry} destinationEntry The new destination entry.
-     * @this {importer.MediaImportHandler.ImportTask}
+     * @this {mediaImportInterfaces.MediaImportHandler.ImportTask}
      */
     const onComplete = destinationEntry => {
       this.cancelCallback_ = null;
       this.markAsCopied_(entry, /** @type {!FileEntry} */ (destinationEntry));
-      this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+      this.notify(importer.UpdateType.PROGRESS);
       resolver.resolve(destinationEntry);
     };
 
-    /** @this {importer.MediaImportHandler.ImportTask} */
+    /** @this {mediaImportInterfaces.MediaImportHandler.ImportTask} */
     const onError = error => {
       this.cancelCallback_ = null;
       if (error.name === util.FileError.ABORT_ERR) {
         // Task cancellations result in the error callback being triggered with
         // an ABORT_ERR, but we want to ignore these errors.
-        this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+        this.notify(importer.UpdateType.PROGRESS);
         resolver.resolve(null);
       } else {
         this.errorCount_++;
-        this.notify(importer.TaskQueue.UpdateType.ERROR);
+        this.notify(importer.UpdateType.ERROR);
         resolver.reject(error);
       }
     };
@@ -546,7 +565,7 @@ importer.MediaImportHandler.ImportTaskImpl =
     this.remainingFilesCount_--;
     this.historyLoader_.getHistory()
         .then(
-            /** @param {!importer.ImportHistory} history */
+            /** @param {!importerHistoryInterfaces.ImportHistory} history */
             history => {
               history.markImported(entry, this.destination_);
             })
@@ -555,7 +574,7 @@ importer.MediaImportHandler.ImportTaskImpl =
 
   /** @private */
   onSuccess_() {
-    this.notify(importer.TaskQueue.UpdateType.COMPLETE);
+    this.notify(importer.UpdateType.COMPLETE);
   }
 
   /**
@@ -601,6 +620,6 @@ importer.MediaImportHandler.ImportTaskImpl =
  * ImportTask to listen for these kinds of updates.
  * @enum {string}
  */
-importer.MediaImportHandler.ImportTask.UpdateType = {
+mediaImport.UpdateType = {
   ENTRY_CHANGED: 'ENTRY_CHANGED'
 };

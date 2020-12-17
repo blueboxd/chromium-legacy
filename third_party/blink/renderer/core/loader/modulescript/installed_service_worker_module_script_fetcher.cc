@@ -46,7 +46,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
         mojom::ConsoleMessageLevel::kError,
         "Failed to load the script unexpectedly",
         fetch_params.Url().GetString(), nullptr, 0));
-    client->NotifyFetchFinished(base::nullopt, error_messages);
+    client->NotifyFetchFinishedError(error_messages);
     return;
   }
 
@@ -99,16 +99,17 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
         mojom::ConsoleMessageLevel::kError,
         "Failed to load the script unexpectedly",
         fetch_params.Url().GetString(), nullptr, 0));
-    client->NotifyFetchFinished(base::nullopt, error_messages);
+    client->NotifyFetchFinishedError(error_messages);
     return;
   }
 
-  ModuleScriptCreationParams params(
-      fetch_params.Url(), module_type,
-      ParkableString(script_data->TakeSourceText().Impl()),
-      nullptr /* cache_handler */,
-      fetch_params.GetResourceRequest().GetCredentialsMode());
-  client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
+  // Create an external module script where base_url == source_url.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  client->NotifyFetchFinishedSuccess(ModuleScriptCreationParams(
+      /*source_url=*/fetch_params.Url(), /*base_url=*/fetch_params.Url(),
+      module_type, ParkableString(script_data->TakeSourceText().Impl()),
+      /*cache_handler=*/nullptr,
+      fetch_params.GetResourceRequest().GetCredentialsMode()));
 }
 
 void InstalledServiceWorkerModuleScriptFetcher::Trace(Visitor* visitor) const {

@@ -157,7 +157,7 @@ class ItemRegistry {
   void RemoveAll() { items_.clear(); }
 
   // Gets the set of registered data items.
-  void HandleGetRequest(DataItem::RegisteredValuesOnceCallback callback) {
+  void HandleGetRequest(DataItem::RegisteredValuesCallback callback) {
     if (!throttle_get_) {
       RunCallback(std::move(callback));
       return;
@@ -180,7 +180,7 @@ class ItemRegistry {
   void set_throttle_get(bool throttle_get) { throttle_get_ = throttle_get; }
 
  private:
-  void RunCallback(DataItem::RegisteredValuesOnceCallback callback) {
+  void RunCallback(DataItem::RegisteredValuesCallback callback) {
     std::move(callback).Run(
         fail_ ? OperationResult::kFailed : OperationResult::kSuccess,
         ItemsToValue());
@@ -210,7 +210,7 @@ class ItemRegistry {
   // complete the request.
   bool throttle_get_ = false;
 
-  DataItem::RegisteredValuesOnceCallback pending_callback_;
+  DataItem::RegisteredValuesCallback pending_callback_;
   // Set of registered item ids.
   std::set<std::string> items_;
 
@@ -235,13 +235,13 @@ class OperationQueue {
     std::vector<char> data;
 
     // Callback for write operation.
-    DataItem::WriteOnceCallback write_callback;
+    DataItem::WriteCallback write_callback;
 
     // Callback for read operation.
-    DataItem::ReadOnceCallback read_callback;
+    DataItem::ReadCallback read_callback;
 
     // Callback for delete operation.
-    DataItem::WriteOnceCallback delete_callback;
+    DataItem::WriteCallback delete_callback;
   };
 
   OperationQueue(const std::string& id, ItemRegistry* item_registry)
@@ -249,14 +249,14 @@ class OperationQueue {
 
   ~OperationQueue() = default;
 
-  void Register(DataItem::WriteOnceCallback callback) {
+  void Register(DataItem::WriteCallback callback) {
     bool registered = item_registry_->Add(id_);
     std::move(callback).Run(registered ? OperationResult::kSuccess
                                        : OperationResult::kFailed);
   }
 
   void AddWrite(const std::vector<char>& data,
-                DataItem::WriteOnceCallback callback) {
+                DataItem::WriteCallback callback) {
     PendingOperation operation(OperationType::kWrite);
     operation.data = data;
     operation.write_callback = std::move(callback);
@@ -264,14 +264,14 @@ class OperationQueue {
     pending_operations_.emplace(std::move(operation));
   }
 
-  void AddRead(DataItem::ReadOnceCallback callback) {
+  void AddRead(DataItem::ReadCallback callback) {
     PendingOperation operation(OperationType::kRead);
     operation.read_callback = std::move(callback);
 
     pending_operations_.emplace(std::move(operation));
   }
 
-  void AddDelete(DataItem::WriteOnceCallback callback) {
+  void AddDelete(DataItem::WriteCallback callback) {
     PendingOperation operation(OperationType::kDelete);
     operation.delete_callback = std::move(callback);
 
@@ -295,8 +295,7 @@ class OperationQueue {
       case OperationType::kWrite: {
         if (result == OperationResult::kSuccess)
           content_ = operation.data;
-        DataItem::WriteOnceCallback callback =
-            std::move(operation.write_callback);
+        DataItem::WriteCallback callback = std::move(operation.write_callback);
         pending_operations_.pop();
         std::move(callback).Run(result);
         break;
@@ -308,8 +307,7 @@ class OperationQueue {
           content_ = std::vector<char>();
         }
 
-        DataItem::WriteOnceCallback callback =
-            std::move(operation.delete_callback);
+        DataItem::WriteCallback callback = std::move(operation.delete_callback);
         pending_operations_.pop();
         std::move(callback).Run(result);
         break;
@@ -321,8 +319,7 @@ class OperationQueue {
                                                             content_.end());
         }
 
-        DataItem::ReadOnceCallback callback =
-            std::move(operation.read_callback);
+        DataItem::ReadCallback callback = std::move(operation.read_callback);
         pending_operations_.pop();
         std::move(callback).Run(result, std::move(result_data));
         break;
@@ -367,20 +364,19 @@ class TestDataItem : public DataItem {
 
   ~TestDataItem() override = default;
 
-  void Register(WriteOnceCallback callback) override {
+  void Register(WriteCallback callback) override {
     operations_->Register(std::move(callback));
   }
 
-  void Write(const std::vector<char>& data,
-             WriteOnceCallback callback) override {
+  void Write(const std::vector<char>& data, WriteCallback callback) override {
     operations_->AddWrite(data, std::move(callback));
   }
 
-  void Read(ReadOnceCallback callback) override {
+  void Read(ReadCallback callback) override {
     operations_->AddRead(std::move(callback));
   }
 
-  void Delete(WriteOnceCallback callback) override {
+  void Delete(WriteCallback callback) override {
     operations_->AddDelete(std::move(callback));
   }
 
@@ -532,7 +528,7 @@ class LockScreenItemStorageTest : public ExtensionsTest {
     OperationResult write_result = OperationResult::kFailed;
     lock_screen_item_storage()->SetItemContent(
         extension()->id(), id, content,
-        base::Bind(&RecordWriteResult, &write_result));
+        base::BindOnce(&RecordWriteResult, &write_result));
     if (!item_operations->HasPendingOperations()) {
       ADD_FAILURE() << "Write not registered";
       return false;
@@ -737,7 +733,7 @@ class LockScreenItemStorageTest : public ExtensionsTest {
   }
 
   void GetRegisteredItems(const std::string& extension_id,
-                          DataItem::RegisteredValuesOnceCallback callback) {
+                          DataItem::RegisteredValuesCallback callback) {
     if (extension()->id() != extension_id) {
       std::move(callback).Run(OperationResult::kUnknownExtension, nullptr);
       return;
@@ -821,7 +817,7 @@ TEST_F(LockScreenItemStorageTest, SetAndGetContent) {
   OperationResult write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), item->id(), content,
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
 
   item_operations->CompleteNextOperation(OperationQueue::OperationType::kWrite,
                                          OperationResult::kSuccess);
@@ -834,7 +830,7 @@ TEST_F(LockScreenItemStorageTest, SetAndGetContent) {
 
   lock_screen_item_storage()->GetItemContent(
       extension()->id(), item->id(),
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
 
   item_operations->CompleteNextOperation(OperationQueue::OperationType::kRead,
                                          OperationResult::kSuccess);
@@ -844,7 +840,7 @@ TEST_F(LockScreenItemStorageTest, SetAndGetContent) {
   OperationResult delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), item->id(),
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
 
   item_operations->CompleteNextOperation(OperationQueue::OperationType::kDelete,
                                          OperationResult::kSuccess);
@@ -865,20 +861,20 @@ TEST_F(LockScreenItemStorageTest, FailToInitializeData) {
   OperationResult write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), item_id, {'x'},
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
   EXPECT_EQ(OperationResult::kNotFound, write_result);
 
   OperationResult read_result = OperationResult::kFailed;
   std::unique_ptr<std::vector<char>> read_content;
   lock_screen_item_storage()->GetItemContent(
       extension()->id(), item_id,
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
   EXPECT_EQ(OperationResult::kNotFound, read_result);
 
   OperationResult delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), "non_existen",
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
   EXPECT_EQ(OperationResult::kNotFound, delete_result);
 
   OperationQueue* operations = GetOperations(item_id);
@@ -893,7 +889,7 @@ TEST_F(LockScreenItemStorageTest, FailToInitializeData) {
   write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), new_item->id(), {'y'},
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
 
   OperationQueue* new_item_operations = GetOperations(new_item->id());
   ASSERT_TRUE(new_item_operations);
@@ -922,13 +918,13 @@ TEST_F(LockScreenItemStorageTest, RequestsDuringInitialLoad) {
   OperationResult write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), item_id, {'x'},
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
 
   OperationResult read_result = OperationResult::kFailed;
   std::unique_ptr<std::vector<char>> read_content;
   lock_screen_item_storage()->GetItemContent(
       extension()->id(), item_id,
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
 
   std::vector<std::string> items;
   lock_screen_item_storage()->GetAllForExtension(
@@ -938,7 +934,7 @@ TEST_F(LockScreenItemStorageTest, RequestsDuringInitialLoad) {
   OperationResult delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), item_id,
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
 
   OperationQueue* operations = GetOperations(item_id);
   ASSERT_TRUE(operations);
@@ -991,38 +987,38 @@ TEST_F(LockScreenItemStorageTest, HandleNonExistent) {
   OperationResult write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), "non_existent", content,
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
   EXPECT_EQ(OperationResult::kNotFound, write_result);
 
   write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       "non_existent", item->id(), content,
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
   EXPECT_EQ(OperationResult::kNotFound, write_result);
 
   OperationResult read_result = OperationResult::kFailed;
   std::unique_ptr<std::vector<char>> read_content;
   lock_screen_item_storage()->GetItemContent(
       extension()->id(), "non_existent",
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
   EXPECT_EQ(OperationResult::kNotFound, read_result);
   read_result = OperationResult::kFailed;
 
   lock_screen_item_storage()->GetItemContent(
       "non_existent", item->id(),
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
   EXPECT_EQ(OperationResult::kNotFound, read_result);
 
   OperationResult delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), "non_existen",
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
   EXPECT_EQ(OperationResult::kNotFound, delete_result);
 
   delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       "non_existent", item->id(),
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
   EXPECT_EQ(OperationResult::kNotFound, delete_result);
 }
 
@@ -1037,7 +1033,7 @@ TEST_F(LockScreenItemStorageTest, HandleFailure) {
   OperationResult write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), item->id(), {'x'},
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
   operations->CompleteNextOperation(OperationQueue::OperationType::kWrite,
                                     OperationResult::kInvalidKey);
   EXPECT_EQ(OperationResult::kInvalidKey, write_result);
@@ -1046,7 +1042,7 @@ TEST_F(LockScreenItemStorageTest, HandleFailure) {
   std::unique_ptr<std::vector<char>> read_content;
   lock_screen_item_storage()->GetItemContent(
       extension()->id(), item->id(),
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
   operations->CompleteNextOperation(OperationQueue::OperationType::kRead,
                                     OperationResult::kWrongKey);
   EXPECT_EQ(OperationResult::kWrongKey, read_result);
@@ -1103,7 +1099,7 @@ TEST_F(LockScreenItemStorageTest, DataItemsAvailableEventOnUnlock) {
   OperationResult delete_result;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), item_id,
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
   OperationQueue* operations = GetOperations(item_id);
   ASSERT_TRUE(operations);
   operations->CompleteNextOperation(OperationQueue::OperationType::kDelete,
@@ -1175,7 +1171,7 @@ TEST_F(LockScreenItemStorageTest, DataItemsAvailableEventOnRestart) {
   OperationResult delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), item_id,
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
   OperationQueue* operations = GetOperations(item_id);
   ASSERT_TRUE(operations);
   operations->CompleteNextOperation(OperationQueue::OperationType::kDelete,
@@ -1263,13 +1259,13 @@ TEST_F(LockScreenItemStorageTest, OperationsBlockedOnMigration) {
   OperationResult write_result = OperationResult::kFailed;
   lock_screen_item_storage()->SetItemContent(
       extension()->id(), initial_item_id, {'x'},
-      base::Bind(&RecordWriteResult, &write_result));
+      base::BindOnce(&RecordWriteResult, &write_result));
 
   OperationResult read_result = OperationResult::kFailed;
   std::unique_ptr<std::vector<char>> read_content;
   lock_screen_item_storage()->GetItemContent(
       extension()->id(), migrated_item_id,
-      base::Bind(&RecordReadResult, &read_result, &read_content));
+      base::BindOnce(&RecordReadResult, &read_result, &read_content));
 
   std::vector<std::string> items;
   lock_screen_item_storage()->GetAllForExtension(
@@ -1279,7 +1275,7 @@ TEST_F(LockScreenItemStorageTest, OperationsBlockedOnMigration) {
   OperationResult delete_result = OperationResult::kFailed;
   lock_screen_item_storage()->DeleteItem(
       extension()->id(), initial_item_id,
-      base::Bind(&RecordWriteResult, &delete_result));
+      base::BindOnce(&RecordWriteResult, &delete_result));
 
   OperationQueue* initial_item_operations = GetOperations(initial_item_id);
   ASSERT_TRUE(initial_item_operations);

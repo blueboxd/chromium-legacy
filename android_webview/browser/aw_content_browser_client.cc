@@ -96,11 +96,11 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/display/display.h"
@@ -136,16 +136,8 @@ class AwContentsMessageFilter : public content::BrowserMessageFilter {
   explicit AwContentsMessageFilter(int process_id);
 
   // BrowserMessageFilter methods.
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnShouldOverrideUrlLoading(int routing_id,
-                                  const base::string16& url,
-                                  bool has_user_gesture,
-                                  bool is_redirect,
-                                  bool is_main_frame,
-                                  bool* ignore_navigation);
   void OnSubFrameCreated(int parent_render_frame_id, int child_render_frame_id);
 
  private:
@@ -161,47 +153,13 @@ AwContentsMessageFilter::AwContentsMessageFilter(int process_id)
 
 AwContentsMessageFilter::~AwContentsMessageFilter() = default;
 
-void AwContentsMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message,
-    BrowserThread::ID* thread) {
-  if (message.type() == AwViewHostMsg_ShouldOverrideUrlLoading::ID) {
-    *thread = BrowserThread::UI;
-  }
-}
-
 bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwContentsMessageFilter, message)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_ShouldOverrideUrlLoading,
-                        OnShouldOverrideUrlLoading)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_SubFrameCreated, OnSubFrameCreated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
-    int render_frame_id,
-    const base::string16& url,
-    bool has_user_gesture,
-    bool is_redirect,
-    bool is_main_frame,
-    bool* ignore_navigation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  *ignore_navigation = false;
-  AwContentsClientBridge* client =
-      AwContentsClientBridge::FromID(process_id_, render_frame_id);
-  if (client) {
-    if (!client->ShouldOverrideUrlLoading(url, has_user_gesture, is_redirect,
-                                          is_main_frame, ignore_navigation)) {
-      // If the shouldOverrideUrlLoading call caused a java exception we should
-      // always return immediately here!
-      return;
-    }
-  } else {
-    LOG(WARNING) << "Failed to find the associated render view host for url: "
-                 << url;
-  }
 }
 
 void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
@@ -717,8 +675,7 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
       // Since AW currently doesn't support UKM, this feature is not enabled.
       /* rt_lookup_service */ nullptr));
 
-  if (request.resource_type ==
-      static_cast<int>(blink::mojom::ResourceType::kMainFrame)) {
+  if (request.destination == network::mojom::RequestDestination::kDocument) {
     const bool is_load_url =
         request.transition_type & ui::PAGE_TRANSITION_FROM_API;
     const bool is_go_back_forward =

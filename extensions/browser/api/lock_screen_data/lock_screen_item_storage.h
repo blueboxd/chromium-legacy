@@ -108,18 +108,18 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   void SetItemContent(const std::string& extension_id,
                       const std::string& item_id,
                       const std::vector<char>& data,
-                      const WriteCallback& callback);
+                      WriteCallback callback);
 
   // Retrieves the content of the item identified by |item_id| that is
   // associated with the provided extension.
   void GetItemContent(const std::string& extension_id,
                       const std::string& item_id,
-                      const ReadCallback& callback);
+                      ReadCallback callback);
 
   // Deletes the data item associated with the extension.
   void DeleteItem(const std::string& extension_id,
                   const std::string& item_id,
-                  const WriteCallback& callback);
+                  WriteCallback callback);
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
@@ -146,7 +146,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
       const std::string& crypto_key)>;
   using RegisteredItemsGetter = base::RepeatingCallback<void(
       const std::string& extension_id,
-      DataItem::RegisteredValuesOnceCallback callback)>;
+      DataItem::RegisteredValuesCallback callback)>;
   using ItemStoreDeleter =
       base::RepeatingCallback<void(const std::string& extension_id,
                                    base::OnceClosure callback)>;
@@ -186,7 +186,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
     // When the initial data item list is being loaded, contains the callback
     // waiting for the load to finish. When the initial data item set is loaded,
     // all of the callbacks in this list will be run.
-    std::vector<base::Closure> load_callbacks;
+    std::vector<base::OnceClosure> load_callbacks;
   };
 
   // Maps an extension ID to data items associated with the extension.
@@ -214,19 +214,19 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   void SetItemContentImpl(const std::string& extension_id,
                           const std::string& item_id,
                           const std::vector<char>& data,
-                          const WriteCallback& callback);
+                          WriteCallback callback);
   void GetItemContentImpl(const std::string& extension_id,
                           const std::string& item_id,
-                          const ReadCallback& callback);
+                          ReadCallback callback);
   void DeleteItemImpl(const std::string& extension_id,
                       const std::string& item_id,
-                      const WriteCallback& callback);
+                      WriteCallback callback);
 
   // Defers |callback| until the cached data item set is loaded for the
   // extension. If the data is already loaded, |callback| will be run
   // immediately.
   void EnsureCacheForExtensionLoaded(const std::string& extension_id,
-                                     const base::Closure& callback);
+                                     base::OnceClosure callback);
 
   // Callback for loading initial set of known data items for an extension.
   void OnGotExtensionItems(const std::string& extension_id,
@@ -245,13 +245,13 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   // Callback for data item write operation - it invokes the callback with the
   // operation result.
   void OnItemWritten(const base::TimeTicks& start_time,
-                     const WriteCallback& callback,
+                     WriteCallback callback,
                      OperationResult result);
 
   // Callback for data item read operation - it invokes the callback with the
   // operation result.
   void OnItemRead(const base::TimeTicks& start_time,
-                  const ReadCallback& callback,
+                  ReadCallback callback,
                   OperationResult result,
                   std::unique_ptr<std::vector<char>> data);
 
@@ -260,7 +260,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   void OnItemDeleted(const std::string& extension_id,
                      const std::string& item_id,
                      const base::TimeTicks& start_time,
-                     const WriteCallback& callback,
+                     WriteCallback callback,
                      OperationResult result);
 
   // Finds a data item associated with the extension.

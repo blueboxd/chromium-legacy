@@ -261,10 +261,10 @@ void DeleteImpl(OperationResult* result,
                                 : OperationResult::kFailed;
 }
 
-void OnGetRegisteredValues(const DataItem::RegisteredValuesCallback& callback,
+void OnGetRegisteredValues(DataItem::RegisteredValuesOnceCallback callback,
                            std::unique_ptr<OperationResult> result,
                            std::unique_ptr<base::DictionaryValue> values) {
-  callback.Run(*result, std::move(values));
+  std::move(callback).Run(*result, std::move(values));
 }
 
 }  // namespace
@@ -275,12 +275,12 @@ void DataItem::GetRegisteredValuesForExtension(
     ValueStoreCache* value_store_cache,
     base::SequencedTaskRunner* task_runner,
     const std::string& extension_id,
-    const RegisteredValuesCallback& callback) {
+    RegisteredValuesOnceCallback callback) {
   scoped_refptr<const Extension> extension =
       ExtensionRegistry::Get(context)->GetExtensionById(
           extension_id, ExtensionRegistry::ENABLED);
   if (!extension) {
-    callback.Run(OperationResult::kUnknownExtension, nullptr);
+    std::move(callback).Run(OperationResult::kUnknownExtension, nullptr);
     return;
   }
 
@@ -297,8 +297,8 @@ void DataItem::GetRegisteredValuesForExtension(
                      base::Unretained(value_store_cache),
                      base::Bind(&GetRegisteredItems, result_ptr, values_ptr),
                      extension),
-      base::BindOnce(&OnGetRegisteredValues, callback, std::move(result),
-                     std::move(values)));
+      base::BindOnce(&OnGetRegisteredValues, std::move(callback),
+                     std::move(result), std::move(values)));
 }
 
 // static
@@ -330,12 +330,12 @@ DataItem::DataItem(const std::string& id,
 
 DataItem::~DataItem() = default;
 
-void DataItem::Register(const WriteCallback& callback) {
+void DataItem::Register(WriteOnceCallback callback) {
   scoped_refptr<const Extension> extension =
       ExtensionRegistry::Get(context_)->GetExtensionById(
           extension_id_, ExtensionRegistry::ENABLED);
   if (!extension) {
-    callback.Run(OperationResult::kUnknownExtension);
+    std::move(callback).Run(OperationResult::kUnknownExtension);
     return;
   }
 
@@ -349,16 +349,16 @@ void DataItem::Register(const WriteCallback& callback) {
                      base::Unretained(value_store_cache_),
                      base::Bind(&RegisterItem, result_ptr, id()), extension),
       base::BindOnce(&DataItem::OnWriteDone, weak_ptr_factory_.GetWeakPtr(),
-                     callback, std::move(result)));
+                     std::move(callback), std::move(result)));
 }
 
 void DataItem::Write(const std::vector<char>& data,
-                     const WriteCallback& callback) {
+                     WriteOnceCallback callback) {
   scoped_refptr<const Extension> extension =
       ExtensionRegistry::Get(context_)->GetExtensionById(
           extension_id_, ExtensionRegistry::ENABLED);
   if (!extension) {
-    callback.Run(OperationResult::kUnknownExtension);
+    std::move(callback).Run(OperationResult::kUnknownExtension);
     return;
   }
 
@@ -373,15 +373,15 @@ void DataItem::Write(const std::vector<char>& data,
                      base::Bind(&WriteImpl, result_ptr, id_, data, crypto_key_),
                      extension),
       base::BindOnce(&DataItem::OnWriteDone, weak_ptr_factory_.GetWeakPtr(),
-                     callback, std::move(result)));
+                     std::move(callback), std::move(result)));
 }
 
-void DataItem::Read(const ReadCallback& callback) {
+void DataItem::Read(ReadOnceCallback callback) {
   scoped_refptr<const Extension> extension =
       ExtensionRegistry::Get(context_)->GetExtensionById(
           extension_id_, ExtensionRegistry::ENABLED);
   if (!extension) {
-    callback.Run(OperationResult::kUnknownExtension, nullptr);
+    std::move(callback).Run(OperationResult::kUnknownExtension, nullptr);
     return;
   }
 
@@ -401,15 +401,15 @@ void DataItem::Read(const ReadCallback& callback) {
           base::Bind(&ReadImpl, result_ptr, data_ptr, id_, crypto_key_),
           extension),
       base::BindOnce(&DataItem::OnReadDone, weak_ptr_factory_.GetWeakPtr(),
-                     callback, std::move(result), std::move(data)));
+                     std::move(callback), std::move(result), std::move(data)));
 }
 
-void DataItem::Delete(const WriteCallback& callback) {
+void DataItem::Delete(WriteOnceCallback callback) {
   scoped_refptr<const Extension> extension =
       ExtensionRegistry::Get(context_)->GetExtensionById(
           extension_id_, ExtensionRegistry::ENABLED);
   if (!extension) {
-    callback.Run(OperationResult::kUnknownExtension);
+    std::move(callback).Run(OperationResult::kUnknownExtension);
     return;
   }
   std::unique_ptr<OperationResult> result =
@@ -422,18 +422,18 @@ void DataItem::Delete(const WriteCallback& callback) {
                      base::Unretained(value_store_cache_),
                      base::Bind(&DeleteImpl, result_ptr, id_), extension),
       base::BindOnce(&DataItem::OnWriteDone, weak_ptr_factory_.GetWeakPtr(),
-                     callback, std::move(result)));
+                     std::move(callback), std::move(result)));
 }
 
-void DataItem::OnWriteDone(const DataItem::WriteCallback& callback,
+void DataItem::OnWriteDone(DataItem::WriteOnceCallback callback,
                            std::unique_ptr<OperationResult> success) {
-  callback.Run(*success);
+  std::move(callback).Run(*success);
 }
 
-void DataItem::OnReadDone(const DataItem::ReadCallback& callback,
+void DataItem::OnReadDone(DataItem::ReadOnceCallback callback,
                           std::unique_ptr<OperationResult> success,
                           std::unique_ptr<std::vector<char>> data) {
-  callback.Run(*success, std::move(data));
+  std::move(callback).Run(*success, std::move(data));
 }
 
 }  // namespace lock_screen_data

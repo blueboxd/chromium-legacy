@@ -289,8 +289,19 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
   auto existing_play_api_turl = std::find_if(
       template_urls.cbegin(), template_urls.cend(),
       [](const TemplateURL* turl) { return turl->created_from_play_api(); });
-  if (existing_play_api_turl != template_urls.cend())
+  if (existing_play_api_turl != template_urls.cend()) {
+    // Migrate old Play API database entries that were incorrectly marked as
+    // safe_for_autoreplace() before M89.
+    // TODO(tommycli): Delete this once the below metric approaches zero.
+    TemplateURL* turl = *existing_play_api_turl;
+    if (turl->safe_for_autoreplace()) {
+      TemplateURLService::LogSearchTemplateURLEvent(
+          TemplateURLService::MIGRATE_SAFE_FOR_AUTOREPLACE_PLAY_API_ENGINE);
+      template_url_service_->ResetTemplateURL(turl, turl->short_name(),
+                                              turl->keyword(), turl->url());
+    }
     return false;
+  }
 
   base::string16 keyword =
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
@@ -305,12 +316,14 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
     favicon_url = base::android::ConvertJavaStringToUTF8(jfavicon_url);
   }
 
-  TemplateURL* t_url =
-      template_url_service_->CreateOrUpdateTemplateURLFromPlayAPIData(
-          name, keyword, search_url, suggest_url, favicon_url);
+  TemplateURL* t_url = template_url_service_->CreatePlayAPISearchEngine(
+      name, keyword, search_url, suggest_url, favicon_url);
 
-  if (set_as_default && template_url_service_->CanMakeDefault(t_url))
+  // CanMakeDefault() will prevent us from taking over a policy or extension
+  // defined default search engine.
+  if (set_as_default && template_url_service_->CanMakeDefault(t_url)) {
     template_url_service_->SetUserSelectedDefaultSearchProvider(t_url);
+  }
   return true;
 }
 

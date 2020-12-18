@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4052510f0b7a8821181b7e924593e70f61101342',
+  'skia_revision': '74ebd7e6ceaa279853c577545e289e32b26d138b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'fc4ac7024d121a1fdc77cecab42defe4bd11a967',
+  'v8_revision': '8481473da99c1ba0af4b0b1546452566883d1f91',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -215,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '1ca6504eb7bb9971d317cf8c8033b38b914036b7',
+  'swiftshader_revision': '1cc5b3357d2ff3c81ef7ec0b07a6660796bde5cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '84b3616c94f48726c596ead4150218d4431b3412',
+  'freetype_revision': '7bdf386e758cb7c01392e625f4d723e5abb3f9a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '92c77100518eb763855f8b0ef8ba9ce6b29ac9f5',
+  'catapult_revision': '8d43e589947e9279336118ca568525261849f886',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '25c49a45ff3993f32ce8645ae3823fd5adc01c51',
+  'devtools_frontend_revision': '49872c09220ec9802688705956062b28fbcb0730',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -310,23 +310,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '671914c28e8249f0a555726a0f3f38691fe5c1df',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling feed
-  # and whatever else without interference from each other.
-  'spv_headers_revision': '05836bdba63e7debce9fa9feaed42f20cd43af9d',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling feed
-  # and whatever else without interference from each other.
-  'spirv_cross_revision': '16d9fea77c376cb5d7d6e06d33bf054fe24734a7',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling feed
-  # and whatever else without interference from each other.
   'shaderc_revision': '4089217d30c1f035c44a08255b875b5fea4f4bc5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '155241b665f8305d54145ca460e0b8cebe888336',
+  'dawn_revision': 'ee977a0df8e3f3a12a6f2983db98838bf65566da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -354,7 +342,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': '03db3f121129434cd1298c098b6d14444e488c01',
+  'nearby_revision': '183aed7f6cc2bc86c4deac1037b9873b567b4a52',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -365,7 +353,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '181d8baf8f016df2a50dd2bf1776c3283f282807',
+  'tint_revision': 'd1469c60c1ab5c96278d570aa93ef38b722b67e4',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -565,7 +553,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e946f7e093404de560e8f63a76921e1bf7e2b1f6',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'f03c0a36e0fcc5ded1f7ce51b0a0589224689d01',
       'condition': 'checkout_ios',
   },
 
@@ -648,22 +636,6 @@ deps = {
       ],
       'dep_type': 'cipd',
   },
-
-  # SPIRV-Cross is in third_party/spirv-cross/spirv-cross instead of
-  # third_party/spirv-cross/src  because its header files are at the root of
-  # the repository and dependencies include them like so:
-  #   #include "spirv-cross/spirv_glsl.hpp"
-  'src/third_party/spirv-cross/spirv-cross':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Cross.git@' +
-        Var('spirv_cross_revision'),
-
-  'src/third_party/spirv-headers/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Headers.git@' +
-        Var('spv_headers_revision'),
-
-  'src/third_party/SPIRV-Tools/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git@' +
-        Var('spv_tools_revision'),
 
   'src/third_party/shaderc/src':
     Var('chromium_git') + '/external/github.com/google/shaderc.git@' +
@@ -916,7 +888,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '460536ec43e3f40609e3b0a22732fb0b57c629e0',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'd6f3734b69e2f842a58bdc6c6a63cf17d82629df',
       'condition': 'checkout_linux',
   },
 
@@ -986,9 +958,6 @@ deps = {
 
   'src/third_party/libgav1/src':
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
-
-  'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'd550bebee919179c9e332a0ab28a67f8fe3ca239',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1276,7 +1245,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '4a33b7b19905753224349bc09e1b4adef115cb3c',
+    Var('chromium_git') + '/openscreen' + '@' + '3159f65600d94f3ce05eee47ec25ec81b0170274',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1293,7 +1262,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'cc9b7694ce3d8fbcc20b3492313923c7d392ac54',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c65f224a7259d87bf1f980e7424d73fc0cfca795',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1371,7 +1340,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'xbub5pS-4jut2bXIXFZ4xABfPqAJC0wMGX7DZaoMJNcC'
+              'version': 'qMq36BPvKEIxjpVFBefO08HoyM51jARe3EuX0vcgzWsC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1512,6 +1481,8 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '995c0b84414466d77d52011e5b572cbe213b770a',
 
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@b08eace32e9cb8dd7dce9866f051558ac57acb15',
+
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '6c656df63da5995a932aafd45b32af1974e497d9',
 
@@ -1615,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f8ca67ef2d093330a31bf50ba38bc29afaafab82',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b778fd86daf8c6a329fba069602753b794311d22',
     'condition': 'checkout_src_internal',
   },
 
@@ -1623,7 +1594,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'vut0tWjt1yQoJk5vrwYDcHtYQKjr64przVZjYeqRU6EC',
+        'version': 'Lhu0LG_M8M2Pn2h_RBp-1HjjF6xbNUOUOu6DedtsKlQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -5043,6 +5014,7 @@ recursedeps = [
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
   'src/third_party/angle',
   'src/third_party/openscreen/src',
+  'src/third_party/vulkan-deps',
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',
 ]

@@ -92,13 +92,15 @@ void GetRegisteredItems(const std::string& extension_id,
                         content::BrowserContext* context,
                         ValueStoreCache* value_store_cache,
                         base::SequencedTaskRunner* task_runner,
-                        const DataItem::RegisteredValuesCallback& callback) {
+                        DataItem::RegisteredValuesOnceCallback callback) {
   if (g_test_registered_items_getter_callback) {
-    g_test_registered_items_getter_callback->Run(extension_id, callback);
+    g_test_registered_items_getter_callback->Run(extension_id,
+                                                 std::move(callback));
     return;
   }
-  DataItem::GetRegisteredValuesForExtension(
-      context, value_store_cache, task_runner, extension_id, callback);
+  DataItem::GetRegisteredValuesForExtension(context, value_store_cache,
+                                            task_runner, extension_id,
+                                            std::move(callback));
 }
 
 void DeleteAllItems(const std::string& extension_id,
@@ -313,10 +315,9 @@ void LockScreenItemStorage::CreateItemImpl(const std::string& extension_id,
       CreateDataItem(base::GenerateGUID(), extension_id, context_,
                      value_store_cache_.get(), task_runner_.get(), crypto_key_);
   DataItem* item_ptr = item.get();
-  item_ptr->Register(base::Bind(&LockScreenItemStorage::OnItemRegistered,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(std::move(item)), extension_id,
-                                tick_clock_->NowTicks(), callback));
+  item_ptr->Register(base::BindOnce(
+      &LockScreenItemStorage::OnItemRegistered, weak_ptr_factory_.GetWeakPtr(),
+      std::move(item), extension_id, tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::GetAllForExtensionImpl(
@@ -350,9 +351,9 @@ void LockScreenItemStorage::SetItemContentImpl(
     return;
   }
 
-  item->Write(data, base::Bind(&LockScreenItemStorage::OnItemWritten,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               tick_clock_->NowTicks(), callback));
+  item->Write(data, base::BindOnce(&LockScreenItemStorage::OnItemWritten,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::GetItemContentImpl(const std::string& extension_id,
@@ -364,9 +365,9 @@ void LockScreenItemStorage::GetItemContentImpl(const std::string& extension_id,
     return;
   }
 
-  item->Read(base::Bind(&LockScreenItemStorage::OnItemRead,
-                        weak_ptr_factory_.GetWeakPtr(), tick_clock_->NowTicks(),
-                        callback));
+  item->Read(base::BindOnce(&LockScreenItemStorage::OnItemRead,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::DeleteItemImpl(const std::string& extension_id,
@@ -378,9 +379,9 @@ void LockScreenItemStorage::DeleteItemImpl(const std::string& extension_id,
     return;
   }
 
-  item->Delete(base::Bind(&LockScreenItemStorage::OnItemDeleted,
-                          weak_ptr_factory_.GetWeakPtr(), extension_id, item_id,
-                          tick_clock_->NowTicks(), callback));
+  item->Delete(base::BindOnce(&LockScreenItemStorage::OnItemDeleted,
+                              weak_ptr_factory_.GetWeakPtr(), extension_id,
+                              item_id, tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::OnItemRegistered(std::unique_ptr<DataItem> item,
@@ -502,9 +503,9 @@ void LockScreenItemStorage::EnsureCacheForExtensionLoaded(
 
   GetRegisteredItems(extension_id, context_, value_store_cache_.get(),
                      task_runner_.get(),
-                     base::Bind(&LockScreenItemStorage::OnGotExtensionItems,
-                                weak_ptr_factory_.GetWeakPtr(), extension_id,
-                                tick_clock_->NowTicks()));
+                     base::BindOnce(&LockScreenItemStorage::OnGotExtensionItems,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    extension_id, tick_clock_->NowTicks()));
 }
 
 void LockScreenItemStorage::OnItemsMigratedForExtension(
@@ -515,9 +516,9 @@ void LockScreenItemStorage::OnItemsMigratedForExtension(
   data_item_cache_[extension_id].state = CachedExtensionData::State::kLoading;
   GetRegisteredItems(extension_id, context_, value_store_cache_.get(),
                      task_runner_.get(),
-                     base::Bind(&LockScreenItemStorage::OnGotExtensionItems,
-                                weak_ptr_factory_.GetWeakPtr(), extension_id,
-                                tick_clock_->NowTicks()));
+                     base::BindOnce(&LockScreenItemStorage::OnGotExtensionItems,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    extension_id, tick_clock_->NowTicks()));
 }
 
 void LockScreenItemStorage::OnGotExtensionItems(

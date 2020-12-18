@@ -1301,14 +1301,14 @@ extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 extern const char kStopInBackgroundName[];
 extern const char kStopInBackgroundDescription[];
 
-extern const char kStopNonTimersInBackgroundName[];
-extern const char kStopNonTimersInBackgroundDescription[];
-
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
 
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
+
+extern const char kStylusBatteryStatusName[];
+extern const char kStylusBatteryStatusDescription[];
 
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
@@ -1923,6 +1923,9 @@ extern const char kWalletRequiresFirstSyncSetupCompleteDescription[];
 
 extern const char kWebFeedName[];
 extern const char kWebFeedDescription[];
+
+extern const char kXsurfaceMetricsReportingName[];
+extern const char kXsurfaceMetricsReportingDescription[];
 
 // Non-Android ----------------------------------------------------------------
 
@@ -2818,13 +2821,6 @@ extern const char kDirectManipulationStylusDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
-
-extern const char kWebContentsOcclusionName[];
-extern const char kWebContentsOcclusionDescription[];
-
-#endif  // defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)

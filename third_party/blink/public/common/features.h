@@ -88,7 +88,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature
     kFreezeBackgroundTabOnNetworkIdle;
-BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kFontAccess;
@@ -348,6 +347,11 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kCloneSessionStorageForNoOpener;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcDistinctWorkerThread;
+
+// Performs additional SubresourceFilter checks when CNAME aliases are found
+// for the host of a requested URL.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kSendCnameAliasesToSubresourceFilterFromRenderer;
 
 }  // namespace features
 }  // namespace blink

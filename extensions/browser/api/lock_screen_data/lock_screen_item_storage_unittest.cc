@@ -157,22 +157,20 @@ class ItemRegistry {
   void RemoveAll() { items_.clear(); }
 
   // Gets the set of registered data items.
-  void HandleGetRequest(const DataItem::RegisteredValuesCallback& callback) {
+  void HandleGetRequest(DataItem::RegisteredValuesOnceCallback callback) {
     if (!throttle_get_) {
-      RunCallback(callback);
+      RunCallback(std::move(callback));
       return;
     }
 
     ASSERT_TRUE(pending_callback_.is_null());
-    pending_callback_ = callback;
+    pending_callback_ = std::move(callback);
   }
 
   // Completes a pending |HandleGetRequest| request.
   void RunPendingCallback() {
     ASSERT_FALSE(pending_callback_.is_null());
-    DataItem::RegisteredValuesCallback callback = pending_callback_;
-    pending_callback_.Reset();
-    RunCallback(callback);
+    RunCallback(std::move(pending_callback_));
   }
 
   bool HasPendingCallback() const { return !pending_callback_.is_null(); }
@@ -182,9 +180,10 @@ class ItemRegistry {
   void set_throttle_get(bool throttle_get) { throttle_get_ = throttle_get; }
 
  private:
-  void RunCallback(const DataItem::RegisteredValuesCallback& callback) {
-    callback.Run(fail_ ? OperationResult::kFailed : OperationResult::kSuccess,
-                 ItemsToValue());
+  void RunCallback(DataItem::RegisteredValuesOnceCallback callback) {
+    std::move(callback).Run(
+        fail_ ? OperationResult::kFailed : OperationResult::kSuccess,
+        ItemsToValue());
   }
 
   std::unique_ptr<base::DictionaryValue> ItemsToValue() {
@@ -211,7 +210,7 @@ class ItemRegistry {
   // complete the request.
   bool throttle_get_ = false;
 
-  DataItem::RegisteredValuesCallback pending_callback_;
+  DataItem::RegisteredValuesOnceCallback pending_callback_;
   // Set of registered item ids.
   std::set<std::string> items_;
 
@@ -236,13 +235,13 @@ class OperationQueue {
     std::vector<char> data;
 
     // Callback for write operation.
-    DataItem::WriteCallback write_callback;
+    DataItem::WriteOnceCallback write_callback;
 
     // Callback for read operation.
-    DataItem::ReadCallback read_callback;
+    DataItem::ReadOnceCallback read_callback;
 
     // Callback for delete operation.
-    DataItem::WriteCallback delete_callback;
+    DataItem::WriteOnceCallback delete_callback;
   };
 
   OperationQueue(const std::string& id, ItemRegistry* item_registry)
@@ -250,31 +249,31 @@ class OperationQueue {
 
   ~OperationQueue() = default;
 
-  void Register(const DataItem::WriteCallback& callback) {
+  void Register(DataItem::WriteOnceCallback callback) {
     bool registered = item_registry_->Add(id_);
-    callback.Run(registered ? OperationResult::kSuccess
-                            : OperationResult::kFailed);
+    std::move(callback).Run(registered ? OperationResult::kSuccess
+                                       : OperationResult::kFailed);
   }
 
   void AddWrite(const std::vector<char>& data,
-                const DataItem::WriteCallback& callback) {
+                DataItem::WriteOnceCallback callback) {
     PendingOperation operation(OperationType::kWrite);
     operation.data = data;
-    operation.write_callback = callback;
+    operation.write_callback = std::move(callback);
 
     pending_operations_.emplace(std::move(operation));
   }
 
-  void AddRead(const DataItem::ReadCallback& callback) {
+  void AddRead(DataItem::ReadOnceCallback callback) {
     PendingOperation operation(OperationType::kRead);
-    operation.read_callback = callback;
+    operation.read_callback = std::move(callback);
 
     pending_operations_.emplace(std::move(operation));
   }
 
-  void AddDelete(const DataItem::WriteCallback& callback) {
+  void AddDelete(DataItem::WriteOnceCallback callback) {
     PendingOperation operation(OperationType::kDelete);
-    operation.delete_callback = callback;
+    operation.delete_callback = std::move(callback);
 
     pending_operations_.emplace(std::move(operation));
   }
@@ -288,7 +287,7 @@ class OperationQueue {
     ASSERT_FALSE(pending_operations_.empty());
     ASSERT_FALSE(deleted_);
 
-    const PendingOperation& operation = pending_operations_.front();
+    PendingOperation& operation = pending_operations_.front();
 
     ASSERT_EQ(expected_type, operation.type);
 
@@ -296,9 +295,10 @@ class OperationQueue {
       case OperationType::kWrite: {
         if (result == OperationResult::kSuccess)
           content_ = operation.data;
-        DataItem::WriteCallback callback = operation.write_callback;
+        DataItem::WriteOnceCallback callback =
+            std::move(operation.write_callback);
         pending_operations_.pop();
-        callback.Run(result);
+        std::move(callback).Run(result);
         break;
       }
       case OperationType::kDelete: {
@@ -308,9 +308,10 @@ class OperationQueue {
           content_ = std::vector<char>();
         }
 
-        DataItem::WriteCallback callback = operation.delete_callback;
+        DataItem::WriteOnceCallback callback =
+            std::move(operation.delete_callback);
         pending_operations_.pop();
-        callback.Run(result);
+        std::move(callback).Run(result);
         break;
       }
       case OperationType::kRead: {
@@ -320,9 +321,10 @@ class OperationQueue {
                                                             content_.end());
         }
 
-        DataItem::ReadCallback callback = operation.read_callback;
+        DataItem::ReadOnceCallback callback =
+            std::move(operation.read_callback);
         pending_operations_.pop();
-        callback.Run(result, std::move(result_data));
+        std::move(callback).Run(result, std::move(result_data));
         break;
       }
       default:
@@ -365,21 +367,21 @@ class TestDataItem : public DataItem {
 
   ~TestDataItem() override = default;
 
-  void Register(const WriteCallback& callback) override {
-    operations_->Register(callback);
+  void Register(WriteOnceCallback callback) override {
+    operations_->Register(std::move(callback));
   }
 
   void Write(const std::vector<char>& data,
-             const WriteCallback& callback) override {
-    operations_->AddWrite(data, callback);
+             WriteOnceCallback callback) override {
+    operations_->AddWrite(data, std::move(callback));
   }
 
-  void Read(const ReadCallback& callback) override {
-    operations_->AddRead(callback);
+  void Read(ReadOnceCallback callback) override {
+    operations_->AddRead(std::move(callback));
   }
 
-  void Delete(const WriteCallback& callback) override {
-    operations_->AddDelete(callback);
+  void Delete(WriteOnceCallback callback) override {
+    operations_->AddDelete(std::move(callback));
   }
 
  private:
@@ -483,12 +485,12 @@ class LockScreenItemStorageTest : public ExtensionsTest {
     LockScreenItemStorage::SetValueStoreMigratorFactoryForTesting(
         &migrator_factory_);
 
-    item_factory_ = base::Bind(&LockScreenItemStorageTest::CreateItem,
-                               base::Unretained(this));
-    registered_items_getter_ = base::Bind(
+    item_factory_ = base::BindRepeating(&LockScreenItemStorageTest::CreateItem,
+                                        base::Unretained(this));
+    registered_items_getter_ = base::BindRepeating(
         &LockScreenItemStorageTest::GetRegisteredItems, base::Unretained(this));
-    item_store_deleter_ = base::Bind(&LockScreenItemStorageTest::RemoveAllItems,
-                                     base::Unretained(this));
+    item_store_deleter_ = base::BindRepeating(
+        &LockScreenItemStorageTest::RemoveAllItems, base::Unretained(this));
     LockScreenItemStorage::SetItemProvidersForTesting(
         &registered_items_getter_, &item_factory_, &item_store_deleter_);
 
@@ -735,19 +737,19 @@ class LockScreenItemStorageTest : public ExtensionsTest {
   }
 
   void GetRegisteredItems(const std::string& extension_id,
-                          const DataItem::RegisteredValuesCallback& callback) {
+                          DataItem::RegisteredValuesOnceCallback callback) {
     if (extension()->id() != extension_id) {
-      callback.Run(OperationResult::kUnknownExtension, nullptr);
+      std::move(callback).Run(OperationResult::kUnknownExtension, nullptr);
       return;
     }
-    item_registry_->HandleGetRequest(callback);
+    item_registry_->HandleGetRequest(std::move(callback));
   }
 
   void RemoveAllItems(const std::string& extension_id,
-                      const base::Closure& callback) {
+                      base::OnceClosure callback) {
     ASSERT_EQ(extension()->id(), extension_id);
     item_registry_->RemoveAll();
-    callback.Run();
+    std::move(callback).Run();
   }
 
   std::unique_ptr<LockScreenItemStorage> lock_screen_item_storage_;

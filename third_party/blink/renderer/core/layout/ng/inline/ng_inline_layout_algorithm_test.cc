@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -51,12 +50,14 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   builder.SetAvailableSize(size);
   NGConstraintSpace constraint_space = builder.ToConstraintSpace();
 
+  NGInlineChildLayoutContext context;
   NGBoxFragmentBuilder container_builder(
       block_flow, block_flow->Style(),
       block_flow->Style()->GetWritingDirection());
-  NGInlineChildLayoutContext context(inline_node,
-                                     container_builder.GetWritingDirection());
-  container_builder.SetItemsBuilder(context.ItemsBuilder());
+  NGFragmentItemsBuilder items_builder(inline_node,
+                                       container_builder.GetWritingDirection());
+  container_builder.SetItemsBuilder(&items_builder);
+  context.SetItemsBuilder(&items_builder);
   scoped_refptr<const NGLayoutResult> layout_result =
       inline_node.Layout(constraint_space, nullptr, &context);
   const auto& line1 = layout_result->PhysicalFragment();

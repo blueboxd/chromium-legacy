@@ -170,6 +170,7 @@ class CONTENT_EXPORT NavigationRequest
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
       bool browser_initiated,
+      bool was_opener_suppressed,
       const base::UnguessableToken* initiator_frame_token,
       int initiator_process_id,
       const std::string& extra_headers,
@@ -573,14 +574,13 @@ class CONTENT_EXPORT NavigationRequest
   void SetNavigationClient(
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client);
 
-  // Whether the new document loaded will be loaded from an MHTML archive.
-  // Contrary to IsForMhtmlSubframe(), this isn't scoped to subframe, but can't
-  // be called prior to receiving the final response.
-  bool IsLoadedFromMhtmlArchive();
+  // Whether the navigation loads an MHTML document or a subframe of an MHTML
+  // document.  The navigation might or might not be fullfilled from the MHTML
+  // archive (see `is_mhtml_subframe_loaded_from_achive` in the NeedsUrlLoader
+  // method).  The navigation will commit in the main frame process.
+  bool IsMhtmlOrSubframe();
 
-  // Whether the new document created by this navigation will be loaded from a
-  // MHTML document. In this case, the navigation will commit in the main frame
-  // process without needing any network requests.
+  // Whether this navigation navigates a subframe of an MHTML document.
   bool IsForMhtmlSubframe() const;
 
   std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
@@ -801,7 +801,8 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       RenderFrameHostImpl* rfh_restored_from_back_forward_cache,
-      int initiator_process_id);
+      int initiator_process_id,
+      bool was_opener_suppressed);
 
   // Checks if the response requests an isolated origin (using either origin
   // policy or the Origin-Isolation header), and if so opts in the origin to be
@@ -1462,6 +1463,11 @@ class CONTENT_EXPORT NavigationRequest
   // only valid in conjunction with it.
   int initiator_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
+  // Whether a navigation in a new window had the opener suppressed. False if
+  // the navigation is not in a new window. Can only be true for renderer
+  // initiated navigations which use `CreateBrowserInitiated()`.
+  bool was_opener_suppressed_;
+
   // This tracks a connection between the current pending entry and this
   // request, such that the pending entry can be discarded if no requests are
   // left referencing it.
@@ -1523,8 +1529,11 @@ class CONTENT_EXPORT NavigationRequest
   // net::ERR_BLOCKED_BY_CLIENT.
   bool silently_ignore_blocked_by_client_ = false;
 
-  // Whether the new document will be loaded from an MHTML archive.
-  bool is_loaded_from_mhtml_archive_ = false;
+  // Whether the navigation loads an MHTML document or a subframe of an MHTML
+  // document.  The navigation might or might not be fullfilled from the MHTML
+  // archive (see `is_mhtml_subframe_loaded_from_achive` in the NeedsUrlLoader
+  // method).
+  bool is_mhtml_or_subframe_ = false;
 
   // Observers listening to cookie access notifications for the network requests
   // made by this navigation.

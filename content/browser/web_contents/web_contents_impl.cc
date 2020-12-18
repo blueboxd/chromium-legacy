@@ -832,9 +832,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       audio_stream_monitor_(this),
       media_web_contents_observer_(
           std::make_unique<MediaWebContentsObserver>(this)),
-#if !defined(OS_ANDROID)
-      page_scale_factor_is_one_(true),
-#endif  // !defined(OS_ANDROID)
       is_overlay_content_(false),
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}) {
@@ -3663,6 +3660,7 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
           std::make_unique<NavigationController::LoadURLParams>(
               params.target_url);
       load_params->initiator_origin = opener->GetLastCommittedOrigin();
+      load_params->initiator_frame_token = opener->GetFrameToken();
       // Avoiding setting |load_params->source_site_instance| when
       // |opener_suppressed| is true, because in that case we do not want to use
       // the old SiteInstance and/or BrowsingInstance.  See also the test here:
@@ -3670,7 +3668,9 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
       load_params->referrer = params.referrer.To<Referrer>();
       load_params->transition_type = ui::PAGE_TRANSITION_LINK;
       load_params->is_renderer_initiated = true;
+      load_params->was_opener_suppressed = true;
       load_params->has_user_gesture = has_user_gesture;
+      load_params->impression = params.impression;
 
       if (delegate_ && !is_guest &&
           !delegate_->ShouldResumeRequestsForCreatedWindow()) {
@@ -5789,22 +5789,21 @@ void WebContentsImpl::OnPageScaleFactorChanged(RenderFrameHostImpl* source,
 #if !defined(OS_ANDROID)
   // While page scale factor is used on mobile, this PageScaleFactorIsOne logic
   // is only needed on desktop.
+  bool was_one = page_scale_factor_ == 1.f;
   bool is_one = page_scale_factor == 1.f;
-  if (is_one != page_scale_factor_is_one_) {
-    page_scale_factor_is_one_ = is_one;
-
+  if (is_one != was_one) {
     HostZoomMapImpl* host_zoom_map =
         static_cast<HostZoomMapImpl*>(HostZoomMap::GetForWebContents(this));
 
     if (host_zoom_map) {
       host_zoom_map->SetPageScaleFactorIsOneForView(
           source->GetProcess()->GetID(),
-          source->GetRenderViewHost()->GetRoutingID(),
-          page_scale_factor_is_one_);
+          source->GetRenderViewHost()->GetRoutingID(), is_one);
     }
   }
 #endif  // !defined(OS_ANDROID)
 
+  page_scale_factor_ = page_scale_factor;
   observers_.ForEachObserver([&](WebContentsObserver* observer) {
     observer->OnPageScaleFactorChanged(page_scale_factor);
   });
@@ -8610,12 +8609,10 @@ void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   OPTIONAL_TRACE_EVENT1("content",
                         "WebContentsImpl::UpdateWebContentsVisibility",
                         "visibility", visibility);
-  // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
-  // (for power and speed impact assessment) or when
+  // Occlusion is disabled when
   // |switches::kDisableBackgroundingOccludedWindowsForTesting| is specified on
   // the command line (to avoid flakiness in browser tests).
   const bool occlusion_is_disabled =
-      !base::FeatureList::IsEnabled(features::kWebContentsOcclusion) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableBackgroundingOccludedWindowsForTesting);
   if (occlusion_is_disabled && visibility == Visibility::OCCLUDED)

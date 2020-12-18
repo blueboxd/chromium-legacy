@@ -736,8 +736,9 @@ TEST_F(TemplateURLServiceTest, CreateFromPlayAPI) {
   const std::string search_url = "http://www.google.com/foo/bar";
   const std::string suggest_url = "http://www.google.com/suggest";
   const std::string favicon_url = "http://favicon.url";
-  TemplateURL* t_url = model()->CreateOrUpdateTemplateURLFromPlayAPIData(
+  TemplateURL* t_url = model()->CreatePlayAPISearchEngine(
       short_name, keyword, search_url, suggest_url, favicon_url);
+  ASSERT_TRUE(t_url);
   ASSERT_EQ(short_name, t_url->short_name());
   ASSERT_EQ(keyword, t_url->keyword());
   ASSERT_EQ(search_url, t_url->url());
@@ -770,14 +771,15 @@ TEST_F(TemplateURLServiceTest, UpdateFromPlayAPI) {
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.last_visited = Time::FromTimeT(100);
+  // Play API only replaces safe_for_autoreplace engines.
+  data.safe_for_autoreplace = true;
   TemplateURL* t_url = model()->Add(std::make_unique<TemplateURL>(data));
 
   VerifyObserverCount(1);
   base::RunLoop().RunUntilIdle();
 
-  Time now = Time::Now();
   auto clock = std::make_unique<base::SimpleTestClock>();
-  clock->SetNow(now);
+  clock->SetNow(base::Time::FromTimeT(200));
   model()->set_clock(std::move(clock));
 
   // Reset the short name and url and make sure it takes.
@@ -785,10 +787,13 @@ TEST_F(TemplateURLServiceTest, UpdateFromPlayAPI) {
   const std::string new_search_url = "new_url";
   const std::string new_suggest_url = "new_suggest_url";
   const std::string new_favicon_url = "new_favicon_url";
-  TemplateURL* updated_turl = model()->CreateOrUpdateTemplateURLFromPlayAPIData(
-      new_short_name, keyword, new_search_url, new_suggest_url,
-      new_favicon_url);
-  ASSERT_EQ(t_url, updated_turl);
+
+  // The update creates a new Play API engine and deletes the old replaceable
+  // one.
+  t_url = model()->CreatePlayAPISearchEngine(new_short_name, keyword,
+                                             new_search_url, new_suggest_url,
+                                             new_favicon_url);
+  ASSERT_TRUE(t_url);
   ASSERT_EQ(new_short_name, t_url->short_name());
   ASSERT_EQ(keyword, t_url->keyword());
   ASSERT_EQ(new_search_url, t_url->url());
@@ -947,7 +952,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   model()->SetUserSelectedDefaultSearchProvider(user_dse);
   EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
 
-  // Remove bing.
+  // Remove bing. It will not be restored because of the extension below.
   TemplateURL* bing = model()->GetTemplateURLForKeyword(
       ASCIIToUTF16("bing.com"));
   ASSERT_TRUE(bing);
@@ -959,6 +964,14 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
                                   "http://abcdefg", Time());
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com")));
 
+  // Remove yahoo. It will be restored later, but for now verify we removed it.
+  TemplateURL* yahoo =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("yahoo.com"));
+  ASSERT_TRUE(yahoo);
+  model()->Remove(yahoo);
+  EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("yahoo.com")));
+
+  // Now perform the actual repair that should restore Yahoo.
   model()->RepairPrepopulatedSearchEngines();
 
   // Google is default.
@@ -968,11 +981,21 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   EXPECT_EQ("www.google.com",
             google->GenerateSearchURL(model()->search_terms_data()).host());
 
-  // Bing was repaired.
-  bing =
-      model()->FindNonExtensionTemplateURLForKeyword(ASCIIToUTF16("bing.com"));
-  ASSERT_TRUE(bing);
-  EXPECT_EQ(TemplateURL::NORMAL, bing->type());
+  // Bing was repaired, but the NORMAL engine is still gone because the bing
+  // extension caused the prepopulated engine to be auto-deleted.
+  bing = nullptr;
+  for (TemplateURL* turl : model()->GetTemplateURLs()) {
+    if (turl->keyword() == ASCIIToUTF16("bing.com") &&
+        turl->type() == TemplateURL::NORMAL) {
+      bing = turl;
+      break;
+    }
+  }
+  EXPECT_FALSE(bing);
+
+  // Yahoo was repaired and is now restored.
+  yahoo = model()->GetTemplateURLForKeyword(ASCIIToUTF16("yahoo.com"));
+  EXPECT_TRUE(yahoo);
 
   // User search engine is preserved.
   EXPECT_EQ(user_dse, model()->GetTemplateURLForHost("www.goo.com"));

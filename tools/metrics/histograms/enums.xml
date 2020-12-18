@@ -41860,6 +41860,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Gaia ID mismatch"/>
 </enum>
 
+<enum name="LocationPermissionsFirstRunModalIOSEnum">
+  <int value="0" label="iOS native system location prompt shown"/>
+  <int value="1" label="No system prompt shown, modal dismissed"/>
+</enum>
+
 <enum name="LocationPermissionsIOSUI">
   <int value="0" label="First Run Location Prompt Not Shown"/>
   <int value="1" label="First Run Location Permissions Modal Shown"/>
@@ -42189,6 +42194,7 @@ from previous Chrome versions.
   <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
   <int value="-1971086581" label="print-scaling"/>
   <int value="-1969636234" label="OmniboxRefinedFocusState:disabled"/>
+  <int value="-1966445414" label="StylusBatteryStatus:disabled"/>
   <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
   <int value="-1963838301"
@@ -42570,6 +42576,7 @@ from previous Chrome versions.
   <int value="-1621963267" label="EnableAssistantLauncherUI:enabled"/>
   <int value="-1620804800" label="NoScriptPreviews:disabled"/>
   <int value="-1620568042" label="FeaturePolicy:disabled"/>
+  <int value="-1620230777" label="StylusBatteryStatus:enabled"/>
   <int value="-1620046590" label="UseMediaHistoryStore:enabled"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
   <int value="-1619146163" label="OverrideSitePrefsForHrefTranslate:disabled"/>
@@ -44742,6 +44749,7 @@ from previous Chrome versions.
   <int value="418769094" label="MixedContentSiteSetting:enabled"/>
   <int value="420160748" label="CornerShortcuts:enabled"/>
   <int value="422307097" label="PhysicalWeb:disabled"/>
+  <int value="422670720" label="ContextualSearchLongpressPanelHelp:disabled"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
@@ -45478,6 +45486,7 @@ from previous Chrome versions.
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1139756271" label="WebOTPCrossDevice:enabled"/>
   <int value="1140541604" label="WinrtGeolocationImplementation:enabled"/>
+  <int value="1141918949" label="ContextualSearchLongpressPanelHelp:enabled"/>
   <int value="1142515376" label="enable-nacl"/>
   <int value="1142788238" label="FontCacheScaling:disabled"/>
   <int value="1142970266"
@@ -46564,6 +46573,7 @@ from previous Chrome versions.
   <int value="0" label="No login"/>
   <int value="1" label="OAuth login"/>
   <int value="2" label="OAuth first time login flow"/>
+  <int value="3" label="Field trial logged-in site"/>
 </enum>
 
 <enum name="LoginFailureReason">
@@ -50773,6 +50783,19 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Bluetooth error"/>
   <int value="6" label="BLE error"/>
   <int value="7" label="WiFiLAN error"/>
+</enum>
+
+<enum name="NearbyShareTransferFinalStatus">
+  <int value="0" label="Complete"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Awaiting remote acceptance failed"/>
+  <int value="3" label="Failed"/>
+  <int value="4" label="Rejected"/>
+  <int value="5" label="Cancelled"/>
+  <int value="6" label="Timed out"/>
+  <int value="7" label="Media unavailable"/>
+  <int value="8" label="Not enough space"/>
+  <int value="9" label="Unsupported attachment type"/>
 </enum>
 
 <enum name="NearbyShareTransferNotCompletedReason">
@@ -55411,7 +55434,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="600" label="Preferred Search Engine"/>
   <int value="601" label="Assistant: On/Off"/>
   <int value="602" label="Assistant: Related Info"/>
-  <int value="603" label="Assistant: Quick Answers"/>
+  <int value="603" label="Assistant: Quick Answers (Deprecated)"/>
   <int value="604" label="Assistant: Ok Google"/>
   <int value="605" label="Assistant: Notifications"/>
   <int value="606" label="Assistant: Voice Input"/>
@@ -57784,6 +57807,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Generic string with org name"/>
   <int value="2" label="Warning string without org name"/>
   <int value="3" label="Warning string with org name"/>
+</enum>
+
+<enum name="PasswordProtectionReferringAppSource">
+  <int value="0" label="Source unspecified"/>
+  <int value="1" label="Known app id"/>
+  <int value="2" label="Unknown app id"/>
+  <int value="3" label="Activity referrer"/>
 </enum>
 
 <enum name="PasswordProtectionRequestOutcome">
@@ -66128,6 +66158,34 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Phishing classifier was destructed"/>
 </enum>
 
+<enum name="SBThreatType">
+  <int value="0" label="Unused"/>
+  <int value="1" label="Safe"/>
+  <int value="2" label="URL phishing"/>
+  <int value="3" label="URL malware"/>
+  <int value="4" label="URL unwanted"/>
+  <int value="5" label="URL binary malware"/>
+  <int value="6" label="URL client side phishing"/>
+  <int value="7" label="Extension"/>
+  <int value="8" label="URL client side malware"/>
+  <int value="9" label="Blacklisted resource"/>
+  <int value="10" label="API abuse"/>
+  <int value="11" label="Subresource filter"/>
+  <int value="12" label="CSD whitelist"/>
+  <int value="13" label="URL password protection phishing"/>
+  <int value="14" label="Saved password reuse"/>
+  <int value="15" label="Signed in sync password reuse"/>
+  <int value="16" label="Signed in non sync password reuse"/>
+  <int value="17" label="Blocked ad redirect"/>
+  <int value="18" label="Ad sample"/>
+  <int value="19" label="Blocked ad popup"/>
+  <int value="20" label="Suspicious site"/>
+  <int value="21" label="Enterprise password reuse"/>
+  <int value="22" label="Billing"/>
+  <int value="23" label="Apk download"/>
+  <int value="24" label="High confidence allowlist"/>
+</enum>
+
 <enum name="ScanAppEntryPoint">
 <!-- This must be kept current with ScanAppEntryPoint in
      chromeos/components/scanning/scanning_uma.h.
@@ -66549,6 +66607,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="SYNC_ADD_FAIL_OTHER_ERROR"/>
   <int value="6" label="SYNC_UPDATE_SUCCESS"/>
   <int value="7" label="SYNC_UPDATE_CONVERTED_TO_ADD"/>
+  <int value="8" label="MIGRATE_SAFE_FOR_AUTOREPLACE_PLAY_API_ENGINE"/>
 </enum>
 
 <enum name="SearchWidgetUseInfo">

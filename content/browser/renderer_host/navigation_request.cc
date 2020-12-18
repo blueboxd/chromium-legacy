@@ -708,6 +708,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
     bool browser_initiated,
+    bool was_opener_suppressed,
     const base::UnguessableToken* initiator_frame_token,
     int initiator_process_id,
     const std::string& extra_headers,
@@ -763,7 +764,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
       entry, std::move(navigation_ui_data), mojo::NullAssociatedRemote(),
       mojo::NullRemote(), rfh_restored_from_back_forward_cache,
-      initiator_process_id));
+      initiator_process_id, was_opener_suppressed));
 
   if (frame_entry) {
     navigation_request->blob_url_loader_factory_ =
@@ -870,6 +871,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   int initiator_process_id =
       frame_tree_node->current_frame_host()->GetProcess()->GetID();
 
+  // `was_opener_suppressed` can be true for renderer initiated navigations, but
+  // only in cases which get routed through `CreateBrowserInitiated()` instead.
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -880,7 +883,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       nullptr,  // navigation_ui_data
       std::move(navigation_client), std::move(navigation_initiator),
       nullptr,  // rfh_restored_from_back_forward_cache
-      initiator_process_id));
+      initiator_process_id,
+      /*was_opener_suppressed=*/false));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
   navigation_request->prefetched_signed_exchange_cache_ =
@@ -977,7 +981,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       nullptr /* frame_navigation_entry */, nullptr /* navigation_entry */,
       nullptr /* navigation_ui_data */, mojo::NullAssociatedRemote(),
       mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */,
-      ChildProcessHost::kInvalidUniqueID /* initiator_process_id */));
+      ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
+      false /* was_opener_suppressed */));
 
   navigation_request->web_bundle_navigation_info_ =
       std::move(web_bundle_navigation_info);
@@ -1009,7 +1014,8 @@ NavigationRequest::NavigationRequest(
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     RenderFrameHostImpl* rfh_restored_from_back_forward_cache,
-    int initiator_process_id)
+    int initiator_process_id,
+    bool was_opener_suppressed)
     : frame_tree_node_(frame_tree_node),
       is_for_commit_(is_for_commit),
       common_params_(std::move(common_params)),
@@ -1039,6 +1045,7 @@ NavigationRequest::NavigationRequest(
           frame_tree_node->current_frame_host()->GetRoutingID())),
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
+      was_opener_suppressed_(was_opener_suppressed),
       coop_status_(frame_tree_node, common_params_->initiator_origin),
       previous_page_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
@@ -1435,6 +1442,9 @@ void NavigationRequest::BeginNavigation() {
     return;
   }
 
+  if (IsForMhtmlSubframe())
+    is_mhtml_or_subframe_ = true;
+
   if (!NeedsUrlLoader()) {
     // The types of pages that don't need a URL Loader should never get served
     // from the BackForwardCache.
@@ -1444,7 +1454,6 @@ void NavigationRequest::BeginNavigation() {
     // it immediately.
     EnterChildTraceEvent("ResponseStarted", this);
 
-    is_loaded_from_mhtml_archive_ = IsForMhtmlSubframe();
     ComputeSandboxFlagsToCommit(/*response_head=*/nullptr);
 
     // Same-document navigations occur in the currently loaded document. See
@@ -1468,8 +1477,9 @@ void NavigationRequest::BeginNavigation() {
                                  frame_host_choice_reason);
       SCOPED_CRASH_KEY_BOOL("nav_request", "has_source_instance",
                             !!GetSourceSiteInstance());
-      // Crash keys capturing values affecting |was_opener_suppressed| in
-      // RequiresInitiatorBasedSourceSiteInstance:
+      // Crash keys capturing values for/related to |was_opener_suppressed_|.
+      SCOPED_CRASH_KEY_BOOL("nav_request", "was_opener_suppressed",
+                            was_opener_suppressed_);
       SCOPED_CRASH_KEY_BOOL("nav_request", "is_main_frame", IsInMainFrame());
       SCOPED_CRASH_KEY_BOOL("nav_request", "got_initiator_routing_id",
                             GetInitiatorFrameToken() != base::nullopt);
@@ -2229,8 +2239,8 @@ void NavigationRequest::OnResponseStarted(
 
   bool is_mhtml_archive = response_head_->mime_type == "multipart/related" ||
                           response_head_->mime_type == "message/rfc822";
-
-  is_loaded_from_mhtml_archive_ = is_mhtml_archive || IsForMhtmlSubframe();
+  if (is_mhtml_archive)
+    is_mhtml_or_subframe_ = true;
 
   ComputeSandboxFlagsToCommit(response_head_.get());
 
@@ -3211,7 +3221,7 @@ void NavigationRequest::CommitErrorPage(
     }
   }
 
-  is_loaded_from_mhtml_archive_ = false;
+  is_mhtml_or_subframe_ = false;
   sandbox_flags_to_commit_.reset();
   // TODO(https://crbug.com/1158370): Apparently, error pages inherit sandbox
   // flags from their parent/opener. Document loaded from the network
@@ -4084,21 +4094,18 @@ bool NavigationRequest::IsDeferredForTesting() {
   return throttle_runner_->GetDeferringThrottle() != nullptr;
 }
 
-bool NavigationRequest::IsLoadedFromMhtmlArchive() {
+bool NavigationRequest::IsMhtmlOrSubframe() {
   DCHECK(state_ >= WILL_PROCESS_RESPONSE ||
          state_ == WILL_START_REQUEST && !NeedsUrlLoader());
-  return is_loaded_from_mhtml_archive_;
+
+  return is_mhtml_or_subframe_;
 }
 
 bool NavigationRequest::IsForMhtmlSubframe() const {
-  return frame_tree_node_->parent() &&
-         frame_tree_node_->frame_tree()
-             ->root()
-             ->current_frame_host()
-             ->is_mhtml_document() &&
-         // Unlike every other MHTML subframe URLs, data-url are loaded via the
-         // URL, not from the MHTML archive. See https://crbug.com/969696.
-         !common_params_->url.SchemeIs(url::kDataScheme);
+  return frame_tree_node_->parent() && frame_tree_node_->frame_tree()
+                                           ->root()
+                                           ->current_frame_host()
+                                           ->is_mhtml_document();
 }
 
 void NavigationRequest::CancelDeferredNavigationInternal(
@@ -4406,8 +4413,14 @@ void NavigationRequest::SetNavigationClient(
 }
 
 bool NavigationRequest::NeedsUrlLoader() {
+  bool is_mhtml_subframe_loaded_from_achive =
+      IsForMhtmlSubframe() &&
+      // Unlike all other MHTML subframe URLs, data-url are loaded via the
+      // URL, not from the MHTML archive. See https://crbug.com/969696.
+      !common_params_->url.SchemeIs(url::kDataScheme);
+
   return IsURLHandledByNetworkStack(common_params_->url) && !IsSameDocument() &&
-         !IsForMhtmlSubframe();
+         !is_mhtml_subframe_loaded_from_achive;
 }
 
 bool NavigationRequest::IsWebSecureContext() const {
@@ -4580,7 +4593,7 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
 
   // MHTML documents should commit as an opaque origin. They should not be able
   // to make network request on behalf of the real origin.
-  DCHECK(!IsLoadedFromMhtmlArchive() || use_opaque_origin);
+  DCHECK(!IsMhtmlOrSubframe() || use_opaque_origin);
 
   // https://crbug.com/1041376) of the origin that will be committed because of
   // |this| NavigationRequest.
@@ -4601,7 +4614,7 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
   // policy of the process being used. This is because the content is loaded
   // from the MHTML archive within the process. There are no data loaded from
   // the network.
-  if (IsLoadedFromMhtmlArchive() && !IsInMainFrame())
+  if (IsForMhtmlSubframe())
     return origin;
 
   int process_id = target_frame->GetProcess()->GetID();
@@ -5152,17 +5165,7 @@ bool NavigationRequest::RequiresInitiatorBasedSourceSiteInstance() const {
       common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
           .IsValid();
 
-  // If renderer-initiated navigation of a main frame |has_valid_initiator| but
-  // has no |initiator_frame_token_|, then it means that the opener was
-  // suppressed (and therefore that a source SiteInstance is not needed). Note
-  // that |initiator_frame_token_| is always base::nullopt during
-  // browser-initiated navigations (including session restore or history
-  // navigations).
-  const bool was_opener_suppressed =
-      has_valid_initiator && frame_tree_node()->IsMainFrame() &&
-      !initiator_frame_token_.has_value() && !browser_initiated_;
-
-  return is_data_or_about && has_valid_initiator && !was_opener_suppressed &&
+  return is_data_or_about && has_valid_initiator && !was_opener_suppressed_ &&
          !dest_site_instance_;
 }
 
@@ -5314,7 +5317,7 @@ void NavigationRequest::ComputeSandboxFlagsToCommit(
   // potentially dangerous. For this reason we force the document to be
   // sandboxed, providing exceptions only for creating new windows. This
   // includes disallowing javascript and using an opaque origin.
-  if (IsLoadedFromMhtmlArchive()) {
+  if (IsMhtmlOrSubframe()) {
     *sandbox_flags_to_commit_ |= ~network::mojom::WebSandboxFlags::kPopups &
                                  ~network::mojom::WebSandboxFlags::
                                      kPropagatesToAuxiliaryBrowsingContexts;

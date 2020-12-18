@@ -3358,12 +3358,12 @@
   {
     "name": "mixed-forms-disable-autofill",
     "owners": [ "carlosil" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "mixed-forms-interstitial",
     "owners": [ "carlosil" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "mobile-google-srp",
@@ -4582,11 +4582,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "stop-non-timers-in-background",
-    "owners": [ "fdoray" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "storage-access-api",
     "owners": [ "brandm@microsoft.com" ],
     "expiry_milestone": 90
@@ -4600,6 +4595,11 @@
     // with a stronger isolation policy for users who may not care about
     // breaking compatibility with document.domain.
     "expiry_milestone": 90
+  },
+  {
+    "name": "stylus-battery-status",
+    "owners": ["amehfooz"],
+    "expiry_milestone": 91
   },
   {
     "name": "suggested-content-toggle",
@@ -4985,11 +4985,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "web-contents-occlusion",
-    "owners": [ "davidbienvenu", "fdoray" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "web-feed",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 99
@@ -5072,6 +5067,11 @@
     "name": "window-naming",
     "owners": [ "ellyjones" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "xsurface-metrics-reporting",
+    "owners": [ "//chrom/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 99
   },
   {
     "name": "zero-copy-video-capture",

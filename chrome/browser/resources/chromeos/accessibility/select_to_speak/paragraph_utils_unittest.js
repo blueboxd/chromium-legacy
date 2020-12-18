@@ -248,6 +248,33 @@ TEST_F(
     });
 
 TEST_F(
+    'SelectToSpeakParagraphUnitTest', 'BuildNodeGroupAcrossParagraphs',
+    function() {
+      const root = {role: 'rootWebArea'};
+      const paragraph1 =
+          {role: 'paragraph', display: 'block', parent: root, root};
+      const text1 =
+          {role: 'staticText', parent: paragraph1, name: 'text1', root};
+      const text2 =
+          {role: 'staticText', parent: paragraph1, name: 'text2', root};
+      const paragraph2 =
+          {role: 'paragraph', display: 'block', parent: root, root};
+      const text3 =
+          {role: 'staticText', parent: paragraph2, name: 'text3', root};
+      const result = ParagraphUtils.buildNodeGroup(
+          [text1, text2, text3], 0, {splitOnParagraph: false});
+      assertEquals('text1 text2 text3 ', result.text);
+      assertEquals(2, result.endIndex);
+      assertEquals(3, result.nodes.length);
+      assertEquals(0, result.nodes[0].startChar);
+      assertEquals(text1, result.nodes[0].node);
+      assertEquals(6, result.nodes[1].startChar);
+      assertEquals(text2, result.nodes[1].node);
+      assertEquals(12, result.nodes[2].startChar);
+      assertEquals(text3, result.nodes[2].node);
+    });
+
+TEST_F(
     'SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtLanguageBoundary',
     function() {
       const splitOnLanguage = true;
@@ -484,3 +511,168 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupWithSvg', function() {
       [inline1, inline2], 0, {splitOnLanguage: false});
   assertEquals('Hello, world! ', result.text);
 });
+
+TEST_F(
+    'SelectToSpeakParagraphUnitTest', 'findNodeFromNodeGroupByCharIndex',
+    function() {
+      // The array has four inline text nodes and one static text node.
+      const nodeGroup =
+          ParagraphUtils.buildNodeGroup(generateNodesForParagraph(), 0);
+      // Start index = 0
+      const firstInline = 'The first';
+      // Start index = 9
+      const secondInline = ' sentence.';
+      // Start index = 20
+      const thirdInline = 'The second';
+      // Start index = 30
+      const fourthInline = ' sentence is longer.';
+      // Start index = 51
+      const thirdStatic = 'No child sentence.';
+
+      let result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 0 /* charIndex */);
+      assertEquals(result.node.name, firstInline);
+      assertEquals(result.offset, 0);
+
+      result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 3 /* charIndex */);
+      assertEquals(result.node.name, firstInline);
+      assertEquals(result.offset, 3);
+
+      result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 10 /* charIndex */);
+      assertEquals(result.node.name, secondInline);
+      assertEquals(result.offset, 1);
+
+      result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 20 /* charIndex */);
+      assertEquals(result.node.name, thirdInline);
+      assertEquals(result.offset, 0);
+
+      result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 33 /* charIndex */);
+      assertEquals(result.node.name, fourthInline);
+      assertEquals(result.offset, 3);
+
+      result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 52 /* charIndex */);
+      assertEquals(result.node.name, thirdStatic);
+      assertEquals(result.offset, 1);
+
+      result = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+          nodeGroup, 100 /* charIndex */);
+      assertEquals(result.node, null);
+    });
+
+TEST_F(
+    'SelectToSpeakParagraphUnitTest', 'BuildSingleNodeGroupWithOffset',
+    function() {
+      // The array has four inline text nodes and one static text node.
+      // Their starting indexes are 0, 9, 20, 30, and 51.
+      const nodes = generateNodesForParagraph();
+      // Start index = 0
+      const firstInline = 'The first';
+      // Start index = 9
+      const secondInline = ' sentence.';
+      const firstSentence = firstInline + secondInline + ' ';
+      // Start index = 20
+      const thirdInline = 'The second';
+      // Start index = 30
+      const fourthInline = ' sentence is longer.';
+      const secondSentence = thirdInline + fourthInline + ' ';
+      // Start index = 51
+      const thirdStatic = 'No child sentence.';
+      const thirdSentence = thirdStatic + ' ';
+
+      let nodeGroup, startIndexInGroup, endIndexInGroup;
+      ({nodeGroup, startIndexInGroup, endIndexInGroup} =
+           ParagraphUtils.buildSingleNodeGroupWithOffset(nodes));
+      assertEquals(
+          nodeGroup.text, firstSentence + secondSentence + thirdSentence);
+      assertEquals(startIndexInGroup, undefined);
+      assertEquals(endIndexInGroup, undefined);
+
+      ({nodeGroup, startIndexInGroup, endIndexInGroup} =
+           ParagraphUtils.buildSingleNodeGroupWithOffset(
+               nodes, 5 /* startIndex */));
+      assertEquals(
+          nodeGroup.text, firstSentence + secondSentence + thirdSentence);
+      assertEquals(startIndexInGroup, 5);
+      assertEquals(endIndexInGroup, undefined);
+
+      ({nodeGroup, startIndexInGroup, endIndexInGroup} =
+           ParagraphUtils.buildSingleNodeGroupWithOffset(
+               nodes.slice(1), 0 /* startIndex */));
+      assertEquals(
+          nodeGroup.text, firstSentence + secondSentence + thirdSentence);
+      assertEquals(startIndexInGroup, 9);
+      assertEquals(endIndexInGroup, undefined);
+
+      ({nodeGroup, startIndexInGroup, endIndexInGroup} =
+           ParagraphUtils.buildSingleNodeGroupWithOffset(
+               nodes.slice(2, 5), 1 /* startIndex */, 1 /* endIndex */));
+      assertEquals(nodeGroup.text, secondSentence + thirdSentence);
+      assertEquals(startIndexInGroup, 1);
+      assertEquals(endIndexInGroup, 32);
+
+      ({nodeGroup, startIndexInGroup, endIndexInGroup} =
+           ParagraphUtils.buildSingleNodeGroupWithOffset(
+               nodes.slice(4, 5), undefined, 5 /* endIndex */));
+      assertEquals(nodeGroup.text, thirdSentence);
+      assertEquals(startIndexInGroup, undefined);
+      assertEquals(endIndexInGroup, 5);
+    });
+
+/**
+ * Creates an array of nodes that represents a paragraph.
+ * @return {Array<AutomationNode>}
+ */
+function generateNodesForParagraph() {
+  const root = {role: 'rootWebArea'};
+  const paragraph = {role: 'paragraph', display: 'block', parent: root, root};
+  const text1 = {
+    name: 'The first sentence.',
+    role: 'staticText',
+    parent: paragraph
+  };
+  const inlineText1 = {
+    role: 'inlineTextBox',
+    name: 'The first',
+    indexInParent: 0,
+    parent: text1
+  };
+  const inlineText2 = {
+    role: 'inlineTextBox',
+    name: ' sentence.',
+    indexInParent: 1,
+    parent: text1
+  };
+  text1.children = [inlineText1, inlineText2];
+
+  const text2 = {
+    name: 'The second sentence is longer.',
+    role: 'staticText',
+    parent: paragraph
+  };
+  const inlineText3 = {
+    role: 'inlineTextBox',
+    name: 'The second',
+    indexInParent: 0,
+    parent: text2
+  };
+  const inlineText4 = {
+    role: 'inlineTextBox',
+    name: ' sentence is longer.',
+    indexInParent: 1,
+    parent: text2
+  };
+  text2.children = [inlineText3, inlineText4];
+
+  const text3 = {
+    name: 'No child sentence.',
+    role: 'staticText',
+    parent: paragraph
+  };
+
+  return [inlineText1, inlineText2, inlineText3, inlineText4, text3];
+}

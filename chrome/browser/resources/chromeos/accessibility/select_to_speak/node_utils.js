@@ -547,6 +547,112 @@ class NodeUtils {
   }
 
   /**
+   * Gets the remaining content of a paragraph with an assigned position. The
+   * position is defined by the |charIndex| to the text of |nodeGroup|. If
+   * |direction| is set to forward, we will look for trailing content after the
+   * position. Otherwise, we will get the leading content before the position.
+   * The remaining content is returned as a list of nodes with offset.
+   * @param {!ParagraphUtils.NodeGroup} nodeGroup The nodeGroup of the assigned
+   *     position. The nodeGroup may contain the content of the entire paragraph
+   *     or only a part of the paragraph.
+   * @param {number} charIndex The char index of the position. The index is
+   *     relative to the text content of the |nodeGroup|. This index is
+   *     inclusive for forward searching: if we set |direction| to forward with
+   *     a 0 |charIndex|, we will get the remaining content of the paragraph
+   *     including all the content in the input |nodeGroup|. However, it is
+   *     exclusive for backward searching: when searching backward with a 0
+   *     |charIndex|, we will exclude all the content in the input |nodeGroup|.
+   * @param {constants.Dir} direction
+   * @return {!{nodes: !Array<!AutomationNode>,
+   *          offset: number}}
+   *    nodes: the nodes that have the remaining content.
+   *    offset: the offset for the nodes. When searching forward, the offset is
+   * into the name of the first node, and marks the start index of the remaining
+   * content in the first node, inclusively. For example, "Hello" with an offset
+   * 3 indicates that the remaining content is "lo". Otherwise, the offset is
+   * into the name of the last node, and marks the end index of the remaining
+   * content in the last node, exclusively. For example, "Hello" with an offset
+   * 3 indicates that the remaining content is "Hel".
+   */
+  static getNextNodesInParagraphFromNodeGroup(nodeGroup, charIndex, direction) {
+    if (nodeGroup.nodes.length === 0) {
+      return {nodes: [], offset: -1};
+    }
+    let {node: startNode, offset} =
+        ParagraphUtils.findNodeFromNodeGroupByCharIndex(nodeGroup, charIndex);
+
+    if (direction === constants.Dir.BACKWARD) {
+      // If we did not find a node for the charIndex, we use the first node of
+      // the current node group and set offset to 0. This enables us to get all
+      // the content before the current node group in this paragraph.
+      if (!startNode) {
+        const firstNode = nodeGroup.nodes[0].node;
+        const firstChildOfFirstNode = NodeUtils.getFirstLeafChild(firstNode);
+        startNode = firstChildOfFirstNode || firstNode;
+        offset = 0;
+      }
+
+      // Gets all the nodes before the startNode. We include the start node
+      // if it is not empty. Note that this is based on the assumption that
+      // this function will still include nodes with overflow text.
+      const leadingNodes =
+          NodeUtils.getNextNodesInParagraph(startNode, constants.Dir.BACKWARD);
+      const textInStartNode =
+          ParagraphUtils.getNodeName(startNode).substr(0, offset);
+      if (!ParagraphUtils.isWhitespace(textInStartNode)) {
+        leadingNodes.push(startNode);
+        return {nodes: leadingNodes, offset};
+      }
+      if (leadingNodes.length === 0) {
+        return {nodes: [], offset: -1};
+      }
+      // Returns all the nodes once we find a valid one among them.
+      for (const node of leadingNodes) {
+        if (NodeUtils.isValidLeafNode(node)) {
+          const lastLeadingNodeName =
+              ParagraphUtils.getNodeName(leadingNodes[leadingNodes.length - 1]);
+          return {nodes: leadingNodes, offset: lastLeadingNodeName.length};
+        }
+      }
+      return {nodes: [], offset: -1};
+    }
+
+    // If we search forward, we use the start node as anchor and look for
+    // remaining content. If we did not find a node for the charIndex, we use
+    // the last node of the current node group as the starting node and set
+    // offset to the length of the node's name. This enables us to get all the
+    // content within this paragraph but after the current node group.
+    if (!startNode) {
+      const lastNode = nodeGroup.nodes[nodeGroup.nodes.length - 1].node;
+      const lastChildOfLastNode = NodeUtils.getLastLeafChild(lastNode);
+      startNode = lastChildOfLastNode || lastNode;
+      offset = ParagraphUtils.getNodeName(startNode).length;
+    }
+
+    // Gets all the trailing nodes after the startNode. We include the start
+    // node if it is not empty. Note that this is based on the assumption that
+    // this function will still include nodes with overflow text.
+    const trailingNodes =
+        NodeUtils.getNextNodesInParagraph(startNode, constants.Dir.FORWARD);
+    const textInStartNode =
+        ParagraphUtils.getNodeName(startNode).substr(offset);
+    if (!ParagraphUtils.isWhitespace(textInStartNode)) {
+      const nodes = [startNode, ...trailingNodes];
+      return {nodes, offset};
+    }
+    if (trailingNodes.length === 0) {
+      return {nodes: [], offset: -1};
+    }
+    // Returns all the nodes once we find a valid one among them.
+    for (const node of trailingNodes) {
+      if (NodeUtils.isValidLeafNode(node)) {
+        return {nodes: trailingNodes, offset: 0};
+      }
+    }
+    return {nodes: [], offset: -1};
+  }
+
+  /**
    * @param {!AutomationNode} node
    * @return {boolean} Whether the given node is a valid leaf node that is can
    *     be ingested by Select-to-speak.

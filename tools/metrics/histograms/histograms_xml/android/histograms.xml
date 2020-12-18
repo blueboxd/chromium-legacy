@@ -274,12 +274,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>boliu@chromium.org</owner>
   <summary>
     Measures time from {type} child process starts to right before main. Only
-    recorded on Android N+.
+    recorded on Android N+. Zygote measurements are recorded on Q+.
   </summary>
   <token key="type">
-    <variant name=".All" summary="all"/>
+    <variant name=".All" summary="all (excluding zygote)"/>
     <variant name=".Isolated" summary="isolated"/>
     <variant name=".NotIsolated" summary="non-isolated"/>
+    <variant name=".Zygote" summary="app zygote"/>
   </token>
 </histogram>
 
@@ -509,6 +510,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Android.DefaultBrowserPromo.IntentReceivedFromDisambiguationSheet"
     enum="AndroidDefaultBrowserPromoOutcomeType" expires_after="2021-03-26">
+  <obsolete>
+    Removed Dec 2020; experiment is done and the data isn't useful.
+  </obsolete>
   <owner>lazzzis@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>pavely@chromium.org</owner>

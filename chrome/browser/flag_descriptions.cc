@@ -2247,12 +2247,6 @@ const char kStopInBackgroundDescription[] =
     "Stop scheduler task queues, in the background, "
     " after a grace period.";
 
-const char kStopNonTimersInBackgroundName[] =
-    "Stop non-timer task queues background";
-const char kStopNonTimersInBackgroundDescription[] =
-    "Stop non-timer task queues, in the background, "
-    "after a grace period.";
-
 const char kStorageAccessAPIName[] = "Storage Access API";
 const char kStorageAccessAPIDescription[] =
     "Enables the Storage Access API, allowing websites to request storage "
@@ -2288,6 +2282,12 @@ const char kSystemKeyboardLockDescription[] =
     "Enables websites to use the keyboard.lock() API to intercept system "
     "keyboard shortcuts and have the events routed directly to the website "
     "when in fullscreen mode.";
+
+const char kStylusBatteryStatusName[] =
+    "Show stylus battery stylus in the stylus tools menu";
+const char kStylusBatteryStatusDescription[] =
+    "Enables viewing the current stylus battery level in the stylus tools "
+    "menu.";
 
 const char kSystemTrayMicGainName[] = "Modify mic gain in the system tray";
 const char kSystemTrayMicGainDescription[] =
@@ -3339,6 +3339,10 @@ const char kWalletRequiresFirstSyncSetupCompleteDescription[] =
 const char kWebFeedName[] = "Web Feed";
 const char kWebFeedDescription[] =
     "Allows users to keep up with and consume web content.";
+
+const char kXsurfaceMetricsReportingName[] = "Xsurface Metrics Reporting";
+const char kXsurfaceMetricsReportingDescription[] =
+    "Allows metrics reporting state to be passed to Xsurface";
 
 // Non-Android -----------------------------------------------------------------
 
@@ -4825,15 +4829,6 @@ const char kDirectManipulationStylusDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
-
-const char kWebContentsOcclusionName[] = "Enable occlusion of web contents";
-const char kWebContentsOcclusionDescription[] =
-    "If enabled, web contents will behave as hidden when it is occluded by "
-    "other windows.";
-
-#endif  // defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)

@@ -2944,6 +2944,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
+    {"stylus-battery-status", flag_descriptions::kStylusBatteryStatusName,
+     flag_descriptions::kStylusBatteryStatusDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kStylusBatteryStatus)},
     {"system-tray-mic-gain", flag_descriptions::kSystemTrayMicGainName,
      flag_descriptions::kSystemTrayMicGainDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayMicGainSetting)},
@@ -3660,6 +3663,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2)},
     {"web-feed", flag_descriptions::kWebFeedName,
      flag_descriptions::kWebFeedDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kWebFeed)},
+    {"xsurface-metrics-reporting",
+     flag_descriptions::kXsurfaceMetricsReportingName,
+     flag_descriptions::kXsurfaceMetricsReportingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kWebFeed)},
     {"report-feed-user-actions", flag_descriptions::kReportFeedUserActionsName,
      flag_descriptions::kReportFeedUserActionsDescription, kOsAndroid,
@@ -4638,11 +4645,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabHoverCardImages)},
 
-    {"stop-non-timers-in-background",
-     flag_descriptions::kStopNonTimersInBackgroundName,
-     flag_descriptions::kStopNonTimersInBackgroundDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kStopNonTimersInBackground)},
-
     {"stop-in-background", flag_descriptions::kStopInBackgroundName,
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
@@ -5354,13 +5356,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill_assistant::features::kAutofillAssistantProactiveHelp)},
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
-    {"web-contents-occlusion", flag_descriptions::kWebContentsOcclusionName,
-     flag_descriptions::kWebContentsOcclusionDescription,
-     kOsWin | kOsMac | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
-#endif  // defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_ANDROID)
     {"mobile-identity-consistency",

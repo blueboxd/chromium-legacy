@@ -23,6 +23,7 @@ import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -198,8 +199,13 @@ public class SplitChromeApplication extends SplitCompatApplication {
                 }
 
                 // Make sure all splits are compiled correclty, and if not force a compile.
-                for (String sourceDir : getApplicationInfo().splitSourceDirs) {
-                    if (DexFile.isDexOptNeeded(sourceDir)) {
+                String[] splitNames = ApiHelperForO.getSplitNames(getApplicationInfo());
+                for (int i = 0; i < splitNames.length; i++) {
+                    // Ignore config splits like "config.en".
+                    if (splitNames[i].contains(".")) {
+                        continue;
+                    }
+                    if (DexFile.isDexOptNeeded(getApplicationInfo().splitSourceDirs[i])) {
                         performDexCompile();
                         return;
                     }

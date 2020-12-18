@@ -25,7 +25,7 @@ GEN('#include "ui/display/display_features.h"');
 
 // Generic test fixture for CrOS Polymer Settings elements to be overridden by
 // individual element tests.
-const OSSettingsBrowserTest = class extends PolymerTest {
+const OSSettingsBrowserTest = class extends Polymer2DeprecatedTest {
   /** @override */
   get browsePreload() {
     return 'chrome://os-settings/';
@@ -347,6 +347,7 @@ var OSSettingsAmbientModePhotosPageTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'ambient_mode_photos_page_test.js',
     ]);
   }
@@ -748,8 +749,9 @@ var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
     return {
       enabled: [
         'ash::features::kDisplayIdentification',
+        'ash::features::kKeyboardBasedDisplayArrangementInSettings',
         'display::features::kListAllDisplayModes'
-      ]
+      ],
     };
   }
 
@@ -802,14 +804,14 @@ TEST_F('OSSettingsDevicePageTest', 'StylusTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Stylus)).run();
 });
 
-// Tests for the Device page with keyboard arrangement flag enabled.
+// Tests for the Device page with keyboard arrangement flag disabled.
 // eslint-disable-next-line no-var
-var OSSettingsDevicePageKeyboardArrangementTest =
+var OSSettingsDevicePageKeyboardArrangementDisabledTest =
     class extends OSSettingsDevicePageTest {
   /** @override */
   get featureList() {
     return {
-      enabled: [
+      disabled: [
         'ash::features::kKeyboardBasedDisplayArrangementInSettings',
       ]
     };
@@ -817,9 +819,11 @@ var OSSettingsDevicePageKeyboardArrangementTest =
 };
 
 TEST_F(
-    'OSSettingsDevicePageKeyboardArrangementTest', 'KeyboardArrangement',
-    () => {
-      mocha.grep(assert(device_page_tests.TestNames.KeyboardArrangement)).run();
+    'OSSettingsDevicePageKeyboardArrangementDisabledTest',
+    'KeyboardArrangement', () => {
+      mocha
+          .grep(assert(device_page_tests.TestNames.KeyboardArrangementDisabled))
+          .run();
     });
 
 // Tests for the Fingerprint page.

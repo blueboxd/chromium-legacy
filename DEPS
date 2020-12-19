@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b9a172aaef229207376501f54e94df1b7f2237aa',
+  'skia_revision': 'b6a382975ae7bb6391324896e35ed02a96c34224',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c47b951ecbcbbba653db801bc7eb5f4fa5d72042',
+  'angle_revision': '011e0ad18679541b98b1d83bd86fd70bc7ea5664',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '70f81f6b5041da5b96777d038aecadad6295ed88',
+  'devtools_frontend_revision': '0cf9ac4bcdbfeefc7816b3cd34782f67259c039d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '64c5d601f89b7733091222796ff3631668fb2c25',
+  'dawn_revision': '5d4fd88a7403aa255d49919d011af54c691b344a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -353,7 +353,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'd1469c60c1ab5c96278d570aa93ef38b722b67e4',
+  'tint_revision': '9a644c7903caa792fc5f78ffe945289d802687df',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1586,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cfc9e036a897d7b1c4142b99bf716a4a0c8b805a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@baa0b2e054f3733b8437c08b75531738e6e67c0d',
     'condition': 'checkout_src_internal',
   },
 
@@ -1605,7 +1605,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'Lqnbzl4-hoc2WrAL80TsiADU6Of1I2wk_-c35v-9vSkC',
+        'version': 'eqtd4lNDx7izMGW_17TOrdQecZugRD-GE5POK26KJCYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

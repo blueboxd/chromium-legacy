@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b6a382975ae7bb6391324896e35ed02a96c34224',
+  'skia_revision': 'e78f8cebca014b976c48544418f2cfa01ed140e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '0322fc1a67c4458a00169ce2bf45fcaf3b5f297a',
+  'angle_revision': 'ed9213bca0643edb65b7d39a938210419398a1b3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1514,7 +1514,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3c2fe3888658d82b47ca831d59a2e07579619c2d',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd7f750f7be4b2f61018d3cb55a995d09daa226e6',
+    Var('webrtc_git') + '/src.git' + '@' + 'ef9c4e07a351c9396c72e72efaa1be3df728c440',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1586,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ceaad3a4765d6099f6c727ff9d01d7ef5130e3ce',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ed0fe78cb98d41be9b214e42acce71906ab8f8ad',
     'condition': 'checkout_src_internal',
   },
 
@@ -1605,7 +1605,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'eqtd4lNDx7izMGW_17TOrdQecZugRD-GE5POK26KJCYC',
+        'version': 'cLMbR5hrZxbw11Uo04_qMEm4sHJn3Ur2ZPVxIm1LhUQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

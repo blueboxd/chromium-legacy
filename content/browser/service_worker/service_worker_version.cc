@@ -483,12 +483,6 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
   switch (running_status()) {
     case EmbeddedWorkerStatus::STARTING:
     case EmbeddedWorkerStatus::RUNNING: {
-      // Endpoint isn't available after calling StopWorker(). This needs to be
-      // set here without waiting until the worker is actually stopped because
-      // subsequent StartWorker() may read the flag to decide whether an event
-      // can be dispatched or not.
-      is_endpoint_ready_ = false;
-
       // EmbeddedWorkerInstance::Stop() may synchronously call
       // ServiceWorkerVersion::OnStopped() and destroy |this|. This protection
       // avoids it.
@@ -540,6 +534,19 @@ bool ServiceWorkerVersion::OnRequestTermination() {
     // But when activation is happening and this worker needs to be terminated
     // asap, it'll be terminated.
     will_be_terminated = needs_to_be_terminated_asap_;
+
+    if (!will_be_terminated) {
+      // When the worker is being kept alive due to devtools, it's important to
+      // set the service worker's idle delay back to the default value rather
+      // than zero. Otherwise, the service worker might see that it has no work
+      // and immediately send a RequestTermination() back to the browser again,
+      // repeating this over and over. In the non-devtools case, it's
+      // necessarily being kept alive due to an inflight request, and will only
+      // send a RequestTermination() once that request settles (which is the
+      // intended behavior).
+      endpoint()->SetIdleDelay(base::TimeDelta::FromSeconds(
+          blink::mojom::kServiceWorkerDefaultIdleDelayInSeconds));
+    }
   }
 
   if (will_be_terminated) {
@@ -1222,6 +1229,12 @@ void ServiceWorkerVersion::OnStopping() {
                            stop_time_.since_origin().InMicroseconds(), "Script",
                            script_url_.spec(), "Version Status",
                            VersionStatusToString(status_));
+
+  // Endpoint isn't available after calling EmbeddedWorkerInstance::Stop().
+  // This needs to be set here without waiting until the worker is actually
+  // stopped because subsequent StartWorker() may read the flag to decide
+  // whether an event can be dispatched or not.
+  is_endpoint_ready_ = false;
 
   // Shorten the interval so stalling in stopped can be fixed quickly. Once the
   // worker stops, the timer is disabled. The interval will be reset to normal

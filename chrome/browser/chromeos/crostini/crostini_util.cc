@@ -177,6 +177,9 @@ void LaunchApplication(
 
   crostini_tracker->OnAppLaunchRequested(app_id, display_id);
 
+  auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
+  const auto vm_name = registration.VmName();
+
   // Share any paths not in crostini.  The user will see the spinner while this
   // is happening.
   std::vector<base::FilePath> paths_to_share;
@@ -196,7 +199,8 @@ void LaunchApplication(
           "Cannot share file with crostini: " + url.DebugString());
     }
     if (url.mount_filesystem_id() !=
-        file_manager::util::GetCrostiniMountPointName(profile)) {
+            file_manager::util::GetCrostiniMountPointName(profile) &&
+        !share_path->IsPathShared(vm_name, url.path())) {
       paths_to_share.push_back(url.path());
     }
     launch_args.push_back(path.value());
@@ -207,8 +211,7 @@ void LaunchApplication(
                                     display_id, std::move(launch_args),
                                     std::move(callback), true, "");
   } else {
-    const auto vm_name = registration.VmName();
-    guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
+    share_path->SharePaths(
         vm_name, std::move(paths_to_share), /*persist=*/false,
         base::BindOnce(OnSharePathForLaunchApplication, profile, app_id,
                        std::move(registration), display_id,
@@ -572,7 +575,12 @@ const ContainerId& DefaultContainerId() {
   return *container_id;
 }
 
-bool IsCrostiniWindow(aura::Window* window) {
+bool IsCrostiniWindow(const aura::Window* window) {
+  // TODO(crbug/1158644): Non-Crostini apps (borealis, ...) have also been
+  // identifying as Crostini. For now they're less common, and as they become
+  // more productionised they get their own app type (e.g. lacros), but at some
+  // point we'll want to untangle these different types to e.g. avoid double
+  // counting in usage metrics.
   return window->GetProperty(aura::client::kAppType) ==
          static_cast<int>(ash::AppType::CROSTINI_APP);
 }

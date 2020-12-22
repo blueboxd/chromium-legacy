@@ -2177,11 +2177,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-service-worker-on-ui",
-    "owners": [ "falken", "shimazu", "//content/browser/service_worker/OWNERS" ],
-    "expiry_milestone": 87
-  },
-  {
     "name": "enable-sharesheet",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 92
@@ -3966,6 +3961,11 @@
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "prefer-constant-frame-rate",
+    "owners": [ "chromeos-camera-eng@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "prefetch-notification-scheduling-integration",

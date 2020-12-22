@@ -2101,11 +2101,6 @@ const char kSecurePaymentConfirmationDebugDescription[] =
     "secure payment confirmation in PaymentRequest API must use user verifying "
     "platform authenticators.";
 
-const char kServiceWorkerOnUIName[] = "Service worker on UI thread";
-const char kServiceWorkerOnUIDescription[] =
-    "Enables browser process logic related to service workers to run on the UI "
-    "thread rather than the IO thread.";
-
 const char kSidePanelName[] = "Side panel";
 const char kSidePanelDescription[] = "Host some content in a side panel.";
 
@@ -3813,6 +3808,11 @@ const char kBluetoothWbsDogfoodDescription[] =
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";
+
+const char kPreferConstantFrameRateName[] = "Prefer Constant Frame Rate";
+const char kPreferConstantFrameRateDescription[] =
+    "Enables this flag to prefer using constant frame rate for camera when "
+    "streaming";
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 const char kChromeOSDirectVideoDecoderName[] = "ChromeOS Direct Video Decoder";

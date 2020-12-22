@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/system/system_monitor.h"
 #include "base/unguessable_token.h"
 #include "media/capture/video/chromeos/camera_app_device_bridge_impl.h"
@@ -34,7 +33,6 @@ namespace media {
 namespace {
 
 constexpr int32_t kDefaultFps = 30;
-constexpr char kVirtualPrefix[] = "VIRTUAL_";
 
 constexpr base::TimeDelta kEventWaitTimeoutSecs =
     base::TimeDelta::FromSeconds(1);
@@ -196,10 +194,30 @@ std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
     return nullptr;
   }
 
-  auto* delegate = GetVCDDelegate(task_runner_for_screen_observer,
-                                  device_descriptor, camera_app_device_bridge);
-  return std::make_unique<VideoCaptureDeviceChromeOSHalv3>(delegate,
-                                                           device_descriptor);
+  if (camera_app_device_bridge) {
+    auto* camera_app_device = camera_app_device_bridge->GetCameraAppDevice(
+        device_descriptor.device_id);
+    // Since the cleanup callback will be triggered when VideoCaptureDevice died
+    // and |camera_app_device_bridge| is actually owned by
+    // VideoCaptureServiceImpl, it should be safe to assume
+    // |camera_app_device_bridge| is still valid here.
+    auto cleanup_callback = base::BindOnce(
+        [](const std::string& device_id, CameraAppDeviceBridgeImpl* bridge) {
+          bridge->OnDeviceClosed(device_id);
+        },
+        device_descriptor.device_id, camera_app_device_bridge);
+    auto delegate = std::make_unique<VideoCaptureDeviceChromeOSDelegate>(
+        std::move(task_runner_for_screen_observer), device_descriptor, this,
+        camera_app_device, std::move(cleanup_callback));
+    return std::make_unique<VideoCaptureDeviceChromeOSHalv3>(
+        std::move(delegate));
+  } else {
+    auto delegate = std::make_unique<VideoCaptureDeviceChromeOSDelegate>(
+        std::move(task_runner_for_screen_observer), device_descriptor, this,
+        nullptr, base::DoNothing());
+    return std::make_unique<VideoCaptureDeviceChromeOSHalv3>(
+        std::move(delegate));
+  }
 }
 
 void CameraHalDelegate::GetSupportedFormats(
@@ -297,7 +315,6 @@ void CameraHalDelegate::GetDevicesInfo(
   {
     base::AutoLock info_lock(camera_info_lock_);
     base::AutoLock id_map_lock(device_id_to_camera_id_lock_);
-    base::AutoLock virtual_lock(enable_virtual_device_lock_);
     for (const auto& it : camera_info_) {
       int camera_id = it.first;
       const cros::mojom::CameraInfoPtr& camera_info = it.second;
@@ -345,12 +362,6 @@ void CameraHalDelegate::GetDevicesInfo(
           // Mojo validates the input parameters for us so we don't need to
           // worry about malformed values.
         }
-        case cros::mojom::CameraFacing::CAMERA_FACING_VIRTUAL_BACK:
-        case cros::mojom::CameraFacing::CAMERA_FACING_VIRTUAL_FRONT:
-        case cros::mojom::CameraFacing::CAMERA_FACING_VIRTUAL_EXTERNAL:
-          // |camera_info_| should not have these facing types.
-          LOG(ERROR) << "Invalid facing type: " << camera_info->facing;
-          break;
       }
       auto* vid = get_vendor_string("com.google.usb.vendorId");
       auto* pid = get_vendor_string("com.google.usb.productId");
@@ -361,19 +372,9 @@ void CameraHalDelegate::GetDevicesInfo(
       device_id_to_camera_id_[desc.device_id] = camera_id;
       devices_info.emplace_back(desc);
       GetSupportedFormats(camera_id, &devices_info.back().supported_formats);
-
-      // Create a virtual device when multiple streams are enabled.
-      if (enable_virtual_device_[camera_id]) {
-        desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
-        desc.device_id =
-            std::string(kVirtualPrefix) + base::NumberToString(camera_id);
-        desc.set_display_name("Virtual Camera");
-        device_id_to_camera_id_[desc.device_id] = camera_id;
-        devices_info.emplace_back(desc);
-        GetSupportedFormats(camera_id, &devices_info.back().supported_formats);
-      }
     }
   }
+
   // TODO(shik): Report external camera first when lid is closed.
   // TODO(jcliang): Remove this after JS API supports query camera facing
   // (http://crbug.com/543997).
@@ -431,36 +432,7 @@ cros::mojom::CameraInfoPtr CameraHalDelegate::GetCameraInfoFromDeviceId(
   if (it == camera_info_.end()) {
     return {};
   }
-  auto info = it->second.Clone();
-  if (base::StartsWith(device_id, std::string(kVirtualPrefix))) {
-    switch (it->second->facing) {
-      case cros::mojom::CameraFacing::CAMERA_FACING_BACK:
-        info->facing = cros::mojom::CameraFacing::CAMERA_FACING_VIRTUAL_BACK;
-        break;
-      case cros::mojom::CameraFacing::CAMERA_FACING_FRONT:
-        info->facing = cros::mojom::CameraFacing::CAMERA_FACING_VIRTUAL_FRONT;
-        break;
-      case cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL:
-        info->facing =
-            cros::mojom::CameraFacing::CAMERA_FACING_VIRTUAL_EXTERNAL;
-        break;
-      default:
-        break;
-    }
-  }
-  return info;
-}
-
-void CameraHalDelegate::EnableVirtualDevice(const std::string& device_id,
-                                            bool enable) {
-  if (base::StartsWith(device_id, std::string(kVirtualPrefix))) {
-    return;
-  }
-  auto camera_id = GetCameraIdFromDeviceId(device_id);
-  if (camera_id != -1) {
-    base::AutoLock lock(enable_virtual_device_lock_);
-    enable_virtual_device_[camera_id] = enable;
-  }
+  return it->second.Clone();
 }
 
 const VendorTagInfo* CameraHalDelegate::GetVendorTagInfoByName(
@@ -490,47 +462,6 @@ int CameraHalDelegate::GetCameraIdFromDeviceId(const std::string& device_id) {
     return -1;
   }
   return it->second;
-}
-
-VideoCaptureDeviceChromeOSDelegate* CameraHalDelegate::GetVCDDelegate(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
-    const VideoCaptureDeviceDescriptor& device_descriptor,
-    CameraAppDeviceBridgeImpl* camera_app_device_bridge) {
-  auto camera_id = GetCameraIdFromDeviceId(device_descriptor.device_id);
-  auto it = vcd_delegate_map_.find(camera_id);
-  if (it == vcd_delegate_map_.end() || it->second->HasDeviceClient() == 0) {
-    std::unique_ptr<VideoCaptureDeviceChromeOSDelegate> delegate;
-    if (camera_app_device_bridge) {
-      auto* camera_app_device = camera_app_device_bridge->GetCameraAppDevice(
-          device_descriptor.device_id);
-      // Since the cleanup callback will be triggered when VideoCaptureDevice
-      // died and |camera_app_device_bridge| is actually owned by
-      // VideoCaptureServiceImpl, it should be safe to assume
-      // |camera_app_device_bridge| is still valid here.
-      auto cleanup_callback = base::BindOnce(
-          [](const std::string& device_id, int camera_id,
-             CameraAppDeviceBridgeImpl* bridge,
-             base::flat_map<
-                 int, std::unique_ptr<VideoCaptureDeviceChromeOSDelegate>>*
-                 vcd_delegate_map) {
-            bridge->OnDeviceClosed(device_id);
-            vcd_delegate_map->erase(camera_id);
-          },
-          device_descriptor.device_id, camera_id, camera_app_device_bridge,
-          &vcd_delegate_map_);
-
-      delegate = std::make_unique<VideoCaptureDeviceChromeOSDelegate>(
-          std::move(task_runner_for_screen_observer), device_descriptor, this,
-          camera_app_device, std::move(cleanup_callback));
-    } else {
-      delegate = std::make_unique<VideoCaptureDeviceChromeOSDelegate>(
-          std::move(task_runner_for_screen_observer), device_descriptor, this,
-          nullptr, base::DoNothing());
-    }
-    vcd_delegate_map_[camera_id] = std::move(delegate);
-    return vcd_delegate_map_[camera_id].get();
-  }
-  return it->second.get();
 }
 
 void CameraHalDelegate::SetCameraModuleOnIpcThread(

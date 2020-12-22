@@ -547,6 +547,8 @@ std::unique_ptr<base::DictionaryValue> GetFileManagerStrings() {
   SET_STRING("ERROR_LONG_NAME", IDS_FILE_BROWSER_ERROR_LONG_NAME);
   SET_STRING("ERROR_EXTERNAL_DRIVE_LONG_NAME",
              IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME);
+  SET_STRING("ERROR_PROGRESS_SUMMARY_PLURAL",
+             IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY_PLURAL);
   SET_STRING("ERROR_RENAMING", IDS_FILE_BROWSER_ERROR_RENAMING);
   SET_STRING("ERROR_RESERVED_NAME", IDS_FILE_BROWSER_ERROR_RESERVED_NAME);
   SET_STRING("ERROR_WHITESPACE_NAME", IDS_FILE_BROWSER_ERROR_WHITESPACE_NAME);
@@ -1074,6 +1076,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->SetBoolean(
       "AUDIO_PLAYER_JS_MODULES_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kAudioPlayerJsModules));
+  dict->SetBoolean(
+      "VIDEO_PLAYER_JS_MODULES_ENABLED",
+      base::FeatureList::IsEnabled(chromeos::features::kVideoPlayerJsModules));
 
   dict->SetString("UI_LOCALE", locale);
 }

@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -30,7 +29,6 @@ namespace media {
 
 class CameraAppDeviceBridgeImpl;
 class CameraBufferFactory;
-class VideoCaptureDeviceChromeOSDelegate;
 
 // CameraHalDelegate is the component which does Mojo IPCs to the camera HAL
 // process on Chrome OS to access the module-level camera functionalities such
@@ -92,8 +90,6 @@ class CAPTURE_EXPORT CameraHalDelegate final
 
   const VendorTagInfo* GetVendorTagInfoByName(const std::string& full_name);
 
-  void EnableVirtualDevice(const std::string& device_id, bool enable);
-
  private:
   friend class base::RefCountedThreadSafe<CameraHalDelegate>;
 
@@ -103,12 +99,6 @@ class CAPTURE_EXPORT CameraHalDelegate final
 
   void GetSupportedFormats(int camera_id,
                            VideoCaptureFormats* supported_formats);
-
-  VideoCaptureDeviceChromeOSDelegate* GetVCDDelegate(
-      scoped_refptr<base::SingleThreadTaskRunner>
-          task_runner_for_screen_observer,
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      CameraAppDeviceBridgeImpl* camera_app_device_bridge);
 
   void SetCameraModuleOnIpcThread(
       mojo::PendingRemote<cros::mojom::CameraModule> camera_module);
@@ -192,10 +182,6 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // GetCameraIdFromDeviceId().
   base::Lock device_id_to_camera_id_lock_;
   std::map<std::string, int> device_id_to_camera_id_;
-  // A virtual device is enabled/disabled for camera id.
-  base::Lock enable_virtual_device_lock_;
-  base::flat_map<int, bool> enable_virtual_device_
-      GUARDED_BY(enable_virtual_device_lock_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -215,10 +201,6 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // An internal delegate to handle VendorTagOps mojo connection and query
   // information of vendor tags.  Bound to |ipc_task_runner_|.
   VendorTagOpsDelegate vendor_tag_ops_delegate_;
-
-  // A map from camera id to corresponding delegate instance.
-  base::flat_map<int, std::unique_ptr<VideoCaptureDeviceChromeOSDelegate>>
-      vcd_delegate_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraHalDelegate);
 };

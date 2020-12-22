@@ -1221,9 +1221,6 @@ extern const char kScrollUnificationDescription[];
 extern const char kSecurePaymentConfirmationDebugName[];
 extern const char kSecurePaymentConfirmationDebugDescription[];
 
-extern const char kServiceWorkerOnUIName[];
-extern const char kServiceWorkerOnUIDescription[];
-
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
 
@@ -2205,6 +2202,9 @@ extern const char kBluetoothWbsDogfoodDescription[];
 
 extern const char kCameraSystemWebAppName[];
 extern const char kCameraSystemWebAppDescription[];
+
+extern const char kPreferConstantFrameRateName[];
+extern const char kPreferConstantFrameRateDescription[];
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 extern const char kChromeOSDirectVideoDecoderName[];

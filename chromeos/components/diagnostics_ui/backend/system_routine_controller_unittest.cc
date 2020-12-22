@@ -13,6 +13,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
+#include "chromeos/dbus/cros_healthd/fake_cros_healthd_service.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -26,6 +27,7 @@ namespace {
 namespace healthd = cros_healthd::mojom;
 
 constexpr char kChargePercentKey[] = "chargePercent";
+constexpr char kDischargePercentKey[] = "dischargePercent";
 constexpr char kResultDetailsKey[] = "resultDetails";
 
 void SetCrosHealthdRunRoutineResponse(
@@ -96,9 +98,17 @@ mojom::PowerRoutineResultPtr ConstructPowerRoutineResult(
                                         time_elapsed_seconds);
 }
 
-std::string ConstructPowerRoutineResultJson(double charge_percent) {
+// Constructs the Power Routine Result json. If `charge_percent` is negative,
+// the discharge field will be used.
+std::string ConstructPowerRoutineResultJson(double charge_percent,
+                                            bool charge) {
   base::Value result_dict(base::Value::Type::DICTIONARY);
-  result_dict.SetKey(kChargePercentKey, base::Value(charge_percent));
+  if (charge) {
+    result_dict.SetKey(kChargePercentKey, base::Value(charge_percent));
+
+  } else {
+    result_dict.SetKey(kDischargePercentKey, base::Value(charge_percent));
+  }
 
   base::Value output_dict(base::Value::Type::DICTIONARY);
   output_dict.SetKey(kResultDetailsKey, std::move(result_dict));
@@ -144,8 +154,10 @@ class SystemRoutineControllerTest : public testing::Test {
   }
 
  protected:
-  mojo::ScopedHandle CreateMojoHandleForPowerRoutine(double charge_percent) {
-    return CreateMojoHandle(ConstructPowerRoutineResultJson(charge_percent));
+  mojo::ScopedHandle CreateMojoHandleForPowerRoutine(double charge_percent,
+                                                     bool charge) {
+    return CreateMojoHandle(
+        ConstructPowerRoutineResultJson(charge_percent, charge));
   }
 
   base::test::TaskEnvironment task_environment_{
@@ -422,7 +434,8 @@ TEST_F(SystemRoutineControllerTest, PowerRoutineSuccess) {
 
   SetNonInteractiveRoutineUpdateResponse(
       /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kPassed,
-      CreateMojoHandleForPowerRoutine(expected_percent_charge));
+      CreateMojoHandleForPowerRoutine(expected_percent_charge,
+                                      /*charge=*/true));
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(31));
 
   EXPECT_FALSE(routine_runner.result.is_null());
@@ -430,6 +443,39 @@ TEST_F(SystemRoutineControllerTest, PowerRoutineSuccess) {
       *routine_runner.result, mojom::RoutineType::kBatteryCharge,
       ConstructPowerRoutineResult(mojom::StandardRoutineResult::kTestPassed,
                                   expected_percent_charge,
+                                  expected_time_elapsed_seconds));
+}
+
+TEST_F(SystemRoutineControllerTest, DischargeRoutineSuccess) {
+  SetRunRoutineResponse(/*id=*/1,
+                        healthd::DiagnosticRoutineStatusEnum::kWaiting);
+  SetNonInteractiveRoutineUpdateResponse(
+      /*percent_complete=*/10, healthd::DiagnosticRoutineStatusEnum::kRunning,
+      mojo::ScopedHandle());
+
+  FakeRoutineRunner routine_runner;
+  system_routine_controller_->RunRoutine(
+      mojom::RoutineType::kBatteryDischarge,
+      routine_runner.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  // Assert that the routine is not complete.
+  EXPECT_TRUE(routine_runner.result.is_null());
+
+  const uint8_t expected_percent_discharge = 5;
+  const uint32_t expected_time_elapsed_seconds = 30;
+
+  SetNonInteractiveRoutineUpdateResponse(
+      /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kPassed,
+      CreateMojoHandleForPowerRoutine(expected_percent_discharge,
+                                      /*charge=*/false));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(31));
+
+  EXPECT_FALSE(routine_runner.result.is_null());
+  VerifyRoutineResult(
+      *routine_runner.result, mojom::RoutineType::kBatteryDischarge,
+      ConstructPowerRoutineResult(mojom::StandardRoutineResult::kTestPassed,
+                                  expected_percent_discharge,
                                   expected_time_elapsed_seconds));
 }
 
@@ -462,6 +508,76 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+TEST_F(SystemRoutineControllerTest, CancelRoutine) {
+  const int32_t expected_id = 1;
+  SetRunRoutineResponse(expected_id,
+                        healthd::DiagnosticRoutineStatusEnum::kRunning);
+
+  std::unique_ptr<FakeRoutineRunner> routine_runner =
+      std::make_unique<FakeRoutineRunner>();
+  system_routine_controller_->RunRoutine(
+      mojom::RoutineType::kCpuStress,
+      routine_runner->receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  // Assert that the first routine is not complete.
+  EXPECT_TRUE(routine_runner->result.is_null());
+
+  // Update the status on cros_healthd.
+  SetNonInteractiveRoutineUpdateResponse(
+      /*percent_complete=*/0, healthd::DiagnosticRoutineStatusEnum::kCancelled,
+      mojo::ScopedHandle());
+
+  // Close the routine_runner
+  routine_runner.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that CrosHealthd is called with the correct parameters.
+  base::Optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+      update_params =
+          cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
+
+  ASSERT_TRUE(update_params.has_value());
+  EXPECT_EQ(expected_id, update_params->id);
+  EXPECT_EQ(healthd::DiagnosticRoutineCommandEnum::kCancel,
+            update_params->command);
+}
+
+TEST_F(SystemRoutineControllerTest, CancelRoutineDtor) {
+  const int32_t expected_id = 2;
+  SetRunRoutineResponse(expected_id,
+                        healthd::DiagnosticRoutineStatusEnum::kRunning);
+
+  std::unique_ptr<FakeRoutineRunner> routine_runner =
+      std::make_unique<FakeRoutineRunner>();
+  system_routine_controller_->RunRoutine(
+      mojom::RoutineType::kCpuStress,
+      routine_runner->receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  // Assert that the first routine is not complete.
+  EXPECT_TRUE(routine_runner->result.is_null());
+
+  // Update the status on cros_healthd.
+  SetNonInteractiveRoutineUpdateResponse(
+      /*percent_complete=*/0, healthd::DiagnosticRoutineStatusEnum::kCancelled,
+      mojo::ScopedHandle());
+
+  // Destroy the SystemRoutineController
+  system_routine_controller_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that CrosHealthd is called with the correct parameters.
+  base::Optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+      update_params =
+          cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
+
+  ASSERT_TRUE(update_params.has_value());
+  EXPECT_EQ(expected_id, update_params->id);
+  EXPECT_EQ(healthd::DiagnosticRoutineCommandEnum::kCancel,
+            update_params->command);
 }
 
 }  // namespace diagnostics

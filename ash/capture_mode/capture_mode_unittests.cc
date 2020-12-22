@@ -19,6 +19,7 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/magnifier/magnifier_glass.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
@@ -43,6 +44,10 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -52,6 +57,7 @@ namespace {
 
 constexpr char kEndRecordingReasonInClamshellHistogramName[] =
     "Ash.CaptureModeController.EndRecordingReason.ClamshellMode";
+constexpr char kScreenCaptureNotificationId[] = "capture_mode_notification";
 
 // Returns true if the software-composited cursor is enabled.
 bool IsCursorCompositingEnabled() {
@@ -77,6 +83,22 @@ void SendKey(ui::KeyboardCode key_code,
   int flags = shift_down ? ui::EF_SHIFT_DOWN : 0;
   event_generator->PressKey(key_code, flags);
   event_generator->ReleaseKey(key_code, flags);
+}
+
+const message_center::Notification* GetPreviewNotification() {
+  const message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+  for (const auto* notification : notifications) {
+    if (notification->id() == kScreenCaptureNotificationId)
+      return notification;
+  }
+  return nullptr;
+}
+
+void ClickNotification(base::Optional<int> button_index) {
+  const message_center::Notification* notification = GetPreviewNotification();
+  DCHECK(notification);
+  notification->delegate()->Click(button_index, base::nullopt);
 }
 
 // Moves the mouse and updates the cursor's display manually to imitate what a
@@ -322,6 +344,27 @@ class CaptureSessionWidgetObserver : public views::WidgetObserver {
 
  private:
   base::ScopedObservation<views::Widget, views::WidgetObserver> observer_{this};
+};
+
+class CaptureNotificationWaiter : public message_center::MessageCenterObserver {
+ public:
+  CaptureNotificationWaiter() {
+    message_center::MessageCenter::Get()->AddObserver(this);
+  }
+  ~CaptureNotificationWaiter() override {
+    message_center::MessageCenter::Get()->RemoveObserver(this);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  // message_center::MessageCenterObserver:
+  void OnNotificationAdded(const std::string& notification_id) override {
+    if (notification_id == kScreenCaptureNotificationId)
+      run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
 };
 
 TEST_F(CaptureModeTest, StartStop) {
@@ -1883,9 +1926,10 @@ TEST_F(CaptureModeTest, TabletTouchCaptureLabelWidgetWindowMode) {
   event_generator->PressTouch();
   event_generator->ReleaseTouch();
 
-  // There are no windows so the window finder algorithm will find the app list
-  // window and take a picture of that, ending capture mode.
-  EXPECT_FALSE(controller->IsActive());
+  // There are no windows and home screen window is excluded from window capture
+  // mode, so capture mode will still remain active.
+  EXPECT_TRUE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  EXPECT_TRUE(controller->IsActive());
 }
 
 // Tests that after rotating a display, the capture session widgets are updated
@@ -2143,6 +2187,56 @@ TEST_F(CaptureModeTest, CaptureBarOpacity) {
   // Check that the opacity is reset when we select another region.
   SelectRegion(target_region);
   EXPECT_EQ(1.f, capture_bar_layer->GetTargetOpacity());
+}
+
+// Tests that the quick action histogram is recorded properly.
+TEST_F(CaptureModeTest, QuickActionHistograms) {
+  constexpr char kQuickActionHistogramName[] =
+      "Ash.CaptureModeController.QuickAction";
+  base::HistogramTester histogram_tester;
+
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kImage);
+  EXPECT_TRUE(controller->IsActive());
+  {
+    CaptureNotificationWaiter waiter;
+    controller->PerformCapture();
+    waiter.Wait();
+  }
+  // Verify clicking delete on screenshot notification.
+  const int delete_button = 1;
+  ClickNotification(delete_button);
+  EXPECT_FALSE(GetPreviewNotification());
+  histogram_tester.ExpectBucketCount(kQuickActionHistogramName,
+                                     CaptureQuickAction::kDelete, 1);
+
+  controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                   CaptureModeType::kImage);
+  {
+    CaptureNotificationWaiter waiter;
+    controller->PerformCapture();
+    waiter.Wait();
+  }
+  // Click on the notification body. This should take us to the files app.
+  ClickNotification(base::nullopt);
+  EXPECT_FALSE(GetPreviewNotification());
+  histogram_tester.ExpectBucketCount(kQuickActionHistogramName,
+                                     CaptureQuickAction::kFiles, 1);
+
+  controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                   CaptureModeType::kImage);
+
+  {
+    CaptureNotificationWaiter waiter;
+    controller->PerformCapture();
+    waiter.Wait();
+  }
+  const int edit_button = 0;
+  // Verify clicking edit on screenshot notification.
+  ClickNotification(edit_button);
+  EXPECT_FALSE(GetPreviewNotification());
+  histogram_tester.ExpectBucketCount(kQuickActionHistogramName,
+                                     CaptureQuickAction::kBacklight, 1);
 }
 
 }  // namespace ash

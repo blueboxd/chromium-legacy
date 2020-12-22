@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -27,6 +28,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/escape.h"
@@ -243,7 +245,8 @@ constexpr char kJSGetThumbnailHeight[] = "height";
 constexpr char kJSSetReadOnlyType[] = "setReadOnly";
 constexpr char kJSEnableReadOnly[] = "enableReadOnly";
 
-constexpr int kFindResultCooldownMs = 100;
+constexpr base::TimeDelta kFindResultCooldown =
+    base::TimeDelta::FromMilliseconds(100);
 
 // Do not save files with over 100 MB. This cap should be kept in sync with and
 // is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
@@ -256,7 +259,8 @@ constexpr int kInvalidPDFIndex = -2;
 
 // A delay to wait between each accessibility page to keep the system
 // responsive.
-constexpr int kAccessibilityPageDelayMs = 100;
+constexpr base::TimeDelta kAccessibilityPageDelay =
+    base::TimeDelta::FromMilliseconds(100);
 
 constexpr double kMinZoom = 0.01;
 
@@ -528,10 +532,7 @@ PrivateAccessibilityCharInfoFromAccessibilityTextRunInfo(
 }  // namespace
 
 OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
-    : pp::Instance(instance),
-      pp::Find_Private(this),
-      pp::Printing_Dev(this),
-      paint_manager_(this) {
+    : pp::Instance(instance), pp::Find_Private(this), pp::Printing_Dev(this) {
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
 
@@ -767,7 +768,7 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
     plugin_size_ = view_device_size;
     plugin_offset_ = view_rect.point();
 
-    paint_manager_.SetSize(SizeFromPPSize(view_device_size), device_scale_);
+    paint_manager().SetSize(SizeFromPPSize(view_device_size), device_scale_);
 
     const gfx::Size old_image_data_size = SizeFromPPSize(image_data_.size());
     gfx::Size new_image_data_size = PaintManager::GetNewContextSize(
@@ -867,11 +868,10 @@ void OutOfProcessInstance::LoadAccessibility() {
   SendAccessibilityViewportInfo();
 
   // Schedule loading the first page.
-  pp::Module::Get()->core()->CallOnMainThread(
-      kAccessibilityPageDelayMs,
-      PPCompletionCallbackFromResultCallback(
-          base::BindOnce(&OutOfProcessInstance::SendNextAccessibilityPage,
-                         weak_factory_.GetWeakPtr())),
+  ScheduleTaskOnMainThread(
+      kAccessibilityPageDelay,
+      base::BindOnce(&OutOfProcessInstance::SendNextAccessibilityPage,
+                     weak_factory_.GetWeakPtr()),
       0);
 }
 
@@ -901,11 +901,10 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
                                     pp_text_runs, pp_chars, page_objects);
 
   // Schedule loading the next page.
-  pp::Module::Get()->core()->CallOnMainThread(
-      kAccessibilityPageDelayMs,
-      PPCompletionCallbackFromResultCallback(
-          base::BindOnce(&OutOfProcessInstance::SendNextAccessibilityPage,
-                         weak_factory_.GetWeakPtr())),
+  ScheduleTaskOnMainThread(
+      kAccessibilityPageDelay,
+      base::BindOnce(&OutOfProcessInstance::SendNextAccessibilityPage,
+                     weak_factory_.GetWeakPtr()),
       page_index + 1);
 }
 
@@ -1210,12 +1209,12 @@ void OutOfProcessInstance::Invalidate(const gfx::Rect& rect) {
 
   gfx::Rect offset_rect(rect);
   offset_rect.Offset(VectorFromPPPoint(available_area_.point()));
-  paint_manager_.InvalidateRect(offset_rect);
+  paint_manager().InvalidateRect(offset_rect);
 }
 
 void OutOfProcessInstance::DidScroll(const gfx::Vector2d& offset) {
   if (!image_data_.is_null())
-    paint_manager_.ScrollRect(RectFromPPRect(available_area_), offset);
+    paint_manager().ScrollRect(RectFromPPRect(available_area_), offset);
 }
 
 void OutOfProcessInstance::ScrollToX(int x_in_screen_coords) {
@@ -1327,11 +1326,10 @@ void OutOfProcessInstance::NotifyNumberOfFindResultsChanged(int total,
   NumberOfFindResultsChanged(total, final_result);
   SetTickmarks(tickmarks_);
   recently_sent_find_update_ = true;
-  pp::Module::Get()->core()->CallOnMainThread(
-      kFindResultCooldownMs,
-      PPCompletionCallbackFromResultCallback(
-          base::BindOnce(&OutOfProcessInstance::ResetRecentlySentFindUpdate,
-                         weak_factory_.GetWeakPtr())),
+  ScheduleTaskOnMainThread(
+      kFindResultCooldown,
+      base::BindOnce(&OutOfProcessInstance::ResetRecentlySentFindUpdate,
+                     weak_factory_.GetWeakPtr()),
       0);
 }
 
@@ -1468,9 +1466,10 @@ void OutOfProcessInstance::Print() {
     return;
   }
 
-  pp::Module::Get()->core()->CallOnMainThread(
-      0, PPCompletionCallbackFromResultCallback(base::BindOnce(
-             &OutOfProcessInstance::OnPrint, weak_factory_.GetWeakPtr())));
+  ScheduleTaskOnMainThread(base::TimeDelta(),
+                           base::BindOnce(&OutOfProcessInstance::OnPrint,
+                                          weak_factory_.GetWeakPtr()),
+                           0);
 }
 
 void OutOfProcessInstance::SubmitForm(const std::string& url,
@@ -1763,7 +1762,7 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   engine()->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
   engine()->New(url_.c_str(), /*headers=*/nullptr);
 
-  paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
+  paint_manager().InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
 }
 
 void OutOfProcessInstance::HandleSaveAttachmentMessage(
@@ -1961,9 +1960,9 @@ void OutOfProcessInstance::HandleViewportMessage(
           (scroll_offset.y() - scroll_offset_at_last_raster_.y() * zoom_ratio));
     }
 
-    paint_manager_.SetTransform(zoom_ratio, PointFromPPPoint(pinch_center),
-                                pinch_vector + paint_offset + scroll_delta,
-                                true);
+    paint_manager().SetTransform(zoom_ratio, PointFromPPPoint(pinch_center),
+                                 pinch_vector + paint_offset + scroll_delta,
+                                 true);
     needs_reraster_ = false;
     return;
   }
@@ -1973,7 +1972,7 @@ void OutOfProcessInstance::HandleViewportMessage(
     // that appear after zooming out.
     // On pinch end the scale is again 1.f and we request a reraster
     // in the new position.
-    paint_manager_.ClearTransform();
+    paint_manager().ClearTransform();
     last_bitmap_smaller_ = false;
     needs_reraster_ = true;
 
@@ -2021,7 +2020,7 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   }
 
   document_load_state_ = LOAD_STATE_FAILED;
-  paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
+  paint_manager().InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
 
   // Send a progress value of -1 to indicate a failure.
   SendLoadingProgress(-1);
@@ -2130,7 +2129,7 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
 
   if (document_size_.IsEmpty())
     return;
-  paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
+  paint_manager().InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
 
   if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
     SendAccessibilityViewportInfo();
@@ -2287,11 +2286,24 @@ void OutOfProcessInstance::OnPaint(const std::vector<gfx::Rect>& paint_rects,
   engine()->PostPaint();
 
   if (!deferred_invalidates_.empty()) {
-    pp::Module::Get()->core()->CallOnMainThread(
-        0, PPCompletionCallbackFromResultCallback(
-               base::BindOnce(&OutOfProcessInstance::InvalidateAfterPaintDone,
-                              weak_factory_.GetWeakPtr())));
+    ScheduleTaskOnMainThread(
+        base::TimeDelta(),
+        base::BindOnce(&OutOfProcessInstance::InvalidateAfterPaintDone,
+                       weak_factory_.GetWeakPtr()),
+        0);
   }
+}
+
+void OutOfProcessInstance::ScheduleTaskOnMainThread(
+    base::TimeDelta delay,
+    ResultCallback callback,
+    int32_t result,
+    const base::Location& from_here) {
+  int64_t delay_in_msec = delay.InMilliseconds();
+  DCHECK(delay_in_msec <= INT32_MAX);
+  pp::Module::Get()->core()->CallOnMainThread(
+      static_cast<int32_t>(delay_in_msec),
+      PPCompletionCallbackFromResultCallback(std::move(callback)), result);
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,

@@ -12899,6 +12899,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="ResourceScheduler.DelayableRequests.WaitTimeToAvoidContentionWithNonDelayableRequest"
     units="ms" expires_after="M85">
+  <obsolete>
+    Obsoleted M85.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <summary>
     Records how long after the start of a delayable resource request, a
@@ -12910,6 +12913,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ResourceScheduler.NonDelayableLastEndToNonDelayableStart"
     units="ms" expires_after="M85">
+  <obsolete>
+    Obsoleted M85.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>dougarnett@chromium.org</owner>
   <summary>
@@ -12922,7 +12928,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="ResourceScheduler.NonDelayableLastEndToNonDelayableStart.NonDelayableNotInFlight"
-    units="ms" expires_after="2021-09-01">
+    units="ms" expires_after="2020-12-14">
+  <obsolete>
+    Obsoleted M89.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>dougarnett@chromium.org</owner>
   <summary>
@@ -14641,7 +14650,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SpellCheck.SpellingService.RequestDuration" units="ms"
-    expires_after="2021-01-31">
+    expires_after="2021-04-04">
   <owner>yyushkina@google.com</owner>
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -14653,7 +14662,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SpellCheck.SpellingService.RequestHttpResponseCode"
-    enum="HttpResponseCode" expires_after="2021-04-11">
+    enum="HttpResponseCode" expires_after="2021-04-04">
   <owner>yyushkina@google.com</owner>
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>

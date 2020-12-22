@@ -5,8 +5,8 @@
 #ifndef PDF_PDF_VIEW_WEB_PLUGIN_H_
 #define PDF_PDF_VIEW_WEB_PLUGIN_H_
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "pdf/paint_manager.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -109,6 +109,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void OnPaint(const std::vector<gfx::Rect>& paint_rects,
                std::vector<PaintReadyRect>* ready,
                std::vector<gfx::Rect>* pending) override;
+  void ScheduleTaskOnMainThread(
+      base::TimeDelta delay,
+      ResultCallback callback,
+      int32_t result,
+      const base::Location& from_here = base::Location::Current()) override;
 
   // BlinkUrlLoader::Client:
   bool IsValid() const override;
@@ -133,8 +138,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   blink::WebPluginParams initial_params_;
   blink::WebPluginContainer* container_ = nullptr;
-
-  PaintManager paint_manager_{this};
 
   // The background color of the PDF viewer.
   uint32_t background_color_ = 0;

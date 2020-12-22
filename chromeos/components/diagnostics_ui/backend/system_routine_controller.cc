@@ -34,6 +34,7 @@ constexpr uint32_t kExpectedMemoryDurationInSeconds = 1000;
 constexpr uint32_t kRoutineResultRefreshIntervalInSeconds = 1;
 
 constexpr char kChargePercentKey[] = "chargePercent";
+constexpr char kDischargePercentKey[] = "dischargePercent";
 constexpr char kResultDetailsKey[] = "resultDetails";
 
 mojom::RoutineResultInfoPtr ConstructStandardRoutineResultInfoPtr(
@@ -197,7 +198,19 @@ SystemRoutineController::SystemRoutineController() {
   inflight_routine_timer_ = std::make_unique<base::OneShotTimer>();
 }
 
-SystemRoutineController::~SystemRoutineController() = default;
+SystemRoutineController::~SystemRoutineController() {
+  if (!inflight_routine_runner_) {
+    return;
+  }
+
+  // Since SystemRoutineController is torn down at the same time as the
+  // frontend, there's no guarantee that the disconnect handler will be called.
+  // If there's a routine inflight, cancel it but do not pass a callback.
+  BindCrosHealthdDiagnosticsServiceIfNeccessary();
+  diagnostics_service_->GetRoutineUpdate(
+      inflight_routine_id_, healthd::DiagnosticRoutineCommandEnum::kCancel,
+      /*should_include_output=*/false, base::DoNothing());
+}
 
 void SystemRoutineController::RunRoutine(
     mojom::RoutineType type,
@@ -214,6 +227,9 @@ void SystemRoutineController::RunRoutine(
 
   inflight_routine_runner_ =
       mojo::Remote<mojom::RoutineRunner>(std::move(runner));
+  inflight_routine_runner_.set_disconnect_handler(base::BindOnce(
+      &SystemRoutineController::OnInflightRoutineRunnerDisconnected,
+      base::Unretained(this)));
   ExecuteRoutine(type);
 }
 
@@ -566,7 +582,9 @@ void SystemRoutineController::OnPowerRoutineJsonParsed(
   }
 
   base::Optional<double> charge_percent_opt =
-      result_details_dict->FindDoubleKey(kChargePercentKey);
+      routine_type == mojom::RoutineType::kBatteryCharge
+          ? result_details_dict->FindDoubleKey(kChargePercentKey)
+          : result_details_dict->FindDoubleKey(kDischargePercentKey);
   if (!charge_percent_opt.has_value()) {
     OnPowerRoutineResult(routine_type,
                          mojom::StandardRoutineResult::kExecutionError,
@@ -621,8 +639,29 @@ void SystemRoutineController::OnDiagnosticsServiceDisconnected() {
 }
 
 void SystemRoutineController::OnInflightRoutineRunnerDisconnected() {
+  // Reset `inflight_routine_runner_` since the other side of the pipe is
+  // already disconnected.
   inflight_routine_runner_.reset();
-  // TODO(baileyberro): Implement routine cancellation.
+
+  // Make a best effort attempt to remove the routine.
+  BindCrosHealthdDiagnosticsServiceIfNeccessary();
+  diagnostics_service_->GetRoutineUpdate(
+      inflight_routine_id_, healthd::DiagnosticRoutineCommandEnum::kCancel,
+      /*should_include_output=*/false,
+      base::BindOnce(&SystemRoutineController::OnRoutineCancelAttempted,
+                     base::Unretained(this)));
+}
+
+void SystemRoutineController::OnRoutineCancelAttempted(
+    healthd::RoutineUpdatePtr update_ptr) {
+  const healthd::NonInteractiveRoutineUpdate* update =
+      GetNonInteractiveRoutineUpdate(*update_ptr);
+
+  if (!update ||
+      update->status != healthd::DiagnosticRoutineStatusEnum::kCancelled) {
+    DVLOG(2) << "Failed to cancel routine.";
+    return;
+  }
 }
 
 }  // namespace diagnostics

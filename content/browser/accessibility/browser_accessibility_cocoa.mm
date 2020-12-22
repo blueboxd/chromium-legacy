@@ -2372,8 +2372,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if ([self internalRole] == ax::mojom::Role::kDescriptionList)
     return NSAccessibilityDefinitionListSubrole;
 
-  if ([self internalRole] == ax::mojom::Role::kList)
+  if ([self internalRole] == ax::mojom::Role::kDirectory ||
+      [self internalRole] == ax::mojom::Role::kList) {
     return NSAccessibilityContentListSubrole;
+  }
 
   return [AXPlatformNodeCocoa nativeSubroleFromAXRole:[self internalRole]];
 }

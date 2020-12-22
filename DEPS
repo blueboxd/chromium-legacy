@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '88883c4ca259aa1340286c3a0f85fe97a911292d',
+  'skia_revision': '960bd2dbaa6a2130330c5f693e2a07a24aeca392',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b96d7e2a4be85264b9cd7ba26d91f7fb98baa9a5',
+  'v8_revision': 'ab90f8251bdc6bd9dc6033afdd2374af4883794f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '4ebcee3eb02ffdd586e20965b9c4bb609876db36',
+  'angle_revision': '11c31e0a4a73d7d62e765dc7ec400560fbb16b5e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '7bdf386e758cb7c01392e625f4d723e5abb3f9a6',
+  'freetype_revision': '0d5f1dd37c056b4460a460d16fd1fbb06740e891',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cde5182f7aa484bea3ea9d2ba2a5f49b2cfd738a',
+  'devtools_frontend_revision': '70441189dfa102083af0b32159f697fb5f3c3ae4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '5d4fd88a7403aa255d49919d011af54c691b344a',
+  'dawn_revision': 'ec56b90ceab0c16e3c9f5603cc26562ec7bc2430',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1262,7 +1262,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c65f224a7259d87bf1f980e7424d73fc0cfca795',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8986f3ce67ec65a72629404b45d639ca37e5ea2b',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1340,7 +1340,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'qMq36BPvKEIxjpVFBefO08HoyM51jARe3EuX0vcgzWsC'
+              'version': 'GI8QGXYA44_uicQ1AX9ecXBzIK4dImUA90X-kMlohyIC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1514,7 +1514,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3c2fe3888658d82b47ca831d59a2e07579619c2d',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'ef9c4e07a351c9396c72e72efaa1be3df728c440',
+    Var('webrtc_git') + '/src.git' + '@' + '8649e49d10e6e6efb5a98920f0b19a77abe8f070',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1586,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3974e673643526eb5e4050be7da7abcc86e70699',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0b9574c6ab0a3b7c0b3cf252c7d9b8389cf8f4a5',
     'condition': 'checkout_src_internal',
   },
 
@@ -1594,7 +1594,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'Lhu0LG_M8M2Pn2h_RBp-1HjjF6xbNUOUOu6DedtsKlQC',
+        'version': 'ArjDoksx4veFQalheiqMNhRYccNS84igngDuMSvLD-0C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1605,7 +1605,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '97cSjc_Tjv810DAVmAh-xqhwbphGqNsTmBJluRhxfZ8C',
+        'version': 'JzkQbgu707ehmRMJSwGBX0gMotKpUKiewC8zdP_xHngC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -3361,7 +3361,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_guava_guava',
-              'version': 'version:27.1-jre-cr0',
+              'version': 'version:30.1-jre-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3372,7 +3372,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_guava_guava_android',
-              'version': 'version:25.1-android-cr0',
+              'version': 'version:30.1-android-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3394,7 +3394,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_j2objc_j2objc_annotations',
-              'version': 'version:1.1-cr0',
+              'version': 'version:1.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3735,7 +3735,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_checkerframework_checker_compat_qual',
-              'version': 'version:2.5.3-cr0',
+              'version': 'version:2.5.5-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3746,7 +3746,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_checkerframework_checker_qual',
-              'version': 'version:2.10.0-cr0',
+              'version': 'version:3.5.0-cr0',
           },
       ],
       'condition': 'checkout_android',

@@ -44,6 +44,7 @@ struct ResultMetadata {
   ~ResultMetadata();
 
   base::Optional<uint8_t> ae_mode;
+  base::Optional<int32_t> ae_compensation;
   base::Optional<uint8_t> af_mode;
   base::Optional<uint8_t> awb_mode;
   base::Optional<int32_t> brightness;
@@ -52,6 +53,7 @@ struct ResultMetadata {
   base::Optional<float> focus_distance;
   base::Optional<int32_t> pan;
   base::Optional<int32_t> saturation;
+  base::Optional<int32_t> sensitivity;
   base::Optional<int32_t> sharpness;
   base::Optional<int32_t> tilt;
   base::Optional<int32_t> zoom;
@@ -254,8 +256,10 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
   bool is_set_awb_mode_;
   bool is_set_brightness_;
   bool is_set_contrast_;
+  bool is_set_exposure_compensation_;
   bool is_set_exposure_time_;
   bool is_set_focus_distance_;
+  bool is_set_iso_;
   bool is_set_pan_;
   bool is_set_saturation_;
   bool is_set_sharpness_;
@@ -264,6 +268,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
 
   std::vector<base::OnceClosure> get_photo_state_queue_;
   bool use_digital_zoom_;
+  float ae_compensation_step_;
+
   // We reply GetPhotoState when |result_metadata_frame_number_| >
   // |result_metadata_frame_number_for_photo_state_|. Otherwise javascript API
   // getSettings() will get non-updated settings.

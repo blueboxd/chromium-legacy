@@ -1484,14 +1484,6 @@ util.isZipUnpackEnabled = () => {
 };
 
 /**
- * Returns true if transfer details flag is enabled.
- * @return {boolean}
- */
-util.isTransferDetailsEnabled = () => {
-  return loadTimeData.getBoolean('FILES_TRANSFER_DETAILS_ENABLED');
-};
-
-/**
  * Returns true if FilesSinglePartitionFormat flag is enabled.
  * @return {boolean}
  */

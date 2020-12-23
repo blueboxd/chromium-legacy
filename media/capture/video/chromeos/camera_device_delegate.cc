@@ -292,8 +292,10 @@ void CameraDeviceDelegate::AllocateAndStart(
   is_set_awb_mode_ = false;
   is_set_brightness_ = false;
   is_set_contrast_ = false;
+  is_set_exposure_compensation_ = false;
   is_set_exposure_time_ = false;
   is_set_focus_distance_ = false;
+  is_set_iso_ = false;
   is_set_pan_ = false;
   is_set_saturation_ = false;
   is_set_sharpness_ = false;
@@ -428,6 +430,13 @@ void CameraDeviceDelegate::SetPhotoOptions(
 
   // Set the vendor tag into with given |name| and |value|. Returns true if
   // the vendor tag is set and false otherwise.
+  auto to_uint8_vector = [](int32_t value) {
+    std::vector<uint8_t> temp(sizeof(int32_t));
+    auto* temp_ptr = reinterpret_cast<int32_t*>(temp.data());
+    *temp_ptr = value;
+    return temp;
+  };
+
   auto set_vendor_int = [&](const std::string& name, bool has_field,
                             double value, bool is_set) {
     const VendorTagInfo* info =
@@ -438,11 +447,8 @@ void CameraDeviceDelegate::SetPhotoOptions(
       }
       return false;
     }
-    std::vector<uint8_t> temp(sizeof(int32_t));
-    auto* temp_ptr = reinterpret_cast<int32_t*>(temp.data());
-    *temp_ptr = value;
     request_manager_->SetRepeatingCaptureMetadata(info->tag, info->type, 1,
-                                                  std::move(temp));
+                                                  to_uint8_vector(value));
     return true;
   };
   is_set_brightness_ = set_vendor_int(kBrightness, settings->has_brightness,
@@ -536,6 +542,36 @@ void CameraDeviceDelegate::SetPhotoOptions(
   } else if (is_set_focus_distance_) {
     camera_3a_controller_->SetFocusDistance(true, 0);
     is_set_focus_distance_ = false;
+  }
+
+  if (settings->has_iso) {
+    request_manager_->SetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_SENSITIVITY,
+        cros::mojom::EntryType::TYPE_INT32, 1, to_uint8_vector(settings->iso));
+    is_set_iso_ = true;
+    if (!is_set_exposure_time_) {
+      LOG(WARNING) << "set iso doesn't work due to auto exposure time";
+    }
+  } else if (is_set_iso_) {
+    request_manager_->UnsetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_SENSITIVITY);
+    is_set_iso_ = false;
+  }
+
+  if (settings->has_exposure_compensation) {
+    int metadata_exposure_compensation =
+        std::round(settings->exposure_compensation / ae_compensation_step_);
+    request_manager_->SetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::
+            ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION,
+        cros::mojom::EntryType::TYPE_INT32, 1,
+        to_uint8_vector(metadata_exposure_compensation));
+    is_set_exposure_compensation_ = true;
+  } else if (is_set_exposure_compensation_) {
+    request_manager_->UnsetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::
+            ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION);
+    is_set_exposure_compensation_ = false;
   }
 
   // If there is callback of SetPhotoOptions(), the streams might being
@@ -1328,6 +1364,20 @@ void CameraDeviceDelegate::OnResultMetadataAvailable(
   if (focus_distance.size() == 1)
     result_metadata_.focus_distance = focus_distance[0];
 
+  result_metadata_.sensitivity.reset();
+  auto sensitivity = GetMetadataEntryAsSpan<int32_t>(
+      result_metadata,
+      cros::mojom::CameraMetadataTag::ANDROID_SENSOR_SENSITIVITY);
+  if (sensitivity.size() == 1)
+    result_metadata_.sensitivity = sensitivity[0];
+
+  result_metadata_.ae_compensation.reset();
+  auto ae_compensation = GetMetadataEntryAsSpan<int32_t>(
+      result_metadata,
+      cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION);
+  if (ae_compensation.size() == 1)
+    result_metadata_.ae_compensation = ae_compensation[0];
+
   result_metadata_frame_number_ = frame_number;
   // We need to wait the new result metadata for new settings.
   if (result_metadata_frame_number_ >
@@ -1542,6 +1592,48 @@ void CameraDeviceDelegate::DoGetPhotoState(
       double meters = 1.0 / result_metadata_.focus_distance.value();
       photo_state->focus_distance->current = std::roundf(meters * 100) / 100.0;
     }
+  }
+
+  auto sensitivity_range = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata_,
+      cros::mojom::CameraMetadataTag::ANDROID_SENSOR_INFO_SENSITIVITY_RANGE);
+  if (sensitivity_range.size() == 2 && result_metadata_.sensitivity) {
+    photo_state->iso->min = sensitivity_range[0];
+    photo_state->iso->max = sensitivity_range[1];
+    photo_state->iso->step = 1;
+    photo_state->iso->current = result_metadata_.sensitivity.value();
+  }
+
+  auto ae_compensation_step = GetMetadataEntryAsSpan<Rational>(
+      static_metadata_,
+      cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_COMPENSATION_STEP);
+  ae_compensation_step_ = 0.0;
+  if (ae_compensation_step.size() == 1) {
+    if (ae_compensation_step[0].numerator == 0 ||
+        ae_compensation_step[0].denominator == 0) {
+      LOG(WARNING) << "AE_COMPENSATION_STEP: numerator:"
+                   << ae_compensation_step[0].numerator
+                   << "denominator:" << ae_compensation_step[0].denominator;
+    } else {
+      ae_compensation_step_ =
+          static_cast<float>(ae_compensation_step[0].numerator) /
+          static_cast<float>(ae_compensation_step[0].denominator);
+    }
+  }
+  auto ae_compensation_range = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata_,
+      cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_COMPENSATION_RANGE);
+  if (ae_compensation_step_ != 0.0 && ae_compensation_range.size() == 2) {
+    photo_state->exposure_compensation->min =
+        ae_compensation_range[0] * ae_compensation_step_;
+    photo_state->exposure_compensation->max =
+        ae_compensation_range[1] * ae_compensation_step_;
+    photo_state->exposure_compensation->step = ae_compensation_step_;
+    if (result_metadata_.ae_compensation)
+      photo_state->exposure_compensation->current =
+          result_metadata_.ae_compensation.value() * ae_compensation_step_;
+    else
+      photo_state->exposure_compensation->current = 0;
   }
 
   std::move(callback).Run(std::move(photo_state));

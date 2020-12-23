@@ -150,6 +150,11 @@ void GpuDataManagerImpl::AppendGpuCommandLine(base::CommandLine* command_line,
   private_->AppendGpuCommandLine(command_line, kind);
 }
 
+void GpuDataManagerImpl::StartUmaTimer() {
+  base::AutoLock auto_lock(lock_);
+  private_->StartUmaTimer();
+}
+
 bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
   base::AutoLock auto_lock(lock_);
   return private_->GpuProcessStartAllowed();
@@ -260,6 +265,16 @@ gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
     const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfoForHardwareGpu();
+}
+
+bool GpuDataManagerImpl::GpuAccessAllowedForHardwareGpu(std::string* reason) {
+  base::AutoLock auto_lock(lock_);
+  return private_->GpuAccessAllowedForHardwareGpu(reason);
+}
+
+bool GpuDataManagerImpl::IsGpuCompositingDisabledForHardwareGpu() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsGpuCompositingDisabledForHardwareGpu();
 }
 
 gfx::GpuExtraInfo GpuDataManagerImpl::GetGpuExtraInfo() const {

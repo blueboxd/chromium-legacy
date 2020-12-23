@@ -35,15 +35,11 @@ std::string_view IdPathLens::ParentName(const BaseSymbol& symbol) {
 }
 
 std::string_view ContainerLens::ParentName(const BaseSymbol& symbol) {
-  std::string component;
-  if (symbol.ContainerName() && *symbol.ContainerName()) {
-    return symbol.ContainerName();
-  }
-  return kDefaultContainer;
+  std::string_view ret = symbol.ContainerName();
+  return ret.empty() ? kDefaultContainer : ret;
 }
 
 std::string_view ComponentLens::ParentName(const BaseSymbol& symbol) {
-  std::string component;
   if (symbol.Component() && *symbol.Component()) {
     return symbol.Component();
   }
@@ -80,8 +76,9 @@ std::string_view GeneratedLens::ParentName(const BaseSymbol& symbol) {
     return "C++ Protocol Buffers";
   }
 
-  static LazyRE2 mojo_regex = {"\\bmojom?\\b|^mojo::"};
-  if (PartialMatch(symbol.SourcePath(), *mojo_regex)) {
+  static LazyRE2 mojo_regex = {"\\bmojom?\\b"};
+  if (symbol.FullName().substr(0, 7) == "mojom::" ||
+      PartialMatch(symbol.SourcePath(), *mojo_regex)) {
     return "Mojo";
   }
 

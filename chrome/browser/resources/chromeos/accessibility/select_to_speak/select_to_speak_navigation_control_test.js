@@ -346,7 +346,7 @@ TEST_F('SelectToSpeakNavigationControlTest', 'PrevSentence', function() {
       this.generateHtmlWithSelectedElement('p1', bodyHtml), async function() {
         this.triggerReadSelectedText();
 
-        // Speaks till the end of the second sentence.
+        // Speaks util the start of the second sentence.
         this.mockTts.speakUntilCharIndex(33);
         assertTrue(this.mockTts.currentlySpeaking());
         assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -365,6 +365,37 @@ TEST_F('SelectToSpeakNavigationControlTest', 'PrevSentence', function() {
             'Second sentence. Third sentence.');
       });
 });
+
+TEST_F(
+    'SelectToSpeakNavigationControlTest', 'PrevSentenceFromMiddleOfSentence',
+    function() {
+      const bodyHtml = `
+      <p id="p1">First sentence. Second sentence. Third sentence.</p>'
+    `;
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelectedElement('p1', bodyHtml),
+          async function() {
+            this.triggerReadSelectedText();
+
+            // Speaks util the start of "sentence" in "Second sentence".
+            this.mockTts.speakUntilCharIndex(23);
+            assertTrue(this.mockTts.currentlySpeaking());
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0],
+                'First sentence. Second sentence. Third sentence.');
+
+            // Hitting prev sentence will start another TTS.
+            await selectToSpeak.onSelectToSpeakPanelAction_(
+                chrome.accessibilityPrivate.SelectToSpeakPanelAction
+                    .PREVIOUS_SENTENCE);
+            assertTrue(this.mockTts.currentlySpeaking());
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0],
+                'First sentence. Second sentence. Third sentence.');
+          });
+    });
 
 TEST_F(
     'SelectToSpeakNavigationControlTest', 'PrevSentenceWithinParagraph',
@@ -557,3 +588,53 @@ TEST_F(
                 this.mockTts.pendingUtterances()[0], '. Sentence two.');
           });
     });
+
+TEST_F('SelectToSpeakNavigationControlTest', 'ResizeWhilePlaying', function() {
+  const longLine =
+      'Second paragraph is longer than 300 pixels and will wrap when resized';
+  const bodyHtml = `
+          <script type="text/javascript">
+            function doResize() {
+              document.getElementById('resize').style.width = '100px';
+            }
+          </script>
+          <div id="content">
+            <p>First paragraph</p>
+            <p id='resize' style='width:300px; font-size: 1em'>
+              ${longLine}
+            </p>
+          </div>
+          <button onclick="doResize()">Resize</button>
+        `;
+  this.runWithLoadedTree(
+      this.generateHtmlWithSelectedElement('content', bodyHtml), (root) => {
+        this.triggerReadSelectedText();
+
+        // Speaks the first paragraph.
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'First paragraph');
+
+        const resizeButton =
+            root.find({role: 'button', attributes: {name: 'Resize'}});
+
+        // Wait for click event, at which point the automation tree should
+        // be updated from the resize.
+        resizeButton.addEventListener(
+            EventType.CLICKED, this.newCallback(() => {
+              // Trigger next node group by completing first TTS request.
+              this.mockTts.finishPendingUtterance();
+
+              // Should still read second paragraph, even though some nodes
+              // were invalided from the resize.
+              assertTrue(this.mockTts.currentlySpeaking());
+              assertEquals(this.mockTts.pendingUtterances().length, 1);
+              this.assertEqualsCollapseWhitespace(
+                  this.mockTts.pendingUtterances()[0], longLine);
+            }));
+
+        // Perform resize.
+        resizeButton.doDefault();
+      });
+});

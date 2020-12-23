@@ -712,10 +712,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHost is ready to be deleted (LifecycleState::kReadyToBeDeleted).
   bool IsPendingDeletion();
 
-  // A NavigationRequest for a pending cross-document navigation in this frame,
-  // if any. This is cleared when the navigation commits.
-  NavigationRequest* navigation_request() { return navigation_request_.get(); }
-
   // A NavigationRequest for a pending same-document navigation in this frame,
   // if any. This is cleared when the navigation commits.
   NavigationRequest* same_document_navigation_request() {
@@ -1207,7 +1203,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Request a new NavigationClient interface from the renderer and returns the
   // ownership of the mojo::AssociatedRemote. This is intended for use by the
-  // NavigationRequest. Only used with PerNavigationMojoInterface enabled.
+  // NavigationRequest.
   mojo::AssociatedRemote<mojom::NavigationClient>
   GetNavigationClientFromInterfaceProvider();
 
@@ -2083,16 +2079,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::FramePolicy& frame_policy,
       blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
       blink::mojom::FrameOwnerElementType owner_type) override;
-
-  // This function mimics DidCommitProvisionalLoad but is a direct mojo
-  // callback from NavigationClient::CommitNavigation.
-  // This only used when PerNavigationMojoInterface is enabled, and will
-  // replace DidCommitProvisionalLoad in the long run.
-  void DidCommitPerNavigationMojoInterfaceNavigation(
-      NavigationRequest* committing_navigation_request,
-      mojom::DidCommitProvisionalLoadParamsPtr params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
-
   void DidCommitSameDocumentNavigation(
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitSameDocumentNavigationParamsPtr same_document_params)
@@ -2422,10 +2408,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // an interstitial.
   void UpdateSiteURL(const GURL& url, bool url_is_unreachable);
 
-  // The actual implementation of DidCommitProvisionalLoad and
-  // DidCommitPerNavigationMojoInterfaceNavigation.
+  // The actual implementation of committing a navigation in the browser
+  // process. Called by the DidCommitProvisionalLoad IPC handler.
   void DidCommitNavigation(
-      std::unique_ptr<NavigationRequest> committing_navigation_request,
+      NavigationRequest* committing_navigation_request,
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
 
@@ -2838,27 +2824,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Holder of Mojo connection with the HighPriorityLocalFrame in blink.
   mojo::Remote<blink::mojom::HighPriorityLocalFrame> high_priority_local_frame_;
 
-  // Holds a NavigationRequest when it's about to commit, ie. after
-  // OnCrossDocumentCommitProcessed has returned a positive answer for this
-  // NavigationRequest but before receiving DidCommitProvisionalLoad. This
-  // NavigationRequest is for a cross-document navigation.
-  std::unique_ptr<NavigationRequest> navigation_request_;
-
   // Holds AppCacheNavigationHandle after navigation request has been committed,
   // which keeps corresponding AppCacheHost alive while renderer asks for it.
   // See AppCacheNavigationHandle comment for more details.
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
-  // Holds the cross-document NavigationRequests that are waiting to commit,
-  // indexed by IDs. These are navigations that have passed ReadyToCommit stage
-  // and are waiting for the renderer to send back a matching
-  // OnCrossDocumentCommitProcessed.
-
-  // TODO(ahemery): We have this storage as a map because we actually want to
-  // find navigations by id with PerNavigationMojoInterface disabled.
-  // When the flag is always on, rework the structure to simply store an
-  // unindexed bunch of ongoing navigations and modify
-  // DidCommitNavigationInternal.
+  // Holds the cross-document NavigationRequests that are waiting to commit.
+  // These are navigations that have passed ReadyToCommit stage and are waiting
+  // for a matching commit IPC.
   std::map<NavigationRequest*, std::unique_ptr<NavigationRequest>>
       navigation_requests_;
 

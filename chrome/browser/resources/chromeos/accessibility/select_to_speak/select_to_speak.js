@@ -128,81 +128,69 @@ class SelectToSpeak {
     /** @private {boolean} */
     this.readAfterClose_ = true;
 
-    /** @private {?ParagraphUtils.NodeGroupItem} */
-    this.currentNode_ = null;
-
-    /** @private {number} */
-    this.currentNodeGroupIndex_ = -1;
-
-    /** @private {?ParagraphUtils.NodeGroup} */
-    this.currentNodeGroup_ = null;
+    /**
+     * The node groups to be spoken. We process content into node groups and
+     * pass one node group at a time to the TTS engine. Note that we do not use
+     * node groups for user-selected text in Gsuite. See readNodesInSelection_.
+     * @private {!Array<!ParagraphUtils.NodeGroup>}
+     */
+    this.currentNodeGroups_ = [];
 
     /**
-     * The indexes within the current node representing the word currently being
-     * spoken. Only updated if word highlighting is enabled.
+     * The index for the node group currently being spoken in
+     * |this.currentNodeGroups_|.
+     * @private {number}
+     */
+    this.currentNodeGroupIndex_ = -1;
+
+    /**
+     * The node group item currently being spoken. A node group item is a
+     * representation of the original input nodes, but may not be the same. For
+     * example, an input inline text node will be represented by its static text
+     * node in the node group item.
+     * @private {?ParagraphUtils.NodeGroupItem}
+     */
+    this.currentNodeGroupItem_ = null;
+
+    /**
+     * The index for the current node group item within the current node group,
+     * The current node group can be accessed from |this.currentNodeGroups_|
+     * using |this.currentNodeGroupIndex_|. In most cases,
+     * |this.currentNodeGroupItemIndex_| can be used to get
+     * |this.currentNodeGroupItem_| from the current node group. However, in
+     * Gsuite, we will have node group items outside of a node group.
+     * @private {number}
+     */
+    this.currentNodeGroupItemIndex_ = -1;
+
+    /**
+     * The indexes within the current node group item representing the word
+     * currently being spoken. Only updated if word highlighting is enabled.
      * @private {?Object}
      */
     this.currentNodeWord_ = null;
 
     /**
-     * These navigation state variables enable us to separate the
-     * functionalities of node enqueueing, navigation control, and TTS playback.
-     * @private {!{currentNodes:!Array<AutomationNode>,
-     *             currentNodeGroupStartNodeIndex: number,
-     *             currentCharIndex: number,
-     *             currentStartCharIndex: (number|undefined),
-     *             currentEndCharIndex: (number|undefined),
-     *             supportsNavigationPanel: boolean}}
-     *             isUserSelectedContent: boolean}}
+     * The start char index of the word to be spoken. The index is relative
+     * to the text content of the current node group.
+     * @private {number}
      */
-    this.navigationState_ = {
-      /**
-       * The current enqueued Automation nodes.
-       */
-      currentNodes: [],
+    this.currentCharIndex_ = -1;
 
-      /**
-       * The index indicating which node in |currentNodes| is used as the start
-       * of the current NodeGroup. STS will select a few nodes from
-       * |currentNodes| to form a NodeGroup, which is the basic unit for a
-       * TTS utterance. A NodeGroup could be a paragraph and a block of text.
-       * This number is used to generate a NodeGroup from |currentNodes|.
-       */
-      currentNodeGroupStartNodeIndex: -1,
+    /**
+     * Whether we are reading user-selected content. True if the current
+     * content is from mouse or keyboard selection. False if the current
+     * content is processed by the navigation features like paragraph
+     * navigation, sentence navigation, pause and resume.
+     * @private {boolean}
+     */
+    this.isUserSelectedContent_ = false;
 
-      /**
-       * The start char index of the word to be spoken. The index is relative
-       * to the NodeGroup.
-       */
-      currentCharIndex: -1,
-
-      /**
-       * The current start offset. The index is relative to the Automation node.
-       * When a user selects text, they could start from the middle of a node.
-       * This variable indicates where the user selection starts from within
-       * the first node of |currentNodes|. If set to undefined, we will use the
-       * entire first node.
-       */
-      currentStartCharIndex: undefined,
-
-      /**
-       * The current end offset - see currentStartCharIndex, above.
-       */
-      currentEndCharIndex: undefined,
-
-      /**
-       * Whether the current nodes support use of the navigation panel.
-       */
-      supportsNavigationPanel: true,
-
-      /**
-       * Whether we are reading user-selected content. True if the current
-       * content is from mouse or keyboard selection. False if the current
-       * content is processed by the navigation features like paragraph
-       * navigation, sentence navigation, pause and resume.
-       */
-      isUserSelectedContent: false,
-    };
+    /**
+     * Whether the current nodes support use of the navigation panel.
+     * @private {boolean}
+     */
+    this.supportsNavigationPanel_ = true;
 
     /**
      * The position of the current focus ring, which usually highlights the
@@ -211,9 +199,6 @@ class SelectToSpeak {
      * @private {!Array<!chrome.accessibilityPrivate.ScreenRect>}
      */
     this.currentFocusRing_ = [];
-
-    /** @private {?AutomationNode} */
-    this.currentBlockParent_ = null;
 
     /** @private {boolean} */
     this.visible_ = true;
@@ -283,6 +268,14 @@ class SelectToSpeak {
   }
 
   /**
+   * Gets the node group currently being spoken.
+   * @return {!ParagraphUtils.NodeGroup|undefined}
+   */
+  getCurrentNodeGroup_() {
+    return this.currentNodeGroups_[this.currentNodeGroupIndex_];
+  }
+
+  /**
    * Determines if navigation controls should be shown (and other related
    * functionality, such as auto-dismiss and click-to-navigate to sentence,
    * should be activated) based on feature flag and user setting.
@@ -291,7 +284,7 @@ class SelectToSpeak {
   shouldShowNavigationControls_() {
     return this.navigationControlFlag_ &&
         this.prefsManager_.navigationControlsEnabled() &&
-        this.navigationState_.supportsNavigationPanel;
+        this.supportsNavigationPanel_;
   }
 
   /**
@@ -520,6 +513,8 @@ class SelectToSpeak {
       MetricsUtils.recordStartEvent(
           MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
     } else {
+      // Gsuite apps include webapps beyond Docs, see getGSuiteAppRoot and
+      // GSUITE_APP_REGEXP.
       const gsuiteAppRootNode = getGSuiteAppRoot(focusedNode);
       if (!gsuiteAppRootNode) {
         return;
@@ -532,7 +527,7 @@ class SelectToSpeak {
         }
         const tab = tabs[0];
         this.inputHandler_.onRequestReadClipboardData();
-        this.currentNode_ =
+        this.currentNodeGroupItem_ =
             new ParagraphUtils.NodeGroupItem(gsuiteAppRootNode, 0, false);
         chrome.tabs.executeScript(tab.id, {
           allFrames: true,
@@ -648,9 +643,9 @@ class SelectToSpeak {
    * |this.ttsPaused_| was true while tts is speaking. This function also sets
    * the |this.pauseCompleteCallback_|, which will be executed at the end of
    * the pause process in |updatePauseStatusFromTtsEvent_|. This enables us to
-   * execute functions when the pause request is finished. For example, we can
-   * adjust |this.navigationState_| after a pause is fulfilled, and then resume
-   * to navigate to different positions.
+   * execute functions when the pause request is finished. For example, to
+   * navigate the next sentence, we trigger pause_ and start finding the next
+   * sentence when the pause function is fulfilled.
    * @return {!Promise}
    * @private
    */
@@ -666,7 +661,7 @@ class SelectToSpeak {
       // user-selected content. This enables us to distinguish between a user-
       // trigger pause from the auto pause happening at the end of user-selected
       // content.
-      this.navigationState_.isUserSelectedContent = false;
+      this.isUserSelectedContent_ = false;
     });
   }
 
@@ -684,15 +679,16 @@ class SelectToSpeak {
     if (!this.isPaused_()) {
       return;
     }
+    const currentNodeGroup = this.getCurrentNodeGroup_();
+
     // If there is no processed node group, that means the user has not selected
     // anything. Ignore the resume command.
-    if (!this.currentNodeGroup_) {
+    if (!currentNodeGroup) {
       return;
     }
     const {nodes: remainingNodes, offset} =
         NodeUtils.getNextNodesInParagraphFromNodeGroup(
-            this.currentNodeGroup_, this.navigationState_.currentCharIndex,
-            constants.Dir.FORWARD);
+            currentNodeGroup, this.currentCharIndex_, constants.Dir.FORWARD);
     // There is no remaining nodes in this paragraph so we navigate to the next
     // paragraph.
     if (remainingNodes.length === 0) {
@@ -700,9 +696,9 @@ class SelectToSpeak {
       return;
     }
 
-    if (this.navigationState_.isUserSelectedContent ||
+    if (this.isUserSelectedContent_ ||
         SentenceUtils.isSentenceStart(
-            this.currentNodeGroup_, this.navigationState_.currentCharIndex)) {
+            currentNodeGroup, this.currentCharIndex_)) {
       // If we are resuming from the end of user-selected content or if we are
       // at the start of the current sentence, we should start reading the
       // remaining content.
@@ -728,25 +724,8 @@ class SelectToSpeak {
   stopAll_() {
     chrome.tts.stop();
     this.clearFocusRing_();
-    this.clearNavigationStateVariables_();
     this.overrideSpeechRate_ = null;  // Reset speech rate to system default
     this.onStateChanged_(SelectToSpeakState.INACTIVE);
-  }
-
-  /**
-   * Clears the member variables for the navigation state.
-   * @private
-   */
-  clearNavigationStateVariables_() {
-    this.navigationState_ = {
-      currentNodes: [],
-      currentNodeGroupStartNodeIndex: -1,
-      currentCharIndex: -1,
-      currentStartCharIndex: undefined,
-      currentEndCharIndex: undefined,
-      supportsNavigationPanel: true,
-      isUserSelectedContent: false,
-    };
   }
 
   /**
@@ -757,12 +736,25 @@ class SelectToSpeak {
   clearFocusRingAndNode_() {
     this.clearFocusRing_();
     // Clear the node and also stop the interval testing.
-    this.currentNode_ = null;
-    this.currentNodeGroupIndex_ = -1;
-    this.currentNodeWord_ = null;
+    this.resetNodes_();
+    this.supportsNavigationPanel_ = true;
+    this.isUserSelectedContent_ = false;
     clearInterval(this.intervalId_);
     this.intervalId_ = undefined;
     this.scrollToSpokenNode_ = false;
+  }
+
+  /**
+   * Resets the instance variables for nodes and node groups.
+   * @private
+   */
+  resetNodes_() {
+    this.currentNodeGroups_ = [];
+    this.currentNodeGroupIndex_ = -1;
+    this.currentNodeGroupItem_ = null;
+    this.currentNodeGroupItemIndex_ = -1;
+    this.currentNodeWord_ = null;
+    this.currentCharIndex_ = -1;
   }
 
   /**
@@ -970,7 +962,8 @@ class SelectToSpeak {
         this.navigateToNextSentence_(constants.Dir.FORWARD);
         break;
       case SelectToSpeakPanelAction.PREVIOUS_SENTENCE:
-        this.navigateToNextSentence_(constants.Dir.BACKWARD);
+        this.navigateToNextSentence_(
+            constants.Dir.BACKWARD, true /* skipCurrentSentence */);
         break;
       case SelectToSpeakPanelAction.EXIT:
         // User manually requested, so log cancel metric.
@@ -1017,16 +1010,30 @@ class SelectToSpeak {
    * current node group. If we do not find one, we will search within the
    * remaining content in the current paragraph (i.e., text block). If this
    * still fails, we will search the next paragraph.
+   * TODO(leileilei@google.com): Handle the edge case where the user navigates
+   * to next sentence from the end of a document, see http://crbug.com/1160962.
    * @param {constants.Dir} direction Direction to search for the next sentence.
    *     If set to forward, we look for the sentence start after the current
    *     position. Otherwise, we look for the sentence start before the current
    *     position.
+   * @param {boolean} skipCurrentSentence Whether to skip the current sentence.
+   *     This only affects backward navigation. When set to false, navigating
+   *     backward will find the closest sentence start. When set to true,
+   *     navigating backward will ignore the sentence start in the current
+   *     sentence. For example, when navigating backward from the middle of a
+   *     sentence. A true |skipCurrentSentence| will take us to the start of the
+   *     previous sentence while a false one will take us to the start of the
+   *     current sentence. Regardless of this parameter, navigating backward
+   *     from a sentence start will take us to the start of the previous
+   *     sentence.
    * @private
    */
-  async navigateToNextSentence_(direction) {
+  async navigateToNextSentence_(direction, skipCurrentSentence = false) {
+    const currentNodeGroup = this.getCurrentNodeGroup_();
+
     // An empty node group is not expected and means that the user has not
     // enqueued any text.
-    if (!this.currentNodeGroup_) {
+    if (!currentNodeGroup) {
       return;
     }
 
@@ -1034,14 +1041,15 @@ class SelectToSpeak {
       await this.pause_();
     }
 
-    // Check the next sentence start within this node group.
-    if (this.navigateToNextSentenceWithinNodeGroup_(
-            this.currentNodeGroup_, this.navigationState_.currentCharIndex,
-            direction)) {
+    // Checks the next sentence within this node group. If we have enqueued the
+    // next sentence that fulfilled the requirements, return.
+    if (this.enqueueNextSentenceWithinNodeGroup_(
+            currentNodeGroup, this.currentCharIndex_, direction,
+            skipCurrentSentence)) {
       return;
     }
 
-    // If there is no sentence start at the current node group, look for the
+    // If there is no next sentence at the current node group, look for the
     // content within this paragraph. First, we get the remaining content in
     // the paragraph. The returned offset marks the char index of the current
     // position in the paragraph. When searching forward, the offset is the
@@ -1049,12 +1057,11 @@ class SelectToSpeak {
     // searching backward, the offset is the char index pointing to the char
     // after the remaining content.
     const {nodes, offset} = NodeUtils.getNextNodesInParagraphFromNodeGroup(
-        this.currentNodeGroup_, this.navigationState_.currentCharIndex,
-        direction);
-    // If we have reached to the end of a paragraph, navigate to the next
-    // paragraph.
+        currentNodeGroup, this.currentCharIndex_, direction);
+    // If we have reached to the end of a paragraph, enqueue the sentence from
+    // the next paragraph.
     if (nodes.length === 0) {
-      this.navigateToNextSentenceInNextParagraph_(direction);
+      this.enqueueNextSentenceInNextParagraph_(direction);
       return;
     }
     // Get the node group for the remaining content in the paragraph. If we are
@@ -1074,18 +1081,30 @@ class SelectToSpeak {
       console.warn('Navigate sentence with an invalid char index', charIndex);
       return;
     }
-    if (this.navigateToNextSentenceWithinNodeGroup_(
-            nodeGroup, charIndex, direction)) {
+    // When searching backward, we need to adjust |skipCurrentSentence| if it
+    // is true. The remaining content we get excludes the char at
+    // |this.currentCharIndex_|. If this char is a sentence
+    // start, we have already skipped the current sentence so we need to change
+    // |skipCurrentSentence| to false for the next search.
+    if (direction === constants.Dir.BACKWARD && skipCurrentSentence) {
+      const currentPositionIsSentenceStart = SentenceUtils.isSentenceStart(
+          currentNodeGroup, this.currentCharIndex_);
+      if (currentPositionIsSentenceStart) {
+        skipCurrentSentence = false;
+      }
+    }
+    if (this.enqueueNextSentenceWithinNodeGroup_(
+            nodeGroup, charIndex, direction, skipCurrentSentence)) {
       return;
     }
 
-    // If there is no sentence start within this paragraph, navigate to the next
-    // one.
-    this.navigateToNextSentenceInNextParagraph_(direction);
+    // If there is no next sentence within this paragraph, enqueue the sentence
+    // from the next paragraph.
+    this.enqueueNextSentenceInNextParagraph_(direction);
   }
 
   /**
-   * Navigates to the next sentence within the |nodeGroup|. If the |direction|
+   * Enqueues the next sentence within the |nodeGroup|. If the |direction|
    * is set to forward, it will navigate to the sentence start after the
    * |startCharIndex|. Otherwise, it will look for the sentence start before the
    * |startCharIndex|.
@@ -1096,16 +1115,36 @@ class SelectToSpeak {
    *     |startCharIndex|, this function will return the next sentence start
    *     after 0 if we search forward.
    * @param {constants.Dir} direction
-   * @return {boolean} Whether we have found a sentence start in the given node
-   *     group. If we found the sentence start, we will start TTS.
+   * @param {boolean} skipCurrentSentence Whether to skip the current sentence
+   *     when navigating backward. See navigateToNextSentence_.
+   * @return {boolean} Whether we have enqueued content to the speech queue.
+   *     When |skipCurrentSentence| is true, we will not enqueue content to
+   *     speech queue if we only find a sentence start in the current sentence.
    * @private
    */
-  navigateToNextSentenceWithinNodeGroup_(nodeGroup, startCharIndex, direction) {
+  enqueueNextSentenceWithinNodeGroup_(
+      nodeGroup, startCharIndex, direction, skipCurrentSentence) {
     if (!nodeGroup) {
       return false;
     }
-    const nextSentenceStart =
+    let nextSentenceStart =
         SentenceUtils.getSentenceStart(nodeGroup, startCharIndex, direction);
+    if (nextSentenceStart === null) {
+      return false;
+    }
+    // When we search backward, if we want to skip the current sentence, we
+    // need to search the sentence start in the previous sentence. If the
+    // position of |startCharIndex| is a sentence start, the current
+    // |nextSentenceStart| is already in the previous sentence because
+    // getSentenceStart excludes the search index. Otherwise, the
+    // |nextSentenceStart| we found is the start of current sentence, and we
+    // need to search backward again.
+    if (direction === constants.Dir.BACKWARD && skipCurrentSentence &&
+        !SentenceUtils.isSentenceStart(nodeGroup, startCharIndex)) {
+      nextSentenceStart = SentenceUtils.getSentenceStart(
+          nodeGroup, nextSentenceStart, direction);
+    }
+    // If the second sentence start is not valid, we do not enqueue text,
     if (nextSentenceStart === null) {
       return false;
     }
@@ -1117,7 +1156,7 @@ class SelectToSpeak {
       // There is no remaining content. Move to the next paragraph. This is
       // unexpected since we already found a sentence start, which indicates
       // there should be some content to read.
-      this.navigateToNextSentenceInNextParagraph_(direction);
+      this.enqueueNextSentenceInNextParagraph_(direction);
     } else {
       this.startSpeechQueue_(
           nodes, {clearFocusRing: false, startCharIndex: offset});
@@ -1126,15 +1165,16 @@ class SelectToSpeak {
   }
 
   /**
-   * Navigates to the next sentence in the next text block in the given
+   * Enqueues the next sentence in the next text block in the given
    * direction. If the |direction| is set to forward, it will navigate to the
    * start of the following text block. Otherwise, it will look for the last
-   * sentence in the previous text block. This function will also start TTS
-   * regardless of whether we have found a sentence start in the text block.
+   * sentence in the previous text block. This function will enqueue content to
+   * the speech queue regardless of whether we have found a sentence start in
+   * the text block.
    * @param {constants.Dir} direction
    * @private
    */
-  navigateToNextSentenceInNextParagraph_(direction) {
+  enqueueNextSentenceInNextParagraph_(direction) {
     const paragraphNodes = this.locateNodesForNextParagraph_(direction);
     if (paragraphNodes.length === 0) {
       return;
@@ -1166,9 +1206,9 @@ class SelectToSpeak {
       this.startSpeechQueue_(paragraphNodes);
       return;
     }
-    // Gets the remaining content between the sentence start till the end of the
-    // text block. The offset is the start char index for the first node in the
-    // remaining content.
+    // Gets the remaining content between the sentence start until the end of
+    // the text block. The offset is the start char index for the first node in
+    // the remaining content.
     const {nodes, offset} = NodeUtils.getNextNodesInParagraphFromNodeGroup(
         nodeGroup, sentenceStartIndex, constants.Dir.FORWARD);
     if (nodes.length === 0) {
@@ -1178,7 +1218,7 @@ class SelectToSpeak {
       this.startSpeechQueue_(paragraphNodes);
       return;
     }
-    // Reads the remaining content from the sentence start till the end of the
+    // Reads the remaining content from the sentence start until the end of the
     // block.
     this.startSpeechQueue_(
         nodes, {clearFocusRing: false, startCharIndex: offset});
@@ -1217,12 +1257,16 @@ class SelectToSpeak {
   locateNodesForNextParagraph_(direction) {
     // Use current block parent as starting point to navigate from. If it is not
     // a valid block, then use one of the nodes that are currently activated.
-    let node = this.currentBlockParent_;
-    if ((node === null || node.isRootNode) && this.currentNodeGroup_ &&
-        this.currentNodeGroup_.nodes.length > 0) {
-      node = this.currentNodeGroup_.nodes[0].node;
+    const currentNodeGroup = this.getCurrentNodeGroup_();
+    if (!currentNodeGroup) {
+      return [];
     }
-    if (node === null) {
+    let node = currentNodeGroup.blockParent;
+    if ((node === null || node.isRootNode || node.role === undefined) &&
+        currentNodeGroup.nodes.length > 0) {
+      node = currentNodeGroup.nodes[0].node;
+    }
+    if (node === null || node.role === undefined) {
       // Could not find any nodes to navigate from.
       return [];
     }
@@ -1286,8 +1330,7 @@ class SelectToSpeak {
   /**
    * Enqueue nodes to TTS queue and start TTS. This function can be used for
    * adding nodes, either from user selection (e.g., mouse selection) or
-   * navigation control (e.g., next paragraph). This function will overwrite
-   * |this.navigationState_| and start TTS according to the offsets.
+   * navigation control (e.g., next paragraph).
    * @param {!Array<AutomationNode>} nodes The nodes to speak.
    * @param {!{clearFocusRing: (boolean|undefined),
    *          startCharIndex: (number|undefined),
@@ -1310,7 +1353,7 @@ class SelectToSpeak {
     const clearFocusRing = params.clearFocusRing || false;
     let startCharIndex = params.startCharIndex;
     let endCharIndex = params.endCharIndex;
-    const isUserSelectedContent = params.isUserSelectedContent || false;
+    this.isUserSelectedContent_ = params.isUserSelectedContent || false;
 
     this.prepareForSpeech_(clearFocusRing /* clear the focus ring */);
 
@@ -1333,101 +1376,96 @@ class SelectToSpeak {
       endCharIndex = undefined;
     }
 
-    // Update the navigation state variables.
-    this.navigationState_ = {
-      currentNodes: nodes,
-      currentNodeGroupStartNodeIndex: 0,
-      currentCharIndex: 0,
-      currentStartCharIndex: startCharIndex,
-      currentEndCharIndex: endCharIndex,
-      supportsNavigationPanel: this.isNavigationPanelSupported_(nodes),
-      isUserSelectedContent,
-    };
+    this.supportsNavigationPanel_ = this.isNavigationPanelSupported_(nodes);
+    this.updateNodeGroups_(nodes, startCharIndex, endCharIndex);
 
     // Play TTS according to the current state variables.
     this.startCurrentNodeGroup_();
   }
 
   /**
-   * Start TTS according to the five variables in |this.navigationState_|. This
-   * function will first construct a NodeGroup based on |currentNodes| and
-   * |currentNodeGroupStartNodeIndex|. Then, it will clip texts based on
-   * |currentCharIndex|, |currentStartCharIndex|, and |currentEndCharIndex|.
-   * Lastly, it will start TTS using the processed text.
+   * Updates the node groups to be spoken. Converts |nodes|, |startCharIndex|,
+   * and |endCharIndex| into node groups, and updates |this.currentNodeGroups_|
+   * and |this.currentNodeGroupIndex_|.
+   * @param {!Array<AutomationNode>} nodes The nodes to speak.
+   * @param {number=} startCharIndex The index into the first node's text at
+   *     which to start speaking. If this is not passed, will start at 0.
+   * @param {number=} endCharIndex The index into the last node's text at which
+   *     to end speech. If this is not passed, will stop at the end.
+   * @private
+   */
+  updateNodeGroups_(nodes, startCharIndex, endCharIndex) {
+    this.resetNodes_();
+
+    for (let i = 0; i < nodes.length; i++) {
+      // When navigation controls are enabled, disable the clipping of overflow
+      // words. When overflow words are clipped, words scrolled out of view are
+      // clipped, which is undesirable for our navigation features as we
+      // generate node groups for next/previous paragraphs which may be fully or
+      // partially scrolled out of view.
+      const nodeGroup = ParagraphUtils.buildNodeGroup(nodes, i, {
+        splitOnLanguage: this.enableLanguageDetectionIntegration_,
+        clipOverflowWords: !this.shouldShowNavigationControls_(),
+      });
+
+      const isFirstNodeGroup = i === 0;
+      const shouldApplyStartOffset =
+          isFirstNodeGroup && startCharIndex !== undefined;
+      const firstNodeHasInlineText =
+          nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText;
+      if (shouldApplyStartOffset && firstNodeHasInlineText) {
+        // We assume that the start offset will only be applied to the first
+        // node in the first NodeGroup. The |startCharIndex| needs to be
+        // adjusted. The first node of the NodeGroup may not be at the beginning
+        // of the parent of the NodeGroup. (e.g., an inlineText in its
+        // staticText parent). Thus, we need to adjust the start index.
+        const startIndexInNodeParent =
+            ParagraphUtils.getStartCharIndexInParent(nodes[0]);
+        const startIndexInNodeGroup = startCharIndex + startIndexInNodeParent +
+            nodeGroup.nodes[0].startChar;
+        this.applyOffset(
+            nodeGroup, startIndexInNodeGroup, true /* isStartOffset */);
+      }
+
+      // Advance i to the end of this group, to skip all nodes it contains.
+      i = nodeGroup.endIndex;
+      const isLastNodeGroup = (i === nodes.length - 1);
+      const shouldApplyEndOffset =
+          isLastNodeGroup && endCharIndex !== undefined;
+      const lastNodeHasInlineText = nodeGroup.nodes.length > 0 &&
+          nodeGroup.nodes[nodeGroup.nodes.length - 1].hasInlineText;
+      if (shouldApplyEndOffset && lastNodeHasInlineText) {
+        // We assume that the end offset will only be applied to the last node
+        // in the last NodeGroup. Similarly, |endCharIndex| needs to be
+        // adjusted.
+        const startIndexInNodeParent =
+            ParagraphUtils.getStartCharIndexInParent(nodes[i]);
+        const endIndexInNodeGroup = endCharIndex + startIndexInNodeParent +
+            nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar;
+        this.applyOffset(
+            nodeGroup, endIndexInNodeGroup, false /* isStartOffset */);
+      }
+      if (nodeGroup.nodes.length === 0 && !isLastNodeGroup) {
+        continue;
+      }
+      this.currentNodeGroups_.push(nodeGroup);
+    }
+    // Sets the initial node group index to zero if this.currentNodeGroups_ has
+    // items.
+    if (this.currentNodeGroups_.length > 0) {
+      this.currentNodeGroupIndex_ = 0;
+    }
+  }
+
+  /**
+   * Starts reading the current node group.
    * @private
    */
   startCurrentNodeGroup_() {
-    const currentNodes = this.navigationState_.currentNodes;
-    const currentNodeGroupStartNodeIndex =
-        this.navigationState_.currentNodeGroupStartNodeIndex;
-    const currentCharIndex = this.navigationState_.currentCharIndex;
-    const currentStartCharIndex = this.navigationState_.currentStartCharIndex;
-    const currentEndCharIndex = this.navigationState_.currentEndCharIndex;
-
-    // Reaches to the end of the current nodes.
-    if (currentNodeGroupStartNodeIndex >= currentNodes.length) {
+    const nodeGroup = this.getCurrentNodeGroup_();
+    if (!nodeGroup) {
       return;
     }
-    // When navigation controls are enabled, disable the
-    // clipping of overflow words. When overflow words are clipped, words
-    // scrolled out of view are clipped, which is undesirable for our navigation
-    // features as we generate node groups for next/previous paragraphs which
-    // may be fully or partially scrolled out of view.
-    const nodeGroup = ParagraphUtils.buildNodeGroup(
-        currentNodes, currentNodeGroupStartNodeIndex, {
-          splitOnLanguage: this.enableLanguageDetectionIntegration_,
-          clipOverflowWords: !this.shouldShowNavigationControls_(),
-        });
-
-    // |currentCharIndex| is the start char index of the word to be spoken in
-    // the nodeGroup text. If the |currentCharIndex| is non-zero, that means we
-    // are resuming from prior TTS. We trim the text regardless which NodeGroup
-    // we are, as a user could possibly pause at any NodeGroup.
-    this.applyOffset(nodeGroup, currentCharIndex, true /* isStartOffset */);
-
-    const isFirstNodeGroup = currentNodeGroupStartNodeIndex === 0;
-    const shouldApplyStartOffset =
-        isFirstNodeGroup && currentStartCharIndex !== undefined;
-    const firstNodeHasInlineText =
-        nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText;
-    if (shouldApplyStartOffset && firstNodeHasInlineText) {
-      // We assume that the start offset will only be applied to the first node
-      // in the first NodeGroup. The |currentStartCharIndex| needs to be
-      // adjusted. The first node of the NodeGroup may not be at the beginning
-      // of the parent of the NodeGroup. (e.g., an inlineText in its staticText
-      // parent). Thus, we need to adjust the start index.
-      const startIndexInNodeParent =
-          ParagraphUtils.getStartCharIndexInParent(currentNodes[0]);
-      const startIndexInNodeGroup = currentStartCharIndex +
-          startIndexInNodeParent + nodeGroup.nodes[0].startChar;
-      this.applyOffset(
-          nodeGroup, startIndexInNodeGroup, true /* isStartOffset */);
-    }
-
-    const isLastNodeGroup = (nodeGroup.endIndex === currentNodes.length - 1);
-    const shouldApplyEndOffset =
-        isLastNodeGroup && currentEndCharIndex !== undefined;
-    const lastNodeHasInlineText = nodeGroup.nodes.length > 0 &&
-        nodeGroup.nodes[nodeGroup.nodes.length - 1].hasInlineText;
-    if (shouldApplyEndOffset && lastNodeHasInlineText) {
-      // We assume that the end offset will only be applied to the last node in
-      // the last NodeGroup. Similarly, |currentEndCharIndex| needs to be
-      // adjusted.
-      const startIndexInNodeParent = ParagraphUtils.getStartCharIndexInParent(
-          currentNodes[nodeGroup.endIndex]);
-      const endIndexInNodeGroup = currentEndCharIndex + startIndexInNodeParent +
-          nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar;
-      this.applyOffset(
-          nodeGroup, endIndexInNodeGroup, false /* isStartOffset */);
-    }
-
-    if (nodeGroup.nodes.length === 0 && !isLastNodeGroup) {
-      // If the current nodeGroup is empty, we end this node group early, as if
-      // we have completed this node group.
-      this.onNodeGroupSpeakingCompleted_(
-          currentNodeGroupStartNodeIndex /* currentNodeGroupEndIndex */);
-    }
-
     const options = {};
     // Copy options so we can add lang below
     Object.assign(options, this.prefsManager_.speechOptions());
@@ -1444,31 +1482,25 @@ class SelectToSpeak {
     options.onEvent = (event) => {
       if (event.type === 'start' && nodeGroup.nodes.length > 0) {
         this.updatePauseStatusFromTtsEvent_(false /* shouldPause */);
-        // TODO(leileilei): We can get rid of this.currentBlockParent_ if it is
-        // always equal to currentNodeGroup_.blockParent.
-        this.currentBlockParent_ = nodeGroup.blockParent;
-        this.currentNodeGroup_ = nodeGroup;
 
-        // Update |currentCharIndex|. Find the first non-space char index in
-        // nodeGroup text, or 0 if the text is undefined or the first char is
+        // Update |this.currentCharIndex_|. Find the first non-space char index
+        // in nodeGroup text, or 0 if the text is undefined or the first char is
         // non-space.
-        this.navigationState_.currentCharIndex = nodeGroupText.search(/\S|$/);
+        this.currentCharIndex_ = nodeGroupText.search(/\S|$/);
 
-        this.syncCurrentNodeWithCharIndex_(
-            nodeGroup, this.navigationState_.currentCharIndex /* charIndex */);
+        this.syncCurrentNodeWithCharIndex_(nodeGroup, this.currentCharIndex_);
         if (this.prefsManager_.wordHighlightingEnabled()) {
           // At 'start', find the first word and highlight that. Clear the
           // previous word in the node.
           this.currentNodeWord_ = null;
-          // If |currentCharIndex| is not 0, that means we have applied a start
-          // offset. Thus, we need to pass startIndexInNodeGroup to
+          // If |this.currentCharIndex_| is not 0, that means we have applied a
+          // start offset. Thus, we need to pass startIndexInNodeGroup to
           // opt_startIndex and overwrite the word boundaries in the original
           // node.
           this.updateNodeHighlight_(
-              nodeGroupText, this.navigationState_.currentCharIndex,
-              this.navigationState_.currentCharIndex !== 0 ?
-                  this.navigationState_.currentCharIndex :
-                  undefined);
+              nodeGroupText, this.currentCharIndex_,
+              this.currentCharIndex_ !== 0 ? this.currentCharIndex_ :
+                                             undefined);
         } else {
           this.testCurrentNode_();
         }
@@ -1493,9 +1525,13 @@ class SelectToSpeak {
           this.updatePauseStatusFromTtsEvent_(true /* shouldPause */);
         }
       } else if (event.type === 'end') {
-        this.onNodeGroupSpeakingCompleted_(
-            nodeGroup.endIndex /* currentNodeGroupEndIndex */);
+        this.onNodeGroupSpeakingCompleted_();
       } else if (event.type === 'word') {
+        // The Closure compiler doesn't realize that we did a !nodeGroup earlier
+        // so we check again here.
+        if (!nodeGroup) {
+          return;
+        }
         this.onTtsWordEvent_(event, nodeGroup);
       }
     };
@@ -1507,20 +1543,18 @@ class SelectToSpeak {
    * indicated by the end index. If we have reached the last node group, this
    * function will update STS status depending whether the navigation feature is
    * enabled.
-   * @param {number} currentNodeGroupEndIndex the index of the last node in the
-   *     current node group. The index is relative to
-   *     |this.navigationState_.currentNodes|.
+   * @private
    */
-  onNodeGroupSpeakingCompleted_(currentNodeGroupEndIndex) {
+  onNodeGroupSpeakingCompleted_() {
+    const currentNodeGroup = this.getCurrentNodeGroup_();
+
     // Update the current char index to the end of the text content in this
     // nodeGroup.
-    const nodeGroupText =
-        (this.currentNodeGroup_ && this.currentNodeGroup_.text) || '';
-    this.navigationState_.currentCharIndex = nodeGroupText.trimEnd().length;
+    const nodeGroupText = (currentNodeGroup && currentNodeGroup.text) || '';
+    this.currentCharIndex_ = nodeGroupText.trimEnd().length;
 
     const isLastNodeGroup =
-        (currentNodeGroupEndIndex ===
-         this.navigationState_.currentNodes.length - 1);
+        (this.currentNodeGroupIndex_ === this.currentNodeGroups_.length - 1);
     if (isLastNodeGroup) {
       if (!this.shouldShowNavigationControls_()) {
         this.onStateChanged_(SelectToSpeakState.INACTIVE);
@@ -1531,18 +1565,14 @@ class SelectToSpeak {
       return;
     }
 
-    // Navigate to the next NodeGroup. Don't change |currentNodes|,
-    // |currentStartCharIndex|, or |currentEndCharIndex|.
-    this.navigationState_.currentCharIndex = 0;
-    this.navigationState_.currentNodeGroupStartNodeIndex =
-        currentNodeGroupEndIndex + 1;
-    // Play TTS.
+    // Start reading the next node group.
+    this.currentNodeGroupIndex_++;
     this.startCurrentNodeGroup_();
   }
 
   /**
-   * Update |this.currentNode_|, the current speaking or the node to be spoken
-   * in the node group.
+   * Update |this.currentNodeGroupItem_|, the current speaking or the node to be
+   * spoken in the node group.
    * @param {ParagraphUtils.NodeGroup} nodeGroup the current nodeGroup.
    * @param {number} charIndex the start char index of the word to be spoken.
    *    The index is relative to the entire NodeGroup.
@@ -1557,19 +1587,22 @@ class SelectToSpeak {
       opt_startFromNodeGroupIndex = 0;
     }
 
-    // There is no speaking word, set the NodeGroupIndex to 0.
+    // There is no speaking word, set the NodeGroupItemIndex to 0.
     if (charIndex <= 0) {
-      this.currentNodeGroupIndex_ = 0;
-      this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
-      return this.currentNodeGroupIndex_ === opt_startFromNodeGroupIndex;
+      this.currentNodeGroupItemIndex_ = 0;
+      this.currentNodeGroupItem_ =
+          nodeGroup.nodes[this.currentNodeGroupItemIndex_];
+      return this.currentNodeGroupItemIndex_ === opt_startFromNodeGroupIndex;
     }
 
-    // Sets the this.currentNodeGroupIndex_ to |opt_startFromNodeGroupIndex|
-    this.currentNodeGroupIndex_ = opt_startFromNodeGroupIndex;
-    this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
+    // Sets the |this.currentNodeGroupItemIndex_| to
+    // |opt_startFromNodeGroupIndex|
+    this.currentNodeGroupItemIndex_ = opt_startFromNodeGroupIndex;
+    this.currentNodeGroupItem_ =
+        nodeGroup.nodes[this.currentNodeGroupItemIndex_];
 
-    if (this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
-      let next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
+    if (this.currentNodeGroupItemIndex_ + 1 < nodeGroup.nodes.length) {
+      let next = nodeGroup.nodes[this.currentNodeGroupItemIndex_ + 1];
       let nodeUpdated = false;
       // TODO(katie): For something like a date, the start and end
       // node group nodes can actually be different. Example:
@@ -1579,7 +1612,7 @@ class SelectToSpeak {
       // start char index of the target word, we just need to make sure the
       // next.startchar is bigger than it.
       while (next && charIndex >= next.startChar &&
-             this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
+             this.currentNodeGroupItemIndex_ + 1 < nodeGroup.nodes.length) {
         next = this.incrementCurrentNodeAndGetNext_(nodeGroup);
         nodeUpdated = true;
       }
@@ -1634,10 +1667,9 @@ class SelectToSpeak {
   onTtsWordEvent_(event, nodeGroup) {
     // Not all speech engines include length in the ttsEvent object. .
     const hasLength = event.length !== undefined && event.length >= 0;
-    // Only update the currentCharIndex if event has a higher charIndex. TTS
-    // sometimes will report an incorrect number at the end of an utterance.
-    this.navigationState_.currentCharIndex =
-        Math.max(event.charIndex, this.navigationState_.currentCharIndex);
+    // Only update the |this.currentCharIndex_| if event has a higher charIndex.
+    // TTS sometimes will report an incorrect number at the end of an utterance.
+    this.currentCharIndex_ = Math.max(event.charIndex, this.currentCharIndex_);
     console.debug(nodeGroup.text + ' (index ' + event.charIndex + ')');
     let debug = '-'.repeat(event.charIndex);
     if (hasLength) {
@@ -1648,10 +1680,10 @@ class SelectToSpeak {
     console.debug(debug);
 
     // First determine which node contains the word currently being spoken,
-    // and update this.currentNode_, this.currentNodeWord_, and
-    // this.currentNodeGroupIndex_ to match.
+    // and update this.currentNodeGroupItem_, this.currentNodeWord_, and
+    // this.currentNodeGroupItemIndex_ to match.
     const nodeUpdated = this.syncCurrentNodeWithCharIndex_(
-        nodeGroup, event.charIndex, this.currentNodeGroupIndex_);
+        nodeGroup, event.charIndex, this.currentNodeGroupItemIndex_);
     if (nodeUpdated) {
       if (!this.prefsManager_.wordHighlightingEnabled()) {
         // If we are doing a per-word highlight, we will test the
@@ -1665,8 +1697,9 @@ class SelectToSpeak {
     if (this.prefsManager_.wordHighlightingEnabled()) {
       if (hasLength) {
         this.currentNodeWord_ = {
-          'start': event.charIndex - this.currentNode_.startChar,
-          'end': event.charIndex + event.length - this.currentNode_.startChar
+          'start': event.charIndex - this.currentNodeGroupItem_.startChar,
+          'end': event.charIndex + event.length -
+              this.currentNodeGroupItem_.startChar
         };
         this.testCurrentNode_();
       } else {
@@ -1689,15 +1722,16 @@ class SelectToSpeak {
    */
   incrementCurrentNodeAndGetNext_(nodeGroup) {
     // Move to the next node.
-    this.currentNodeGroupIndex_ += 1;
-    this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
+    this.currentNodeGroupItemIndex_ += 1;
+    this.currentNodeGroupItem_ =
+        nodeGroup.nodes[this.currentNodeGroupItemIndex_];
     // Setting this.currentNodeWord_ to null signals it should be recalculated
     // later.
     this.currentNodeWord_ = null;
-    if (this.currentNodeGroupIndex_ + 1 >= nodeGroup.nodes.length) {
+    if (this.currentNodeGroupItemIndex_ + 1 >= nodeGroup.nodes.length) {
       return null;
     }
-    return nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
+    return nodeGroup.nodes[this.currentNodeGroupItemIndex_ + 1];
   }
 
   /**
@@ -1830,9 +1864,13 @@ class SelectToSpeak {
     // TODO: Better test: has no siblings in the group, highlight just
     // the one node. if it has siblings, highlight the parent.
     let focusRingRect;
-    if (this.currentBlockParent_ !== null &&
-        node.role === RoleType.INLINE_TEXT_BOX) {
-      focusRingRect = this.currentBlockParent_.location;
+    const currentNodeGroup = this.getCurrentNodeGroup_();
+    if (!currentNodeGroup) {
+      return;
+    }
+    const currentBlockParent = currentNodeGroup.blockParent;
+    if (currentBlockParent !== null && node.role === RoleType.INLINE_TEXT_BOX) {
+      focusRingRect = currentBlockParent.location;
     } else {
       focusRingRect = node.location;
     }
@@ -1845,22 +1883,22 @@ class SelectToSpeak {
    * @private
    */
   testCurrentNode_() {
-    if (this.currentNode_ == null) {
+    if (this.currentNodeGroupItem_ == null) {
       return;
     }
-    if (this.currentNode_.node.location === undefined) {
+    if (this.currentNodeGroupItem_.node.location === undefined) {
       // Don't do the hit test because there is no location to test against.
       // Just directly update Select To Speak from node state.
-      this.updateFromNodeState_(this.currentNode_, false);
+      this.updateFromNodeState_(this.currentNodeGroupItem_, false);
     } else {
-      this.updateHighlightAndFocus_(this.currentNode_);
+      this.updateHighlightAndFocus_(this.currentNodeGroupItem_);
       // Do a hit test to make sure the node is not in a background window
       // or minimimized. On the result checkCurrentNodeMatchesHitTest_ will be
       // called, and we will use that result plus the currentNode's state to
       // determine how to set the focus and whether to stop speech.
       this.desktop_.hitTest(
-          this.currentNode_.node.location.left,
-          this.currentNode_.node.location.top, EventType.HOVER);
+          this.currentNodeGroupItem_.node.location.left,
+          this.currentNodeGroupItem_.node.location.top, EventType.HOVER);
     }
   }
 
@@ -1870,13 +1908,13 @@ class SelectToSpeak {
    * @private
    */
   onHitTestCheckCurrentNodeMatches_(evt) {
-    if (this.currentNode_ == null) {
+    if (this.currentNodeGroupItem_ == null) {
       return;
     }
     chrome.automation.getFocus(function(focusedNode) {
       var window = NodeUtils.getNearestContainingWindow(evt.target);
       var currentWindow =
-          NodeUtils.getNearestContainingWindow(this.currentNode_.node);
+          NodeUtils.getNearestContainingWindow(this.currentNodeGroupItem_.node);
       var inForeground =
           currentWindow != null && window != null && currentWindow === window;
       if (!inForeground &&
@@ -1896,7 +1934,7 @@ class SelectToSpeak {
             NodeUtils.getNearestContainingWindow(focusedNode.root);
         inForeground = focusedWindow != null && currentWindow === focusedWindow;
       }
-      this.updateFromNodeState_(this.currentNode_, inForeground);
+      this.updateFromNodeState_(this.currentNodeGroupItem_, inForeground);
     }.bind(this));
   }
 
@@ -1938,20 +1976,20 @@ class SelectToSpeak {
     }
     // Get the next word based on the event's charIndex.
     const nextWordStart =
-        WordUtils.getNextWordStart(text, charIndex, this.currentNode_);
+        WordUtils.getNextWordStart(text, charIndex, this.currentNodeGroupItem_);
     // The |WordUtils.getNextWordEnd| will find the correct end based on the
     // trimmed text, so there is no need to provide additional input like
     // opt_startIndex.
     const nextWordEnd = WordUtils.getNextWordEnd(
         text, opt_startIndex === undefined ? nextWordStart : opt_startIndex,
-        this.currentNode_);
+        this.currentNodeGroupItem_);
     // Map the next word into the node's index from the text.
     const nodeStart = opt_startIndex === undefined ?
-        nextWordStart - this.currentNode_.startChar :
-        opt_startIndex - this.currentNode_.startChar;
+        nextWordStart - this.currentNodeGroupItem_.startChar :
+        opt_startIndex - this.currentNodeGroupItem_.startChar;
     const nodeEnd = Math.min(
-        nextWordEnd - this.currentNode_.startChar,
-        NodeUtils.nameLength(this.currentNode_.node));
+        nextWordEnd - this.currentNodeGroupItem_.startChar,
+        NodeUtils.nameLength(this.currentNodeGroupItem_.node));
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
         nodeStart <= nodeEnd) {

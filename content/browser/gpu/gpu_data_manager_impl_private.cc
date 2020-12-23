@@ -494,13 +494,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   // For testing only.
   if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
     domain_blocking_enabled_ = false;
-
-  // Do not change kTimerInterval without also changing the UMA histogram name,
-  // as histogram data from before/after the change will not be comparable.
-  constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromMinutes(5);
-  compositing_mode_timer_.Start(
-      FROM_HERE, kTimerInterval, this,
-      &GpuDataManagerImplPrivate::RecordCompositingMode);
 }
 
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
@@ -512,6 +505,15 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->RemoveObserver(owner_);
 #endif
+}
+
+void GpuDataManagerImplPrivate::StartUmaTimer() {
+  // Do not change kTimerInterval without also changing the UMA histogram name,
+  // as histogram data from before/after the change will not be comparable.
+  constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromMinutes(5);
+  compositing_mode_timer_.Start(
+      FROM_HERE, kTimerInterval, this,
+      &GpuDataManagerImplPrivate::RecordCompositingMode);
 }
 
 void GpuDataManagerImplPrivate::InitializeGpuModes() {
@@ -612,6 +614,13 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
       }
       return false;
   }
+}
+
+bool GpuDataManagerImplPrivate::GpuAccessAllowedForHardwareGpu(
+    std::string* reason) const {
+  if (reason)
+    *reason = gpu_access_blocked_reason_for_hardware_gpu_;
+  return gpu_access_allowed_for_hardware_gpu_;
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
@@ -1070,6 +1079,9 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     } else {
       gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
     }
+    is_gpu_compositing_disabled_for_hardware_gpu_ = IsGpuCompositingDisabled();
+    gpu_access_allowed_for_hardware_gpu_ =
+        GpuAccessAllowed(&gpu_access_blocked_reason_for_hardware_gpu_);
   }
   if (update_histograms_) {
     UpdateFeatureStats(gpu_feature_info_);
@@ -1099,6 +1111,10 @@ gfx::GpuExtraInfo GpuDataManagerImplPrivate::GetGpuExtraInfo() const {
 
 bool GpuDataManagerImplPrivate::IsGpuCompositingDisabled() const {
   return disable_gpu_compositing_ || !HardwareAccelerationEnabled();
+}
+
+bool GpuDataManagerImplPrivate::IsGpuCompositingDisabledForHardwareGpu() const {
+  return is_gpu_compositing_disabled_for_hardware_gpu_;
 }
 
 void GpuDataManagerImplPrivate::SetGpuCompositingDisabled() {

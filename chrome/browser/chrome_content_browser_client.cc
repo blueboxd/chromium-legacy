@@ -664,6 +664,7 @@
 #include "chrome/browser/chrome_browser_main_parts_lacros.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_lacros.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "ui/base/ui_base_switches.h"
 #endif
 
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION) && !defined(OS_ANDROID)
@@ -2453,6 +2454,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    base::size(kSwitchNames));
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Ensure zygote loads the resource bundle for the right locale.
+    static const char* const kMoreSwitchNames[] = {switches::kLang};
+    command_line->CopySwitchesFrom(browser_command_line, kMoreSwitchNames,
+                                   base::size(kMoreSwitchNames));
 #endif
   } else if (process_type == switches::kGpuProcess) {
     // If --ignore-gpu-blocklist is passed in, don't send in crash reports
@@ -5717,8 +5724,8 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
 
 std::string ChromeContentBrowserClient::GetInterestCohortForJsApi(
     content::BrowserContext* browser_context,
-    const url::Origin& requesting_origin,
-    const net::SiteForCookies& site_for_cookies) {
+    const GURL& url,
+    const base::Optional<url::Origin>& top_frame_origin) {
   federated_learning::FlocIdProvider* floc_id_provider =
       federated_learning::FlocIdProviderFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));
@@ -5726,8 +5733,7 @@ std::string ChromeContentBrowserClient::GetInterestCohortForJsApi(
   if (!floc_id_provider)
     return std::string();
 
-  return floc_id_provider->GetInterestCohortForJsApi(requesting_origin,
-                                                     site_for_cookies);
+  return floc_id_provider->GetInterestCohortForJsApi(url, top_frame_origin);
 }
 
 bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(

@@ -855,15 +855,6 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/modules/webcodecs/',
-        ],
-        'allowed': [
-            'gpu::kNullSurfaceHandle',
-            'media::.+',
-        ]
-    },
-    {
-        'paths': [
             'third_party/blink/renderer/modules/encryptedmedia/',
             'third_party/blink/renderer/modules/media/',
             'third_party/blink/renderer/modules/media_capabilities/',
@@ -1009,6 +1000,8 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webcodecs/',
         ],
         'allowed': [
+            'gpu::kNullSurfaceHandle',
+            'gpu::SHARED_IMAGE_.+',
             'media::.+',
             'libyuv::.+',
         ]
@@ -1129,8 +1122,9 @@ _CONFIG = [
             'third_party/blink/renderer/core/layout/layout_theme_mac.mm',
             'third_party/blink/renderer/core/paint/object_painter_base.cc',
             'third_party/blink/renderer/core/paint/theme_painter.cc',
+            'third_party/blink/renderer/core/paint/theme_painter_default.cc',
         ],
-        'allowed': ['ui::NativeTheme.*'],
+        'allowed': ['ui::NativeTheme.*', 'ui::color_utils.*'],
     },
     {
         'paths': [

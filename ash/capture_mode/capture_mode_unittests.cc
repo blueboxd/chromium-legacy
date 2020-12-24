@@ -1206,6 +1206,15 @@ TEST_F(CaptureModeTest, FullscreenCursorStates) {
   EXPECT_FALSE(controller->IsActive());
   EXPECT_FALSE(cursor_manager->IsCursorLocked());
   EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+
+  // Test that if we're in tablet mode for dev purpose, the cursor should still
+  // be visible.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForDev(true);
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kImage);
+  EXPECT_EQ(controller->type(), CaptureModeType::kImage);
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
+  event_generator->MoveMouseTo(gfx::Point(175, 175));
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 TEST_F(CaptureModeTest, WindowCursorStates) {
@@ -2257,6 +2266,40 @@ TEST_F(CaptureModeTest, QuickActionHistograms) {
   EXPECT_FALSE(GetPreviewNotification());
   histogram_tester.ExpectBucketCount(kQuickActionHistogramName,
                                      CaptureQuickAction::kBacklight, 1);
+}
+
+TEST_F(CaptureModeTest, CannotDoMultipleRecordings) {
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+
+  auto* controller = CaptureModeController::Get();
+  controller->StartVideoRecordingImmediatelyForTesting();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  EXPECT_EQ(CaptureModeType::kVideo, controller->type());
+
+  // Start a new session with the current type which set to kVideo, the type
+  // should be switched automatically to kImage, and video toggle button should
+  // be disabled.
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  EXPECT_TRUE(controller->IsActive());
+  EXPECT_EQ(CaptureModeType::kImage, controller->type());
+  EXPECT_TRUE(GetImageToggleButton()->GetToggled());
+  EXPECT_FALSE(GetVideoToggleButton()->GetToggled());
+  EXPECT_FALSE(GetVideoToggleButton()->GetEnabled());
+
+  // Clicking on the video button should do nothing.
+  ClickOnView(GetVideoToggleButton(), GetEventGenerator());
+  EXPECT_TRUE(GetImageToggleButton()->GetToggled());
+  EXPECT_FALSE(GetVideoToggleButton()->GetToggled());
+  EXPECT_EQ(CaptureModeType::kImage, controller->type());
+
+  // Things should go back to normal when there's no recording going on.
+  controller->Stop();
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  EXPECT_EQ(CaptureModeType::kVideo, controller->type());
+  EXPECT_FALSE(GetImageToggleButton()->GetToggled());
+  EXPECT_TRUE(GetVideoToggleButton()->GetToggled());
+  EXPECT_TRUE(GetVideoToggleButton()->GetEnabled());
 }
 
 }  // namespace ash

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +20,17 @@ namespace chrome_pdf {
 PdfViewPluginBase::PdfViewPluginBase() = default;
 
 PdfViewPluginBase::~PdfViewPluginBase() = default;
+
+uint32_t PdfViewPluginBase::GetBackgroundColor() {
+  return background_color_;
+}
+
+void PdfViewPluginBase::OnPaint(const std::vector<gfx::Rect>& paint_rects,
+                                std::vector<PaintReadyRect>* ready,
+                                std::vector<gfx::Rect>* pending) {
+  base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
+  DoPaint(paint_rects, ready, pending);
+}
 
 void PdfViewPluginBase::InitializeEngine(
     PDFiumFormFiller::ScriptOption script_option) {

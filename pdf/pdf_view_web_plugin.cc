@@ -109,15 +109,19 @@ bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
     if (initial_params_.attribute_names[i] == "stream-url") {
       stream_url = initial_params_.attribute_values[i].Utf8();
     } else if (initial_params_.attribute_names[i] == "background-color") {
+      uint32_t background_color;
       if (!base::HexStringToUInt(initial_params_.attribute_values[i].Utf8(),
-                                 &background_color_)) {
+                                 &background_color)) {
         return false;
       }
+      SetBackgroundColor(background_color);
     } else if (initial_params_.attribute_names[i] == "top-toolbar-height") {
+      int toolbar_height;
       if (!base::StringToInt(initial_params_.attribute_values[i].Utf8(),
-                             &top_toolbar_height_in_viewport_coords_)) {
+                             &toolbar_height)) {
         return false;
       }
+      set_top_toolbar_height_in_viewport_coords(toolbar_height);
     }
   }
 
@@ -281,10 +285,6 @@ bool PdfViewWebPlugin::IsPrintPreview() {
   return false;
 }
 
-uint32_t PdfViewWebPlugin::GetBackgroundColor() {
-  return background_color_;
-}
-
 void PdfViewWebPlugin::IsSelectingChanged(bool is_selecting) {}
 
 void PdfViewWebPlugin::SelectionChanged(const gfx::Rect& left,
@@ -321,14 +321,6 @@ std::unique_ptr<Graphics> PdfViewWebPlugin::CreatePaintGraphics(
 bool PdfViewWebPlugin::BindPaintGraphics(Graphics& graphics) {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
-}
-
-// TODO(https://crbug.com/1099020): To be implemented as a Pepper-free version
-// of `OutOfProcessInstance::OnPaint()`
-void PdfViewWebPlugin::OnPaint(const std::vector<gfx::Rect>& paint_rects,
-                               std::vector<PaintReadyRect>* ready,
-                               std::vector<gfx::Rect>* pending) {
-  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void PdfViewWebPlugin::ScheduleTaskOnMainThread(
@@ -395,6 +387,14 @@ void PdfViewWebPlugin::DidOpen(std::unique_ptr<UrlLoader> loader,
 void PdfViewWebPlugin::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                                       int32_t result) {
   NOTIMPLEMENTED();
+}
+
+// TODO(https://crbug.com/1099020): To be implemented as a Pepper-free version
+// of `OutOfProcessInstance::DoPaint()`
+void PdfViewWebPlugin::DoPaint(const std::vector<gfx::Rect>& paint_rects,
+                               std::vector<PaintReadyRect>* ready,
+                               std::vector<gfx::Rect>* pending) {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace chrome_pdf

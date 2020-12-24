@@ -62,8 +62,10 @@ class HoldingSpaceItemViewsSection : public views::View,
   void OnHoldingSpaceModelDetached(HoldingSpaceModel* model) override;
 
   // HoldingSpaceModelObserver:
-  void OnHoldingSpaceItemAdded(const HoldingSpaceItem* item) override;
-  void OnHoldingSpaceItemRemoved(const HoldingSpaceItem* item) override;
+  void OnHoldingSpaceItemsAdded(
+      const std::vector<const HoldingSpaceItem*>& items) override;
+  void OnHoldingSpaceItemsRemoved(
+      const std::vector<const HoldingSpaceItem*>& items) override;
   void OnHoldingSpaceItemFinalized(const HoldingSpaceItem* item) override;
 
  protected:
@@ -132,6 +134,10 @@ class HoldingSpaceItemViewsSection : public views::View,
   // briefly possible to be both `kAnimatingIn` and `kAnimatingOut` when one
   // animation is preempting another.
   uint32_t animation_state_ = AnimationState::kNotAnimating;
+
+  // Whether or not animations are disabled. Animations are only disabled during
+  // initialization as holding space child bubbles are animated in instead.
+  bool disable_animations_ = false;
 
   base::ScopedObservation<HoldingSpaceController,
                           HoldingSpaceControllerObserver>

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/holding_space/holding_space_browsertest_base.h"
 
+#include <vector>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/capture_mode_test_api.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
@@ -136,12 +138,12 @@ class MockActivationChangeObserver : public wm::ActivationChangeObserver {
 class MockHoldingSpaceModelObserver : public HoldingSpaceModelObserver {
  public:
   MOCK_METHOD(void,
-              OnHoldingSpaceItemAdded,
-              (const HoldingSpaceItem* item),
+              OnHoldingSpaceItemsAdded,
+              (const std::vector<const HoldingSpaceItem*>& items),
               (override));
   MOCK_METHOD(void,
-              OnHoldingSpaceItemRemoved,
-              (const HoldingSpaceItem* item),
+              OnHoldingSpaceItemsRemoved,
+              (const std::vector<const HoldingSpaceItem*>& items),
               (override));
   MOCK_METHOD(void,
               OnHoldingSpaceItemFinalized,
@@ -491,6 +493,9 @@ class HoldingSpaceUiPreviewsBrowserTest : public HoldingSpaceUiBrowserTest {
 
 // Verifies that previews can be toggled via context menu.
 IN_PROC_BROWSER_TEST_F(HoldingSpaceUiPreviewsBrowserTest, TogglePreviews) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
   ASSERT_TRUE(IsShowingInShelf());
 
   // Initially, the default icon should be shown.
@@ -501,6 +506,8 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiPreviewsBrowserTest, TogglePreviews) {
   auto* previews_tray_icon = GetPreviewsTrayIcon();
   ASSERT_TRUE(previews_tray_icon);
   ASSERT_TRUE(previews_tray_icon->layer());
+  ASSERT_EQ(1u, previews_tray_icon->layer()->children().size());
+  auto* previews_container_layer = previews_tray_icon->layer()->children()[0];
   EXPECT_FALSE(previews_tray_icon->GetVisible());
 
   // After pinning a file, we should have a single preview in the tray icon.
@@ -510,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiPreviewsBrowserTest, TogglePreviews) {
   EXPECT_FALSE(default_tray_icon->GetVisible());
   EXPECT_TRUE(previews_tray_icon->GetVisible());
 
-  EXPECT_EQ(1u, previews_tray_icon->layer()->children().size());
+  EXPECT_EQ(1u, previews_container_layer->children().size());
   EXPECT_EQ(gfx::Size(32, 32), previews_tray_icon->size());
 
   // After downloading a file, we should have two previews in the tray icon.
@@ -519,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiPreviewsBrowserTest, TogglePreviews) {
 
   EXPECT_FALSE(default_tray_icon->GetVisible());
   EXPECT_TRUE(previews_tray_icon->GetVisible());
-  EXPECT_EQ(2u, previews_tray_icon->layer()->children().size());
+  EXPECT_EQ(2u, previews_container_layer->children().size());
   EXPECT_EQ(gfx::Size(48, 32), previews_tray_icon->size());
 
   // After taking a screenshot, we should have three previews in the tray icon.
@@ -528,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiPreviewsBrowserTest, TogglePreviews) {
 
   EXPECT_FALSE(default_tray_icon->GetVisible());
   EXPECT_TRUE(previews_tray_icon->GetVisible());
-  EXPECT_EQ(3u, previews_tray_icon->layer()->children().size());
+  EXPECT_EQ(3u, previews_container_layer->children().size());
   EXPECT_EQ(gfx::Size(64, 32), previews_tray_icon->size());
 
   // Right click the tray icon, and expect a context menu to be shown which will
@@ -566,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiPreviewsBrowserTest, TogglePreviews) {
   EXPECT_FALSE(default_tray_icon->GetVisible());
   EXPECT_TRUE(previews_tray_icon->GetVisible());
 
-  EXPECT_EQ(3u, previews_tray_icon->layer()->children().size());
+  EXPECT_EQ(3u, previews_container_layer->children().size());
   EXPECT_EQ(gfx::Size(64, 32), previews_tray_icon->size());
 }
 
@@ -617,10 +624,11 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiScreenshotBrowserTest, AddScreenshot) {
 
   // Expect and wait for a screenshot item to be added to holding space.
   base::RunLoop run_loop;
-  EXPECT_CALL(mock, OnHoldingSpaceItemAdded)
-      .WillOnce([&](const HoldingSpaceItem* item) {
-        if (item->type() == HoldingSpaceItem::Type::kScreenshot)
-          run_loop.Quit();
+  EXPECT_CALL(mock, OnHoldingSpaceItemsAdded)
+      .WillOnce([&](const std::vector<const HoldingSpaceItem*>& items) {
+        ASSERT_EQ(items.size(), 1u);
+        ASSERT_EQ(items[0]->type(), HoldingSpaceItem::Type::kScreenshot);
+        run_loop.Quit();
       });
   run_loop.Run();
 
@@ -671,10 +679,11 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiScreenCaptureBrowserTest,
 
   base::RunLoop wait_for_item;
   // Expect and wait for a screen recording item to be added to holding space.
-  EXPECT_CALL(mock, OnHoldingSpaceItemAdded)
-      .WillOnce([&](const HoldingSpaceItem* item) {
-        if (item->type() == HoldingSpaceItem::Type::kScreenRecording)
-          wait_for_item.Quit();
+  EXPECT_CALL(mock, OnHoldingSpaceItemsAdded)
+      .WillOnce([&](const std::vector<const HoldingSpaceItem*>& items) {
+        ASSERT_EQ(items.size(), 1u);
+        ASSERT_EQ(items[0]->type(), HoldingSpaceItem::Type::kScreenRecording);
+        wait_for_item.Quit();
       });
   wait_for_item.Run();
 

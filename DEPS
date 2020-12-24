@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '0247e9ea1c73e8ac121a22402e356c40fc47446a',
+  'skia_revision': 'd12c91ba318b6d6bc62411a754fdc33baca2e92e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e16ff968e8a40413cd274975e8681f213c0e536c',
+  'angle_revision': 'cde0e3ab3d710ca9838d226873462c5f093f60bd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'db8fb909f39707287a0c55aefb8e6a8dcab299df',
+  'devtools_frontend_revision': 'b4a82aa3575f22267816d59a3af93f22ddb80bea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1586,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b36cb2de91bfe12107c01810ab9733a595680465',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a437db8d0e0716d8b3c34bb11c9e50eea530a7b6',
     'condition': 'checkout_src_internal',
   },
 
@@ -2471,17 +2471,6 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_webkit_webkit',
               'version': 'version:1.3.0-rc01-cr0',
-          },
-      ],
-      'condition': 'checkout_android',
-      'dep_type': 'cipd',
-  },
-
-  'src/third_party/android_deps/libs/androidx_window_window': {
-      'packages': [
-          {
-              'package': 'chromium/third_party/android_deps/libs/androidx_window_window',
-              'version': 'version:1.0.0-alpha01-cr0',
           },
       ],
       'condition': 'checkout_android',

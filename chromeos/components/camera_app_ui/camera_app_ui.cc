@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/strings/string_util.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper_impl.h"
 #include "chromeos/components/camera_app_ui/resources.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
@@ -63,6 +64,9 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ChildSrc,
       std::string("frame-src ") + kChromeUIUntrustedCameraAppURL + ";");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ObjectSrc,
+      std::string("object-src 'self';"));
 
   return source;
 }
@@ -263,12 +267,15 @@ CameraAppWindowManager* CameraAppUI::app_window_manager() {
 }
 
 const GURL& CameraAppUI::url() {
-  return web_ui()->GetWebContents()->GetURL();
+  return web_ui()->GetWebContents()->GetLastCommittedURL();
 }
 
 void CameraAppUI::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
-  if (agent_host->GetWebContents() != web_ui()->GetWebContents()) {
+  if (agent_host->GetWebContents() == nullptr ||
+      !base::StartsWith(
+          agent_host->GetWebContents()->GetLastCommittedURL().spec(),
+          kChromeUICameraAppMainURL)) {
     return;
   }
   app_window_manager()->SetDevToolsEnabled(true);
@@ -276,7 +283,10 @@ void CameraAppUI::DevToolsAgentHostAttached(
 
 void CameraAppUI::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  if (agent_host->GetWebContents() != web_ui()->GetWebContents()) {
+  if (agent_host->GetWebContents() == nullptr ||
+      !base::StartsWith(
+          agent_host->GetWebContents()->GetLastCommittedURL().spec(),
+          kChromeUICameraAppMainURL)) {
     return;
   }
   app_window_manager()->SetDevToolsEnabled(false);

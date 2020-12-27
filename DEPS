@@ -364,7 +364,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:53d92014bf94c3893886470a1c7c1289f8818db0',
+  'gn_version': 'git_revision:0d67e272bdb8145f87d238bc0b2cb8bf80ccec90',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -1586,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fc091bf0f15b04ca6c4a25b6f777c64b70202a3d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6473c88c9d17c604c5e2c49564e20008e8cf61c5',
     'condition': 'checkout_src_internal',
   },
 
@@ -1594,7 +1594,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'qJhtBw7ouc--Fdht1yXy9-ZDPYguiqAZbixcf8MasiwC',
+        'version': 'nmFhO5_ZTTtPNJGhEylXtJ4sG_lvSsW7CgsI4mn7xzoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1605,7 +1605,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'RYs0dVeLJjwsPik_WXMr4pMuzN55DAmi4gfQCMX-evUC',
+        'version': 'fN6miAr7wkQU9WpptOa6uOiKJ8AkmdpAu4nu0fI8YuUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

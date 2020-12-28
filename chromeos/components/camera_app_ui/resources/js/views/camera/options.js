@@ -8,9 +8,10 @@ import {Camera3DeviceInfo} from '../../device/camera3_device_info.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../../device/device_info_updater.js';
 import * as dom from '../../dom.js';
+import {sendBarcodeEnabledEvent} from '../../metrics.js';
 import * as nav from '../../nav.js';
 import * as state from '../../state.js';
-import {Facing, PerfEvent, ViewName} from '../../type.js';
+import {Facing, Mode, PerfEvent, ViewName} from '../../type.js';
 import * as util from '../../util.js';
 
 /**
@@ -104,6 +105,13 @@ export class Options {
     this.toggleMic_.addEventListener('click', () => this.updateAudioByMic_());
     this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
     this.toggleBarcode_.addEventListener('click', () => this.updateBarcode_());
+
+    state.addObserver(Mode.PHOTO, (inPhotoMode) => {
+      if (!inPhotoMode) {
+        this.toggleBarcode_.checked = false;
+        this.updateBarcode_();
+      }
+    });
 
     util.bindElementAriaLabelWithState({
       element: dom.get('#toggle-timer', Element),
@@ -257,6 +265,9 @@ export class Options {
    */
   updateBarcode_() {
     state.set(state.State.SCAN_BARCODE, this.toggleBarcode_.checked);
+    if (this.toggleBarcode_.checked) {
+      sendBarcodeEnabledEvent();
+    }
   }
 
   /**

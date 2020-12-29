@@ -12,7 +12,7 @@ namespace chromeos {
 namespace assistant {
 
 LibassistantServiceHostImpl::LibassistantServiceHostImpl(
-    assistant_client::PlatformApi* platform_api,
+    CrosPlatformApi* platform_api,
     AssistantManagerServiceDelegate* delegate)
     : platform_api_(platform_api), delegate_(delegate) {
   DCHECK(platform_api_);
@@ -23,9 +23,8 @@ LibassistantServiceHostImpl::~LibassistantServiceHostImpl() = default;
 
 void LibassistantServiceHostImpl::Launch(
     mojo::PendingReceiver<LibassistantServiceMojom> receiver) {
-  DCHECK_EQ(libassistant_service_, nullptr);
-
   base::AutoLock lock(libassistant_service_lock_);
+  DCHECK(!libassistant_service_);
   libassistant_service_ =
       std::make_unique<chromeos::libassistant::LibassistantService>(
           std::move(receiver), platform_api_, delegate_);

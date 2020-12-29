@@ -185,7 +185,7 @@
                 selected-file-type="{{selectedFileType}}"></file-type-select>
             <div id="more-settings-line-separator"></div>
             <cr-button id="moreSettingsButton" on-click="toggleClicked_"
-                aria-expanded$="[[opened]]"
+                aria-expanded="[[opened]]"
                 disabled="[[settingsDisabled_]]">
               <span>[[i18n('moreSettings')]]</span>
               <iron-icon icon="[[getArrowIcon_(opened)]]">
@@ -246,7 +246,8 @@
   </cr-toast>
   <cr-dialog id="scanFailedDialog">
     <div slot="title">
-      <iron-icon id="dialogInfoIcon" icon="cr:info-outline"></iron-icon>
+      <iron-icon id="dialogInfoIcon" icon="cr:info-outline" aria-hidden="true">
+      </iron-icon>
       [[i18n('scanFailedDialogTitleText')]]
     </div>
     <div slot="body">

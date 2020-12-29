@@ -287,7 +287,7 @@ const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
 
 // Enables the OOBE ChromeVox hint dialog and announcement feature.
 const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
@@ -446,10 +446,6 @@ const base::Feature kLanguageSettingsUpdate{"LanguageSettingsUpdate",
 // Enables or disables device management disclosure on login / lock screen.
 const base::Feature kLoginDeviceManagementDisclosure{
     "LoginDeviceManagementDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables the display password button on login / lock screen.
-const base::Feature kLoginDisplayPasswordButton{
-    "LoginDisplayPasswordButton", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -786,10 +782,6 @@ bool IsKerberosSettingsSectionEnabled() {
 
 bool IsLoginDeviceManagementDisclosureEnabled() {
   return base::FeatureList::IsEnabled(kLoginDeviceManagementDisclosure);
-}
-
-bool IsLoginDisplayPasswordButtonEnabled() {
-  return base::FeatureList::IsEnabled(kLoginDisplayPasswordButton);
 }
 
 bool IsMinimumChromeVersionEnabled() {

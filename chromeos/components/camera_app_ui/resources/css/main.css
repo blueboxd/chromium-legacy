@@ -47,6 +47,7 @@ body {
   overflow: hidden;
   position: absolute;
   top: 0;
+  touch-action: none;
   width: 100%;
 }
 
@@ -208,17 +209,13 @@ body.review-result #shutters-group {
   display: none;
 }
 
-body.should-handle-intent-result #shutters-group {
-  bottom: calc((var(--bottom-line) * 2) + 8px + (var(--shutter-size) / 2));
-}
-
 body.tablet-landscape .actions-group {
   flex-direction: column-reverse;
 }
 
 #mode-selector {
-  --fade-padding: 16px;
-  --scrollbar-height: 5px;
+  --fade-padding: 24px;
+  --scrollbar-height: 4px;
 
   left: calc(var(--left-line) * 2);
   right: calc(var(--right-line) * 2);
@@ -249,7 +246,6 @@ body.tablet-landscape .actions-group {
 #modes-group {
   display: block;
   overflow: auto;
-  padding: 5px 0;
   pointer-events: auto;
   text-align: center;
   white-space: nowrap;
@@ -262,8 +258,8 @@ body.taking:not(.video) #shutters-group {
 }
 
 #modes-group::-webkit-scrollbar-thumb {
-  background: gray;
-  border-radius: 3px/50%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
   height: auto;
   width: auto;
 }
@@ -324,7 +320,7 @@ body.playing-result-video #play-result-video {
 
   display: inline-block;
   font-size: 0; /* Remove space between inline-block. */
-  margin: calc(var(--focus-ring-gap) + var(--focus-ring-border)) 12px;
+  margin: calc(var(--focus-ring-gap) + var(--focus-ring-border)) 8px;
   position: relative;
 }
 
@@ -799,20 +795,16 @@ html[dir=rtl] body.view-expert-settings .right-stripe {
 
 #view-camera {
   --big-icon: 48px;
-  --bottom-line: 40px;
-  --left-line: 40px;
-  --right-line: 56px;
+  --bottom-line: 44px;
+  --left-line: 44px;
+  --right-line: 50px;
   --small-icon: 40px;
-  --shutter-vertical-center: calc((var(--bottom-line) * 2) + 204px);
+  --shutter-vertical-center: 180px;
 
   align-items: center;
   display: flex;
   justify-content: center;
   overflow: hidden;
-}
-
-body.max-wnd #view-camera {
-  --bottom-line: 56px;
 }
 
 #preview-box {

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.base;
 
 import static org.chromium.chrome.browser.base.SplitCompatUtils.CHROME_SPLIT_NAME;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -25,10 +26,10 @@ import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
-import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.lang.reflect.Field;
 
@@ -42,8 +43,11 @@ import java.lang.reflect.Field;
  */
 public class SplitChromeApplication extends SplitCompatApplication {
     private static final String TAG = "SplitChromeApp";
+
+    @SuppressLint("StaticFieldLeak")
+    private static SplitPreloader sSplitPreloader;
+
     private String mChromeApplicationClassName;
-    private SplitPreloader mSplitPreloader;
 
     public SplitChromeApplication() {
         this(SplitCompatUtils.getIdentifierName(
@@ -56,9 +60,7 @@ public class SplitChromeApplication extends SplitCompatApplication {
 
     @Override
     public void onCreate() {
-        if (mSplitPreloader != null) {
-            mSplitPreloader.wait(CHROME_SPLIT_NAME);
-        }
+        finishPreload(CHROME_SPLIT_NAME);
         super.onCreate();
     }
 
@@ -81,11 +83,9 @@ public class SplitChromeApplication extends SplitCompatApplication {
     @Override
     public Context createContextForSplit(String name) throws PackageManager.NameNotFoundException {
         try (TraceEvent te = TraceEvent.scoped("SplitChromeApplication.createContextForSplit")) {
-            if (mSplitPreloader != null) {
-                // Wait for any splits that are preloading so we don't have a race to update the
-                // class loader cache (b/172602571).
-                mSplitPreloader.wait(name);
-            }
+            // Wait for any splits that are preloading so we don't have a race to update the
+            // class loader cache (b/172602571).
+            finishPreload(name);
             long startTime = SystemClock.uptimeMillis();
             Context context = super.createContextForSplit(name);
             RecordHistogram.recordTimesHistogram("Android.IsolatedSplits.ContextCreateTime." + name,
@@ -99,13 +99,13 @@ public class SplitChromeApplication extends SplitCompatApplication {
         // The chrome split has a large amount of code, which can slow down startup. Loading
         // this in the background allows us to do this in parallel with startup tasks which do
         // not depend on code in the chrome split.
-        mSplitPreloader = new SplitPreloader(context);
+        sSplitPreloader = new SplitPreloader(context);
         // If the chrome module is not enabled or isolated splits are not supported (e.g. in Android
         // N), the onComplete function will run immediately so it must handle the case where the
         // base context of the application has not been set yet.
-        mSplitPreloader.preload(CHROME_SPLIT_NAME, (chromeContext) -> {
+        sSplitPreloader.preload(CHROME_SPLIT_NAME, (chromeContext) -> {
             // When installed, the vr module is always loaded on startup, so preload here.
-            mSplitPreloader.preload("vr", null);
+            sSplitPreloader.preload("vr", null);
             // If the chrome module is not enabled or isolated splits are not supported,
             // chromeContext will have the same ClassLoader as the base context, so no need to
             // replace the ClassLoaders here.
@@ -118,6 +118,12 @@ public class SplitChromeApplication extends SplitCompatApplication {
 
     protected Impl createNonBrowserApplication() {
         return new Impl();
+    }
+
+    /* package */ static void finishPreload(String name) {
+        if (sSplitPreloader != null) {
+            sSplitPreloader.wait(name);
+        }
     }
 
     /**
@@ -164,53 +170,41 @@ public class SplitChromeApplication extends SplitCompatApplication {
                 || ChromeVersionInfo.isLocalBuild()) {
             return;
         }
-
         // Wait until startup completes so this doesn't slow down early startup or mess with
         // compiled dex files before they get loaded initially.
-        // TODO(crbug.com/1159608): Determine if this works good enough, or if more needs to be done
-        // to avoid slowing startup.
-        BrowserStartupController.getInstance().addStartupCompletedObserver(
-                new BrowserStartupController.StartupCallback() {
-                    @Override
-                    public void onSuccess() {
-                        // BEST_EFFORT will only affect when the task runs, the dexopt will run with
-                        // normal priority (but in a separate process, due to using Runtime.exec()).
-                        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-                            try {
-                                // If the app has just been updated, it will be compiled with
-                                // quicken. The next time bg-dexopt-job runs it will break the
-                                // optimized dex for splits. If we force compile now, then
-                                // bg-dexopt-job won't mess up the splits, and we save the user a
-                                // slow startup.
-                                if (needsDexCompileAfterUpdate()) {
-                                    performDexCompile();
-                                    return;
-                                }
-
-                                // Make sure all splits are compiled correclty, and if not force a
-                                // compile.
-                                String[] splitNames =
-                                        ApiHelperForO.getSplitNames(getApplicationInfo());
-                                for (int i = 0; i < splitNames.length; i++) {
-                                    // Ignore config splits like "config.en".
-                                    if (splitNames[i].contains(".")) {
-                                        continue;
-                                    }
-                                    if (DexFile.isDexOptNeeded(
-                                                getApplicationInfo().splitSourceDirs[i])) {
-                                        performDexCompile();
-                                        return;
-                                    }
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error compiling dex.", e);
-                            }
-                        });
+        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
+            // BEST_EFFORT will only affect when the task runs, the dexopt will run with
+            // normal priority (but in a separate process, due to using Runtime.exec()).
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                try {
+                    // If the app has just been updated, it will be compiled with
+                    // quicken. The next time bg-dexopt-job runs it will break the
+                    // optimized dex for splits. If we force compile now, then
+                    // bg-dexopt-job won't mess up the splits, and we save the user a
+                    // slow startup.
+                    if (needsDexCompileAfterUpdate()) {
+                        performDexCompile();
+                        return;
                     }
 
-                    @Override
-                    public void onFailure() {}
-                });
+                    // Make sure all splits are compiled correclty, and if not force a
+                    // compile.
+                    String[] splitNames = ApiHelperForO.getSplitNames(getApplicationInfo());
+                    for (int i = 0; i < splitNames.length; i++) {
+                        // Ignore config splits like "config.en".
+                        if (splitNames[i].contains(".")) {
+                            continue;
+                        }
+                        if (DexFile.isDexOptNeeded(getApplicationInfo().splitSourceDirs[i])) {
+                            performDexCompile();
+                            return;
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error compiling dex.", e);
+                }
+            });
+        });
     }
 
     /** Returns whether the dex has been compiled since the last app update. */
@@ -222,14 +216,8 @@ public class SplitChromeApplication extends SplitCompatApplication {
 
     /** Compiles dex for the app, and sets the pref key tracking the latest compiled version. */
     private void performDexCompile() throws Exception {
-        Class<?> c = Class.forName("android.os.SystemProperties");
-        java.lang.reflect.Method get = c.getMethod("get", String.class, String.class);
-        // Use the shared compile mode, and if we can't find that, default to speed. The shared
-        // compile mode will be quicken on Android Go.
-        String compileMode = (String) get.invoke(null, "pm.dexopt.shared", "speed");
-
-        Runtime.getRuntime().exec(new String[] {
-                "cmd", "package", "compile", "-m", compileMode, "-f", getPackageName()});
+        Runtime.getRuntime().exec(
+                new String[] {"cmd", "package", "compile", "-r", "shared", getPackageName()});
         SharedPreferencesManager.getInstance().writeInt(
                 ChromePreferenceKeys.ISOLATED_SPLITS_DEX_COMPILE_VERSION,
                 PackageUtils.getPackageVersion(this, getPackageName()));

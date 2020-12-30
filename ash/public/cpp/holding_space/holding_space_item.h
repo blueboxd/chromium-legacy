@@ -86,6 +86,10 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
   void UpdateBackingFile(const base::FilePath& file_path,
                          const GURL& file_system_url);
 
+  // Invalidates the current holding space image, so fresh image representations
+  // are loaded when the image is next needed.
+  void InvalidateImage();
+
   const std::string& id() const { return id_; }
 
   Type type() const { return type_; }
@@ -97,6 +101,8 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
   const base::FilePath& file_path() const { return file_path_; }
 
   const GURL& file_system_url() const { return file_system_url_; }
+
+  HoldingSpaceImage& image_for_testing() { return *image_; }
 
  private:
   // Constructor for file backed items.

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skia_util.h"
 
@@ -17,12 +18,9 @@ namespace ash {
 
 class HoldingSpaceImage::ImageSkiaSource : public gfx::ImageSkiaSource {
  public:
-  ImageSkiaSource(const base::WeakPtr<HoldingSpaceImage>& owner,
-                  const gfx::ImageSkia& placeholder,
-                  AsyncBitmapResolver async_bitmap_resolver)
-      : owner_(owner),
-        placeholder_(placeholder),
-        async_bitmap_resolver_(async_bitmap_resolver) {}
+  ImageSkiaSource(const base::WeakPtr<HoldingSpaceImage>& host,
+                  const gfx::ImageSkia& placeholder)
+      : host_(host), placeholder_(placeholder) {}
 
   ImageSkiaSource(const ImageSkiaSource&) = delete;
   ImageSkiaSource& operator=(const ImageSkiaSource&) = delete;
@@ -31,45 +29,23 @@ class HoldingSpaceImage::ImageSkiaSource : public gfx::ImageSkiaSource {
  private:
   // gfx::ImageSkiaSource:
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    // Use a cached representation when possible.
-    if (base::Contains(cache_, scale))
-      return cache_[scale].GetRepresentation(scale);
-
-    // When missing the cache, asynchronously resolve the bitmap for `scale`.
-    async_bitmap_resolver_.Run(
-        gfx::ScaleToCeiledSize(placeholder_.size(), scale), scale,
-        base::BindOnce(&ImageSkiaSource::CacheImageForScale,
-                       weak_factory_.GetWeakPtr(), scale));
+    if (host_)
+      host_->LoadBitmap(scale);
 
     // Use `placeholder_` while we wait for the async bitmap to resolve.
     return placeholder_.GetRepresentation(scale);
   }
 
-  void CacheImageForScale(float scale, const SkBitmap* bitmap) {
-    if (bitmap) {
-      cache_[scale].AddRepresentation(gfx::ImageSkiaRep(*bitmap, scale));
-      if (owner_)
-        owner_->NotifyUpdated(scale);
-    }
-  }
-
-  const base::WeakPtr<HoldingSpaceImage> owner_;
+  const base::WeakPtr<HoldingSpaceImage> host_;
   const gfx::ImageSkia placeholder_;
-  AsyncBitmapResolver async_bitmap_resolver_;
-  std::map<float, gfx::ImageSkia> cache_;
-
-  base::WeakPtrFactory<ImageSkiaSource> weak_factory_{this};
 };
 
 // HoldingSpaceImage -----------------------------------------------------------
 
-HoldingSpaceImage::HoldingSpaceImage(
-    const gfx::ImageSkia& placeholder,
-    AsyncBitmapResolver async_bitmap_resolver) {
-  image_skia_ = gfx::ImageSkia(
-      std::make_unique<ImageSkiaSource>(/*owner=*/weak_factory_.GetWeakPtr(),
-                                        placeholder, async_bitmap_resolver),
-      placeholder.size());
+HoldingSpaceImage::HoldingSpaceImage(const gfx::ImageSkia& placeholder,
+                                     AsyncBitmapResolver async_bitmap_resolver)
+    : placeholder_(placeholder), async_bitmap_resolver_(async_bitmap_resolver) {
+  CreateImageSkia();
 }
 
 HoldingSpaceImage::~HoldingSpaceImage() = default;
@@ -83,12 +59,70 @@ base::CallbackListSubscription HoldingSpaceImage::AddImageSkiaChangedCallback(
   return callback_list_.Add(std::move(callback));
 }
 
-void HoldingSpaceImage::NotifyUpdated(float scale) {
+void HoldingSpaceImage::LoadBitmap(float scale) {
+  async_bitmap_resolver_.Run(gfx::ScaleToCeiledSize(image_skia_.size(), scale),
+                             scale,
+                             base::BindOnce(&HoldingSpaceImage::OnBitmapLoaded,
+                                            weak_factory_.GetWeakPtr(), scale));
+}
+
+void HoldingSpaceImage::OnBitmapLoaded(float scale, const SkBitmap* bitmap) {
+  if (!bitmap)
+    return;
+
   // Force invalidate `image_skia_` for `scale` so that it will request the
   // updated `gfx::ImageSkiaRep` at next access.
   image_skia_.RemoveRepresentation(scale);
+  image_skia_.AddRepresentation(gfx::ImageSkiaRep(*bitmap, scale));
   image_skia_.RemoveUnsupportedRepresentationsForScale(scale);
+
+  // Update the placeholder image, so the newly loaded representation becomes
+  // the default for any `ImageSkia` instances created when the holding space
+  // image gets invalidated.
+  placeholder_.RemoveRepresentation(scale);
+  placeholder_.AddRepresentation(gfx::ImageSkiaRep(*bitmap, scale));
+  placeholder_.RemoveUnsupportedRepresentationsForScale(scale);
+
   callback_list_.Notify();
+}
+
+void HoldingSpaceImage::Invalidate() {
+  if (invalidate_timer_.IsRunning())
+    return;
+
+  // Schedule an invalidation task with a delay to reduce number of image loads
+  // when multiple image invalidations are requested in quick succession. The
+  // delay is selected somewhat arbitrarily to be non trivial but still not
+  // easily noticable by the user.
+  invalidate_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(250),
+                          base::BindOnce(&HoldingSpaceImage::OnInvalidateTimer,
+                                         base::Unretained(this)));
+}
+
+bool HoldingSpaceImage::FireInvalidateTimerForTesting() {
+  if (!invalidate_timer_.IsRunning())
+    return false;
+  invalidate_timer_.FireNow();
+  return true;
+}
+
+void HoldingSpaceImage::OnInvalidateTimer() {
+  // Invalidate the existing pointers to:
+  // *   Invalidate previous `image_skia_`'s host pointer, and prevent it from
+  //     requesting bitmap loads.
+  // *   Prevent pending bitmap request callbacks from running.
+  weak_factory_.InvalidateWeakPtrs();
+
+  CreateImageSkia();
+
+  callback_list_.Notify();
+}
+
+void HoldingSpaceImage::CreateImageSkia() {
+  image_skia_ =
+      gfx::ImageSkia(std::make_unique<ImageSkiaSource>(
+                         /*host=*/weak_factory_.GetWeakPtr(), placeholder_),
+                     placeholder_.size());
 }
 
 }  // namespace ash

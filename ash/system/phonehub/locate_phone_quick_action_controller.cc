@@ -8,7 +8,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/quick_action_item.h"
-#include "ash/system/phonehub/silence_phone_quick_action_controller.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -29,19 +28,14 @@ constexpr base::TimeDelta kWaitForRequestTimeout =
 using Status = chromeos::phonehub::FindMyDeviceController::Status;
 
 LocatePhoneQuickActionController::LocatePhoneQuickActionController(
-    chromeos::phonehub::FindMyDeviceController* find_my_device_controller,
-    SilencePhoneQuickActionController* silence_phone_controller)
-    : find_my_device_controller_(find_my_device_controller),
-      silence_phone_controller_(silence_phone_controller) {
+    chromeos::phonehub::FindMyDeviceController* find_my_device_controller)
+    : find_my_device_controller_(find_my_device_controller) {
   DCHECK(find_my_device_controller_);
-  DCHECK(silence_phone_controller_);
   find_my_device_controller_->AddObserver(this);
-  silence_phone_controller_->AddObserver(this);
 }
 
 LocatePhoneQuickActionController::~LocatePhoneQuickActionController() {
   find_my_device_controller_->RemoveObserver(this);
-  silence_phone_controller_->RemoveObserver(this);
 }
 
 QuickActionItem* LocatePhoneQuickActionController::CreateItem() {
@@ -69,11 +63,6 @@ void LocatePhoneQuickActionController::OnButtonPressed(bool is_now_enabled) {
   find_my_device_controller_->RequestNewPhoneRingingState(!is_now_enabled);
 }
 
-void LocatePhoneQuickActionController::OnSilencePhoneItemStateChanged() {
-  is_silence_enabled_ = silence_phone_controller_->IsItemEnabled();
-  UpdateState();
-}
-
 void LocatePhoneQuickActionController::OnPhoneRingingStateChanged() {
   UpdateState();
 }
@@ -81,20 +70,16 @@ void LocatePhoneQuickActionController::OnPhoneRingingStateChanged() {
 void LocatePhoneQuickActionController::UpdateState() {
   // Disable Locate Phone if Silence Phone is on, otherwise change accordingly
   // based on status from FindMyDeviceController.
-  if (is_silence_enabled_) {
-    state_ = ActionState::kNotAvailable;
-  } else {
-    switch (find_my_device_controller_->GetPhoneRingingStatus()) {
-      case Status::kRingingOff:
-        state_ = ActionState::kOff;
-        break;
-      case Status::kRingingOn:
-        state_ = ActionState::kOn;
-        break;
-      case Status::kRingingNotAvailable:
-        state_ = ActionState::kNotAvailable;
-        break;
-    }
+  switch (find_my_device_controller_->GetPhoneRingingStatus()) {
+    case Status::kRingingOff:
+      state_ = ActionState::kOff;
+      break;
+    case Status::kRingingOn:
+      state_ = ActionState::kOn;
+      break;
+    case Status::kRingingNotAvailable:
+      state_ = ActionState::kNotAvailable;
+      break;
   }
 
   SetItemState(state_);
@@ -109,32 +94,42 @@ void LocatePhoneQuickActionController::UpdateState() {
 
 void LocatePhoneQuickActionController::SetItemState(ActionState state) {
   bool icon_enabled;
+  bool button_enabled;
   int state_text_id;
   int sub_label_text;
   switch (state) {
     case ActionState::kNotAvailable:
-      item_->SetEnabled(false);
-      return;
+      icon_enabled = false;
+      button_enabled = false;
+      state_text_id = IDS_ASH_PHONE_HUB_LOCATE_BUTTON_NOT_AVAILABLE_TOOLTIP;
+      sub_label_text = IDS_ASH_PHONE_HUB_QUICK_ACTIONS_NOT_AVAILABLE_STATE;
+      break;
     case ActionState::kOff:
       icon_enabled = false;
+      button_enabled = true;
       state_text_id = IDS_ASH_PHONE_HUB_QUICK_ACTIONS_DISABLED_STATE_TOOLTIP;
       sub_label_text = IDS_ASH_PHONE_HUB_QUICK_ACTIONS_OFF_STATE;
       break;
     case ActionState::kOn:
       icon_enabled = true;
+      button_enabled = true;
       state_text_id = IDS_ASH_PHONE_HUB_QUICK_ACTIONS_ENABLED_STATE_TOOLTIP;
       sub_label_text = IDS_ASH_PHONE_HUB_QUICK_ACTIONS_ON_STATE;
       break;
   }
 
-  item_->SetEnabled(true);
+  item_->SetEnabled(button_enabled);
   item_->SetToggled(icon_enabled);
   item_->SetSubLabel(l10n_util::GetStringUTF16(sub_label_text));
-  base::string16 tooltip_state =
-      l10n_util::GetStringFUTF16(state_text_id, item_->GetItemLabel());
-  item_->SetIconTooltip(
-      l10n_util::GetStringFUTF16(IDS_ASH_PHONE_HUB_QUICK_ACTIONS_TOGGLE_TOOLTIP,
-                                 item_->GetItemLabel(), tooltip_state));
+  if (state == ActionState::kNotAvailable) {
+    item_->SetIconTooltip(l10n_util::GetStringUTF16(state_text_id));
+  } else {
+    base::string16 tooltip_state =
+        l10n_util::GetStringFUTF16(state_text_id, item_->GetItemLabel());
+    item_->SetIconTooltip(l10n_util::GetStringFUTF16(
+        IDS_ASH_PHONE_HUB_QUICK_ACTIONS_TOGGLE_TOOLTIP, item_->GetItemLabel(),
+        tooltip_state));
+  }
 }
 
 void LocatePhoneQuickActionController::CheckRequestedState() {

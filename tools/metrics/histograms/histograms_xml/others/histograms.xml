@@ -1318,7 +1318,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlueZ.ResultOfConnection" enum="BlueZResultOfConnection"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>mcchou@chromium.org</owner>
   <summary>
     This is specific to Chrome OS. Records the outcomes of connection requests
@@ -1630,7 +1630,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bookmarks.EntryPoint" enum="BookmarksEntryPoint"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>ianwen@chromium.org</owner>
   <summary>How users add a new bookmark.</summary>
 </histogram>
@@ -1703,7 +1703,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="BootTime.Total2" units="ms" expires_after="2021-04-25">
+<histogram name="BootTime.Total2" units="ms" expires_after="2021-06-27">
   <owner>bccheng@chromium.org</owner>
   <owner>semenzato@chromium.org</owner>
   <summary>Time from power on to login panel ready (Chrome OS).</summary>
@@ -1869,7 +1869,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cast.Sender.CastMediaType" enum="MediaContainers"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>takumif@chromium.org</owner>
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
@@ -3298,6 +3298,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="CrashReport.Sender.ActiveRuntime" units="ms"
     expires_after="2021-05-23">
+  <obsolete>
+    As of 2020-12, we've decided on a timeout and no longer need this metric.
+  </obsolete>
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -3310,6 +3313,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="CrashReport.Sender.Runtime" units="ms"
     expires_after="2021-01-15">
+  <obsolete>
+    As of 2020-12, we've decided on a timeout and no longer need this metric.
+  </obsolete>
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -3776,7 +3782,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Discarding.DiscardCandidatesCount" units="tabs"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>sebmarchand@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -6599,6 +6605,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.MaxFileSizeOnInit" units="KB"
+    expires_after="2021-05-02">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Max file size allowed to be cached in the http cache. This is logged at the
+    time the backend is created.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.NetworkIsolationKeyPresent2"
     enum="NetworkIsolationKeyPresent" expires_after="2020-09-10">
   <owner>jkarlin@chromium.org</owner>
@@ -6776,6 +6792,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>xaerox@yandex-team.ru</owner>
   <summary>
     File error happened upon temporary file renaming at ImportantFileWriter.
+  </summary>
+</histogram>
+
+<histogram name="ImportantFile.FileReplaceRetryCount" units="attempt count"
+    expires_after="2021-06-30">
+  <owner>brucedawson@chromium.org</owner>
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The number of retries needed to successfully move the temporary file to its
+    final location. Zero means that ReplaceFile worked the first time. Ten means
+    that it never succeeded.
   </summary>
 </histogram>
 
@@ -8324,7 +8351,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="LiteVideo.HintAgent.HasHint" units="boolean"
-    expires_after="M90">
+    expires_after="2021-06-27">
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -8557,7 +8584,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="MachineLearningService.HandwritingModel.LoadModelResult.Event"
     enum="MachineLearningServiceLoadHandwritingModelResultEvent"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -10504,7 +10531,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OAuth2Login.MergeSessionFailure" enum="GoogleServiceAuthError"
-    expires_after="2020-11-29">
+    expires_after="2021-11-29">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -10515,7 +10542,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OAuth2Login.MergeSessionRetry" enum="GoogleServiceAuthError"
-    expires_after="2020-11-29">
+    expires_after="2021-11-29">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -10550,7 +10577,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OAuth2Login.SessionRestore" enum="GaiaSessionRestoreOutcome"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -11605,7 +11632,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"
-    expires_after="2021-04-22">
+    expires_after="2021-06-27">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -12319,7 +12346,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.ReceivedMessageInBackground" enum="Boolean"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -14392,7 +14419,10 @@ should be kept until we remove incident reporting. -->
 
 <histogram
     name="SiteIsolation.FileSystemApi.CanAccessDataForOriginFailure.IsHttpBasedScheme"
-    enum="BooleanHttpBasedOrOtherScheme" expires_after="2021-01-31">
+    enum="BooleanHttpBasedOrOtherScheme" expires_after="2020-12-21">
+  <obsolete>
+    Removed in Dec 2020 / M89.
+  </obsolete>
   <owner>lukasza@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -17411,7 +17441,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Webapp.Install.DisplayMode2" enum="WebAppDisplayMode"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>ericwilligers@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -18058,7 +18088,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.LocalFontUsed" enum="BooleanUsage"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>

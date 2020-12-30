@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fe4611c18e9de63d7ff2113c14f43e3275a51547',
+  'skia_revision': '8f924ac0ce63806886b7297e8be554984a6e7ce5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '47ee6a7b096a991aa26b813a123664904a1bd86c',
+  'angle_revision': '938399865e720c2e37616cdad64109ef331bb035',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '768022b98e45d343b540f83816fb65f549eac041',
+  'freetype_revision': 'c6ff2556c8e6f3bb8370cf3f6113bf73a6d5d9a3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c6a4cc37015a80bf9df4c5e6950028a21f626d53',
+  'devtools_frontend_revision': '3b3a5d369325da454bf792730ad8bf3719ea59be',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'cfb206c8b38663bf10ec1ada85a3a4db2a7da632',
+  'quiche_revision': '528c36b3cfd0110e56b1158f8f58d833817991e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1514,7 +1514,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3c2fe3888658d82b47ca831d59a2e07579619c2d',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '5994a16ca0769c7933881bab76e325b3b6fcad68',
+    Var('webrtc_git') + '/src.git' + '@' + '167ecc9bc53f00845c7a9dbbb21624f9dcf6de82',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1552,7 +1552,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'Ac-h0vLh65FkA8CAYh5B6yg9X0l3cJFf5XCZkVByG1AC',
+          'version': 'NpVnJKqGf0vShIczjp5jLbdX0QQ2ZZV8gmEa927sfrAC',
         },
       ],
       'dep_type': 'cipd',
@@ -1562,7 +1562,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'HHMFtoVyIQfQIhJgSOb5RkIHwzApVNZXRtDNjBCx3tEC',
+          'version': 'ryPhRCNJFCeT_33PL_QhlmN8Jjv9RenfHH8y0lgD23wC',
         },
       ],
       'dep_type': 'cipd',
@@ -1572,7 +1572,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'NYEeKAWq6p8n1jHl0h3emCE3hdfWkaYbeoEPrnFO5dEC',
+          'version': 'WasgZUd345851n2ct6gIUckbtVkDSlQfHoDCpl7dbhcC',
         },
       ],
       'dep_type': 'cipd',
@@ -1586,7 +1586,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ce202c065f9737fe66f18e2d8530b00d32495530',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4cd389281e5548e82d1d36317bfd908e9450dd8f',
     'condition': 'checkout_src_internal',
   },
 
@@ -1594,7 +1594,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'nmFhO5_ZTTtPNJGhEylXtJ4sG_lvSsW7CgsI4mn7xzoC',
+        'version': 'lS1l7jMzRb6bzoO6vbP1ZMBpvEEYJKB60YS3L7IJrb8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

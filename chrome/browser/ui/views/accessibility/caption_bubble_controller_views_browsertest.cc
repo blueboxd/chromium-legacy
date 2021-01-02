@@ -60,11 +60,19 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
   }
 
   views::Label* GetLabel() {
-    return controller_ ? controller_->caption_bubble_->label_ : nullptr;
+    return controller_ ? controller_->caption_bubble_->GetLabelForTesting()
+                       : nullptr;
   }
 
   views::Label* GetTitle() {
     return controller_ ? controller_->caption_bubble_->title_ : nullptr;
+  }
+
+  std::string GetAccessibleWindowTitle() {
+    return controller_
+               ? base::UTF16ToUTF8(
+                     controller_->caption_bubble_->GetAccessibleWindowTitle())
+               : "";
   }
 
   views::Button* GetCloseButton() {
@@ -94,6 +102,10 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
 
   std::string GetLabelText() {
     return controller_ ? controller_->GetBubbleLabelTextForTesting() : "";
+  }
+
+  size_t GetNumLinesInLabel() {
+    return controller_ ? controller_->caption_bubble_->GetNumLinesInLabel() : 0;
   }
 
   views::Widget* GetCaptionWidget() {
@@ -162,8 +174,8 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetWebContentsAt(tab_index));
   }
 
-  std::vector<std::string> GetVirtualChildrenText() {
-    return GetBubble()->GetVirtualChildrenTextForTesting();
+  std::vector<std::string> GetAXLineText() {
+    return GetBubble()->GetAXLineTextForTesting();
   }
 
   void SetTickClockForTesting(const base::TickClock* tick_clock) {
@@ -394,21 +406,24 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
 
-  OnError(0);
+  OnError();
   EXPECT_FALSE(GetTitle()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
   EXPECT_TRUE(GetErrorMessage()->GetVisible());
 
-  // Setting text during an error shouldn't cause the error to disappear.
+  // Setting text during an error should cause the error to disappear.
   OnPartialTranscription("Elephant tails average 4-5 feet long.");
-  EXPECT_FALSE(GetTitle()->GetVisible());
-  EXPECT_FALSE(GetLabel()->GetVisible());
-  EXPECT_TRUE(GetErrorMessage()->GetVisible());
+  EXPECT_TRUE(GetTitle()->GetVisible());
+  EXPECT_TRUE(GetLabel()->GetVisible());
+  EXPECT_FALSE(GetErrorMessage()->GetVisible());
+
+  // Set the error again.
+  OnError();
 
   // The error should not be visible on a new tab.
   InsertNewTab();
   ActivateTabAt(1);
-  OnPartialTranscription("Elephants are vegetarians.");
+  OnPartialTranscription("Elephants are vegetarians.", 1);
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
@@ -430,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
-  bool success = OnFinalTranscription("Elephants have 3-4 toenails per foot");
+  bool success = OnPartialTranscription("Elephants have 3-4 toenails per foot");
   EXPECT_TRUE(success);
   EXPECT_TRUE(GetCaptionWidget());
   EXPECT_TRUE(IsWidgetVisible());
@@ -438,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
   ClickButton(GetCloseButton());
   EXPECT_TRUE(GetCaptionWidget());
   EXPECT_FALSE(IsWidgetVisible());
-  success = OnFinalTranscription(
+  success = OnPartialTranscription(
       "Elephants wander 35 miles a day in search of water");
   EXPECT_FALSE(success);
   EXPECT_EQ("", GetLabelText());
@@ -763,21 +778,23 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, TruncatesFinalText) {
   for (int i = 10; i < 40; i++) {
     text += base::NumberToString(i) + line + " ";
   }
+  OnPartialTranscription(text);
   OnFinalTranscription(text);
   EXPECT_EQ(text.substr(10500, 15000), GetLabelText());
-  EXPECT_EQ(9u, GetBubble()->GetNumLinesInLabel());
+  EXPECT_EQ(9u, GetNumLinesInLabel());
   OnPartialTranscription(text);
   EXPECT_EQ(text.substr(10500, 15000) + text, GetLabelText());
-  EXPECT_EQ(39u, GetBubble()->GetNumLinesInLabel());
+  EXPECT_EQ(39u, GetNumLinesInLabel());
   OnFinalTranscription("a ");
   EXPECT_EQ(text.substr(11000, 15000) + "a ", GetLabelText());
-  EXPECT_EQ(9u, GetBubble()->GetNumLinesInLabel());
+  EXPECT_EQ(9u, GetNumLinesInLabel());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, TabNavigation) {
   ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com"));
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
+  OnPartialTranscription("Elephant calves");
   OnFinalTranscription("Elephant calves can stand within 20 minutes of birth");
   EXPECT_TRUE(IsWidgetVisible());
   EXPECT_EQ("Elephant calves can stand within 20 minutes of birth",
@@ -879,12 +896,23 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ExpandsAndCollapses) {
   ActivateTabAt(1);
   EXPECT_FALSE(IsWidgetVisible());
 
-  OnPartialTranscription("Nearly all ants are female.");
+  OnPartialTranscription("Nearly all ants are female.", 1);
   EXPECT_TRUE(GetCollapseButton()->GetVisible());
   EXPECT_FALSE(GetExpandButton()->GetVisible());
   EXPECT_EQ(7 * line_height, GetLabel()->GetBoundsInScreen().height());
 
   ClickButton(GetCollapseButton());
+  EXPECT_TRUE(GetExpandButton()->GetVisible());
+  EXPECT_FALSE(GetCollapseButton()->GetVisible());
+  EXPECT_EQ(line_height, GetLabel()->GetBoundsInScreen().height());
+
+  // The expand and collapse buttons are not visible when there is an error.
+  OnError(1);
+  EXPECT_FALSE(GetCollapseButton()->GetVisible());
+  EXPECT_FALSE(GetExpandButton()->GetVisible());
+
+  // Clear the error message. The expand button should appear.
+  OnPartialTranscription("An ant can lift 20 times its own body weight.", 1);
   EXPECT_TRUE(GetExpandButton()->GetVisible());
   EXPECT_FALSE(GetCollapseButton()->GetVisible());
   EXPECT_EQ(line_height, GetLabel()->GetBoundsInScreen().height());
@@ -902,21 +930,22 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        AccessibleTextComputedWhenAccessibilityModeEnabled) {
   // If accessibility is disabled, virtual children aren't computed.
   content::BrowserAccessibilityState::GetInstance()->DisableAccessibility();
+  OnPartialTranscription("A");
   OnFinalTranscription("A dog's nose print");
-  EXPECT_EQ(0u, GetVirtualChildrenText().size());
+  EXPECT_EQ(0u, GetAXLineText().size());
 
   // When accessibility is enabled, virtual children are computed.
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   OnFinalTranscription("is unique");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("A dog's nose print is unique", GetVirtualChildrenText()[0]);
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("A dog's nose print is unique", GetAXLineText()[0]);
 
   // When accessibility is disabled, virtual children are no longer being
   // updated.
   content::BrowserAccessibilityState::GetInstance()->DisableAccessibility();
   OnFinalTranscription("like a fingerprint");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("A dog's nose print is unique", GetVirtualChildrenText()[0]);
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("A dog's nose print is unique", GetAXLineText()[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
@@ -927,79 +956,55 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   OnPartialTranscription(line);
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ(line, GetVirtualChildrenText()[0]);
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ(line, GetAXLineText()[0]);
   OnPartialTranscription(line + line);
-  EXPECT_EQ(2u, GetVirtualChildrenText().size());
-  EXPECT_EQ(line, GetVirtualChildrenText()[0]);
-  EXPECT_EQ(line, GetVirtualChildrenText()[1]);
+  EXPECT_EQ(2u, GetAXLineText().size());
+  EXPECT_EQ(line, GetAXLineText()[0]);
+  EXPECT_EQ(line, GetAXLineText()[1]);
   OnPartialTranscription(line);
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ(line, GetVirtualChildrenText()[0]);
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ(line, GetAXLineText()[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        AccessibleTextClearsWhenBubbleCloses) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  OnFinalTranscription("Dogs' noses are wet to help them smell.");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("Dogs' noses are wet to help them smell.",
-            GetVirtualChildrenText()[0]);
+  OnPartialTranscription("Dogs' noses are wet to help them smell.");
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("Dogs' noses are wet to help them smell.", GetAXLineText()[0]);
   ClickButton(GetCloseButton());
-  EXPECT_EQ(0u, GetVirtualChildrenText().size());
+  EXPECT_EQ(0u, GetAXLineText().size());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        AccessibleTextClearsWhenTabRefreshes) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  OnFinalTranscription("Newfoundlands are amazing lifeguards.");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("Newfoundlands are amazing lifeguards.",
-            GetVirtualChildrenText()[0]);
+  OnPartialTranscription("Newfoundlands are amazing lifeguards.");
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("Newfoundlands are amazing lifeguards.", GetAXLineText()[0]);
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_EQ(0u, GetVirtualChildrenText().size());
+  EXPECT_EQ(0u, GetAXLineText().size());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        AccessibleTextChangesWhenTabChanges) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  OnFinalTranscription("3 dogs survived the Titanic sinking.");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("3 dogs survived the Titanic sinking.",
-            GetVirtualChildrenText()[0]);
+  OnPartialTranscription("3 dogs survived the Titanic sinking.");
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("3 dogs survived the Titanic sinking.", GetAXLineText()[0]);
 
   InsertNewTab();
   ActivateTabAt(1);
   OnFinalTranscription("30% of Dalmations are deaf in one ear.", 1);
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("30% of Dalmations are deaf in one ear.",
-            GetVirtualChildrenText()[0]);
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("30% of Dalmations are deaf in one ear.", GetAXLineText()[0]);
 
   ActivateTabAt(0);
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("3 dogs survived the Titanic sinking. ",
-            GetVirtualChildrenText()[0]);
-}
-
-IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
-                       AccessibleTextClearsOnError) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  OnFinalTranscription("The Saluki is the oldest dog breed.");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("The Saluki is the oldest dog breed.", GetVirtualChildrenText()[0]);
-  OnError();
-  EXPECT_EQ(0u, GetVirtualChildrenText().size());
-
-  // Clear the error by refreshing.
-  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
-
-  OnFinalTranscription("Chow Chows have black tongues.");
-  EXPECT_EQ(1u, GetVirtualChildrenText().size());
-  EXPECT_EQ("Chow Chows have black tongues.", GetVirtualChildrenText()[0]);
+  EXPECT_EQ(1u, GetAXLineText().size());
+  EXPECT_EQ("3 dogs survived the Titanic sinking.", GetAXLineText()[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
@@ -1011,29 +1016,26 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
     text += base::NumberToString(i) + line + " ";
   }
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  OnPartialTranscription(text);
   OnFinalTranscription(text);
-  EXPECT_EQ(9u, GetVirtualChildrenText().size());
+  EXPECT_EQ(9u, GetAXLineText().size());
   for (int i = 0; i < 9; i++) {
-    EXPECT_EQ(base::NumberToString(i + 31) + line + " ",
-              GetVirtualChildrenText()[i]);
+    EXPECT_EQ(base::NumberToString(i + 31) + line + " ", GetAXLineText()[i]);
   }
   OnPartialTranscription(text);
-  EXPECT_EQ(39u, GetVirtualChildrenText().size());
+  EXPECT_EQ(39u, GetAXLineText().size());
   for (int i = 0; i < 9; i++) {
-    EXPECT_EQ(base::NumberToString(i + 31) + line + " ",
-              GetVirtualChildrenText()[i]);
+    EXPECT_EQ(base::NumberToString(i + 31) + line + " ", GetAXLineText()[i]);
   }
   for (int i = 10; i < 40; i++) {
-    EXPECT_EQ(base::NumberToString(i) + line + " ",
-              GetVirtualChildrenText()[i - 1]);
+    EXPECT_EQ(base::NumberToString(i) + line + " ", GetAXLineText()[i - 1]);
   }
   OnFinalTranscription("a ");
-  EXPECT_EQ(9u, GetVirtualChildrenText().size());
+  EXPECT_EQ(9u, GetAXLineText().size());
   for (int i = 0; i < 8; i++) {
-    EXPECT_EQ(base::NumberToString(i + 32) + line + " ",
-              GetVirtualChildrenText()[i]);
+    EXPECT_EQ(base::NumberToString(i + 32) + line + " ", GetAXLineText()[i]);
   }
-  EXPECT_EQ("a ", GetVirtualChildrenText()[8]);
+  EXPECT_EQ("a ", GetAXLineText()[8]);
 }
 
 #if !defined(OS_MAC)
@@ -1068,24 +1070,32 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, HidesAfterInactivity) {
   // Caption bubble hides after 5 seconds without receiving a transcription.
   OnPartialTranscription("Bowhead whales can live for over 200 years.");
   EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ("Bowhead whales can live for over 200 years.", GetLabelText());
   ASSERT_TRUE(GetBubble()->GetInactivityTimerForTesting()->IsRunning());
   test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
   EXPECT_FALSE(IsWidgetVisible());
+  EXPECT_EQ("", GetLabelText());
 
   // Caption bubble becomes visible when transcription is received, and stays
   // visible if transcriptions are received before 5 seconds have passed.
   OnPartialTranscription("Killer whales");
   EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ("Killer whales", GetLabelText());
   test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(4));
   EXPECT_TRUE(IsWidgetVisible());
   OnPartialTranscription("Killer whales travel in matrifocal groups");
   EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ("Killer whales travel in matrifocal groups", GetLabelText());
   test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(4));
   EXPECT_TRUE(IsWidgetVisible());
   OnFinalTranscription(
       "Killer whales travel in matrifocal groups--a family unit centered on "
       "the mother.");
   EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ(
+      "Killer whales travel in matrifocal groups--a family unit centered on "
+      "the mother.",
+      GetLabelText());
   test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(4));
   EXPECT_TRUE(IsWidgetVisible());
 
@@ -1096,12 +1106,56 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, HidesAfterInactivity) {
   EXPECT_TRUE(IsWidgetVisible());
   test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(10));
   EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ(
+      "Killer whales travel in matrifocal groups--a family unit centered on "
+      "the mother.",
+      GetLabelText());
 
   UnfocusCaptionWidget();
   EXPECT_FALSE(GetBubble()->HasFocus());
+  EXPECT_EQ(
+      "Killer whales travel in matrifocal groups--a family unit centered on "
+      "the mother.",
+      GetLabelText());
   EXPECT_TRUE(IsWidgetVisible());
   test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
   EXPECT_FALSE(IsWidgetVisible());
+  EXPECT_EQ("", GetLabelText());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       ClearsTextAfterInactivity) {
+  // Use a ScopedMockTimeMessageLoopTaskRunner to test the inactivity timer with
+  // a mock tick clock that replaces the default tick clock with mock time.
+  base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
+  SetTickClockForTesting(test_task_runner->GetMockTickClock());
+
+  // Caption bubble hides after 5 seconds without receiving a transcription.
+  OnPartialTranscription("Bowhead whales can live for over 200 years.");
+  EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ("Bowhead whales can live for over 200 years.", GetLabelText());
+  ASSERT_TRUE(GetBubble()->GetInactivityTimerForTesting()->IsRunning());
+  test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  EXPECT_FALSE(IsWidgetVisible());
+  EXPECT_EQ("", GetLabelText());
+
+  // Caption bubble stays hidden when receiving a final transcription.
+  OnFinalTranscription("Bowhead whales can live for over 200 years.");
+  EXPECT_FALSE(IsWidgetVisible());
+  EXPECT_EQ("", GetLabelText());
+
+  // Caption bubble reappears when receiving a partial transcription.
+  OnPartialTranscription("Killer whales");
+  EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ("Killer whales", GetLabelText());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       HasAccessibleWindowTitle) {
+  OnPartialTranscription("A turtle's shell is part of its skeleton.");
+  EXPECT_FALSE(GetAccessibleWindowTitle().empty());
+  EXPECT_EQ(GetAccessibleWindowTitle(),
+            base::UTF16ToUTF8(GetTitle()->GetText()));
 }
 
 }  // namespace captions

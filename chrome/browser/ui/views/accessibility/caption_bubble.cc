@@ -193,6 +193,85 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 BEGIN_METADATA(CaptionBubbleFrameView, views::BubbleFrameView)
 END_METADATA
 
+class CaptionBubbleLabel : public views::Label {
+ public:
+  METADATA_HEADER(CaptionBubbleLabel);
+  CaptionBubbleLabel() = default;
+  ~CaptionBubbleLabel() override = default;
+  CaptionBubbleLabel(const CaptionBubbleLabel&) = delete;
+  CaptionBubbleLabel& operator=(const CaptionBubbleLabel&) = delete;
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kParagraph;
+  }
+
+  void SetText(const base::string16& text) override {
+    views::Label::SetText(text);
+
+    // Only update ViewAccessibility if accessibility is enabled.
+    if (content::BrowserAccessibilityState::GetInstance()
+            ->GetAccessibilityMode()
+            .is_mode_off()) {
+      return;
+    }
+
+    auto& ax_lines = GetViewAccessibility().virtual_children();
+    if (text.empty() && !ax_lines.empty()) {
+      GetViewAccessibility().RemoveAllVirtualChildViews();
+      return;
+    }
+
+    const size_t num_lines = GetRequiredLines();
+    size_t start = 0;
+    for (size_t i = 0; i < num_lines - 1; ++i) {
+      size_t end = GetTextIndexOfLine(i + 1);
+      base::string16 substring = text.substr(start, end - start);
+      UpdateAXLine(substring, i, gfx::Range(start, end));
+      start = end;
+    }
+    base::string16 substring = text.substr(start, text.size() - start);
+    if (!substring.empty()) {
+      UpdateAXLine(substring, num_lines - 1, gfx::Range(start, text.size()));
+    }
+
+    // Remove all ax_lines that don't have a corresponding line.
+    size_t num_ax_lines = ax_lines.size();
+    for (size_t i = num_lines; i < num_ax_lines; ++i) {
+      GetViewAccessibility().RemoveVirtualChildView(ax_lines.back().get());
+    }
+
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+  }
+
+ private:
+  void UpdateAXLine(const base::string16& line_text,
+                    const size_t line_index,
+                    const gfx::Range& text_range) {
+    auto& ax_lines = GetViewAccessibility().virtual_children();
+
+    // Add a new virtual child for a new line of text.
+    DCHECK(line_index <= ax_lines.size());
+    if (line_index == ax_lines.size()) {
+      auto ax_line = std::make_unique<views::AXVirtualView>();
+      ax_line->GetCustomData().role = ax::mojom::Role::kStaticText;
+      GetViewAccessibility().AddVirtualChildView(std::move(ax_line));
+    }
+
+    // Set the virtual child's name as line text.
+    ui::AXNodeData& ax_node_data = ax_lines[line_index]->GetCustomData();
+    if (base::UTF8ToUTF16(ax_node_data.GetStringAttribute(
+            ax::mojom::StringAttribute::kName)) != line_text) {
+      ax_node_data.SetName(line_text);
+      std::vector<gfx::Rect> bounds = GetSubstringBounds(text_range);
+      DCHECK_EQ(bounds.size(), 1u);
+      ax_node_data.relative_bounds.bounds = gfx::RectF(bounds[0]);
+    }
+  }
+};
+
+BEGIN_METADATA(CaptionBubbleLabel, views::Label)
+END_METADATA
+
 CaptionBubble::CaptionBubble(views::View* anchor,
                              BrowserView* browser_view,
                              base::OnceClosure destroyed_callback)
@@ -345,7 +424,7 @@ void CaptionBubble::Init() {
   // The caption bubble starts out hidden and unable to be activated.
   SetCanActivate(false);
 
-  auto label = std::make_unique<views::Label>();
+  auto label = std::make_unique<CaptionBubbleLabel>();
   label->SetMultiLine(true);
   label->SetMaximumWidth(kMaxWidthDip - kSidePaddingDip * 2);
   label->SetEnabledColor(SK_ColorWHITE);
@@ -366,6 +445,7 @@ void CaptionBubble::Init() {
   title->SetBackgroundColor(SK_ColorTRANSPARENT);
   title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
+  title->GetViewAccessibility().OverrideIsIgnored(true);
 
   auto error_text = std::make_unique<views::Label>();
   error_text->SetEnabledColor(SK_ColorWHITE);
@@ -510,11 +590,12 @@ void CaptionBubble::OnBlur() {
 }
 
 void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kDialog;
   node_data->SetName(title_->GetText());
-  node_data->role = ax::mojom::Role::kCaption;
-  if (model_ && model_->HasError()) {
-    node_data->SetDescription(error_text_->GetText());
-  }
+}
+
+base::string16 CaptionBubble::GetAccessibleWindowTitle() const {
+  return title_->GetText();
 }
 
 void CaptionBubble::AddedToWidget() {
@@ -564,64 +645,6 @@ void CaptionBubble::OnTextChanged() {
   UpdateBubbleAndTitleVisibility();
   if (GetWidget()->IsVisible())
     inactivity_timer_->Reset();
-
-  // Only update ViewAccessibility if accessibility is enabled.
-  if (content::BrowserAccessibilityState::GetInstance()
-          ->GetAccessibilityMode()
-          .is_mode_off() ||
-      model_->HasError()) {
-    return;
-  }
-
-  auto& virtual_children = GetViewAccessibility().virtual_children();
-  if (text.empty() && !virtual_children.empty()) {
-    GetViewAccessibility().RemoveAllVirtualChildViews();
-    return;
-  }
-
-  const size_t num_lines = GetNumLinesInLabel();
-  size_t start = 0;
-  for (size_t i = 0; i < num_lines - 1; ++i) {
-    size_t end = GetTextIndexOfLineInLabel(i + 1);
-    std::string substring = text.substr(start, end - start);
-    AddVirtualChildView(substring, i, gfx::Range(start, end));
-    start = end;
-  }
-  std::string substring = text.substr(start, text.size() - start);
-  if (!substring.empty()) {
-    AddVirtualChildView(substring, num_lines - 1,
-                        gfx::Range(start, text.size()));
-  }
-
-  // Remove all virtual children that don't have a corresponding line.
-  size_t num_virtual_children = virtual_children.size();
-  for (size_t i = num_lines; i < num_virtual_children; ++i) {
-    GetViewAccessibility().RemoveVirtualChildView(
-        virtual_children.back().get());
-  }
-}
-
-void CaptionBubble::AddVirtualChildView(const std::string& name,
-                                        const size_t line_index,
-                                        const gfx::Range& range) {
-  auto& virtual_children = GetViewAccessibility().virtual_children();
-
-  // Add a new virtual child for a new line of text.
-  DCHECK(line_index <= virtual_children.size());
-  if (line_index == virtual_children.size()) {
-    auto view = std::make_unique<views::AXVirtualView>();
-    GetViewAccessibility().AddVirtualChildView(std::move(view));
-  }
-
-  // Set the virtual child's name as the content of the line.
-  ui::AXNodeData& ax_node_data = virtual_children[line_index]->GetCustomData();
-  if (ax_node_data.GetStringAttribute(ax::mojom::StringAttribute::kName) !=
-      name) {
-    ax_node_data.SetName(name);
-    std::vector<gfx::Rect> bounds = label_->GetSubstringBounds(range);
-    DCHECK_EQ(bounds.size(), 1u);
-    ax_node_data.relative_bounds.bounds = gfx::RectF(bounds[0]);
-  }
 }
 
 void CaptionBubble::OnErrorChanged() {
@@ -629,17 +652,11 @@ void CaptionBubble::OnErrorChanged() {
   bool has_error = model_->HasError();
   label_->SetVisible(!has_error);
   error_message_->SetVisible(has_error);
+  expand_button_->SetVisible(!has_error && !is_expanded_);
+  collapse_button_->SetVisible(!has_error && is_expanded_);
 
   // The error is only 1 line, so redraw the bubble.
   Redraw();
-
-  if (has_error &&
-      !content::BrowserAccessibilityState::GetInstance()
-           ->GetAccessibilityMode()
-           .is_mode_off() &&
-      !GetViewAccessibility().virtual_children().empty()) {
-    GetViewAccessibility().RemoveAllVirtualChildViews();
-  }
 }
 
 void CaptionBubble::OnIsExpandedChanged() {
@@ -661,26 +678,37 @@ void CaptionBubble::UpdateBubbleAndTitleVisibility() {
 
 void CaptionBubble::UpdateBubbleVisibility() {
   DCHECK(GetWidget());
+  // If there is no model set, do not show the bubble.
   if (!model_) {
-    // If there is no model set, do not show the bubble.
     if (GetWidget()->IsVisible())
       GetWidget()->Hide();
-  } else if (!can_layout_ || model_->IsClosed()) {
-    // Hide the widget if there is no room for it or the model is closed.
+    return;
+  }
+
+  // Hide the widget if there is no room for it, the model is closed. or the
+  // bubble has no activity. Activity is defined as transcription received from
+  // the speech service or user interacting with the bubble through focus,
+  // pressing buttons, or dragging.
+  if (!can_layout_ || model_->IsClosed() || !HasActivity()) {
     if (GetWidget()->IsVisible())
       GetWidget()->Hide();
-  } else if (!model_->GetFullText().empty() || model_->HasError()) {
-    // Show the widget if it has text or an error to display.
+    return;
+  }
+
+  // Show the widget if it has text or an error to display.
+  if (!model_->GetFullText().empty() || model_->HasError()) {
     if (!GetWidget()->IsVisible()) {
       GetWidget()->ShowInactive();
       GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
           IDS_LIVE_CAPTION_BUBBLE_APPEAR_SCREENREADER_ANNOUNCEMENT));
       LogSessionEvent(SessionEvent::kStreamStarted);
     }
-  } else if (GetWidget()->IsVisible()) {
-    // No text and no error. Hide it.
-    GetWidget()->Hide();
+    return;
   }
+
+  // No text and no error. Hide it.
+  if (GetWidget()->IsVisible())
+    GetWidget()->Hide();
 }
 
 void CaptionBubble::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -774,20 +802,34 @@ void CaptionBubble::OnInactivityTimeout() {
   LogSessionEvent(SessionEvent::kStreamEnded);
   if (GetWidget()->IsVisible())
     GetWidget()->Hide();
+
+  // Clear the partial and final text in the caption bubble model and the label.
+  // Does not affect the speech service. The speech service will emit a final
+  // result after ~10-15 seconds of no audio which the caption bubble will
+  // receive but will not display. If the speech service is in the middle of a
+  // recognition phrase, and the caption bubble regains activity (such as if the
+  // audio stream restarts), the speech service will emit partial results that
+  // contain text cleared by the UI.
+  model_->ClearText();
 }
 
-std::string CaptionBubble::GetLabelTextForTesting() {
-  return base::UTF16ToUTF8(label_->GetText());
+bool CaptionBubble::HasActivity() {
+  return model_ && (inactivity_timer_->IsRunning() || HasFocus() ||
+                    !model_->GetFullText().empty() || model_->HasError());
 }
 
-std::vector<std::string> CaptionBubble::GetVirtualChildrenTextForTesting() {
-  auto& virtual_children = GetViewAccessibility().virtual_children();
-  std::vector<std::string> texts;
-  for (auto& virtual_child : virtual_children) {
-    texts.push_back(virtual_child->GetCustomData().GetStringAttribute(
+views::Label* CaptionBubble::GetLabelForTesting() {
+  return static_cast<views::Label*>(label_);
+}
+
+std::vector<std::string> CaptionBubble::GetAXLineTextForTesting() {
+  auto& ax_lines = label_->GetViewAccessibility().virtual_children();
+  std::vector<std::string> line_texts;
+  for (auto& ax_line : ax_lines) {
+    line_texts.push_back(ax_line->GetCustomData().GetStringAttribute(
         ax::mojom::StringAttribute::kName));
   }
-  return texts;
+  return line_texts;
 }
 
 base::RetainingOneShotTimer* CaptionBubble::GetInactivityTimerForTesting() {

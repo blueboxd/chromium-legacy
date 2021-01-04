@@ -184,10 +184,10 @@ class StartupTracingController::BackgroundTracer {
       }
     }
 
+    VLOG(0) << "Completed startup tracing to " << written_to_file_;
+
     state_ = State::kFinished;
     std::move(on_tracing_finished_).Run();
-
-    VLOG(0) << "Completed startup tracing to " << written_to_file_;
   }
 
   enum class State {

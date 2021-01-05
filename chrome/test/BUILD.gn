@@ -1039,6 +1039,7 @@ if (!is_android) {
       "../browser/download/download_frame_policy_browsertest.cc",
       "../browser/download/download_started_animation_browsertest.cc",
       "../browser/download/save_page_browsertest.cc",
+      "../browser/enterprise/connectors/connectors_service_browsertest.cc",
       "../browser/enterprise/connectors/content_analysis_delegate_browsertest.cc",
       "../browser/enterprise/connectors/content_analysis_dialog_browsertest.cc",
       "../browser/enterprise/reporting/report_scheduler_browsertest.cc",
@@ -3491,11 +3492,11 @@ test("unit_tests") {
     "../browser/download/download_ui_controller_unittest.cc",
     "../browser/download/offline_item_utils_unittest.cc",
     "../browser/endpoint_fetcher/endpoint_fetcher_unittest.cc",
-    "../browser/engagement/important_sites_usage_counter_unittest.cc",
     "../browser/engagement/important_sites_util_unittest.cc",
     "../browser/engagement/site_engagement_helper_unittest.cc",
     "../browser/engagement/site_engagement_score_unittest.cc",
     "../browser/engagement/site_engagement_service_unittest.cc",
+    "../browser/enterprise/util/affiliation_unittest.cc",
     "../browser/enterprise/util/managed_browser_utils_unittest.cc",
     "../browser/external_protocol/external_protocol_handler_unittest.cc",
     "../browser/federated_learning/floc_id_provider_unittest.cc",
@@ -6494,6 +6495,7 @@ if (!is_android) {
       "../browser/sessions/session_restore_interactive_uitest.cc",
       "../browser/site_isolation/site_per_process_interactive_browsertest.cc",
       "../browser/site_isolation/site_per_process_text_input_browsertest.cc",
+      "../browser/ssl/typed_navigation_upgrade_throttle_browsertest.cc",
       "../browser/ui/autofill/autofill_popup_controller_interactive_uitest.cc",
       "../browser/ui/blocked_content/popup_blocker_browsertest.cc",
       "../browser/ui/browser_command_controller_interactive_browsertest.cc",
@@ -6715,6 +6717,7 @@ if (!is_android) {
       }
       if (is_win) {
         sources += [
+          "../browser/ui/views/accessibility/post_install_announcement_browsertest.cc",
           "../browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc",
           "../browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc",
         ]

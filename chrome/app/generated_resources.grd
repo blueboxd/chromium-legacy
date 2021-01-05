@@ -5867,9 +5867,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_BOOKMARKS_CHEVRON" desc="The accessible name for the chevron visible if not all the bookmark buttons fit.">
         Menu containing hidden bookmarks
       </message>
-      <message name="IDS_ACCNAME_BOOKMARKS_MENU" desc="The accessible name for
-the Bookmarks menu.">
-        Bookmarks menu
+      <message name="IDS_ACCNAME_BOOKMARK_BUTTON_ROLE_DESCRIPTION" desc="The accessible role description for bookmark buttons.">
+        Bookmark button
+      </message>
+      <message name="IDS_ACCNAME_BOOKMARK_FOLDER_BUTTON_ROLE_DESCRIPTION" desc="The accessible role description for bookmark folders.">
+        Bookmark folder button
       </message>
       <message name="IDS_ACCNAME_SEPARATOR" desc="The accessible name for a separator.">
         Separator
@@ -5897,9 +5899,6 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_ACCNAME_TAB_SEARCH" desc="The accessible name for the Tab Search bubble.">
         Search tabs
-      </message>
-      <message name="IDS_ACCNAME_TOOLBAR" desc="The accessible name for the toolbar.">
-        Toolbar
       </message>
 
       <!-- Clipboard permission -->
@@ -8003,6 +8002,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CONFIRM_SWITCH_BUTTON_LABEL" desc="Label of the profile switch button in the web signin interception bubble">
           Switch
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_GUEST_LINK" desc="Text of the link to offer switching to a Guest profile">
+            Not your device? Use <ph name="BEGIN_LINK">&lt;a href="#" target=&quot;_blank&quot;&gt;</ph>Guest mode<ph name="END_LINK">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC" desc="Body of the web signin interception bubble">
           To keep your browsing separate, you can create a new profile for <ph name="NEW_USER">$1<ex>Bob</ex></ph>

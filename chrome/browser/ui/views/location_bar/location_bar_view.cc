@@ -875,7 +875,7 @@ void LocationBarView::RefreshBackground() {
   } else {
     SkColor stroke_color = SK_ColorTRANSPARENT;
 
-    if (GetNativeTheme()->UsesHighContrastColors()) {
+    if (GetNativeTheme()->UserHasContrastPreference()) {
       // High contrast schemes get a border stroke even on a rounded omnibox.
       stroke_color = border_color;
     }
@@ -963,6 +963,10 @@ void LocationBarView::OnPageInfoBubbleClosed(
 
 GURL LocationBarView::GetDestinationURL() const {
   return destination_url();
+}
+
+bool LocationBarView::IsInputTypedUrlWithoutScheme() const {
+  return destination_url_entered_without_scheme();
 }
 
 WindowOpenDisposition LocationBarView::GetWindowOpenDisposition() const {

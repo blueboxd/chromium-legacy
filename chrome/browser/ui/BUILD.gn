@@ -2949,12 +2949,16 @@ static_library("ui") {
       "webui/welcome/welcome_ui.h",
     ]
 
-    deps += [ "//components/country_codes" ]
+    deps += [
+      "//chrome/common/search:generate_colors_info",
+      "//components/country_codes",
+    ]
 
     if (enable_dice_support) {
       sources += [
         "signin/dice_web_signin_interceptor_delegate.cc",
         "signin/dice_web_signin_interceptor_delegate.h",
+        "signin/profile_customization_bubble_sync_controller.h",
         "views/profiles/dice_web_signin_interception_bubble_view.cc",
         "views/profiles/dice_web_signin_interception_bubble_view.h",
         "views/profiles/profile_customization_bubble_sync_controller.cc",
@@ -4270,7 +4274,11 @@ static_library("ui") {
     }
 
     if (is_win) {
-      sources += [ "views/chrome_views_delegate_win.cc" ]
+      sources += [
+        "accessibility_util.h",
+        "views/accessibility/accessibility_util.cc",
+        "views/chrome_views_delegate_win.cc",
+      ]
     }
 
     if (is_win || (is_linux || is_chromeos_lacros)) {

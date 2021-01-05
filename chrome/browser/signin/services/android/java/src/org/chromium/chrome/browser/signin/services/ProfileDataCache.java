@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin.services;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.util.AvatarGenerator;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.ProfileDataSource.ProfileData;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 
@@ -140,17 +142,16 @@ public class ProfileDataCache implements ProfileDataSource.Observer, IdentityMan
      * sent to observers of ProfileDownloader. The instance must have at least one observer (see
      * {@link #addObserver}) when this method is called.
      */
-    public void update(List<String> accounts) {
+    public void update(List<String> accountEmails) {
         ThreadUtils.assertOnUiThread();
         assert !mObservers.isEmpty();
 
         // ProfileDataSource is updated automatically.
         if (mProfileDataSource != null) return;
 
-        for (int i = 0; i < accounts.size(); i++) {
-            if (mCachedProfileData.get(accounts.get(i)) == null) {
-                ProfileDownloader.get().startFetchingAccountInfoFor(
-                        mContext, accounts.get(i), mImageSize, true);
+        for (String accountEmail : accountEmails) {
+            if (!mCachedProfileData.containsKey(accountEmail)) {
+                ProfileDownloader.get().startFetchingAccountInfoFor(accountEmail, mImageSize);
             }
         }
     }
@@ -226,9 +227,16 @@ public class ProfileDataCache implements ProfileDataSource.Observer, IdentityMan
     }
 
     private void updateCacheFromProfileDataSource() {
-        for (ProfileDataSource.ProfileData profileData :
-                mProfileDataSource.getProfileDataMap().values()) {
-            updateCachedProfileDataAndNotifyObservers(createDisplayableProfileData(profileData));
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(this::updateAccounts);
+    }
+
+    private void updateAccounts(final List<Account> accounts) {
+        for (Account account : accounts) {
+            ProfileData profileData = mProfileDataSource.getProfileDataForAccount(account.name);
+            if (profileData != null) {
+                updateCachedProfileDataAndNotifyObservers(
+                        createDisplayableProfileData(profileData));
+            }
         }
     }
 

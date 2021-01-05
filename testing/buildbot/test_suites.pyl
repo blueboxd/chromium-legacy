@@ -252,6 +252,18 @@
       },
     },
 
+    'android_specific_chromium_gtests_for_paeverywhere': {
+      'android_browsertests': {
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'android_webview_unittests': {},
+      'breakpad_unittests': {},
+      'gl_unittests': {},
+      'ui_android_unittests': {},
+    },
+
     'android_trichrome_smoke_tests': {
       'trichrome_chrome_bundle_fake_modules_smoke_test': {},
       'trichrome_chrome_bundle_smoke_test': {},
@@ -1204,6 +1216,15 @@
           'result_format': 'single',
           'result_file': '${ISOLATED_OUTDIR}/sizes/test_results.json'
         },
+      },
+    },
+
+    'cros_skylab_chrome_critical': {
+      'tast.critical-chrome': {
+        # TODO(crbug/1139516): Update this once LaCrOS tast test is ready.
+        # A Tast suite, e.g. tast.informational-chrome.
+        'suite': 'tast.critical-chrome',
+        'timeout': 10800,
       },
     },
 
@@ -4192,13 +4213,6 @@
       },
     },
 
-    'paeverywhere_common_tests': {
-      'base_unittests': {},
-      'blink_platform_unittests': {},
-      'unit_tests': {},
-      'wtf_unittests': {},
-    },
-
     'perfetto_gtests': {
       'base_unittests': {},
       'content_browsertests': {
@@ -6142,27 +6156,27 @@
     ],
 
     'paeverywhere_android_gtests': [
-      'android_specific_chromium_gtests',
+      'android_specific_chromium_gtests_for_paeverywhere',
       'android_smoke_tests',
-      'paeverywhere_common_tests'
+      'chromium_gtests'
     ],
 
     'paeverywhere_linux_gtests': [
       'chromium_gtests_for_linux_and_mac_only',
       'chromium_gtests_for_linux_only',
       'chromium_gtests_for_win_and_linux_only',
-      'paeverywhere_common_tests',
+      'chromium_gtests',
     ],
 
     'paeverywhere_mac_gtests': [
       'chromium_gtests_for_linux_and_mac_only',
       'mac_specific_chromium_gtests',
-      'paeverywhere_common_tests',
+      'chromium_gtests',
     ],
 
     'paeverywhere_win_gtests': [
       'chromium_gtests_for_win_and_linux_only',
-      'paeverywhere_common_tests',
+      'chromium_gtests',
       'win_specific_chromium_gtests',
     ],
 
@@ -6223,6 +6237,15 @@
           'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
         ]
       }
+    },
+
+    'cros_skylab_chrome_critical_x86_64': {
+      'cros_skylab_chrome_critical': {
+        'variants': [
+          'CROS_OCTOPUS_TOT',
+          'CROS_OCTOPUS_TOT-1',
+        ]
+      },
     },
 
     # ios14-beta-sim runs sims only on 14.0+ since

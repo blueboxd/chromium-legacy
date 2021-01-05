@@ -243,6 +243,7 @@ crbug.com/757605 virtual/gpu-rasterization/images/jpeg-yuv-progressive-image.htm
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
+crbug.com/1046784 http/tests/inspector-protocol/page/page-events-associated-isolation.js [ Failure Pass ]
 
 # Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
@@ -1033,7 +1034,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-edge.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pass ]
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
-crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
 crbug.com/1113911 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/1154585 virtual/layout_ng_block_frag/external/wpt/css/css-break/ink-overflow-002.html [ Failure ]
 crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-009.html [ Failure ]
@@ -4985,14 +4985,7 @@ crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_prelo
 # Expected failures for forced colors mode tests when the corresponding flags
 # are not enabled.
 crbug.com/970285 external/wpt/forced-colors-mode/* [ Failure ]
-
-# Virtual forced colors mode tests should fail on macOS since macOS high
-# contrast does not imply forced colors mode. The tests should pass on all other
-# platforms.
-crbug.com/970285 [ Mac ] virtual/forced-high-contrast-colors/* [ Failure ]
-crbug.com/970285 [ Win ] virtual/forced-high-contrast-colors/* [ Pass ]
-crbug.com/970285 [ Linux ] virtual/forced-high-contrast-colors/* [ Pass ]
-crbug.com/970285 [ Android ] virtual/forced-high-contrast-colors/* [ Pass ]
+crbug.com/970285 virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/* [ Pass ]
 
 # Expected failures for dark mode tests when the corresponding flags
 # are not enabled.
@@ -5917,9 +5910,15 @@ crbug.com/626703 [ Linux ] wpt_internal/storage/estimate-usage-details-filesyste
 crbug.com/626703 [ Mac ] external/wpt/mediacapture-image/MediaStreamTrack-getConstraints.https.html [ Pass Failure ]
 
 # Wpt importer sheriff 2020-12-23
-crbug.com/626703 external/wpt/cookies/samesite/multiple-samesite-attributes.https.html?legacy-samesite [ Failure ]
-crbug.com/626703 virtual/legacy-samesite/external/wpt/cookies/samesite/multiple-samesite-attributes.https.html [ Failure ]
 crbug.com/1161590 external/wpt/html/semantics/forms/textfieldselection/select-event.html [ Failure Timeout ]
+
+# Wpt importer sheriff 2021-01-05
+crbug.com/1163175 external/wpt/css/css-pseudo/first-letter-punctuation-and-space.html [ Failure ]
+crbug.com/1163176 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-004.html [ Failure ]
+crbug.com/1163176 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-006.html [ Failure ]
+crbug.com/1163176 external/wpt/css/css-sizing/aspect-ratio/replaced-element-031.html [ Failure ]
+crbug.com/1163176 external/wpt/css/css-sizing/aspect-ratio/replaced-element-032.html [ Failure ]
+crbug.com/1163178 external/wpt/svg/embedded/image-embedding-svg-with-auto-height.svg [ Failure ]
 
 # Sheriff 2020-12-14
 crbug.com/1046784 http/tests/devtools/console/console-context-selector.js [ Pass Timeout ]

@@ -92,8 +92,6 @@
 namespace content {
 namespace {
 
-using ::testing::NotNull;
-
 // Implementation of ContentBrowserClient that overrides
 // OverridePageVisibilityState() and allows consumers to set a value.
 class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
@@ -5107,8 +5105,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5125,8 +5122,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -5143,8 +5139,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1126856): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5161,8 +5156,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1126856): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -5179,8 +5173,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5197,8 +5190,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -5215,8 +5207,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5233,8 +5224,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -5252,8 +5242,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1126856): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5271,8 +5260,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1126856): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -5289,8 +5277,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5307,8 +5294,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -5325,8 +5311,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kPublic once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }
 
@@ -5343,8 +5328,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1136028): Expect kLocal once inheritance is fixed.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 

@@ -42,11 +42,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DeviceHandlerTest) {
-  RunTestURL("background/js/device_handler_unittest_gen.html");
+  RunTestURL("background/js/device_handler_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryContentsTest) {
-  RunTestURL("foreground/js/directory_contents_unittest_gen.html");
+  RunTestURL("foreground/js/directory_contents_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
@@ -71,11 +71,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExternalMetadataProvider) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListModel) {
-  RunTestURL("foreground/js/file_list_model_unittest_gen.html");
+  RunTestURL("foreground/js/file_list_model_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
-  RunTestURL("foreground/js/ui/file_list_selection_model_unittest_gen.html");
+  RunTestURL("foreground/js/ui/file_list_selection_model_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerCommandsTest) {
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMetadataProvider) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {
-  RunTestURL("foreground/js/navigation_list_model_unittest_gen.html");
+  RunTestURL("foreground/js/navigation_list_model_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
@@ -254,5 +254,5 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, VolumeManagerTest) {
-  RunTestURL("background/js/volume_manager_unittest_gen.html");
+  RunTestURL("background/js/volume_manager_unittest.m_gen.html");
 }

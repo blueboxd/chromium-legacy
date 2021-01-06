@@ -58,7 +58,6 @@ group("unit_test_data") {
   testonly = true
   deps = [
     "base/js:js_test_gen_html",
-    "file_manager/background/js:js_test_gen_html",
     "file_manager/background/js:js_test_gen_html_modules",
     "file_manager/common/js:js_test_gen_html_modules",
     "file_manager/foreground/elements:js_test_gen_html_modules",
@@ -66,6 +65,7 @@ group("unit_test_data") {
     "file_manager/foreground/js:js_test_gen_html_modules",
     "file_manager/foreground/js/metadata:js_test_gen_html_modules",
     "file_manager/foreground/js/ui:js_test_gen_html",
+    "file_manager/foreground/js/ui:js_test_gen_html_modules",
     "gallery/js:js_test_gen_html",
     "gallery/js/image_editor:js_test_gen_html",
     "gallery/js/image_editor:js_test_gen_html_modules",

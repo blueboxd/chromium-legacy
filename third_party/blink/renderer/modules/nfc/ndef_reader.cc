@@ -4,9 +4,6 @@
 
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
 
-#include <utility>
-
-#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_array_buffer_view_or_ndef_message_init.h"
@@ -26,7 +23,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -70,7 +66,9 @@ constexpr char kNotSupportedOrPermissionDenied[] =
 constexpr char kChildFrameErrorMessage[] =
     "Web NFC can only be accessed in a top-level browsing context.";
 
-constexpr char kInvalidStateErrorMessage[] = "A scan() operation is ongoing.";
+constexpr char kScanAbortMessage[] = "The NFC scan operation was cancelled.";
+
+constexpr char kWriteAbortMessage[] = "The NFC write operation was cancelled.";
 }  // namespace
 
 // static
@@ -119,33 +117,18 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
   // "AbortError" DOMException and return p.
   if (options->hasSignal() && options->signal()->aborted()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
-                                      "The NFC scan operation was cancelled.");
+                                      kScanAbortMessage);
     return ScriptPromise();
   }
 
-  if (has_pending_scan_request_) {
+  // Reject promise when there's already an ongoing scan.
+  if (scan_resolver_ || GetNfcProxy()->IsReading(this)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kInvalidStateErrorMessage);
-    return ScriptPromise();
-  }
-  has_pending_scan_request_ = true;
-
-  // https://github.com/w3c/web-nfc/issues/592
-  // reject scan promise when there's already an ongoing scan.
-  if (GetNfcProxy()->IsReading(this)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kInvalidStateErrorMessage);
+                                      "A scan() operation is ongoing.");
     return ScriptPromise();
   }
 
   scan_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  // 8. If |signal| is not null, then add the following abort steps
-  // to |signal|:
-  if (options->hasSignal()) {
-    options->signal()->AddAlgorithm(
-        WTF::Bind(&NDEFReader::ReadAbort, WrapPersistent(this)));
-  }
-
   GetPermissionService()->RequestPermission(
       CreatePermissionDescriptor(PermissionName::NFC),
       LocalFrame::HasTransientUserActivation(DomWindow()->GetFrame()),
@@ -156,25 +139,25 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
 
 void NDEFReader::ReadOnRequestPermission(const NDEFScanOptions* options,
                                          PermissionStatus status) {
-  if (!scan_resolver_) {
-    has_pending_scan_request_ = false;
+  if (!scan_resolver_)
     return;
-  }
 
   if (status != PermissionStatus::GRANTED) {
-    has_pending_scan_request_ = false;
     scan_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "NFC permission request denied."));
     scan_resolver_.Clear();
     return;
   }
-  if (options->hasSignal() && options->signal()->aborted()) {
-    has_pending_scan_request_ = false;
-    scan_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kAbortError,
-        "The NFC scan operation was cancelled."));
-    scan_resolver_.Clear();
-    return;
+
+  if (options->hasSignal()) {
+    if (options->signal()->aborted()) {
+      scan_resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError, kScanAbortMessage));
+      scan_resolver_.Clear();
+      return;
+    }
+    options->signal()->AddAlgorithm(
+        WTF::Bind(&NDEFReader::ReadAbort, WrapPersistent(this)));
   }
 
   GetNfcProxy()->StartReading(
@@ -184,7 +167,6 @@ void NDEFReader::ReadOnRequestPermission(const NDEFScanOptions* options,
 
 void NDEFReader::ReadOnRequestCompleted(
     device::mojom::blink::NDEFErrorPtr error) {
-  has_pending_scan_request_ = false;
   if (!scan_resolver_)
     return;
 
@@ -220,8 +202,7 @@ void NDEFReader::ContextDestroyed() {
 void NDEFReader::ReadAbort() {
   if (scan_resolver_) {
     scan_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kAbortError,
-        "The NFC scan operation was cancelled."));
+        DOMExceptionCode::kAbortError, kScanAbortMessage));
     scan_resolver_.Clear();
   }
 
@@ -246,7 +227,7 @@ ScriptPromise NDEFReader::write(ScriptState* script_state,
     // If signal’s aborted flag is set, then reject p with an "AbortError"
     // DOMException and return p.
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
-                                      "The NFC write operation was cancelled.");
+                                      kWriteAbortMessage);
     return ScriptPromise();
   }
 
@@ -289,18 +270,14 @@ void NDEFReader::WriteOnRequestPermission(
     return;
   }
 
-  if (options->hasSignal() && options->signal()->aborted()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kAbortError,
-        "The NFC write operation was cancelled."));
-    return;
-  }
-
-  // If signal is not null, then add the abort steps to signal.
-  if (options->hasSignal() && !options->signal()->aborted()) {
-    options->signal()->AddAlgorithm(WTF::Bind(&NDEFReader::WriteAbort,
-                                              WrapPersistent(this),
-                                              WrapPersistent(resolver)));
+  if (options->hasSignal()) {
+    if (options->signal()->aborted()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError, kWriteAbortMessage));
+      return;
+    }
+    options->signal()->AddAlgorithm(
+        WTF::Bind(&NDEFReader::WriteAbort, WrapPersistent(this)));
   }
 
   auto callback = WTF::Bind(&NDEFReader::WriteOnRequestCompleted,
@@ -325,7 +302,7 @@ void NDEFReader::WriteOnRequestCompleted(
   }
 }
 
-void NDEFReader::WriteAbort(ScriptPromiseResolver* resolver) {
+void NDEFReader::WriteAbort() {
   // WriteOnRequestCompleted() should always be called whether the push
   // operation is cancelled successfully or not.
   GetNfcProxy()->CancelPush();

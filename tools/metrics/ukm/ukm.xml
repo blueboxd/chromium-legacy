@@ -2121,6 +2121,12 @@ be describing additional metrics about the same event.
       First Contentful Paint, in microseconds.
     </summary>
   </metric>
+  <metric name="UpdateViewportIntersection">
+    <summary>
+      Time spent computing internal geometry information about iframes, in
+      microseconds.
+    </summary>
+  </metric>
   <metric name="WaitForCommit">
     <summary>
       The time spent waiting for the compositor thread to begin processing a
@@ -3279,6 +3285,26 @@ be describing additional metrics about the same event.
     <summary>
       The percentage of the main frame time used by LayerTreeHost::UpdateLayers.
       An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="UpdateViewportIntersection">
+    <summary>
+      Time spent computing internal geometry information about iframes, in
+      microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UpdateViewportIntersectionBeginMainFrame">
+    <summary>
+      The total main frame time used to compute internal geometry information
+      about iframes, in microseconds.
     </summary>
   </metric>
   <metric name="WaitForCommit">
@@ -11239,11 +11265,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="noscript">
+    <obsolete>
+      Deprecated December 2020.
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a NoScript preview on a page load.
     </summary>
   </metric>
   <metric name="noscript_eligibility_reason">
+    <obsolete>
+      Deprecated December 2020.
+    </obsolete>
     <summary>
       Set to the value of the last known reason a NoScript preview was not
       eligible on this page load. The value of this metric corresponds to the
@@ -11252,6 +11284,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="offline_eligibility_reason">
+    <obsolete>
+      Deprecated December 2020.
+    </obsolete>
     <summary>
       Set to the value of the last known reason an Offline preview was not
       eligible on this page load. The value of this metric corresponds to the
@@ -11260,6 +11295,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="offline_preview">
+    <obsolete>
+      Deprecated December 2020.
+    </obsolete>
     <summary>
       Set to 1 when a user is shown an offline preview page in page load.
     </summary>
@@ -11297,12 +11335,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="resource_loading_hints">
+    <obsolete>
+      Deprecated December 2020.
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a resource loading hints based preview on a
       page load.
     </summary>
   </metric>
   <metric name="resource_loading_hints_eligibility_reason">
+    <obsolete>
+      Deprecated December 2020.
+    </obsolete>
     <summary>
       Set to the value of the last known reason a Resource Loading Hints preview
       was not eligible on this page load. The value of this metric corresponds

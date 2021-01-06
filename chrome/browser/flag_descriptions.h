@@ -381,9 +381,6 @@ extern const char kEnableNavigationPredictorRendererWarmupDescription[];
 extern const char kEnablePreconnectToSearchName[];
 extern const char kEnablePreconnectToSearchDescription[];
 
-extern const char kEnableNoScriptPreviewsName[];
-extern const char kEnableNoScriptPreviewsDescription[];
-
 extern const char kEnableRemovingAllThirdPartyCookiesName[];
 extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
 
@@ -583,18 +580,12 @@ extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
 extern const char kEnableResamplingScrollEventsDescription[];
 
-extern const char kEnableResourceLoadingHintsName[];
-extern const char kEnableResourceLoadingHintsDescription[];
-
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
 extern const char kEnableTabSearchFlagId[];
 extern const char kEnableTabSearchName[];
 extern const char kEnableTabSearchDescription[];
-
-extern const char kEnableTextFragmentAnchorName[];
-extern const char kEnableTextFragmentAnchorDescription[];
 
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
@@ -1022,9 +1013,6 @@ extern const char kEnableDeJellyDescription[];
 
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];
-
-extern const char kOverlayScrollbarsFlashAfterAnyScrollUpdateName[];
-extern const char kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription[];
 
 extern const char kOverlayStrategiesName[];
 extern const char kOverlayStrategiesDescription[];
@@ -1645,9 +1633,6 @@ extern const char kEnableAndroidSpellcheckerDescription[];
 
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
-
-extern const char kEnableOfflinePreviewsName[];
-extern const char kEnableOfflinePreviewsDescription[];
 
 extern const char kEnableUseAaudioDriverName[];
 extern const char kEnableUseAaudioDriverDescription[];
@@ -2363,9 +2348,6 @@ extern const char kEnhancedClipboardNudgeSessionResetDescription[];
 
 extern const char kEnhancedClipboardSimpleRenderName[];
 extern const char kEnhancedClipboardSimpleRenderDescription[];
-
-extern const char kMultiDisplayOverviewAndSplitViewName[];
-extern const char kMultiDisplayOverviewAndSplitViewDescription[];
 
 extern const char kEnableCrOSActionRecorderName[];
 extern const char kEnableCrOSActionRecorderDescription[];

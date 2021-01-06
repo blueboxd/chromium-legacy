@@ -620,11 +620,6 @@ const char kEnablePreconnectToSearchName[] =
 const char kEnablePreconnectToSearchDescription[] =
     "Enables the feature that preconnects to the user's default search engine.";
 
-const char kEnableNoScriptPreviewsName[] = "NoScript previews";
-
-const char kEnableNoScriptPreviewsDescription[] =
-    "Enable disabling JavaScript on some pages on slow networks.";
-
 const char kEnableRemovingAllThirdPartyCookiesName[] =
     "Enable removing SameSite=None cookies";
 const char kEnableRemovingAllThirdPartyCookiesDescription[] =
@@ -992,20 +987,11 @@ const char kEnableResamplingScrollEventsName[] =
 const char kEnableResamplingScrollEventsDescription[] =
     "Predicts the scroll amount at vsync time based on previous input";
 
-const char kEnableResourceLoadingHintsName[] = "Enable resource loading hints";
-const char kEnableResourceLoadingHintsDescription[] =
-    "Enable using server-provided resource loading hints to provide a preview "
-    "over slow network connections.";
-
 const char kEnableTabSearchFlagId[] = "enable-tab-search";
 const char kEnableTabSearchName[] = "Enable Tab Search";
 const char kEnableTabSearchDescription[] =
     "Enable the Tab Search feature in Top Chrome UI, which will show a popup "
     "bubble that allows users to search over their currently open tabs.";
-
-const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
-const char kEnableTextFragmentAnchorDescription[] =
-    "Enables scrolling to text specified in URL's fragment.";
 
 const char kEnableUseZoomForDsfName[] =
     "Use Blink's zoom for device scale factor.";
@@ -1755,12 +1741,6 @@ const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
 const char kOverlayScrollbarsDescription[] =
     "Enable the experimental overlay scrollbars implementation. You must also "
     "enable threaded compositing to have the scrollbars animate.";
-
-const char kOverlayScrollbarsFlashAfterAnyScrollUpdateName[] =
-    "Flash Overlay Scrollbars After Any Scroll Update";
-const char kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription[] =
-    "Flash Overlay Scrollbars After any scroll update happends in page. You"
-    " must also enable Overlay Scrollbars.";
 
 const char kOverlayStrategiesName[] = "Select HW overlay strategies";
 const char kOverlayStrategiesDescription[] =
@@ -2826,10 +2806,6 @@ const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
-
-const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
-const char kEnableOfflinePreviewsDescription[] =
-    "Enable showing offline page previews on slow networks.";
 
 const char kEnableUseAaudioDriverName[] = "Use AAudio Driver";
 const char kEnableUseAaudioDriverDescription[] =
@@ -4047,13 +4023,6 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
 
-const char kDragToSnapInClamshellModeName[] = "Enable clamshell split view.";
-const char kDragToSnapInClamshellModeDescription[] =
-    "You can drag a window from clamshell overview and snap it. If you will be "
-    "using multiple displays, you should use this flag only in conjunction "
-    "with multi-display-overview-and-split-view (otherwise you are likely to "
-    "get a crash).";
-
 const char kEnhancedClipboardName[] =
     "Productivity Experiment: Enable Enhanced Clipboard";
 const char kEnhancedClipboardDescription[] =
@@ -4073,12 +4042,6 @@ const char kEnhancedClipboardSimpleRenderName[] =
     "tags";
 const char kEnhancedClipboardSimpleRenderDescription[] =
     "This will result in less HTML rendering in the Enhanced Clipboard menu.";
-
-const char kMultiDisplayOverviewAndSplitViewName[] =
-    "Enable multi-display overview and split view.";
-const char kMultiDisplayOverviewAndSplitViewDescription[] =
-    "You can drag a window from one overview grid and drop into another "
-    "overview grid.";
 
 const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
 const char kEnableCrOSActionRecorderDescription[] =

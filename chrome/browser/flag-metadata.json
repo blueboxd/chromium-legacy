@@ -1071,11 +1071,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "drag-to-snap-in-clamshell-mode",
-    "owners": [ "amusbach@chromium.org", "xdai@chromium.org" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "drive-fs-bidirectional-native-messaging",
     "owners": [ "austinct@chromium.org", "dats@chromium.org" ],
     "expiry_milestone": 90
@@ -2331,11 +2326,6 @@
     "expiry_milestone": 96
   },
   {
-    "name": "enable-text-fragment-anchor",
-    "owners": [ "bokan", "input-dev" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enable-tls13-early-data",
     "owners": [ "svaldez" ],
     "expiry_milestone": 90
@@ -3398,11 +3388,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "multi-display-overview-and-split-view",
-    "owners": [ "amusbach@chromium.org", "xdai@chromium.org" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "mute-notifications-during-screen-share",
     "owners": [ "knollr@chromium.org", "peter@chromium.org" ],
     "expiry_milestone": 90
@@ -3808,11 +3793,6 @@
   },
   {
     "name": "overlay-scrollbars",
-    "owners": [ "chaopeng", "bokan", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "overlay-scrollbars-flash-after-scroll-update",
     "owners": [ "chaopeng", "bokan", "input-dev" ],
     "expiry_milestone": 76
   },

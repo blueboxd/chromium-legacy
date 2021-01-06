@@ -756,7 +756,6 @@
     },
     {
       name: "DocumentPolicy",
-      origin_trial_feature_name: "DocumentPolicy",
       status: "stable",
     },
     {
@@ -1843,8 +1842,7 @@
     },
     {
       name: "Serial",
-      origin_trial_feature_name: "Serial",
-      status: {"Android": "", "default": "experimental"},
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "ServiceWorkerClientLifecycleState",

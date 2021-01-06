@@ -2690,11 +2690,6 @@ const FeatureEntry kFeatureEntries[] = {
      // Uses the system preference on Mac (a different implementation).
      // On Android, this is always enabled.
      kOsAura, FEATURE_VALUE_TYPE(features::kOverlayScrollbar)},
-    {"overlay-scrollbars-flash-after-scroll-update",
-     flag_descriptions::kOverlayScrollbarsFlashAfterAnyScrollUpdateName,
-     flag_descriptions::kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription,
-     kOsAura,
-     FEATURE_VALUE_TYPE(features::kOverlayScrollbarFlashAfterAnyScrollUpdate)},
 #endif  // USE_AURA
     {"enable-quic", flag_descriptions::kQuicName,
      flag_descriptions::kQuicDescription, kOsAll,
@@ -3310,11 +3305,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-login-detection", flag_descriptions::kEnableLoginDetectionName,
      flag_descriptions::kEnableLoginDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(login_detection::kLoginDetection)},
-#if defined(OS_ANDROID)
-    {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
-     flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
-#endif  // OS_ANDROID
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     {"enable-save-data", flag_descriptions::kEnableSaveDataName,
      flag_descriptions::kEnableSaveDataDescription, kOsCrOS | kOsLinux,
@@ -3334,13 +3324,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePreconnectToSearchName,
      flag_descriptions::kEnablePreconnectToSearchDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPreconnectToSearch)},
-    {"enable-noscript-previews", flag_descriptions::kEnableNoScriptPreviewsName,
-     flag_descriptions::kEnableNoScriptPreviewsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(previews::features::kNoScriptPreviews)},
-    {"enable-resource-loading-hints",
-     flag_descriptions::kEnableResourceLoadingHintsName,
-     flag_descriptions::kEnableResourceLoadingHintsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(previews::features::kResourceLoadingHints)},
     {"enable-previews-coin-flip",
      flag_descriptions::kEnablePreviewsCoinFlipName,
      flag_descriptions::kEnablePreviewsCoinFlipDescription, kOsAll,
@@ -5261,11 +5244,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
 
-    {"enable-text-fragment-anchor",
-     flag_descriptions::kEnableTextFragmentAnchorName,
-     flag_descriptions::kEnableTextFragmentAnchorDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kTextFragmentAnchor)},
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-assistant-stereo-input",
      flag_descriptions::kEnableGoogleAssistantStereoInputName,
@@ -6311,14 +6289,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"drag-to-snap-in-clamshell-mode",
-     flag_descriptions::kDragToSnapInClamshellModeName,
-     flag_descriptions::kDragToSnapInClamshellModeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kDragToSnapInClamshellMode)},
-    {"multi-display-overview-and-split-view",
-     flag_descriptions::kMultiDisplayOverviewAndSplitViewName,
-     flag_descriptions::kMultiDisplayOverviewAndSplitViewDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kMultiDisplayOverviewAndSplitView)},
     {"enhanced_clipboard", flag_descriptions::kEnhancedClipboardName,
      flag_descriptions::kEnhancedClipboardDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kClipboardHistory)},

@@ -206,7 +206,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.MessageReceivedType" enum="SharingMessageType"
-    expires_after="M88">
+    expires_after="M92">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -336,6 +336,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Logged when actions are taken in the sharing screenshot image editing
     feature.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.ScreenshotFallback.Action"
+    enum="SharingScreenshotFallbackAction" expires_after="M92">
+  <owner>ramyan@chromium.org</owner>
+  <owner>jeffreycohen@chromium.org</owner>
+  <summary>
+    Logged when actions are taken in the sharing screenshot fallback feature.
   </summary>
 </histogram>
 

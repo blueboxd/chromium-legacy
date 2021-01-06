@@ -332,8 +332,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 }
 
 // Test that for a locked last profile, a reopen event opens the User Manager.
+//
+// Flaky: crbug.com/1163620
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
-                       LockedProfileReopenWithNoWindows) {
+                       DISABLED_LockedProfileReopenWithNoWindows) {
   // The User Manager uses the system profile as its underlying profile. To
   // minimize flakiness due to the scheduling/descheduling of tasks on the
   // different threads, pre-initialize the guest profile before it is needed.
@@ -494,8 +496,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
   EXPECT_FALSE(ProfilePicker::IsOpen());
 }
 
-// Test that for a locked last profile, a reopen event opens the User Manager,
-// because the profile picker does not support locked profiles yet.
+// Test that for a locked last profile, a reopen event opens the ProfilePicker.
 IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
                        LockedProfileReopenWithNoWindows) {
   signin_util::SetForceSigninForTesting(true);
@@ -522,8 +523,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, active_browser_list_->size());
-  EXPECT_TRUE(UserManager::IsShowing());
-  UserManager::Hide();
+  EXPECT_TRUE(ProfilePicker::IsOpen());
+  EXPECT_FALSE(UserManager::IsShowing());
+  ProfilePicker::Hide();
 }
 
 // Test that for a guest last profile, a reopen event opens the ProfilePicker.
@@ -555,8 +557,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
 }
 
 // Test that the ProfilePicker is shown when there are multiple profiles.
+//
+// Flaky: crbug.com/1163620
 IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
-                       MultiProfilePickerShown) {
+                       DISABLED_MultiProfilePickerShown) {
   CreateAndWaitForSystemProfile();
   AppController* ac = base::mac::ObjCCastStrict<AppController>(
       [[NSApplication sharedApplication] delegate]);

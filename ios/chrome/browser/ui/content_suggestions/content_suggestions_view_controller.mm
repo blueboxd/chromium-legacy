@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
@@ -60,8 +61,6 @@ const CGFloat kDiscoverFeedFeaderHeight = 30;
 // Minimum height of the Discover feed content to indicate that the articles
 // have loaded.
 const CGFloat kDiscoverFeedLoadedHeight = 1000;
-// Delay before the CollectionView scrolls to the saved position.
-const CGFloat kDelayBeforeScrollingToSavedOffset = 0.3;
 }
 
 NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
@@ -628,7 +627,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForHeaderInSection:(NSInteger)section {
   if ([self.collectionUpdater isHeaderSection:section]) {
-    return CGSizeMake(0, [self.headerSynchronizer headerHeight]);
+    return CGSizeMake(0, [self.headerProvider headerHeight]);
   }
   if ([self.collectionUpdater isDiscoverSection:section]) {
     return CGSizeMake(0, kDiscoverFeedFeaderHeight);
@@ -954,25 +953,9 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
                        self.traitCollection.preferredContentSizeCategory) +
                    collection.contentInset.bottom));
     if (collection.contentOffset.y != offset) {
-      // Since the Discover feed uses a diffable data source its not completely
-      // loaded at this time, in order to make this work we need to add a short
-      // delay before scrolling.
-      if (IsDiscoverFeedEnabled()) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                     static_cast<int64_t>(
-                                         kDelayBeforeScrollingToSavedOffset *
-                                         NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-                         collection.contentOffset = CGPointMake(0, offset);
-                         // Update the constraints in case the omnibox needs to
-                         // be moved.
-                         [self updateConstraints];
-                       });
-      } else {
         collection.contentOffset = CGPointMake(0, offset);
         // Update the constraints in case the omnibox needs to be moved.
         [self updateConstraints];
-      }
     }
   }
   _initialContentOffset = NAN;

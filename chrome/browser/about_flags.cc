@@ -520,22 +520,6 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
      base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
 #endif  // !OS_CHROMEOS
 
-const FeatureEntry::FeatureParam kDelayAsyncScriptExecutionFinishedParsing[] = {
-    {"delay_type", "finished_parsing"}};
-const FeatureEntry::FeatureParam
-    kDelayAsyncScriptExecutionFirstPaintOrFinishedParsing[] = {
-        {"delay_type", "first_paint_or_finished_parsing"}};
-
-const FeatureEntry::FeatureVariation
-    kDelayAsyncScriptExecutionFeatureVariations[] = {
-        {"with delay until finished parsing document",
-         kDelayAsyncScriptExecutionFinishedParsing,
-         base::size(kDelayAsyncScriptExecutionFinishedParsing), nullptr},
-        {"with delay until first paint or finished parsing document",
-         kDelayAsyncScriptExecutionFirstPaintOrFinishedParsing,
-         base::size(kDelayAsyncScriptExecutionFirstPaintOrFinishedParsing),
-         nullptr}};
-
 const FeatureEntry::FeatureParam kMBIModeLegacy[] = {{"mode", "legacy"}};
 const FeatureEntry::FeatureParam kMBIModeEnabledPerRenderProcessHost[] = {
     {"mode", "per_render_process_host"}};
@@ -4383,13 +4367,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
 
-    {"delay-async-script-execution",
-     flag_descriptions::kDelayAsyncScriptExecutionName,
-     flag_descriptions::kDelayAsyncScriptExecutionDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kDelayAsyncScriptExecution,
-                                    kDelayAsyncScriptExecutionFeatureVariations,
-                                    "DelayAsyncScriptExecution")},
-
     {"mbi-mode", flag_descriptions::kMBIModeName,
      flag_descriptions::kMBIModeDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kMBIMode,
@@ -4859,10 +4836,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillRichMetadataQueriesName,
      flag_descriptions::kAutofillRichMetadataQueriesDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillRichMetadataQueries)},
-    {"enable-experimental-productivity-features",
-     flag_descriptions::kExperimentalProductivityFeaturesName,
-     flag_descriptions::kExperimentalProductivityFeaturesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kExperimentalProductivityFeatures)},
 
 #if defined(USE_AURA)
     {"touchpad-overscroll-history-navigation",
@@ -5239,10 +5212,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSwapSideVolumeButtonsForOrientation)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-implicit-root-scroller",
-     flag_descriptions::kEnableImplicitRootScrollerName,
-     flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-assistant-stereo-input",

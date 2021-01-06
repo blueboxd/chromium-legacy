@@ -463,9 +463,6 @@ extern const char kEnableGenericSensorExtraClassesDescription[];
 extern const char kEnableGpuServiceLoggingName[];
 extern const char kEnableGpuServiceLoggingDescription[];
 
-extern const char kEnableImplicitRootScrollerName[];
-extern const char kEnableImplicitRootScrollerDescription[];
-
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 
@@ -631,9 +628,6 @@ extern const char kExperimentalExtensionApisDescription[];
 
 extern const char kExperimentalFlingAnimationName[];
 extern const char kExperimentalFlingAnimationDescription[];
-
-extern const char kExperimentalProductivityFeaturesName[];
-extern const char kExperimentalProductivityFeaturesDescription[];
 
 extern const char kExperimentalWebPlatformFeaturesName[];
 extern const char kExperimentalWebPlatformFeaturesDescription[];
@@ -1153,9 +1147,6 @@ extern const char kRewriteLevelDBOnDeletionDescription[];
 
 extern const char kRestrictGamepadAccessName[];
 extern const char kRestrictGamepadAccessDescription[];
-
-extern const char kDelayAsyncScriptExecutionName[];
-extern const char kDelayAsyncScriptExecutionDescription[];
 
 extern const char kMBIModeName[];
 extern const char kMBIModeDescription[];

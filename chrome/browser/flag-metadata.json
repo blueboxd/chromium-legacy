@@ -444,8 +444,8 @@
   },
   {
     "name": "bypass-app-banner-engagement-checks",
-    "owners": [ "dominickn" ],
-    "expiry_milestone": 88
+    "owners": [ "dmurph" ],
+    "expiry_milestone": 95
   },
   {
     "name": "calculate-native-win-occlusion",
@@ -833,11 +833,6 @@
     "name": "default-browser-setting",
     "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "delay-async-script-execution",
-    "owners": [ "dom", "chrome-loading@google.com" ],
-    "expiry_milestone": 88
   },
   {
     "name": "delay-competing-low-priority-requests",
@@ -1772,11 +1767,6 @@
     "name": "enable-immersive-fullscreen-toolbar",
     "owners": [ "lgrey" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enable-implicit-root-scroller",
-    "owners": [ "bokan", "input-dev" ],
-    "expiry_milestone": 80
   },
   {
     "name": "enable-incognito-authentication-ios",

@@ -6254,12 +6254,21 @@ bool RenderFrameImpl::IsAccessibilityEnabled() const {
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-void RenderFrameImpl::PepperInstanceCreated(
-    PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.insert(instance);
 
-  Send(new FrameHostMsg_PepperInstanceCreated(routing_id_,
-                                              instance->pp_instance()));
+mojom::PepperHost* RenderFrameImpl::GetPepperHost() {
+  if (!pepper_host_remote_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&pepper_host_remote_);
+  return pepper_host_remote_.get();
+}
+
+void RenderFrameImpl::PepperInstanceCreated(
+    PepperPluginInstanceImpl* instance,
+    mojo::PendingAssociatedRemote<mojom::PepperPluginInstance> mojo_instance,
+    mojo::PendingAssociatedReceiver<mojom::PepperPluginInstanceHost>
+        mojo_host) {
+  active_pepper_instances_.insert(instance);
+  GetPepperHost()->InstanceCreated(
+      instance->pp_instance(), std::move(mojo_instance), std::move(mojo_host));
 }
 
 void RenderFrameImpl::PepperInstanceDeleted(
@@ -6268,14 +6277,6 @@ void RenderFrameImpl::PepperInstanceDeleted(
 
   if (focused_pepper_plugin_ == instance)
     PepperFocusChanged(instance, false);
-
-  RenderFrameImpl* const render_frame = instance->render_frame();
-  if (render_frame) {
-    // TODO(crbug.com/1137580): In some cases, using the RenderFrame to send the
-    // message causes UB, so for now avoid that by calling RT::Send directly.
-    RenderThread::Get()->Send(new FrameHostMsg_PepperInstanceDeleted(
-        render_frame->GetRoutingID(), instance->pp_instance()));
-  }
 }
 
 void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
@@ -6287,22 +6288,6 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
 
   GetLocalRootWebFrameWidget()->UpdateTextInputState();
   GetLocalRootWebFrameWidget()->UpdateSelectionBounds();
-}
-
-void RenderFrameImpl::PepperStartsPlayback(PepperPluginInstanceImpl* instance) {
-  RenderFrameImpl* const render_frame = instance->render_frame();
-  if (render_frame) {
-    render_frame->Send(new FrameHostMsg_PepperStartsPlayback(
-        render_frame->GetRoutingID(), instance->pp_instance()));
-  }
-}
-
-void RenderFrameImpl::PepperStopsPlayback(PepperPluginInstanceImpl* instance) {
-  RenderFrameImpl* const render_frame = instance->render_frame();
-  if (render_frame) {
-    render_frame->Send(new FrameHostMsg_PepperStopsPlayback(
-        render_frame->GetRoutingID(), instance->pp_instance()));
-  }
 }
 
 void RenderFrameImpl::OnSetPepperVolume(int32_t pp_instance, double volume) {

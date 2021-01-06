@@ -8060,6 +8060,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="HTTPS"/>
 </enum>
 
+<enum name="BooleanHTTPVsJS">
+  <int value="0" label="JS"/>
+  <int value="1" label="HTTP"/>
+</enum>
+
 <enum name="BooleanIgnored">
   <int value="0" label="Not ignored"/>
   <int value="1" label="Ignored"/>
@@ -10016,6 +10021,21 @@ histogram as enum -->
   </int>
   <int value="4" label="App sync is enabled">
     Profile data was recorded in full since App Sync is enabled.
+  </int>
+  <int value="5" label="Sync service is unavailable">
+    Profile data was redacted since sync service is unavailable.
+  </int>
+  <int value="6" label="Chrome sync feature is disabled">
+    Profile data was redacted since Chrome sync feature is disabled.
+  </int>
+  <int value="7" label="Chrome App Sync is disabled">
+    Profile data was redacted since Chrome App Sync is disabled.
+  </int>
+  <int value="8" label="Chrome OS sync feature is disabled">
+    Profile data was redacted since Chrome OS sync feature is disabled.
+  </int>
+  <int value="9" label="Chrome OS App Sync is disabled">
+    Profile data was redacted since Chrome OS App Sync is disabled.
   </int>
 </enum>
 
@@ -31071,6 +31091,9 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="FetchFontName">
+  <obsolete>
+    Removed Jan 2021.
+  </obsolete>
   <int value="0" label="Other"/>
   <int value="1" label="Google Sans Regular"/>
   <int value="2" label="Google Sans Medium"/>
@@ -31078,6 +31101,9 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="FetchFontResult">
+  <obsolete>
+    Removed Jan 2021.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Failed due to unexpected font name"/>
   <int value="2" label="Failed with non-OK status code on result"/>
@@ -36804,6 +36830,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HoldingSpaceDownloadsAction">
+  <int value="0" label="kClick"/>
+</enum>
+
+<enum name="HoldingSpaceFilesAppChipAction">
   <int value="0" label="kClick"/>
 </enum>
 
@@ -67937,6 +67967,18 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="14" label="Draw tool: color changed"/>
 </enum>
 
+<enum name="SharingScreenshotFallbackAction">
+<!--
+  SharingScreenshotAction must be kept in sync with SharingScreenshotAction defined
+  in /chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetMetrics.java
+-->
+
+  <int value="0" label="Screenshot Edit"/>
+  <int value="1" label="Screenshot Shared"/>
+  <int value="2" label="Screenshot Saved"/>
+  <int value="3" label="Screenshot Deleted"/>
+</enum>
+
 <enum name="SharingSendMessageResult">
   <int value="0" label="Successful"/>
   <int value="1" label="Device is not found"/>
@@ -68406,6 +68448,18 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Declined"/>
   <int value="2" label="Ignored"/>
   <int value="3" label="Not displayed"/>
+</enum>
+
+<enum name="SigninInterceptSessionStartupResult">
+  <int value="0" label="Nothing to do (Reconcilor)"/>
+  <int value="1" label="Nothing to do (Multilogin)"/>
+  <int value="2" label="Success (reconcilor)"/>
+  <int value="3" label="Success (multilogin)"/>
+  <int value="4" label="Success (other)"/>
+  <int value="5" label="Timeout (multilogin)"/>
+  <int value="6" label="Timeout (reconcilor)"/>
+  <int value="7" label="Transient error (multilogin)"/>
+  <int value="8" label="Persistent error (multilogin)"/>
 </enum>
 
 <enum name="SigninInvalidGaiaCredentialsReason">

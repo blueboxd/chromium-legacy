@@ -132,10 +132,6 @@ extern const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[];
 extern const char kDetectMainThreadFreezeName[];
 extern const char kDetectMainThreadFreezeDescription[];
 
-// Title and description for the flag to disable progress bar animation.
-extern const char kDisableProgressBarAnimationName[];
-extern const char kDisableProgressBarAnimationDescription[];
-
 // Title and description for the flag to replace the Zine feed with the
 // Discover feed in the Bling NTP.
 extern const char kDiscoverFeedInNtpName[];
@@ -295,6 +291,11 @@ extern const char kOmniboxOnFocusSuggestionsDescription[];
 // suggestions.
 extern const char kOmniboxLocalHistoryZeroSuggestName[];
 extern const char kOmniboxLocalHistoryZeroSuggestDescription[];
+
+// Title and description for the flag to swap Omnibox Textfield implementation
+// to a new experimental one.
+extern const char kOmniboxNewImplementationName[];
+extern const char kOmniboxNewImplementationDescription[];
 
 // Title and description for the flag that enables the refactored new tab page.
 extern const char kRefactoredNTPName[];

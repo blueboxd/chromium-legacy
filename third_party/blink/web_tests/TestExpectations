@@ -30,7 +30,8 @@ external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
 external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
 
-# Fuzzy reftests are not supported.
+# We don't support extracting fuzzy information from .ini files, which these
+# WPT infrastructure tests rely on.
 crbug.com/997202 external/wpt/infrastructure/reftest/legacy/reftest_fuzzy_chain_ini.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/legacy/fuzzy-ref-2.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Failure ]
@@ -68,6 +69,11 @@ crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-o
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
+
+# Temporarily disable until Chrome DevTools change has rolled.
+crbug.com/1132260 http/tests/devtools/components/linkifier.js [ Pass Failure ]
+crbug.com/1132260 http/tests/devtools/console/console-bad-stacktrace.js [ Pass Failure ]
+crbug.com/1132260 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
@@ -330,6 +336,8 @@ crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filte
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
 crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
+
+crbug.com/916825 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
@@ -1097,7 +1105,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/nested-multicol.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/overflowing-columns-large-gaps.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/positioned-split.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/span/invalid-spanner-in-transform.html [ Failure Crash ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/preferred-widths-with-column-content.html [ Failure ]
@@ -1110,7 +1117,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/transform-with-fixe
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html [ Failure ]
 
 ### With LayoutNGFragmentTraversal (and LayoutNGFragmentItem) enabled:
 
@@ -1568,9 +1574,6 @@ crbug.com/802029 [ Mac10.13 Debug ] fast/dom/shadow/focus-controller-recursion-c
 crbug.com/829740 fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
-
-# Test failing on "Linux Tests (dbg)(1)" since it was introduced.
-crbug.com/1160616 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTracks.html [ Failure ]
 
 # crbug.com/1095379: These fail with a timeout, even when they're given extra time (via SlowTests)
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002.html [ Pass Timeout ]
@@ -2774,7 +2777,6 @@ crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-013.html [ Failu
 crbug.com/626703 external/wpt/css/css-text/white-space/white-space-intrinsic-size-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-copy-paste-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/webappapis/animation-frames/cancel-handle-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-preserve-breaks-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-discard-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-trim-trim-inner-001.xht [ Failure ]
@@ -3294,7 +3296,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/descen
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/descendant-static-position-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/descendant-static-position-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/descendant-static-position-004.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/empty-grid-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-paint-positioned-children-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-positioned-children-writing-modes-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-positioned-item-dynamic-change-001.html [ Failure ]
@@ -3383,7 +3384,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/positi
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/positioned-grid-items-015.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/positioned-grid-items-016.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/positioned-grid-items-017.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/positioned-grid-items-should-not-create-implicit-tracks-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/positioned-grid-items-sizing-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-align-baseline-vertical.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-align-baseline.html [ Failure ]
@@ -3635,7 +3635,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/animation/gri
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/anonymous-grid-items-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/relative-grandchild.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/explicit-grid-size-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/flex-content-distribution-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/flex-content-resolution-columns-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/flex-content-resolution-columns-002.html [ Failure ]
@@ -3659,7 +3658,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definiti
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-multiple-values-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-multiple-values-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-positioned-container-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-change-auto-repeat-tracks.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-change-auto-repeat-tracks.html [ Failure Crash ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-change-fit-content-argument-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-change-intrinsic-size-with-auto-repeat-tracks-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-inline-auto-repeat-001.html [ Failure ]
@@ -3852,7 +3851,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed-implicit-track.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed-withcontent.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-container-change-grid-tracks-recompute-child-positions-001.html [ Failure Crash ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-layout-grid-span.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-layout-lines-shorthands.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-layout-lines.html [ Failure ]
@@ -5795,10 +5793,6 @@ crbug.com/1144537 external/wpt/xhr/responsexml-document-properties.htm [ Pass Fa
 # Sheriff 2020-11-03
 crbug.com/1145019 [ Win7 ] fast/events/updateLayoutForHitTest.html [ Failure ]
 
-# Lack of support for reftest fuzzy matching
-# Reftests have minor pixel differences due to antialiasing.
-crbug.com/997202 external/wpt/css/css-transforms/animation/transform-interpolation-rotate-slerp.html [ Failure ]
-
 # Sheriff 2020-11-04
 crbug.com/1144273 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure Timeout ]
 crbug.com/1145742 [ Fuchsia ] virtual/stable/http/tests/navigation/location-assign-adds-history-item.html [ Pass Crash Timeout ]
@@ -5834,6 +5828,7 @@ crbug.com/1152088 [ Mac10.13 Debug ] fast/dom/cssTarget-crash.html [ Pass Timeou
 crbug.com/1149734 http/tests/devtools/sources/source-frame-toolbar-items.js [ Pass Failure ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-frameworks/frameworks-sourcemap.js [ Pass Failure ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
+crbug.com/1149734 http/tests/devtools/sources/debugger-ui/inline-scope-variables.js [ Pass Failure ]
 
 #Sheriff 2020-11-24
 crbug.com/1152496 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow.html [ Pass Timeout ]

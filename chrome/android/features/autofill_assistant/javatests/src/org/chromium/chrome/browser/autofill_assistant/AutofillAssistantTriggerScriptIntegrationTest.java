@@ -253,7 +253,7 @@ public class AutofillAssistantTriggerScriptIntegrationTest {
         setupTriggerScripts(triggerScripts);
         startAutofillAssistantOnTab(TEST_PAGE_A);
 
-        Assert.assertTrue(AutofillAssistantPreferencesUtil.isProactiveHelpSwitchOn());
+        Assert.assertTrue(AutofillAssistantPreferencesUtil.isProactiveHelpOn());
         waitUntilViewMatchesCondition(
                 withContentDescription(R.string.autofill_assistant_overflow_options),
                 isCompletelyDisplayed());
@@ -263,7 +263,7 @@ public class AutofillAssistantTriggerScriptIntegrationTest {
         onView(withText("Never show again")).perform(click());
         waitUntilViewAssertionTrue(
                 withText("Hello world"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertFalse(AutofillAssistantPreferencesUtil.isProactiveHelpSwitchOn());
+        Assert.assertFalse(AutofillAssistantPreferencesUtil.isProactiveHelpOn());
     }
 
     @Test

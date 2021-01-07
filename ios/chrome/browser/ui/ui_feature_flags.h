@@ -20,9 +20,6 @@ extern const base::Feature kSettingsRefresh;
 // Feature flag for embedders to block restore urls.
 extern const base::Feature kEmbedderBlockRestoreUrl;
 
-// Feature flag disabling progress bar animation.
-extern const base::Feature kDisableProgressBarAnimation;
-
 // Feature flag to use the unstacked tabstrip when voiceover is enabled.
 extern const base::Feature kVoiceOverUnstackedTabstrip;
 
@@ -73,6 +70,9 @@ extern const base::Feature kDefaultBrowserFullscreenPromoExperiment;
 
 // Feature flag that enable Shared Highlighting color change in iOS.
 extern const base::Feature kIOSSharedHighlightingColorChange;
+
+// Feature flag that swaps the omnibox textfield implementation.
+extern const base::Feature kIOSNewOmniboxImplementation;
 
 // Feature flag that enables persisting the Crash Restore Infobar across
 // navigations.

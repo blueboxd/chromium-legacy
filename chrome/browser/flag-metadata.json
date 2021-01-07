@@ -977,11 +977,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "disable-progress-bar-animation",
-    "owners": [ "eugenebut", "djean", "bling-flags@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
     // This flag is a useful debugging control when investigating scrolling
@@ -2098,11 +2093,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-profiles-ui-revamp",
-    "owners": [ "droger", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-quic",
     "owners": [ "//net/quic/OWNERS" ],
     // This flag is used by network administrators to debug
@@ -2188,6 +2178,11 @@
     "owners": [ "kolos" ],
     // Used for debugging and QA by the autofill team for the indefinite future.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-sign-in-profile-creation",
+    "owners": [ "jkrcal", "my-chrome-everywhere@google.com" ],
+    "expiry_milestone": 91
   },
   {
     "name": "enable-site-isolation-for-password-sites",
@@ -3653,6 +3648,11 @@
     "expiry_milestone": 93
   },
   {
+      "name": "omnibox-new-textfield-implementation",
+      "owners": ["stkhapugin", "rkgibson@google.com", "chrome-omnibox-team@google.com"],
+      "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-on-device-head-suggestions-incognito",
     "owners": [ "cechen", "suggest-2g@google.com" ],
     "expiry_milestone": 90
@@ -4062,6 +4062,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "query-tiles-more-trending",
+    "owners": [ "qinmin" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "query-tiles-ntp",
     "owners": [ "shaktisahu", "qinmin" ],
     "expiry_milestone": 90
@@ -4075,6 +4080,11 @@
     "name": "query-tiles-single-tier",
     "owners": [ "shaktisahu" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "query-tiles-swap-trending",
+    "owners": [ "qinmin" ],
+    "expiry_milestone": 92
   },
   {
     "name": "quiet-notification-prompts",
@@ -4357,6 +4367,11 @@
     "name": "select-to-speak-navigation-control",
     "owners": [ "joelriley" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "send-tab-to-self-when-signed-in",
+    "owners": ["victorvianna@google.com", "mastiz@chromium.org"],
+    "expiry_milestone": 92
   },
   {
     "name": "send-uma-cellular",

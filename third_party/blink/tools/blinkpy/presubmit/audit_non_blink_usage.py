@@ -43,6 +43,8 @@ _CONFIG = [
             'base::FilePath',
             'base::GetUniqueIdForProcess',
             "base::i18n::TextDirection",
+            "base::i18n::ToChar16Ptr",
+            "base::i18n::ToUCharPtr",
             'base::Location',
             'base::MakeRefCounted',
             'base::Optional',
@@ -1004,6 +1006,10 @@ _CONFIG = [
         'allowed': [
             'gpu::kNullSurfaceHandle',
             'gpu::SHARED_IMAGE_.+',
+            'gpu::raster::RasterInterface',
+            'gpu::Mailbox',
+            'gpu::MailboxHolder',
+            "viz::RasterContextProvider",
             'media::.+',
             'libyuv::.+',
         ]

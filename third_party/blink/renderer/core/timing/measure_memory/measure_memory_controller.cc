@@ -4,12 +4,15 @@
 
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_controller.h"
 
+#include <algorithm>
+#include "base/rand_util.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_memory_attribution.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_memory_attribution_container.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_memory_breakdown_entry.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_memory_measurement.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -112,6 +115,19 @@ bool MeasureMemoryController::IsMeasureMemoryAvailable(LocalDOMWindow* window) {
 
 namespace {
 
+// Satisfies the requirements of UniformRandomBitGenerator from C++ standard.
+// It is used in std::shuffle calls below.
+struct RandomBitGenerator {
+  using result_type = size_t;
+  static constexpr size_t min() { return 0; }
+  static constexpr size_t max() {
+    return static_cast<size_t>(std::numeric_limits<int>::max());
+  }
+  size_t operator()() {
+    return static_cast<size_t>(base::RandInt(min(), max()));
+  }
+};
+
 // These functions convert WebMemory* mojo structs to IDL and JS values.
 WTF::String ConvertScope(WebMemoryAttribution::Scope scope) {
   using Scope = WebMemoryAttribution::Scope;
@@ -123,12 +139,27 @@ WTF::String ConvertScope(WebMemoryAttribution::Scope scope) {
   }
 }
 
+MemoryAttributionContainer* ConvertContainer(
+    const WebMemoryAttributionPtr& attribution) {
+  if (!attribution->src && !attribution->id) {
+    return nullptr;
+  }
+  auto* result = MemoryAttributionContainer::Create();
+  result->setSrc(attribution->src);
+  result->setId(attribution->id);
+  return result;
+}
+
 MemoryAttribution* ConvertAttribution(
     const WebMemoryAttributionPtr& attribution) {
   auto* result = MemoryAttribution::Create();
-  result->setUrl(attribution->url);
+  if (attribution->url) {
+    result->setUrl(attribution->url);
+  } else {
+    result->setUrl("cross-origin-url");
+  }
   result->setScope(ConvertScope(attribution->scope));
-  result->setContainer(nullptr);
+  result->setContainer(ConvertContainer(attribution));
   return result;
 }
 
@@ -141,7 +172,15 @@ MemoryBreakdownEntry* ConvertBreakdown(
     attribution.push_back(ConvertAttribution(entry));
   }
   result->setAttribution(attribution);
-  result->setUserAgentSpecificTypes(Vector<String>());
+  result->setUserAgentSpecificTypes({});
+  return result;
+}
+
+MemoryBreakdownEntry* EmptyBreakdown() {
+  auto* result = MemoryBreakdownEntry::Create();
+  result->setBytes(0);
+  result->setAttribution({});
+  result->setUserAgentSpecificTypes({});
   return result;
 }
 
@@ -150,6 +189,11 @@ MemoryMeasurement* ConvertResult(const WebMemoryMeasurementPtr& measurement) {
   for (const auto& entry : measurement->breakdown) {
     breakdown.push_back(ConvertBreakdown(entry));
   }
+  // Add an empty breakdown entry as required by the spec.
+  // See https://github.com/WICG/performance-measure-memory/issues/10.
+  breakdown.push_back(EmptyBreakdown());
+  // Randomize the order of the entries as required by the spec.
+  std::shuffle(breakdown.begin(), breakdown.end(), RandomBitGenerator{});
   size_t bytes = 0;
   for (auto entry : breakdown) {
     bytes += entry->bytes();

@@ -389,10 +389,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEmbedderBlockRestoreUrlName,
      flag_descriptions::kEmbedderBlockRestoreUrlDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEmbedderBlockRestoreUrl)},
-    {"disable-progress-bar-animation",
-     flag_descriptions::kDisableProgressBarAnimationName,
-     flag_descriptions::kDisableProgressBarAnimationDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDisableProgressBarAnimation)},
     {"messages-save-card-infobar",
      flag_descriptions::kSaveCardInfobarMessagesUIName,
      flag_descriptions::kSaveCardInfobarMessagesUIDescription, flags_ui::kOsIos,
@@ -599,6 +595,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kUseOfHashAffiliationFetcher)},
+    {"omnibox-new-textfield-implementation",
+     flag_descriptions::kOmniboxNewImplementationName,
+     flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

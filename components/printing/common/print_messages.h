@@ -127,15 +127,6 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
 IPC_STRUCT_TRAITS_END()
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::RequestPrintPreviewParams)
-  IPC_STRUCT_TRAITS_MEMBER(is_from_arc)
-  IPC_STRUCT_TRAITS_MEMBER(is_modifiable)
-  IPC_STRUCT_TRAITS_MEMBER(is_pdf)
-  IPC_STRUCT_TRAITS_MEMBER(webnode_only)
-  IPC_STRUCT_TRAITS_MEMBER(has_selection)
-  IPC_STRUCT_TRAITS_MEMBER(selection_only)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PreviewIds)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(ui_id)
@@ -235,34 +226,9 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPrintDocumentParams)
   IPC_STRUCT_TRAITS_MEMBER(physical_offsets)
 IPC_STRUCT_TRAITS_END()
 
-// TODO(dgn): Rename *ScriptedPrint messages because they are not called only
-//           from scripts.
-// Parameters for the IPC message PrintHostMsg_ScriptedPrint
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::ScriptedPrintParams)
-  IPC_STRUCT_TRAITS_MEMBER(cookie)
-  IPC_STRUCT_TRAITS_MEMBER(expected_pages_count)
-  IPC_STRUCT_TRAITS_MEMBER(has_selection)
-  IPC_STRUCT_TRAITS_MEMBER(is_scripted)
-  IPC_STRUCT_TRAITS_MEMBER(is_modifiable)
-  IPC_STRUCT_TRAITS_MEMBER(margin_type)
-IPC_STRUCT_TRAITS_END()
-
 // Messages sent from the renderer to the browser.
 
-// It's the renderer that controls the printing process when it is generated
-// by javascript. This step is about showing UI to the user to select the
-// final print settings. The output parameter is the same as
-// PrintMsg_PrintPages which is executed implicitly.
-IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
-                           printing::mojom::ScriptedPrintParams,
-                           printing::mojom::PrintPagesParams
-                           /* settings chosen by the user*/)
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Asks the browser to do print preview.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview,
-                    printing::mojom::RequestPrintPreviewParams /* params */)
-
 // Notify the browser the about the to-be-rendered print preview document.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidStartPreview,
                     printing::mojom::DidStartPreviewParams /* params */,
@@ -291,11 +257,6 @@ IPC_MESSAGE_ROUTED4(
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPreviewPage,
                     printing::mojom::DidPreviewPageParams /* params */,
                     printing::mojom::PreviewIds /* ids */)
-
-// Asks the browser whether the print preview has been cancelled.
-IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_CheckForCancel,
-                           printing::mojom::PreviewIds /* ids */,
-                           bool /* print preview cancelled */)
 
 // Sends back to the browser the complete rendered document (non-draft mode,
 // used for printing) that was requested by a PrintMsg_PrintPreview message.

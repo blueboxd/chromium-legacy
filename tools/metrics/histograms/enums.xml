@@ -16844,6 +16844,12 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="3" label="Cancel"/>
 </enum>
 
+<enum name="DeviceSettingsFeatureFlagsMigrationStatus">
+  <int value="0" label="No feature flags present"/>
+  <int value="1" label="Migration already completed previously"/>
+  <int value="2" label="Migration has been performed"/>
+</enum>
+
 <enum name="DeviceSettingsStatus">
   <int value="0" label="STORE_SUCCESS"/>
   <int value="1" label="STORE_KEY_UNAVAILABLE"/>
@@ -42459,6 +42465,8 @@ from previous Chrome versions.
   <int value="-1837401779" label="EnableFileManagerFormatDialog:enabled"/>
   <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
   <int value="-1836854634" label="CloseTabSuggestions:enabled"/>
+  <int value="-1836511093"
+      label="QueryTilesRemoveTrendingAfterInactivity:enabled"/>
   <int value="-1836412886" label="UseChimeAndroidSdk:disabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835905702" label="FilesZipNoNaCl:enabled"/>
@@ -42753,6 +42761,7 @@ from previous Chrome versions.
   <int value="-1546351452" label="CrossOriginIsolated:enabled"/>
   <int value="-1546029755" label="OverrideTranslateTriggerInIndia:enabled"/>
   <int value="-1545595496" label="RendererSideResourceScheduler:enabled"/>
+  <int value="-1545384766" label="SignInProfileCreation:disabled"/>
   <int value="-1544248549" label="ArcUseAuthEndpoint:enabled"/>
   <int value="-1543316040"
       label="DisplayPersistenceToggleInPermissionPrompts:disabled"/>
@@ -44604,6 +44613,8 @@ from previous Chrome versions.
   <int value="191737931" label="enable-mark-http-as"/>
   <int value="192167036" label="LogJsConsoleMessages:disabled"/>
   <int value="192320180" label="ignore-gpu-blocklist"/>
+  <int value="192693676"
+      label="QueryTilesRemoveTrendingAfterInactivity:disabled"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
@@ -45056,6 +45067,7 @@ from previous Chrome versions.
   <int value="628570445" label="AndroidAutofillAccessibility:enabled"/>
   <int value="629549626" label="ContextualSearchMlTapSuppression:enabled"/>
   <int value="630244477" label="ServiceWorkerPaymentApps:enabled"/>
+  <int value="630308195" label="SignInProfileCreation:enabled"/>
   <int value="630776247" label="USBGuard:disabled"/>
   <int value="630947363" label="touch-events"/>
   <int value="632340413" label="network-settings-config"/>
@@ -45131,6 +45143,7 @@ from previous Chrome versions.
   <int value="693012666" label="QuickUnlockPin:disabled"/>
   <int value="693545401"
       label="AutofillEnableInfoBarAccountIndicationFooter:enabled"/>
+  <int value="694016981" label="query-tiles-more-trending"/>
   <int value="694985670" label="OmniboxUIExperimentNarrowDropdown:disabled"/>
   <int value="695385040" label="enable-external-drive-rename"/>
   <int value="696261973" label="GaiaActionButtons:enabled"/>

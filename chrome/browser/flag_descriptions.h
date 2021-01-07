@@ -855,8 +855,8 @@ extern const char kNewCanvas2DAPIDescription[];
 extern const char kNewProfilePickerName[];
 extern const char kNewProfilePickerDescription[];
 
-extern const char kProfilesUIRevampName[];
-extern const char kProfilesUIRevampDescription[];
+extern const char kSignInProfileCreationName[];
+extern const char kSignInProfileCreationDescription[];
 
 extern const char kDestroyProfileOnBrowserCloseName[];
 extern const char kDestroyProfileOnBrowserCloseDescription[];
@@ -1190,6 +1190,9 @@ extern const char kScrollUnificationDescription[];
 
 extern const char kSecurePaymentConfirmationDebugName[];
 extern const char kSecurePaymentConfirmationDebugDescription[];
+
+extern const char kSendTabToSelfWhenSignedInName[];
+extern const char kSendTabToSelfWhenSignedInDescription[];
 
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
@@ -1761,6 +1764,10 @@ extern const char kQueryTilesLocalOrderingName[];
 extern const char kQueryTilesLocalOrderingDescription[];
 extern const char kQueryTilesInstantFetchName[];
 extern const char kQueryTilesInstantFetchDescription[];
+extern const char kQueryTilesMoreTrendingName[];
+extern const char kQueryTilesMoreTrendingDescription[];
+extern const char kQueryTilesSwapTrendingName[];
+extern const char kQueryTilesSwapTrendingDescription[];
 
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];

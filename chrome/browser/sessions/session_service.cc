@@ -150,6 +150,8 @@ void SessionService::MoveCurrentSessionToLastSession() {
   pending_window_close_ids_.clear();
 
   command_storage_manager_->MoveCurrentSessionToLastSession();
+  // TODO(https://crbug.com/1163158): this needs to call
+  // ScheduleResetCommands().
 }
 
 void SessionService::DeleteLastSession() {
@@ -275,8 +277,8 @@ void SessionService::WindowOpened(Browser* browser) {
   SetWindowAppName(browser->session_id(), browser->app_name());
 
   // Save a browser workspace after window is created in `Browser()`.
-  // DesksRestore feature in ash requires this line to restore correctly after
-  // creating a new browser window in a particular desk.
+  // Bento desks restore feature in ash requires this line to restore correctly
+  // after creating a new browser window in a particular desk.
   SetWindowWorkspace(browser->session_id(), browser->window()->GetWorkspace());
 }
 
@@ -485,6 +487,11 @@ bool SessionService::ShouldUseDelayedSave() {
 
 void SessionService::OnWillSaveCommands() {
   RebuildCommandsIfRequired();
+}
+
+void SessionService::OnErrorWritingSessionCommands() {
+  // TODO(https://crbug.com/648266): implement this.
+  NOTIMPLEMENTED();
 }
 
 void SessionService::RebuildCommandsIfRequired() {

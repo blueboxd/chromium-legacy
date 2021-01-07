@@ -721,11 +721,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHost is ready to be deleted (LifecycleState::kReadyToBeDeleted).
   bool IsPendingDeletion();
 
-  // A NavigationRequest for a pending same-document navigation in this frame,
-  // if any. This is cleared when the navigation commits.
-  NavigationRequest* same_document_navigation_request() {
-    return same_document_navigation_request_.get();
-  }
+  // Returns a pending same-document navigation request in this frame that has
+  // the navigation_token |token|, if any.
+  NavigationRequest* GetSameDocumentNavigationRequest(
+      const base::UnguessableToken& token);
 
   // Resets the NavigationRequests stored in this RenderFrameHost.
   void ResetNavigationRequests();
@@ -752,6 +751,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // have completed its unload handler. The RenderFrameHost may be immediately
   // deleted or deferred depending on its children's unload status.
   void Unload(RenderFrameProxyHost* proxy, bool is_loading);
+
+  // Unload this frame for the proxy. Similar to `Unload()` but without
+  // managing the lifecycle of this object.
+  void SwapOuterDelegateFrame(RenderFrameProxyHost* proxy);
+
+  // Process the acknowledgment of the unload of this frame from the renderer.
+  void OnUnloadACK();
 
   // Remove this frame and its children. This happens asynchronously, an IPC
   // round trip with the renderer process is needed to ensure children's unload
@@ -821,7 +827,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // state. Then, the RenderFrameHost sends IPCs to the renderer process to
     // execute unload handlers and deletes the RenderFrame. The RenderFrameHost
     // waits for an ACK from the renderer process, either
-    // FrameHostMsg_Unload_ACK for a navigating frame or FrameHostMsg_Detach for
+    // mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame for a navigating
+    // frame or FrameHostMsg_Detach for
     // its subframes, after which the RenderFrameHost transitions to
     // kReadyToBeDeleted state.
     //
@@ -1286,6 +1293,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Set a callback to listen to the |CreateNewPopupWidget| for testing.
   void SetCreateNewPopupCallbackForTesting(
       const CreateNewPopupWidgetCallbackForTesting& callback);
+
+  using UnloadACKCallbackForTesting = base::RepeatingCallback<bool()>;
+
+  // Set a callback to listen to the |OnUnloadACK| for testing.
+  void SetUnloadACKCallbackForTesting(
+      const UnloadACKCallbackForTesting& callback);
 
   // Posts a message from a frame in another process to the current renderer.
   void PostMessageEvent(
@@ -1988,7 +2001,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       RenderFrameHostManagerUnloadBrowserTest,
       PendingDeleteRFHProcessShutdownDoesNotRemoveSubframes);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, FindImmediateLocalRoots);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderViewHostIsNotReusedAfterDelayedUnloadACK);
@@ -2049,7 +2061,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateRenderProcessHostFramePriorities();
 
   // IPC Message handlers.
-  void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
@@ -2466,9 +2477,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Called by the renderer process when it is done processing a same-document
   // commit request.
-  void OnSameDocumentCommitProcessed(int64_t navigation_id,
-                                     bool should_replace_current_entry,
-                                     blink::mojom::CommitResult result);
+  void OnSameDocumentCommitProcessed(
+      const base::UnguessableToken& navigation_token,
+      bool should_replace_current_entry,
+      blink::mojom::CommitResult result);
 
   // Creates a TracedValue object containing the details of a committed
   // navigation, so it can be logged with the tracing system.
@@ -2498,7 +2510,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // subframes have completed running unload handlers. If so, this function
   // destroys this frame. This will happen as soon as...
   // 1) The children in other processes have been deleted.
-  // 2) The ack (FrameHostMsg_Unload_ACK or mojom::FrameHost::Detach) has been
+  // 2) The ack (mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame or
+  // mojom::FrameHost::Detach) has been
   //    received. It means this frame in the renderer process is gone.
   void PendingDeletionCheckCompleted();
 
@@ -2615,6 +2628,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                      const ukm::SourceId document_ukm_source_id,
                                      ukm::UkmRecorder* ukm_recorder);
 
+  // Has the RenderFrame been created in the renderer process and not yet been
+  // deleted, exited or crashed. See RenderFrameState.
+  bool is_render_frame_created() {
+    return render_frame_state_ == RenderFrameState::kCreated;
+  }
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -2707,17 +2726,25 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const int routing_id_;
 
   // Boolean indicating whether this RenderFrameHost is being actively used or
-  // is waiting for FrameHostMsg_Unload_ACK and thus pending deletion.
+  // is waiting for mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame and
+  // thus pending deletion.
   bool is_waiting_for_unload_ack_ = false;
 
-  // Tracks whether the RenderFrame for this RenderFrameHost has been created in
-  // the renderer process.
-  bool render_frame_created_ = false;
-
-  // Tracks whether the RenderFrame has ever been created for this
-  // RenderFrameHost or not. This starts out as false, becomes true after the
-  // first call to RenderFrameCreated(), and stays true thereafter.
-  bool was_render_frame_ever_created_ = false;
+  // Tracks the creation state of the RenderFrame in renderer process for this
+  // RenderFrameHost.
+  enum class RenderFrameState {
+    // A RenderFrame has never been created for this RenderFrameHost. The next
+    // state will be kCreated or kDeleted.
+    kNeverCreated = 0,
+    // A RenderFrame has been created in the renderer and is still in that
+    // state. The next state will be kDeleted.
+    kCreated,
+    // A RenderFrame has either been cleanly deleted or its renderer process has
+    // exited or crashed. The next state may be kCreated or the RenderFrameHost
+    // may be destroyed.
+    kDeleted,
+  };
+  RenderFrameState render_frame_state_ = RenderFrameState::kNeverCreated;
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
@@ -2869,9 +2896,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::map<NavigationRequest*, std::unique_ptr<NavigationRequest>>
       navigation_requests_;
 
-  // Holds a same-document NavigationRequest while waiting for the navigation it
-  // is tracking to commit.
-  std::unique_ptr<NavigationRequest> same_document_navigation_request_;
+  // Holds same-document NavigationRequests while waiting for the navigations
+  // to commit.
+  // TODO(https://crbug.com/1133115): Use the NavigationRequest as key once
+  // NavigationRequests are bound to same-document DidCommit callbacks,
+  // similar to |navigation_requests_| above.
+  base::flat_map<base::UnguessableToken, std::unique_ptr<NavigationRequest>>
+      same_document_navigation_requests_;
 
   // The associated WebUIImpl and its type. They will be set if the current
   // document is from WebUI source. Otherwise they will be null and
@@ -3140,6 +3171,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Used to hear about CreateNewPopupWidget calls in tests.
   CreateNewPopupWidgetCallbackForTesting create_new_popup_widget_callback_;
+
+  // Used to hear about UnloadACK calls in tests.
+  UnloadACKCallbackForTesting unload_ack_callback_;
 
   // Mask of the active features tracked by the scheduler used by this frame.
   // This is used only for metrics.

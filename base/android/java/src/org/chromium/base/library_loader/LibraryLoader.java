@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.system.Os;
 
@@ -40,6 +41,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
 
 import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides functionality to load and register the native libraries.
@@ -101,7 +103,7 @@ public class LibraryLoader {
     // Avoids locking: should be initialized very early.
     private boolean mConfigurationSet;
 
-    // The type of process the shared library is loaded in.
+    // The type of process the shared library is loaded in. Gets passed to native after loading.
     // Avoids locking: should be initialized very early.
     private @LibraryProcessType int mLibraryProcessType;
 
@@ -109,8 +111,17 @@ public class LibraryLoader {
     // except the volatile |mLoadState|.
     private final Object mNonMainDexLock = new Object();
 
+    // Mediates all communication between Linker instances in different processes.
+    private final MultiProcessMediator mMessageHandler = new MultiProcessMediator();
+
     // Guards all the fields below.
     private final Object mLock = new Object();
+
+    // When a Chromium linker is used, this field represents the concrete class serving as a Linker.
+    // Always accessed via getLinker() because the choice of the class can be influenced by
+    // public setLinkerImplementation() below.
+    @GuardedBy("mLock")
+    private Linker mLinker;
 
     @GuardedBy("mLock")
     private NativeLibraryPreloader mLibraryPreloader;
@@ -128,10 +139,117 @@ public class LibraryLoader {
     @GuardedBy("mLock")
     private boolean mCommandLineSwitched;
 
-    // The number of milliseconds it took to load all the native libraries, which
-    // will be reported via UMA. Set once when the libraries are done loading.
+    // The number of milliseconds it took to load all the native libraries, which will be reported
+    // via UMA. Set once when the libraries are done loading.
     @GuardedBy("mLock")
     private long mLibraryLoadTimeMs;
+
+    /**
+     * Inner class encapsulating points of communication between instances of LibraryLoader in
+     * different processes.
+     *
+     * Usage:
+     *
+     * - For a {@link LibraryLoader} requiring the knowledge of the load address before
+     *   initialization, {@link #takeLoadAddressFromBundle(Bundle)} should be called first. It is
+     *   done very early after establishing a Binder connection.
+     *
+     * - To initialize the object, one of {@link #ensureInitializedInMainProcess()} and
+     *   {@link #initInChildProcess()} must be called. Subsequent calls to initialization are
+     *   ignored.
+     *
+     * - Later  {@link #putLoadAddressToBundle(Bundle)} and
+     *   {@link #takeLoadAddressFromBundle(Bundle)} should be called for passing the RELRO
+     *   information between library loaders.
+     *
+     * Internally the {@LibraryLoader} may ignore these messages because it can fall back to not
+     * sharing RELRO.
+     */
+    @ThreadSafe
+    public class MultiProcessMediator {
+        @GuardedBy("mLock")
+        private long mLoadAddress;
+
+        // Used only for asserts, and only ever switched from false to true.
+        private volatile boolean mInitDone;
+
+        /**
+         * Extracts the load address as provided by another process.
+         * @param bundle The Bundle to extract from.
+         */
+        public void takeLoadAddressFromBundle(Bundle bundle) {
+            // Currently clients call this method strictly before any other method can get executed
+            // on a different thread. Hence, synchronization is not required, but verification of
+            // correctness is still non-trivial, and over-synchronization is cheap compared to
+            // library loading.
+            synchronized (mLock) {
+                mLoadAddress = Linker.extractLoadAddressFromBundle(bundle);
+            }
+        }
+
+        /**
+         * Initializes the Browser process side of communication, the one that coordinates creation
+         * of other processes. Can be called more than once, subsequent calls are ignored.
+         */
+        public void ensureInitializedInMainProcess() {
+            if (mInitDone) return;
+            if (useChromiumLinker()) {
+                getLinker().initAsRelroProducer();
+            }
+            mInitDone = true;
+        }
+
+        /**
+         * Serializes the load address for communication, if any was determined during
+         * initialization. Must be called after the library has been loaded in this process.
+         * @param bundle Bundle to put the address to.
+         */
+        public void putLoadAddressToBundle(Bundle bundle) {
+            assert mInitDone;
+            if (useChromiumLinker()) {
+                getLinker().putLoadAddressToBundle(bundle);
+            }
+        }
+
+        /**
+         * Initializes in processes other than "Main".
+         */
+        public void initInChildProcess() {
+            if (useChromiumLinker()) {
+                synchronized (mLock) {
+                    getLinker().initAsRelroConsumer(mLoadAddress);
+                }
+            }
+            mInitDone = true;
+        }
+
+        /**
+         * Optionally extracts RELRO and saves it for replacing the RELRO section in this process.
+         * Can be invoked before initialization.
+         * @param bundle Where to deserialize from.
+         */
+        public void takeSharedRelrosFromBundle(Bundle bundle) {
+            if (useChromiumLinker() && !isLoadedByZygote()) {
+                getLinker().takeSharedRelrosFromBundle(bundle);
+            }
+        }
+
+        /**
+         * Optionally puts the RELRO section information so that it can be memory-mapped in another
+         * process reading the bundle.
+         * @param bundle Where to serialize.
+         */
+        public void putSharedRelrosToBundle(Bundle bundle) {
+            assert mInitDone;
+            if (useChromiumLinker()) {
+                getLinker().putSharedRelrosToBundle(bundle);
+            }
+        }
+    }
+
+    public final MultiProcessMediator getMediator() {
+        return mMessageHandler;
+    }
 
     /**
      * Call this method to determine if the chromium project must load the library
@@ -189,8 +307,9 @@ public class LibraryLoader {
      * Must be called before loading the library. Since this function is called extremely early on
      * in startup, locking is not required.
      *
-     * @param useChromiumLinker Whether to use the chromium linker.
-     * @param useModernLinker Whether to use ModernLinker.
+     * @param useChromiumLinker Whether to use a chromium linker.
+     * @param useModernLinker Given that one of the Chromium linkers is used, whether to use
+     *                        ModernLinker instea of the LegacyLinker.
      */
     public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
         assert !mInitialized;
@@ -234,12 +353,70 @@ public class LibraryLoader {
         return result;
     }
 
-    public boolean useChromiumLinker() {
+    private boolean useChromiumLinker() {
         return mUseChromiumLinker && !forceSystemLinker();
     }
 
-    boolean useModernLinker() {
-        return mUseModernLinker;
+    /**
+     * Returns either a LegacyLinker or a ModernLinker.
+     *
+     * ModernLinker requires OS features from Android M and later: a system linker that handles
+     * packed relocations and load from APK, and |android_dlopen_ext()| for shared RELRO support. It
+     * cannot run on Android releases earlier than M.
+     *
+     * LegacyLinker runs on all Android releases but it is slower and more complex than
+     * ModernLinker. The LegacyLinker is used on M as it avoids writing the relocation to disk.
+     *
+     * On N, O and P Monochrome is selected by Play Store. With Monochrome this code is not used,
+     * instead Chrome asks the WebView to provide the library (and the shared RELRO). If the WebView
+     * fails to provide the library, the system linker is used as a fallback.
+     *
+     * LegacyLinker can run on all Android releases, but is unused on P+ as it may cause issues.
+     * LegacyLinker is preferred on M- because it does not write the shared RELRO to disk at
+     * almost every cold startup.
+     *
+     * Finally, ModernLinker is used on Android Q+ with Trichrome.
+     *
+     * More: docs/android_native_libraries.md
+     *
+     * @return the Linker implementation instance.
+     */
+    private Linker getLinker(ApplicationInfo info) {
+        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
+        // circumstances:
+        // * installing APK manually
+        // * after OTA from M to N
+        // * side-installing Chrome (possibly from another release channel)
+        // * Play Store bugs leading to incorrect APK flavor being installed
+        // * installing other Chromium-based browsers
+        //
+        // For Chrome builds regularly shipped to users on N+, the system linker (or the Android
+        // Framework) provides the necessary functionality to load without crazylinker. The
+        // LegacyLinker is risky to auto-enable on newer Android releases, as it may interfere with
+        // regular library loading. See http://crbug.com/980304 as example.
+        //
+        // This is only called if LibraryLoader.useChromiumLinker() returns true, meaning this is
+        // either Chrome{,Modern} or Trichrome.
+        synchronized (mLock) {
+            if (mLinker == null) {
+                // With incremental install, it's important to fall back to the "normal"
+                // library loading path in order for the libraries to be found.
+                String appClass = info.className;
+                boolean isIncrementalInstall =
+                        appClass != null && appClass.contains("incrementalinstall");
+                if (mUseModernLinker && !isIncrementalInstall) {
+                    mLinker = new ModernLinker();
+                } else {
+                    mLinker = new LegacyLinker();
+                }
+                Log.i(TAG, "Using linker: %s", mLinker.getClass().getName());
+            }
+            return mLinker;
+        }
+    }
+
+    private Linker getLinker() {
+        return getLinker(ContextUtils.getApplicationContext().getApplicationInfo());
     }
 
     @CheckDiscard("Can't use @RemovableInRelease because Release build with DCHECK_IS_ON needs it")
@@ -329,7 +506,7 @@ public class LibraryLoader {
     }
 
     /**
-     * Checks if library is fully loaded and initialized.
+     * Checks whether the native library is fully loaded and initialized.
      */
     public boolean isInitialized() {
         return mInitialized && mLoadState == LoadState.LOADED;
@@ -372,9 +549,9 @@ public class LibraryLoader {
     }
 
     /**
-     * Initializes the library here and now: must be called on the thread that the
+     * Initializes the native library: must be called on the thread that the
      * native will call its "main" thread. The library must have previously been
-     * loaded with loadNow.
+     * loaded with one of the loadNow*() variants.
      */
     public void initialize() {
         synchronized (mLock) {
@@ -434,7 +611,7 @@ public class LibraryLoader {
     }
 
     private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
-        Linker linker = Linker.getInstance(appInfo);
+        Linker linker = getLinker(appInfo);
 
         if (isInZipFile()) {
             String sourceDir = appInfo.sourceDir;

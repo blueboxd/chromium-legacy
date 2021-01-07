@@ -25,19 +25,19 @@ class LegacyLinker extends Linker {
 
     @Override
     void setApkFilePath(String path) {
-        synchronized (sLock) {
+        synchronized (mLock) {
             ensureInitializedLocked();
             nativeAddZipArchivePath(path);
         }
     }
 
     @Override
-    @GuardedBy("sLock")
+    @GuardedBy("mLock")
     void loadLibraryImplLocked(String library, boolean isFixedAddressPermitted) {
         ensureInitializedLocked();
         assert mState == State.INITIALIZED; // Only one successful call.
 
-        boolean provideRelro = mInBrowserProcess;
+        boolean produceRelro = mRelroProducer;
         long loadAddress = isFixedAddressPermitted ? mBaseLoadAddress : 0;
 
         String libFilePath = System.mapLibraryName(library);
@@ -50,7 +50,7 @@ class LegacyLinker extends Linker {
         }
         libInfo.mLibFilePath = libFilePath;
 
-        if (provideRelro) {
+        if (produceRelro) {
             if (!nativeCreateSharedRelro(sharedRelRoName, mBaseLoadAddress, libInfo)) {
                 Log.w(TAG, "Could not create shared RELRO for %s at %x", libFilePath,
                         mBaseLoadAddress);
@@ -67,6 +67,7 @@ class LegacyLinker extends Linker {
             useSharedRelrosLocked(mLibInfo);
             mState = State.DONE_PROVIDE_RELRO;
         } else {
+            // Consume RELRO.
             waitForSharedRelrosLocked();
             assert libFilePath.equals(mLibInfo.mLibFilePath);
             useSharedRelrosLocked(mLibInfo);
@@ -82,7 +83,6 @@ class LegacyLinker extends Linker {
      *
      * @param info Object containing the relro file descriptor.
      */
-    @GuardedBy("sLock")
     private static void useSharedRelrosLocked(LibInfo info) {
         String libFilePath = info.mLibFilePath;
         if (!nativeUseSharedRelro(libFilePath, info)) {

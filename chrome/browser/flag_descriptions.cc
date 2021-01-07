@@ -1434,10 +1434,9 @@ const char kNewProfilePickerName[] = "New profile picker";
 const char kNewProfilePickerDescription[] =
     "Enables new profile picker implementation.";
 
-const char kProfilesUIRevampName[] = "Revamp of profiles UI";
-const char kProfilesUIRevampDescription[] =
-    "Enables several profile-related features including a new signin flow, "
-    "profile promo bubbles and a color picker in settings";
+const char kSignInProfileCreationName[] = "Profile creation flow with sign-in";
+const char kSignInProfileCreationDescription[] =
+    "Enables a new sign-in flow in profile creation";
 
 const char kDestroyProfileOnBrowserCloseName[] =
     "Destroy Profile on browser close";
@@ -2047,6 +2046,11 @@ const char kSecurePaymentConfirmationDebugDescription[] =
     "This flag removes the restriction that PaymentCredential in WebAuthn and "
     "secure payment confirmation in PaymentRequest API must use user verifying "
     "platform authenticators.";
+
+const char kSendTabToSelfWhenSignedInName[] = "Send tab to self when signed-in";
+const char kSendTabToSelfWhenSignedInDescription[] =
+    "Makes the tab sharing feature also available for users who have \"only\" "
+    "signed-in to their Google Account (as opposed to having enabled Sync).";
 
 const char kSidePanelName[] = "Side panel";
 const char kSidePanelDescription[] = "Host some content in a side panel.";
@@ -3047,6 +3051,15 @@ const char kQueryTilesLocalOrderingDescription[] =
 const char kQueryTilesInstantFetchName[] = "Query tile instant fetch";
 const char kQueryTilesInstantFetchDescription[] =
     "Immediately schedule background task to fetch query tiles";
+const char kQueryTilesMoreTrendingName[] =
+    "Query Tiles - more trending queries";
+const char kQueryTilesMoreTrendingDescription[] =
+    "Request more trending queries from the server";
+const char kQueryTilesSwapTrendingName[] =
+    "Query Tiles - Swap trending queries";
+const char kQueryTilesSwapTrendingDescription[] =
+    "Swap trending queries if user didn't click on them after several "
+    "impressions";
 
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =

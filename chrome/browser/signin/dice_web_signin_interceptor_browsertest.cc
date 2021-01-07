@@ -39,18 +39,33 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
-#include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "content/public/test/browser_test.h"
-#include "google_apis/gaia/fake_gaia.h"
-#include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
+
+// Fake response for OAuth multilogin.
+const char kMultiloginSuccessResponse[] =
+    R"()]}'
+       {
+         "status": "OK",
+         "cookies":[
+           {
+             "name":"SID",
+             "value":"SID_value",
+             "domain":".google.fr",
+             "path":"/",
+             "isSecure":true,
+             "isHttpOnly":false,
+             "priority":"HIGH",
+             "maxAge":63070000
+           }
+         ]
+       }
+      )";
 
 class FakeDiceWebSigninInterceptorDelegate;
 
@@ -186,13 +201,8 @@ void CheckHistograms(const base::HistogramTester& histogram_tester,
 
 class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
  public:
-  DiceWebSigninInterceptorBrowserTest()
-      : embedded_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  DiceWebSigninInterceptorBrowserTest() {
     feature_list_.InitAndEnableFeature(kDiceWebSigninInterceptionFeature);
-
-    net::test_server::RegisterDefaultHandlers(&embedded_test_server_);
-    embedded_test_server_.RegisterRequestHandler(base::BindRepeating(
-        &FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -221,57 +231,12 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
     return interceptor_delegate;
   }
 
-  // Configures future profiles to use FakeGaia (otherwise they use
-  // IdentityTestEnvironment instead). Must be called before the profile is
-  // created.
-  void SetupFakeGaiaResponsesOnNewProfile(const std::string& email) {
-    set_test_url_loader_factory_on_new_profile_ = false;
-    FakeGaia::AccessTokenInfo access_token_info;
-    access_token_info.token = "test_access_token";
-    access_token_info.any_scope = true;
-    access_token_info.audience =
-        GaiaUrls::GetInstance()->oauth2_chrome_client_id();
-    access_token_info.email = email;
-    fake_gaia_.IssueOAuthToken(
-        base::StringPrintf("test_refresh_token_for_%s", email.c_str()),
-        access_token_info);
-    fake_gaia_.SetFakeMergeSessionParams(email, "sid_cookie", "lsid_cooke");
-  }
-
-  net::EmbeddedTestServer* test_server() { return &embedded_test_server_; }
-
-  void WaitForTokensLoaded(signin::IdentityManager* identity_manager) {
-    if (identity_manager->AreRefreshTokensLoaded())
-      return;
-
-    base::RunLoop run_loop;
-    signin::TestIdentityManagerObserver load_credentials_observer(
-        identity_manager);
-    load_credentials_observer.SetOnRefreshTokensLoadedCallback(
-        run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
  private:
   // InProcessBrowserTest:
-  void SetUp() override {
-    ASSERT_TRUE(embedded_test_server_.InitializeAndListen());
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
-    embedded_test_server_.StartAcceptingConnections();
+    ASSERT_TRUE(embedded_test_server()->Start());
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    const GURL& base_url = embedded_test_server_.base_url();
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl, base_url.spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl, base_url.spec());
-    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
-                                    base_url.spec());
-    fake_gaia_.Initialize();
   }
 
   void TearDownOnMainThread() override {
@@ -290,13 +255,11 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    if (set_test_url_loader_factory_on_new_profile_) {
-      IdentityTestEnvironmentProfileAdaptor::
-          SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
-      ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
-          context, base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
-                                       &test_url_loader_factory_));
-    }
+    IdentityTestEnvironmentProfileAdaptor::
+        SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
+    ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
+        context, base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                     &test_url_loader_factory_));
     DiceWebSigninInterceptorFactory::GetInstance()->SetTestingFactory(
         context,
         base::BindRepeating(&DiceWebSigninInterceptorBrowserTest::
@@ -322,9 +285,6 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
   base::CallbackListSubscription create_services_subscription_;
   std::map<content::BrowserContext*, FakeDiceWebSigninInterceptorDelegate*>
       interceptor_delegates_;
-  net::EmbeddedTestServer embedded_test_server_;
-  FakeGaia fake_gaia_;
-  bool set_test_url_loader_factory_on_new_profile_ = true;
 };
 
 // Tests the complete interception flow including profile and browser creation.
@@ -344,13 +304,25 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, InterceptionTest) {
   DCHECK(account_info.IsValid());
   identity_test_env()->UpdateAccountInfoForAccount(account_info);
 
-  // The new profile does not use the IdentityTestEnvironment, and has a real
-  // IdentityManager. It relies on FakeGaia to handle the network requests
-  // instead.
-  SetupFakeGaiaResponsesOnNewProfile(account_info.email);
+  // Instantly return from Gaia calls, to avoid timing out when injecting the
+  // account in the new profile.
+  network::TestURLLoaderFactory* loader_factory = test_url_loader_factory();
+  loader_factory->SetInterceptor(base::BindLambdaForTesting(
+      [loader_factory](const network::ResourceRequest& request) {
+        std::string path = request.url.path();
+        if (path == "/ListAccounts" || path == "/GetCheckConnectionInfo") {
+          loader_factory->AddResponse(request.url.spec(), std::string());
+          return;
+        }
+        if (path == "/oauth/multilogin") {
+          loader_factory->AddResponse(request.url.spec(),
+                                      kMultiloginSuccessResponse);
+          return;
+        }
+      }));
 
   // Add a tab.
-  GURL intercepted_url = test_server()->GetURL("/defaultresponse");
+  GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
   content::WebContents* web_contents = AddTab(intercepted_url);
   int original_tab_count = browser()->tab_strip_model()->count();
 
@@ -364,9 +336,11 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, InterceptionTest) {
   EXPECT_TRUE(source_interceptor_delegate->intercept_bubble_shown());
   signin::IdentityManager* new_identity_manager =
       IdentityManagerFactory::GetForProfile(new_profile);
-  WaitForTokensLoaded(new_identity_manager);
   EXPECT_TRUE(new_identity_manager->HasAccountWithRefreshToken(
       account_info.account_id));
+
+  IdentityTestEnvironmentProfileAdaptor adaptor(new_profile);
+  adaptor.identity_test_env()->SetAutomaticIssueOfAccessTokens(true);
 
   // Check the profile name.
   ProfileAttributesEntry* entry = nullptr;
@@ -426,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAndLoad) {
   ASSERT_EQ(entry->GetGAIAId(), account_info.gaia);
 
   // Add a tab.
-  GURL intercepted_url = test_server()->GetURL("/defaultresponse");
+  GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
   content::WebContents* web_contents = AddTab(intercepted_url);
   int original_tab_count = browser()->tab_strip_model()->count();
 
@@ -506,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAlreadyOpen) {
       account_info.account_id);
 
   // Add a tab.
-  GURL intercepted_url = test_server()->GetURL("/defaultresponse");
+  GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
   content::WebContents* web_contents = AddTab(intercepted_url);
   int original_tab_count = browser()->tab_strip_model()->count();
   int other_original_tab_count = other_browser->tab_strip_model()->count();
@@ -558,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, CloseSourceTab) {
   identity_test_env()->UpdateAccountInfoForAccount(account_info);
 
   // Add a tab.
-  GURL intercepted_url = test_server()->GetURL("/defaultresponse");
+  GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
   content::WebContents* contents = AddTab(intercepted_url);
   int original_tab_count = browser()->tab_strip_model()->count();
 

@@ -3543,6 +3543,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQueryTilesInstantFetchDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(
          query_tiles::switches::kQueryTilesInstantBackgroundTask)},
+    {"query-tiles-more-trending",
+     flag_descriptions::kQueryTilesMoreTrendingName,
+     flag_descriptions::kQueryTilesMoreTrendingDescription, kOsAndroid,
+     SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesMoreTrending)},
+    {"query-tiles-swap-trending",
+     flag_descriptions::kQueryTilesSwapTrendingName,
+     flag_descriptions::kQueryTilesSwapTrendingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         query_tiles::features::kQueryTilesRemoveTrendingTilesAfterInactivity)},
     {"video-tutorials", flag_descriptions::kVideoTutorialsName,
      flag_descriptions::kVideoTutorialsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(video_tutorials::features::kVideoTutorials)},
@@ -5042,10 +5051,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kNewProfilePicker)},
 
-    {"enable-profiles-ui-revamp", flag_descriptions::kProfilesUIRevampName,
-     flag_descriptions::kProfilesUIRevampDescription,
+    {"enable-sign-in-profile-creation",
+     flag_descriptions::kSignInProfileCreationName,
+     flag_descriptions::kSignInProfileCreationDescription,
      kOsMac | kOsWin | kOsLinux,
-     FEATURE_VALUE_TYPE(features::kProfilesUIRevamp)},
+     FEATURE_VALUE_TYPE(features::kSignInProfileCreation)},
 #endif
 
     {"destroy-profile-on-browser-close",
@@ -6880,7 +6890,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChangePasswordAffiliationInfoName,
      flag_descriptions::kChangePasswordAffiliationInfoDescription, kOsAll,
      FEATURE_VALUE_TYPE(
-         password_manager::features::kUseOfHashAffiliationFetcher)},
+         password_manager::features::kChangePasswordAffiliationInfo)},
 
     {"use-of-hash-affiliation-fetcher",
      flag_descriptions::kUseOfHashAffiliationFetcherName,
@@ -6942,6 +6952,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kActionableContentSettingsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(browser_ui::kActionableContentSettings)},
 #endif
+
+    {"send-tab-to-self-when-signed-in",
+     flag_descriptions::kSendTabToSelfWhenSignedInName,
+     flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

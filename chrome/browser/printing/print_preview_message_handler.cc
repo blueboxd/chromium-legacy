@@ -99,22 +99,6 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI(
   return (id && *id == preview_ui_id) ? preview_ui : nullptr;
 }
 
-void PrintPreviewMessageHandler::OnRequestPrintPreview(
-    content::RenderFrameHost* render_frame_host,
-    const mojom::RequestPrintPreviewParams& params) {
-  PrintViewManager* print_view_manager =
-      PrintViewManager::FromWebContents(web_contents());
-  if (print_view_manager->RejectPrintPreviewRequestIfRestricted(
-          render_frame_host)) {
-    return;
-  }
-  if (params.webnode_only) {
-    print_view_manager->PrintPreviewForWebNode(render_frame_host);
-  }
-  PrintPreviewDialogController::PrintPreview(web_contents());
-  PrintPreviewUI::SetInitialParams(GetPrintPreviewDialog(), params);
-}
-
 void PrintPreviewMessageHandler::OnDidStartPreview(
     const mojom::DidStartPreviewParams& params,
     const mojom::PreviewIds& ids) {
@@ -201,7 +185,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
   if (ShouldUseCompositor(print_preview_ui)) {
     // Don't bother compositing if this request has been cancelled already.
-    if (PrintPreviewUI::ShouldCancelRequest(ids))
+    if (print_preview_ui->ShouldCancelRequest(ids.request_id))
       return;
 
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
@@ -254,7 +238,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 
   if (composite_document_using_individual_pages) {
     // Don't bother compositing if this request has been cancelled already.
-    if (PrintPreviewUI::ShouldCancelRequest(ids))
+    if (print_preview_ui->ShouldCancelRequest(ids.request_id))
       return;
 
     auto callback = base::BindOnce(
@@ -301,7 +285,7 @@ void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
     return;
 
   // Don't bother notifying the UI if this request has been cancelled already.
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
     return;
 
   print_preview_ui->OnDidPreviewPage(page_number, std::move(data_bytes),
@@ -316,7 +300,7 @@ void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
     return;
 
   // Don't bother notifying the UI if this request has been cancelled already.
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
     return;
 
   print_preview_ui->OnPreviewDataIsAvailable(std::move(data_bytes),
@@ -331,19 +315,19 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
     return;
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
+    return;
+
   if (status != mojom::PrintCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
-    if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
+    print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  if (!print_preview_ui)
-    return;
 
   int pages_per_sheet = print_preview_ui->pages_per_sheet();
   if (pages_per_sheet == 1) {
@@ -415,18 +399,18 @@ void PrintPreviewMessageHandler::OnCompositeToPdfDone(
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
-    return;
-
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (status != mojom::PrintCompositor::Status::kSuccess) {
-    DLOG(ERROR) << "Completion of document to pdf failed with error " << status;
-    if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
-    return;
-  }
   if (!print_preview_ui)
     return;
+
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
+    return;
+
+  if (status != mojom::PrintCompositor::Status::kSuccess) {
+    DLOG(ERROR) << "Completion of document to pdf failed with error " << status;
+    print_preview_ui->OnPrintPreviewFailed(ids.request_id);
+    return;
+  }
 
   int pages_per_sheet = print_preview_ui->pages_per_sheet();
   if (pages_per_sheet == 1) {
@@ -459,14 +443,15 @@ void PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone(
     mojom::PrintCompositor::Status status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
     return;
 
-  if (status != mojom::PrintCompositor::Status::kSuccess) {
-    PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-    if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
-  }
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
+    return;
+
+  if (status != mojom::PrintCompositor::Status::kSuccess)
+    print_preview_ui->OnPrintPreviewFailed(ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone(
@@ -496,8 +481,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintPreviewMessageHandler, message,
                                    render_frame_host)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
-                        OnRequestPrintPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrepareDocumentForPreview,
                         OnDidPrepareForDocumentToPdf)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)

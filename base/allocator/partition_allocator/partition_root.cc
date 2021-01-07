@@ -4,6 +4,7 @@
 
 #include "base/allocator/partition_allocator/partition_root.h"
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
@@ -27,7 +28,7 @@ typename PartitionRoot<thread_safe>::PCScanMode PartitionOptionsToPCScanMode(
   // PCScan is currently only supported on 64-bit systems.
   // Mark partitions non-scannable on 32-bit systems unconditionally, so that
   // address space for quarantine bitmaps doesn't get reserved.
-#if defined(PA_HAS_64_BITS_POINTERS)
+#if defined(PA_HAS_64_BITS_POINTERS) && !ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
   switch (opt) {
     case PartitionOptions::PCScan::kAlwaysDisabled:
       return Root::PCScanMode::kNonScannable;
@@ -636,27 +637,6 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
-  // PCScan quarantines freed slots. Trigger the scan first to let it call
-  // FreeNoHooksImmediate on slots that pass the quarantine.
-  //
-  // In turn, FreeNoHooksImmediate may add slots to thread cache. Purge it next
-  // so that the slots are actually freed. (This is done synchronously only for
-  // the current thread.)
-  //
-  // Lastly decommit empty slot spans and lastly try to discard unused pages at
-  // the end of the remaining active slots.
-
-  // TODO(chromium:1129751): Change to LIKELY once PCScan is enabled by default.
-  if (UNLIKELY(IsScanEnabled())) {
-    if (flags & PartitionPurgeForceAllFreed)
-      PCScan::Instance().PerformScan(PCScan::InvocationMode::kBlocking);
-    else
-      PCScan::Instance().PerformScanIfNeeded(PCScan::InvocationMode::kBlocking);
-  }
-
-  if (with_thread_cache)
-    internal::ThreadCacheRegistry::Instance().PurgeAll();
-
   {
     ScopedGuard guard{lock_};
     // Avoid purging if there is PCScan task currently scheduled. Since pcscan

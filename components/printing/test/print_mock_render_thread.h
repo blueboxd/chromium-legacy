@@ -34,10 +34,6 @@ class PrintMockRenderThread : public content::MockRenderThread {
   // Returns the pseudo-printer instance.
   MockPrinter* printer();
 
-  // Call with |response| set to true if the user wants to print.
-  // False if the user decides to cancel.
-  void set_print_dialog_user_response(bool response);
-
   // Cancel print preview when print preview has |page| remaining pages.
   void set_print_preview_cancel_page_number(uint32_t page);
 
@@ -46,6 +42,9 @@ class PrintMockRenderThread : public content::MockRenderThread {
 
   // Get a vector of print preview pages.
   const std::vector<std::pair<uint32_t, uint32_t>>& print_preview_pages() const;
+
+  // Determines whether to cancel a print preview request.
+  bool ShouldCancelRequest() const;
 #endif
 
   MockPrinter* GetPrinter() { return printer_.get(); }
@@ -55,22 +54,15 @@ class PrintMockRenderThread : public content::MockRenderThread {
   bool OnMessageReceived(const IPC::Message& msg) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
-  // PrintRenderFrameHelper expects final print settings from the user.
-  void OnScriptedPrint(const printing::mojom::ScriptedPrintParams& params,
-                       IPC::Message* reply_msg);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnDidStartPreview(const printing::mojom::DidStartPreviewParams& params,
                          const printing::mojom::PreviewIds& ids);
   void OnDidPreviewPage(const printing::mojom::DidPreviewPageParams& params,
                         const printing::mojom::PreviewIds& ids);
-  void OnCheckForCancel(const printing::mojom::PreviewIds& ids, bool* cancel);
 #endif
 
   // A mock printer device used for printing tests.
   std::unique_ptr<MockPrinter> printer_;
-
-  // True to simulate user clicking print. False to cancel.
-  bool print_dialog_user_response_ = true;
 
   // Simulates cancelling print preview if |print_preview_pages_remaining_|
   // equals this.

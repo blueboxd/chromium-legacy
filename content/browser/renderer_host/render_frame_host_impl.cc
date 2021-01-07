@@ -1210,8 +1210,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   site_instance_->RemoveObserver(this);
   GetProcess()->RemoveObserver(this);
 
-  const bool was_created = render_frame_created_;
-  render_frame_created_ = false;
+  const bool was_created = is_render_frame_created();
+  render_frame_state_ = RenderFrameState::kDeleted;
   if (was_created)
     delegate_->RenderFrameDeleted(this);
 
@@ -1233,10 +1233,11 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //    associated RenderView will clean up the resources associated with the
   //    main RenderFrame.
   // 2. The RenderFrame can be unloaded. In this case, the browser sends a
-  //    UnfreezableFrameMsg_Unload for the RenderFrame to replace itself with a
-  //    RenderFrameProxy and release its associated resources.
-  //    |lifecycle_state_| is advanced to LifeCycleState::kRunningUnloadHandlers
-  //    to track that this IPC is in flight.
+  //    mojom::FrameNavigationControl::UnloadFrame message for the RenderFrame
+  //    to replace itself with a RenderFrameProxy and release its associated
+  //    resources. |lifecycle_state_| is advanced to
+  //    LifeCycleState::kRunningUnloadHandlers to track that this IPC is in
+  //    flight.
   // 3. The RenderFrame can be detached, as part of removing a subtree (due to
   //    navigation, unload, or DOM mutation). In this case, the browser sends
   //    a UnfreezableFrameMsg_Delete for the RenderFrame to detach itself and
@@ -1932,7 +1933,7 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
 
 bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
   // Only process messages if the RenderFrame is alive.
-  if (!render_frame_created_)
+  if (!is_render_frame_created())
     return false;
 
   // Crash reports triggered by IPC messages for this frame should be associated
@@ -1944,7 +1945,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
   IPC_END_MESSAGE_MAP()
 
@@ -2442,7 +2442,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
   bool wait_for_unload_handlers =
       has_unload_handlers() && !IsInBackForwardCache();
 
-  if (render_frame_created_) {
+  if (is_render_frame_created()) {
     Send(new UnfreezableFrameMsg_Delete(routing_id_, intent));
 
     if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
@@ -2481,10 +2481,10 @@ void RenderFrameHostImpl::RenderFrameCreated() {
   // (e.g., via a WebContentsObserver during WebContents shutdown).  This seems
   // to have caused crashes in https://crbug.com/717650.
   CHECK(!delegate_->IsBeingDestroyed());
+  DCHECK_NE(render_frame_state_, RenderFrameState::kCreated);
 
-  bool was_created = render_frame_created_;
-  DCHECK(!was_created);
-  render_frame_created_ = true;
+  const RenderFrameState old_render_frame_state = render_frame_state_;
+  render_frame_state_ = RenderFrameState::kCreated;
 
   // Clear all the user data associated with this RenderFrameHost when its
   // RenderFrame is recreated after a crash. Checking
@@ -2496,9 +2496,8 @@ void RenderFrameHostImpl::RenderFrameCreated() {
   // Clearing of user data should be called before RenderFrameCreated to ensure:
   // - a) new new state set in RenderFrameCreated doesn't get deleted.
   // - b) the old state is not leaked to a new RenderFrameHost.
-  if (was_render_frame_ever_created_)
+  if (old_render_frame_state == RenderFrameState::kDeleted)
     document_associated_data_.ClearAllUserData();
-  was_render_frame_ever_created_ = true;
 
   // Initialize the RenderWidgetHost which marks it and the RenderViewHost as
   // live before calling to the `delegate_`.
@@ -2523,8 +2522,8 @@ void RenderFrameHostImpl::RenderFrameCreated() {
 }
 
 void RenderFrameHostImpl::RenderFrameDeleted() {
-  bool was_created = render_frame_created_;
-  render_frame_created_ = false;
+  bool was_created = is_render_frame_created();
+  render_frame_state_ = RenderFrameState::kDeleted;
 
   // If the current status is different than the new status, the delegate
   // needs to be notified.
@@ -2673,7 +2672,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // child, but by the time we get here, it's possible for the RenderFrameHost
   // to become pending deletion, or for its process to have disconnected (maybe
   // due to browser shutdown). Ignore such messages.
-  if (IsInactiveAndDisallowReactivation() || !render_frame_created_)
+  if (IsInactiveAndDisallowReactivation() || !is_render_frame_created())
     return;
 
   // |new_routing_id|, |browser_interface_broker_receiver| and
@@ -3195,14 +3194,18 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
 
   // Check if the navigation matches a stored same-document NavigationRequest.
   // In that case it is browser-initiated.
+  auto request_entry =
+      same_document_navigation_requests_.find(params->navigation_token);
   bool is_browser_initiated =
-      same_document_navigation_request_ &&
-      (same_document_navigation_request_->commit_params().navigation_token ==
-       params->navigation_token);
-  if (!DidCommitNavigationInternal(
-          is_browser_initiated ? std::move(same_document_navigation_request_)
-                               : nullptr,
-          std::move(params), std::move(same_document_params))) {
+      (request_entry != same_document_navigation_requests_.end());
+  std::unique_ptr<NavigationRequest> request =
+      is_browser_initiated ? std::move(request_entry->second) : nullptr;
+  same_document_navigation_requests_.erase(params->navigation_token);
+  if (!MaybeInterceptCommitCallback(request.get(), &params, nullptr)) {
+    return;
+  }
+  if (!DidCommitNavigationInternal(std::move(request), std::move(params),
+                                   std::move(same_document_params))) {
     return;
   }
 
@@ -3232,16 +3235,24 @@ GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
 
 bool RenderFrameHostImpl::HasPendingCommitNavigation() const {
   return HasPendingCommitForCrossDocumentNavigation() ||
-         same_document_navigation_request_;
+         !same_document_navigation_requests_.empty();
 }
 
 bool RenderFrameHostImpl::HasPendingCommitForCrossDocumentNavigation() const {
   return !navigation_requests_.empty();
 }
 
+NavigationRequest* RenderFrameHostImpl::GetSameDocumentNavigationRequest(
+    const base::UnguessableToken& token) {
+  auto request = same_document_navigation_requests_.find(token);
+  return (request == same_document_navigation_requests_.end())
+             ? nullptr
+             : request->second.get();
+}
+
 void RenderFrameHostImpl::ResetNavigationRequests() {
-  same_document_navigation_request_.reset();
   navigation_requests_.clear();
+  same_document_navigation_requests_.clear();
 }
 
 void RenderFrameHostImpl::SetNavigationRequest(
@@ -3249,7 +3260,9 @@ void RenderFrameHostImpl::SetNavigationRequest(
   DCHECK(navigation_request);
   if (NavigationTypeUtils::IsSameDocument(
           navigation_request->common_params().navigation_type)) {
-    same_document_navigation_request_ = std::move(navigation_request);
+    same_document_navigation_requests_[navigation_request->commit_params()
+                                           .navigation_token] =
+        std::move(navigation_request);
     return;
   }
   navigation_requests_[navigation_request.get()] =
@@ -3281,10 +3294,10 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   if (proxy) {
     SetLifecycleState(LifecycleState::kRunningUnloadHandlers);
     if (IsRenderFrameLive()) {
-      Send(new UnfreezableFrameMsg_Unload(
-          routing_id_, proxy->GetRoutingID(), is_loading,
+      GetNavigationControl()->Unload(
+          proxy->GetRoutingID(), is_loading,
           proxy->frame_tree_node()->current_replication_state(),
-          proxy->GetFrameToken()));
+          proxy->GetFrameToken());
       // Remember that a RenderFrameProxy was created as part of processing the
       // Unload message above.
       proxy->SetRenderFrameProxyCreated(true);
@@ -3296,7 +3309,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
 
     // The unload handlers already ran for this document during the
     // local<->local swap. Hence, there is no need to send
-    // UnfreezableFrameMsg_Unload here. It can be marked at completed.
+    // mojo::FrameNavigationControl::Unload here. It can be marked at completed.
     SetLifecycleState(LifecycleState::kReadyToBeDeleted);
   }
 
@@ -3310,6 +3323,12 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   // dead branches now. This is a performance optimization.
   PendingDeletionCheckCompletedOnSubtree();
   // |this| is potentially deleted. Do not add code after this.
+}
+
+void RenderFrameHostImpl::SwapOuterDelegateFrame(RenderFrameProxyHost* proxy) {
+  GetNavigationControl()->Unload(proxy->GetRoutingID(), /*is_loading=*/false,
+                                 frame_tree_node()->current_replication_state(),
+                                 proxy->GetFrameToken());
 }
 
 void RenderFrameHostImpl::DetachFromProxy() {
@@ -3482,6 +3501,11 @@ bool RenderFrameHostImpl::BeforeUnloadTimedOut() const {
 }
 
 void RenderFrameHostImpl::OnUnloadACK() {
+  // Give the tests a chance to override this sequence.
+  if (unload_ack_callback_ && unload_ack_callback_.Run()) {
+    return;
+  }
+
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
     // This RFH was unloaded while attaching an inner delegate. The RFH
     // will stay around but it will no longer be associated with a RenderFrame.
@@ -3926,7 +3950,7 @@ bool RenderFrameHostImpl::HasCommittingNavigationRequestForOrigin(
     }
   }
 
-  // Note: this function excludes |same_document_navigation_request_|, which
+  // Note: this function excludes |same_document_navigation_requests_|, which
   // should be ok since these cannot change the origin.
   return false;
 }
@@ -3981,7 +4005,7 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
 
   enabled_bindings_ |= bindings_flags;
 
-  if (render_frame_created_) {
+  if (is_render_frame_created()) {
     GetFrameBindingsControl()->AllowBindings(enabled_bindings_);
     if (web_ui_ && enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
       web_ui_->SetupMojoConnection();
@@ -4375,6 +4399,13 @@ void RenderFrameHostImpl::SetCreateNewPopupCallbackForTesting(
   // This DCHECK aims to avoid unexpected replacement of a callback.
   DCHECK(!create_new_popup_widget_callback_ || !callback);
   create_new_popup_widget_callback_ = callback;
+}
+
+void RenderFrameHostImpl::SetUnloadACKCallbackForTesting(
+    const UnloadACKCallbackForTesting& callback) {
+  // This DCHECK aims to avoid unexpected replacement of a callback.
+  DCHECK(!unload_ack_callback_ || !callback);
+  unload_ack_callback_ = callback;
 }
 
 void RenderFrameHostImpl::DidBlockNavigation(
@@ -5189,7 +5220,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   // Ignore window creation when sent from a frame that's not current or
   // created.
   bool can_create_window =
-      IsCurrent() && render_frame_created_ &&
+      IsCurrent() && is_render_frame_created() &&
       GetContentClient()->browser()->CanCreateWindow(
           this, GetLastCommittedURL(), GetMainFrame()->GetLastCommittedURL(),
           last_committed_origin_, params->window_container_type,
@@ -6554,14 +6585,15 @@ void RenderFrameHostImpl::CommitNavigation(
 
   if (is_same_document) {
     DCHECK_EQ(frame_tree_node()->current_frame_host(), this);
-    DCHECK(same_document_navigation_request_);
+    const base::UnguessableToken& navigation_token =
+        commit_params->navigation_token;
+    DCHECK(GetSameDocumentNavigationRequest(navigation_token));
     bool should_replace_current_entry =
         common_params->should_replace_current_entry;
     GetNavigationControl()->CommitSameDocumentNavigation(
         std::move(common_params), std::move(commit_params),
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
-                       base::Unretained(this),
-                       same_document_navigation_request_->GetNavigationId(),
+                       base::Unretained(this), navigation_token,
                        should_replace_current_entry));
   } else {
     // Pass the controller service worker info if we have one.
@@ -7177,12 +7209,12 @@ void RenderFrameHostImpl::InsertVisualStateCallback(
 }
 
 bool RenderFrameHostImpl::IsRenderFrameCreated() {
-  return render_frame_created_;
+  return is_render_frame_created();
 }
 
 bool RenderFrameHostImpl::IsRenderFrameLive() {
   bool is_live =
-      GetProcess()->IsInitializedAndNotDead() && render_frame_created_;
+      GetProcess()->IsInitializedAndNotDead() && is_render_frame_created();
 
   // Sanity check: the RenderView should always be live if the RenderFrame is.
   DCHECK(!is_live || render_view_host_->IsRenderViewLive());
@@ -8691,7 +8723,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (navigation_request &&
       navigation_request->common_params().url != params->url &&
       is_same_document_navigation) {
-    same_document_navigation_request_ = std::move(navigation_request);
+    same_document_navigation_requests_[navigation_request->commit_params()
+                                           .navigation_token] =
+        std::move(navigation_request);
   }
 
   // Set is loading to true now if it has not been set yet. This happens for
@@ -8989,13 +9023,15 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 }
 
 void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
-    int64_t navigation_id,
+    const base::UnguessableToken& navigation_token,
     bool should_replace_current_entry,
     blink::mojom::CommitResult result) {
-  // If the NavigationRequest was deleted, another navigation commit started to
-  // be processed. Let the latest commit go through and stop doing anything.
-  if (!same_document_navigation_request_ ||
-      same_document_navigation_request_->GetNavigationId() != navigation_id) {
+  auto request = same_document_navigation_requests_.find(navigation_token);
+  if (request == same_document_navigation_requests_.end()) {
+    // OnSameDocumentCommitProcessed will be called after DidCommitNavigation on
+    // successfull same-document commits, so |request| should already be deleted
+    // by the time we got here.
+    DCHECK_EQ(result, blink::mojom::CommitResult::Ok);
     return;
   }
 
@@ -9003,11 +9039,14 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
     // The navigation could not be committed as a same-document navigation.
     // Restart the navigation cross-document.
     frame_tree_node_->navigator().RestartNavigationAsCrossDocument(
-        std::move(same_document_navigation_request_));
+        std::move(request->second));
+    return;
   }
 
-  if (result == blink::mojom::CommitResult::Aborted)
-    same_document_navigation_request_.reset();
+  DCHECK_EQ(result, blink::mojom::CommitResult::Aborted);
+  // Note: if the commit was successful, the NavigationRequest is moved in
+  // DidCommitSameDocumentNavigation.
+  same_document_navigation_requests_.erase(navigation_token);
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
@@ -9382,7 +9421,7 @@ void RenderFrameHostImpl::PostMessageEvent(
     const base::string16& source_origin,
     const base::string16& target_origin,
     blink::TransferableMessage message) {
-  DCHECK(render_frame_created_);
+  DCHECK(is_render_frame_created());
 
   GetAssociatedLocalFrame()->PostMessageEvent(
       source_token, source_origin, target_origin, std::move(message));

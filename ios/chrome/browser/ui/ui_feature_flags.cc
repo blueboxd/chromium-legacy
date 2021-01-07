@@ -19,9 +19,6 @@ const base::Feature kSettingsRefresh{"SettingsRefresh",
 const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDisableProgressBarAnimation{
-    "DisableProgressBarAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kVoiceOverUnstackedTabstrip{
     "VoiceOverUnstackedTabstrip", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -69,6 +66,9 @@ const base::Feature kDefaultBrowserFullscreenPromoExperiment{
 
 const base::Feature kIOSSharedHighlightingColorChange{
     "IOSSharedHighlightingColorChange", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIOSNewOmniboxImplementation{
+    "kIOSNewOmniboxImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIOSPersistCrashRestore{"IOSPersistCrashRestore",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

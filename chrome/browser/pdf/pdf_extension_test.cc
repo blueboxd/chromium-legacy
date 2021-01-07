@@ -473,8 +473,10 @@ class PDFExtensionTestWithTestGuestViewManager
 // for https://crbug.com/536637. The original implementation checked that the
 // BrowserPlugin hosting the pdf extension was focused; in this re-write, we
 // make sure the guest view's WebContents has focus.
+//
+// Flaky: crbug.com/1126876
 IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
-                       PdfInMainFrameHasFocus) {
+                       DISABLED_PdfInMainFrameHasFocus) {
   // Load test HTML, and verify the text area has focus.
   GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -912,6 +914,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerPdfSidenav) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_pdf_sidenav_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest,
+                       ViewerPropertiesDialogTest) {
+  RunTestsInJsModule("viewer_properties_dialog_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerThumbnailBar) {

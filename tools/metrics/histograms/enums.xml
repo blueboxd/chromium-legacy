@@ -32839,6 +32839,12 @@ Called by update_feature_policy_enum.py.-->
   <int value="2" label="Failed / credentials rejected"/>
 </enum>
 
+<enum name="FulfillTrustTokenIssuanceAnswerStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="NotFound"/>
+  <int value="2" label="UnknownError"/>
+</enum>
+
 <enum name="FuseZipError">
   <int value="0" label="Success">Hardcoded in fuse-zip</int>
   <int value="11" label="Multipart ZIP">
@@ -42136,6 +42142,7 @@ from previous Chrome versions.
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
   <int value="-2104654357" label="GamesHub:enabled"/>
+  <int value="-2102286055" label="WebViewVulkanIntermediateBuffer:disabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2101337189" label="AutofillOffNoServerData:disabled"/>
   <int value="-2099486626" label="DownloadLater:enabled"/>
@@ -43573,6 +43580,7 @@ from previous Chrome versions.
   <int value="-810684526"
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-810110236" label="EditPasswordsInSettings:enabled"/>
+  <int value="-809456392" label="WebViewVulkanIntermediateBuffer:enabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
   <int value="-806549905"
       label="TabbedAppOverflowMenuThreeButtonActionbar:disabled"/>
@@ -44952,6 +44960,7 @@ from previous Chrome versions.
   <int value="538468149" label="OfflinePagesCT:enabled"/>
   <int value="538600423" label="OmniboxDocumentProvider:enabled"/>
   <int value="538685995" label="InstallableInkDrop:enabled"/>
+  <int value="542930298" label="WebAppEnableLinkCapturing:disabled"/>
   <int value="542960889" label="HeavyAdIntervention:enabled"/>
   <int value="544443920" label="QuickAnswers:disabled"/>
   <int value="546043947" label="ImplicitRootScroller:enabled"/>
@@ -45513,6 +45522,7 @@ from previous Chrome versions.
   <int value="1084365949" label="ReleaseNotesNotification:disabled"/>
   <int value="1084972292" label="WebXRAnchors:enabled"/>
   <int value="1085130793" label="LongPressBackForHistory:disabled"/>
+  <int value="1086592430" label="WebAppEnableLinkCapturing:enabled"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1088915385" label="new-password-form-parsing:enabled"/>
   <int value="1089913432" label="VirtualDesksGestures:disabled"/>
@@ -54985,6 +54995,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OmniboxUserTextCleared">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <int value="0" label="cleared by editing"/>
   <int value="1" label="cleared with escape"/>
 </enum>
@@ -64653,6 +64666,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="RequestMediaKeySystemAccessStatus">
   <int value="0" label="Requested"/>
   <int value="1" label="Supported"/>
+</enum>
+
+<enum name="RequestStopReason">
+  <int value="0" label="Fulfilled"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Empty Result"/>
+  <int value="3" label="Multiple Copy Completion"/>
+  <int value="4" label="Request Canceled"/>
 </enum>
 
 <enum name="RequestStorageResult">

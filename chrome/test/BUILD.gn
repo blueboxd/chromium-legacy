@@ -442,6 +442,8 @@ static_library("test_support") {
     sources += [
       "../browser/extensions/browsertest_util.cc",
       "../browser/extensions/browsertest_util.h",
+      "../browser/extensions/extension_apitest.cc",
+      "../browser/extensions/extension_apitest.h",
       "../browser/extensions/extension_browsertest.cc",
       "../browser/extensions/extension_browsertest.h",
       "../browser/extensions/permissions_test_util.cc",
@@ -911,7 +913,6 @@ if (!is_android) {
     data = [
       "data/",
       "//chrome/browser/page_load_metrics/integration_tests/data/",
-      "//chrome/common/extensions/docs/examples/apps/calculator/",
       "//components/test/data/arc/",
       "//components/test/data/autofill/",
       "//components/test/data/payments/",
@@ -1693,7 +1694,8 @@ if (!is_android) {
     }
 
     if (is_mac) {
-      sources += [ "../browser/metrics/power_metrics_provider_mac_unittest.cc" ]
+      sources +=
+          [ "../browser/metrics/power/power_metrics_provider_mac_unittest.cc" ]
     }
 
     if (is_chromeos_ash) {
@@ -2016,6 +2018,7 @@ if (!is_android) {
         "../browser/extensions/background_page_apitest.cc",
         "../browser/extensions/background_scripts_apitest.cc",
         "../browser/extensions/background_xhr_browsertest.cc",
+        "../browser/extensions/calculator_app_browsertest.cc",
         "../browser/extensions/chrome_app_api_browsertest.cc",
         "../browser/extensions/chrome_test_extension_loader_browsertest.cc",
         "../browser/extensions/chrome_theme_url_browsertest.cc",
@@ -2029,13 +2032,10 @@ if (!is_android) {
         "../browser/extensions/corb_and_cors_extension_browsertest.cc",
         "../browser/extensions/cross_origin_xhr_apitest.cc",
         "../browser/extensions/crx_installer_browsertest.cc",
-        "../browser/extensions/docs/examples/apps/calculator_browsertest.cc",
         "../browser/extensions/error_console/error_console_browsertest.cc",
         "../browser/extensions/events_apitest.cc",
         "../browser/extensions/execute_script_apitest.cc",
         "../browser/extensions/extension_action_runner_browsertest.cc",
-        "../browser/extensions/extension_apitest.cc",
-        "../browser/extensions/extension_apitest.h",
         "../browser/extensions/extension_bindings_apitest.cc",
         "../browser/extensions/extension_bookmarklet_browsertest.cc",
         "../browser/extensions/extension_browsertest_browsertest.cc",
@@ -3846,7 +3846,6 @@ test("unit_tests") {
     "../common/ini_parser_unittest.cc",
     "../common/net/safe_search_util_unittest.cc",
     "../common/pref_names_util_unittest.cc",
-    "../common/qr_code_generator/qr_code_generator_unittest.cc",
     "../renderer/chrome_content_renderer_client_unittest.cc",
     "../renderer/chrome_render_frame_observer_unittest.cc",
     "../renderer/instant_restricted_id_cache_unittest.cc",
@@ -4312,10 +4311,6 @@ test("unit_tests") {
       "../browser/ui/views/profiles/profile_customization_bubble_sync_controller_unittest.cc",
       "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
     ]
-  }
-
-  if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
-    sources += [ "../browser/ui/profile_picker_unittest.cc" ]
   }
 
   if (enable_offline_pages) {

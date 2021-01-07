@@ -34,6 +34,7 @@ component("full_restore") {
     "//components/account_id:account_id",
     "//components/services/app_service/public/cpp:intents",
     "//components/services/app_service/public/mojom",
+    "//components/sessions",
     "//ui/aura",
   ]
 }
@@ -43,11 +44,13 @@ source_set("unit_tests") {
 
   sources = [
     "full_restore_info_unittest.cc",
+    "full_restore_read_and_save_unittest.cc",
     "restore_data_unittest.cc",
   ]
 
   deps = [
     ":full_restore",
+    "//content/test:test_support",
     "//testing/gtest",
   ]
 }

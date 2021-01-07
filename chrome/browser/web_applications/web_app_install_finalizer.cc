@@ -4,8 +4,8 @@
 
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 
-#include <utility>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
+#include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -164,6 +165,13 @@ void WebAppInstallFinalizer::FinalizeInstall(
   if (options.chromeos_data.has_value())
     web_app->SetWebAppChromeOsData(options.chromeos_data.value());
 
+  // `WebApp::system_web_app_data` has a default value already. Only override if
+  // the caller provided a new value.
+  if (options.system_web_app_data.has_value()) {
+    web_app->client_data()->system_web_app_data =
+        options.system_web_app_data.value();
+  }
+
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(source);
   web_app->SetIsInSyncInstall(false);
@@ -209,9 +217,10 @@ void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
   DCHECK(!GetWebAppRegistrar().GetAppById(app_id));
 
   icon_manager_->DeleteData(
-      app_id, base::BindOnce(&WebAppInstallFinalizer::OnIconsDataDeleted,
-                             weak_ptr_factory_.GetWeakPtr(), app_id,
-                             std::move(callback)));
+      app_id,
+      base::BindOnce(
+          &WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled,
+          weak_ptr_factory_.GetWeakPtr(), app_id, std::move(callback)));
 }
 
 void WebAppInstallFinalizer::UninstallExternalWebApp(
@@ -330,9 +339,10 @@ void WebAppInstallFinalizer::OnUninstallOsHooks(
   update->DeleteApp(app_id);
 
   icon_manager_->DeleteData(
-      app_id, base::BindOnce(&WebAppInstallFinalizer::OnIconsDataDeleted,
-                             weak_ptr_factory_.GetWeakPtr(), app_id,
-                             std::move(callback)));
+      app_id,
+      base::BindOnce(
+          &WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled,
+          weak_ptr_factory_.GetWeakPtr(), app_id, std::move(callback)));
 }
 
 void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
@@ -427,10 +437,11 @@ void WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten(
       std::move(update), std::move(commit_callback));
 }
 
-void WebAppInstallFinalizer::OnIconsDataDeleted(
+void WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled(
     const AppId& app_id,
     UninstallWebAppCallback callback,
     bool success) {
+  registrar().NotifyWebAppUninstalled(app_id);
   std::move(callback).Run(success);
 }
 

@@ -41,9 +41,20 @@ VideoEncodeAccelerator::Config SetUpVeaConfig(
       opts.bitrate.value_or(opts.frame_size.width() * opts.frame_size.height() *
                             kVEADefaultBitratePerPixel));
 
+  const bool is_rgb =
+      format == PIXEL_FORMAT_XBGR || format == PIXEL_FORMAT_XRGB ||
+      format == PIXEL_FORMAT_ABGR || format == PIXEL_FORMAT_ARGB;
+
+  // Override the provided format if incoming frames are RGB -- they'll be
+  // converted to I420 or NV12 depending on the VEA configuration.
+  if (is_rgb)
+    config.input_format = PIXEL_FORMAT_I420;
+
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (storage_type == VideoFrame::STORAGE_DMABUFS ||
       storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    if (is_rgb)
+      config.input_format = PIXEL_FORMAT_NV12;
     config.storage_type = VideoEncodeAccelerator::Config::StorageType::kDmabuf;
   }
 #endif
@@ -223,9 +234,13 @@ void VideoEncodeAcceleratorAdapter::InitializeInternalOnAcceleratorThread() {
   // We use the first frame to setup the VEA config so that we can ensure that
   // zero copy hardware encoding from the camera can be used.
   const auto& first_frame = pending_encodes_.front()->frame;
-  auto format = first_frame->format();
-
-  if (format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_NV12) {
+  const auto format = first_frame->format();
+  const bool is_rgb =
+      format == PIXEL_FORMAT_XBGR || format == PIXEL_FORMAT_XRGB ||
+      format == PIXEL_FORMAT_ABGR || format == PIXEL_FORMAT_ARGB;
+  const bool supported_format =
+      format == PIXEL_FORMAT_NV12 || format == PIXEL_FORMAT_I420 || is_rgb;
+  if (!supported_format) {
     auto status =
         Status(StatusCode::kEncoderFailedEncode, "Unexpected frame format.")
             .WithData("frame", first_frame->AsHumanReadableString());
@@ -259,7 +274,7 @@ void VideoEncodeAcceleratorAdapter::InitializeInternalOnAcceleratorThread() {
   }
 
   state_ = State::kInitializing;
-  format_ = format;
+  format_ = vea_config.input_format;
 }
 
 void VideoEncodeAcceleratorAdapter::Encode(scoped_refptr<VideoFrame> frame,
@@ -409,7 +424,7 @@ void VideoEncodeAcceleratorAdapter::FlushOnAcceleratorThread(StatusCB done_cb) {
 
   // If flush is not supported FlushCompleted() will be called by
   // BitstreamBufferReady() when |active_encodes_| is empty.
-  if (flush_support_ && state_ == State::kFlushing) {
+  if (state_ == State::kFlushing && flush_support_.value()) {
     accelerator_->Flush(
         base::BindOnce(&VideoEncodeAcceleratorAdapter::FlushCompleted,
                        base::Unretained(this)));
@@ -438,7 +453,6 @@ void VideoEncodeAcceleratorAdapter::RequireBitstreamBuffers(
   accelerator_->UseOutputBitstreamBuffer(
       BitstreamBuffer(buffer_id, region->Duplicate(), region->GetSize()));
   InitCompleted(Status());
-  flush_support_ = accelerator_->IsFlushSupported();
 }
 
 void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
@@ -516,7 +530,7 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     }
   }
   output_cb_.Run(std::move(result), std::move(desc));
-  if (active_encodes_.empty() && !flush_support_) {
+  if (active_encodes_.empty() && !flush_support_.value()) {
     // Manually call FlushCompleted(), since |accelerator_| won't do it for us.
     FlushCompleted(true);
   }
@@ -571,6 +585,7 @@ void VideoEncodeAcceleratorAdapter::InitCompleted(Status status) {
   }
 
   state_ = State::kReadyToEncode;
+  flush_support_ = accelerator_->IsFlushSupported();
 
   // Send off the encodes that came in while we were waiting for initialization.
   for (auto& encode : pending_encodes_) {
@@ -583,7 +598,7 @@ void VideoEncodeAcceleratorAdapter::InitCompleted(Status status) {
   // all the pending encodes have been sent.
   if (pending_flush_) {
     state_ = State::kFlushing;
-    if (flush_support_) {
+    if (flush_support_.value()) {
       accelerator_->Flush(
           base::BindOnce(&VideoEncodeAcceleratorAdapter::FlushCompleted,
                          base::Unretained(this)));
@@ -610,8 +625,8 @@ T VideoEncodeAcceleratorAdapter::WrapCallback(T cb) {
   return BindToLoop(callback_task_runner_.get(), std::move(cb));
 }
 
-// Copy a frame into a shared mem buffer and resize it as the same time.
-// Input frames can I420 or NV12, they'll be converted to I420 if needed.
+// Copy a frame into a shared mem buffer and resize it as the same time. Input
+// frames can I420, NV12, or RGB -- they'll be converted to I420 if needed.
 StatusOr<scoped_refptr<VideoFrame>>
 VideoEncodeAcceleratorAdapter::PrepareCpuFrame(
     const gfx::Size& size,
@@ -646,8 +661,8 @@ VideoEncodeAcceleratorAdapter::PrepareCpuFrame(
   return shared_frame;
 }
 
-// Copy a frame into a GPU buffer and resize it as the same time.
-// Input frames can I420 or NV12, they'll be converted to NV12 if needed.
+// Copy a frame into a GPU buffer and resize it as the same time. Input frames
+// can I420, NV12, or RGB -- they'll be converted to NV12 if needed.
 StatusOr<scoped_refptr<VideoFrame>>
 VideoEncodeAcceleratorAdapter::PrepareGpuFrame(
     const gfx::Size& size,

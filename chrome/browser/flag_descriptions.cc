@@ -682,6 +682,14 @@ const char kDesktopPWAsFlashAppNameInsteadOfOriginDescription[] =
     "Replaces the origin flash with an app name flash when launching a web app "
     "window.";
 
+const char kDesktopPWAsLinkCapturingName[] =
+    "Desktop PWA declarative link capturing";
+const char kDesktopPWAsLinkCapturingDescription[] =
+    "Enable web app manifests to declare link capturing behavior. Prototype "
+    "implementation of: "
+    "https://github.com/WICG/sw-launch/blob/master/"
+    "declarative_link_capturing.md";
+
 const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 const char kDesktopPWAsTabStripDescription[] =
     "Experimental UI for exploring what PWA windows would look like with a tab "
@@ -1724,11 +1732,6 @@ const char kOsSettingsDeepLinkingName[] = "CrOS Settings Deep Linking";
 const char kOsSettingsDeepLinkingDescription[] =
     "Enables a unique URL for each path in CrOS settings. "
     "This allows deep linking to individual settings, i.e. in settings search.";
-
-const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
-const char kOverlayScrollbarsDescription[] =
-    "Enable the experimental overlay scrollbars implementation. You must also "
-    "enable threaded compositing to have the scrollbars animate.";
 
 const char kOverlayStrategiesName[] = "Select HW overlay strategies";
 const char kOverlayStrategiesDescription[] =
@@ -4792,12 +4795,12 @@ const char kUserDataSnapshotDescription[] =
     "update and restoring them after a version rollback.";
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
 const char kWebShareName[] = "Web Share";
 const char kWebShareDescription[] =
     "Enables the Web Share (navigator.share) APIs on experimentally supported "
     "platforms.";
-#endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.

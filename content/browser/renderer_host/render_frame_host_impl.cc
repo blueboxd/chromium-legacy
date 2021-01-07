@@ -49,6 +49,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
+#include "content/browser/coop_coep_cross_origin_isolated_info.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/protocol/audits.h"
@@ -886,6 +887,8 @@ class PepperPluginInstanceHost : public mojom::PepperPluginInstanceHost {
     frame_host_->delegate()->OnPepperStopsPlayback(frame_host_, instance_id_);
   }
 
+  void SetVolume(double volume) { remote_->SetVolume(volume); }
+
  private:
   int32_t const instance_id_;
   RenderFrameHostImpl* const frame_host_;
@@ -1594,6 +1597,20 @@ bool RenderFrameHostImpl::IsCrossProcessSubframe() {
   if (!parent_)
     return false;
   return GetSiteInstance() != parent_->GetSiteInstance();
+}
+
+RenderFrameHost::CrossOriginIsolationStatus
+RenderFrameHostImpl::GetCrossOriginIsolationStatus() {
+  ProcessLock process_lock = GetSiteInstance()->GetProcessLock();
+  if (process_lock.is_invalid() ||
+      !process_lock.coop_coep_cross_origin_isolated_info().is_isolated()) {
+    // Cross-origin isolated frames must be hosted in cross-origin isolated
+    // processes.
+    return RenderFrameHost::CrossOriginIsolationStatus::kNotIsolated;
+  }
+  // TODO(crbug.com/1159832): Check the document policy once it's available to
+  // find out if this frame is actually isolated.
+  return RenderFrameHost::CrossOriginIsolationStatus::kMaybeIsolated;
 }
 
 const GURL& RenderFrameHostImpl::GetLastCommittedURL() {
@@ -8093,7 +8110,7 @@ void RenderFrameHostImpl::GetFontAccessManager(
 }
 
 void RenderFrameHostImpl::GetNativeFileSystemManager(
-    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
+    mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* storage_partition =
       static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
@@ -10220,6 +10237,13 @@ void RenderFrameHostImpl::PepperInstanceClosed(int32_t instance_id) {
   delegate()->OnPepperInstanceDeleted(this, instance_id);
   pepper_instance_map_.erase(instance_id);
 }
+
+void RenderFrameHostImpl::PepperSetVolume(int32_t instance_id, double volume) {
+  auto plugin_instance_host = pepper_instance_map_.find(instance_id);
+  DCHECK(plugin_instance_host != pepper_instance_map_.end());
+  plugin_instance_host->second->SetVolume(volume);
+}
+
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 void RenderFrameHostImpl::OnCookiesAccessed(

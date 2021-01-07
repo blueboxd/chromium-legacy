@@ -1511,6 +1511,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "enable-desktop-pwas-link-capturing",
+    "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "enable-desktop-pwas-run-on-os-login",
     "owners": [ "mjackson@microsoft.com", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 90
@@ -2323,7 +2328,7 @@
   {
     "name": "enable-touch-drag-drop",
     "owners": [ "nzolghadr", "input-dev" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 93
   },
   {
     "name": "enable-touchscreen-calibration",
@@ -3782,11 +3787,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "overlay-scrollbars",
-    "owners": [ "chaopeng", "bokan", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "overlay-strategies",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & debugging on ChromeOS, which has no way to
@@ -4978,8 +4978,8 @@
   },
   {
     "name": "web-share",
-    "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com" ],
-    "expiry_milestone": 89
+    "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com", "hatalat@microsoft.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "web-view-native-context-menu",

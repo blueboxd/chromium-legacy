@@ -107,7 +107,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
-#include "third_party/blink/public/mojom/file_system_access/native_file_system_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/font_access/font_access.mojom.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
@@ -320,6 +320,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const base::Optional<gfx::Size>& GetFrameSize() override;
   size_t GetFrameDepth() override;
   bool IsCrossProcessSubframe() override;
+  CrossOriginIsolationStatus GetCrossOriginIsolationStatus() override;
   const GURL& GetLastCommittedURL() override;
   const url::Origin& GetLastCommittedOrigin() override;
   const net::NetworkIsolationKey& GetNetworkIsolationKey() override;
@@ -1351,7 +1352,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver);
 
   void GetNativeFileSystemManager(
-      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver);
 
 #if !defined(OS_ANDROID)
   void GetHidService(mojo::PendingReceiver<blink::mojom::HidService> receiver);
@@ -1882,6 +1883,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void PepperInstanceClosed(int32_t instance_id);
+  void PepperSetVolume(int32_t instance_id, double volume);
 #endif
 
  protected:

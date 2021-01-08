@@ -44,10 +44,6 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   void ResizeBubble(const int& width, const int& height);
   void CloseBubble();
 
-  // views::BubbleDialogDelegateView:
-  void OnWidgetBoundsChanged(views::Widget* widget,
-                             const gfx::Rect& new_bounds) override;
-
  private:
   class SharesheetParentWidgetObserver;
 
@@ -77,6 +73,7 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   void ShowWidgetWithAnimateFadeIn();
   void CloseWidgetWithAnimateFadeOut(views::Widget::ClosedReason closed_reason);
   void CloseWidgetWithReason(views::Widget::ClosedReason closed_reason);
+  int GetBubbleHeight();
   void RecordFormFactorMetric();
 
   // Owns this class.

@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/hang_watcher.h"
+#include "build/build_config.h"
 
 // -----------------------------------------------------------------------------
 // Usage documentation
@@ -149,13 +150,14 @@ class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class CategorizedWorkerPool;
 class DesktopCaptureDevice;
+class EmergencyTraceFinalisationCoordinator;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
 class NetworkServiceInstancePrivate;
 class PepperPrintSettingsManagerImpl;
+class RTCVideoDecoder;
 class RenderProcessHostImpl;
 class RenderWidgetHostViewMac;
-class RTCVideoDecoder;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
 class ServiceWorkerContextClient;
@@ -228,6 +230,9 @@ class ScopedIPCSupport;
 }
 namespace printing {
 class LocalPrinterHandlerDefault;
+#if defined(OS_MAC)
+class PrintBackendServiceImpl;
+#endif
 class PrintJobWorker;
 class PrinterQuery;
 }
@@ -399,6 +404,9 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
   friend class printing::LocalPrinterHandlerDefault;
+#if defined(OS_MAC)
+  friend class printing::PrintBackendServiceImpl;
+#endif
   friend class printing::PrintJobWorker;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class web::WebSubThread;
@@ -523,6 +531,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class cc::TileTaskManagerImpl;
   friend class content::CategorizedWorkerPool;
   friend class content::DesktopCaptureDevice;
+  friend class content::EmergencyTraceFinalisationCoordinator;
   friend class content::InProcessUtilityThread;
   friend class content::RTCVideoDecoder;
   friend class content::SandboxHostLinux;

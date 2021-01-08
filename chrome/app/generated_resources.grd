@@ -1161,6 +1161,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_ASSIGN_TO_DESKS_MENU" desc="The text label of the Assign to Desks submenu">
           Assign to desk
         </message>
+        <message name="IDS_ASSIGN_TO_ALL_DESKS" desc="The text label of the Assign to All Desks menu item">
+          All desks
+        </message>
       </if>
 
       <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
@@ -5985,7 +5988,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Reopen a tab if you accidentally closed it
       </message>
       <message name="IDS_DESKTOP_PWA_INSTALL_PROMO" desc="Text shown on promotional UI appearing next to the PWA install icon">
-        To get back here quickly, install <ph name="APP_NAME">$1<ex>Google Maps</ex></ph>
+        To get back here quickly, install <ph name="APP_NAME">$1<ex>Google Maps</ex></ph> by clicking the install button
       </message>
       <message name="IDS_REOPEN_TAB_PROMO_SCREENREADER" desc="Text announced encouraging users to reopen a tab with the given shortcut">
         <ph name="SHORTCUT">$1<ex>CTRL+SHIFT+T</ex></ph> can reopen accidentally closed tabs

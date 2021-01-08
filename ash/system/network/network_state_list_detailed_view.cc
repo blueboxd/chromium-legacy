@@ -113,7 +113,7 @@ class NetworkStateListDetailedView::InfoBubble
     SetButtons(ui::DIALOG_BUTTON_NONE);
     set_margins(gfx::Insets(kBubbleMargin));
     SetArrow(views::BubbleBorder::NONE);
-    set_shadow(views::BubbleBorder::NO_ASSETS);
+    set_shadow(views::BubbleBorder::NO_SHADOW);
     set_anchor_view_insets(gfx::Insets(0, 0, kBubbleMargin, 0));
     SetNotifyEnterExitOnChild(true);
     SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -323,10 +323,17 @@ void NetworkStateListDetailedView::ShowSettings() {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
+
+  SystemTrayClient* system_tray_client =
+      Shell::Get()->system_tray_model()->client();
+
+  if (system_tray_client) {
+    system_tray_client->ShowNetworkSettings(
+        model_->default_network() ? model_->default_network()->guid
+                                  : std::string());
+  }
+
   CloseBubble();  // Deletes |this|.
-  Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
-      model_->default_network() ? model_->default_network()->guid
-                                : std::string());
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {

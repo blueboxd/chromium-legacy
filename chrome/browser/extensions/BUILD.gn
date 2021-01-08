@@ -877,6 +877,7 @@ static_library("extensions") {
     "//extensions:extensions_resources",
     "//extensions/browser",
     "//extensions/browser:core_api_provider",
+    "//extensions/browser/api:api_implementations",
     "//extensions/buildflags",
     "//extensions/common",
     "//extensions/common/api",
@@ -1228,14 +1229,6 @@ static_library("extensions") {
       "plugin_manager.cc",
       "plugin_manager.h",
     ]
-  }
-
-  if (enable_print_preview && !is_chromeos_ash) {
-    sources += [
-      "api/cloud_print_private/cloud_print_private_api.cc",
-      "api/cloud_print_private/cloud_print_private_api.h",
-    ]
-    deps += [ "//chrome/common:service_process_mojom" ]
   }
 
   if (enable_service_discovery) {

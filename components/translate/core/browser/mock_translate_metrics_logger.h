@@ -30,12 +30,13 @@ class MockTranslateMetricsLogger : public TranslateMetricsLogger {
   MOCK_METHOD1(OnPageLoadStart, void(bool));
   MOCK_METHOD1(OnForegroundChange, void(bool));
   MOCK_METHOD1(RecordMetrics, void(bool));
+  MOCK_METHOD1(SetUkmSourceId, void(ukm::SourceId));
   MOCK_METHOD2(LogRankerMetrics, void(RankerDecision, uint32_t));
   MOCK_METHOD1(LogTriggerDecision, void(TriggerDecision));
   MOCK_METHOD0(LogAutofillAssistantDeferredTriggerDecision, void());
   MOCK_METHOD0(LogInitialState, void());
   MOCK_METHOD0(LogTranslationStarted, void());
-  MOCK_METHOD1(LogTranslationFinished, void(TranslateErrors::Type));
+  MOCK_METHOD2(LogTranslationFinished, void(bool, TranslateErrors::Type));
   MOCK_METHOD0(LogReversion, void());
   MOCK_METHOD1(LogUIChange, void(bool));
   MOCK_METHOD1(LogOmniboxIconChange, void(bool));

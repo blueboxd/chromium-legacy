@@ -1058,7 +1058,6 @@ tab_groups::TabGroupId TabStripModel::AddToNewGroup(
   const tab_groups::TabGroupId new_group =
       tab_groups::TabGroupId::GenerateNew();
   AddToNewGroupImpl(indices, new_group);
-  OpenTabGroupEditor(new_group);
   return new_group;
 }
 
@@ -1387,10 +1386,12 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandToggleGrouped: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
       bool group = WillContextMenuGroup(context_index);
-      if (group)
-        AddToNewGroup(indices);
-      else
+      if (group) {
+        tab_groups::TabGroupId new_group = AddToNewGroup(indices);
+        OpenTabGroupEditor(new_group);
+      } else {
         RemoveFromGroup(indices);
+      }
 
       break;
     }
@@ -1424,7 +1425,9 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandAddToNewGroup: {
       base::RecordAction(UserMetricsAction("TabContextMenu_AddToNewGroup"));
 
-      AddToNewGroup(GetIndicesForCommand(context_index));
+      tab_groups::TabGroupId new_group =
+          AddToNewGroup(GetIndicesForCommand(context_index));
+      OpenTabGroupEditor(new_group);
       break;
     }
 
@@ -2015,25 +2018,34 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
 
   group_model_->AddTabGroup(new_group, base::nullopt);
 
-  // Find a destination for the first tab that's not inside another group. We
-  // will stack the rest of the tabs up to its right.
+  // Find a destination for the first tab that's not pinned or inside another
+  // group. We will stack the rest of the tabs up to its right.
   int destination_index = -1;
   for (int i = indices[0]; i < count(); i++) {
     const int destination_candidate = i + 1;
-    const bool end_of_strip = !ContainsIndex(destination_candidate);
-    if (end_of_strip || !GetTabGroupForTab(destination_candidate).has_value() ||
-        GetTabGroupForTab(destination_candidate) !=
-            GetTabGroupForTab(indices[0])) {
+
+    // Grouping at the end of the tabstrip is always valid.
+    if (!ContainsIndex(destination_candidate)) {
+      destination_index = destination_candidate;
+      break;
+    }
+
+    // Grouping in the middle of pinned tabs is never valid.
+    if (IsTabPinned(destination_candidate))
+      continue;
+
+    // Otherwise, grouping is valid if the destination is not in the middle of a
+    // different group.
+    base::Optional<tab_groups::TabGroupId> destination_group =
+        GetTabGroupForTab(destination_candidate);
+    if (!destination_group.has_value() ||
+        destination_group != GetTabGroupForTab(indices[0])) {
       destination_index = destination_candidate;
       break;
     }
   }
 
-  // Unpin tabs when grouping -- the states should be mutually exclusive.
-  std::vector<int> new_indices = indices;
-  new_indices = SetTabsPinned(new_indices, false);
-
-  MoveTabsAndSetGroupImpl(new_indices, destination_index, new_group);
+  MoveTabsAndSetGroupImpl(indices, destination_index, new_group);
 }
 
 void TabStripModel::AddToExistingGroupImpl(
@@ -2050,9 +2062,6 @@ void TabStripModel::AddToExistingGroupImpl(
   if (!group_model_->ContainsTabGroup(group))
     return;
 
-  // Unpin tabs when grouping -- the states should be mutually exclusive.
-  std::vector<int> new_indices = SetTabsPinned(indices, false);
-
   const TabGroup* group_object = group_model_->GetTabGroup(group);
   int first_tab_in_group = group_object->GetFirstTab().value();
   int last_tab_in_group = group_object->GetLastTab().value();
@@ -2062,13 +2071,13 @@ void TabStripModel::AddToExistingGroupImpl(
   // that are inside the group.
   std::vector<int> tabs_left_of_group;
   std::vector<int> tabs_right_of_group;
-  for (int new_index : new_indices) {
-    if (new_index >= first_tab_in_group && new_index <= last_tab_in_group) {
-      GroupTab(new_index, group);
-    } else if (new_index < first_tab_in_group) {
-      tabs_left_of_group.push_back(new_index);
+  for (int index : indices) {
+    if (index >= first_tab_in_group && index <= last_tab_in_group) {
+      GroupTab(index, group);
+    } else if (index < first_tab_in_group) {
+      tabs_left_of_group.push_back(index);
     } else {
-      tabs_right_of_group.push_back(new_index);
+      tabs_right_of_group.push_back(index);
     }
   }
 
@@ -2108,12 +2117,22 @@ void TabStripModel::MoveAndSetGroup(
     int index,
     int new_index,
     base::Optional<tab_groups::TabGroupId> new_group) {
-  DCHECK(!IsTabPinned(index));
+  if (new_group.has_value()) {
+    // Unpin tabs when grouping -- the states should be mutually exclusive.
+    // Here we manually unpin the tab to avoid moving the tab twice, which can
+    // potentially cause race conditions.
+    if (IsTabPinned(index)) {
+      contents_data_[index]->set_pinned(false);
+      for (auto& observer : observers_) {
+        observer.TabPinnedStateChanged(
+            this, contents_data_[index]->web_contents(), index);
+      }
+    }
 
-  if (new_group.has_value())
     GroupTab(index, new_group.value());
-  else
+  } else {
     UngroupTab(index);
+  }
 
   if (index != new_index)
     MoveWebContentsAtImpl(index, new_index, false);

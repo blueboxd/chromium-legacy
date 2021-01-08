@@ -455,7 +455,7 @@ static_library("ui") {
     "//components/omnibox/browser",
     "//components/omnibox/browser:vector_icons",
     "//components/onc",
-    "//components/optimization_guide",
+    "//components/optimization_guide/core",
     "//components/paint_preview/buildflags",
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
@@ -554,7 +554,6 @@ static_library("ui") {
     "//skia",
     "//storage/browser",
     "//storage/common",
-    "//third_party/adobe/flash:flapper_version_h",
     "//third_party/blink/public:buildflags",
     "//third_party/blink/public:resources",
     "//third_party/blink/public/common",
@@ -1537,6 +1536,7 @@ static_library("ui") {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker",
       "//chrome/browser/safe_browsing:advanced_protection",
+      "//chrome/browser/search/drive:mojo_bindings",
       "//chrome/browser/search/task_module:mojo_bindings",
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/color:mixers",
@@ -3094,6 +3094,13 @@ static_library("ui") {
       "cocoa/rosetta_required_infobar_delegate.mm",
       "cocoa/scoped_menu_bar_lock.h",
       "cocoa/scoped_menu_bar_lock.mm",
+      "cocoa/screentime/fake_webpage_controller.h",
+      "cocoa/screentime/fake_webpage_controller.mm",
+      "cocoa/screentime/tab_helper.h",
+      "cocoa/screentime/tab_helper.mm",
+      "cocoa/screentime/webpage_controller.h",
+      "cocoa/screentime/webpage_controller_impl.h",
+      "cocoa/screentime/webpage_controller_impl.mm",
       "cocoa/share_menu_controller.h",
       "cocoa/share_menu_controller.mm",
       "cocoa/simple_message_box_cocoa.h",
@@ -3161,6 +3168,7 @@ static_library("ui") {
       "Carbon.framework",
       "Quartz.framework",
     ]
+    weak_frameworks = [ "ScreenTime.framework" ]
 
     if (enable_chromium_updater) {
       deps += [

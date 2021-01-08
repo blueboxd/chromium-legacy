@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -21,29 +22,31 @@
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
-#include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_download_manager.h"
-#include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
-#include "chrome/browser/optimization_guide/prediction/prediction_model_file.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/optimization_guide/optimization_guide_constants.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
-#include "components/optimization_guide/optimization_guide_enums.h"
-#include "components/optimization_guide/optimization_guide_features.h"
-#include "components/optimization_guide/optimization_guide_prefs.h"
-#include "components/optimization_guide/optimization_guide_store.h"
-#include "components/optimization_guide/optimization_guide_switches.h"
-#include "components/optimization_guide/optimization_guide_test_util.h"
-#include "components/optimization_guide/optimization_guide_util.h"
-#include "components/optimization_guide/prediction_model.h"
+#include "chrome/browser/profiles/profile_key.h"
+#include "chrome/common/chrome_paths.h"
+#include "components/optimization_guide/content/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_constants.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_prefs.h"
+#include "components/optimization_guide/core/optimization_guide_store.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
+#include "components/optimization_guide/core/optimization_guide_util.h"
+#include "components/optimization_guide/core/prediction_model.h"
+#include "components/optimization_guide/core/prediction_model_fetcher.h"
+#include "components/optimization_guide/core/prediction_model_file.h"
+#include "components/optimization_guide/core/store_update_data.h"
+#include "components/optimization_guide/core/top_host_provider.h"
 #include "components/optimization_guide/proto/models.pb.h"
-#include "components/optimization_guide/store_update_data.h"
-#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -229,13 +232,7 @@ PredictionManager::PredictionManager(
     Profile* profile)
     : host_model_features_cache_(
           std::max(features::MaxHostModelFeaturesCacheSize(), size_t(1))),
-      prediction_model_download_manager_(
-          features::IsModelDownloadingEnabled()
-              ? std::make_unique<PredictionModelDownloadManager>(
-                    profile,
-                    base::ThreadPool::CreateSequencedTaskRunner(
-                        {base::MayBlock(), base::TaskPriority::BEST_EFFORT}))
-              : nullptr),
+      prediction_model_download_manager_(nullptr),
       top_host_provider_(top_host_provider),
       model_and_features_store_(model_and_features_store),
       url_loader_factory_(url_loader_factory),
@@ -243,8 +240,20 @@ PredictionManager::PredictionManager(
       profile_(profile),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(model_and_features_store_);
-  if (prediction_model_download_manager_)
+
+  if (features::IsModelDownloadingEnabled()) {
+    base::FilePath models_dir;
+    base::PathService::Get(chrome::DIR_OPTIMIZATION_GUIDE_PREDICTION_MODELS,
+                           &models_dir);
+    prediction_model_download_manager_ =
+        std::make_unique<PredictionModelDownloadManager>(
+            DownloadServiceFactory::GetForKey(profile->GetProfileKey()),
+            models_dir,
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     prediction_model_download_manager_->AddObserver(this);
+  }
+
   Initialize();
 }
 
@@ -646,7 +655,8 @@ void PredictionManager::FetchModelsAndHostModelFeatures() {
   if (!prediction_model_fetcher_) {
     prediction_model_fetcher_ = std::make_unique<PredictionModelFetcher>(
         url_loader_factory_,
-        features::GetOptimizationGuideServiceGetModelsURL());
+        features::GetOptimizationGuideServiceGetModelsURL(),
+        content::GetNetworkConnectionTracker());
   }
 
   std::vector<proto::ModelInfo> models_info = std::vector<proto::ModelInfo>();
@@ -1178,8 +1188,15 @@ void PredictionManager::OverrideTargetDecisionForTesting(
           : threshold - 1.0;  // Value is less than |threshold| to get |kFalse|
 
   std::unique_ptr<proto::PredictionModel> prediction_model =
-      GetSingleLeafDecisionTreePredictionModel(threshold, weight,
-                                               leaf_value / weight);
+      std::make_unique<proto::PredictionModel>();
+  prediction_model->mutable_model()->mutable_threshold()->set_value(threshold);
+  proto::DecisionTree* decision_tree =
+      prediction_model->mutable_model()->mutable_decision_tree();
+  decision_tree->set_weight(weight);
+  proto::TreeNode* tree_node = decision_tree->add_nodes();
+  tree_node->mutable_node_id()->set_value(0);
+  tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
+      leaf_value);
 
   proto::ModelInfo* model_info = prediction_model->mutable_model_info();
 

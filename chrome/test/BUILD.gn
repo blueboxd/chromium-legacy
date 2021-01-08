@@ -810,7 +810,7 @@ if (!is_android) {
       "//components/metrics/demographics:test_support",
       "//components/nacl/common:buildflags",
       "//components/offline_items_collection/core/test_support",
-      "//components/optimization_guide:test_support",
+      "//components/optimization_guide/core:test_support",
       "//components/page_load_metrics/browser:test_support",
       "//components/page_load_metrics/common:test_support",
       "//components/policy:chrome_settings_proto_generated_compile",
@@ -3124,9 +3124,6 @@ if (!is_android) {
         "../browser/printing/pwg_raster_converter_browsertest.cc",
         "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
       ]
-      if (enable_extensions && !is_chromeos_ash) {
-        sources += [ "../browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc" ]
-      }
       if (!is_mac && !is_chromeos_ash && !is_chromeos_lacros) {
         sources += [
           # This test depends on GetCommandLineForRelaunch, which is not
@@ -3241,6 +3238,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/browser_test_util.cc",
       "../browser/lacros/browser_test_util.h",
       "../browser/lacros/clipboard_lacros_browsertest.cc",
+      "../browser/lacros/crosapi_pref_observer_lacros_browsertest.cc",
       "../browser/lacros/file_manager_lacros_browsertest.cc",
       "../browser/lacros/keystore_service_lacros_browsertest.cc",
       "../browser/lacros/media_session_lacros_browsertest.cc",
@@ -3578,11 +3576,9 @@ test("unit_tests") {
     "../browser/optimization_guide/optimization_guide_hints_manager_unittest.cc",
     "../browser/optimization_guide/optimization_guide_navigation_data_unittest.cc",
     "../browser/optimization_guide/optimization_guide_permissions_util_unittest.cc",
-    "../browser/optimization_guide/optimization_guide_session_statistic_unittest.cc",
     "../browser/optimization_guide/optimization_guide_top_host_provider_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_manager_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_model_download_manager_unittest.cc",
-    "../browser/optimization_guide/prediction/prediction_model_fetcher_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
@@ -4211,8 +4207,10 @@ test("unit_tests") {
     "//components/nacl/common:buildflags",
     "//components/offline_items_collection/core/test_support",
     "//components/offline_pages/task:test_support",
-    "//components/optimization_guide",
-    "//components/optimization_guide:test_support",
+    "//components/optimization_guide/content",
+    "//components/optimization_guide/content:test_support",
+    "//components/optimization_guide/core",
+    "//components/optimization_guide/core:test_support",
     "//components/os_crypt:test_support",
     "//components/page_info",
     "//components/page_load_metrics/browser",
@@ -4311,6 +4309,10 @@ test("unit_tests") {
       "../browser/ui/views/profiles/profile_customization_bubble_sync_controller_unittest.cc",
       "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
     ]
+  }
+
+  if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+    sources += [ "../browser/ui/profile_picker_unittest.cc" ]
   }
 
   if (enable_offline_pages) {
@@ -4569,6 +4571,7 @@ test("unit_tests") {
       "../browser/send_tab_to_self/send_tab_to_self_client_service_unittest.cc",
       "../browser/send_tab_to_self/send_tab_to_self_desktop_util_unittest.cc",
       "../browser/send_tab_to_self/send_tab_to_self_util_unittest.cc",
+      "../browser/serial/serial_blocklist_unittest.cc",
       "../browser/serial/serial_chooser_context_unittest.cc",
       "../browser/sessions/tab_restore_service_unittest.cc",
       "../browser/signin/signin_promo_unittest.cc",

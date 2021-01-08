@@ -1457,6 +1457,10 @@ const char kNotificationIndicatorDescription[] =
     "Enable notification indicators, which appear on shelf app icons and "
     "launcher apps when a notification is active.";
 
+const char kNotificationSchedulerName[] = "Notification scheduler";
+const char kNotificationSchedulerDescription[] =
+    "Enable notification scheduler feature.";
+
 const char kNotificationSchedulerDebugOptionName[] =
     "Notification scheduler debug options";
 const char kNotificationSchedulerDebugOptionDescription[] =
@@ -3074,6 +3078,11 @@ const char kReaderModeInCCTName[] = "Reader Mode in CCT";
 const char kReaderModeInCCTDescription[] =
     "Open Reader Mode in Chrome Custom Tabs.";
 
+const char kReadLaterReminderNotificationName[] =
+    "Read later reminder notification";
+const char kReadLaterReminderNotificationDescription[] =
+    "Enables read later weekly reminder notification.";
+
 const char kRecoverFromNeverSaveAndroidName[] =
     "UI to recover from never save passwords on Android";
 const char kRecoverFromNeverSaveAndroidDescription[] =
@@ -4110,10 +4119,6 @@ const char kEnableNeuralStylusPalmRejectionDescription[] =
 const char kEnableNewShortcutMappingName[] = "Enable New Shortcut Mapping";
 const char kEnableNewShortcutMappingDescription[] =
     "Enables experimental new shortcut mapping";
-
-const char kEnableOnDeviceAssistantName[] = "Enable On Device Assistant";
-const char kEnableOnDeviceAssistantDescription[] =
-    "Enable On Device Assistant.";
 
 const char kEnablePalmOnMaxTouchMajorName[] =
     "Enable Palm when Touch is Maximum";

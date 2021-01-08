@@ -4614,6 +4614,7 @@ others/histograms.xml -->
   <int value="24" label="User navigation in RUNNING state"/>
   <int value="25" label="The UI was closed unexpectedly"/>
   <int value="26" label="User navigated during onboarding"/>
+  <int value="27" label="User dismissed the onboarding dialog"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -16720,6 +16721,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="0" label="Drag and drop"/>
   <int value="1" label="Move-window-to-desk keyboard shortcut"/>
   <int value="2" label="Send to desk menu"/>
+  <int value="3" label="Assign to desk menu"/>
 </enum>
 
 <enum name="DesksSwitchSource">
@@ -24294,7 +24296,7 @@ Called by update_extension_histograms.py.-->
   <int value="48" label="DELETED_EXPERIMENTAL_RLZ_RECORDPRODUCTEVENT"/>
   <int value="49" label="BOOKMARKS_GETRECENT"/>
   <int value="50" label="APP_CURRENTWINDOWINTERNAL_SETBOUNDS"/>
-  <int value="51" label="CLOUDPRINTPRIVATE_SETUPCONNECTOR"/>
+  <int value="51" label="DELETED_CLOUDPRINTPRIVATE_SETUPCONNECTOR"/>
   <int value="52" label="SERIAL_SETCONTROLSIGNALS"/>
   <int value="53" label="DELETED_FILEMANAGERPRIVATE_SETLASTMODIFIED"/>
   <int value="54" label="IDLE_SETDETECTIONINTERVAL"/>
@@ -24357,7 +24359,7 @@ Called by update_extension_histograms.py.-->
   <int value="111" label="FONTSETTINGS_CLEARDEFAULTFIXEDFONTSIZE"/>
   <int value="112" label="MEDIAPLAYERPRIVATE_CLOSEWINDOW"/>
   <int value="113" label="WEBREQUESTINTERNAL_ADDEVENTLISTENER"/>
-  <int value="114" label="CLOUDPRINTPRIVATE_GETPRINTERS"/>
+  <int value="114" label="DELETED_CLOUDPRINTPRIVATE_GETPRINTERS"/>
   <int value="115" label="STORAGE_SET"/>
   <int value="116" label="FONTSETTINGS_GETDEFAULTFONTSIZE"/>
   <int value="117" label="EXTENSION_SETUPDATEURLDATA"/>
@@ -24444,7 +24446,7 @@ Called by update_extension_histograms.py.-->
   <int value="197" label="BROWSERACTION_ENABLE"/>
   <int value="198" label="METRICSPRIVATE_RECORDMEDIUMTIME"/>
   <int value="199" label="PAGEACTION_SETTITLE"/>
-  <int value="200" label="CLOUDPRINTPRIVATE_GETHOSTNAME"/>
+  <int value="200" label="DELETED_CLOUDPRINTPRIVATE_GETHOSTNAME"/>
   <int value="201" label="CONTENTSETTINGS_GETRESOURCEIDENTIFIERS"/>
   <int value="202" label="SOCKET_CREATE"/>
   <int value="203" label="DEVELOPERPRIVATE_RELOAD"/>
@@ -24670,7 +24672,7 @@ Called by update_extension_histograms.py.-->
   <int value="423" label="DELETED_DEVELOPERPRIVATE_ALLOWINCOGNITO"/>
   <int value="424" label="INPUT_IME_DELETESURROUNDINGTEXT"/>
   <int value="425" label="DELETED_FILEMANAGERPRIVATE_OPENNEWWINDOW"/>
-  <int value="426" label="CLOUDPRINTPRIVATE_GETCLIENTID"/>
+  <int value="426" label="DELETED_CLOUDPRINTPRIVATE_GETCLIENTID"/>
   <int value="427" label="ECHOPRIVATE_GETUSERCONSENT"/>
   <int value="428" label="SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY"/>
   <int value="429" label="SYNCFILESYSTEM_GETCONFLICTRESOLUTIONPOLICY"/>
@@ -26235,7 +26237,7 @@ Called by update_extension_permission.py.-->
   <int value="26" label="kChromeosInfoPrivate"/>
   <int value="27" label="kClipboardRead"/>
   <int value="28" label="kClipboardWrite"/>
-  <int value="29" label="kCloudPrintPrivate"/>
+  <int value="29" label="kDeleted_CloudPrintPrivate"/>
   <int value="30" label="kCommandLinePrivate"/>
   <int value="31" label="kCommandsAccessibility"/>
   <int value="32" label="kContentSettings"/>
@@ -30753,6 +30755,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3742" label="CrossOriginSubframeWithoutEmbeddingControl"/>
   <int value="3743" label="ReadableStreamWithByteSource"/>
   <int value="3744" label="ReadableStreamBYOBReader"/>
+  <int value="3745" label="EmbedElementWithoutTypeSrcChanged"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42508,7 +42511,6 @@ from previous Chrome versions.
   <int value="-1799801575" label="CookieDeprecationMessages:enabled"/>
   <int value="-1798337879" label="enable-md-downloads"/>
   <int value="-1797739460" label="brotli-encoding:disabled"/>
-  <int value="-1794276584" label="OnDeviceAssistant:enabled"/>
   <int value="-1791226955" label="BreakingNewsPush:enabled"/>
   <int value="-1790227231" label="show-autofill-signatures"/>
   <int value="-1789139269" label="SmbFs:disabled"/>
@@ -44593,6 +44595,7 @@ from previous Chrome versions.
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>
   <int value="168429629" label="ContentIndexingNTP:enabled"/>
   <int value="168627257" label="AppServiceIntentHandling:disabled"/>
+  <int value="168887810" label="ReadLaterReminderNotification:disabled"/>
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
   <int value="173339199" label="SmsReceiverCrossDevice:disabled"/>
   <int value="174759256" label="LockScreenMediaControls:enabled"/>
@@ -44864,7 +44867,6 @@ from previous Chrome versions.
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
-  <int value="433667885" label="OnDeviceAssistant:disabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
   <int value="434530296"
       label="HappinessTrackingSurveysForDesktopMigration:disabled"/>
@@ -44898,6 +44900,7 @@ from previous Chrome versions.
   <int value="468901900" label="AppStoreBillingDebug:disabled"/>
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
+  <int value="469999350" label="NotificationScheduleService:disabled"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
   <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
   <int value="471519375" label="NewOsSettingsSearch:disabled"/>
@@ -46447,6 +46450,7 @@ from previous Chrome versions.
   <int value="1940625534" label="NewOverviewUi:disabled"/>
   <int value="1941845443" label="ScrollableTabStrip:enabled"/>
   <int value="1942911276" label="enable-grouped-history"/>
+  <int value="1943083555" label="NotificationScheduleService:enabled"/>
   <int value="1944156526" label="sync-url"/>
   <int value="1947350992" label="drop-sync-credential:disabled"/>
   <int value="1948978490" label="PaintPreviewDemo:disabled"/>
@@ -46551,6 +46555,7 @@ from previous Chrome versions.
   <int value="2020898714" label="HudDisplayForPerformanceMetrics:enabled"/>
   <int value="2022153130" label="MobileIdentityConsistencyVar:disabled"/>
   <int value="2022294878" label="WifiSyncAndroid:enabled"/>
+  <int value="2022716687" label="ReadLaterReminderNotification:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
   <int value="2024298022"
       label="AutofillEnableInfoBarAccountIndicationFooterForSyncUsers:disabled"/>
@@ -66755,7 +66760,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="SYNC_UPDATE_SUCCESS"/>
   <int value="7" label="SYNC_UPDATE_CONVERTED_TO_ADD"/>
   <int value="8" label="MIGRATE_SAFE_FOR_AUTOREPLACE_PLAY_API_ENGINE"/>
-  <int value="9" label="MIGRATE_SAFE_FOR_AUTOREPLACE_RESET_UNDERSCORE_KEYWORD"/>
 </enum>
 
 <enum name="SearchWidgetUseInfo">
@@ -74319,6 +74323,19 @@ Full version information for the fingerprint enum values:
   <int value="13" label="Show UI"/>
   <int value="14" label="Automatic translation, by link"/>
   <int value="15" label="Automatic translation, by user preference"/>
+</enum>
+
+<enum name="TranslateUIInteraction">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Translate page"/>
+  <int value="2" label="Revert translation"/>
+  <int value="3" label="Always translate language"/>
+  <int value="4" label="Change source language"/>
+  <int value="5" label="Change target language"/>
+  <int value="6" label="Never translate language"/>
+  <int value="7" label="Never translate site"/>
+  <int value="8" label="Close UI explicitly"/>
+  <int value="9" label="Close UI by lost focus"/>
 </enum>
 
 <enum name="TrendingTileEvent">

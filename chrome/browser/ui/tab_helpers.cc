@@ -103,7 +103,7 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
-#include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -154,6 +154,10 @@
     defined(OS_CHROMEOS)
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
+#endif
+
+#if defined(OS_MAC)
+#include "chrome/browser/ui/cocoa/screentime/tab_helper.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -401,6 +405,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     ThumbnailTabHelper::CreateForWebContents(web_contents);
   }
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
+#endif
+
+#if defined(OS_MAC)
+  if (screentime::TabHelper::IsScreentimeEnabled())
+    screentime::TabHelper::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

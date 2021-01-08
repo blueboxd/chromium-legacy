@@ -351,6 +351,15 @@
   <message name="IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION" desc="Message, informing user that a network connection is being established during cellular setup">
     Establishing network connection ...
   </message>
+  <message name="IDS_CELLULAR_SETUP_EID_POPUP_TITLE" desc="Label shown when vewing EID and QR code popup describing device EID">
+    Your device EID
+  </message>
+  <message name="IDS_CELLULAR_SETUP_EID_POPUP_DESCRIPTION" desc="Label shown when veiwing EID and QR code popup describing what an EID number is used for">
+    A customer service rep can use the EID number to help you activate service.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_CLOSE_EID_POPUP_BUTTON_LABEL" desc="A11y and tooltip label for EID and QR code popup close button when viewing EID and QR code popup">
+    Close EID and QR code popup
+  </message>
 
   <!-- Upgrade notifications -->
   <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the device must be restarted within two or more days.">
@@ -1632,8 +1641,17 @@
   <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME" desc="A11y label for an eSIM profile that's ready to be installed, shown in a list in settings and oobe. Includes the provider name.  Clicking the profile installs the eSIM profile so that the cellular network is available for connecting.">
     Download mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>
   </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_INSTALLING" desc="A11y label for an eSIM profile that is currently installing, shown in a list in settings and oobe.">
+    Installing mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME_INSTALLING" desc="A11y label for an eSIM profile that is currently installing, shown in a list in settings and oobe. Includes the provider name.">
+    Installing mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>
+  </message>
   <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD" desc="Text for the button displayed for pending eSIM profiles that installs the profile when pressed.">
     Download
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_ADDING_PROFILE" desc="Loading text indicating that an eSIM profile is currently installing.">
+    Adding Profile...
   </message>
   <message name="IDS_WIFI_NETWORK_STATUS_SECURED" desc="a11y label used when a Wi-Fi network is secured.">
     Secured

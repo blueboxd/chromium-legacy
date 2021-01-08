@@ -980,8 +980,6 @@ static_library("browser") {
     "optimization_guide/optimization_guide_navigation_data.h",
     "optimization_guide/optimization_guide_permissions_util.cc",
     "optimization_guide/optimization_guide_permissions_util.h",
-    "optimization_guide/optimization_guide_session_statistic.cc",
-    "optimization_guide/optimization_guide_session_statistic.h",
     "optimization_guide/optimization_guide_top_host_provider.cc",
     "optimization_guide/optimization_guide_top_host_provider.h",
     "optimization_guide/optimization_guide_web_contents_observer.cc",
@@ -993,10 +991,6 @@ static_library("browser") {
     "optimization_guide/prediction/prediction_model_download_manager.cc",
     "optimization_guide/prediction/prediction_model_download_manager.h",
     "optimization_guide/prediction/prediction_model_download_observer.h",
-    "optimization_guide/prediction/prediction_model_fetcher.cc",
-    "optimization_guide/prediction/prediction_model_fetcher.h",
-    "optimization_guide/prediction/prediction_model_file.cc",
-    "optimization_guide/prediction/prediction_model_file.h",
     "page_load_metrics/observers/aborts_page_load_metrics_observer.cc",
     "page_load_metrics/observers/aborts_page_load_metrics_observer.h",
     "page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.cc",
@@ -1324,6 +1318,8 @@ static_library("browser") {
     "prefetch/no_state_prefetch/prerender_link_manager_factory.h",
     "prefetch/no_state_prefetch/prerender_manager_factory.cc",
     "prefetch/no_state_prefetch/prerender_manager_factory.h",
+    "prefetch/pref_names.cc",
+    "prefetch/pref_names.h",
     "prefetch/prefetch_proxy/prefetch_proxy_features.cc",
     "prefetch/prefetch_proxy/prefetch_proxy_features.h",
     "prefetch/prefetch_proxy/prefetch_proxy_from_string_url_loader.cc",
@@ -2003,6 +1999,7 @@ static_library("browser") {
     "//chrome/browser/resource_coordinator:tab_manager_features",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/safe_browsing:advanced_protection",
+    "//chrome/browser/search/drive:mojo_bindings",
     "//chrome/browser/search/task_module:mojo_bindings",
     "//chrome/browser/sharing:buildflags",
     "//chrome/browser/sharing/proto",
@@ -2146,7 +2143,8 @@ static_library("browser") {
     "//components/omnibox/browser",
     "//components/onc",
     "//components/open_from_clipboard",
-    "//components/optimization_guide",
+    "//components/optimization_guide/content",
+    "//components/optimization_guide/core",
     "//components/os_crypt",
     "//components/page_load_metrics/browser",
     "//components/page_load_metrics/common",
@@ -3879,6 +3877,8 @@ static_library("browser") {
       "search/chrome_colors/chrome_colors_factory.h",
       "search/chrome_colors/chrome_colors_service.cc",
       "search/chrome_colors/chrome_colors_service.h",
+      "search/drive/drive_handler.cc",
+      "search/drive/drive_handler.h",
       "search/instant_service.cc",
       "search/instant_service.h",
       "search/instant_service_factory.cc",
@@ -3936,6 +3936,8 @@ static_library("browser") {
       "send_tab_to_self/send_tab_to_self_desktop_util.h",
       "serial/chrome_serial_delegate.cc",
       "serial/chrome_serial_delegate.h",
+      "serial/serial_blocklist.cc",
+      "serial/serial_blocklist.h",
       "serial/serial_chooser_context.cc",
       "serial/serial_chooser_context.h",
       "serial/serial_chooser_context_factory.cc",
@@ -4213,7 +4215,10 @@ static_library("browser") {
       ]
     }
     if (enable_extensions) {
-      deps += [ "//extensions/browser" ]
+      deps += [
+        "//extensions/browser",
+        "//extensions/browser/api:api_implementations",
+      ]
     }
 
     if (is_posix || is_fuchsia) {
@@ -4508,7 +4513,7 @@ static_library("browser") {
       "//chrome/browser/nearby_sharing/scheduling",
       "//chrome/browser/ui/webui/nearby_share:mojom",
       "//chrome/browser/ui/webui/nearby_share/public/mojom",
-      "//chrome/browser/webshare/chromeos:storage",
+      "//chrome/browser/webshare:storage",
       "//chromeos/components/account_manager",
       "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/components/quick_answers",
@@ -4607,6 +4612,8 @@ static_library("browser") {
       "lacros/cert_db_initializer_impl.h",
       "lacros/client_cert_store_lacros.cc",
       "lacros/client_cert_store_lacros.h",
+      "lacros/crosapi_pref_observer.cc",
+      "lacros/crosapi_pref_observer.h",
       "lacros/feedback_util.cc",
       "lacros/feedback_util.h",
       "lacros/immersive_context_lacros.cc",
@@ -6061,7 +6068,6 @@ static_library("browser") {
       "//ppapi/host",
       "//ppapi/proxy:ipc",
       "//services/device/public/mojom",
-      "//third_party/adobe/flash:flapper_version_h",
     ]
     if (is_chromeos_ash) {
       deps += [ "//chromeos/cryptohome" ]

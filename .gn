@@ -122,7 +122,6 @@ no_check_targets = [
   "//extensions/browser/api/sockets_tcp:*",  # 6 errors
   "//extensions/browser/api/sockets_tcp_server:*",  # 8 errors
   "//extensions/browser/api/sockets_udp:*",  # 9 errors
-  "//extensions/browser/api/storage:*",  # 9 errors
   "//extensions/browser/api/system_cpu:*",  # 1 error
   "//extensions/browser/api/system_display:*",  # 3 errors
   "//extensions/browser/api/system_info:*",  # 8 errors
@@ -138,7 +137,6 @@ no_check_targets = [
   "//extensions/browser/api/webcam_private:*",  # 8 errors
   "//extensions/browser/api:*",  # 7 errors
   "//extensions/browser/updater:*",  # 31 errors
-  "//extensions/browser/value_store:*",  # 5 errors
   "//extensions/browser:*",  # 20 errors
   "//extensions:*",  # 75 errors
   "//headless:*",  # 167 errors

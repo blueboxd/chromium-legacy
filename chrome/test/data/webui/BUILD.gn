@@ -7,6 +7,7 @@ import("//build/config/crypto.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
@@ -192,6 +193,7 @@ if (include_js_tests) {
 
     deps = [
       ":modulize",
+      "settings:preprocess",
       "//build:branding_buildflags",
       "//chrome/browser/ui",
       "//services/network/public/cpp",
@@ -232,6 +234,7 @@ if (include_js_tests) {
       "$root_gen_dir/chrome/test/data/webui/settings/pref_util_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/prefs_test_cases.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/prefs_tests.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/route_tests.js",
       "$root_gen_dir/chrome/test/data/webui/settings/settings_slider_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/settings_textarea_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/settings_toggle_button_tests.m.js",
@@ -519,7 +522,6 @@ group("closure_compile") {
     "inline_login:closure_compile",
     "js/cr:closure_compile",
     "new_tab_page:closure_compile",
-    "print_preview:closure_compile",
     "read_later:closure_compile",
     "settings:closure_compile",
     "signin:closure_compile",
@@ -537,6 +539,9 @@ group("closure_compile") {
   }
   if (!is_android) {
     deps += [ "commander:closure_compile" ]
+  }
+  if (enable_print_preview) {
+    deps += [ "print_preview:closure_compile" ]
   }
 }
 

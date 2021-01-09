@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -27,6 +28,7 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/window_shape_updater.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
@@ -198,7 +200,13 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
   native_widget_delegate_->OnNativeWidgetCreated();
 }
 
-void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
+void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {
+  // WindowShape is updated from ShapeRects transformed from
+  // NonClientView::GetWindowMask. We can guarantee that |NonClientView| is
+  // created OnWidgetInitDone.
+  WindowShapeUpdater::CreateWindowShapeUpdater(
+      this, this->desktop_native_widget_aura());
+}
 
 void DesktopWindowTreeHostPlatform::OnActiveWindowChanged(bool active) {}
 
@@ -436,6 +444,8 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostPlatform::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
+  // TODO(crbug.com/1158733) : When supporting PlatformWindow::SetShape,
+  // Calls ui::Layer::SetAlphaShape and sets |is_shape_explicitly_set_| to true.
   platform_window()->SetShape(std::move(native_shape), GetRootTransform());
 }
 
@@ -558,7 +568,10 @@ bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
-  return platform_window()->ShouldWindowContentsBeTransparent();
+  return platform_window()->ShouldWindowContentsBeTransparent() ||
+         const_cast<DesktopWindowTreeHostPlatform*>(this)
+             ->GetWindowMaskForWindowShape(GetBoundsInPixels().size())
+             .has_value();
 }
 
 void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
@@ -736,6 +749,20 @@ base::Optional<gfx::Size>
 DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
   return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMaximumSize()))
       .size();
+}
+
+base::Optional<SkPath>
+DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShape(
+    const gfx::Size& size_in_pixels) {
+  if (GetWidget()->non_client_view()) {
+    SkPath window_mask;
+    // Some frame views define a custom (non-rectanguar) window mask.
+    // If so, use it to define the window shape. If not, fall through.
+    GetWidget()->non_client_view()->GetWindowMask(size_in_pixels, &window_mask);
+    if (!window_mask.isEmpty())
+      return window_mask;
+  }
+  return base::nullopt;
 }
 
 void DesktopWindowTreeHostPlatform::OnWorkspaceChanged() {

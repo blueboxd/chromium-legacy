@@ -887,6 +887,12 @@ class PepperPluginInstanceHost : public mojom::PepperPluginInstanceHost {
     frame_host_->delegate()->OnPepperStopsPlayback(frame_host_, instance_id_);
   }
 
+  void InstanceCrashed(const base::FilePath& plugin_path,
+                       base::ProcessId plugin_pid) override {
+    frame_host_->delegate()->OnPepperPluginCrashed(frame_host_, plugin_path,
+                                                   plugin_pid);
+  }
+
   void SetVolume(double volume) { remote_->SetVolume(volume); }
 
  private:
@@ -10301,7 +10307,7 @@ void RenderFrameHostImpl::PepperSetVolume(int32_t instance_id, double volume) {
 
 void RenderFrameHostImpl::OnCookiesAccessed(
     network::mojom::CookieAccessDetailsPtr details) {
-  EmitSameSiteCookiesDeprecationWarning(this, details);
+  EmitCookieWarningsAndMetrics(this, details);
 
   CookieAccessDetails allowed;
   CookieAccessDetails blocked;

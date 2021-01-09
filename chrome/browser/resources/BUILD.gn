@@ -68,6 +68,10 @@ group("resources") {
     ]
   }
 
+  if (enable_pdf) {
+    public_deps += [ "pdf:pdf_resources" ]
+  }
+
   if (enable_print_preview) {
     public_deps += [ "print_preview:print_preview_resources" ]
   }
@@ -78,6 +82,7 @@ if (enable_js_type_check) {
     deps = [
       "accessibility:closure_compile",
       "components:closure_compile",
+      "domain_reliability_internals:closure_compile",
       "engagement:closure_compile",
       "interventions_internals:closure_compile",
       "media:closure_compile",
@@ -177,10 +182,6 @@ if (enable_js_type_check) {
 if (!is_android) {
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"
-
-    if (enable_pdf) {
-      deps = [ "//chrome/browser/resources/pdf:web_components" ]
-    }
 
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {

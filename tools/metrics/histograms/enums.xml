@@ -1580,6 +1580,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidDefaultBrowserPromoUserActionType">
+  <obsolete>
+    Removed Dec 2020; experiment is done and the data isn't useful.
+  </obsolete>
   <int value="0" label="Change Default"/>
   <int value="1" label="No Thanks"/>
 </enum>
@@ -3875,6 +3878,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="RES_INIT_FAILED"/>
   <int value="2" label="RES_INIT_UNSET"/>
@@ -3887,6 +3893,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSConfigParseWin">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="READ_IPHELPER"/>
   <int value="2" label="READ_POLICY_SEARCHLIST"/>
@@ -3903,6 +3912,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSHostsParseWin">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="UNREADABLE_HOSTS_FILE"/>
   <int value="2" label="COMPUTER_NAME_FAILED"/>
@@ -3911,6 +3923,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSNameServersType">
+  <obsolete>
+    Removed unknown date before 2021-01.
+  </obsolete>
   <summary>Type of nameservers in the DNS config.</summary>
   <int value="0" label="NONE">No nameservers configured.</int>
   <int value="1" label="GOOGLE_PUBLIC_DNS">
@@ -3930,6 +3945,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSParseResult">
+  <obsolete>
+    Removed unknown date before 2021-01.
+  </obsolete>
   <summary>Results of DnsResponse::ParseToAddressList.</summary>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="MALFORMED_RESPONSE"/>
@@ -3942,12 +3960,18 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSPrefDefaultSource">
+  <obsolete>
+    Removed unknown date before 2021-01.
+  </obsolete>
   <int value="0" label="PLATFORM"/>
   <int value="1" label="FIELD_TRIAL"/>
   <int value="2" label="HARD_CODED_DEFAULT"/>
 </enum>
 
 <enum name="AsyncDNSPrefSource">
+  <obsolete>
+    Removed unknown date before 2021-01.
+  </obsolete>
   <int value="0" label="MANAGED_PREF"/>
   <int value="1" label="SUPERVISED_PREF"/>
   <int value="2" label="EXTENSION_PREF"/>
@@ -3959,6 +3983,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSRcode">
+  <obsolete>
+    Removed unknown date before 2021-01.
+  </obsolete>
   <summary>
     https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-6
   </summary>
@@ -3971,6 +3998,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSResolveStatus">
+  <obsolete>
+    Removed unknown date before 2021-01.
+  </obsolete>
   <int value="0" label="DNS_SUCCESS">Succeeded with async DNS.</int>
   <int value="1" label="PROC_SUCCESS">
     Succeeded with getaddrinfo after async DNS failed.
@@ -3982,6 +4012,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AsyncDNSWatchStatus">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <int value="0" label="STARTED">Started.</int>
   <int value="1" label="FAILED_TO_START_CONFIG">
     Failed to start watching config.
@@ -6912,6 +6945,28 @@ Called by update_bad_message_reasons.py.-->
   <int value="0" label="BLOCK_STATUS_NOT_BLOCKED"/>
   <int value="1" label="BLOCK_STATUS_SPECIFIC_DOMAIN_BLOCKED"/>
   <int value="2" label="BLOCK_STATUS_ALL_DOMAINS_BLOCKED"/>
+</enum>
+
+<enum name="BluetoothAdapterConnectToServiceInsecurelyResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error: Invalid arguments"/>
+  <int value="2" label="Error: Operation already in progress"/>
+  <int value="3" label="Error: Already exists"/>
+  <int value="4" label="Error: Operation is not supported"/>
+  <int value="5" label="Error: Not connected"/>
+  <int value="6" label="Error: Already connected"/>
+  <int value="7" label="Error: Operation currently not available"/>
+  <int value="8" label="Error: Does not exist"/>
+  <int value="9" label="Error: Operation not authorized"/>
+  <int value="10" label="Error: Not permitted"/>
+  <int value="11" label="Error: No such adapter"/>
+  <int value="12" label="Error: Agent not available"/>
+  <int value="13" label="Error: Resource not ready"/>
+  <int value="14" label="Error: Failed"/>
+  <int value="15" label="Error: Failed to create receiving Mojo pipe"/>
+  <int value="16" label="Error: Failed to create sending Mojo pipe"/>
+  <int value="17" label="Error: Could not connect to device"/>
+  <int value="18" label="Error: Unknown"/>
 </enum>
 
 <enum name="BluetoothAvailability">
@@ -30358,7 +30413,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3343" label="V8Window_GetOriginPrivateDirectory_Method"/>
   <int value="3344" label="RTCConstraintEnableRtpDataChannelsTrue"/>
   <int value="3345" label="RTCConstraintEnableRtpDataChannelsFalse"/>
-  <int value="3346" label="NativeFileSystemDragAndDrop"/>
+  <int value="3346" label="FileSystemAccessDragAndDrop"/>
   <int value="3347" label="RTCAdaptivePtime"/>
   <int value="3348"
       label="HTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest"/>
@@ -30764,6 +30819,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3743" label="ReadableStreamWithByteSource"/>
   <int value="3744" label="ReadableStreamBYOBReader"/>
   <int value="3745" label="EmbedElementWithoutTypeSrcChanged"/>
+  <int value="3746" label="SamePartyCookieAttribute"/>
+  <int value="3747" label="SamePartyCookieExclusionOverruledSameSite"/>
+  <int value="3748" label="SamePartyCookieInclusionOverruledSameSite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36847,6 +36905,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HistoryUrlType">
+  <obsolete>
+    Removed Jan 2021 as the only user has expired
+  </obsolete>
   <int value="0" label="Empty"/>
   <int value="1" label="Same as baseUrl"/>
   <int value="2" label="Different from baseUrl"/>
@@ -42824,6 +42885,8 @@ from previous Chrome versions.
   <int value="-1497450774" label="TreatUnsafeDownloadsAsActive:disabled"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1496106797" label="IPH_PasswordsAccountStorage:enabled"/>
+  <int value="-1495973732"
+      label="ResamplingScrollEventsExperimentalPrediction:disabled"/>
   <int value="-1492934655" label="TabSwitcherOnReturn:enabled"/>
   <int value="-1492609320"
       label="TurnOffStreamingMediaCachingOnBattery:disabled"/>
@@ -43359,6 +43422,8 @@ from previous Chrome versions.
   <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
   <int value="-1039889738" label="NativeNotifications:enabled"/>
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
+  <int value="-1037950113"
+      label="ResamplingScrollEventsExperimentalPrediction:enabled"/>
   <int value="-1037128156" label="HomeLauncherGestures:disabled"/>
   <int value="-1035346097" label="SyncErrorInfoBarAndroid:enabled"/>
   <int value="-1035140982" label="ClientSideDetectionModelOnAndroid:enabled"/>
@@ -50300,6 +50365,22 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Authentication Error"/>
 </enum>
 
+<enum name="MultiDeviceNearbyDisconnectionReason">
+  <int value="0" label="Disconnection requested by client"/>
+  <int value="1" label="Failed discovery"/>
+  <int value="2" label="Timeout during discovery"/>
+  <int value="3" label="Failed requesting connection"/>
+  <int value="4" label="Timeout during RequestConnection() call"/>
+  <int value="5" label="Failed accepting connection"/>
+  <int value="6" label="Timeout during AcceptConnection() call"/>
+  <int value="7" label="Connection rejected"/>
+  <int value="8" label="Timeout waiting for connection to be accepted"/>
+  <int value="9" label="SendMessage() failed"/>
+  <int value="10" label="Received unexpected payload type"/>
+  <int value="11" label="Connection lost"/>
+  <int value="12" label="Nearby process crash"/>
+</enum>
+
 <enum name="MultiDeviceNearbyMessageAction">
   <int value="0" label="Message Sent"/>
   <int value="1" label="Message Received"/>
@@ -50857,6 +50938,24 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="NFC"/>
   <int value="8" label="WiFi Direct"/>
   <int value="9" label="WebRTC"/>
+</enum>
+
+<enum name="NearbyConnectionsStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error"/>
+  <int value="2" label="Out-of-order API call"/>
+  <int value="3" label="Already have active strategy"/>
+  <int value="4" label="Already advertising"/>
+  <int value="5" label="Already discovering"/>
+  <int value="6" label="Endpoint IO error"/>
+  <int value="7" label="Endpoint unknown"/>
+  <int value="8" label="Connection rejected"/>
+  <int value="9" label="Already connected to endpoint"/>
+  <int value="10" label="Not connected to endpoint"/>
+  <int value="11" label="Bluetooth error"/>
+  <int value="12" label="BLE error"/>
+  <int value="13" label="Wi-Fi LAN error"/>
+  <int value="14" label="Payload unknown"/>
 </enum>
 
 <enum name="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult">
@@ -52975,6 +53074,17 @@ Called by update_net_trust_anchors.py.-->
 <enum name="NetworkDisconnectType">
   <int value="0" label="System Disconnect"/>
   <int value="1" label="User Disconnect"/>
+</enum>
+
+<enum name="NetworkEligibilityStatus">
+  <int value="0" label="Network Is Eligible"/>
+  <int value="1" label="No Metedata"/>
+  <int value="2" label="Prohibited By Policy"/>
+  <int value="3" label="Invalid Password"/>
+  <int value="4" label="Not Connectable"/>
+  <int value="5" label="Not Configured By User"/>
+  <int value="6" label="Unsupported Security Type"/>
+  <int value="7" label="No Wifi Networks Available"/>
 </enum>
 
 <enum name="NetworkErrorType">
@@ -61431,6 +61541,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
 </enum>
 
+<enum name="ProfileKeepAliveOrigin">
+  <int value="0" label="kWaitingForFirstBrowserWindow"/>
+  <int value="1" label="kBrowserWindow"/>
+  <int value="2" label="kBackgroundMode"/>
+  <int value="3" label="kOffTheRecordProfile"/>
+</enum>
+
 <enum name="ProfileMenuActionableItem">
   <int value="0" label="Manage your Google Account button"/>
   <int value="1" label="Passwords button"/>
@@ -66355,6 +66472,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Launcher"/>
 </enum>
 
+<enum name="ScanJobFailureReason">
+  <int value="0" label="Unknown scanner error"/>
+  <int value="1" label="Scanner not found"/>
+  <int value="2" label="Unsupported Scan To path"/>
+  <int value="3" label="Save to disk failed"/>
+</enum>
+
 <enum name="ScheduledNavigationType">
   <obsolete>
     Deprecated August 2018
@@ -66800,6 +66924,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="SecureChannelNearbyConnectionMedium">
   <int value="0" label="Connected via Bluetooth"/>
   <int value="1" label="Upgraded bandwidth to WebRTC"/>
+  <int value="2"
+      label="Disconnected in under 30s without WebRTC upgrade; not provided
+             enough time to complete bandwidth upgrade process"/>
 </enum>
 
 <enum name="SecureCookieAction">

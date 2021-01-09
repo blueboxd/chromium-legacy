@@ -151,30 +151,22 @@
     'android_pie_rel_reduced_capacity_gtests': {
       'android_browsertests': {},
       'blink_platform_unittests': {},
-      'chrome_java_test_pagecontroller_tests': {},
-      'chrome_java_test_webapk_launch_tests': {},
+      'chrome_public_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+          'enable_resultdb',
+        ],
+      },
       'content_browsertests': {
         'swarming': {
           'shards': 15,
         },
       },
-      'monochrome_public_bundle_fake_modules_smoke_test': {},
-      'monochrome_public_bundle_smoke_test': {},
-      'monochrome_public_smoke_test': {},
-      'weblayer_browsertests': {},
       'weblayer_instrumentation_test_apk': {},
-      'webview_cts_tests': {
-        'swarming': {
-          'shards': 2,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
-            }
-          ]
-        },
-      },
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -259,7 +251,6 @@
         },
       },
       'android_webview_unittests': {},
-      'breakpad_unittests': {},
       'gl_unittests': {},
       'ui_android_unittests': {},
     },
@@ -4215,6 +4206,77 @@
       },
     },
 
+    'paeverywhere_common_tests': {
+      # Copy from chromium_gtests minus capture_unittests, crashpad_tests,
+      # content_browsertests, events_unittests and perfetto_unittests, because
+      # they fail.
+      'absl_hardening_tests': {},
+      'angle_unittests': {
+        'args': [
+          'angle_unittests',
+        ],
+        'android_args': [
+          '-v',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'base_unittests': {},
+      'base_util_unittests': {},
+      'blink_common_unittests': {},
+      'blink_heap_unittests': {},
+      'blink_platform_unittests': {},
+      'boringssl_crypto_tests': {},
+      'boringssl_ssl_tests': {},
+      'cast_unittests': {},
+      'components_browsertests': {},
+      'components_unittests': {
+        'android_swarming': {
+          'shards': 4,
+        },
+      },
+      'content_unittests': {
+        'android_swarming': {
+          'shards': 3,
+        },
+      },
+      'crypto_unittests': {},
+      'gcm_unit_tests': {},
+      'gin_unittests': {},
+      'google_apis_unittests': {},
+      'gpu_unittests': {},
+      'gwp_asan_unittests': {},
+      'ipc_tests': {},
+      'jingle_unittests': {},
+      'latency_unittests': {},
+      'libjingle_xmpp_unittests': {},
+      'liburlpattern_unittests': {},
+      'media_blink_unittests': {},
+      'media_unittests': {},
+      'midi_unittests': {},
+      'mojo_unittests': {},
+      'net_unittests': {
+        'android_swarming': {
+          'shards': 3,
+        },
+      },
+      'services_unittests': {},
+      'shell_dialogs_unittests': {},
+      'skia_unittests': {},
+      'sql_unittests': {},
+      'storage_unittests': {},
+      'ui_base_unittests': {},
+      'ui_touch_selection_unittests': {},
+      'url_unittests': {},
+      'webkit_unit_tests': {
+        'test': 'blink_unittests',
+        'android_swarming': {
+          'shards': 4,
+        },
+      },
+      'wtf_unittests': {},
+      'zlib_unittests': {},
+    },
+
     'perfetto_gtests': {
       'base_unittests': {},
       'content_browsertests': {
@@ -5203,12 +5265,16 @@
     #
     # TODO(https://crbug.com/1058067): Remove this once SkiaRenderer goes
     # stable on Android.
-    # 'android_pie_rel_non_skia_renderer_gtests': [
-    #   'android_monochrome_smoke_tests',
-    #   'android_pagecontroller_self_tests',
-    #   'android_smoke_tests',
-    #   'android_webapk_launch_tests',
-    #   # TODO: Following tests are experimental (crbug/1010211).
+    'android_pie_rel_non_skia_renderer_gtests': [
+      # TODO(crbug.com/1111436): Deprecate this when all the test suites below
+      # it are re-enabled.
+      'android_pie_rel_reduced_capacity_gtests',
+
+      'android_monochrome_smoke_tests',
+      'android_pagecontroller_self_tests',
+      'android_smoke_tests',
+      'android_webapk_launch_tests',
+      # TODO: Following tests are experimental (crbug/1010211).
     #   'android_specific_chromium_gtests',  # Already includes gl_gtests.
     #   'chromium_gtests',
     #   'chromium_gtests_for_devices_with_graphical_output',
@@ -5218,11 +5284,11 @@
     #   'system_webview_shell_instrumentation_tests', # Not an experimental test
     #   'vr_platform_specific_chromium_gtests',
     #   'weblayer_android_gtests',
-    #   'weblayer_gtests',
-    #   # Experimental tests end here.
-    #   'webview_cts_tests_gtest',
-    #   'webview_ui_instrumentation_tests',
-    # ],
+      'weblayer_gtests',
+      # Experimental tests end here.
+      'webview_cts_tests_gtest',
+      'webview_ui_instrumentation_tests',
+    ],
 
     'android_wpt_scripts': [
       'chrome_public_wpt',
@@ -5640,9 +5706,7 @@
     'gpu_angle_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_validating_telemetry_tests',
     ],
 
     'gpu_angle_mac_amd_and_intel_gtests': [
@@ -5666,8 +5730,8 @@
 
     'gpu_angle_mac_telemetry_tests': [
       'gpu_info_collection_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
@@ -6269,25 +6333,25 @@
     'paeverywhere_android_gtests': [
       'android_specific_chromium_gtests_for_paeverywhere',
       'android_smoke_tests',
-      'chromium_gtests'
+      'paeverywhere_common_tests'
     ],
 
     'paeverywhere_linux_gtests': [
       'chromium_gtests_for_linux_and_mac_only',
       'chromium_gtests_for_linux_only',
       'chromium_gtests_for_win_and_linux_only',
-      'chromium_gtests',
+      'paeverywhere_common_tests',
     ],
 
     'paeverywhere_mac_gtests': [
       'chromium_gtests_for_linux_and_mac_only',
       'mac_specific_chromium_gtests',
-      'chromium_gtests',
+      'paeverywhere_common_tests',
     ],
 
     'paeverywhere_win_gtests': [
       'chromium_gtests_for_win_and_linux_only',
-      'chromium_gtests',
+      'paeverywhere_common_tests',
       'win_specific_chromium_gtests',
     ],
 
@@ -6356,6 +6420,19 @@
           'CROS_OCTOPUS_TOT',
           'CROS_OCTOPUS_TOT-1',
         ]
+      },
+    },
+
+    'gpu_angle_ios_gtests': {
+      'gpu_angle_end2end_gtests': {
+        'variants': [
+          'SIM_IPHONE_X_14_0',
+        ],
+      },
+      'gpu_angle_white_box_gtests': {
+        'variants': [
+          'SIM_IPHONE_X_14_0',
+        ],
       },
     },
 

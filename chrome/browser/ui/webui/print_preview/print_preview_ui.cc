@@ -48,8 +48,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/component_extension_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/pdf_resources.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -381,9 +381,7 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 
   source->AddBoolean("isEnterpriseManaged", webui::IsEnterpriseManaged());
 
-  bool cloud_print_deprecation_warnings_suppressed =
-      profile->GetPrefs()->GetBoolean(
-          prefs::kCloudPrintDeprecationWarningsSuppressed);
+  bool cloud_print_deprecation_warnings_suppressed = true;
   source->AddBoolean("cloudPrintDeprecationWarningsSuppressed",
                      cloud_print_deprecation_warnings_suppressed);
 
@@ -415,11 +413,14 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
       {"pdf/browser_api.js", IDR_PDF_BROWSER_API_JS},
       {"pdf/constants.js", IDR_PDF_CONSTANTS_JS},
       {"pdf/controller.js", IDR_PDF_CONTROLLER_JS},
-      {"pdf/elements/icons.js", IDR_PDF_ICONS_JS},
-      {"pdf/elements/shared-vars.js", IDR_PDF_SHARED_VARS_JS},
-      {"pdf/elements/viewer-error-screen.js", IDR_PDF_VIEWER_ERROR_SCREEN_JS},
-      {"pdf/elements/viewer-zoom-button.js", IDR_PDF_VIEWER_ZOOM_BUTTON_JS},
-      {"pdf/elements/viewer-zoom-toolbar.js", IDR_PDF_VIEWER_ZOOM_SELECTOR_JS},
+      {"pdf/elements/icons.js", IDR_PDF_ELEMENTS_ICONS_JS},
+      {"pdf/elements/shared-vars.js", IDR_PDF_ELEMENTS_SHARED_VARS_JS},
+      {"pdf/elements/viewer-error-screen.js",
+       IDR_PDF_ELEMENTS_VIEWER_ERROR_SCREEN_JS},
+      {"pdf/elements/viewer-zoom-button.js",
+       IDR_PDF_ELEMENTS_VIEWER_ZOOM_BUTTON_JS},
+      {"pdf/elements/viewer-zoom-toolbar.js",
+       IDR_PDF_ELEMENTS_VIEWER_ZOOM_TOOLBAR_JS},
       {"pdf/gesture_detector.js", IDR_PDF_GESTURE_DETECTOR_JS},
       {"pdf/index.css", IDR_PDF_INDEX_CSS},
       {"pdf/main.js", IDR_PDF_MAIN_JS},

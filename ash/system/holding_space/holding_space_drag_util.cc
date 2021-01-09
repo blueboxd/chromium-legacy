@@ -159,8 +159,8 @@ class DragImageItemView : public views::View {
     // painting the background outside content bounds as might otherwise occur
     // due to pixel rounding. Failure to do so could result in white paint
     // artifacts.
-    gfx::Rect bounds(GetContentsBounds());
-    bounds.Inset(gfx::Insets(1));
+    gfx::RectF bounds(GetContentsBounds());
+    bounds.Inset(gfx::InsetsF(0.5f));
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -210,7 +210,7 @@ class DragImageItemChipView : public DragImageItemView {
         RoundedImageView::Alignment::kCenter));
     icon->SetPreferredSize(gfx::Size(kDragImageItemChipViewIconSize,
                                      kDragImageItemChipViewIconSize));
-    icon->SetImage(item->image().image_skia(), icon->GetPreferredSize());
+    icon->SetImage(item->image().GetImageSkia(icon->GetPreferredSize()));
 
     // Label.
     ScopedLightModeAsDefault scoped_light_mode;
@@ -246,7 +246,7 @@ class DragImageItemScreenshotView : public DragImageItemView {
     auto* image = AddChildView(std::make_unique<RoundedImageView>(
         kDragImageItemViewCornerRadius, RoundedImageView::Alignment::kCenter));
     image->SetPreferredSize(kDragImageItemScreenshotViewPreferredSize);
-    image->SetImage(item->image().image_skia(), image->GetPreferredSize());
+    image->SetImage(item->image().GetImageSkia(image->GetPreferredSize()));
   }
 };
 

@@ -59,7 +59,6 @@ std::unique_ptr<views::ImageView> CreateDefaultTrayIcon() {
       kHoldingSpaceIcon, kHoldingSpaceTrayIconSize,
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary)));
-  icon->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE));
   icon->SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   return icon;
 }
@@ -111,11 +110,18 @@ base::string16 HoldingSpaceTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_A11Y_NAME);
 }
 
+views::View* HoldingSpaceTray::GetTooltipHandlerForPoint(
+    const gfx::Point& point) {
+  // Tooltip events should be handled top level, not by descendents.
+  return HitTestPoint(point) ? this : nullptr;
+}
+
+base::string16 HoldingSpaceTray::GetTooltipText(const gfx::Point& point) const {
+  return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
+}
+
 void HoldingSpaceTray::HandleLocaleChange() {
-  default_tray_icon_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE));
-  if (previews_tray_icon_)
-    previews_tray_icon_->OnLocaleChanged();
+  TooltipTextChanged();
 }
 
 void HoldingSpaceTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {}
@@ -195,12 +201,16 @@ void HoldingSpaceTray::SetVisiblePreferred(bool preferred_visibility) {
   }
 }
 
+void HoldingSpaceTray::FirePreviewsUpdateTimerIfRunningForTesting() {
+  if (previews_update_.IsRunning())
+    previews_update_.FireNow();
+}
+
 void HoldingSpaceTray::UpdateVisibility() {
   HoldingSpaceModel* model = HoldingSpaceController::Get()->model();
   LoginStatus login_status = shelf()->GetStatusAreaWidget()->login_status();
   const bool in_active_session = login_status != LoginStatus::NOT_LOGGED_IN &&
                                  login_status != LoginStatus::LOCKED;
-
   if (!model || !in_active_session) {
     SetVisiblePreferred(false);
     return;
@@ -378,6 +388,9 @@ void HoldingSpaceTray::UpdatePreviewsVisibility() {
 
   DCHECK(previews_tray_icon_);
   previews_tray_icon_->SetVisible(show_previews);
+
+  if (!show_previews)
+    previews_update_.Stop();
 }
 
 void HoldingSpaceTray::SchedulePreviewsIconUpdate() {

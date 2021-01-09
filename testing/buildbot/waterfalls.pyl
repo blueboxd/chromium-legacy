@@ -1125,11 +1125,10 @@
           'weblayer_shell',
         ],
         'test_suites': {
-          #'gtest_tests': 'android_pie_rel_non_skia_renderer_gtests',
-          #'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
-          # TODO(crbug.com/1111436): Remove this if/when additional capacity
+          'gtest_tests': 'android_pie_rel_non_skia_renderer_gtests',
+          # TODO(crbug.com/1111436): Re-enable this if/when additional capacity
           # has been deployed.
-          'gtest_tests': 'android_pie_rel_reduced_capacity_gtests',
+          #'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -1318,6 +1317,22 @@
           'angle_end2end_tests',
           'angle_unittests',
         ],
+      },
+      'ios-angle-builder': {},
+      'ios-angle-intel': {
+        'os_type': 'mac',
+        'mixins': [
+          'mac_mini_intel_gpu_stable',
+          'enable_resultdb',
+          'isolate_profile_data',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12a7209',
+          'xctest',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_ios_gtests',
+        },
       },
       'linux-angle-builder': {},
       'linux-angle-chromium-builder': {},

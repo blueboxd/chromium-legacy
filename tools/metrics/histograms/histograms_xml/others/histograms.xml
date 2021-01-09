@@ -817,6 +817,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -826,6 +829,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AsyncDNS.ConfigNotifyInterval" units="ms" expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -834,6 +840,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AsyncDNS.ConfigParseDuration" units="ms" expires_after="M81">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>Duration of time spent parsing DnsConfig.</summary>
@@ -841,6 +850,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.ConfigParsePosix" enum="AsyncDNSConfigParsePosix"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -850,6 +862,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.ConfigParseWin" enum="AsyncDNSConfigParseWin"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -859,6 +874,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.HostParseResult" enum="BooleanSuccess"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>Whether DnsHosts were parsed successfully.</summary>
@@ -866,6 +884,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.HostsChange" enum="BooleanSuccess"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -875,6 +896,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AsyncDNS.HostsNotifyInterval" units="ms" expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -883,6 +907,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AsyncDNS.HostsParseDuration" units="ms" expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>Duration of time spent parsing DnsHosts.</summary>
@@ -890,6 +917,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.HostsParseWin" enum="AsyncDNSHostsParseWin"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -898,6 +928,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AsyncDNS.ServerCount" units="units" expires_after="2021-03-21">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -908,6 +941,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.UnchangedConfigInterval" units="ms"
     expires_after="M77">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>mef@chromium.org</owner>
   <summary>
@@ -918,6 +954,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.UnchangedHostsInterval" units="ms"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -928,6 +967,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="AsyncDNS.WatchStatus" enum="AsyncDNSWatchStatus"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -4675,7 +4717,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthEvent.DidUserManuallyUnlockPhone"
-    enum="EasyUnlockDidUserManuallyUnlockPhone" expires_after="2021-02-02">
+    enum="EasyUnlockDidUserManuallyUnlockPhone" expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4687,7 +4729,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthEvent.SignIn" enum="EasyUnlockAuthEvent"
-    expires_after="2021-06-06">
+    expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4699,7 +4741,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthEvent.SignIn.Duration" units="ms"
-    expires_after="2021-02-02">
+    expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4709,7 +4751,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthEvent.Unlock" enum="EasyUnlockAuthEvent"
-    expires_after="2021-06-06">
+    expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4721,7 +4763,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthEvent.Unlock.Duration" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4733,7 +4775,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthProximity.RemoteDeviceModelHash"
-    enum="EasyUnlockDeviceModelHash" expires_after="2021-02-02">
+    enum="EasyUnlockDeviceModelHash" expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4747,7 +4789,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.AuthProximity.RollingRssi" units="dBm"
-    expires_after="2021-02-02">
+    expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4768,7 +4810,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.RemoteLockScreenState"
-    enum="EasyUnlockRemoteLockScreenState" expires_after="2021-02-02">
+    enum="EasyUnlockRemoteLockScreenState" expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -4782,7 +4824,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EasyUnlock.StartupTimeFromSuspend" units="ms"
-    expires_after="2021-02-02">
+    expires_after="2022-02-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -17592,6 +17634,18 @@ regressions. -->
   <owner>phillis@chromium.org</owner>
   <owner>dmurph@chromium.org</owner>
   <summary>Records the result of shortcut creation for PWA.</summary>
+</histogram>
+
+<histogram name="WebApp.Shortcuts.Deletion.Success" enum="BooleanSuccess"
+    expires_after="M93">
+  <owner>phillis@chromium.org</owner>
+  <owner>dmurph@chromium.org</owner>
+  <owner>sunggch@microsoft.com</owner>
+  <summary>
+    Records the result of shortcut deletion for a PWA. This occurs when an
+    installed PWA is uninstalled, which can be triggered by user, policy admin,
+    or sync system depending on the situation.
+  </summary>
 </histogram>
 
 <histogram name="Webapp.SyncInitiatedUninstallResult" enum="BooleanSuccess"

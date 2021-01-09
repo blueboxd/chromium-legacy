@@ -1659,6 +1659,25 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
       kResamplingInputEventsLinearResamplingEnabled,
       base::size(kResamplingInputEventsLinearResamplingEnabled), nullptr}};
 
+const FeatureEntry::FeatureParam
+    kResamplingScrollEventsPredictionTimeBasedEnabled[] = {
+        {"mode", features::kPredictionTypeTimeBased},
+        {"latency", features::kPredictionTypeDefaultTime}};
+const FeatureEntry::FeatureParam
+    kResamplingScrollEventsPredictionFramesBasedEnabled[] = {
+        {"mode", features::kPredictionTypeFramesBased},
+        {"latency", features::kPredictionTypeDefaultFramesRatio}};
+const FeatureEntry::FeatureVariation
+    kResamplingScrollEventsExperimentalPredictionVariations[] = {
+        {features::kPredictionTypeTimeBased,
+         kResamplingScrollEventsPredictionTimeBasedEnabled,
+         base::size(kResamplingScrollEventsPredictionTimeBasedEnabled),
+         nullptr},
+        {features::kPredictionTypeFramesBased,
+         kResamplingScrollEventsPredictionFramesBasedEnabled,
+         base::size(kResamplingScrollEventsPredictionFramesBasedEnabled),
+         nullptr}};
+
 const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
     {"filter", features::kFilterNameEmpty}};
 const FeatureEntry::FeatureParam kFilteringPredictionOneEuroFilterEnabled[] = {
@@ -2468,6 +2487,15 @@ const FeatureEntry::FeatureVariation
         {"with linked Suggest experiment", {}, 0, "t4461027"},
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+constexpr FeatureEntry::FeatureParam kPlatformProvidedTrustTokenIssuance[] = {
+    {"PlatformProvidedTrustTokenIssuance", "true"}};
+
+constexpr FeatureEntry::FeatureVariation
+    kPlatformProvidedTrustTokensVariations[] = {
+        {"with platform-provided trust token issuance",
+         kPlatformProvidedTrustTokenIssuance,
+         base::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -4967,6 +4995,18 @@ const FeatureEntry kFeatureEntries[] = {
                                     kResamplingInputEventsFeatureVariations,
                                     "ResamplingScrollEvents")},
 
+    // Should only be available if kResamplingScrollEvents is on, and using
+    // linear resampling.
+    {"enable-resampling-scroll-events-experimental-prediction",
+     flag_descriptions::kEnableResamplingScrollEventsExperimentalPredictionName,
+     flag_descriptions::
+         kEnableResamplingScrollEventsExperimentalPredictionDescription,
+     kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ::features::kResamplingScrollEventsExperimentalPrediction,
+         kResamplingScrollEventsExperimentalPredictionVariations,
+         "ResamplingScrollEventsExperimentalLatency")},
+
     {"enable-filtering-scroll-events",
      flag_descriptions::kFilteringScrollPredictionName,
      flag_descriptions::kFilteringScrollPredictionDescription, kOsAll,
@@ -5356,10 +5396,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(TOOLKIT_VIEWS)
-    {"enable-md-rounded-corners-on-dialogs",
-     flag_descriptions::kEnableMDRoundedCornersOnDialogsName,
-     flag_descriptions::kEnableMDRoundedCornersOnDialogsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(views::features::kEnableMDRoundedCornersOnDialogs)},
 
     {"enable-new-badge-on-menu-items",
      flag_descriptions::kEnableNewBadgeOnMenuItemsName,
@@ -6308,7 +6344,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"trust-tokens", flag_descriptions::kTrustTokensName,
      flag_descriptions::kTrustTokensDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kTrustTokens)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(network::features::kTrustTokens,
+                                    kPlatformProvidedTrustTokensVariations,
+                                    "TrustTokenOriginTrial")},
 
 #if defined(OS_ANDROID)
     {"android-partner-customization-phenotype",
@@ -6627,7 +6665,7 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
     {"enable-avif", flag_descriptions::kEnableAVIFName,
-     flag_descriptions::kEnableAVIFDescription, kOsDesktop,
+     flag_descriptions::kEnableAVIFDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAVIF)},
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 

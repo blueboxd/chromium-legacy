@@ -620,6 +620,21 @@
             ]
         }
     ],
+    "ArcUseHighMemoryDalvikProfile": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ArcUseHighMemoryDalvikProfile"
+                    ]
+                }
+            ]
+        }
+    ],
     "AssistAutocorrect": [
         {
             "platforms": [
@@ -1376,7 +1391,8 @@
                 {
                     "name": "Enabled_Stage2",
                     "enable_features": [
-                        "AutofillEnableAccountWalletStorage"
+                        "AutofillEnableAccountWalletStorage",
+                        "AutofillEnablePasswordInfoBarAccountIndicationFooter"
                     ],
                     "disable_features": [
                         "WalletRequiresFirstSyncSetupComplete"
@@ -3756,21 +3772,6 @@
             ]
         }
     ],
-    "IOSPreloadDelayWebStateReset": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreloadDelayWebStateReset"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSRequestDesktopByDefault": [
         {
             "platforms": [
@@ -5036,6 +5037,7 @@
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxEntitySuggestionsReduceLatency",
+                        "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
@@ -5075,6 +5077,7 @@
                     "enable_features": [
                         "OmniboxAdaptiveSuggestionsCount",
                         "OmniboxCompactSuggestions",
+                        "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",

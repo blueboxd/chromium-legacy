@@ -162,6 +162,10 @@
   "chrome/browser/resources/preinstalled_web_apps/resources.grd": {
     "includes": [1710],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/pdf/resources.grd": {
+    "META": {"sizes": {"includes": [200]}},
+    "includes": [1715],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/print_preview/print_preview_resources.grd": {
     "META": {"sizes": {"includes": [500],}},
     "includes": [1720],
@@ -242,7 +246,8 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [2090],
   },
-  "chrome/browser/resources/media/webrtc_logs_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/media/webrtc_logs_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
     "includes": [2100],
   },
   "chrome/browser/resources/net_internals/net_internals_resources.grd": {

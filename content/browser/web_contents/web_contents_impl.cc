@@ -1147,7 +1147,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
 #if BUILDFLAG(ENABLE_PLUGINS)
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 #else
@@ -6050,10 +6049,10 @@ void WebContentsImpl::OnPepperStopsPlayback(RenderFrameHostImpl* source,
   pepper_playback_observer_->PepperStopsPlayback(source, pp_instance);
 }
 
-void WebContentsImpl::OnPluginCrashed(RenderFrameHostImpl* source,
-                                      const base::FilePath& plugin_path,
-                                      base::ProcessId plugin_pid) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnPluginCrashed",
+void WebContentsImpl::OnPepperPluginCrashed(RenderFrameHostImpl* source,
+                                            const base::FilePath& plugin_path,
+                                            base::ProcessId plugin_pid) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnPepperPluginCrashed",
                         "render_frame_host",
                         base::trace_event::ToTracedValue(source));
   // TODO(nick): Eliminate the |plugin_pid| parameter, which can't be trusted,
@@ -8008,6 +8007,12 @@ gfx::Size WebContentsImpl::GetSize() {
 }
 
 #endif  // !defined(OS_MAC)
+
+void WebContentsImpl::UpdateWindowControlsOverlay(
+    const gfx::Rect& bounding_rect) {
+  GetMainFrame()->GetAssociatedLocalMainFrame()->UpdateWindowControlsOverlay(
+      bounding_rect);
+}
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();

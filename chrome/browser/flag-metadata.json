@@ -92,7 +92,7 @@
   {
     "name": "allow-sync-xhr-in-page-dismissal",
     "owners": [ "kdillon@chromium.org" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 93
   },
   {
     "name": "android-default-browser-promo",
@@ -2152,6 +2152,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-resampling-scroll-events-experimental-prediction",
+    "owners": [ "input-dev" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-resource-loading-hints",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -3977,12 +3982,12 @@
   {
     "name": "printer-status",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "printer-status-dialog",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 91
   },
   {
     "name": "privacy-advisor",

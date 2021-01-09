@@ -531,6 +531,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const std::vector<blink::mojom::FaviconURLPtr>& GetFaviconURLs() override;
   void Resize(const gfx::Rect& new_bounds) override;
   gfx::Size GetSize() override;
+  void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect) override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -782,6 +783,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               int32_t pp_instance) override;
   void OnPepperStopsPlayback(RenderFrameHostImpl* source,
                              int32_t pp_instance) override;
+  void OnPepperPluginCrashed(RenderFrameHostImpl* source,
+                             const base::FilePath& plugin_path,
+                             base::ProcessId plugin_pid) override;
 #endif
 
   // RenderViewHostDelegate ----------------------------------------------------
@@ -1518,9 +1522,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           int plugin_child_id,
                           const base::FilePath& path,
                           bool is_hung);
-  void OnPluginCrashed(RenderFrameHostImpl* source,
-                       const base::FilePath& plugin_path,
-                       base::ProcessId plugin_pid);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
   void OnShowValidationMessage(RenderViewHostImpl* source,
                                const gfx::Rect& anchor_in_root_view,

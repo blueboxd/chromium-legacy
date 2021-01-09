@@ -51,11 +51,6 @@ crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.ht
 # WPT Test harness doesn't deal with finding an about:blank ref test
 crbug.com/1066130 external/wpt/infrastructure/assumptions/blank.html [ Failure ]
 
-# When running under Python 3 on Windows, this test fails to activate backpressure.
-crbug.com/1155106 external/wpt/websockets/stream/tentative/backpressure-receive.any.html [ Failure ]
-crbug.com/1155106 external/wpt/websockets/stream/tentative/backpressure-receive.any.worker.html [ Failure ]
-crbug.com/1155106 external/wpt/websockets/stream/tentative/backpressure-receive.any.sharedworker.html [ Failure ]
-
 # Favicon is not supported by run_web_tests.
 external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
 
@@ -1065,7 +1060,6 @@ crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mul
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-004.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
-crbug.com/1066616 virtual/layout_ng_block_frag/fast/multicol/border-radius-clipped-layer-second-column.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/client-rect-nested.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-multiple-fragments-translated.html [ Failure Crash ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-multiple-fragments.html [ Failure Crash ]
@@ -1435,6 +1429,8 @@ crbug.com/692560 external/wpt/html/semantics/document-metadata/styling/LinkStyle
 crbug.com/1143074 [ Mac ] external/wpt/html/semantics/forms/the-input-element/selection-pointer.html [ Failure Timeout ]
 
 crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
+
+crbug.com/1002937 external/wpt/editing/run/caret-navigation-around-line-break.html [ Failure ]
 
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
 
@@ -2045,9 +2041,6 @@ crbug.com/910421 virtual/threaded-composited-iframes/external/wpt/is-input-pendi
 # Need to support 'direction: rtl' for scroll snap
 crbug.com/1012173 external/wpt/css/css-scroll-snap/snap-after-initial-layout/direction-rtl.html [ Failure ]
 
-# Hit a DCHECK
-crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
-
 # WebVTT is off because additional padding
 crbug.com/1012242 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
 crbug.com/1012242 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_down.html [ Failure ]
@@ -2474,6 +2467,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] external/wpt/x-frame-options/multiple.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/FileAPI/idlharness.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/table-element-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
@@ -2826,6 +2821,7 @@ crbug.com/1131471 external/wpt/web-locks/clientids.tentative.https.html [ Failur
 # See also crbug.com/920100 (sheriff 2019-01-09).
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/inline-style.html [ Timeout Failure ]
+crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/inline-style-with-differentorigin-base-tag.tentative.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/internal-stylesheet.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout Failure ]
@@ -5941,5 +5937,8 @@ crbug.com/1161352 [ Mac10.14 ] external/wpt/webxr/xrSession_requestReferenceSpac
 # Failing on Webkit Linux Leak only:
 crbug.com/1046784 http/tests/devtools/tracing/timeline-receive-response-event.js [ Pass Failure ]
 
-# Sheriff 2021-01-21
-crbug.com/1164166 [ Linux ] virtual/synchronous_html_parser/external/wpt/preload/avoid-prefetching-on-text-plain.html [ Pass Failure ]
+
+# Sheriff 2021-01-08
+crbug.com/1164459 [ Mac ] virtual/synchronous_html_parser/external/wpt/preload/download-resources.html [ Pass Timeout ]
+crbug.com/1164568 [ Mac ] external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-allow-popups-report-to.https.html [ Pass Failure ]
+

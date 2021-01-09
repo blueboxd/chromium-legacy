@@ -33,12 +33,19 @@ NearbyConnectionBrokerImpl::Factory* g_test_factory = nullptr;
 constexpr base::TimeDelta kConnectionStatusChangeTimeout =
     base::TimeDelta::FromSeconds(10);
 
+// The amount of time by which we can expect a WebRTC upgrade to have been
+// completed. According to metrics, 30 seconds is the 95th+ percentile of how
+// long it takes to upgrade to WebRTC.
+constexpr base::TimeDelta kWebRtcUpgradeDelay =
+    base::TimeDelta::FromSeconds(30);
+
 // Numerical values should not be reused or changed since this is used by
 // metrics.
 enum class ConnectionMedium {
   kConnectedViaBluetooth = 0,
   kUpgradedToWebRtc = 1,
-  kMaxValue = kUpgradedToWebRtc
+  kDisconnectedInUnder30Seconds = 2,
+  kMaxValue = kDisconnectedInUnder30Seconds
 };
 
 void RecordConnectionMediumMetric(ConnectionMedium medium) {
@@ -142,7 +149,24 @@ void NearbyConnectionBrokerImpl::TransitionToStatus(
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NearbyConnectionBrokerImpl::Disconnect() {
+void NearbyConnectionBrokerImpl::Disconnect(
+    util::NearbyDisconnectionReason reason) {
+  // Only log a single disconnection reason per connection attempt. Edge cases
+  // can cause this function to be invoked multiple times.
+  if (!has_disconnect_reason_been_logged_) {
+    has_disconnect_reason_been_logged_ = true;
+    util::RecordNearbyDisconnection(reason);
+  }
+
+  if (!has_recorded_no_webrtc_metric_ && !has_upgraded_to_webrtc_ &&
+      !time_when_connection_accepted_.is_null() &&
+      (base::Time::Now() - time_when_connection_accepted_) <
+          kWebRtcUpgradeDelay) {
+    has_recorded_no_webrtc_metric_ = true;
+    RecordConnectionMediumMetric(
+        ConnectionMedium::kDisconnectedInUnder30Seconds);
+  }
+
   if (!need_to_disconnect_endpoint_) {
     TransitionToDisconnectedAndInvokeCallback();
     return;
@@ -190,20 +214,24 @@ void NearbyConnectionBrokerImpl::OnEndpointDiscovered(
 
 void NearbyConnectionBrokerImpl::OnDiscoveryFailure() {
   DCHECK_EQ(ConnectionStatus::kDiscoveringEndpoint, connection_status_);
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kFailedDiscovery);
 }
 
 void NearbyConnectionBrokerImpl::OnRequestConnectionResult(Status status) {
+  util::RecordRequestConnectionResult(status);
+
   // In the success case, OnConnectionInitiated() is expected to be called to
   // continue the flow, so nothing else needs to be done in this callback.
   if (status == Status::kSuccess)
     return;
 
   PA_LOG(WARNING) << "RequestConnection() failed: " << status;
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kFailedRequestingConnection);
 }
 
 void NearbyConnectionBrokerImpl::OnAcceptConnectionResult(Status status) {
+  util::RecordAcceptConnectionResult(status);
+
   if (status == Status::kSuccess) {
     DCHECK_EQ(ConnectionStatus::kAcceptingConnection, connection_status_);
     TransitionToStatus(
@@ -212,12 +240,14 @@ void NearbyConnectionBrokerImpl::OnAcceptConnectionResult(Status status) {
   }
 
   PA_LOG(WARNING) << "AcceptConnection() failed: " << status;
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kFailedAcceptingConnection);
 }
 
 void NearbyConnectionBrokerImpl::OnSendPayloadResult(
     SendMessageCallback callback,
     Status status) {
+  util::RecordSendPayloadResult(status);
+
   bool success = status == Status::kSuccess;
   std::move(callback).Run(success);
 
@@ -228,10 +258,12 @@ void NearbyConnectionBrokerImpl::OnSendPayloadResult(
     return;
 
   PA_LOG(WARNING) << "OnSendPayloadResult() failed: " << status;
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kSendMessageFailed);
 }
 
 void NearbyConnectionBrokerImpl::OnDisconnectFromEndpointResult(Status status) {
+  util::RecordDisconnectFromEndpointResult(status);
+
   // If the disconnection was successful, wait for the OnDisconnected()
   // callback.
   if (status == Status::kSuccess)
@@ -240,7 +272,7 @@ void NearbyConnectionBrokerImpl::OnDisconnectFromEndpointResult(Status status) {
   PA_LOG(WARNING) << "Failed to disconnect from endpoint with ID "
                   << remote_endpoint_id_ << ": " << status;
   need_to_disconnect_endpoint_ = false;
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kDisconnectionRequestedByClient);
 }
 
 void NearbyConnectionBrokerImpl::OnConnectionStatusChangeTimeout() {
@@ -257,11 +289,32 @@ void NearbyConnectionBrokerImpl::OnConnectionStatusChangeTimeout() {
     need_to_disconnect_endpoint_ = true;
 
   PA_LOG(WARNING) << "Timeout changing connection status";
-  Disconnect();
+  util::NearbyDisconnectionReason reason;
+  switch (connection_status_) {
+    case ConnectionStatus::kDiscoveringEndpoint:
+      reason = util::NearbyDisconnectionReason::kTimeoutDuringDiscovery;
+      break;
+    case ConnectionStatus::kRequestingConnection:
+      reason = util::NearbyDisconnectionReason::kTimeoutDuringRequestConnection;
+      break;
+    case ConnectionStatus::kAcceptingConnection:
+      reason = util::NearbyDisconnectionReason::kTimeoutDuringAcceptConnection;
+      break;
+    case ConnectionStatus::kWaitingForConnectionToBeAcceptedByRemoteDevice:
+      reason =
+          util::NearbyDisconnectionReason::kTimeoutWaitingForConnectionAccepted;
+      break;
+    default:
+      NOTREACHED() << "Unexpected timeout with connection status "
+                   << connection_status_;
+      reason = util::NearbyDisconnectionReason::kConnectionLost;
+      break;
+  }
+  Disconnect(reason);
 }
 
 void NearbyConnectionBrokerImpl::OnMojoDisconnection() {
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kDisconnectionRequestedByClient);
 }
 
 void NearbyConnectionBrokerImpl::SendMessage(const std::string& message,
@@ -339,7 +392,7 @@ void NearbyConnectionBrokerImpl::OnConnectionRejected(
   }
 
   PA_LOG(WARNING) << "Connection rejected: " << status;
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kConnectionRejected);
 }
 
 void NearbyConnectionBrokerImpl::OnDisconnected(
@@ -354,7 +407,7 @@ void NearbyConnectionBrokerImpl::OnDisconnected(
     PA_LOG(WARNING) << "Connection disconnected unexpectedly";
   }
   need_to_disconnect_endpoint_ = false;
-  Disconnect();
+  Disconnect(util::NearbyDisconnectionReason::kConnectionLost);
 }
 
 void NearbyConnectionBrokerImpl::OnBandwidthChanged(
@@ -369,6 +422,7 @@ void NearbyConnectionBrokerImpl::OnBandwidthChanged(
   PA_LOG(INFO) << "Bandwidth changed: " << medium;
 
   if (medium == Medium::kWebRtc) {
+    has_upgraded_to_webrtc_ = true;
     RecordConnectionMediumMetric(ConnectionMedium::kUpgradedToWebRtc);
 
     DCHECK(!time_when_connection_accepted_.is_null());
@@ -390,7 +444,7 @@ void NearbyConnectionBrokerImpl::OnPayloadReceived(
   if (!payload->content->is_bytes()) {
     PA_LOG(WARNING) << "OnPayloadReceived(): Received unexpected payload type "
                     << "(was expecting bytes type). Disconnecting.";
-    Disconnect();
+    Disconnect(util::NearbyDisconnectionReason::kReceivedUnexpectedPayloadType);
     return;
   }
 

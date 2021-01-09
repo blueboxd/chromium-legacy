@@ -156,10 +156,6 @@
 #include "chrome/browser/ui/hats/hats_helper.h"
 #endif
 
-#if defined(OS_MAC)
-#include "chrome/browser/ui/cocoa/screentime/tab_helper.h"
-#endif
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
@@ -405,11 +401,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     ThumbnailTabHelper::CreateForWebContents(web_contents);
   }
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
-#endif
-
-#if defined(OS_MAC)
-  if (screentime::TabHelper::IsScreentimeEnabled())
-    screentime::TabHelper::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

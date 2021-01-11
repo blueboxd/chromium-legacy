@@ -1186,7 +1186,8 @@ body:not(.recording-ui-paused) #record-time [i18n-content=record_video_paused_ms
   }
   8%,
   92% {
-    animation-timing-function: var(--exit-easing);
+    /* exit-easing. We cannot use variable here (https://crbug.com/1066798) */
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
     bottom: 31px;
   }
 }
@@ -1549,16 +1550,22 @@ body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {
   --border-distance: 8px;
   --border-width: 4px;
   --inner-border-radius: 16px;
+  opacity: 0;
   /* Use padding-top instead of height to make a responsive square, since the
    * percentage in padding-top is relative to the width of the containing
    * block. */
-  padding-top: calc(100% / 3);
+  padding-top: calc(100% / 2);
+  transition: all var(--exit-easing) var(--moderate1-duration);
   visibility: hidden;
-  width: calc(100% / 3);
+  width: calc(100% / 2);
 }
 
 body.photo.scan-barcode .barcode-scan-box {
+  opacity: 1;
+  padding-top: calc(100% / 3);
+  transition: all var(--enter-easing) var(--moderate1-duration);
   visibility: visible;
+  width: calc(100% / 3);
 }
 
 /* The inner scan box with a translucent overlay. */
@@ -1602,6 +1609,7 @@ body.photo.scan-barcode .barcode-scan-box {
   left: 50%;
   max-width: min(80%, var(--chip-max-width));
   opacity: 1;
+  pointer-events: auto;
   position: absolute;
   /* Avoid collision with scan-box and preview-box */
   top: max(8px, min(10%, 33.33% - var(--text-line-height) -

@@ -103,6 +103,9 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
     const char* url;
   };
 
+  // TODO(crbug.com/1153336): Merge SecurityOrigin::IsPotentiallyTrustworthy
+  // into network::IsOriginPotentiallyTrustworthy.
+  // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy
   TestCase inputs[] = {
       // Access is granted to webservers running on localhost.
       {true, true, "http://localhost"},
@@ -153,12 +156,15 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
       // Secure transports are considered trustworthy.
       {true, false, "https://foobar.com"},
       {true, false, "wss://foobar.com"},
+      {true, false, "quic-transport://example.com/counter"},
 
       // Insecure transports are not considered trustworthy.
       {false, false, "ftp://foobar.com"},
       {false, false, "http://foobar.com"},
       {false, false, "http://foobar.com:443"},
       {false, false, "ws://foobar.com"},
+      // TODO(crbug.com/1163060): Test registration of secure schemes.
+      {false, false, "custom-scheme://example.com"},
 
       // Local files are considered trustworthy.
       {true, false, "file:///home/foobar/index.html"},
@@ -171,6 +177,10 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
        "blob:https://foopy:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
       {false, false, "blob:http://baz:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
       {false, false, "blob:ftp://evil:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
+      {false, false, "blob:data:text/html,Hello"},
+      {false, false, "blob:about:blank"},
+      {false, false,
+       "blob:blob:https://example.com/578223a1-8c13-17b3-84d5-eca045ae384a"},
 
       // filesystem: URLs work the same as blob: URLs, and look to the inner
       // URL for security origin.
@@ -178,6 +188,16 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
       {true, false, "filesystem:https://foopy:99/foo"},
       {false, false, "filesystem:http://baz:99/foo"},
       {false, false, "filesystem:ftp://evil:99/foo"},
+      {false, false, "filesystem:data:text/html,Hello"},
+      {false, false, "filesystem:about:blank"},
+      {false, false,
+       "filesystem:blob:https://example.com/"
+       "578223a1-8c13-17b3-84d5-eca045ae384a"},
+
+      // about: and data: URLs.
+      {false, false, "about:blank"},
+      {false, false, "about:srcdoc"},
+      {false, false, "data:text/html,Hello"},
   };
 
   for (size_t i = 0; i < base::size(inputs); ++i) {
@@ -238,6 +258,7 @@ TEST_F(SecurityOriginTest, IsSecure) {
       {false,
        "filesystem:blob:https://example.com/"
        "578223a1-8c13-17b3-84d5-eca045ae384a"},
+      // TODO(crbug.com/1163060): Test registration of secure schemes.
       {false, "custom-scheme://example.com"},
       {true, "quic-transport://example.com/counter"},
       {false, ""},
@@ -249,12 +270,6 @@ TEST_F(SecurityOriginTest, IsSecure) {
         << "URL: '" << test.url << "'";
 
   EXPECT_FALSE(SecurityOrigin::IsSecure(NullURL()));
-}
-
-TEST_F(SecurityOriginTest, IsCustomSchemeSecure) {
-  url::ScopedSchemeRegistryForTests scoped_registry;
-  url::AddSecureScheme("custom-scheme");
-  EXPECT_TRUE(SecurityOrigin::IsSecure(KURL("custom-scheme://example.com")));
 }
 
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {

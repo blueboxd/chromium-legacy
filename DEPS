@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8f282f5d9f30aeb5e3122735723b403203511370',
+  'skia_revision': '2199cde1f52b39182a21f5ff41ab8aafde1f3731',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -274,7 +274,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '56e9ceb621af13f4d35ff0a65e1206f7b50772a1',
+  'devtools_frontend_revision': '39974fe062b2c72190893c5c5bec05ebed115e24',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1249,7 +1249,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '31a6a84b0393546e7076a90d0d5b5c5c606825a0',
+    Var('chromium_git') + '/openscreen' + '@' + 'f9e9052e7e6f1f75212737926b267a0e41621892',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1485,7 +1485,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a3c3ef666b7a5e4c93ebae5a7462add6f86f5cf2',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@b07d8724d4e4f04710c6fb1faea790d828174891',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@e59ae1af7571c2994183768c2a36fff8b1854437',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '6c656df63da5995a932aafd45b32af1974e497d9',
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3c2fe3888658d82b47ca831d59a2e07579619c2d',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '42082f9045e74e65b9e3a66b51093e0dc2f9375a',
+    Var('webrtc_git') + '/src.git' + '@' + '952be209246ab9ba702159cb246eac0e232b15ae',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1590,7 +1590,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@569646057afaebd8fd9c20801bcf4ea19aa75861',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ae0631b5a5df92b1c777bef77460fb20ec517495',
     'condition': 'checkout_src_internal',
   },
 
@@ -1609,7 +1609,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'wqI-j8sCbfunzbh8sr3nRonzOeHLEK0lQHNePHx9xWwC',
+        'version': 'R77YnQ53JE-EhrDRTHfTXpK36kcw2lVngfX8hLaV5OQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -97,7 +97,6 @@ no_check_targets = [
   "//extensions/browser/api/declarative_content:*",  # 2 errors
   "//extensions/browser/api/declarative_net_request:*",  # 18 errors
   "//extensions/browser/api/declarative_webrequest:*",  # 29 errors
-  "//extensions/browser/api/diagnostics:*",  # 2 errors
   "//extensions/browser/api/display_source:*",  # 7 errors
   "//extensions/browser/api/dns:*",  # 3 errors
   "//extensions/browser/api/document_scan:*",  # 2 errors
@@ -129,9 +128,7 @@ no_check_targets = [
   "//extensions/browser/api/test:*",  # 1 error
   "//extensions/browser/api/usb:*",  # 12 errors
   "//extensions/browser/api/virtual_keyboard_private:*",  # 2 errors
-  "//extensions/browser/api/vpn_provider:*",  # 13 errors
   "//extensions/browser/api/web_request:*",  # 37 errors
-  "//extensions/browser/api/webcam_private:*",  # 8 errors
   "//extensions/browser/api:*",  # 7 errors
   "//extensions/browser/updater:*",  # 31 errors
   "//extensions/browser:*",  # 20 errors

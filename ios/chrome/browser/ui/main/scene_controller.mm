@@ -675,22 +675,20 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     }
   }
 
-  // Before bringing up the UI, make sure the launch mode is correct, and
-  // check for previous crashes.
-  BOOL startInIncognito =
-      [[NSUserDefaults standardUserDefaults] boolForKey:kIncognitoCurrentKey];
-  BOOL switchFromIncognito =
-      startInIncognito &&
-      !self.sceneState.appState.startupInformation.canLaunchInIncognito;
+  // Make sure the launch mode is correct and consistent with the mode used
+  // when the application was terminated. It is possible for the incognito
+  // UI to have been presented but with no tabs (e.g. the tab switcher was
+  // active and user closed the last tab). In that case, switch to regular
+  // UI. Also, if the app crashed, always switch back to regular UI.
+  const BOOL startInIncognito =
+      self.sceneState.incognitoContentVisible &&
+      !self.sceneState.appState.postCrashLaunch &&
+      !self.interfaceProvider.incognitoInterface.browser->GetWebStateList()
+           ->empty();
 
-  if (self.sceneState.appState.postCrashLaunch || switchFromIncognito) {
+  // If the application crashed, clear incognito state.
+  if (self.sceneState.appState.postCrashLaunch)
     [self clearIOSSpecificIncognitoData];
-    if (switchFromIncognito)
-      [self.browserViewWrangler
-          switchGlobalStateToMode:ApplicationMode::NORMAL];
-  }
-  if (switchFromIncognito)
-    startInIncognito = NO;
 
   [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
                                           : ApplicationMode::NORMAL)];
@@ -737,8 +735,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // Decide if the First Run UI needs to run.
   const bool firstRun = ShouldPresentFirstRunExperience();
-
-  [self.browserViewWrangler switchGlobalStateToMode:launchMode];
 
   Browser* browser;
   if (launchMode == ApplicationMode::INCOGNITO) {
@@ -788,12 +784,16 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     // the categorization of potentially interested users or if the user is
     // signed in. Do not show if it is determined that Chrome is already the
     // default browser or if the user has already seen the promo UI.
+    // If the user was in the experiment group that showed the Remind Me Later
+    // button and tapped on it, then show the promo again if now is the right
+    // time.
     BOOL isEligibleUser = IsLikelyInterestedDefaultBrowserUser() ||
                           ios::GetChromeBrowserProvider()
                               ->GetChromeIdentityService()
                               ->HasIdentities();
-    if (!IsChromeLikelyDefaultBrowser() &&
-        !HasUserInteractedWithFullscreenPromoBefore() && isEligibleUser) {
+    if ((!IsChromeLikelyDefaultBrowser() &&
+         !HasUserInteractedWithFullscreenPromoBefore() && isEligibleUser) ||
+        ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
       self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
     }
   }
@@ -807,10 +807,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 
   // The UI should be stopped before the models they observe are stopped.
+  // SigninCoordinator teardown is performed by the |signinCompletion| on
+  // termination of async events, do not add additional teardown here.
   [self.signinCoordinator
       interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
                completion:nil];
-  self.signinCoordinator = nil;
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;

@@ -10,34 +10,45 @@ import("//ui/webui/resources/tools/generate_grd.gni")
 component_js_files = [
   "emoji_picker.js",
   "emoji_group.js",
+  "emoji_group_button.js",
   "icons.js",
 ]
 
-polymer_deps =
-    [ "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled" ]
-
 resources_grd_file = "$target_gen_dir/resources.grd"
 components_grdp_file = "$target_gen_dir/components.grdp"
+data_grdp_file = "$target_gen_dir/data.grdp"
 
 generate_grd("build_grd") {
-  deps = [ ":build_grdp" ]
+  deps = [
+    ":build_components_grdp",
+    ":build_data_grdp",
+  ]
   grd_prefix = "emoji_picker"
   out_grd = resources_grd_file
   input_files = [
     "index.html",
     "types.js",
-    "emoji_ordering.json",
   ]
-  grdp_files = [ components_grdp_file ]
+  grdp_files = [
+    components_grdp_file,
+    data_grdp_file,
+  ]
   input_files_base_dir = rebase_path(".", "//")
 }
 
-generate_grd("build_grdp") {
+generate_grd("build_components_grdp") {
   deps = [ ":web_components" ]
   grd_prefix = "emoji_picker"
   out_grd = components_grdp_file
   input_files = component_js_files
   input_files_base_dir = rebase_path(target_gen_dir, root_build_dir)
+}
+
+generate_grd("build_data_grdp") {
+  grd_prefix = "emoji_picker"
+  out_grd = data_grdp_file
+  input_files = [ "emoji_13_1_ordering.json" ]
+  input_files_base_dir = rebase_path("//third_party/emoji-metadata/src", "//")
 }
 
 grit("resources") {
@@ -56,21 +67,34 @@ grit("resources") {
 
 js_library("emoji_picker") {
   deps = [
-           ":types",
-           ":icons",
-           ":emoji_group",
-           "//ui/webui/resources/js:load_time_data.m",
-           "//third_party/polymer/v3_0/components-chromium/iron-icon",
-         ] + polymer_deps
+    ":emoji_group",
+    ":emoji_group_button",
+    ":types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
 }
 
 js_library("emoji_group") {
-  deps = [ ":types" ] + polymer_deps
+  deps = [
+    ":types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("emoji_group_button") {
+  deps = [
+    ":icons",
+    "//third_party/polymer/v3_0/components-chromium/iron-icon",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
 }
 
 js_library("icons") {
-  deps = [ "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg" ] +
-         polymer_deps
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
 }
 
 js_library("types") {
@@ -80,6 +104,7 @@ js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
     ":emoji_group",
+    ":emoji_group_button",
     ":emoji_picker",
     ":icons",
     ":types",

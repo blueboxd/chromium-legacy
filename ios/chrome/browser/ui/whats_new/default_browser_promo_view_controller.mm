@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_view_controller.h"
 
+#include "base/feature_list.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -27,11 +30,24 @@
   self.showDismissBarButton = NO;
   self.titleString = l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_TITLE);
   self.subtitleString =
-      l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_DESCRIPTION);
+      IsInModifiedStringsGroup()
+          ? l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_MESSAGE)
+          : l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_DESCRIPTION);
   self.primaryActionString =
       l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_MAIN_BUTTON_TEXT);
-  self.secondaryActionString =
-      l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_SECONDARY_BUTTON_TEXT);
+  if (IsInRemindMeLaterGroup() &&
+      !ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
+    // Show the Remind Me Later button if the user is in the correct experiment
+    // group and this isn't the second impression.
+    self.secondaryActionString = l10n_util::GetNSString(
+        IDS_IOS_DEFAULT_BROWSER_REMIND_ME_LATER_BUTTON_TEXT);
+    self.tertiaryActionAvailable = YES;
+    self.tertiaryActionString =
+        l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_SECONDARY_BUTTON_TEXT);
+  } else {
+    self.secondaryActionString =
+        l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_SECONDARY_BUTTON_TEXT);
+  }
   self.dismissBarButtonSystemItem = UIBarButtonSystemItemCancel;
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {

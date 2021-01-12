@@ -35,11 +35,13 @@
 #include "chromeos/services/assistant/libassistant_service_host_impl.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
+#include "chromeos/services/assistant/proxy/conversation_controller_proxy.h"
 #include "chromeos/services/assistant/proxy/service_controller_proxy.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/cpp/migration/assistant_manager_service_delegate.h"
+#include "chromeos/services/assistant/public/cpp/migration/audio_input_host.h"
 #include "chromeos/services/assistant/public/cpp/migration/libassistant_v1_api.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/assistant/service_context.h"
@@ -194,6 +196,10 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   // constructor.
   // To solve this chicken-and-egg problem, we need a separe Initialize() call.
   assistant_proxy_->Initialize(libassistant_service_host_.get());
+
+  audio_input_host_ = delegate_->CreateAudioInputHost();
+
+  platform_api_->InitializeAudioInputHost(*audio_input_host_);
 
   settings_delegate_ =
       std::make_unique<AssistantDeviceSettingsDelegate>(context);
@@ -358,7 +364,7 @@ void AssistantManagerServiceImpl::EnableListening(bool enable) {
 }
 
 void AssistantManagerServiceImpl::EnableHotword(bool enable) {
-  platform_api_->OnHotwordEnabled(enable);
+  audio_input_host_->OnHotwordEnabled(enable);
 }
 
 void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
@@ -446,14 +452,14 @@ void AssistantManagerServiceImpl::StartVoiceInteraction() {
   DCHECK(assistant_manager());
   DVLOG(1) << __func__;
 
-  platform_api_->SetMicState(true);
+  audio_input_host_->SetMicState(true);
   assistant_manager()->StartAssistantInteraction();
 }
 
 void AssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {
   DVLOG(1) << __func__;
-  platform_api_->SetMicState(false);
+  audio_input_host_->SetMicState(false);
 
   if (!assistant_manager_internal()) {
     VLOG(1) << "Stopping interaction without assistant manager.";
@@ -501,22 +507,10 @@ void AssistantManagerServiceImpl::StartTextInteraction(
     AssistantQuerySource source,
     bool allow_tts) {
   DVLOG(1) << __func__;
-  assistant_client::VoicelessOptions options;
-  options.is_user_initiated = true;
 
-  if (!allow_tts) {
-    options.modality =
-        assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
-  }
-
-  // Cache metadata about this interaction that can be resolved when the
-  // associated conversation turn starts in LibAssistant.
-  options.conversation_turn_id =
-      NewPendingInteraction(AssistantInteractionType::kText, source, query);
-
-  std::string interaction = CreateTextQueryInteraction(query);
-  assistant_manager_internal()->SendVoicelessInteraction(
-      interaction, /*description=*/"text_query", options, [](auto) {});
+  conversation_controller_proxy().SendTextQuery(
+      query, allow_tts,
+      NewPendingInteraction(AssistantInteractionType::kText, source, query));
 }
 
 void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
@@ -575,7 +569,7 @@ void AssistantManagerServiceImpl::OnConversationTurnStartedInternal(
       &AssistantManagerServiceImpl::OnConversationTurnStartedInternal,
       metadata);
 
-  platform_api_->OnConversationTurnStarted();
+  audio_input_host_->OnConversationTurnStarted();
 
   // Retrieve the cached interaction metadata associated with this conversation
   // turn or construct a new instance if there's no match in the cache.
@@ -604,10 +598,10 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
   if (resolution != Resolution::NORMAL_WITH_FOLLOW_ON &&
       resolution != Resolution::CANCELLED &&
       resolution != Resolution::BARGE_IN) {
-    platform_api_->SetMicState(false);
+    audio_input_host_->SetMicState(false);
   }
 
-  platform_api_->OnConversationTurnFinished();
+  audio_input_host_->OnConversationTurnFinished();
 
   switch (resolution) {
     // Interaction ended normally.
@@ -1391,6 +1385,16 @@ assistant_client::AssistantManagerInternal*
 AssistantManagerServiceImpl::assistant_manager_internal() {
   auto* api = LibassistantV1Api::Get();
   return api ? api->assistant_manager_internal() : nullptr;
+}
+
+void AssistantManagerServiceImpl::SetMicState(bool mic_open) {
+  DCHECK(audio_input_host_);
+  audio_input_host_->SetMicState(mic_open);
+}
+
+ConversationControllerProxy&
+AssistantManagerServiceImpl::conversation_controller_proxy() {
+  return assistant_proxy_->conversation_controller_proxy();
 }
 
 ServiceControllerProxy& AssistantManagerServiceImpl::service_controller() {

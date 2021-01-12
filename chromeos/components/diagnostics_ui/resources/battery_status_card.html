@@ -2,12 +2,12 @@
 
 <diagnostics-card>
   <div id="cardTitle" slot="title">[[i18n('batteryTitle')]]</div>
-  <div id="batteryStatusChipInfo" slot="chip">
+  <div id="batteryStatusChipInfo" slot="chip" class="diagnostics-chip">
     [[getDesignedFullCharge_(batteryHealth_.chargeFullDesignMilliampHours)]]
   </div>
   <!-- TODO(michaelcheco): Replace placeholder icon. -->
   <iron-icon slot="icon" icon="cr:add"></iron-icon>
-  <percent-bar-chart slot="left-panel" header="[[i18n('remainingCharge')]]"
+  <percent-bar-chart slot="left-panel" header="[[powerTimeString_]]"
     value="[[batteryChargeStatus_.chargeNowMilliampHours]]"
     max="[[batteryHealth_.chargeFullNowMilliampHours]]">
   </percent-bar-chart>
@@ -31,6 +31,7 @@
 
   <routine-section slot="routines" routines="[[routines_]]"
     is-test-running="{{isTestRunning}}"
+    is-power-routine="true"
     run-tests-button-text="[[getRunTestsButtonText_(
       batteryChargeStatus_.powerAdapterStatus
     )]]">

@@ -6985,7 +6985,8 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 }
 
 bool RenderFrameHostImpl::IsFocused() {
-  if (!GetRenderWidgetHost()->is_focused() || !frame_tree_->GetFocusedFrame())
+  if (!GetMainFrame()->GetRenderWidgetHost()->is_focused() ||
+      !frame_tree_->GetFocusedFrame())
     return false;
 
   RenderFrameHostImpl* focused_rfh =
@@ -10290,6 +10291,20 @@ void RenderFrameHostImpl::InstanceCreated(
       instance_id,
       std::make_unique<PepperPluginInstanceHost>(
           instance_id, this, std::move(instance), std::move(host)));
+}
+
+void RenderFrameHostImpl::BindHungDetectorHost(
+    mojo::PendingReceiver<mojom::PepperHungDetectorHost> hung_host,
+    int32_t plugin_child_id,
+    const base::FilePath& path) {
+  pepper_hung_detectors_.Add(this, std::move(hung_host),
+                             {plugin_child_id, path});
+}
+
+void RenderFrameHostImpl::PluginHung(bool is_hung) {
+  const HungDetectorContext& context = pepper_hung_detectors_.current_context();
+  delegate()->OnPepperPluginHung(this, context.plugin_child_id,
+                                 context.plugin_path, is_hung);
 }
 
 void RenderFrameHostImpl::PepperInstanceClosed(int32_t instance_id) {

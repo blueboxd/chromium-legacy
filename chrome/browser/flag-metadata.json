@@ -1067,7 +1067,7 @@
   },
   {
     "name": "dynamic-color-gamut",
-    "owners": [ "cblume", "khushalsagar", "ccameron" ],
+    "owners": [ "cblume", "ccameron" ],
     "expiry_milestone": 90
   },
   {
@@ -1760,7 +1760,7 @@
   },
   {
     "name": "enable-image-reader",
-    "owners": [ "vikassoni", "khushalsagar" ],
+    "owners": [ "vikassoni", "liberato" ],
     "expiry_milestone": 90
   },
   {
@@ -1916,11 +1916,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-native-context-menus",
-    "owners": [ "seblalancette" ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "enable-native-notifications",
     "owners": [ "peter", "finnur", "knollr" ],
     "expiry_milestone": 90
@@ -1998,12 +1993,12 @@
   },
   {
     "name": "enable-oop-rasterization",
-    "owners": [ "enne", "khushalsagar" ],
+    "owners": [ "sunnyps", "vasilyt" ],
     "expiry_milestone": 86
   },
   {
     "name": "enable-oop-rasterization-ddl",
-    "owners": [ "robertphillips", "khushalsagar" ],
+    "owners": [ "robertphillips", "penghuang" ],
     "expiry_milestone": 87
   },
   {
@@ -2247,7 +2242,7 @@
   },
   {
     "name": "enable-surface-control",
-    "owners": [ "vikassoni", "khushalsagar" ],
+    "owners": [ "vikassoni", "vasilyt" ],
     "expiry_milestone": 90
   },
   {
@@ -3533,11 +3528,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "offline-pages-load-signal-collecting",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "offline-pages-pending-download",
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
@@ -3546,16 +3536,6 @@
     "name": "offline-pages-prefetching",
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-renovations",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 86
-  },
-  {
-    "name": "offline-pages-resource-based-snapshot",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 86
   },
   {
     "name": "offlining-recent-pages",

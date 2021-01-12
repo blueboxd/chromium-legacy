@@ -19,14 +19,6 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
-// Title and description for the flag to control card nickname management.
-extern const char kAutofillEnableCardNicknameManagementName[];
-extern const char kAutofillEnableCardNicknameManagementDescription[];
-
-// Title and description for the flag to control card nickname upstream.
-extern const char kAutofillEnableCardNicknameUpstreamName[];
-extern const char kAutofillEnableCardNicknameUpstreamDescription[];
-
 // Title and description for the flag to control enabling Google-issued cards in
 // autofill suggestions.
 extern const char kAutofillEnableGoogleIssuedCardName[];
@@ -168,10 +160,6 @@ extern const char kEnableIncognitoModeAvailabilityIOSDescription[];
 // setting is managed by an enterprise policy.
 extern const char kEnableIOSManagedSettingsUIName[];
 extern const char kEnableIOSManagedSettingsUIDescription[];
-
-// Title and description for the flag to enable new context menus for native UI.
-extern const char kEnableNativeContextMenusName[];
-extern const char kEnableNativeContextMenusDescription[];
 
 // Title and description for the flag to enable an expanded tab strip.
 extern const char kExpandedTabStripName[];

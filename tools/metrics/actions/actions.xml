@@ -9148,6 +9148,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.DefaultBrowserFullscreenPromo.RemindMeTapped">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <description>
+    The user tapped the &quot;Remind Me Later&quot; button in the default
+    browser fullscreen promo modal that takes the user to the Settings app. iOS
+    only.
+  </description>
+</action>
+
 <action name="IOS.DefaultBrowserNTPPromoTapped">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
@@ -12037,6 +12047,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManagedUsers_Chromeos_Sync_Recovered">
+  <obsolete>Legacy supervised users are deprecated</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -22092,6 +22103,15 @@ should be able to be added at any place in this file.
   <owner>bzanotti@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the tab switcher.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromUserManager" not_user_triggered="true">
+  <owner>jkrcal@chromium.org</owner>
+  <owner>droger@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the profile creation flow (as part of
+    the profile picker).
   </description>
 </action>
 

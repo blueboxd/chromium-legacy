@@ -223,32 +223,6 @@ DOMNodeId GraphicsContext::GetDOMNodeId() const {
   return dom_node_id_;
 }
 
-void GraphicsContext::SetShadow(
-    const FloatSize& offset,
-    float blur,
-    const Color& color,
-    DrawLooperBuilder::ShadowTransformMode shadow_transform_mode,
-    DrawLooperBuilder::ShadowAlphaMode shadow_alpha_mode,
-    ShadowMode shadow_mode) {
-  DrawLooperBuilder draw_looper_builder;
-  if (!color.Alpha()) {
-    // When shadow-only but there is no shadow, we use an empty draw looper
-    // to disable rendering of the source primitive.  When not shadow-only, we
-    // clear the looper.
-    SetDrawLooper(shadow_mode != kDrawShadowOnly
-                      ? nullptr
-                      : draw_looper_builder.DetachDrawLooper());
-    return;
-  }
-
-  draw_looper_builder.AddShadow(offset, blur, color, shadow_transform_mode,
-                                shadow_alpha_mode);
-  if (shadow_mode == kDrawShadowAndForeground) {
-    draw_looper_builder.AddUnmodifiedContent();
-  }
-  SetDrawLooper(draw_looper_builder.DetachDrawLooper());
-}
-
 void GraphicsContext::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
   MutableState()->SetDrawLooper(std::move(draw_looper));
 }
@@ -484,91 +458,6 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
   } else {
     DrawFocusRingInternal(rects, width, offset, border_radius, inner_color);
   }
-}
-
-static inline FloatRect AreaCastingShadowInHole(
-    const FloatRect& hole_rect,
-    float shadow_blur,
-    float shadow_spread,
-    const FloatSize& shadow_offset) {
-  FloatRect bounds(hole_rect);
-
-  bounds.Inflate(shadow_blur);
-
-  if (shadow_spread < 0)
-    bounds.Inflate(-shadow_spread);
-
-  FloatRect offset_bounds = bounds;
-  offset_bounds.Move(-shadow_offset);
-  return UnionRect(bounds, offset_bounds);
-}
-
-static void AdjustHoleForSideClipping(FloatRect& hole_rect,
-                                      const FloatSize& shadow_offset,
-                                      float shadow_blur,
-                                      GraphicsContext::Edges clipped_edges) {
-  if (clipped_edges & GraphicsContext::kLeftEdge) {
-    float extend_by = std::max(shadow_offset.Width(), 0.0f) + shadow_blur;
-    hole_rect.Move(-extend_by, 0);
-    hole_rect.SetWidth(hole_rect.Width() + extend_by);
-  }
-  if (clipped_edges & GraphicsContext::kTopEdge) {
-    float extend_by = std::max(shadow_offset.Height(), 0.0f) + shadow_blur;
-    hole_rect.Move(0, -extend_by);
-    hole_rect.SetHeight(hole_rect.Height() + extend_by);
-  }
-  if (clipped_edges & GraphicsContext::kRightEdge) {
-    float shrink_by = std::min(shadow_offset.Width(), 0.0f) - shadow_blur;
-    hole_rect.SetWidth(hole_rect.Width() - shrink_by);
-  }
-  if (clipped_edges & GraphicsContext::kBottomEdge) {
-    float shrink_by = std::min(shadow_offset.Height(), 0.0f) - shadow_blur;
-    hole_rect.SetHeight(hole_rect.Height() - shrink_by);
-  }
-}
-
-void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
-                                      const Color& orig_shadow_color,
-                                      const FloatSize& shadow_offset,
-                                      float shadow_blur,
-                                      float shadow_spread,
-                                      Edges clipped_edges) {
-  SkColor shadow_color = DarkModeFilterHelper::ApplyToColorIfNeeded(
-      this, orig_shadow_color.Rgb(), DarkModeFilter::ElementRole::kBackground);
-
-  FloatRect hole_rect(rect.Rect());
-  hole_rect.Inflate(-shadow_spread);
-  if (hole_rect.IsEmpty()) {
-    FillRoundedRect(rect, Color(shadow_color));
-    return;
-  }
-  AdjustHoleForSideClipping(hole_rect, shadow_offset, shadow_blur,
-                            clipped_edges);
-
-  FloatRoundedRect rounded_hole(hole_rect, rect.GetRadii());
-
-  GraphicsContextStateSaver state_saver(*this);
-  if (rect.IsRounded()) {
-    ClipRoundedRect(rect);
-    if (shadow_spread < 0)
-      rounded_hole.ExpandRadii(-shadow_spread);
-    else
-      rounded_hole.ShrinkRadii(shadow_spread);
-  } else {
-    Clip(rect.Rect());
-  }
-
-  DrawLooperBuilder draw_looper_builder;
-  draw_looper_builder.AddShadow(shadow_offset, shadow_blur, shadow_color,
-                                DrawLooperBuilder::kShadowRespectsTransforms,
-                                DrawLooperBuilder::kShadowIgnoresAlpha);
-  SetDrawLooper(draw_looper_builder.DetachDrawLooper());
-
-  Color fill_color(SkColorGetR(shadow_color), SkColorGetG(shadow_color),
-                   SkColorGetB(shadow_color));
-  FloatRect outer_rect = AreaCastingShadowInHole(rect.Rect(), shadow_blur,
-                                                 shadow_spread, shadow_offset);
-  FillRectWithRoundedHole(outer_rect, rounded_hole, fill_color);
 }
 
 static void EnforceDotsAtEndpoints(GraphicsContext& context,
@@ -1161,6 +1050,16 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
   canvas_->drawRRect(stroke_r_rect, stroke_flags);
 }
 
+void GraphicsContext::FillRectWithRoundedHole(
+    const FloatRect& rect,
+    const FloatRoundedRect& rounded_hole_rect,
+    const Color& color) {
+  PaintFlags flags(ImmutableState()->FillFlags());
+  flags.setColor(DarkModeFilterHelper::ApplyToColorIfNeeded(
+      this, color.Rgb(), DarkModeFilter::ElementRole::kBackground));
+  canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
+}
+
 void GraphicsContext::FillEllipse(const FloatRect& ellipse) {
   DrawOval(ellipse, ImmutableState()->FillFlags());
 }
@@ -1302,16 +1201,6 @@ void GraphicsContext::SetURLDestinationLocation(const String& name,
 
 void GraphicsContext::ConcatCTM(const AffineTransform& affine) {
   Concat(AffineTransformToSkMatrix(affine));
-}
-
-void GraphicsContext::FillRectWithRoundedHole(
-    const FloatRect& rect,
-    const FloatRoundedRect& rounded_hole_rect,
-    const Color& color) {
-  PaintFlags flags(ImmutableState()->FillFlags());
-  flags.setColor(DarkModeFilterHelper::ApplyToColorIfNeeded(
-      this, color.Rgb(), DarkModeFilter::ElementRole::kBackground));
-  canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
 }
 
 void GraphicsContext::AdjustLineToPixelBoundaries(FloatPoint& p1,

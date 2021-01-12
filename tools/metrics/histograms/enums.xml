@@ -21831,6 +21831,7 @@ Called by update_document_policy_enum.py.-->
   <int value="7" label="File IO error"/>
   <int value="8" label="Dlp interruption"/>
   <int value="9" label="Low disk space"/>
+  <int value="10" label="HDCP interruption"/>
 </enum>
 
 <enum name="EnhancedBookmarkViewMode">
@@ -39351,6 +39352,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="IOSDefaultBrowserFullscreenPromoAction">
   <int value="0" label="Action Button"/>
   <int value="1" label="Cancel"/>
+  <int value="2" label="Remind Me Later"/>
 </enum>
 
 <enum name="IOSDeviceThermalState">
@@ -41065,6 +41067,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="HandleUpdateOrigins Empty"/>
   <int value="7" label="HandleUpdateOrigins Parsed"/>
   <int value="8" label="HandleUpdateOrigins Invalid"/>
+</enum>
+
+<enum name="LaunchCause">
+  <int value="0" label="Other"/>
 </enum>
 
 <enum name="LauncherRankingItemType">
@@ -55774,6 +55780,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1704" label="Get Help with Chrome OS"/>
   <int value="1705" label="Report an Issue"/>
   <int value="1706" label="View Terms of Service"/>
+  <int value="1707" label="Open Diagnostics App"/>
   <int value="1800" label="View Add Kerberos Ticket V2"/>
   <int value="1801" label="Remove Kerberos Ticket V2"/>
   <int value="1802" label="Set Active Kerberos Ticket V2"/>
@@ -66879,6 +66886,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Prefetch request was cancelled"/>
   <int value="7" label="Prefetch request failed"/>
   <int value="8" label="Another reason (unexpected)"/>
+  <int value="9" label="POST, reload, link, or other non-cache loads."/>
 </enum>
 
 <enum name="SearchTemplateURLEvent">

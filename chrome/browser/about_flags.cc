@@ -2497,6 +2497,16 @@ constexpr FeatureEntry::FeatureVariation
          kPlatformProvidedTrustTokenIssuance,
          base::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
+const FeatureEntry::FeatureParam kPasswordsAccountStorage_ProfileStore[] = {
+    {password_manager::features::kSaveToProfileStoreByDefault, "true"},
+};
+
+const FeatureEntry::FeatureVariation kPasswordsAccountStorageVariations[] = {
+    {"(save to profile store by default)",
+     kPasswordsAccountStorage_ProfileStore,
+     base::size(kPasswordsAccountStorage_ProfileStore), nullptr},
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3478,12 +3488,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemKeyboardLockDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemKeyboardLock)},
 #if defined(OS_ANDROID)
-    {"offline-pages-load-signal-collecting",
-     flag_descriptions::kOfflinePagesLoadSignalCollectingName,
-     flag_descriptions::kOfflinePagesLoadSignalCollectingDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesLoadSignalCollectingFeature)},
     {"offline-pages-live-page-sharing",
      flag_descriptions::kOfflinePagesLivePageSharingName,
      flag_descriptions::kOfflinePagesLivePageSharingDescription, kOsAndroid,
@@ -3504,16 +3508,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesDescriptivePendingStatusFeature)},
-    {"offline-pages-resource-based-snapshot",
-     flag_descriptions::kOfflinePagesResourceBasedSnapshotName,
-     flag_descriptions::kOfflinePagesResourceBasedSnapshotDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesResourceBasedSnapshotFeature)},
-    {"offline-pages-renovations",
-     flag_descriptions::kOfflinePagesRenovationsName,
-     flag_descriptions::kOfflinePagesRenovationsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesRenovationsFeature)},
     {"offline-pages-in-downloads-home-open-in-cct",
      flag_descriptions::kOfflinePagesInDownloadHomeOpenInCctName,
      flag_descriptions::kOfflinePagesInDownloadHomeOpenInCctDescription,
@@ -5996,8 +5990,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePasswordsAccountStorageName,
      flag_descriptions::kEnablePasswordsAccountStorageDescription,
      kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnablePasswordsAccountStorage)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kEnablePasswordsAccountStorage,
+         kPasswordsAccountStorageVariations,
+         "ButterForPasswords")},
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

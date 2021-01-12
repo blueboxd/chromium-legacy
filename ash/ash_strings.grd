@@ -1226,15 +1226,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_ENABLE_HOTSPOT_NO_RECEPTION_STATE_TOOLTIP" desc="Tooltip message that indicates to the user that the Enable Hotspot feature is disabled because their phone does not have mobile data.">
         Your phone must have mobile data to provide a hotspot
       </message>
-
-      <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL">
+      <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL" desc="The label next to the stylus battery indicator when the battery level is below 24%">
         Low
-      </message>
-      <message name="IDS_ASH_STYLUS_BATTERY_MED_LABEL">
-        Med
-      </message>
-      <message name="IDS_ASH_STYLUS_BATTERY_HI_LABEL">
-        Hi
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the stylus tools (a pop-up panel next to the status tray). This causes a partial screenshot to be taken (the user selects an area of the screen to take a screenshot of).">
         Capture region
@@ -1358,6 +1351,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_OVERVIEW_WINDOW_CLOSING_A11Y_ALERT" desc="The accessibility alert read by screen readers to alert the user that a window in overview mode is closing.">
         Window <ph name="WINDOW_TITILE">$1<ex>1</ex></ph> closed.
+      </message>
+      <message name="IDS_ASH_OVERVIEW_VISIBLE_ON_ALL_DESKS_TOAST" desc="The text for the toast that appears when user tries to drag a visible on all desks window to a desk.">
+        Already assigned to all desks.
       </message>
 
       <!-- Virtual Desks -->
@@ -3165,6 +3161,9 @@ Here are some things you can try to get started.
       </message>
 
       <!-- Capture Mode -->
+      <message name="IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE" desc="The text of the notification that informs the user the screen recording is blocked due to existence of protected content.">
+        Screen capture is not allowed while protected content is present
+      </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_DISABLED_TITLE" desc="The title of the notification when capture mode is disabled.">
         Screen capture is blocked
       </message>

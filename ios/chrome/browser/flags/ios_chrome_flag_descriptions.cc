@@ -23,18 +23,6 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
-const char kAutofillEnableCardNicknameManagementName[] =
-    "Enable Autofill card nickname management";
-const char kAutofillEnableCardNicknameManagementDescription[] =
-    "When enabled, nicknames for credit cards will be able to be modified "
-    "locally.";
-
-const char kAutofillEnableCardNicknameUpstreamName[] =
-    "Enable Autofill card nickname upstream";
-const char kAutofillEnableCardNicknameUpstreamDescription[] =
-    "When enabled, nicknames for credit cards will be able to be uploaded to "
-    "Payments.";
-
 const char kAutofillEnableGoogleIssuedCardName[] =
     "Enable Autofill Google-issued card";
 const char kAutofillEnableGoogleIssuedCardDescription[] =
@@ -193,12 +181,6 @@ const char kEnableIOSManagedSettingsUIName[] = "Enable IOS Managed Settings UI";
 const char kEnableIOSManagedSettingsUIDescription[] =
     "Enable showing a different UI when the setting is managed by an "
     "enterprise policy on iOS.";
-
-const char kEnableNativeContextMenusName[] =
-    "Enable Context Menus in Native UI";
-const char kEnableNativeContextMenusDescription[] =
-    "Enables the new iOS 13 context menus on various pieces of UI in native "
-    "Chrome (e.g. History, Bookmarks).";
 
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =

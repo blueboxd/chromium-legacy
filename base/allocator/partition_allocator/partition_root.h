@@ -130,9 +130,15 @@ struct PartitionOptions {
     kForcedEnabledForTesting,
   };
 
+  enum class RefCount {
+    kEnabled,
+    kDisabled,
+  };
+
   Alignment alignment;
   ThreadCache thread_cache;
   PCScan pcscan;
+  RefCount ref_count;
 };
 
 // Never instantiate a PartitionRoot directly, instead use
@@ -161,7 +167,8 @@ struct BASE_EXPORT PartitionRoot {
   bool with_thread_cache = false;
   const bool is_thread_safe = thread_safe;
 
-  bool allow_extras;
+  bool allow_ref_count;
+  bool allow_cookies;
 
 #if !PARTITION_EXTRAS_REQUIRED
   // Teach the compiler that `AdjustSizeForExtrasAdd` etc. can be eliminated
@@ -318,7 +325,7 @@ struct BASE_EXPORT PartitionRoot {
   }
 
   bool UsesGigaCage() const {
-    return features::IsPartitionAllocGigaCageEnabled() && allow_extras;
+    return features::IsPartitionAllocGigaCageEnabled() && allow_ref_count;
   }
 
   ALWAYS_INLINE bool IsScannable() const {
@@ -648,8 +655,8 @@ ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
           ptr);
   auto* root = PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span);
   // The only allocations that don't use ref-count are allocated outside of
-  // GigaCage, hence we'd never get here in the `allow_extras = false` case.
-  PA_DCHECK(root->allow_extras);
+  // GigaCage, hence we'd never get here in the `allow_ref_count = false` case.
+  PA_DCHECK(root->allow_ref_count);
 
   // Get the offset from the beginning of the slot span.
   uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
@@ -667,8 +674,8 @@ ALWAYS_INLINE void* PartitionAllocGetSlotStart(void* ptr) {
           ptr);
   auto* root = PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span);
   // The only allocations that don't use ref-count are allocated outside of
-  // GigaCage, hence we'd never get here in the `allow_extras = false` case.
-  PA_DCHECK(root->allow_extras);
+  // GigaCage, hence we'd never get here in the `allow_ref_count = false` case.
+  PA_DCHECK(root->allow_ref_count);
 
   // Get the offset from the beginning of the slot span.
   uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
@@ -692,15 +699,8 @@ ALWAYS_INLINE void PartitionAllocFreeForRefCounting(void* slot_start) {
       SlotSpanMetadata<ThreadSafe>::FromPointerNoAlignmentCheck(slot_start);
   auto* root = PartitionRoot<ThreadSafe>::FromSlotSpan(slot_span);
   // PartitionRefCount is required to be allocated inside a `PartitionRoot` that
-  // supports extras.
-  PA_DCHECK(root->allow_extras);
-
-#ifdef ADDRESS_SANITIZER
-  void* ptr = root->AdjustPointerForExtrasAdd(slot_start);
-  size_t usable_size =
-      root->AdjustSizeForExtrasSubtract(slot_span->GetUtilizedSlotSize());
-  ASAN_UNPOISON_MEMORY_REGION(ptr, usable_size);
-#endif
+  // supports reference counts.
+  PA_DCHECK(root->allow_ref_count);
 
 #if DCHECK_IS_ON()
   memset(slot_start, kFreedByte, slot_span->GetUtilizedSlotSize());
@@ -850,42 +850,41 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
     ZERO_RANDOMLY_ON_FREE
   const size_t utilized_slot_size = slot_span->GetUtilizedSlotSize();
 #endif
-  if (allow_extras) {
+
 #if ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR || DCHECK_IS_ON()
-    size_t usable_size = AdjustSizeForExtrasSubtract(utilized_slot_size);
+  const size_t usable_size = AdjustSizeForExtrasSubtract(utilized_slot_size);
 #endif
+
+  void* slot_start = AdjustPointerForExtrasSubtract(ptr);
+
 #if DCHECK_IS_ON()
+  if (allow_cookies) {
     // Verify 2 cookies surrounding the allocated region.
     // If these asserts fire, you probably corrupted memory.
     char* char_ptr = static_cast<char*>(ptr);
     internal::PartitionCookieCheckValue(char_ptr - internal::kCookieSize);
     internal::PartitionCookieCheckValue(char_ptr + usable_size);
+  }
 #endif
 
-    void* slot_start = AdjustPointerForExtrasSubtract(ptr);
-
-    if (!slot_span->bucket->is_direct_mapped()) {
 #if ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
+  if (allow_ref_count) {
+    if (LIKELY(!slot_span->bucket->is_direct_mapped())) {
       auto* ref_count = internal::PartitionRefCountPointer(slot_start);
       // If we are holding the last reference to the allocation, it can be freed
       // immediately. Otherwise, defer the operation and zap the memory to turn
       // potential use-after-free issues into unexploitable crashes.
-      if (UNLIKELY(!ref_count->HasOneRef())) {
-#ifdef ADDRESS_SANITIZER
-        ASAN_POISON_MEMORY_REGION(ptr, usable_size);
-#else
+      if (UNLIKELY(!ref_count->HasOneRef()))
         memset(ptr, kQuarantinedByte, usable_size);
-#endif
-      }
 
       if (UNLIKELY(!(ref_count->ReleaseFromAllocator())))
         return;
-#endif  // ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
     }
+  }
+#endif  // ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
 
-    // Shift ptr to the beginning of the slot.
-    ptr = slot_start;
-  }  // if (allow_extras)
+  // Shift `ptr` to the beginning of the slot.
+  ptr = slot_start;
 
 #if DCHECK_IS_ON()
   memset(ptr, kFreedByte, utilized_slot_size);
@@ -926,14 +925,19 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeWithThreadCache(
   //
   // Also the thread-unsafe variant doesn't have a use for a thread cache, so
   // make it statically known to the compiler.
-  if (thread_safe && with_thread_cache &&
-      !slot_span->bucket->is_direct_mapped()) {
+  //
+  // LIKELY: performance-sensitive thread-safe partitions have a thread cache,
+  // direct-mapped allocations are uncommon.
+  if (thread_safe &&
+      LIKELY(with_thread_cache && !slot_span->bucket->is_direct_mapped())) {
     PA_DCHECK(slot_span->bucket >= this->buckets &&
               slot_span->bucket <= &this->sentinel_bucket);
     size_t bucket_index = slot_span->bucket - this->buckets;
     auto* thread_cache = internal::ThreadCache::Get();
-    if (thread_cache && thread_cache->MaybePutInCache(ptr, bucket_index))
+    if (LIKELY(thread_cache &&
+               thread_cache->MaybePutInCache(ptr, bucket_index))) {
       return;
+    }
   }
 
   RawFree(ptr, slot_span);
@@ -1123,7 +1127,10 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
 
   // !thread_safe => !with_thread_cache, but adding the condition allows the
   // compiler to statically remove this branch for the thread-unsafe variant.
-  if (thread_safe && with_thread_cache) {
+  //
+  // LIKELY: performance-sensitive partitions are either thread-unsafe or use
+  // the thread cache.
+  if (thread_safe && LIKELY(with_thread_cache)) {
     auto* tcache = internal::ThreadCache::Get();
     if (UNLIKELY(!tcache)) {
       // There is no per-thread ThreadCache allocated here yet, and this
@@ -1164,9 +1171,13 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
       PA_DCHECK(!slot_span->bucket->is_direct_mapped());
     }
 #endif
-  }
 
-  if (!ret) {
+    // UNLIKELY: median hit rate in the thread cache is 95%, from metrics.
+    if (UNLIKELY(!ret)) {
+      ret = RawAlloc(buckets + bucket_index, flags, raw_size,
+                     &utilized_slot_size, &is_already_zeroed);
+    }
+  } else {
     ret = RawAlloc(buckets + bucket_index, flags, raw_size, &utilized_slot_size,
                    &is_already_zeroed);
   }
@@ -1213,7 +1224,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
 
 #if DCHECK_IS_ON()
   // Surround the region with 2 cookies.
-  if (allow_extras) {
+  if (allow_cookies) {
     char* char_ret = static_cast<char*>(ret);
     internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
     internal::PartitionCookieWriteValue(char_ret + usable_size);
@@ -1223,7 +1234,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
   // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
   // or 0 (if requested and not 0 already).
   bool zero_fill = flags & PartitionAllocZeroFill;
-  if (!zero_fill) {
+  // LIKELY: operator new() calls malloc(), not calloc().
+  if (LIKELY(!zero_fill)) {
 #if DCHECK_IS_ON()
     memset(ret, kUninitializedByte, usable_size);
 #endif
@@ -1231,13 +1243,15 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
     memset(ret, 0, usable_size);
   }
 
-  bool is_direct_mapped = raw_size > kMaxBucketed;
-  if (allow_extras && !is_direct_mapped) {
 #if ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
+  bool is_direct_mapped = raw_size > kMaxBucketed;
+  // LIKELY: Direct mapped allocations are large and rare.
+  if (allow_ref_count && LIKELY(!is_direct_mapped)) {
     new (internal::PartitionRefCountPointer(slot_start))
         internal::PartitionRefCount();
-#endif  // ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
   }
+#endif  // ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR
+
   return ret;
 }
 
@@ -1261,7 +1275,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAllocFlags(
   // Aligned allocation support relies on the natural alignment guarantees of
   // PartitionAlloc. Since cookies and ref-count are layered on top of
   // PartitionAlloc, they change the guarantees. As a consequence, forbid both.
-  PA_DCHECK(!allow_extras);
+  PA_DCHECK(!allow_cookies && !allow_ref_count);
 
   // This is mandated by |posix_memalign()|, so should never fire.
   PA_CHECK(base::bits::IsPowerOfTwo(alignment));

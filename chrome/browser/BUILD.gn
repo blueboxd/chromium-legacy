@@ -479,10 +479,6 @@ static_library("browser") {
     "engagement/important_sites_util.h",
     "engagement/site_engagement_helper.cc",
     "engagement/site_engagement_helper.h",
-    "engagement/site_engagement_observer.cc",
-    "engagement/site_engagement_observer.h",
-    "engagement/site_engagement_service.cc",
-    "engagement/site_engagement_service.h",
     "engagement/site_engagement_service_factory.cc",
     "engagement/site_engagement_service_factory.h",
     "enterprise/browser_management/browser_management_service.cc",
@@ -512,6 +508,10 @@ static_library("browser") {
     "favicon/large_icon_service_factory.h",
     "feature_engagement/tracker_factory.cc",
     "feature_engagement/tracker_factory.h",
+    "federated_learning/floc_eligibility_observer.cc",
+    "federated_learning/floc_eligibility_observer.h",
+    "federated_learning/floc_event_logger.cc",
+    "federated_learning/floc_event_logger.h",
     "federated_learning/floc_id_provider.h",
     "federated_learning/floc_id_provider_factory.cc",
     "federated_learning/floc_id_provider_factory.h",
@@ -995,6 +995,8 @@ static_library("browser") {
     "page_load_metrics/observers/aborts_page_load_metrics_observer.h",
     "page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.cc",
     "page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h",
+    "page_load_metrics/observers/ad_metrics/floc_page_load_metrics_observer.cc",
+    "page_load_metrics/observers/ad_metrics/floc_page_load_metrics_observer.h",
     "page_load_metrics/observers/ad_metrics/frame_data.cc",
     "page_load_metrics/observers/ad_metrics/frame_data.h",
     "page_load_metrics/observers/ad_metrics/page_ad_density_tracker.cc",
@@ -2715,6 +2717,7 @@ static_library("browser") {
       "android/feed/v2/background_refresh_task.cc",
       "android/feed/v2/background_refresh_task.h",
       "android/feed/v2/feed_image_fetch_client.cc",
+      "android/feed/v2/feed_persistent_key_value_cache.cc",
       "android/feed/v2/feed_service_bridge.cc",
       "android/feed/v2/feed_service_bridge.h",
       "android/feed/v2/feed_service_factory.cc",
@@ -2953,8 +2956,6 @@ static_library("browser") {
       "android/webapps/add_to_homescreen_installer.h",
       "android/webapps/add_to_homescreen_mediator.cc",
       "android/webapps/add_to_homescreen_mediator.h",
-      "android/webapps/add_to_homescreen_params.cc",
-      "android/webapps/add_to_homescreen_params.h",
       "android/webapps/webapp_registry.cc",
       "android/webapps/webapp_registry.h",
       "android/webauth/fido2helper_native_android.cc",
@@ -3028,8 +3029,6 @@ static_library("browser") {
       "download/android/service/download_task_scheduler.h",
       "download/android/string_utils.cc",
       "download/download_crx_util_android.cc",
-      "engagement/site_engagement_service_android.cc",
-      "engagement/site_engagement_service_android.h",
       "enterprise/util/android_enterprise_info.cc",
       "enterprise/util/android_enterprise_info.h",
       "file_select_helper_contacts_android.cc",
@@ -3372,7 +3371,6 @@ static_library("browser") {
       "//chrome/browser/share",
     ]
 
-    deps += [ "//chrome/browser/engagement/android:jni_headers" ]
     deps -= [ "//components/storage_monitor" ]
 
     if (enable_supervised_users) {
@@ -5985,9 +5983,7 @@ static_library("browser") {
     deps += [
       "//chrome/common:offline_page_auto_fetcher_mojom",
       "//components/offline_pages/content/background_loader",
-      "//components/offline_pages/content/renovations",
       "//components/offline_pages/core/downloads:offline_pages_ui_adapter",
-      "//components/offline_pages/core/renovations",
       "//components/offline_pages/core/request_header",
     ]
 

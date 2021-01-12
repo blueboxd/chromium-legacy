@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/user_education/feature_promo_text_replacements.h"
@@ -28,8 +27,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/installable/installable_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -188,10 +189,6 @@ base::string16 PwaInstallView::GetTextForTooltipAndAccessibleName() const {
       webapps::AppBannerManager::GetInstallableWebAppName(web_contents));
 }
 
-const char* PwaInstallView::GetClassName() const {
-  return "PwaInstallView";
-}
-
 bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,
                                    webapps::AppBannerManager* manager) {
   auto start_url = manager->GetManifestStartUrl();
@@ -207,3 +204,6 @@ bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,
   return score > kIphSiteEngagementThresholdParam.Get() &&
          web_app::ShouldShowIph(profile->GetPrefs(), app_id);
 }
+
+BEGIN_METADATA(PwaInstallView, PageActionIconView)
+END_METADATA

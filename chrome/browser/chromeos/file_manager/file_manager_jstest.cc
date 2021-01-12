@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerCommandsTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerDialogBaseTest) {
-  RunTestURL("foreground/js/ui/file_manager_dialog_base_unittest_gen.html");
+  RunTestURL("foreground/js/ui/file_manager_dialog_base_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationHandlerTest) {
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTransferController) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTypeFiltersController) {
-  RunTestURL("foreground/js/file_type_filters_controller_unittest_gen.html");
+  RunTestURL("foreground/js/file_type_filters_controller_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileType) {
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MountMetricsTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMenu) {
-  RunTestURL("foreground/js/ui/multi_menu_unittest_gen.html");
+  RunTestURL("foreground/js/ui/multi_menu_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMetadataProvider) {
@@ -222,11 +222,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
-  RunTestURL("foreground/js/providers_model_unittest_gen.html");
+  RunTestURL("foreground/js/providers_model_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
-  RunTestURL("foreground/js/spinner_controller_unittest_gen.html");
+  RunTestURL("foreground/js/spinner_controller_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {

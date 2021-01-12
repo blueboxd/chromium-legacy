@@ -596,6 +596,13 @@ message TriggerScriptUIProto {
   // Whether the visual viewport should be resized to allow scrolling to the
   // bottom of the page while the trigger script is being displayed.
   optional bool resize_visual_viewport = 8;
+  // Whether the bottom sheet should temporarily disappear when scrolling down
+  // the website, to move out of the way.
+  //
+  // Avoid setting both resize_visual_viewport and scroll_to_hide to true, as
+  // the resulting behavior is confusing: the bottom sheet can pop back up after
+  // a scroll down instead of staying hidden in some situations.
+  optional bool scroll_to_hide = 9;
 }
 
 // An action could be performed.
@@ -2274,11 +2281,8 @@ message DetailsChangesProto {
 message DetailsProto {
   optional string title = 1;
 
-  oneof image {
-    string image_url = 2;
-    // When set to true shows placeholder in place of an image.
-    bool show_image_placeholder = 10;
-  }
+  optional string image_url = 2;
+
   // Specifies the hint for accessibility. If set to empty, the image will not
   // be announced by accessibility.
   optional string image_accessibility_hint = 14;
@@ -2317,17 +2321,30 @@ message DetailsProto {
   optional DateTimeProto datetime = 3;
   optional string description = 4;
 
-  // Asks the UI to show animated placeholders for missing fields.
-  // The placeholder will be shown on effectively missing:
-  // * title
-  // * image
-  // * description line (1, 2 or 3)
-  // TODO(crbug.com/806868): Make the fields for displaying placeholders
-  // configurable by the server.
-  optional bool animate_placeholders = 11;
+  // The configuration for the placeholders.
+  message PlaceholdersConfiguration {
+    // Show a placeholder if |DetailsProto.image_url| is empty.
+    optional bool show_image_placeholder = 1;
+
+    // Show a placeholder if |DetailsProto.title| is empty.
+    optional bool show_title_placeholder = 2;
+
+    // Show a placeholder if |DetailsProto.description_line_1| is empty.
+    optional bool show_description_line_1_placeholder = 3;
+
+    // Show a placeholder if |DetailsProto.description_line_2| is empty.
+    optional bool show_description_line_2_placeholder = 4;
+
+    // Show a placeholder if |DetailsProto.description_line_3| is empty.
+    optional bool show_description_line_3_placeholder = 5;
+  }
+
+  // The placeholders configuration. Note that a placeholder will be shown only
+  // if the associated data is empty.
+  optional PlaceholdersConfiguration placeholders = 15;
 
   // Deprecated, no longer supported.
-  reserved 5;
+  reserved 5, 10, 11;
 }
 
 // Show contextual information.
@@ -2344,6 +2361,10 @@ message ShowDetailsProto {
   // Flags indicating which parts of the details (if any) have changed.
   // This field is taken into account only if |details| is filled.
   optional DetailsChangesProto change_flags = 2;
+
+  // Whether the details should be added/appended instead of replacing the
+  // current details.
+  optional bool append = 6;
 }
 
 // Set the value of an form element.

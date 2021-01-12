@@ -4749,6 +4749,12 @@ others/histograms.xml -->
   <int value="3" label="Initially incomplete &amp; Failure"/>
 </enum>
 
+<enum name="AutofillAwGSuggestionAvailability">
+  <int value="0" label="No suggestion"/>
+  <int value="1" label="Has suggestion, user doesn't select it"/>
+  <int value="2" label="Has suggestion, user selects it"/>
+</enum>
+
 <enum name="AutofillCardholderNameFixFlowPromptEvent">
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>
@@ -5798,6 +5804,12 @@ others/histograms.xml -->
   <int value="97" label="SEARCH_TERM"/>
   <int value="98" label="PRICE"/>
   <int value="99" label="NOT_PASSWORD"/>
+</enum>
+
+<enum name="AutofillServerPredictionAvailability">
+  <int value="0" label="Not available"/>
+  <int value="1" label="Available on session start"/>
+  <int value="2" label="Available after session start"/>
 </enum>
 
 <enum name="AutofillSessionStates">
@@ -24287,6 +24299,9 @@ Called by update_extension_histograms.py.-->
   <int value="467"
       label="ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_PANEL_ACTION"/>
   <int value="468" label="FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED"/>
+  <int value="469"
+      label="VIRTUAL_KEYBOARD_PRIVATE_ON_CLIPBOARD_HISTORY_CHANGED"/>
+  <int value="470" label="VIRTUAL_KEYBOARD_PRIVATE_ON_CLIPBOARD_ITEM_UPDATED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -30825,6 +30840,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3748" label="SamePartyCookieInclusionOverruledSameSite"/>
   <int value="3749" label="EmbedElementWithoutTypeSrcChanged"/>
   <int value="3750" label="PaymentHandlerStandardizedPaymentMethodIdentifier"/>
+  <int value="3751" label="WebCodecsAudioEncoder"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43635,6 +43651,8 @@ from previous Chrome versions.
   <int value="-854716639" label="TranslateAndroidManualTrigger:enabled"/>
   <int value="-854519621" label="PointerLockOptions:disabled"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
+  <int value="-853455968"
+      label="OmniboxDefaultTypedNavigationsToHttps:disabled"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
   <int value="-847216521" label="ChromeDuplex:enabled"/>
@@ -46711,6 +46729,8 @@ from previous Chrome versions.
   <int value="2099945365" label="OmniboxAssistantVoiceSearch:enabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104340988" label="CrostiniUsername:disabled"/>
+  <int value="2104439359"
+      label="OmniboxDefaultTypedNavigationsToHttps:enabled"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
@@ -61555,6 +61575,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="kBrowserWindow"/>
   <int value="2" label="kBackgroundMode"/>
   <int value="3" label="kOffTheRecordProfile"/>
+  <int value="4" label="kDownloadInProgress"/>
 </enum>
 
 <enum name="ProfileMenuActionableItem">

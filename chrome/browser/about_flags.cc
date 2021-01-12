@@ -1385,6 +1385,24 @@ const FeatureEntry::FeatureVariation
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
+const FeatureEntry::FeatureParam
+    kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout3s[] = {
+        {omnibox::kDefaultTypedNavigationsToHttpsTimeoutParam, "3s"}};
+const FeatureEntry::FeatureParam
+    kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout10s[] = {
+        {omnibox::kDefaultTypedNavigationsToHttpsTimeoutParam, "10s"}};
+const FeatureEntry::FeatureVariation
+    kOmniboxDefaultTypedNavigationsToHttpsVariations[] = {
+        {"3 second timeout",
+         kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout3s,
+         base::size(kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout3s),
+         nullptr},
+        {"10 second timeout",
+         kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout10s,
+         base::size(kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout10s),
+         nullptr},
+};
+
 const FeatureEntry::FeatureParam kOmniboxMaxURLMatches2[] = {
     {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "2"}};
 const FeatureEntry::FeatureParam kOmniboxMaxURLMatches3[] = {
@@ -2499,6 +2517,7 @@ constexpr FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kPasswordsAccountStorage_ProfileStore[] = {
     {password_manager::features::kSaveToProfileStoreByDefault, "true"},
+    {password_manager::features::kSaveToAccountStoreOnOptIn, "true"},
 };
 
 const FeatureEntry::FeatureVariation kPasswordsAccountStorageVariations[] = {
@@ -4285,6 +4304,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"memlog-stack-mode", flag_descriptions::kMemlogStackModeName,
      flag_descriptions::kMemlogStackModeDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogStackModeChoices)},
+
+    {"omnibox-default-typed-navigations-to-https",
+     flag_descriptions::kOmniboxDefaultTypedNavigationsToHttpsName,
+     flag_descriptions::kOmniboxDefaultTypedNavigationsToHttpsDescription,
+     kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kDefaultTypedNavigationsToHttps,
+         kOmniboxDefaultTypedNavigationsToHttpsVariations,
+         "OmniboxDefaultTypedNavigationsToHttps")},
 
     {"omnibox-ui-sometimes-elide-to-registrable-domain",
      flag_descriptions::kOmniboxUIMaybeElideToRegistrableDomainName,
@@ -6264,7 +6292,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          password_manager::features::kPasswordChangeInSettings,
          kPasswordChangeInSettingsFeatureVariations,
-         "PasswordChangeInSettingsFeatureVariations")},
+         "PasswordChangeInSettings")},
     {"password-scripts-fetching",
      flag_descriptions::kPasswordScriptsFetchingName,
      flag_descriptions::kPasswordScriptsFetchingDescription, kOsAndroid,

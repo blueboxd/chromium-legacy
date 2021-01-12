@@ -4034,6 +4034,9 @@ void Document::DispatchUnloadEvents(
     parser_->StopParsing();
 
   if (load_event_progress_ == kLoadEventNotRun ||
+      // TODO(dcheng): We should consider if we can make this conditional check
+      // stronger with a DCHECK() that this isn't called if the unload event is
+      // already complete.
       load_event_progress_ > kUnloadEventInProgress) {
     return;
   }
@@ -5703,7 +5706,7 @@ void Document::WillChangeFrameOwnerProperties(
     int margin_height,
     mojom::blink::ScrollbarMode scrollbar_mode,
     bool is_display_none,
-    ColorScheme color_scheme) {
+    mojom::blink::ColorScheme color_scheme) {
   DCHECK(GetFrame() && GetFrame()->Owner());
   FrameOwner* owner = GetFrame()->Owner();
 

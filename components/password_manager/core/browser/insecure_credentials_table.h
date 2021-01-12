@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_store_sync.h"
 #include "url/gurl.h"
 
 namespace sql {
@@ -59,6 +60,8 @@ struct CompromisedCredentials {
   CompromisedCredentials& operator=(CompromisedCredentials&& rhs);
   ~CompromisedCredentials();
 
+  // The primary key of an affected Login.
+  FormPrimaryKey parent_key{-1};
   // The signon_realm of the website where the credentials were compromised.
   std::string signon_realm;
   // The value of the compromised username.
@@ -102,6 +105,9 @@ class InsecureCredentialsTable {
   // Gets all the rows in the database for |signon_realm|.
   std::vector<CompromisedCredentials> GetRows(
       const std::string& signon_realm) const;
+
+  // Gets all the rows in the database for |parent_key|.
+  std::vector<CompromisedCredentials> GetRows(FormPrimaryKey parent_key) const;
 
   // Removes all compromised credentials created between |remove_begin|
   // inclusive and |remove_end| exclusive. If |url_filter| is not null, only

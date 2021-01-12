@@ -2402,7 +2402,7 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
   UpdateAllLifecyclePhases();
   Color system_background_color = LayoutTheme::GetTheme().SystemColor(
-      CSSValueID::kCanvas, ColorScheme::kLight);
+      CSSValueID::kCanvas, mojom::blink::ColorScheme::kLight);
 
   EXPECT_EQ(system_background_color,
             GetDocument().View()->BaseBackgroundColor());
@@ -2420,7 +2420,7 @@ TEST_F(StyleEngineTest, ColorSchemeOverride) {
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(
-      ColorScheme::kLight,
+      mojom::blink::ColorScheme::kLight,
       GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
 
   GetDocument().GetPage()->SetMediaFeatureOverride("prefers-color-scheme",
@@ -2428,7 +2428,7 @@ TEST_F(StyleEngineTest, ColorSchemeOverride) {
 
   UpdateAllLifecyclePhases();
   EXPECT_EQ(
-      ColorScheme::kDark,
+      mojom::blink::ColorScheme::kDark,
       GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
 }
 
@@ -2984,7 +2984,7 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
 
   EXPECT_EQ(Color::kWhite, root->GetComputedStyle()->VisitedDependentColor(
                                GetCSSPropertyColor()));
-  EXPECT_EQ(ColorScheme::kDark,
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
             root->GetComputedStyle()->UsedColorSchemeForInitialColors());
   EXPECT_EQ(MakeRGB(255, 0, 0), body->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
@@ -2993,7 +2993,7 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
   GetDocument().GetFrame()->StartPrinting(page_size, page_size, 1);
   EXPECT_EQ(Color::kBlack, root->GetComputedStyle()->VisitedDependentColor(
                                GetCSSPropertyColor()));
-  EXPECT_EQ(ColorScheme::kLight,
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
             root->GetComputedStyle()->UsedColorSchemeForInitialColors());
   EXPECT_EQ(MakeRGB(0, 128, 0), body->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
@@ -3001,7 +3001,7 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
   GetDocument().GetFrame()->EndPrinting();
   EXPECT_EQ(Color::kWhite, root->GetComputedStyle()->VisitedDependentColor(
                                GetCSSPropertyColor()));
-  EXPECT_EQ(ColorScheme::kDark,
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
             root->GetComputedStyle()->UsedColorSchemeForInitialColors());
   EXPECT_EQ(MakeRGB(255, 0, 0), body->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
@@ -3492,14 +3492,14 @@ TEST_F(StyleEngineSimTest, OwnerColorScheme) {
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
   ASSERT_TRUE(frame_document);
-  EXPECT_EQ(ColorScheme::kDark,
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
             frame_document->GetStyleEngine().GetOwnerColorScheme());
 
   frame_element->SetInlineStyleProperty(CSSPropertyID::kColorScheme, "light");
 
   test::RunPendingTasks();
   Compositor().BeginFrame();
-  EXPECT_EQ(ColorScheme::kLight,
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
             frame_document->GetStyleEngine().GetOwnerColorScheme());
 }
 
@@ -3746,13 +3746,18 @@ void SetDependsOnContainerQueries(HTMLCollection& affected) {
 
 TEST_F(StyleEngineTest, UpdateStyleAndLayoutTreeForContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
-    <div id="container1" style="contain:layout">
+    <style>
+      .container {
+        contain: layout size;
+      }
+    </style>
+    <div id="container1" class="container">
       <span class="affected"></span>
-      <div id="container2" style="contain:layout" class="affected">
+      <div id="container2" class="container affected">
         <span class="affected"></span>
         <span></span>
         <span class="affected"></span>
-        <span></span>
+        <span><span class="affected"></span></span>
         <span class="affected"></span>
         <div style="display:none" class="affected">
           <span class="affected"></span>
@@ -3763,7 +3768,7 @@ TEST_F(StyleEngineTest, UpdateStyleAndLayoutTreeForContainer) {
         </div>
       </div>
       <span></span>
-      <div id="container3" style="contain:layout">
+      <div id="container3" class="container">
         <span class="affected"></span>
         <span class="affected"></span>
       </div>
@@ -3790,12 +3795,12 @@ TEST_F(StyleEngineTest, UpdateStyleAndLayoutTreeForContainer) {
   GetStyleEngine().UpdateStyleAndLayoutTreeForContainer(*container2);
 
   // Three direct span.affected children, and the two display:none elements.
-  EXPECT_EQ(5u, GetStyleEngine().StyleForElementCount() - start_count);
+  EXPECT_EQ(6u, GetStyleEngine().StyleForElementCount() - start_count);
 }
 
 TEST_F(StyleEngineTest, MarkStyleDirtyFromContainerRecalc) {
   GetDocument().body()->setInnerHTML(R"HTML(
-    <div id="container" style="contain:layout">
+    <div id="container" style="contain: layout size">
       <input id="input" type="text" class="affected">
     </div>
   )HTML");

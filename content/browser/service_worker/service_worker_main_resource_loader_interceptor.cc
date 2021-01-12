@@ -206,6 +206,9 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
 base::Optional<SubresourceLoaderParams>
 ServiceWorkerMainResourceLoaderInterceptor::
     MaybeCreateSubresourceLoaderParams() {
+  if (!handle_) {
+    return base::nullopt;
+  }
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       handle_->container_host();
 

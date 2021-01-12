@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/active_directory_login_screen.h"
@@ -957,10 +958,22 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
   OnScreenExit(GaiaView::kScreenId, GaiaScreen::GetResultString(result));
   switch (result) {
     case GaiaScreen::Result::BACK:
-      AdvanceToScreen(UserCreationView::kScreenId);
-      break;
-    case GaiaScreen::Result::CLOSE_DIALOG:
-      LoginDisplayHost::default_host()->HideOobeDialog();
+    case GaiaScreen::Result::CANCEL:
+      if (result == GaiaScreen::Result::BACK &&
+          wizard_context_->is_user_creation_enabled) {
+        // `Result::BACK` is only triggered when pressing back button. It goes
+        // back to UserCreationScreen if screen is enabled; otherwise, it
+        // behaves the same as `Result::CANCEL` which is triggered by pressing
+        // ESC key.
+        AdvanceToScreen(UserCreationView::kScreenId);
+        break;
+      }
+      if (LoginDisplayHost::default_host()->HasUserPods() &&
+          !wizard_context_->is_user_creation_enabled) {
+        LoginDisplayHost::default_host()->HideOobeDialog();
+      } else {
+        GetScreen<GaiaScreen>()->LoadOnline(EmptyAccountId());
+      }
       break;
     case GaiaScreen::Result::ENTERPRISE_ENROLL:
       ShowEnrollmentScreenIfEligible();
@@ -1705,8 +1718,8 @@ void WizardController::PerformOOBECompletedActions() {
 
   UMA_HISTOGRAM_COUNTS_100(
       "HIDDetection.TimesDialogShownPerOOBECompleted",
-      GetLocalState()->GetInteger(prefs::kTimesHIDDialogShown));
-  GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
+      GetLocalState()->GetInteger(::prefs::kTimesHIDDialogShown));
+  GetLocalState()->ClearPref(::prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
   oobe_marked_completed_ = true;
 }
@@ -2023,8 +2036,8 @@ void WizardController::SkipEnrollmentPromptsForTesting() {
 
 // static
 std::unique_ptr<base::AutoReset<bool>>
-WizardController::ForceBrandedBuildForTesting() {
-  return std::make_unique<base::AutoReset<bool>>(&is_branded_build_, true);
+WizardController::ForceBrandedBuildForTesting(bool value) {
+  return std::make_unique<base::AutoReset<bool>>(&is_branded_build_, value);
 }
 
 // static
@@ -2066,7 +2079,7 @@ void WizardController::PrepareFirstRunPrefs() {
   bool shouldShowParentalControl =
       wizard_context_->sign_in_as_child && !profile->IsChild() &&
       !profile->GetProfilePolicyConnector()->IsManaged();
-  profile->GetPrefs()->SetBoolean(prefs::kHelpAppShouldShowParentalControl,
+  profile->GetPrefs()->SetBoolean(::prefs::kHelpAppShouldShowParentalControl,
                                   shouldShowParentalControl);
 }
 

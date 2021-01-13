@@ -278,9 +278,6 @@ extern const char kForceColorProfileHDR10[];
 extern const char kForceColorProfileName[];
 extern const char kForceColorProfileDescription[];
 
-extern const char kForcePreferredIntervalForVideoName[];
-extern const char kForcePreferredIntervalForVideoDescription[];
-
 extern const char kDynamicColorGamutName[];
 extern const char kDynamicColorGamutDescription[];
 
@@ -840,6 +837,9 @@ extern const char kMobileIdentityConsistencyDescription[];
 extern const char kMobileIdentityConsistencyVarName[];
 extern const char kMobileIdentityConsistencyVarDescription[];
 
+extern const char kMobilePwaInstallUseBottomSheetName[];
+extern const char kMobilePwaInstallUseBottomSheetDescription[];
+
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
@@ -1173,6 +1173,10 @@ extern const char kSafeBrowsingEnhancedProtectionMessageInInterstitialsName[];
 extern const char
     kSafeBrowsingEnhancedProtectionMessageInInterstitialsDescription[];
 
+extern const char kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName[];
+extern const char
+    kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointDescription[];
+
 extern const char kSafetyTipName[];
 extern const char kSafetyTipDescription[];
 
@@ -1405,9 +1409,6 @@ extern const char kUiPartialSwapDescription[];
 
 extern const char kUseFirstPartySetName[];
 extern const char kUseFirstPartySetDescription[];
-
-extern const char kUsePreferredIntervalForVideoName[];
-extern const char kUsePreferredIntervalForVideoDescription[];
 
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
@@ -2467,11 +2468,11 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 extern const char kSwitchAccessPointScanningName[];
 extern const char kSwitchAccessPointScanningDescription[];
 
-extern const char kExperimentalAccessibilityCursorColorsName[];
-extern const char kExperimentalAccessibilityCursorColorsDescription[];
-
 extern const char kMagnifierNewFocusFollowingName[];
 extern const char kMagnifierNewFocusFollowingDescription[];
+
+extern const char kMagnifierPanningImprovementsName[];
+extern const char kMagnifierPanningImprovementsDescription[];
 
 extern const char kFilesAppCopyImageName[];
 extern const char kFilesAppCopyImageDescription[];

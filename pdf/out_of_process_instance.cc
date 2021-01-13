@@ -132,9 +132,11 @@ constexpr char kJSBookmarksData[] = "bookmarksData";
 constexpr char kJSMetadataType[] = "metadata";
 constexpr char kJSMetadataData[] = "metadataData";
 constexpr char kJSVersion[] = "version";
+constexpr char kJSLinearized[] = "linearized";
 constexpr char kJSTitle[] = "title";
 constexpr char kJSAuthor[] = "author";
 constexpr char kJSSubject[] = "subject";
+constexpr char kJSKeywords[] = "keywords";
 constexpr char kJSCreator[] = "creator";
 constexpr char kJSProducer[] = "producer";
 constexpr char kJSCanSerializeDocument[] = "canSerializeDocument";
@@ -2429,6 +2431,9 @@ void OutOfProcessInstance::SendMetadata() {
   if (!version.empty())
     metadata_data.Set(pp::Var(kJSVersion), pp::Var(base::UTF16ToUTF8(version)));
 
+  metadata_data.Set(pp::Var(kJSLinearized),
+                    pp::Var(document_metadata.linearized));
+
   if (!document_metadata.title.empty())
     metadata_data.Set(pp::Var(kJSTitle), pp::Var(document_metadata.title));
 
@@ -2437,6 +2442,11 @@ void OutOfProcessInstance::SendMetadata() {
 
   if (!document_metadata.subject.empty())
     metadata_data.Set(pp::Var(kJSSubject), pp::Var(document_metadata.subject));
+
+  if (!document_metadata.keywords.empty()) {
+    metadata_data.Set(pp::Var(kJSKeywords),
+                      pp::Var(document_metadata.keywords));
+  }
 
   if (!document_metadata.creator.empty())
     metadata_data.Set(pp::Var(kJSCreator), pp::Var(document_metadata.creator));

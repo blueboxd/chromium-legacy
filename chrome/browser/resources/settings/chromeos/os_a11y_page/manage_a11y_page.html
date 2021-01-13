@@ -96,15 +96,17 @@
         deep-link-focus-id$="[[Setting.kFullscreenMagnifier]]">
     </settings-toggle-button>
     <template is="dom-if" if="[[prefs.settings.a11y.screen_magnifier.value]]">
-      <div class="sub-item">
-        <settings-toggle-button
-            class="sub-item"
-            pref="{{prefs.settings.a11y.screen_magnifier_focus_following}}"
-            label="$i18n{screenMagnifierFocusFollowingLabel}"
-            deep-link-focus-id$=
-                "[[Setting.kFullscreenMagnifierFocusFollowing]]">
-        </settings-toggle-button>
-      </div>
+      <template is="dom-if" if="[[isMagnifierPanningImprovementsEnabled_]]">
+        <div class="sub-item">
+          <settings-toggle-button
+              class="sub-item"
+              pref="{{prefs.settings.a11y.screen_magnifier_focus_following}}"
+              label="$i18n{screenMagnifierFocusFollowingLabel}"
+              deep-link-focus-id$=
+                  "[[Setting.kFullscreenMagnifierFocusFollowing]]">
+          </settings-toggle-button>
+        </div>
+      </template>
       <div class="settings-box continuation">
         <div class="start sub-item settings-box-text" aria-hidden="true">
           $i18n{screenMagnifierZoomLabel}
@@ -270,19 +272,17 @@
           label-max="$i18n{largeMouseCursorSizeLargeLabel}">
       </settings-slider>
     </div>
-    <template is="dom-if" if="[[shouldShowExperimentalCursorColor_]]">
-      <div class="settings-box">
-        <div class="start settings-box-text" id="cursorColorOptionsLabel">
-          $i18n{cursorColorOptionsLabel}
-        </div>
-        <settings-dropdown-menu aria-labeledby="cursorColorOptionsLabel"
-            pref="{{prefs.settings.a11y.cursor_color}}"
-            menu-options="[[cursorColorOptions_]]"
-            on-settings-control-change="onA11yCursorColorChange_"
-            deep-link-focus-id$="[[Setting.kEnableCursorColor]]">
-        </settings-dropdown-menu>
+    <div class="settings-box">
+      <div class="start settings-box-text" id="cursorColorOptionsLabel">
+        $i18n{cursorColorOptionsLabel}
       </div>
-    </template>
+      <settings-dropdown-menu aria-labeledby="cursorColorOptionsLabel"
+          pref="{{prefs.settings.a11y.cursor_color}}"
+          menu-options="[[cursorColorOptions_]]"
+          on-settings-control-change="onA11yCursorColorChange_"
+          deep-link-focus-id$="[[Setting.kEnableCursorColor]]">
+      </settings-dropdown-menu>
+    </div>
     <settings-toggle-button
         class="hr"
         pref="{{prefs.settings.a11y.cursor_highlight}}"

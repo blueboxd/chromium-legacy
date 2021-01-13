@@ -65,7 +65,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Canvas.2DPrintingAsVector" enum="BooleanSuccess"
-    expires_after="2021-01-31">
+    expires_after="2022-01-31">
   <owner>fserb@chromium.org</owner>
   <owner>juanmihd@chromium.org</owner>
   <summary>
@@ -154,7 +154,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Canvas.HasRendered" enum="Boolean"
-    expires_after="2021-01-31">
+    expires_after="2022-01-31">
   <owner>juanmihd@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -172,12 +172,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Canvas.IsComposited" enum="Boolean"
-    expires_after="2022-04-04">
+    expires_after="2021-01-31">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
     Records if the canvas context is composited or not. Recorded in
     HTMLCanvasElement::GetCanvasRenderingContext.
+
+    Note: This has been recording bad data since at least 2020-01-01. It was
+    emitted in the wrong place and always recording false. Since it records the
+    same information as IsAccelerated, I am just going to let it expire.
   </summary>
 </histogram>
 
@@ -519,6 +523,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Blink.CookieStore.MatchType" enum="CookieStoreMatchType"
     expires_after="M87">
+  <obsolete>
+    Removed in M87.
+  </obsolete>
   <owner>ayui@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -1032,7 +1039,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Blink.ImageDecoders.IncrementallyDecodedByteSize"
-    units="bytes" expires_after="2021-05-09">
+    units="bytes" expires_after="2021-07-11">
   <owner>mbarowsky@chromium.org</owner>
   <owner>andrescj@chromium.org</owner>
   <summary>
@@ -1642,7 +1649,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.OffscreenCanvas.NewOffscreenCanvas" enum="Boolean"
-    expires_after="2021-01-31">
+    expires_after="2022-04-04">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -1668,7 +1675,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.OffscreenCanvas.Transferred" enum="Boolean"
-    expires_after="2021-01-31">
+    expires_after="2022-04-04">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -1834,7 +1841,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Script.SchedulingType" enum="ScriptSchedulingType"
-    expires_after="2021-05-02">
+    expires_after="2021-07-11">
   <owner>kouhei@chromium.org</owner>
   <owner>hiroshige@chromium.org</owner>
   <summary>

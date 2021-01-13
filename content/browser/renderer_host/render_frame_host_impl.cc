@@ -147,7 +147,6 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/state_transitions.h"
-#include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -1247,9 +1246,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //    flight.
   // 3. The RenderFrame can be detached, as part of removing a subtree (due to
   //    navigation, unload, or DOM mutation). In this case, the browser sends
-  //    a UnfreezableFrameMsg_Delete for the RenderFrame to detach itself and
-  //    release its associated resources. If the subframe contains an unload
-  //    handler, |lifecycle_state_| is advanced to
+  //    a mojom::FrameNavigationControl::Delete message for the RenderFrame
+  //    to detach itself and release its associated resources. If the subframe
+  //    contains an unload handler, |lifecycle_state_| is advanced to
   //    LifeCycleState::kRunningUnloadHandlers to track that the detach is in
   //    progress; otherwise, it is advanced directly to
   //    LifeCycleState::kReadyToBeDeleted.
@@ -1277,9 +1276,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //
   // TODO(dcheng): Due to how frame detach is signalled today, there are some
   // bugs in this area. In particular, subtree detach is reported from the
-  // bottom up, so the replicated UnfreezableFrameMsg_Delete messages actually
-  // operate on a node-by-node basis rather than detaching an entire subtree at
-  // once...
+  // bottom up, so the replicated mojom::FrameNavigationControl::Delete
+  // messages actually operate on a node-by-node basis rather than detaching an
+  // entire subtree at once...
   //
   // Note that this logic is fairly subtle. It needs to include all subframes
   // and all speculative frames, but it should exclude case #1 (a main
@@ -2440,7 +2439,8 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   return true;
 }
 
-void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
+void RenderFrameHostImpl::DeleteRenderFrame(
+    mojom::FrameDeleteIntention intent) {
   if (IsPendingDeletion())
     return;
 
@@ -2450,7 +2450,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
       has_unload_handlers() && !IsInBackForwardCache();
 
   if (is_render_frame_created()) {
-    Send(new UnfreezableFrameMsg_Delete(routing_id_, intent));
+    GetNavigationControl()->Delete(intent);
 
     if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
       DCHECK_NE(lifecycle_state(), LifecycleState::kSpeculative);
@@ -2750,6 +2750,14 @@ void RenderFrameHostImpl::DidNavigate(
   frame_tree_node_->SetCurrentURL(params.url);
   SetLastCommittedOrigin(params.origin);
 
+  // TODO(https://crbug.com/1164508): Remove this check once origin is computed
+  // correctly by the browser side.
+  if (!GetLastCommittedOrigin().IsSameOriginWith(
+          GetIsolationInfoForSubresources().frame_origin().value())) {
+    isolation_info_ = ComputeIsolationInfoInternal(
+        GetLastCommittedOrigin(), isolation_info_.request_type());
+  }
+
   // Separately, update the frame's last successful URL except for net error
   // pages, since those do not end up in the correct process after transfers
   // (see https://crbug.com/560511).  Instead, the next cross-process navigation
@@ -2919,6 +2927,15 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   DCHECK(GetLastCommittedOrigin().opaque());
   DCHECK(isolation_info_.IsEmpty());
 
+  // If the document has a non-secure parent, then it is non-secure. Otherwise
+  // it depends if the creator has a potentially-trustworthy origin.
+  if (parent_ && !parent_->is_web_secure_context()) {
+    is_web_secure_context_ = false;
+  } else {
+    is_web_secure_context_ =
+        network::IsOriginPotentiallyTrustworthy(new_frame_creator);
+  }
+
   // Calculate and set |new_frame_origin|.
   bool new_frame_should_be_sandboxed =
       network::mojom::WebSandboxFlags::kOrigin ==
@@ -2977,10 +2994,10 @@ void RenderFrameHostImpl::RemoveChild(FrameTreeNode* child) {
       std::unique_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
       node_to_delete->current_frame_host()->DeleteRenderFrame(
-          FrameDeleteIntention::kNotMainFrame);
+          mojom::FrameDeleteIntention::kNotMainFrame);
       // Speculative RenderFrameHosts are deleted by the FrameTreeNode's
-      // RenderFrameHostManager's destructor. RenderFrameProxyHosts send
-      // UnfreezableFrameMsg_Delete automatically in the destructor.
+      // RenderFrameHostManager's destructor. RenderFrameProxyHosts disconnect
+      // the mojo channel automatically in the destructor.
       // TODO(dcheng): This is horribly confusing. Refactor this logic so it's
       // more understandable.
       node_to_delete.reset();
@@ -3001,7 +3018,7 @@ void RenderFrameHostImpl::ResetChildren() {
   // than messaging each child's current frame host...
   for (auto& child : children)
     child->current_frame_host()->DeleteRenderFrame(
-        FrameDeleteIntention::kNotMainFrame);
+        mojom::FrameDeleteIntention::kNotMainFrame);
 }
 
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
@@ -3330,7 +3347,8 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
 
     // The unload handlers already ran for this document during the
     // local<->local swap. Hence, there is no need to send
-    // mojo::FrameNavigationControl::Unload here. It can be marked at completed.
+    // mojom::FrameNavigationControl::Unload here. It can be marked at
+    // completed.
     SetLifecycleState(LifecycleState::kReadyToBeDeleted);
   }
 
@@ -3357,7 +3375,7 @@ void RenderFrameHostImpl::DetachFromProxy() {
     return;
 
   // Start pending deletion on this frame and its children.
-  DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
+  DeleteRenderFrame(mojom::FrameDeleteIntention::kNotMainFrame);
   StartPendingDeletionOnSubtree();
   frame_tree()->FrameUnloading(frame_tree_node_);
 
@@ -3865,10 +3883,10 @@ void RenderFrameHostImpl::DownloadURL(
       new download::DownloadUrlParameters(blink_parameters->url,
                                           GetProcess()->GetID(),
                                           GetRoutingID(), traffic_annotation));
-  parameters->set_content_initiated(true);
+  parameters->set_content_initiated(!blink_parameters->is_context_menu_save);
   parameters->set_suggested_name(
       blink_parameters->suggested_name.value_or(base::string16()));
-  parameters->set_prompt(false);
+  parameters->set_prompt(blink_parameters->is_context_menu_save);
   parameters->set_cross_origin_redirects(
       blink_parameters->cross_origin_redirects);
   parameters->set_referrer(
@@ -6121,7 +6139,8 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
           local_ancestor = rfh;
       }
 
-      local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
+      local_ancestor->DeleteRenderFrame(
+          mojom::FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
         // In case of BackForwardCache, page is evicted directly from the cache
         // and deleted immediately, without waiting for unload handlers.
@@ -8047,8 +8066,7 @@ void RenderFrameHostImpl::BindRestrictedCookieManager(
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->CreateRestrictedCookieManager(
           network::mojom::RestrictedCookieManagerRole::SCRIPT,
-          GetLastCommittedOrigin(), isolation_info_.site_for_cookies(),
-          ComputeTopFrameOrigin(GetLastCommittedOrigin()),
+          GetIsolationInfoForSubresources(),
           /* is_service_worker = */ false, GetProcess()->GetID(), routing_id(),
           std::move(receiver), CreateCookieAccessObserver());
 }
@@ -8493,7 +8511,7 @@ RenderFrameHostImpl::CreateMessageFilterForAssociatedReceiver(
 network::mojom::ClientSecurityStatePtr
 RenderFrameHostImpl::BuildClientSecurityState() const {
   auto client_security_state = network::mojom::ClientSecurityState::New();
-  client_security_state->is_web_secure_context = is_web_secure_context_;
+  client_security_state->is_web_secure_context = is_web_secure_context();
   client_security_state->cross_origin_embedder_policy =
       cross_origin_embedder_policy_;
   client_security_state->ip_address_space =
@@ -8933,8 +8951,13 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   cross_origin_opener_policy_ =
       navigation_request->coop_status().current_coop();
+
+  // Only apply some parameters if this is not the fake initial navigation,
+  // because the values set at construction time should remain unmodified.
   if (navigation_request->IsWaitingToCommit()) {
-    is_web_secure_context_ = navigation_request->is_web_secure_context();
+    // IsWebSecureContext() must only be called on ready-to-commit navigations.
+    is_web_secure_context_ = navigation_request->IsWebSecureContext();
+
     private_network_request_policy_ =
         navigation_request->private_network_request_policy();
     cross_origin_embedder_policy_ =

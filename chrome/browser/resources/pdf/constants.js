@@ -22,6 +22,8 @@ export const DisplayAnnotationsAction = {
  *   author: string,
  *   canSerializeDocument: boolean,
  *   creator: string,
+ *   keywords: string,
+ *   linearized: boolean,
  *   producer: string,
  *   subject: string,
  *   title: string,

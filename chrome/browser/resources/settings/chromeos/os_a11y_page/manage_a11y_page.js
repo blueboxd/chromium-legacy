@@ -150,11 +150,10 @@ Polymer({
     },
 
     /** @private */
-    shouldShowExperimentalCursorColor_: {
+    isMagnifierPanningImprovementsEnabled_: {
       type: Boolean,
       value() {
-        return loadTimeData.getBoolean(
-            'showExperimentalAccessibilityCursorColor');
+        return loadTimeData.getBoolean('isMagnifierPanningImprovementsEnabled');
       },
     },
 

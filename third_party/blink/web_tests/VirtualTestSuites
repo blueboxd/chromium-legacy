@@ -714,7 +714,7 @@
   },
   {
     "prefix": "web-bluetooth-new-permissions-backend",
-    "bases": ["bluetooth", "external/wpt/bluetooth"],
+    "bases": ["wpt_internal/bluetooth", "external/wpt/bluetooth"],
     "args": ["--enable-features=WebBluetoothNewPermissionsBackend"]
   },
   {
@@ -767,6 +767,11 @@
     "prefix": "bfcache-experiment-control",
     "bases": [ "http/tests/origin_trials/webexposed/bfcache-experiment-http-header-origin-trial.php" ],
     "args": [ "--enable-features=BackForwardCacheABExperimentControl" ]
+  },
+  {
+    "prefix": "interest-cohort-api-origin-trial",
+    "bases": [ "http/tests/origin_trials/webexposed/interest-cohort-origin-trial-interfaces.html" ],
+    "args": [ "--enable-features=InterestCohortAPIOriginTrial" ]
   },
   {
     "prefix": "threaded-composited-iframes",

@@ -1392,7 +1392,7 @@
                     "name": "Enabled_Stage2",
                     "enable_features": [
                         "AutofillEnableAccountWalletStorage",
-                        "AutofillEnablePasswordInfoBarAccountIndicationFooter"
+                        "AutofillEnableSaveCardInfoBarAccountIndicationFooter"
                     ],
                     "disable_features": [
                         "WalletRequiresFirstSyncSetupComplete"
@@ -1658,21 +1658,6 @@
             ]
         }
     ],
-    "ChromeOSLauncherAssistantIntegration": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableEmbeddedAssistantUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeOSNeuralPalm": [
         {
             "platforms": [
@@ -1833,6 +1818,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ClientStorageAccessContextAuditing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ClipboardContextMenuNewNudgeStudy": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClipboardHistoryContextMenuNudge"
                     ]
                 }
             ]

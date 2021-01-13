@@ -100,6 +100,28 @@ suite('InfiniteListTest', () => {
     assertEquals(tabItemHeight * tabItems.length, infiniteList.scrollHeight);
   });
 
+  test('ListUpdates', async () => {
+    let siteNames = Array.from({length: 1}, (_, i) => 'site' + (i + 1));
+    const tabItems = sampleTabItems(siteNames);
+    await setupTest(tabItems);
+    assertEquals(1, queryRows().length);
+
+    // Ensure that on updating the list with an array smaller in size
+    // than the chunkItemCount property, all the array items are rendered.
+    siteNames = Array.from({length: 3}, (_, i) => 'site' + (i + 1));
+    infiniteList.items = sampleTabItems(siteNames);
+    await waitAfterNextRender(infiniteList);
+    assertEquals(3, queryRows().length);
+
+    // Ensure that on updating the list with an array greater in size than
+    // the chunkItemCount property, only a chunk of array items are rendered.
+    siteNames =
+        Array.from({length: 2 * CHUNK_ITEM_COUNT}, (_, i) => 'site' + (i + 1));
+    infiniteList.items = sampleTabItems(siteNames);
+    await waitAfterNextRender(infiniteList);
+    assertEquals(CHUNK_ITEM_COUNT, queryRows().length);
+  });
+
   test('SelectedIndex', async () => {
     const siteNames = Array.from({length: 50}, (_, i) => 'site' + (i + 1));
     const tabItems = sampleTabItems(siteNames);

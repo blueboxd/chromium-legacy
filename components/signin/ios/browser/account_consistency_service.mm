@@ -22,6 +22,7 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/browser_state.h"
@@ -67,7 +68,8 @@ enum class GaiaCookieStateOnSignedInNavigation {
   kGaiaCookiePresentOnNavigation = 0,
   kGaiaCookieAbsentOnGoogleAssociatedDomainNavigation = 1,
   kGaiaCookieAbsentOnAddSessionNavigation = 2,
-  kMaxValue = kGaiaCookieAbsentOnAddSessionNavigation
+  kGaiaCookieRestoredOnShowInfobar = 3,
+  kMaxValue = kGaiaCookieRestoredOnShowInfobar
 };
 
 // Records the state of Gaia cookies for a navigation in UMA histogram.
@@ -329,6 +331,8 @@ void AccountConsistencyHandler::PageLoaded(
   // condition in which the infobar is dismissed prior to the page load.
   if (gaia_cookies_restored_) {
     [delegate_ onRestoreGaiaCookies];
+    LogIOSGaiaCookiesState(
+        GaiaCookieStateOnSignedInNavigation::kGaiaCookieRestoredOnShowInfobar);
     gaia_cookies_restored_ = false;
   }
 
@@ -353,8 +357,6 @@ void AccountConsistencyHandler::WebStateDestroyed() {
 
 const char AccountConsistencyService::kChromeConnectedCookieName[] =
     "CHROME_CONNECTED";
-
-const char AccountConsistencyService::kGaiaCookieName[] = "SAPISID";
 
 AccountConsistencyService::AccountConsistencyService(
     web::BrowserState* browser_state,
@@ -425,7 +427,7 @@ void AccountConsistencyService::TriggerGaiaCookieChangeIfDeleted(
     const net::CookieAccessResultList& cookie_list,
     const net::CookieAccessResultList& unused_excluded_cookies) {
   for (const auto& cookie : cookie_list) {
-    if (cookie.cookie.Name() == kGaiaCookieName) {
+    if (cookie.cookie.Name() == GaiaConstants::kGaiaSigninCookieName) {
       LogIOSGaiaCookiesState(
           GaiaCookieStateOnSignedInNavigation::kGaiaCookiePresentOnNavigation);
       return;
@@ -554,14 +556,20 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
   identity_manager_->GetAccountsCookieMutator()->ForceTriggerOnCookieChange();
 }
 
-void AccountConsistencyService::OnPrimaryAccountSet(
-    const CoreAccountInfo& account_info) {
-  AddChromeConnectedCookies();
-}
-
-void AccountConsistencyService::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_account_info) {
-  RemoveAllChromeConnectedCookies(base::OnceClosure());
+void AccountConsistencyService::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event) {
+  switch (event.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
+      AddChromeConnectedCookies();
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      RemoveAllChromeConnectedCookies(base::OnceClosure());
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kNone:
+      NOTREACHED() << "ConsentLevel::kNotRequired is not yet supported on iOS. "
+                      "This code needs to be updated when it is supported.";
+      break;
+  }
 }
 
 void AccountConsistencyService::OnAccountsInCookieUpdated(

@@ -227,7 +227,11 @@ export class InfiniteList extends PolymerElement {
 
     updateListProperty(
         this.domRepeat_, 'items', tabData => tabData,
-        newItems.slice(0, this.domRepeat_.items.length),
+        newItems.slice(
+            0,
+            Math.min(
+                Math.max(this.domRepeat_.items.length, this.chunkItemCount),
+                newItems.length)),
         true /* identityBasedUpdate= */);
 
     if (newItems.length !== oldItems.length) {

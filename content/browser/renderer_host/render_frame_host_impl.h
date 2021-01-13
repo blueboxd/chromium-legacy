@@ -53,7 +53,6 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/dom_automation_controller.mojom.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_delete_intention.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_client.mojom-forward.h"
@@ -497,7 +496,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Deletes the RenderFrame in the renderer process.
   // Postcondition: |IsPendingDeletion()| is true.
-  void DeleteRenderFrame(FrameDeleteIntention intent);
+  void DeleteRenderFrame(mojom::FrameDeleteIntention intent);
 
   // Track whether the RenderFrame for this RenderFrameHost has been created in
   // or destroyed in the renderer process.
@@ -1888,12 +1887,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return accessibility_fatal_error_count_;
   }
 
+  // Returns true if the current document is considered to be a secure context.
+  //
+  // See the field documentation for more details.
+  bool is_web_secure_context() const { return is_web_secure_context_; }
+
   // Builds and return a ClientSecurityState based on the internal
   // RenderFrameHostImpl state. This is never null.
   network::mojom::ClientSecurityStatePtr BuildClientSecurityState() const;
-
-  // Returns true if the current document is considered to be a secure context.
-  bool is_web_secure_context() const { return is_web_secure_context_; }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void PepperInstanceClosed(int32_t instance_id);
@@ -2051,6 +2052,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            AttemptDuplicateRenderWidgetHost);
   FRIEND_TEST_ALL_PREFIXES(RenderDocumentHostUserDataTest,
                            CheckInPendingDeletionState);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC);
 
   class DroppedInterfaceRequestLogger;
 
@@ -2700,6 +2702,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;
 
+  // Whether the last committed document is a secure context.
+  //
+  // See: https://html.spec.whatwg.org/#secure-contexts.
+  //
+  // See also:
+  //  - |network::IsUrlPotentiallyTrustworthy()|
+  //  - |network::IsOriginPotentiallyTrustworthy()|
+  //
+  // WARNING: This does not behave exactly as specified in HTML. Instead it more
+  // closely follows the Blink implementation, which predates it, for
+  // consistency.
+  bool is_web_secure_context_ = false;
+
   network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   network::CrossOriginOpenerPolicy cross_origin_opener_policy_;
@@ -3233,16 +3248,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Salt for generating frame-specific media device IDs.
   std::string media_device_id_salt_base_;
 
-  // Below are security properties of the last committed document that are
-  // needed by the network service. Until then they have default or inherited
-  // values.
-
-  // The frame might not have committed a navigation yet. In this case, we need
-  // to make sure that the is_web_secure_context bit is correctly inherited at
-  // construction time in the RenderFrameHostImpl.
-  //
-  // TODO(crbug.com/1124346): Determine if this is correct, fix it if not.
-  bool is_web_secure_context_ = false;
+  // This is a security property of the last committed document that are
+  // needed by the network service. Until then it has a default value.
   network::mojom::PrivateNetworkRequestPolicy private_network_request_policy_ =
       network::mojom::PrivateNetworkRequestPolicy::kAllow;
 

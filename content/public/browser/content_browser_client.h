@@ -70,6 +70,7 @@
 namespace net {
 class AuthCredentials;
 class SiteForCookies;
+class IsolationInfo;
 }  // namespace net
 
 class GURL;
@@ -1454,9 +1455,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool WillCreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole role,
       BrowserContext* browser_context,
-      const url::Origin& origin,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
+      const net::IsolationInfo& isolation_info,
       bool is_service_worker,
       int process_id,
       int routing_id,
@@ -1504,16 +1503,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // BrowserContext's StoragePartition. StoragePartition will use the
   // NetworkService to create a new NetworkContext using these params.
   //
+  // Embedders wishing to modify the initial configuration of the CertVerifier
+  // should edit |cert_verifier_creation_params| rather than
+  // |network_context_params->cert_verifier_params|, which will be discarded.
+  //
   // By default the |network_context_params| is populated with |user_agent|
   // based on the value returned by GetUserAgent(), and with a fixed legacy
   // "accept-language" header value of "en-us,en".
-  //
-  // If the CertVerifierService is enabled, the CertVerifierCreationParams will
-  // be used to create a new CertVerifierService, which will be passed to the
-  // network service in NetworkContextParams. Otherwise, the
-  // CertVerifierCreationParams will be placed in the NetworkContextParams and
-  // sent directly to the NetworkService for in-process CertVerifier creation.
-  //
   // If |in_memory| is true, |relative_partition_path| is still a path that
   // uniquely identifies the storage partition, though nothing should be written
   // to it.

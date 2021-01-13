@@ -432,12 +432,6 @@ const char kForceColorProfileDescription[] =
     "Forces Chrome to use a specific color profile instead of the color "
     "of the window's current monitor, as specified by the operating system.";
 
-const char kForcePreferredIntervalForVideoName[] =
-    "Force preferred interval for video";
-const char kForcePreferredIntervalForVideoDescription[] =
-    "When enabled, the composition rate is reduced to match the video playback "
-    "rate irrespective of the update frequency of other page content";
-
 const char kDynamicColorGamutName[] = "Dynamic color gamut";
 const char kDynamicColorGamutDescription[] =
     "Displays in wide color when the content is wide. When the content is "
@@ -1420,6 +1414,11 @@ const char kMobileIdentityConsistencyVarDescription[] =
     "Enables stronger identity consistency on mobile with different UI "
     "variations";
 
+const char kMobilePwaInstallUseBottomSheetName[] =
+    "Mobile PWA Installation bottom sheet";
+const char kMobilePwaInstallUseBottomSheetDescription[] =
+    "Enables use of a rich bottom sheet when offering mobile PWA installation.";
+
 const char kMouseSubframeNoImplicitCaptureName[] =
     "Disable mouse implicit capture for iframe";
 const char kMouseSubframeNoImplicitCaptureDescription[] =
@@ -2007,6 +2006,13 @@ const char kSafeBrowsingEnhancedProtectionMessageInInterstitialsDescription[] =
     "will include an enhanced protection message when users are not in "
     "enhanced protection mode.";
 
+const char kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName[] =
+    "Use the new GA endpoint to perform enterprise real time URL check.";
+
+const char kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointDescription[] =
+    "If enabled, the enterprise real time URL check will be sent to the new "
+    "endpoint.";
+
 const char kSafetyTipName[] =
     "Show Safety Tip UI when visiting low-reputation websites";
 const char kSafetyTipDescription[] =
@@ -2426,12 +2432,6 @@ const char kUsernameFirstFlowDescription[] =
     "Support of username saving and filling on username first flow i.e. login "
     "flows where a user has to type username first on one page and then "
     "password on another page";
-
-const char kUsePreferredIntervalForVideoName[] =
-    "Use preferred interval for video";
-const char kUsePreferredIntervalForVideoDescription[] =
-    "When enabled, the composition rate will be changed based on the videos' "
-    "actual fps.";
 
 const char kUseSearchClickForRightClickName[] =
     "Use Search+Click for right click";
@@ -4222,17 +4222,17 @@ const char kSwitchAccessPointScanningDescription[] =
     "Enable an in-process feature to select points onscreen with Switch "
     "Access.";
 
-const char kExperimentalAccessibilityCursorColorsName[] =
-    "Enable cursor colors.";
-const char kExperimentalAccessibilityCursorColorsDescription[] =
-    "Enable experimental feature which allows setting cursor color in "
-    "Accessibility settings.";
-
 const char kMagnifierNewFocusFollowingName[] =
     "Enable new focus following in Magnifier";
 const char kMagnifierNewFocusFollowingDescription[] =
     "Enable feature which allows more comprehensive focus following in"
     "in Magnifier.";
+
+const char kMagnifierPanningImprovementsName[] =
+    "Enable panning improvements in magnifier";
+const char kMagnifierPanningImprovementsDescription[] =
+    "Enable feature which adds additional mouse and keyboard panning "
+    "functionality in Magnifier.";
 
 const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
 const char kFilesAppCopyImageDescription[] =

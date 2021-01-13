@@ -37,6 +37,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -131,7 +132,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
@@ -173,6 +173,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
@@ -731,13 +732,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * TODO(mthiesse, https://crbug.com/1163961): Make this function abstract and have derived
-     * classes make their own.
-     * @return The {@link LaunchCauseMetrics} owned by this {@link ChromeActivity}.
+     * @return The {@link LaunchCauseMetrics} to be owned by this {@link ChromeActivity}.
      */
-    protected LaunchCauseMetrics createLaunchCauseMetrics() {
-        return new LaunchCauseMetrics();
-    }
+    protected abstract LaunchCauseMetrics createLaunchCauseMetrics();
 
     private LaunchCauseMetrics getLaunchCauseMetrics() {
         if (mLaunchCauseMetrics == null) {
@@ -1398,7 +1395,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             VrModuleProvider.getDelegate().onNewIntentWithNative(this, getIntent());
         }
 
+        // The first launch of the screenshot feature benefits from this DFM being installed
+        // proactively. However without the isolated split feature there are performance regressions
+        // as a result of adding this extra code.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)
+                && BundleUtils.isolatedSplitsEnabled()
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && AppHooks.get().getImageEditorModuleProvider() != null) {
             AppHooks.get().getImageEditorModuleProvider().maybeInstallModuleDeferred();
         }

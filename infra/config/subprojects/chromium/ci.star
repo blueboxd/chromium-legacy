@@ -2027,14 +2027,6 @@ ci.clang_builder(
 )
 
 ci.clang_builder(
-    name = "UBSanVptr Linux",
-    console_view_entry = consoles.console_view_entry(
-        short_name = "usn",
-    ),
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-ci.clang_builder(
     name = "ToTWindowsCoverage",
     console_view_entry = consoles.console_view_entry(
         category = "ToT Code Coverage",
@@ -2866,25 +2858,6 @@ ci.fyi_builder(
         short_name = "rel",
     ),
     notifies = ["cr-fuchsia"],
-)
-
-ci.fyi_builder(
-    name = "try-warmer",
-    builderless = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "infra",
-        short_name = "warmer",
-    ),
-    executable = "recipe:chromium/try_warmer",
-    execution_timeout = 5 * time.minute,
-    goma_backend = None,
-    properties = {
-        "builder_to_warm": "linux-warmed",
-        "trigger_count": 2,
-    },
-    schedule = "with 2m interval",
-    service_account = "chromium-led-tot-warmer@chops-service-accounts.iam.gserviceaccount.com",
-    triggered_by = [],
 )
 
 ci.fyi_builder(

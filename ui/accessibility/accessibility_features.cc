@@ -78,18 +78,19 @@ bool IsIChromeAccessibleEnabled() {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kAccessibilityCursorColor{"AccessibilityCursorColor",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsAccessibilityCursorColorEnabled() {
-  return base::FeatureList::IsEnabled(::features::kAccessibilityCursorColor);
-}
-
 const base::Feature kMagnifierNewFocusFollowing{
     "MagnifierNewFocusFollowing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsMagnifierNewFocusFollowingEnabled() {
   return base::FeatureList::IsEnabled(::features::kMagnifierNewFocusFollowing);
+}
+
+const base::Feature kMagnifierPanningImprovements{
+    "MagnifierPanningImprovements", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsMagnifierPanningImprovementsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kMagnifierPanningImprovements);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

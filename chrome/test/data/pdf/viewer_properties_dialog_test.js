@@ -50,20 +50,20 @@ const tests = [
 
     // TODO(crbug.com/93169): None of the following expected values should be
     // '-' when support for every property is implemented.
-    [['file-name', '-'],
+    [['file-name', 'document_info.pdf'],
      ['file-size', '-'],
      ['title', 'Sample PDF Document Info'],
      ['author', 'Chromium Authors'],
      ['subject', 'Testing'],
-     ['keywords', '-'],
+     ['keywords', 'testing,chromium,pdfium,document,info'],
      ['created', '-'],
      ['modified', '-'],
      ['application', 'Your Preferred Text Editor'],
      ['pdf-producer', 'fixup_pdf_template.py'],
      ['pdf-version', '1.7'],
-     ['page-count', '-'],
+     ['page-count', '1'],
      ['page-size', '-'],
-     ['fast-web-view', '-'],
+     ['fast-web-view', 'No'],
     ].forEach(([field, expectedValue]) => assertField(field, expectedValue));
 
     await ensurePropertiesDialogClose();

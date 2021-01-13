@@ -557,7 +557,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -582,7 +582,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AppBanners.InstallEvent" enum="AppBannersInstallEvent"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -606,7 +606,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AppBanners.UserResponse" enum="AppBannersUserResponse"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <summary>
@@ -987,7 +987,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Aura.WebContentsWindowUnOccludedTime" units="ms"
-    expires_after="2021-02-28">
+    expires_after="2021-07-11">
   <owner>alemate@chromium.org</owner>
   <owner>oshima@chromium.org</owner>
   <summary>
@@ -1763,7 +1763,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bookmarks.ReadingList.NumberOfReadItems" units="items"
-    expires_after="M91">
+    expires_after="2021-07-11">
   <owner>shaktisahu@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>
@@ -1779,6 +1779,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Logs the number of unread items shown in the reading list on the Android
     Bookmarks page when it is opened.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.StarEntryPoint.ClickedAction"
+    enum="StarEntryPointAction" expires_after="M92">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Recorded when an action in the Bookmark icon menu is clicked.
   </summary>
 </histogram>
 
@@ -2518,7 +2527,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Clipboard.Read" enum="ClipboardFormatRead"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -2543,7 +2552,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Clipboard.Write" enum="ClipboardFormatWrite"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -2609,7 +2618,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="CompositorLatency" units="microseconds"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -4050,7 +4059,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Display.ParseEdidFailure" enum="ParseEdidFailure"
-    expires_after="2021-05-01">
+    expires_after="2021-07-11">
   <owner>sashamcintosh@chromium.org</owner>
   <owner>chromeos-gfx@google.com</owner>
   <summary>
@@ -5990,7 +5999,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Graphics.Smoothness.Checkerboarding" units="%"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -6768,13 +6777,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Hyphenation.Open" units="ms" expires_after="2021-05-09">
+<histogram name="Hyphenation.Open" units="ms" expires_after="2021-07-11">
   <owner>kojii@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>The time it takes to open a hyphenation dictionary.</summary>
 </histogram>
 
-<histogram name="Hyphenation.Open.File" units="ms" expires_after="2021-05-09">
+<histogram name="Hyphenation.Open.File" units="ms" expires_after="2021-07-11">
   <owner>kojii@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>The time it takes to open a hyphenation dictionary file.</summary>
@@ -6848,7 +6857,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ImportantFile.FileCreateError" enum="PlatformFileError"
-    expires_after="2021-03-21">
+    expires_after="2021-07-11">
   <owner>grt@chromium.org</owner>
   <owner>xaerox@yandex-team.ru</owner>
   <summary>
@@ -7910,13 +7919,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="LanguageSettings.PageImpression"
-    enum="LanguageSettingsPageType" expires_after="2021-05-09">
+    enum="LanguageSettingsPageType" expires_after="2021-07-11">
   <owner>googleo@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>The type of panes which language settings loads.</summary>
 </histogram>
 
-<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode"
+<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageName"
     expires_after="2021-06-06">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -7936,7 +7945,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageCode"
+<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageName"
     expires_after="2021-06-06">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -7946,7 +7955,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageCode"
+<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageName"
     expires_after="2021-06-20">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -8905,77 +8914,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ManualFallback.PresentedOptions.AllPasswords"
-    units="Credentials" expires_after="2021-05-23">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of credentials presented to the user in the &quot;Use
-    other password...&quot; view in Manual Fallback. This is logged everytime
-    the user opens this view.
-  </summary>
-</histogram>
-
-<histogram name="ManualFallback.PresentedOptions.CreditCards" units="Cards"
-    expires_after="2021-05-23">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of cards presented to the user in Manual Fallback. This is
-    logged everytime the user opens this view.
-  </summary>
-</histogram>
-
-<histogram name="ManualFallback.PresentedOptions.Passwords" units="Credentials"
-    expires_after="2021-05-23">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of credentials presented to the user in the Passwords
-    Manual Fallback view. This is logged everytime the user opens this view.
-  </summary>
-</histogram>
-
-<histogram name="ManualFallback.PresentedOptions.Profiles" units="Profiles"
-    expires_after="2021-05-23">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of profiles presented to the user in Manual Fallback. This
-    is logged everytime the user opens this view.
-  </summary>
-</histogram>
-
-<histogram name="ManualFallback.VisibleSuggestions.OpenCreditCards"
-    units="Suggestions" expires_after="2021-05-30">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of autofill suggestions present when the user taps on the
-    credit card button in manual fallback.
-  </summary>
-</histogram>
-
-<histogram name="ManualFallback.VisibleSuggestions.OpenPasswords"
-    units="Suggestions" expires_after="2021-05-30">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of password suggestions present when the user taps on the
-    password button in manual fallback.
-  </summary>
-</histogram>
-
-<histogram name="ManualFallback.VisibleSuggestions.OpenProfiles"
-    units="Suggestions" expires_after="2021-01-15">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Tracks the number of autofill suggestions present when the user taps on the
-    profiles (address) button in manual fallback.
-  </summary>
-</histogram>
-
 <histogram name="Mist.SwitchResult" enum="MistSwitchResult" expires_after="M77">
   <owner>akhouderchah@chromium.org</owner>
   <owner>benchan@chromium.org</owner>
@@ -9632,7 +9570,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NCN.NetworkOperatorMCCMNC" units="units"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@google.com</owner>
   <summary>
@@ -9732,16 +9670,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram
+    name="Nearby.Connections.InstantMessaging.{Direction}Express.OAuthTokenFetchResult"
+    enum="BooleanSuccess" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records whether or not the user was able to fetch the OAuth token necessary
+    to {Direction} the Instant Messaging API. Emitted at the conclusion of the
+    token request, which is attempted right before making HTTPS requests to the
+    Instant Messaging API.
+  </summary>
+  <token key="Direction">
+    <variant name="Receive" summary="start receiving messages from"/>
+    <variant name="Send" summary="send a message to"/>
+  </token>
+</histogram>
+
 <histogram name="Nearby.Connections.InstantMessaging.{Direction}Express.Result"
     enum="BooleanSuccess" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether an HTTPS call to {Direction} the Instant Messaging API
     succeeds or fails. Emitted when the HTTPS call succeeds or fails.
   </summary>
   <token key="Direction">
-    <variant name="Receive" summary="receive a message from"/>
+    <variant name="Receive" summary="start receiving messages from"/>
     <variant name="Send" summary="send a message to"/>
   </token>
 </histogram>
@@ -9750,14 +9705,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Connections.InstantMessaging.{Direction}Express.Result.FailureReason"
     enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the network error code or HTTPS response code from a failed HTTPS
     call to {Direction} the Instant Messaging API. Emitted when the HTTPS call
     fails.
   </summary>
   <token key="Direction">
-    <variant name="Receive" summary="receive a message from"/>
+    <variant name="Receive" summary="start receiving messages from"/>
     <variant name="Send" summary="send a message to"/>
   </token>
 </histogram>
@@ -9766,7 +9721,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Share.Certificates.Manager.BluetoothMacAddressSetInPrivateCertificate"
     enum="BooleanSet" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether or not a Bluetooth MAC address is set in the local device's
     private certificate metadata during certificate creation. Emitted when
@@ -9781,7 +9736,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesCount"
     units="certificates" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate manager successfully downloads public
     certificates, then record the total number of certificates downloaded across
@@ -9793,7 +9748,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesFailuePageCount"
     units="pages" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate manager fails to download public
     certificates, then record the page number of the page on which the failure
@@ -9805,7 +9760,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesHttpResult"
     enum="NearbyShareHttpResult" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the async ListPublicCertificates API call to the
     Nearby Sharing server when the certificate manager periodically downloads
@@ -9818,7 +9773,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesSuccessPageCount"
     units="pages" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate manager successfully downloads public
     certificates, then record the number of pages downloaded by the RPC.
@@ -9829,7 +9784,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesSuccessRate"
     enum="BooleanSuccess" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether the Nearby Share certificate manager successfully downloaded
     public certificates from the server and stored them in leveldb.
@@ -9841,7 +9796,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult"
     expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the async GetDecryptedPublicCertificate call in
     certificate manager.
@@ -9851,7 +9806,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Certificates.Storage.InitializeAttemptCount"
     units="attempts" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate storage successfully initializes the public
     certificate database, then record the number of attempts it took.
@@ -9862,7 +9817,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="NearbyShareCertificateStorageInitializationResult"
     expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     For individual initialization attempts of the Nearby Share certificate
     storage public certificate database, record the init status returned by
@@ -9873,7 +9828,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Certificates.Storage.{Operation}SuccessRate"
     enum="BooleanSuccess" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Record success rate of Nearby Share storage operation {Operation}.
   </summary>
@@ -9893,7 +9848,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Connection.EstablishOutgoingConnectionStatus"
     enum="NearbyShareFinalStatus" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether an attempt to establish a connection to a receiving device
     succeeded, failed, or was cancelled. Emitted after the user selects a device
@@ -9906,7 +9861,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Connection.TimeToEstablishOutgoingConnection"
     units="ms" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the time necessary to successfully establish a connection to a
     receiving device. Emitted after the user selects a device to send a payload
@@ -9920,7 +9875,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Discovery.Delay.FromStartDiscoveryTo{EndState}"
     units="ms" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the delay between the start of the discovery session and {EndState}.
   </summary>
@@ -9935,7 +9890,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Discovery.FurthestDiscoveryProgress"
     enum="NearbyShareDiscoveryProgress" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the furthest state reached in a single Nearby Share discovery
     session. Emitted when the per-session discovery manager is destroyed.
@@ -9945,7 +9900,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Discovery.LookUpSelectedShareTarget"
     enum="BooleanFound" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether or not the selected share target on the Nearby Share
     discovery page can be found in the per-session discovery manager's map of
@@ -9957,7 +9912,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Discovery.NumShareTargets.{Variation}"
     units="share targets" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the number of share targets {Variation} in a single discovery
     session. Emitted once during the discovery session.
@@ -9972,7 +9927,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Discovery.{Operation}"
     enum="NearbyShareServiceStatusCode" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of {Operation}. Emitted immediately after the operation
     is attempted for each discovery session.
@@ -9991,7 +9946,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Enabled" enum="NearbyShareEnabledState"
     expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records if the user has the Nearby Share feature enabled, and if not,
     records why the feature is not enabled. For example, the feature is not
@@ -10004,7 +9959,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.LocalDeviceData.DeviceDataUpdater.HttpResult"
     enum="NearbyShareHttpResult" expires_after="2021-08-19">
   <owner>cclem@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the async UpdateDevice API call to the Nearby Sharing
     server when the device data updater makes a request. Recorded when the async
@@ -10015,7 +9970,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Medium.ChangedToMedium"
     enum="NearbyConnectionsMedium" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the data-transfer medium that the Nearby Connections library
     successfully switches to during a Nearby Share transfer. Emitted when the
@@ -10029,7 +9984,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Replaced 12/2020 with Nearby.Share.Payload.FinalStatus[...].
   </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether a transfer succeeded, failed, or was cancelled when
     transmitted over {UpgradedMedium}. Emitted when the payload transfer
@@ -10046,7 +10001,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Medium.InitiateBandwidthUpgradeResult"
     enum="BooleanSuccess" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of Nearby Share starting a bandwidth upgrade via the
     Nearby Connections library. This metric only records the result of
@@ -10060,7 +10015,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Medium.RequestedBandwidthUpgradeResult"
     enum="BooleanUpgraded" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records if the transfer medium was successfully upgraded after an explicit
     bandwidth upgrade request from the client. Emitted when the transfer channel
@@ -10071,7 +10026,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Payload.FinalStatus{UpgradedMedium}"
     enum="NearbyShareFinalStatus" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether a payload transfer succeeded, failed, or was cancelled when
     transmitted over {UpgradedMedium}. Emitted when the payload transfer
@@ -10089,7 +10044,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Payload.NumAttachments{Type}" units="attachments"
     expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the number of {Type} attachments intended to be sent in a Nearby
     Share transfer. Emitted when the transfer concludes, successfully or not.
@@ -10104,7 +10059,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Payload.TotalSize{Variation}" units="KB"
     expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the total payload size of a Nearby Share transfer {Variation}.
     Emitted when the transfer concludes.
@@ -10135,7 +10090,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.Payload.TransferRate{Variation}" units="KB/s"
     expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the payload transfer rate of a Nearby Share transfer {Variation}.
     Emitted when the transfer concludes.
@@ -10166,7 +10121,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.StartAdvertising.Result.FailureReason{Mode}"
     enum="NearbyShareStartAdvertisingFailureReason" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the reason Nearby Share advertising failed to start in {Mode} mode.
   </summary>
@@ -10180,7 +10135,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.StartAdvertising.Result{Mode}"
     enum="BooleanSuccess" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of starting Nearby Share advertising in {Mode} mode.
   </summary>
@@ -10198,7 +10153,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Replaced 12/2020 with Nearby.Share.Transfer.FinalStatus[...].
   </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the reason a Nearby Share {Direction} transfer was not completed
     when sharing with {ShareTargetType}. Emitted when a transfer aborts before
@@ -10230,7 +10185,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Replaced 12/2020 with Nearby.Share.Transfer.FinalStatus[...].
   </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records if a Nearby Share {Direction} transfer fully completes or not when
     sharing with {ShareTargetType}. Emitted when a transfer completes
@@ -10258,22 +10213,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
-<histogram name="Nearby.Share.Transfer.FinalStatus"
-    enum="NearbyShareTransferFinalStatus" expires_after="2021-08-19">
-  <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
-  <summary>
-    Records the final status of a Nearby Share transfer. Emitted when a transfer
-    completes successfully, fails, or was aborted by the user, for example, by
-    cancelling the transfer.
-  </summary>
-</histogram>
-
 <histogram
     name="Nearby.Share.Transfer.FinalStatus.{Direction}.{ShareTargetType}.{ContactStatus}"
     enum="NearbyShareTransferFinalStatus" expires_after="2021-08-19">
+  <obsolete>
+    Replaced 01/2021 with Nearby.Share.Transfer.FinalStatus{Variation}, which
+    slices by only one dimension.
+  </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the final status of a Nearby Share {Direction} transfer with
     {ShareTargetType} using {ContactStatus}. Emitted when a transfer completes
@@ -10296,13 +10244,38 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="Nearby.Share.Transfer.FinalStatus{Variation}"
+    enum="NearbyShareTransferFinalStatus" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the final status of a Nearby Share transfer {Variation}. Emitted
+    when a transfer completes successfully, fails, or was aborted by the user,
+    for example, by cancelling the transfer.
+  </summary>
+  <token key="Variation">
+    <variant name=""
+        summary="for all sharing scenarios, agnostic of send/receive, device
+                 type, or contact/non-contact"/>
+    <variant name=".Contact" summary="when sharing with a contact"/>
+    <variant name=".Laptop" summary="when sharing with a laptop"/>
+    <variant name=".NonContact" summary="when sharing with a non-contact"/>
+    <variant name=".Phone" summary="when sharing with a phone"/>
+    <variant name=".Receive" summary="when receiving"/>
+    <variant name=".Send" summary="when sending"/>
+    <variant name=".Tablet" summary="when sharing with a tablet"/>
+    <variant name=".UnknownDeviceType"
+        summary="when sharing with an unknown device type"/>
+  </token>
+</histogram>
+
 <histogram name="Nearby.Share.Transfer.NumAttachments{Type}"
     units="attachments" expires_after="2021-08-19">
   <obsolete>
     Renamed 12/2020 to Nearby.Share.Payload.NumAttachments[...].
   </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the number of {Type} attachments intended to be sent in a Nearby
     Share transfer. Emitted when the transfer concludes, successfully or not.
@@ -10321,7 +10294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Renamed 12/2020 to Nearby.Share.Payload.TransferRate[...].
   </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the transfer rate of a Nearby Share {Direction} transfer that
     {PayloadStatus} when sharing with {ShareTargetType} over {UpgradedMedium}.
@@ -10361,7 +10334,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Renamed 12/2020 to Nearby.Share.Payload.TotalSize[...].
   </obsolete>
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the total payload size of a Nearby Share {Direction} transfer that
     {PayloadStatus} when sharing with {ShareTargetType} over {UpgradedMedium}.
@@ -10397,7 +10370,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Nearby.Share.VisibilityChoice" enum="NearbyShareVisibility"
     expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
-  <owner>better-together-dev@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the user's chosen degree of visibility to their contacts, selected
     during onboarding or updated in settings. Emitted at login for users that
@@ -10588,7 +10561,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NQE.RTT.OnECTComputation" units="ms"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -11105,7 +11078,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PaintHolding.CommitTrigger2" enum="PaintHoldingCommitTrigger2"
-    expires_after="2021-01-15">
+    expires_after="2021-07-15">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -11115,7 +11088,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PaintHolding.InputTiming2" enum="PaintHoldingInputTiming"
-    expires_after="2021-01-15">
+    expires_after="2021-07-15">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -11209,7 +11182,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PDF.LoadStatus" enum="ChromePDFViewerLoadStatus"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>kmoon@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -11219,7 +11192,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="PDF.PageCount" units="pages" expires_after="2021-05-09">
+<histogram name="PDF.PageCount" units="pages" expires_after="2021-07-11">
   <owner>hnakashima@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -11964,7 +11937,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Previews.EligibilityReason" enum="PreviewsEligibilityReason"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>ryansturm@chromium.org</owner>
   <summary>
     When evaluating whether to show a user a preview, the preview might be
@@ -13302,7 +13275,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SB2.RemoteCall.CanCheckUrl" enum="BooleanCanCheckUrl"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -13395,7 +13368,7 @@ Safe Browsing lookups, which is critical for security. -->
 </histogram>
 
 <histogram name="SB2.ResourceTypes2" enum="ContentResourceType2"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -13894,7 +13867,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated" units="BooleanSuccess"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13903,7 +13876,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error"
-    enum="LinkGenerationError" expires_after="2021-05-09">
+    enum="LinkGenerationError" expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13912,7 +13885,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error.Iterations"
-    units="iterations" expires_after="2021-05-09">
+    units="iterations" expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13922,7 +13895,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error.TimeToGenerate"
-    units="ms" expires_after="2021-05-09">
+    units="ms" expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13932,7 +13905,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Iterations" units="iterations"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13942,7 +13915,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.ParamLength" units="characters"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13954,7 +13927,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.SelectionLength"
-    units="characters" expires_after="2021-05-09">
+    units="characters" expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13964,7 +13937,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.SelectorParameters"
-    enum="TextFragmentAnchorParameters" expires_after="2021-05-09">
+    enum="TextFragmentAnchorParameters" expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -13974,7 +13947,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.TimeToGenerate" units="ms"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -14306,7 +14279,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteEngagementService.EngagementScore" units="units"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -14328,7 +14301,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteEngagementService.EngagementType"
-    enum="SiteEngagementServiceEngagementType" expires_after="2021-05-09">
+    enum="SiteEngagementServiceEngagementType" expires_after="2021-07-11">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -14349,7 +14322,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteEngagementService.MedianEngagement" units="units"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -14397,7 +14370,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteEngagementService.TotalEngagement" units="units"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -14408,7 +14381,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteIsolatedCodeCache.JS.Behaviour"
-    enum="SiteIsolatedCodeCacheJSBehaviour" expires_after="2021-05-09">
+    enum="SiteIsolatedCodeCacheJSBehaviour" expires_after="2021-07-11">
   <owner>mythria@chromium.org</owner>
   <owner>v8-team@google.com</owner>
   <summary>
@@ -14803,7 +14776,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SpellCheck.SpellingService.RequestDuration" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2021-07-11">
   <owner>yyushkina@google.com</owner>
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -15388,7 +15361,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SupervisedUsers.PerAppTimeLimits.BlockedAppsCount"
-    units="Apps" expires_after="2021-03-15">
+    units="Apps" expires_after="2021-07-11">
   <owner>agawronska@chromium.org</owner>
   <owner>yilkal@chromium.org</owner>
   <owner>cros-families@google.com</owner>
@@ -15645,7 +15618,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="TextFragmentAnchor.LinkOpenSource"
-    enum="TextFragmentLinkOpenSource" expires_after="2021-05-09">
+    enum="TextFragmentLinkOpenSource" expires_after="2021-07-11">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -16600,7 +16573,7 @@ should be kept until we use this API.  -->
 
 <histogram name="TrustedWebActivity.QualityEnforcementViolation"
     enum="TrustedWebActivityQualityEnforcementViolationType"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>eirage@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <summary>
@@ -16838,7 +16811,7 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="UsageStats.Events" enum="UsageStatsEvents"
-    expires_after="2021-05-02">
+    expires_after="2021-07-11">
   <owner>pnoland@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>
@@ -16859,18 +16832,6 @@ should be kept until we use this API.  -->
 <histogram name="UserImage.ProfileDownloadTime" units="ms" expires_after="M81">
   <owner>achuith@chromium.org</owner>
   <summary>The time it took to download user's profile picture.</summary>
-</histogram>
-
-<histogram name="UserInterfaceStyle.CurrentlyUsed" enum="IOSUserInterfaceStyle"
-    expires_after="2021-01-15">
-  <owner>javierrobles@chromium.org</owner>
-  <owner>rkgibson@google.com</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    [iOS] Used on iOS 13+ to report the usage of Light and Dark mode. This is
-    logged at startup and on each user interface style change. Can be caused by
-    the system automatic switch or by the user manually changing the style.
-  </summary>
 </histogram>
 
 <histogram name="UserManager.LoginUserType" enum="UserType"
@@ -17324,7 +17285,7 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="VRSessionVideoCount" units="units" expires_after="2021-05-10">
+<histogram name="VRSessionVideoCount" units="units" expires_after="2021-07-11">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>
@@ -17333,7 +17294,7 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="VRSessionVideoTime" units="ms" expires_after="2021-05-10">
+<histogram name="VRSessionVideoTime" units="ms" expires_after="2021-07-11">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>
@@ -17412,7 +17373,7 @@ regressions. -->
 </histogram>
 
 <histogram base="true" name="WebApp.Engagement"
-    enum="SiteEngagementServiceEngagementType" expires_after="2021-05-09">
+    enum="SiteEngagementServiceEngagementType" expires_after="2021-07-11">
   <owner>calamity@chromium.org</owner>
   <owner>mgiuca@chromium.org</owner>
   <owner>loyso@chromium.org</owner>
@@ -17487,7 +17448,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Webapp.Install.InstallEvent" enum="WebappInstallSource"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>dominickn@chromium.org</owner>
   <owner>loyso@chromium.org</owner>
   <owner>calamity@chromium.org</owner>
@@ -17520,7 +17481,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Webapp.InstallResult" enum="WebAppInstallResultCode"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
 <!-- Name completed by histogram_suffixes name="WebAppType" -->
 
   <owner>calamity@chromium.org</owner>
@@ -17680,7 +17641,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Webapp.SystemApps.FreshInstallDuration" units="ms"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>calamity@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <summary>
@@ -17714,7 +17675,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Webapp.UninstallDialogAction"
-    enum="WebappUninstallDialogAction" expires_after="2021-05-09">
+    enum="WebappUninstallDialogAction" expires_after="2021-07-11">
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>loyso@chromium.org</owner>

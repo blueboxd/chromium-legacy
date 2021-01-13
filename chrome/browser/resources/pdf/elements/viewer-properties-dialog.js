@@ -23,6 +23,10 @@ export class ViewerPropertiesDialogElement extends PolymerElement {
     return {
       /** @type {!DocumentMetadata} */
       documentMetadata: Object,
+
+      fileName: String,
+
+      pageCount: Number,
     };
   }
 
@@ -33,6 +37,17 @@ export class ViewerPropertiesDialogElement extends PolymerElement {
   getDialog_() {
     return /** @type {!CrDialogElement} */ (
         this.shadowRoot.querySelector('cr-dialog'));
+  }
+
+  /**
+   * @param {string} yesLabel
+   * @param {string} noLabel
+   * @param {boolean} linearized
+   * @return {string}
+   * @private
+   */
+  getFastWebViewValue_(yesLabel, noLabel, linearized) {
+    return linearized ? yesLabel : noLabel;
   }
 
   /**

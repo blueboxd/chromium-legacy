@@ -103,6 +103,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/page_info/features.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/paint_preview/features/features.h"
@@ -198,6 +199,7 @@
 #include "chrome/browser/continuous_search/features.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
+#include "chrome/browser/webapps/android/features.h"
 #include "components/browser_ui/site_settings/android/features.h"
 #include "components/external_intents/android/external_intents_feature_list.h"
 #else  // OS_ANDROID
@@ -3838,10 +3840,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityChromeVoxAnnotations)},
-    {"enable-experimental-accessibility-cursor-colors",
-     flag_descriptions::kExperimentalAccessibilityCursorColorsName,
-     flag_descriptions::kExperimentalAccessibilityCursorColorsDescription,
-     kOsCrOS, FEATURE_VALUE_TYPE(features::kAccessibilityCursorColor)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -3850,6 +3848,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMagnifierNewFocusFollowingName,
      flag_descriptions::kMagnifierNewFocusFollowingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kMagnifierNewFocusFollowing)},
+    {"enable-magnifier-panning-improvements",
+     flag_descriptions::kMagnifierPanningImprovementsName,
+     flag_descriptions::kMagnifierPanningImprovementsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kMagnifierPanningImprovements)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_MAC)
     {"enable-immersive-fullscreen-toolbar",
@@ -4704,17 +4706,6 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableWebAuthenticationChromeOSAuthenticatorDescription,
      kOsCrOS, FEATURE_VALUE_TYPE(device::kWebAuthCrosPlatformAuthenticator)},
 #endif
-
-    {"use-preferred-interval-for-video",
-     flag_descriptions::kUsePreferredIntervalForVideoName,
-     flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kUsePreferredIntervalForVideo)},
-
-    {"force-preferred-interval-for-video",
-     flag_descriptions::kForcePreferredIntervalForVideoName,
-     flag_descriptions::kForcePreferredIntervalForVideoDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kForcePreferredIntervalForVideo)},
-
 #if BUILDFLAG(ENABLE_PDF)
     {"accessible-pdf-form", flag_descriptions::kAccessiblePDFFormName,
      flag_descriptions::kAccessiblePDFFormDescription, kOsDesktop,
@@ -5768,6 +5759,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          safe_browsing::kEnhancedProtectionMessageInInterstitials)},
 
+    {"safe-browsing-real-time-url-lookup-enterprise-ga-endpoint",
+     flag_descriptions::kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName,
+     flag_descriptions::
+         kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(safe_browsing::kRealTimeUrlLookupEnterpriseGaEndpoint)},
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"gesture-properties-dbus-service",
      flag_descriptions::kEnableGesturePropertiesDBusServiceName,
@@ -6308,7 +6306,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kContextMenuPerformanceInfoAndRemoteHintFetchingDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(performance_hints::features::
+     FEATURE_VALUE_TYPE(optimization_guide::features::
                             kContextMenuPerformanceInfoAndRemoteHintFetching)},
 #endif  // !defined(OS_ANDROID)
 
@@ -7025,6 +7023,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfWhenSignedInName,
      flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
+
+#if defined(OS_ANDROID)
+    {"mobile-pwa-install-use-bottom-sheet",
+     flag_descriptions::kMobilePwaInstallUseBottomSheetName,
+     flag_descriptions::kMobilePwaInstallUseBottomSheetDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(webapps::features::kPwaInstallUseBottomSheet)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

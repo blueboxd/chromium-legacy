@@ -44,9 +44,6 @@ class AccountConsistencyService : public KeyedService,
   // Google authentication cookies are managed by |AccountReconcilor|).
   static const char kChromeConnectedCookieName[];
 
-  // Name of the Google authentication cookie.
-  static const char kGaiaCookieName[];
-
   AccountConsistencyService(
       web::BrowserState* browser_state,
       AccountReconcilor* account_reconcilor,
@@ -116,9 +113,8 @@ class AccountConsistencyService : public KeyedService,
   void ResetInternalState();
 
   // IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_account_info) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;

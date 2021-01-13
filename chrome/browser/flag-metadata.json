@@ -1861,6 +1861,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-magnifier-panning-improvements",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "enable-mark-http-as",
     "owners": [ "cthomp", "estark" ],
     "expiry_milestone": 86
@@ -2730,11 +2735,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "force-preferred-interval-for-video",
-    "owners": [ "khushalsagar" ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "force-secure-payment-confirmation-dialog",
     "owners": [ "//components/payments/OWNERS" ],
     "expiry_milestone": 90
@@ -3361,6 +3361,11 @@
     "name": "mobile-identity-consistency-var",
     "owners": [ "bsazonov", "aliceywang", "msarda", "triploblastic" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "mobile-pwa-install-use-bottom-sheet",
+    "owners": [ "finnur", "hartmanng", "peter" ],
+    "expiry_milestone": 94
   },
   {
     "name": "modern-tab-strip",
@@ -4244,6 +4249,14 @@
     "expiry_milestone": 90
   },
   {
+    "name": "safe-browsing-real-time-url-lookup-enterprise-ga-endpoint",
+    "owners": [
+      "xinghuilu",
+      "chrome-safebrowsing-core@google.com"
+    ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "safe-browsing-security-section-ui-android",
     "owners": [
       "vakh",
@@ -4880,11 +4893,6 @@
     "name": "use-of-hash-affiliation-fetcher",
     "owners": [ "vsemeniuk", "vasilii"],
     "expiry_milestone": 90
-  },
-  {
-    "name": "use-preferred-interval-for-video",
-    "owners": [ "jiahe.zhang@intel.com", "khushalsagar" ],
-    "expiry_milestone": 85
   },
   {
     "name": "use-search-click-for-right-click",

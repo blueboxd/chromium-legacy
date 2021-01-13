@@ -656,6 +656,34 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh"
+    units="ms" expires_after="2022-01-20">
+  <owner>carlosk@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The time since locally stored content was fetched from the server.
+    Reported when the feed surface is shown, and content is refreshed from the
+    network. This typically only happens when content is stale, so this is a
+    measurement of how stale content is before it's replaced by a blocking
+    refresh. Feed v2 only.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed"
+    units="ms" expires_after="2022-01-20">
+  <owner>carlosk@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The time since locally stored content was fetched from the server.
+    Reported when the feed surface is shown, and the local persisted feed
+    content is loaded instead of a direct network refresh. This provides a
+    measure of how stale feed content is when the feed loads without a blocking
+    network request. Feed v2 only.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.Controls.Actions"
     enum="FeedControlsActions" expires_after="never">
 <!-- expires-never: tracked as an important feed metric. -->
@@ -835,7 +863,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore"
-    enum="FeedLoadStreamStatus" expires_after="2021-05-01">
+    enum="FeedLoadStreamStatus" expires_after="2021-07-11">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -961,7 +989,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled" enum="Boolean"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1259,7 +1287,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.FailureDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2021-07-11">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1270,7 +1298,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.SuccessDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2021-07-11">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1303,7 +1331,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2021-07-11">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1315,7 +1343,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2021-07-11">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>

@@ -71,6 +71,7 @@ crbug.com/1132260 http/tests/devtools/console/console-bad-stacktrace.js [ Pass F
 crbug.com/1132260 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
 crbug.com/1132260 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
 crbug.com/1132260 inspector-protocol/page/frameAttachedStacktrace.js [ Pass Failure ]
+crbug.com/1164469 inspector-protocol/performance-timeline/largest-contentful-paint.js [ Pass Failure ]
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
@@ -2471,6 +2472,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-initial-layout-000.html [ Failure ]
+crbug.com/626703 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-initial-layout-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/x-frame-options/multiple.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/FileAPI/idlharness.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/interaction/focus/document-level-focus-apis/document-has-system-focus.html [ Timeout ]
@@ -5655,13 +5658,6 @@ crbug.com/1042877 http/tests/security/mixedContent/strict-mode-via-pref-image-bl
 
 # Mixed content autoupgrades cause test to fail because test relied on http subresources to test a different origin, needs to be changed to not rely on HTTP URLs.
 crbug.com/1042877 http/tests/security/img-crossorigin-redirect-credentials.https.html [ Failure ]
-
-# Temporarily disable tests to land DevTools frontend changes
-crbug.com/1152082 http/tests/devtools/bindings/blackboxed-sourcemap-detach.js [ Pass Failure Timeout ]
-crbug.com/1152082 http/tests/devtools/console/console-linkify-message-location.js [ Pass Failure Timeout ]
-crbug.com/1152082 http/tests/devtools/sources/debugger-frameworks/frameworks-blackbox-by-source-code.js [ Pass Failure Timeout ]
-crbug.com/1152082 http/tests/devtools/sources/debugger-frameworks/frameworks-blackbox-patterns.js [ Pass Failure Timeout ]
-crbug.com/1152082 http/tests/devtools/tracing/timeline-js/timeline-js-ignore-list.js [ Pass Failure Timeout ]
 
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]

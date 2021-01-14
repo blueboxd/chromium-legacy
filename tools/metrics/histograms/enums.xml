@@ -9941,6 +9941,16 @@ histogram as enum -->
   <int value="2" label="First service disabled"/>
 </enum>
 
+<enum name="ChromeOSCameraClientType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Testing"/>
+  <int value="2" label="Chrome"/>
+  <int value="3" label="Android"/>
+  <int value="4" label="PluginVM"/>
+  <int value="5" label="AshChrome"/>
+  <int value="6" label="LacrosChrome"/>
+</enum>
+
 <enum name="ChromeOSCameraErrorType">
   <int value="1" label="Device"/>
   <int value="2" label="Request"/>
@@ -11253,6 +11263,13 @@ histogram as enum -->
   <int value="1" label="Html"/>
   <int value="2" label="Rtf"/>
   <int value="3" label="Web Smart Paste"/>
+</enum>
+
+<enum name="ClipboardHistoryTriggerType">
+  <int value="0" label="Accelerator"/>
+  <int value="1" label="Render View Context Menu"/>
+  <int value="2" label="Textfield Context Menu"/>
+  <int value="3" label="Virtual Keyboard"/>
 </enum>
 
 <enum name="ClockdriftLevel">
@@ -16866,6 +16883,17 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="3" label="Font Editor opened"/>
 </enum>
 
+<enum name="DevToolsDeveloperResourceLoaded">
+  <int value="0" label="LoadThroughPageViaTarget"/>
+  <int value="1" label="LoadThroughPageViaFrame"/>
+  <int value="2" label="LoadThroughPageFailure"/>
+  <int value="3" label="LoadThroughPageFallback"/>
+  <int value="4" label="FallbackAfterFailure"/>
+  <int value="5" label="FallbackPerOverride"/>
+  <int value="6" label="FallbackPerProtocol"/>
+  <int value="7" label="FallbackFailure"/>
+</enum>
+
 <enum name="DevToolsDualScreenDeviceEmulated">
   <int value="0" label="Dual-screen or fold device selected"/>
   <int value="1" label="Dual-screen span mode selected"/>
@@ -20534,6 +20562,13 @@ Called by update_document_policy_enum.py.-->
   <int value="6" label="MediaKeySession.update()"/>
   <int value="7" label="MediaKeySession.close()"/>
   <int value="8" label="MediaKeySession.remove()"/>
+</enum>
+
+<enum name="EmeSessionType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Temporary"/>
+  <int value="2" label="Persistent License"/>
+  <int value="3" label="Persistent Usage Record"/>
 </enum>
 
 <enum name="EmmcLifeUsed">
@@ -46553,7 +46588,6 @@ from previous Chrome versions.
   <int value="1927218315" label="ShelfNewUi:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1927374573" label="EnterpriseRealtimeExtensionRequest:enabled"/>
-  <int value="1928407249" label="NewPhotoPicker:enabled"/>
   <int value="1929603041" label="HideShelfControlsInTabletMode:disabled"/>
   <int value="1930185502"
       label="EnableBluetoothVerboseLogsForGooglers:enabled"/>
@@ -46593,7 +46627,6 @@ from previous Chrome versions.
       label="AutofillUpstreamEditableExpirationDate:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
-  <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961068026"
       label="EnableEphemeralGuestProfilesOnDesktop:enabled"/>
   <int value="1961425320" label="force-qtkit"/>
@@ -56278,6 +56311,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="Tap Suppress"/>
 </enum>
 
+<enum name="OverlayQuadMaterial">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="DebugBorder"/>
+  <int value="2" label="PictureContent"/>
+  <int value="3" label="CompositorRenderPass"/>
+  <int value="4" label="AggregatedRenderPass"/>
+  <int value="5" label="SolidColor"/>
+  <int value="6" label="StreamVideoContent"/>
+  <int value="7" label="SurfaceContent"/>
+  <int value="8" label="TextureContent"/>
+  <int value="9" label="TiledContent"/>
+  <int value="10" label="YuvVideoContent"/>
+  <int value="11" label="VideoHole"/>
+</enum>
+
 <enum name="OverlayStrategies">
   <int value="0" label="Unknown"/>
   <int value="1" label="No overlay"/>
@@ -56286,6 +56334,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Underlay"/>
   <int value="5" label="Underlay Cast"/>
   <int value="6" label="All overlays failed"/>
+  <int value="7" label="Overlays failed min"/>
 </enum>
 
 <enum name="OverlaySupportFlag">
@@ -68676,6 +68725,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
 </enum>
 
+<enum name="SigninInterceptGuestAvailability">
+  <int value="0" label="Guest option available"/>
+  <int value="1" label="Guest already open"/>
+  <int value="2" label="Guest mode blocked by policy"/>
+  <int value="3" label="Ephemeral Guest profile disabled"/>
+</enum>
+
 <enum name="SigninInterceptHeuristicOutcome">
   <int value="0" label="Intercept: profile switch"/>
   <int value="1" label="Intercept: multi-user"/>
@@ -68700,6 +68756,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Declined"/>
   <int value="2" label="Ignored"/>
   <int value="3" label="Not displayed"/>
+  <int value="4" label="Accepted with Guest"/>
 </enum>
 
 <enum name="SigninInterceptSessionStartupResult">
@@ -69782,6 +69839,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="34" label="UMA_HOMEPAGE_PROMO_CHANGED_UNDO"/>
   <int value="35" label="UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO"/>
   <int value="37" label="UMA_READING_LIST_BOOKMARK_ADDED"/>
+  <int value="38" label="UMA_PRIVACY_SANDBOX_PAGE_OPEN"/>
 </enum>
 
 <enum name="SnapshotItemId">

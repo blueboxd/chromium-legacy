@@ -200,6 +200,7 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/webapps/android/features.h"
+#include "components/browser_ui/photo_picker/android/features.h"
 #include "components/browser_ui/site_settings/android/features.h"
 #include "components/external_intents/android/external_intents_feature_list.h"
 #else  // OS_ANDROID
@@ -2003,6 +2004,16 @@ const FeatureEntry::FeatureVariation
          base::size(kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant),
          nullptr}};
 
+const FeatureEntry::FeatureParam
+    kPhotoPickerVideoSupportEnabledWithAnimatedThumbnails[] = {
+        {"animate_thumbnails", "true"}};
+const FeatureEntry::FeatureVariation
+    kPhotoPickerVideoSupportFeatureVariations[] = {
+        {"(with animated thumbnails)",
+         kPhotoPickerVideoSupportEnabledWithAnimatedThumbnails,
+         base::size(kPhotoPickerVideoSupportEnabledWithAnimatedThumbnails),
+         nullptr}};
+
 const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupBackward[] = {
     {"action_bar", "backward_button"}};
 const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupShare[] = {
@@ -3418,7 +3429,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kWebAppEnableLinkCapturing)},
     {"enable-desktop-pwas-run-on-os-login",
      flag_descriptions::kDesktopPWAsRunOnOsLoginName,
-     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin | kOsLinux,
+     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin | kOsLinux | kOsMac,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
     {"record-web-app-debug-info", flag_descriptions::kRecordWebAppDebugInfoName,
      flag_descriptions::kRecordWebAppDebugInfoDescription, kOsDesktop,
@@ -6252,7 +6263,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"photo-picker-video-support",
      flag_descriptions::kPhotoPickerVideoSupportName,
      flag_descriptions::kPhotoPickerVideoSupportDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kPhotoPickerVideoSupport)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         photo_picker::features::kPhotoPickerVideoSupport,
+         kPhotoPickerVideoSupportFeatureVariations,
+         "PhotoPickerVideoSupportFeatureVariations")},
 #endif  // defined(OS_ANDROID)
 
     {"freeze-user-agent", flag_descriptions::kFreezeUserAgentName,

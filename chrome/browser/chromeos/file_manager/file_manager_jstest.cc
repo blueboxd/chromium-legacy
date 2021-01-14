@@ -25,11 +25,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsModelTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsSubmenuTest) {
-  RunTestURL("foreground/js/ui/actions_submenu_unittest_gen.html");
+  RunTestURL("foreground/js/ui/actions_submenu_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Breadcrumb) {
-  RunTestURL("foreground/js/ui/breadcrumb_unittest_gen.html");
+  RunTestURL("foreground/js/ui/breadcrumb_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTasks) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTransferController) {
-  RunTestURL("foreground/js/file_transfer_controller_unittest_gen.html");
+  RunTestURL("foreground/js/file_transfer_controller_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTypeFiltersController) {
@@ -169,7 +169,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportHistoryTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, InstallLinuxPackageDialogTest) {
-  RunTestURL("foreground/js/ui/install_linux_package_dialog_unittest_gen.html");
+  RunTestURL(
+      "foreground/js/ui/install_linux_package_dialog_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListThumbnailLoader) {

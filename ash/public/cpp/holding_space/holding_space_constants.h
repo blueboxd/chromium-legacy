@@ -21,14 +21,15 @@ constexpr int kHoldingSpaceContextMenuMargin = 8;
 constexpr int kHoldingSpaceCornerRadius = 8;
 constexpr int kHoldingSpaceDownloadsChevronIconSize = 20;
 constexpr int kHoldingSpaceDownloadsHeaderSpacing = 16;
-constexpr int kHoldingSpaceFocusCornerRadius = 12;
+constexpr int kHoldingSpaceFocusCornerRadius = 11;
 constexpr int kHoldingSpaceFocusInsets = -4;
 constexpr int kHoldingSpaceIconSize = 20;
 constexpr gfx::Size kHoldingSpaceScreenCaptureSize(104, 80);
 constexpr int kHoldingSpaceSectionChildSpacing = 16;
 constexpr float kHoldingSpaceSelectedOverlayOpacity = 0.24f;
 constexpr int kHoldingSpaceTrayIconMaxVisiblePreviews = 3;
-constexpr int kHoldingSpaceTrayIconPreviewSize = 32;
+constexpr int kHoldingSpaceTrayIconDefaultPreviewSize = 32;
+constexpr int kHoldingSpaceTrayIconSmallPreviewSize = 28;
 constexpr int kHoldingSpaceTrayIconSize = 20;
 
 // Context menu commands.

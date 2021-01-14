@@ -11,9 +11,10 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -24,7 +25,8 @@ class Shelf;
 
 // The icon used to represent holding space in its tray in the shelf.
 class ASH_EXPORT HoldingSpaceTrayIcon : public views::View,
-                                        public ShellObserver {
+                                        public ShellObserver,
+                                        public ShelfConfig::Observer {
  public:
   METADATA_HEADER(HoldingSpaceTrayIcon);
 
@@ -67,7 +69,14 @@ class ASH_EXPORT HoldingSpaceTrayIcon : public views::View,
   void OnShelfAlignmentChanged(aura::Window* root_window,
                                ShelfAlignment old_alignment) override;
 
+  // ShelfConfigObserver:
+  void OnShelfConfigUpdated() override;
+
   void InitLayout();
+
+  // Updates the previews in the icon without an animation. Assumes that the
+  // target previews state has been set for all items in `previews_by_id_`.
+  void UpdatePreviewsWithoutAnimation();
 
   // Invoked when the specified preview has completed animating out. At this
   // point it is owned by `removed_previews_` and should be destroyed.
@@ -84,6 +93,9 @@ class ASH_EXPORT HoldingSpaceTrayIcon : public views::View,
 
   // Animates new items in. Done while updating the previews shown in the icon.
   void AnimateInNewItems();
+
+  // Ensure that preview layers stacking matches their order in the item list.
+  void UpdatePreviewLayerStacking();
 
   // The shelf associated with this holding space tray icon.
   Shelf* const shelf_;
@@ -109,11 +121,14 @@ class ASH_EXPORT HoldingSpaceTrayIcon : public views::View,
   // Helper to run icon resize animation.
   std::unique_ptr<ResizeAnimation> resize_animation_;
 
-  ScopedObserver<Shell,
-                 ShellObserver,
-                 &Shell::AddShellObserver,
-                 &Shell::RemoveShellObserver>
+  base::ScopedObservation<Shell,
+                          ShellObserver,
+                          &Shell::AddShellObserver,
+                          &Shell::RemoveShellObserver>
       shell_observer_{this};
+
+  base::ScopedObservation<ShelfConfig, ShelfConfig::Observer>
+      shelf_config_observer_{this};
 
   // The factory to which callbacks for stages of the previews list update are
   // bound to. The goal is to easily cancel in-progress updates if the list of

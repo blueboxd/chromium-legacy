@@ -35,6 +35,16 @@ namespace {
 constexpr base::TimeDelta kPreviewItemUpdateDelayIncrement =
     base::TimeDelta::FromMilliseconds(50);
 
+// Helpers ---------------------------------------------------------------------
+
+// Returns the size of previews given the current shelf configuration.
+int GetPreviewSize() {
+  ShelfConfig* const shelf_config = ShelfConfig::Get();
+  return shelf_config->in_tablet_mode() && shelf_config->is_in_app()
+             ? kHoldingSpaceTrayIconSmallPreviewSize
+             : kHoldingSpaceTrayIconDefaultPreviewSize;
+}
+
 }  // namespace
 
 // Animation for resizing the previews icon. The animation updates the icon
@@ -110,13 +120,16 @@ class HoldingSpaceTrayIcon::ResizeAnimation
 HoldingSpaceTrayIcon::HoldingSpaceTrayIcon(Shelf* shelf) : shelf_(shelf) {
   SetID(kHoldingSpaceTrayPreviewsIconId);
   InitLayout();
-  shell_observer_.Add(Shell::Get());
+
+  shell_observer_.Observe(Shell::Get());
+  shelf_config_observer_.Observe(ShelfConfig::Get());
 }
 
 HoldingSpaceTrayIcon::~HoldingSpaceTrayIcon() = default;
 
 void HoldingSpaceTrayIcon::Clear() {
   previews_update_weak_factory_.InvalidateWeakPtrs();
+  item_ids_.clear();
   previews_by_id_.clear();
   removed_previews_.clear();
   SetPreferredSize(CalculatePreferredSize());
@@ -134,10 +147,11 @@ gfx::Size HoldingSpaceTrayIcon::CalculatePreferredSize() const {
   const int num_visible_previews =
       std::min(kHoldingSpaceTrayIconMaxVisiblePreviews,
                static_cast<int>(previews_by_id_.size()));
+  const int preview_size = GetPreviewSize();
 
-  int primary_axis_size = kTrayItemSize;
+  int primary_axis_size = preview_size;
   if (num_visible_previews > 1)
-    primary_axis_size += (num_visible_previews - 1) * kTrayItemSize / 2;
+    primary_axis_size += (num_visible_previews - 1) * preview_size / 2;
 
   return shelf_->PrimaryAxisValue(
       /*horizontal=*/gfx::Size(primary_axis_size, kTrayItemSize),
@@ -146,7 +160,9 @@ gfx::Size HoldingSpaceTrayIcon::CalculatePreferredSize() const {
 
 void HoldingSpaceTrayIcon::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
+
+  const int preview_size = GetPreviewSize();
+  SetPreferredSize(gfx::Size(preview_size, preview_size));
 
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   layer()->SetFillsBoundsOpaquely(false);
@@ -161,11 +177,25 @@ void HoldingSpaceTrayIcon::InitLayout() {
   previews_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 }
 
+void HoldingSpaceTrayIcon::UpdatePreviewsWithoutAnimation() {
+  for (auto& preview : previews_by_id_)
+    preview.second->UpdateWithoutAnimation();
+
+  UpdatePreviewLayerStacking();
+
+  if (resize_animation_)
+    resize_animation_.reset();
+  SetPreferredSize(CalculatePreferredSize());
+}
+
 void HoldingSpaceTrayIcon::UpdatePreviews(
     const std::vector<const HoldingSpaceItem*> items) {
   // Cancel any in progress updates.
   previews_update_weak_factory_.InvalidateWeakPtrs();
 
+  // Don't animate if transitioning from empty previews icon to prevent
+  // previews from animating while the tray icon is animating in.
+  const bool animate = !item_ids_.empty();
   item_ids_.clear();
 
   // Go over the new item list, create previews for new items, and assign new
@@ -197,6 +227,14 @@ void HoldingSpaceTrayIcon::UpdatePreviews(
       items_to_remove.push_back(preview_pair.first);
   }
 
+  if (!animate) {
+    for (auto& item_id : items_to_remove)
+      previews_by_id_.erase(item_id);
+
+    UpdatePreviewsWithoutAnimation();
+    return;
+  }
+
   if (items_to_remove.empty()) {
     OnOldItemsRemoved();
     return;
@@ -226,6 +264,20 @@ void HoldingSpaceTrayIcon::OnShelfAlignmentChanged(
   removed_previews_.clear();
   for (const auto& preview : previews_by_id_)
     preview.second->OnShelfAlignmentChanged(old_alignment, shelf_->alignment());
+
+  if (resize_animation_) {
+    resize_animation_->AdvanceToEnd();
+    resize_animation_.reset();
+  }
+
+  SetPreferredSize(CalculatePreferredSize());
+  previews_container_->SetTransform(gfx::Transform());
+}
+
+void HoldingSpaceTrayIcon::OnShelfConfigUpdated() {
+  removed_previews_.clear();
+  for (const auto& preview : previews_by_id_)
+    preview.second->OnShelfConfigChanged();
 
   if (resize_animation_) {
     resize_animation_->AdvanceToEnd();
@@ -275,13 +327,7 @@ void HoldingSpaceTrayIcon::OnOldItemsRemoved() {
   ShiftExistingItems();
   AnimateInNewItems();
 
-  // Ensure that preview layers stacking matches their order in the item list.
-  for (auto& item_id : item_ids_) {
-    auto preview_it = previews_by_id_.find(item_id);
-    HoldingSpaceTrayIconPreview* preview_ptr = preview_it->second.get();
-    if (preview_ptr->layer())
-      previews_container_->layer()->StackAtBottom(preview_ptr->layer());
-  }
+  UpdatePreviewLayerStacking();
 }
 
 void HoldingSpaceTrayIcon::ShiftExistingItems() {
@@ -355,6 +401,15 @@ void HoldingSpaceTrayIcon::AnimateInNewItems() {
       if (addition_delay < base::TimeDelta())
         addition_delay = base::TimeDelta();
     }
+  }
+}
+
+void HoldingSpaceTrayIcon::UpdatePreviewLayerStacking() {
+  for (auto& item_id : item_ids_) {
+    auto preview_it = previews_by_id_.find(item_id);
+    HoldingSpaceTrayIconPreview* preview_ptr = preview_it->second.get();
+    if (preview_ptr->layer())
+      previews_container_->layer()->StackAtBottom(preview_ptr->layer());
   }
 }
 

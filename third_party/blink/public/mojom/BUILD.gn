@@ -42,7 +42,7 @@ mojom("mojom_platform") {
     "clipboard/raw_clipboard.mojom",
     "commit_result/commit_result.mojom",
     "content_index/content_index.mojom",
-    "context_menu/context_menu_data.mojom",
+    "context_menu/context_menu.mojom",
     "conversions/conversions.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
@@ -106,6 +106,7 @@ mojom("mojom_platform") {
     "loader/transferrable_url_loader.mojom",
     "loader/url_loader_factory_bundle.mojom",
     "locks/lock_manager.mojom",
+    "manifest/capture_links.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
@@ -658,6 +659,7 @@ mojom("android_mojo_bindings") {
     "payments/payment_handler_host.mojom",
     "payments/payment_request.mojom",
     "webauthn/authenticator.mojom",
+    "webshare/share_error.mojom",
     "webshare/webshare.mojom",
   ]
 

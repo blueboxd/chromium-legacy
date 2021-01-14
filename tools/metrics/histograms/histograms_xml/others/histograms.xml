@@ -1576,6 +1576,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.BookmarksBarStatus.OnReadingListOpened"
+    enum="BookmarkBarPrefAndState" expires_after="M92">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    This records the Boomarks bar pref state and status when the reading list is
+    opened. This will help determine how often the reading list is accessed from
+    the NTP where the bookmarks bar is always visible and the bookmark bar pref
+    state for those from the NTP. (Desktop only).
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.BookmarksInFolder" units="bookmarks"
     expires_after="M85">
   <owner>calamity@chromium.org</owner>
@@ -1831,7 +1843,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Canvas.TextMetrics.SetFont" units="microseconds"
-    expires_after="M90">
+    expires_after="2022-01-31">
   <owner>yiyix@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -7215,7 +7227,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InProductHelp.Promos.Snooze" units="SnoozeType"
-    expires_after="M88">
+    expires_after="M91">
 <!-- Name completed by histogram_suffixes name="IPHFeatures" -->
 
   <owner>kerenzhu@chromium.org</owner>
@@ -7228,7 +7240,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InProductHelp.Promos.SnoozeCountAtAcknowledge" units="times"
-    expires_after="M88">
+    expires_after="M91">
 <!-- Name completed by histogram_suffixes name="IPHFeatures" -->
 
   <owner>kerenzhu@chromium.org</owner>
@@ -7240,7 +7252,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InProductHelp.Promos.SnoozeCountAtFollow" units="times"
-    expires_after="M88">
+    expires_after="M91">
 <!-- Name completed by histogram_suffixes name="IPHFeatures" -->
 
   <owner>kerenzhu@chromium.org</owner>
@@ -7253,7 +7265,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InProductHelp.Promos.SnoozeCountAtTrigger" units="times"
-    expires_after="M88">
+    expires_after="M91">
 <!-- Name completed by histogram_suffixes name="IPHFeatures" -->
 
   <owner>kerenzhu@chromium.org</owner>
@@ -7294,7 +7306,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InstanceID.GetToken.NetErrorCode" enum="NetErrorCodes"
-    expires_after="M90">
+    expires_after="M94">
   <owner>peter@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>
@@ -7317,7 +7329,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InstanceID.GetToken.RequestStatus"
-    enum="GCMRegistrationRequestStatus" expires_after="M90">
+    enum="GCMRegistrationRequestStatus" expires_after="M94">
   <owner>peter@chromium.org</owner>
   <summary>Status code of the outcome of GetToken request.</summary>
 </histogram>
@@ -7925,7 +7937,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>The type of panes which language settings loads.</summary>
 </histogram>
 
-<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageName"
+<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode"
     expires_after="2021-06-06">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -7945,7 +7957,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageName"
+<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageCode"
     expires_after="2021-06-06">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -7955,7 +7967,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageName"
+<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageCode"
     expires_after="2021-06-20">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -8034,7 +8046,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Launch.WebAppDisplayMode" enum="WebAppDisplayMode"
-    expires_after="M87">
+    expires_after="M96">
   <owner>peter@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -10687,7 +10699,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OffscreenCanvas.TextMetrics.SetFont" units="microseconds"
-    expires_after="2021-01-31">
+    expires_after="2022-01-31">
   <owner>yiyix@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -11677,7 +11689,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.HeadersSizeTotal" units="bytes"
-    expires_after="2021-01-24">
+    expires_after="M94">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -12368,6 +12380,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="PushMessaging.DeliveryStatus" enum="PushEventStatus"
     expires_after="2021-06-13">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When a Service Worker receives a push message, this records whether the
     overall operation was successful, or otherwise the type of error
@@ -12376,8 +12389,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.DeliveryStatus.FindServiceWorker"
-    enum="ServiceWorkerStatusCode" expires_after="M90">
+    enum="ServiceWorkerStatusCode" expires_after="M96">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When attempting to deliver a push message to a Service Worker, this records
     the result of finding the Service Worker registration given its ID and
@@ -12386,8 +12400,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.DeliveryStatus.ServiceWorkerEvent"
-    enum="ServiceWorkerStatusCode" expires_after="M87">
+    enum="ServiceWorkerStatusCode" expires_after="M96">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When a Service Worker receives a push message, this records the precise
     result received from the Service Worker code.
@@ -12395,8 +12410,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.GetRegistrationStatus"
-    enum="PushGetRegistrationStatus" expires_after="M87">
+    enum="PushGetRegistrationStatus" expires_after="M94">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When a webpage asks for details about its current push messaging
     registration, this records whether the request is successful, or otherwise
@@ -12405,7 +12421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.PushSubscriptionChangeStatus"
-    enum="PushEventStatus" expires_after="M87">
+    enum="PushEventStatus" expires_after="M94">
   <owner>peter@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -12431,7 +12447,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.RegistrationStatus"
-    enum="PushRegistrationStatus" expires_after="M87">
+    enum="PushRegistrationStatus" expires_after="M94">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -12471,8 +12487,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationGCMResult" enum="GCMClientResult"
-    expires_after="M87">
+    expires_after="M94">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When unregistering a legacy non-InstanceID push messaging subscription, this
     records the result returned by the GCMDriver (note that exceeding the
@@ -12481,7 +12498,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationIIDResult" enum="InstanceIDResult"
-    expires_after="M90">
+    expires_after="M94">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -12492,8 +12509,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationReason"
-    enum="PushUnregistrationReason" expires_after="M87">
+    enum="PushUnregistrationReason" expires_after="M94">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When unregistering a website from push messaging, this records the reason
     why it is being unregistered.
@@ -12501,8 +12519,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationStatus"
-    enum="PushUnregistrationStatus" expires_after="M87">
+    enum="PushUnregistrationStatus" expires_after="M94">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When unregistering a website from push messaging, this records whether the
     request is successful, or otherwise the type of error encountered.
@@ -12510,8 +12529,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UserVisibleStatus" enum="PushUserVisibleStatus"
-    expires_after="M87">
+    expires_after="M96">
   <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
   <summary>
     When a Service Worker receives a push message, this records whether it
     showed user-visible UX (like a notification), or whether we showed a forced
@@ -12667,6 +12687,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The amount of time between the render frame host StartProvisionalLoad and
     DidFinishDocumentLoad events for the Read Later WebUI page.
+  </summary>
+</histogram>
+
+<histogram name="ReadingList.WindowDisplayedDuration" units="ms"
+    expires_after="M92">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records the amount of time between when a reading list bubble is opened and
+    when it is closed. It does so by recording the difference in time between
+    when the the hosting WebUIBubbleDialogView's Widget is first created and
+    when the widget is destroyed. This is logged on Desktop only.
   </summary>
 </histogram>
 
@@ -12829,6 +12861,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
     Count of renderer view context menu items (Only commands now) used.
+
+    The user action RenderViewContextMenu.Used.IDC_CONTENT_CONTEXT_SEARCHWEBFOR
+    is also logged in case that IDC_CONTENT_CONTEXT_SEARCHWEBFOR is logged to
+    this histogram.
 
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
@@ -18044,7 +18080,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.LoadError" units="ms"
-    expires_after="2021-01-20">
+    expires_after="2021-06-13">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -18284,8 +18320,12 @@ regressions. -->
 </histogram>
 
 <histogram name="WebsiteSettings.Menu.PermissionChanged.SessionOnly"
-    enum="ContentType" expires_after="M90">
-  <owner>timloh@chromium.org</owner>
+    enum="ContentType" expires_after="M96">
+  <owner>andypaicu@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <owner>ravjit@chromium.org</owner>
+  <owner>elklm@chromium.org</owner>
   <summary>
     Count of how often a specific content type (permission) is changed to the
     session only value using the content settings menu. This option only exists
@@ -18478,8 +18518,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebView.ApiCall" enum="WebViewApiCall"
-    expires_after="2021-07-24">
-  <owner>changwan@chromium.org</owner>
+    expires_after="2022-01-31">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records calls to WebView APIs in WebViewChromium.</summary>

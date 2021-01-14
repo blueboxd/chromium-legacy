@@ -102,7 +102,7 @@
   {
     "name": "android-detailed-language-settings",
     "owners": [ "perrier", "chrome-langauge@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 91
   },
   {
     "name": "android-managed-by-menu-item",
@@ -2058,6 +2058,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "enable-policy-blocklist-throttle-requires-policies-loaded",
+    "owners": ["ydago"],
+    "expiry_milestone": 96
+  },
+  {
     "name": "enable-portals",
     "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
     "expiry_milestone": 100
@@ -3889,6 +3894,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "pdf-viewer-document-properties",
+    "owners": [ "dhoss", "dpapad" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "pdf-viewer-presentation-mode",
     "owners": [ "dpapad" ],
     "expiry_milestone": 92
@@ -4434,6 +4444,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "shared-highlighting-use-blocklist",
+    "owners": ["tmartino"],
+    "expiry_milestone": 91
+  },
+  {
     "name": "sharing-device-expiration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 86
@@ -4610,11 +4625,6 @@
     "name": "stylus-battery-status",
     "owners": ["amehfooz"],
     "expiry_milestone": 91
-  },
-  {
-    "name": "suggested-content-toggle",
-    "owners": [ "jiameng", "wrong" ],
-    "expiry_milestone": 88
   },
   {
     "name": "sync-autofill-wallet-offer-data",
@@ -4940,7 +4950,7 @@
   {
     "name": "username-first-flow",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "video-player-js-modules",

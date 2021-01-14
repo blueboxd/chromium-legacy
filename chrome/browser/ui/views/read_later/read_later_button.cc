@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/read_later/read_later_button.h"
 
+#include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -11,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bubble/webui_bubble_dialog_view.h"
 #include "chrome/browser/ui/views/bubble/webui_bubble_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -20,6 +23,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/geometry/insets.h"
@@ -33,6 +38,43 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "url/gurl.h"
+
+namespace {
+
+// Enumeration of all bookmark bar prefs and states when a user can access the
+// ReadLaterButton. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class BookmarkBarPrefAndState {
+  kVisibleAndOnNTP = 0,
+  kHiddenAndOnNTP = 1,
+  kVisibleAndNotOnNTP = 2,
+  kMaxValue = kVisibleAndNotOnNTP,
+};
+
+void RecordBookmarkBarState(Browser* browser) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  BookmarkBarPrefAndState state = BookmarkBarPrefAndState::kVisibleAndNotOnNTP;
+  if (web_contents) {
+    const GURL site_origin = web_contents->GetLastCommittedURL().GetOrigin();
+    // These are also the NTP urls checked for showing the bookmark bar on the
+    // NTP.
+    if (site_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
+        site_origin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin()) {
+      if (browser->profile()->GetPrefs()->GetBoolean(
+              bookmarks::prefs::kShowBookmarkBar)) {
+        state = BookmarkBarPrefAndState::kVisibleAndOnNTP;
+      } else {
+        state = BookmarkBarPrefAndState::kHiddenAndOnNTP;
+      }
+    }
+  }
+  base::UmaHistogramEnumeration(
+      "Bookmarks.BookmarksBarStatus.OnReadingListOpened", state);
+}
+
+}  // namespace
 
 ReadLaterButton::ReadLaterButton(Browser* browser)
     : LabelButton(base::BindRepeating(&ReadLaterButton::ButtonPressed,
@@ -43,7 +85,11 @@ ReadLaterButton::ReadLaterButton(Browser* browser)
           IDS_READ_LATER_TITLE,
           this,
           browser->profile(),
-          GURL(chrome::kChromeUIReadLaterURL))) {
+          GURL(chrome::kChromeUIReadLaterURL))),
+      widget_open_timer_(base::BindRepeating([](base::TimeDelta time_elapsed) {
+        base::UmaHistogramMediumTimes("ReadingList.WindowDisplayedDuration",
+                                      time_elapsed);
+      })) {
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
 
@@ -63,6 +109,11 @@ ReadLaterButton::~ReadLaterButton() = default;
 
 const char* ReadLaterButton::GetClassName() const {
   return "ReadLaterButton";
+}
+
+void ReadLaterButton::CloseBubble() {
+  if (webui_bubble_manager_->GetBubbleWidget())
+    webui_bubble_manager_->CloseBubble();
 }
 
 std::unique_ptr<views::InkDrop> ReadLaterButton::CreateInkDrop() {
@@ -97,6 +148,13 @@ void ReadLaterButton::OnThemeChanged() {
   LabelButton::OnThemeChanged();
 }
 
+void ReadLaterButton::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK_EQ(webui_bubble_manager_->GetBubbleWidget(), widget);
+  DCHECK(bubble_widget_observation_.IsObservingSource(
+      webui_bubble_manager_->GetBubbleWidget()));
+  bubble_widget_observation_.Reset();
+}
+
 void ReadLaterButton::ButtonPressed() {
   BrowserView* const browser_view =
       BrowserView::GetBrowserViewForBrowser(browser_);
@@ -123,7 +181,14 @@ void ReadLaterButton::ButtonPressed() {
     } else {
       base::RecordAction(
           base::UserMetricsAction("DesktopReadingList.OpenReadingList"));
+      RecordBookmarkBarState(browser_);
       webui_bubble_manager_->ShowBubble();
+      // There should only ever be a single bubble widget active for the
+      // ReadLaterButton.
+      DCHECK(!bubble_widget_observation_.IsObserving());
+      bubble_widget_observation_.Observe(
+          webui_bubble_manager_->GetBubbleWidget());
+      widget_open_timer_.Reset(webui_bubble_manager_->GetBubbleWidget());
     }
   }
 }

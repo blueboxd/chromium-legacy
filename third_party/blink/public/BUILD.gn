@@ -73,7 +73,7 @@ if (is_android) {
   java_cpp_enum("blink_headers_java_enums_srcjar") {
     sources = [
       "./common/input/web_input_event.h",
-      "./mojom/context_menu/context_menu_data.mojom",
+      "./mojom/context_menu/context_menu.mojom",
       "./platform/web_text_input_mode.h",
       "./platform/web_text_input_type.h",
     ]
@@ -117,6 +117,7 @@ source_set("blink_headers") {
     "platform/child_url_loader_factory_bundle.h",
     "platform/cross_variant_mojo_util.h",
     "platform/file_path_conversion.h",
+    "platform/impression_conversions.h",
     "platform/input/input_handler_proxy.h",
     "platform/input/input_handler_proxy_client.h",
     "platform/input/predictor_factory.h",

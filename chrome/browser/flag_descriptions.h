@@ -94,6 +94,10 @@ extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 extern const char kEnableFtpName[];
 extern const char kEnableFtpDescription[];
 
+extern const char kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedName[];
+extern const char
+    kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedDescription[];
+
 extern const char kEnableSignedExchangeSubresourcePrefetchName[];
 extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 
@@ -156,9 +160,6 @@ extern const char kAutofillEnableToolbarStatusChipDescription[];
 
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
-
-extern const char kAutofillOffNoServerDataName[];
-extern const char kAutofillOffNoServerDataDescription[];
 
 extern const char kAutofillProfileClientValidationName[];
 extern const char kAutofillProfileClientValidationDescription[];
@@ -1292,9 +1293,6 @@ extern const char kStylusBatteryStatusDescription[];
 
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
-
-extern const char kSuggestedContentToggleName[];
-extern const char kSuggestedContentToggleDescription[];
 
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
@@ -2869,6 +2867,9 @@ extern const char kPdfFormSaveDescription[];
 
 extern const char kPdfViewerUpdateName[];
 extern const char kPdfViewerUpdateDescription[];
+
+extern const char kPdfViewerDocumentPropertiesName[];
+extern const char kPdfViewerDocumentPropertiesDescription[];
 
 extern const char kPdfViewerPresentationModeName[];
 extern const char kPdfViewerPresentationModeDescription[];

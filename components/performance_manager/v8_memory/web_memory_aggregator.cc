@@ -207,6 +207,18 @@ WebMemoryAggregator::AggregateMeasureMemoryResult() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   aggregation_result_ = mojom::WebMemoryMeasurement::New();
   VisitFrame(nullptr, aggregation_start_node_);
+
+  auto* process_data = V8DetailedMemoryProcessData::ForProcessNode(
+      aggregation_start_node_->GetProcessNode());
+  if (process_data) {
+    aggregation_result_->detached_memory = mojom::WebMemoryUsage::New();
+    aggregation_result_->detached_memory->bytes =
+        process_data->detached_v8_bytes_used();
+    aggregation_result_->shared_memory = mojom::WebMemoryUsage::New();
+    aggregation_result_->shared_memory->bytes =
+        process_data->shared_v8_bytes_used();
+  }
+
   return std::move(aggregation_result_);
 }
 
@@ -397,6 +409,7 @@ const FrameNode* GetSameOriginParentOrOpener(const FrameNode* frame_node,
 const FrameNode* FindAggregationStartNode(const FrameNode* requesting_node) {
   DCHECK(requesting_node);
   auto requesting_origin = GetOrigin(requesting_node);
+  DCHECK(!requesting_origin.opaque());
 
   // Follow parent and opener links to find the most general same-site node to
   // start the aggregation traversal from.

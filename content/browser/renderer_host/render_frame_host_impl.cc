@@ -857,6 +857,22 @@ void VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
       << "; navigation_request->GetURL() = " << navigation_request->GetURL();
 }
 
+// Enum used for Navigation.VerifyDidCommitParams histogram, to indicate which
+// DidCommitProvisionalLoadParams differ when comparing browser- vs
+// renderer-calculated values.
+// Do NOT delete or reorder existing entries.
+enum class VerifyDidCommitParamsDifference {
+  kIntendedAsNewEntry = 0,
+  kMethod = 1,
+  kURLIsUnreachable = 2,
+  kBaseURL = 3,
+  kPostID = 4,
+  kIsOverridingUserAgent = 5,
+  kHTTPStatusCode = 6,
+  kShouldUpdateHistory = 7,
+  kMaxValue = kShouldUpdateHistory,
+};
+
 }  // namespace
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2777,6 +2793,11 @@ void RenderFrameHostImpl::DidNavigate(
   // the renderer process.
   last_http_method_ = params.method;
   last_post_id_ = params.post_id;
+
+  // TODO(arthursonzogni): Stop relying on DidCommitProvisionalLoadParams. Use
+  // the NavigationRequest instead. The browser process doesn't need to rely on
+  // the renderer process.
+  last_http_status_code_ = params.http_status_code;
 
   if (did_create_new_document)
     DidCommitNewDocument(params, navigation_request);
@@ -5268,6 +5289,12 @@ void RenderFrameHostImpl::CreateNewWindow(
           effective_transient_activation_state, params->opener_suppressed,
           &no_javascript_access);
 
+  // Disallow window creation in prerendered pages.
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2) &&
+      IsPrerendering()) {
+    can_create_window = false;
+  }
+
   bool was_consumed = false;
   if (can_create_window) {
     // Consume activation even w/o User Activation v2, to sync other renderers
@@ -7180,14 +7207,15 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
   render_accessibility_->SetMode(ax_mode.mode());
 }
 
-void RenderFrameHostImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
-                                                ui::AXMode ax_mode) {
+void RenderFrameHostImpl::RequestAXTreeSnapshot(
+    AXTreeSnapshotCallback callback,
+    mojom::SnapshotAccessibilityTreeParamsPtr params) {
   // TODO(https://crbug.com/859110): Remove once frame_ can no longer be null.
   if (!IsRenderFrameLive())
     return;
 
   frame_->SnapshotAccessibilityTree(
-      ax_mode.mode(),
+      std::move(params),
       base::BindOnce(&RenderFrameHostImpl::RequestAXTreeSnapshotCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -7938,6 +7966,7 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
       std::make_unique<DedicatedWorkerHostFactoryImpl>(
           worker_process_id,
           /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
+          /*creator_worker_token=*/base::nullopt,
           /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
           last_committed_origin_, isolation_info_,
           cross_origin_embedder_policy_, std::move(coep_reporter)),
@@ -8952,11 +8981,6 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   DCHECK(params.embedding_token.has_value());
   SetEmbeddingToken(params.embedding_token.value());
 
-  // TODO(arthursonzogni): Stop relying on DidCommitProvisionalLoadParams. Use
-  // the NavigationRequest instead. The browser process doesn't need to rely on
-  // the renderer process.
-  last_http_status_code_ = params.http_status_code;
-
   renderer_reported_scheduler_tracked_features_ = 0;
   browser_reported_scheduler_tracked_features_ = 0;
 
@@ -9770,6 +9794,11 @@ bool ShouldVerify(const std::string& param) {
 #endif
 }
 
+void LogVerifyDidCommitParamsDifference(
+    VerifyDidCommitParamsDifference difference) {
+  UMA_HISTOGRAM_ENUMERATION("Navigation.VerifyDidCommitParams", difference);
+}
+
 void RenderFrameHostImpl::
     VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch(
         NavigationRequest* request,
@@ -9992,11 +10021,48 @@ void RenderFrameHostImpl::
             params.intended_as_new_entry);
   DCHECK_EQ(browser_method, params.method);
   DCHECK_EQ(browser_url_is_unreachable, params.url_is_unreachable);
+  DCHECK(base_url_expectations_match);
   DCHECK_EQ(browser_post_id, params.post_id);
   DCHECK_EQ(browser_is_overriding_user_agent, params.is_overriding_user_agent);
   DCHECK_EQ(browser_http_status_code, params.http_status_code);
   DCHECK_EQ(browser_should_update_history, params.should_update_history);
-  DCHECK(base_url_expectations_match);
+
+  // Log histograms to trigger Chrometto slow reports, allowing us to see traces
+  // to analyze what happened in these navigations.
+  if (request->commit_params().intended_as_new_entry !=
+      params.intended_as_new_entry) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kIntendedAsNewEntry);
+  }
+  if (browser_method != params.method) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kMethod);
+  }
+  if (browser_url_is_unreachable != params.url_is_unreachable) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kURLIsUnreachable);
+  }
+  if (!base_url_expectations_match) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kBaseURL);
+  }
+  if (browser_post_id != params.post_id) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kPostID);
+  }
+  if (browser_is_overriding_user_agent != params.is_overriding_user_agent) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kIsOverridingUserAgent);
+  }
+  if (browser_http_status_code != params.http_status_code) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kHTTPStatusCode);
+  }
+  if (browser_should_update_history != params.should_update_history) {
+    LogVerifyDidCommitParamsDifference(
+        VerifyDidCommitParamsDifference::kShouldUpdateHistory);
+  }
+
   base::debug::DumpWithoutCrashing();
 }
 

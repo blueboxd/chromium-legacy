@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -58,6 +59,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -145,6 +147,35 @@ GURL GetSigninURL() {
     signin_url = net::AppendQueryParameter(signin_url, "color_scheme", "dark");
   }
   return signin_url;
+}
+
+bool IsExternalURL(const GURL& url) {
+  // Empty URL is used initially, about:blank is used to stop navigation after
+  // sign-in succeeds.
+  if (url.is_empty() || url == GURL(url::kAboutBlankURL))
+    return false;
+  if (gaia::IsGaiaSignonRealm(url.GetOrigin()))
+    return false;
+  return true;
+}
+
+void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
+                        Browser* browser) {
+  DCHECK(browser);
+
+  // Attach DiceTabHelper to `saml_wc` so that sync consent dialog appears after
+  // a successful sign-in.
+  DiceTabHelper::CreateForWebContents(saml_wc.get());
+  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(saml_wc.get());
+  // Use |redirect_url| and not |continue_url|, so that the DiceTabHelper can
+  // redirect to chrome:// URLs such as the NTP.
+  tab_helper->InitializeSigninFlow(
+      GetSigninURL(), signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+      GURL(chrome::kChromeUINewTabURL));
+
+  browser->tab_strip_model()->ReplaceWebContentsAt(0, std::move(saml_wc));
 }
 
 class ProfilePickerWidget : public views::Widget {
@@ -306,7 +337,12 @@ ProfilePickerView::ProfilePickerView()
   // TODO(crbug.com/1063856): Add |RecordDialogCreation|.
 }
 
-ProfilePickerView::~ProfilePickerView() = default;
+ProfilePickerView::~ProfilePickerView() {
+  if (new_profile_contents_)
+    new_profile_contents_->SetDelegate(nullptr);
+  if (system_profile_contents_)
+    system_profile_contents_->SetDelegate(nullptr);
+}
 
 void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
   // Record creation metrics.
@@ -476,31 +512,25 @@ void ProfilePickerView::OnProfileForSigninCreated(
   // Listen for sign-in getting completed.
   identity_manager_observation_.Observe(
       IdentityManagerFactory::GetForProfile(profile));
-  // TODO(crbug.com/1126913): When there is back button from the signed-in page,
-  // make sure the flow does not create multiple profiles simultaneously.
   signed_in_profile_being_created_ = profile;
 
-  // Build the toolbar. Do it as late as here because the elements depend on the
+  // Build the toolbar. Do it as late as here because the button depends on the
   // ThemeProvider which is available only by signed_in_profile_being_created_.
-  const ui::ThemeProvider* tp = GetThemeProviderForProfileBeingCreated();
-  toolbar_->SetBackground(views::CreateSolidBackground(
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR)));
-
   auto back_button = std::make_unique<SimpleBackButton>(base::BindRepeating(
       &ProfilePickerView::BackButtonPressed, base::Unretained(this)));
   toolbar_->AddChildView(std::move(back_button));
-
-  // TODO(crbug.com/1126913): Build the read-only omnibox.
 
   new_profile_contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(signed_in_profile_being_created_));
   new_profile_contents_->SetDelegate(this);
 
-  // Make sure the web contents used for sign-in has proper background (for dark
-  // mode).
+  // Make sure the web contents used for sign-in has proper background to match
+  // the toolbar (for dark mode).
   views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
       new_profile_contents_.get(),
-      tp->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
+
+  UpdateToolbarColor();
 
   ShowScreen(new_profile_contents_.get(), GetSigninURL(),
              /*show_toolbar=*/true);
@@ -592,6 +622,13 @@ bool ProfilePickerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
+void ProfilePickerView::OnThemeChanged() {
+  views::WidgetDelegateView::OnThemeChanged();
+  if (!IsSigningIn())
+    return;
+  UpdateToolbarColor();
+}
+
 bool ProfilePickerView::HandleContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
@@ -627,6 +664,13 @@ void ProfilePickerView::AddNewContents(
   Navigate(&params);
 }
 
+void ProfilePickerView::NavigationStateChanged(
+    content::WebContents* source,
+    content::InvalidateTypes changed_flags) {
+  if (IsSigningIn() && IsExternalURL(new_profile_contents_->GetVisibleURL()))
+    FinishSignedInCreationFlowForSAML();
+}
+
 void ProfilePickerView::BuildLayout() {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
@@ -647,6 +691,7 @@ void ProfilePickerView::BuildLayout() {
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                views::MaximumFlexSizeRule::kPreferred));
+  // It is important for tests that the toolbar starts visible (being empty).
   toolbar_ = AddChildView(std::move(toolbar));
 
   auto web_view = std::make_unique<views::WebView>();
@@ -654,24 +699,33 @@ void ProfilePickerView::BuildLayout() {
   web_view_ = AddChildView(std::move(web_view));
 }
 
+void ProfilePickerView::UpdateToolbarColor() {
+  DCHECK(new_profile_contents_);
+  toolbar_->SetBackground(views::CreateSolidBackground(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+}
+
 void ProfilePickerView::ShowScreen(content::WebContents* contents,
                                    const GURL& url,
                                    bool show_toolbar) {
-  if (!url.is_empty()) {
-    contents->GetController().LoadURL(url, content::Referrer(),
-                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                      std::string());
-  }
   web_view_->SetWebContents(contents);
   web_view_->RequestFocus();
 
   // Change visibility of the toolbar after swapping wc in `web_view_` to make
   // it easier for tests to detect changing of the screen.
   toolbar_->SetVisible(show_toolbar);
+
+  if (!url.is_empty()) {
+    // Make sure to load the url as the last step so that the UI state is
+    // coherent upon the NavigationStateChanged notification.
+    contents->GetController().LoadURL(url, content::Referrer(),
+                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                      std::string());
+  }
 }
 
 void ProfilePickerView::BackButtonPressed(const ui::Event& event) {
-  if (web_view_->GetWebContents() != new_profile_contents_.get()) {
+  if (!IsSigningIn()) {
     return;
   }
 
@@ -684,6 +738,10 @@ void ProfilePickerView::BackButtonPressed(const ui::Event& event) {
   // Do not load any url because the desired screen is still loaded in
   // `system_profile_contents_`.
   ShowScreen(system_profile_contents_.get(), GURL(), /*show_toolbar=*/false);
+}
+
+bool ProfilePickerView::IsSigningIn() const {
+  return (state_ == kReady || state_ == kFinalizing) && toolbar_->GetVisible();
 }
 
 void ProfilePickerView::OnRefreshTokenUpdatedForAccount(
@@ -780,6 +838,23 @@ void ProfilePickerView::FinishSignedInCreationFlow(
 
   FinishSignedInCreationFlowImpl(std::move(callback),
                                  enterprise_sync_consent_needed);
+}
+
+void ProfilePickerView::FinishSignedInCreationFlowForSAML() {
+  DCHECK_NE(state_, kFinalizing);
+  state_ = kFinalizing;
+  DCHECK(name_for_signed_in_profile_.empty());
+
+  name_for_signed_in_profile_ =
+      profiles::GetDefaultNameForNewEnterpriseProfile();
+
+  // Free up `new_profile_contents_` to be moved to a new browser window.
+  new_profile_contents_->SetDelegate(nullptr);
+  ShowScreen(system_profile_contents_.get(), GURL(url::kAboutBlankURL),
+             /*show_toolbar=*/false);
+  FinishSignedInCreationFlowImpl(
+      base::BindOnce(&ContinueSAMLSignin, std::move(new_profile_contents_)),
+      /*enterprise_sync_consent_needed=*/true);
 }
 
 void ProfilePickerView::FinishSignedInCreationFlowImpl(

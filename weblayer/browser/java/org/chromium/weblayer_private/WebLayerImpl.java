@@ -60,6 +60,7 @@ import org.chromium.components.embedder_support.application.FirebaseConfig;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
+import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.ContactsPicker;
 import org.chromium.content_public.browser.ContactsPickerListener;
 import org.chromium.content_public.browser.DeviceUtils;
@@ -276,6 +277,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         BundleUtils.setIsBundle(ProductConfig.IS_BUNDLE);
 
         setChildProcessCreationParams(appContext, packageInfo.packageName);
+        ChildProcessLauncherHelper.warmUp(appContext, true);
 
         // Creating the Android shared preferences object causes I/O.
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
@@ -937,6 +939,10 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             ApplicationInfo appInfo = packageInfo.applicationInfo;
             String[] splitNames = ApiHelperForO.getSplitNames(appInfo);
+            if (splitNames == null) {
+                return;
+            }
+
             for (int i = 0; i < splitNames.length; i++) {
                 String splitName = splitNames[i];
                 // WebLayer depends on the "weblayer" split and "chrome" split (if running in

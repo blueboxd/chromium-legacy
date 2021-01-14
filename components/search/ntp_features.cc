@@ -23,7 +23,7 @@ const base::Feature kDismissPromos{"DismissNtpPromos",
 
 // If enabled, the OneGooleBar is loaded in an iframe. Otherwise, it is inlined.
 const base::Feature kIframeOneGoogleBar{"IframeOneGoogleBar",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, queries that are frequently repeated by the user (and are
 // expected to be issued again) are shown as most visited tiles.
@@ -99,6 +99,8 @@ const char kNtpRepeatableQueriesFrequencyExponentParam[] =
 const char kNtpRepeatableQueriesInsertPositionParam[] =
     "NtpRepeatableQueriesInsertPosition";
 
+const char kNtpModulesLoadTimeoutMillisecondsParam[] =
+    "NtpModulesLoadTimeoutMillisecondsParam";
 const char kNtpStatefulTasksModuleDataParam[] =
     "NtpStatefulTasksModuleDataParam";
 
@@ -154,6 +156,18 @@ RepeatableQueriesInsertPosition GetRepeatableQueriesInsertPosition() {
       kNtpRepeatableQueries, kNtpRepeatableQueriesInsertPositionParam);
   return param_value == "end" ? RepeatableQueriesInsertPosition::kEnd
                               : RepeatableQueriesInsertPosition::kStart;
+}
+
+base::TimeDelta GetModulesLoadTimeout() {
+  std::string param_value = base::GetFieldTrialParamValueByFeature(
+      kModules, kNtpModulesLoadTimeoutMillisecondsParam);
+  // If the field trial param is not found or cannot be parsed to an unsigned
+  // integer, return the default value.
+  unsigned int param_value_as_int = 0;
+  if (!base::StringToUint(param_value, &param_value_as_int)) {
+    return base::TimeDelta::FromSeconds(3);
+  }
+  return base::TimeDelta::FromMilliseconds(param_value_as_int);
 }
 
 }  // namespace ntp_features

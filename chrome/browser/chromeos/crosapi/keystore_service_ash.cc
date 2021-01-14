@@ -9,10 +9,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/crosapi/cpp/keystore_service_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -21,13 +24,16 @@ namespace crosapi {
 
 using PlatformKeysService = chromeos::platform_keys::PlatformKeysService;
 using TokenId = chromeos::platform_keys::TokenId;
+using SigningAlgorithmName = crosapi::mojom::KeystoreSigningAlgorithmName;
 
 namespace {
 
 const char kEnterprisePlatformErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
-const char kUnsupportedKeystoreType[] = "Keystore type is not supported.";
+const char kUnsupportedKeystoreType[] = "The token is not valid.";
 const char kUnsupportedAlgorithmType[] = "Algorithm type is not supported.";
+const char kErrorAlgorithmNotPermittedByCertificate[] =
+    "The requested Algorithm is not permitted by the certificate.";
 
 // Converts a binary blob to a certificate.
 scoped_refptr<net::X509Certificate> ParseCertificate(
@@ -57,6 +63,18 @@ base::Optional<TokenId> KeystoreToToken(mojom::KeystoreType type) {
       return TokenId::kUser;
     case mojom::KeystoreType::kDevice:
       return TokenId::kSystem;
+  }
+}
+
+base::Optional<std::string> StringFromSigningAlgorithmName(
+    SigningAlgorithmName name) {
+  switch (name) {
+    case SigningAlgorithmName::kRsassaPkcs115:
+      return crosapi::keystore_service_util::kWebCryptoRsassaPkcs1v15;
+    case SigningAlgorithmName::kEcdsa:
+      return crosapi::keystore_service_util::kWebCryptoEcdsa;
+    case SigningAlgorithmName::kUnknown:
+      return base::nullopt;
   }
 }
 
@@ -216,6 +234,116 @@ void KeystoreServiceAsh::RemoveCertificate(
                      std::move(callback)));
 }
 
+void KeystoreServiceAsh::GetPublicKey(
+    const std::vector<uint8_t>& certificate,
+    mojom::KeystoreSigningAlgorithmName algorithm_name,
+    GetPublicKeyCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::Optional<std::string> name =
+      StringFromSigningAlgorithmName(algorithm_name);
+  if (!name) {
+    std::move(callback).Run(mojom::GetPublicKeyResult::NewErrorMessage(
+        kErrorAlgorithmNotPermittedByCertificate));
+    return;
+  }
+
+  chromeos::platform_keys::GetPublicKeyAndAlgorithmOutput output =
+      chromeos::platform_keys::GetPublicKeyAndAlgorithm(certificate,
+                                                        name.value());
+
+  mojom::GetPublicKeyResultPtr result_ptr = mojom::GetPublicKeyResult::New();
+  if (output.error.empty()) {
+    base::Optional<crosapi::mojom::KeystoreSigningAlgorithmPtr>
+        signing_algorithm =
+            crosapi::keystore_service_util::SigningAlgorithmFromDictionary(
+                output.algorithm);
+    if (signing_algorithm) {
+      mojom::GetPublicKeySuccessResultPtr success_result_ptr =
+          mojom::GetPublicKeySuccessResult::New();
+      success_result_ptr->public_key = std::move(output.public_key);
+      success_result_ptr->algorithm_properties =
+          std::move(signing_algorithm.value());
+      result_ptr->set_success_result(std::move(success_result_ptr));
+    } else {
+      result_ptr->set_error_message(kUnsupportedAlgorithmType);
+    }
+  } else {
+    result_ptr->set_error_message(output.error);
+  }
+  std::move(callback).Run(std::move(result_ptr));
+}
+
+void KeystoreServiceAsh::Sign(KeystoreType keystore,
+                              const std::vector<uint8_t>& public_key,
+                              SigningScheme scheme,
+                              const std::vector<uint8_t>& data,
+                              const std::string& extension_id,
+                              SignCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::Optional<TokenId> token_id = KeystoreToToken(keystore);
+  if (!token_id) {
+    std::move(callback).Run(
+        mojom::KeystoreBinaryResult::NewErrorMessage(kUnsupportedKeystoreType));
+    return;
+  }
+
+  chromeos::ExtensionPlatformKeysService* service =
+      chromeos::ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
+          ProfileManager::GetActiveUserProfile());
+  chromeos::platform_keys::HashAlgorithm hash_algorithm;
+  chromeos::platform_keys::KeyType key_type;
+  switch (scheme) {
+    case SigningScheme::kUnknown:
+      std::move(callback).Run(mojom::KeystoreBinaryResult::NewErrorMessage(
+          kUnsupportedAlgorithmType));
+      return;
+    case SigningScheme::kRsassaPkcs1V15None:
+      service->SignRSAPKCS1Raw(
+          token_id, std::string(data.begin(), data.end()),
+          std::string(public_key.begin(), public_key.end()), extension_id,
+          base::BindOnce(&KeystoreServiceAsh::OnDidSign, std::move(callback)));
+      return;
+    case SigningScheme::kRsassaPkcs1V15Sha1:
+      key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA1;
+      break;
+    case SigningScheme::kRsassaPkcs1V15Sha256:
+      key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA256;
+      break;
+    case SigningScheme::kRsassaPkcs1V15Sha384:
+      key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA384;
+      break;
+    case SigningScheme::kRsassaPkcs1V15Sha512:
+      key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA512;
+      break;
+    case SigningScheme::kEcdsaSha1:
+      key_type = chromeos::platform_keys::KeyType::kEcdsa;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA1;
+      break;
+    case SigningScheme::kEcdsaSha256:
+      key_type = chromeos::platform_keys::KeyType::kEcdsa;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA256;
+      break;
+    case SigningScheme::kEcdsaSha384:
+      key_type = chromeos::platform_keys::KeyType::kEcdsa;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA384;
+      break;
+    case SigningScheme::kEcdsaSha512:
+      key_type = chromeos::platform_keys::KeyType::kEcdsa;
+      hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA512;
+      break;
+  }
+
+  service->SignDigest(
+      token_id, std::string(data.begin(), data.end()),
+      std::string(public_key.begin(), public_key.end()), key_type,
+      hash_algorithm, extension_id,
+      base::BindOnce(&KeystoreServiceAsh::OnDidSign, std::move(callback)));
+}
+
 // static
 void KeystoreServiceAsh::OnGetTokens(
     GetKeyStoresCallback callback,
@@ -309,6 +437,21 @@ void KeystoreServiceAsh::OnRemoveCertificate(
     std::move(callback).Run(/*error=*/"");
   else
     std::move(callback).Run(chromeos::platform_keys::StatusToString(status));
+}
+
+// static
+void KeystoreServiceAsh::OnDidSign(SignCallback callback,
+                                   const std::string& signature,
+                                   chromeos::platform_keys::Status status) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (status == chromeos::platform_keys::Status::kSuccess) {
+    std::move(callback).Run(mojom::KeystoreBinaryResult::NewBlob(
+        std::vector<uint8_t>(signature.begin(), signature.end())));
+  } else {
+    std::move(callback).Run(mojom::KeystoreBinaryResult::NewErrorMessage(
+        chromeos::platform_keys::StatusToString(status)));
+  }
 }
 
 void KeystoreServiceAsh::DidChallengeAttestationOnlyKeystore(

@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
+#include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_source.h"
@@ -1035,6 +1036,18 @@ void FrameLoader::CommitNavigation(
         std::move(navigation_params->policy_container)));
   }
 
+  // If this is a javascript: URL or XSLT commit, we must copy the ExtraData
+  // from the previous DocumentLoader to ensure the new DocumentLoader behaves
+  // the same way as the previous one.
+  if (commit_reason == CommitReason::kXSLT ||
+      commit_reason == CommitReason::kJavascriptUrl) {
+    DCHECK(!extra_data);
+    if (auto* old_document_loader =
+            static_cast<WebDocumentLoaderImpl*>(document_loader_.Get())) {
+      extra_data = old_document_loader->TakeExtraData();
+    }
+  }
+
   base::Optional<Document::UnloadEventTiming> unload_timing;
   FrameSwapScope frame_swap_scope(frame_owner);
   {
@@ -1227,7 +1240,8 @@ void FrameLoader::CommitDocumentLoader(
     // of the previous Document.
     document_loader_->SetHistoryItemStateForCommit(
         previous_history_item, document_loader_->LoadType(),
-        DocumentLoader::HistoryNavigationType::kDifferentDocument);
+        DocumentLoader::HistoryNavigationType::kDifferentDocument,
+        commit_reason);
   }
 
   // Update the DocumentLoadTiming with the timings from the previous document
@@ -1248,8 +1262,7 @@ void FrameLoader::CommitDocumentLoader(
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState() {
-  if (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()) ||
-      !frame_->GetPage() || !GetDocumentLoader() ||
+  if (!frame_->GetPage() || !GetDocumentLoader() ||
       !GetDocumentLoader()->GetHistoryItem() ||
       !GetDocumentLoader()->GetHistoryItem()->GetViewState() ||
       !GetDocumentLoader()->NavigationScrollAllowed()) {
@@ -1391,13 +1404,11 @@ void FrameLoader::ProcessFragment(const KURL& url,
       GetDocumentLoader()->GetInitialScrollState().did_restore_from_history ||
       uses_manual_scroll_restoration;
 
-  // Scrolling at load can be blocked by document policy (or the equivalent
-  // ForceLoadAtTop REF currently in origin trial). This policy applies only to
-  // cross-document navigations.
+  // Scrolling at load can be blocked by document policy. This policy applies
+  // only to cross-document navigations.
   const bool blocked_by_policy =
       !is_same_document_navigation &&
-      (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()) ||
-       !GetDocumentLoader()->NavigationScrollAllowed());
+      !GetDocumentLoader()->NavigationScrollAllowed();
 
   // We should avoid scrolling the fragment if it would clobber a history
   // restored scroll state but still allow it on same document navigations

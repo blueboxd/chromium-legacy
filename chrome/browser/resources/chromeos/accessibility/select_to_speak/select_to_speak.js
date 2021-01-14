@@ -274,8 +274,8 @@ export class SelectToSpeak {
       this.systemSpeechRate_ = /** @type {number} */ (pref.value);
     });
 
-    /** @private {?number} Speech rate that overrides system rate. */
-    this.overrideSpeechRate_ = null;
+    /** @private {number} Speech rate multiplier. */
+    this.speechRateMultiplier_ = 1.0;
   }
 
   /**
@@ -780,7 +780,7 @@ export class SelectToSpeak {
       chrome.accessibilityPrivate.updateSelectToSpeakPanel(
           /* show= */ true, /* anchor= */ this.currentFocusRing_[0],
           /* isPaused= */ this.isPaused_(),
-          /* speed= */ this.getSpeechRate_());
+          /* speed= */ this.speechRateMultiplier_);
     } else {
       // Dismiss the panel if either the feature is disabled or the focus ring
       // is not valid.
@@ -1298,12 +1298,12 @@ export class SelectToSpeak {
   }
 
   /**
-   * Updates current reading speed (speech rate).
-   * @param {number} rate
+   * Updates current reading speed given a multiplier.
+   * @param {number} rateMultiplier
    * @private
    */
-  async changeSpeed_(rate) {
-    this.overrideSpeechRate_ = rate === this.systemSpeechRate_ ? null : rate;
+  async changeSpeed_(rateMultiplier) {
+    this.speechRateMultiplier_ = rateMultiplier;
 
     // If currently playing, stop TTS, then resume from current spot.
     if (!this.isPaused_()) {
@@ -1322,16 +1322,16 @@ export class SelectToSpeak {
   startSpeech_(text) {
     this.prepareForSpeech_(true /* clearFocusRing */);
     const options = this.prefsManager_.speechOptions();
+    // Without nodes to anchor on, navigate is not supported.
+    this.supportsNavigationPanel_ = false;
     options.onEvent = (event) => {
       if (event.type === 'start') {
         this.onStateChanged_(SelectToSpeakState.SPEAKING);
         this.testCurrentNode_();
       } else if (
-          (event.type === 'end' || event.type === 'interrupted' ||
-           event.type === 'cancelled') &&
-          !this.shouldShowNavigationControls_()) {
-        // Automatically dismiss when we're at the end, unless navigation
-        // controled is enabled, in which case we persist STS.
+          event.type === 'end' || event.type === 'interrupted' ||
+          event.type === 'cancelled') {
+        // Automatically dismiss when we're at the end.
         this.onStateChanged_(SelectToSpeakState.INACTIVE);
       }
     };
@@ -1569,10 +1569,11 @@ export class SelectToSpeak {
     if (isLastNodeGroup) {
       if (!this.shouldShowNavigationControls_()) {
         this.onStateChanged_(SelectToSpeakState.INACTIVE);
+      } else {
+        // If navigation features are enabled, we should turn the pause status
+        // to true so that the user can hit resume to continue.
+        this.updatePauseStatusFromTtsEvent_(true /* shouldPause */);
       }
-      // If navigation features are enabled, we should turn the pause status to
-      // true so that the user can hit resume to continue.
-      this.updatePauseStatusFromTtsEvent_(true /* shouldPause */);
       return;
     }
 
@@ -2019,7 +2020,10 @@ export class SelectToSpeak {
    * @private
    */
   getSpeechRate_() {
-    return this.overrideSpeechRate_ || this.systemSpeechRate_;
+    // Multiply default system rate with user-selected multiplier.
+    const rate = this.systemSpeechRate_ * this.speechRateMultiplier_;
+    // Then round to the nearest tenth (ex. 1.799999 becomes 1.8).
+    return Math.round(rate * 10) / 10;
   }
 
   /**

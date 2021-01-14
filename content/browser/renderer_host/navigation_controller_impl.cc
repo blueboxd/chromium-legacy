@@ -2349,7 +2349,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    const base::Optional<Impression>& impression) {
+    const base::Optional<blink::Impression>& impression) {
   if (is_renderer_initiated)
     DCHECK(initiator_origin.has_value());
 
@@ -3469,7 +3469,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           ukm::kInvalidSourceId /* document_ukm_source_id */,
           node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolated */,
+          false /* origin_agent_cluster */,
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */,

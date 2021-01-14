@@ -17,6 +17,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/browsing_data/browsing_data_remover.h"
+#import "ios/web/common/crw_input_view_provider.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/uikit_ui_util.h"
@@ -95,6 +96,7 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 }  // namespace
 
 @interface CRWWebController () <CRWWKNavigationHandlerDelegate,
+                                CRWInputViewProvider,
                                 CRWJSInjectorDelegate,
                                 CRWSSLStatusUpdaterDataSource,
                                 CRWSSLStatusUpdaterDelegate,
@@ -253,8 +255,6 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 // |completion| is called with nullptr.
 typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)extractViewportTagWithCompletion:(ViewportStateCompletion)completion;
-// Called by NSNotificationCenter upon orientation changes.
-- (void)orientationDidChange;
 // Queries the web view for the user-scalable meta tag and calls
 // |-applyPageDisplayState:userScalable:| with the result.
 - (void)applyPageDisplayState:(const web::PageDisplayState&)displayState;
@@ -316,11 +316,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         std::make_unique<web::JsWindowErrorManager>(_webStateImpl);
     _cookieBlockingErrorLogger =
         std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(orientationDidChange)
-               name:UIApplicationDidChangeStatusBarOrientationNotification
-             object:nil];
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] initWithDelegate:self];
 
@@ -1313,7 +1308,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                }];
 }
 
-- (void)orientationDidChange {
+- (void)surfaceSizeChanged {
   // When rotating, the available zoom scale range may change, zoomScale's
   // percentage into this range should remain constant.  However, there are
   // two known bugs with respect to adjusting the zoomScale on rotation:
@@ -1603,8 +1598,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         web::GetWebClient()->GetDefaultUserAgent(_containerView, GURL());
   }
 
-  return web::BuildWKWebView(
-      CGRectZero, config, self.webStateImpl->GetBrowserState(), userAgentType);
+  return web::BuildWKWebView(CGRectZero, config,
+                             self.webStateImpl->GetBrowserState(),
+                             userAgentType, self);
 }
 
 // Wraps the web view in a CRWWebViewContentView and adds it to the container
@@ -2044,6 +2040,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (CRWWKNavigationHandler*)webRequestControllerNavigationHandler:
     (CRWWebRequestController*)requestController {
   return self.navigationHandler;
+}
+
+#pragma mark -  CRWInputViewProvider
+
+- (id<CRWResponderInputView>)responderInputView {
+  web::WebState* webState = self.webStateImpl;
+  web::WebStateDelegate* webStateDelegate = webState->GetDelegate();
+  if (webStateDelegate) {
+    return webStateDelegate->GetResponderInputView(webState);
+  }
+  return nil;
 }
 
 #pragma mark - CRWJSNavigationHandlerDelegate

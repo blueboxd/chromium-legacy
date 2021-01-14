@@ -724,7 +724,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     NavigationEntryImpl* entry,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    const base::Optional<Impression>& impression) {
+    const base::Optional<blink::Impression>& impression) {
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
   // This is not currently handled here.
   bool is_form_submission = !!post_body;
@@ -872,7 +872,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*document_ukm_source_id=*/ukm::kInvalidSourceId,
           frame_tree_node->pending_frame_policy(),
           /*force_enabled_origin_trials=*/std::vector<std::string>(),
-          /*origin_isolated=*/false,
+          /*origin_agent_cluster=*/false,
           /*enabled_client_hints=*/
           std::vector<network::mojom::WebClientHintsType>(),
           /*is_cross_browsing_instance=*/false,
@@ -990,7 +990,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           ukm::kInvalidSourceId /* document_ukm_source_id */,
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolated */,
+          false /* origin_agent_cluster */,
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */,
@@ -2133,12 +2133,12 @@ void NavigationRequest::DetermineOriginIsolationEndResult(bool is_requested) {
        network::mojom::WebSandboxFlags::kOrigin) ==
       network::mojom::WebSandboxFlags::kOrigin;
 
-  // The origin_isolated navigation commit parameter communicates to the
-  // renderer about origin isolation, so it should be true for opaque origin
+  // The origin_agent_cluster navigation commit parameter communicates to the
+  // renderer about origin-keying, so it should be true for opaque origin
   // cases (e.g., for data: URLs). origin_isolation_end_result_ shouldn't be
   // modified since it's used for warnings and use counters, i.e. things that
-  // don't apply to this sort of "automatic" origin isolation.
-  commit_params_->origin_isolated =
+  // don't apply to this sort of "automatic" origin-keying.
+  commit_params_->origin_agent_cluster =
       is_opaque_origin_because_sandbox || origin.opaque() ||
       origin_isolation_end_result_ ==
           OptInOriginIsolationEndResult::kRequestedAndIsolated ||
@@ -4079,6 +4079,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
   DCHECK(result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_RESPONSE ||
+         result.action() == NavigationThrottle::BLOCK_REQUEST ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
          state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
@@ -4996,7 +4997,7 @@ const std::string& NavigationRequest::GetHrefTranslate() {
   return common_params().href_translate;
 }
 
-const base::Optional<Impression>& NavigationRequest::GetImpression() {
+const base::Optional<blink::Impression>& NavigationRequest::GetImpression() {
   return begin_params()->impression;
 }
 
@@ -5401,6 +5402,10 @@ bool NavigationRequest::MaybeCancelFailedNavigation() {
 bool NavigationRequest::IsPrerenderedPageActivation() const {
   CHECK_GE(state_, WILL_START_REQUEST);
   return !!prerender_host_;
+}
+
+bool NavigationRequest::IsWaitingForBeforeUnload() {
+  return state_ < WILL_START_NAVIGATION;
 }
 
 }  // namespace content

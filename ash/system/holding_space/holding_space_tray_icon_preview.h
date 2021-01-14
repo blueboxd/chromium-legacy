@@ -46,6 +46,10 @@ class ASH_EXPORT HoldingSpaceTrayIconPreview
       delete;
   ~HoldingSpaceTrayIconPreview() override;
 
+  // Updates the preview state to match its `pending_index_` without an
+  // animation.
+  void UpdateWithoutAnimation();
+
   // Animates this preview in. The item is animated at `*pending_index_`. This
   // will move `pending_index_` value to `index_`.
   // `additional_delay` - the delay that should be added on top of initial delay
@@ -68,6 +72,9 @@ class ASH_EXPORT HoldingSpaceTrayIconPreview
   // `new_shelf_alignment`.
   void OnShelfAlignmentChanged(ShelfAlignment old_shelf_alignment,
                                ShelfAlignment new_shelf_alignment);
+
+  // Invoked when the `shelf_` configuration has changed.
+  void OnShelfConfigChanged();
 
   // Returns the holding space `item_` visually represented by this preview.
   const HoldingSpaceItem* item() const { return item_; }
@@ -102,6 +109,9 @@ class ASH_EXPORT HoldingSpaceTrayIconPreview
   // |initial_transform| - The transform that should be set on the layer.
   void CreateLayer(const gfx::Transform& initial_transform);
 
+  // Destroys the `layer_` for this preview, if it was previously created.
+  void DestroyLayer();
+
   // Returns whether this preview needs a layer for its current `transform_`.
   // Since we only maintain `layer_` while it appears in the viewport for the
   // holding space tray `container_`, this is used to gate creation/deletion of
@@ -128,6 +138,10 @@ class ASH_EXPORT HoldingSpaceTrayIconPreview
 
   // The holding space item this preview represents.
   const HoldingSpaceItem* item_;
+
+  // Whether or not this preview is currently using small dimensions. This is
+  // done when in tablet mode and an app is in use.
+  bool use_small_previews_ = false;
 
   // A cached representation of the associated holding space `item_`'s image
   // which has been cropped, resized, and clipped to a circle to be painted at

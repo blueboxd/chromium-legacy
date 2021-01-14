@@ -25,10 +25,8 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
-#include "services/network/public/cpp/isolation_opt_in_hints.h"
 #include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "services/network/public/cpp/origin_policy.h"
-#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
@@ -40,43 +38,6 @@
 
 // This file defines IPC::ParamTraits for network:: classes / structs.
 // For IPC::ParamTraits for net:: class / structs, see net_ipc_param_traits.h.
-
-#ifndef INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
-#define INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
-
-#undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(NETWORK_CPP_BASE)
-
-namespace IPC {
-
-// TODO(Richard): Remove this traits after usage of
-// content::mojom::OpenURLParams disappears.
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
-  typedef network::DataElement param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// TODO(Richard): Remove this traits after usage of OpenURLParams struct
-// disappears.
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    ParamTraits<scoped_refptr<network::ResourceRequestBody>> {
-  typedef scoped_refptr<network::ResourceRequestBody> param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
-#endif  // INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsError,
                           network::mojom::CorsError::kMaxValue)
@@ -131,9 +92,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::TrustTokenOperationStatus,
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::OriginPolicyState,
                           network::OriginPolicyState::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(network::IsolationOptInHints,
-                          network::IsolationOptInHints::ALL_HINTS_ACTIVE)
 
 IPC_STRUCT_TRAITS_BEGIN(network::OriginPolicyContents)
   IPC_STRUCT_TRAITS_MEMBER(ids)

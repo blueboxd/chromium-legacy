@@ -9,7 +9,7 @@
 <translation id="1124772482545689468">वापरकर्ता</translation>
 <translation id="1175697296044146566">हे <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="1195447618553298278">अज्ञात एरर.</translation>
-<translation id="1204296502688602597">DNS लेटंसी</translation>
+<translation id="1204296502688602597">DNS लेटन्सी</translation>
 <translation id="123124571410524056">पोर्टल असल्याची शक्यता आहे</translation>
 <translation id="1238191093934674082">VPN उघडा</translation>
 <translation id="1238612778414822719">HTTPS लेटन्सी</translation>
@@ -51,7 +51,6 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">जवळपासचे डिव्हाइस शोधण्यासाठी ब्लूटूथ सुरू करा</translation>
 <translation id="2364498172489649528">पास झाले</translation>
-<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> प्रयत्न शिल्लक</translation>
 <translation id="2391082728065870591">फीडबॅक अहवाल पाठवा</translation>
 <translation id="2446553403094072641">फ्लोटिंग पॉइंटची अचूकता</translation>
 <translation id="2448312741937722512">प्रकार</translation>
@@ -79,7 +78,7 @@
 <translation id="3199982728237701504">दस्तऐवज फीडर (दोन बाजू असलेले)</translation>
 <translation id="3246869037381808805">एक दिवसापेक्षा जुने प्रिंट जॉब काढून टाकले जातील</translation>
 <translation id="3268178239013324452">अयशस्वी झाले - दार उघडे आहे</translation>
-<translation id="3310640316857623290">DNS लेटंसी अनुमती असलेल्या सीमेपेक्षा लक्षणीयरीत्या जास्त आहे</translation>
+<translation id="3310640316857623290">DNS लेटन्सी अनुमती असलेल्या सीमेपेक्षा लक्षणीयरीत्या जास्त आहे</translation>
 <translation id="3328783797891415197">चाचणी रन होत आहे</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="3369013195428705271">तुम्हाला तुमचा सर्व प्रिंट इतिहास नक्की साफ करायचा आहे का? तुमची सुरू असलेली प्रिंट कार्ये साफ केली जाणार नाहीत.</translation>
@@ -169,7 +168,6 @@
 <translation id="5457599981699367932">अतिथी म्हणून ब्राउझ करा</translation>
 <translation id="54609108002486618">व्यवस्‍थापित</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
-<translation id="5551702563755460533">मदत केंद्र यामध्ये अधिक जाणून घ्या</translation>
 <translation id="5635169860413004179">अहवाल पहा</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5719918614880940190">हे CPU चा वापर आणि सर्व कोअरचे एकत्रीकरण मोजते</translation>
@@ -251,7 +249,6 @@
 <translation id="8075838845814659848">शिल्लक चार्जिंग</translation>
 <translation id="808894953321890993">पासवर्ड बदला</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° से</translation>
-<translation id="8160445423316272678">सुरुवात करण्यासाठी तुमचे दस्तऐवज स्कॅनरवर ठेवा आणि <ph name="SPAN_BEGIN" />स्कॅन करा<ph name="SPAN_END" /> दाबा</translation>
 <translation id="8206859287963243715">सेल्यूलर</translation>
 <translation id="8208861521865154048">लाभ</translation>
 <translation id="8230672074305416752">डीफॉल्ट नेटवर्क गेटवे पिंग करता आला नाही</translation>
@@ -264,13 +261,13 @@
 <translation id="8395584934117017006">हे <ph name="DEVICE_TYPE" /> एंटरप्राइझद्वारे व्यवस्थापित केलेले आहे</translation>
 <translation id="8398927464629426868">ज्या गतीने डिव्हाइस सध्या चार्ज किंवा डिस्चार्ज होत आहे</translation>
 <translation id="8475690821716466388">वायफाय नेटवर्क कमकुवत प्रोटोकॉल WEP PSK सह सुरक्षित केले गेले आहे</translation>
-<translation id="8477551185774834963">DNS लेटंसी अनुमती असलेल्या सीमेपेक्षा किंचित जास्त आहे</translation>
+<translation id="8477551185774834963">DNS लेटन्सी अनुमती असलेल्या सीमेपेक्षा किंचित जास्त आहे</translation>
 <translation id="8483248364096924578">IP पत्ता</translation>
 <translation id="8503813439785031346">वापरकर्ता नाव</translation>
 <translation id="8576249514688522074">सुरुवात केलेली नाही</translation>
 <translation id="8675354002693747642">आधी शेअर केलेली की</translation>
 <translation id="871560550817059752">अयशस्वी झाले - शाई संपली आहे</translation>
-<translation id="8723108084122415655">डीफॉल्ट नसलेले नेटवर्क लेटंसी सीमेपेक्षा जास्त आहे</translation>
+<translation id="8723108084122415655">डीफॉल्ट नसलेले नेटवर्क लेटन्सी सीमेपेक्षा जास्त आहे</translation>
 <translation id="8726019395068607495">थांबले - दार उघडे आहे</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8747900814994928677">बदलाची खात्री करा</translation>
@@ -281,11 +278,10 @@
 <translation id="8845001906332463065">मदत मिळवा</translation>
 <translation id="8881098542468797602">चाचणी यशस्वी झाली</translation>
 <translation id="8898840733695078011">सिग्नल सामर्थ्य</translation>
-<translation id="8910721771319628100">डीफॉल्ट नेटवर्क लेटंसी सीमेच्या वर आहे</translation>
+<translation id="8910721771319628100">डीफॉल्ट नेटवर्क लेटन्सी सीमेच्या वर आहे</translation>
 <translation id="8919837981463578619">अयशस्वी झाले - ट्रे सापडला नाही</translation>
 <translation id="8928727111548978589">अयशस्वी झाले - कागद संपला आहे</translation>
 <translation id="8930622219860340959">बिनतारी</translation>
-<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> प्रयत्न शिल्लक</translation>
 <translation id="8968751544471797276">चार्ज करण्याचा रेट</translation>
 <translation id="8970109610781093811">पुन्हा चालवा</translation>
 <translation id="9003704114456258138">वारंवारता</translation>

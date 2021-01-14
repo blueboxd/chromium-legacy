@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import {eventToPromise, flushTasks} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/webui/test_util.m.js';
-import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
-import {ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-pdf-toolbar-new.js';
+import {FittingType, ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
 
 /** @return {!ViewerPdfToolbarNewElement} */
 function createToolbar() {
@@ -315,7 +314,12 @@ const tests = [
   },
   async function testPropertiesButton() {
     const toolbar = createToolbar();
-    const button = toolbar.shadowRoot.querySelector('#properties-button');
+    let button = toolbar.shadowRoot.querySelector('#properties-button');
+    chrome.test.assertFalse(!!button);
+
+    toolbar.documentPropertiesEnabled = true;
+    await flushTasks();
+    button = toolbar.shadowRoot.querySelector('#properties-button');
     chrome.test.assertTrue(!!button);
 
     const whenFired = eventToPromise('properties-click', toolbar);

@@ -5874,12 +5874,12 @@ void Document::setDomain(const String& raw_domain,
   }
 
   if (RuntimeEnabledFeatures::OriginIsolationHeaderEnabled(dom_window_) &&
-      dom_window_->GetAgent()->IsOriginIsolated()) {
+      dom_window_->GetAgent()->IsOriginKeyed()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kWarning,
         "document.domain mutation is ignored because the surrounding agent "
-        "cluster is origin-isolated."));
+        "cluster is origin-keyed."));
     return;
   }
 
@@ -6277,7 +6277,24 @@ mojom::blink::FlocService* Document::GetFlocService(
   return data_->floc_service_.get();
 }
 
-ScriptPromise Document::interestCohort(ScriptState* script_state) {
+ScriptPromise Document::interestCohort(ScriptState* script_state,
+                                       ExceptionState& exception_state) {
+  if (!GetFrame()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "A browsing context is required when calling document.interestCohort.");
+    return ScriptPromise();
+  }
+
+  if (!GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kInterestCohort)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "The \"interest-cohort\" Permissions Policy denied the use of "
+        "document.interestCohort.");
+    return ScriptPromise();
+  }
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
@@ -6291,7 +6308,15 @@ ScriptPromise Document::interestCohort(ScriptState* script_state) {
             DCHECK(document);
 
             if (interest_cohort.IsEmpty()) {
-              resolver->Reject();
+              ScriptState* state = resolver->GetScriptState();
+              ScriptState::Scope scope(state);
+
+              // TODO(yaoxia): Distinguish between the different causes.
+              resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                  state->GetIsolate(), DOMExceptionCode::kDataError,
+                  "Failed to get the interest cohort: either it is "
+                  "unavailable, or the preferences or content settings has "
+                  "denined the access."));
             } else {
               resolver->Resolve(interest_cohort);
             }

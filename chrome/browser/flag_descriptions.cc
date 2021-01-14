@@ -102,6 +102,12 @@ const char kEnableFtpDescription[] =
     "When disabled, the browser has no special handling for ftp:// URLs and "
     "by default defer handling of the URL to the underlying platform.";
 
+const char kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedName[] =
+    "Url blocklist throttle wait for policies to be loaded";
+const char kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedDescription[] =
+    "Enables behaviour for Url blocklist throttle to wait for all policies to "
+    "load";
+
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
 const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
@@ -247,11 +253,6 @@ const char kAutofillEnableVirtualCardName[] =
 const char kAutofillEnableVirtualCardDescription[] =
     "When enabled, if all requirements are met, Autofill will offer to use "
     "virtual credit cards in form filling.";
-
-const char kAutofillOffNoServerDataName[] = "Autofill Off No Server Data";
-const char kAutofillOffNoServerDataDescription[] =
-    "Disables Autofill for fields with autocomplete off that have no "
-    "crowd-sourced evidence that Autofill would be helpful.";
 
 const char kAutofillProfileClientValidationName[] =
     "Autofill Validates Profiles By Client";
@@ -2217,11 +2218,6 @@ const char kStoragePressureEventName[] = "Enable storage pressure Event";
 const char kStoragePressureEventDescription[] =
     "If enabled, Chrome will dispatch a DOM event, informing applications "
     "about storage pressure (low disk space)";
-
-const char kSuggestedContentToggleName[] = "Enable Suggested Content toggle";
-const char kSuggestedContentToggleDescription[] =
-    "Enables a settings UI toggle that controls Suggested Content status. Also "
-    "enables a corresponding notice in the Launcher about Suggested Content.";
 
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
@@ -4888,6 +4884,12 @@ const char kPdfViewerUpdateName[] = "PDF Viewer Update";
 const char kPdfViewerUpdateDescription[] =
     "When enabled, the PDF viewer will display an updated UI with new "
     "options and features.";
+
+const char kPdfViewerDocumentPropertiesName[] =
+    "PDF Viewer Document Properties";
+const char kPdfViewerDocumentPropertiesDescription[] =
+    "When enabled, the PDF viewer will include an option in the toolbar's "
+    "overflow menu to open a dialog containing document properties.";
 
 const char kPdfViewerPresentationModeName[] = "PDF Viewer Presentation Mode";
 const char kPdfViewerPresentationModeDescription[] =

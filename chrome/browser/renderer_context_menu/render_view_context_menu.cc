@@ -153,7 +153,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/context_menu_data/input_field_type.h"
-#include "third_party/blink/public/mojom/context_menu/context_menu_data.mojom.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -980,6 +980,13 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
   UMA_HISTOGRAM_EXACT_LINEAR(
       "RenderViewContextMenu.Used", enum_id,
       GetUmaValueMax(UmaEnumIdLookupType::GeneralEnumId));
+
+  // Log a user action for the SEARCHWEBFOR case. This value is used as part of
+  // a high-level guiding metric, which is being migrated to user actions.
+  if (id == IDC_CONTENT_CONTEXT_SEARCHWEBFOR) {
+    base::RecordAction(base::UserMetricsAction(
+        "RenderViewContextMenu.Used.IDC_CONTENT_CONTEXT_SEARCHWEBFOR"));
+  }
 
   // Log other situations.
 

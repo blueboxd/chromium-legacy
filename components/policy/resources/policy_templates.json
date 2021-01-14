@@ -402,6 +402,7 @@
         'RemoteAccessHostAllowFileTransfer',
         'RemoteAccessHostEnableUserInterface',
         'RemoteAccessHostAllowRemoteAccessConnections',
+        'RemoteAccessHostMaximumSessionDurationMinutes',
       ],
     },
     {
@@ -2330,6 +2331,26 @@
       'desc': '''If this policy is disabled, the remote access host service cannot be started or configured to accept incoming connections.  This policy does not affect remote support scenarios.
 
           This policy has no effect if it is set to true, left empty, or is not set.''',
+    },
+    {
+      'name': 'RemoteAccessHostMaximumSessionDurationMinutes',
+      'owners': ['file://remoting/OWNERS', 'jamiewalch@chromium.org'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 30, 'maximum': 10080 },
+      'supported_on': ['chrome.*:89-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
+      },
+      'example_value': 1200,
+      'default': None,
+      'id': 814,
+      'caption': '''Maximum session duration allowed for remote access connections''',
+      'tags': [],
+      'desc': '''If this policy is set, remote access connections will automatically disconnect after the number of minutes defined in the policy have elapsed. This does not prevent the client from reconnecting after the maximum session duration has been reached. Setting the policy to a value that is not within the min/max range may prevent the host from starting. This policy does not affect remote support scenarios.
+
+          This policy has no effect if it is not set. In this case, remote access connections will have no maximum duration on this machine.''',
     },
     {
       'name': 'PrintingEnabled',
@@ -4450,6 +4471,38 @@
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, KDC policy is always respected.''',
     },
     {
+      'name': 'BrowserLabsEnabled',
+      'owners': ['elainechien@chromium.org', 'robliao@chromium.org'],
+      'type': 'main',
+      'schema' : {'type': 'boolean'},
+      'supported_on': ['chrome.*:89-'],
+      'future_on' : ['chrome_os'],
+      'example_value': False,
+      'features':{
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable browser experimental features toolbar entrypoint',
+        },
+        {
+          'value': False,
+          'caption': 'Disable browser experimental features toolbar entrypoint',
+        },
+      ],
+      'id': 816,
+      'default': True,
+      'caption': '''Browser experiments icon in toolbar''',
+      'tags': ['google-sharing'],
+      'desc': '''Setting the policy to Enabled or leaving the policy unset means that users can access browser experimental features through an icon in the toolbar
+
+      Setting the policy to Disabled removes the browser experimental features icon from the toolbar.
+
+      chrome://flags and any other means of turning off and on browser features will still behave as expected regardless of whether this policy is Enabled or Disabled.'''
+    },
+    {
       'name': 'GSSAPILibraryName',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
@@ -4782,7 +4835,7 @@
                 'enum': ['blocked', 'allowed', 'force_installed', 'normal_installed', 'removed']
               },
               'update_url': { 'type': 'string' },
-              'update_url_enforced': {'type': 'boolean' },
+              'override_update_url': {'type': 'boolean' },
               'blocked_permissions': {
                 'type': 'array',
                 'items': {
@@ -4904,7 +4957,7 @@
         'ghijklmnopabcdefghijklmnopabcdef' : {
           'installation_mode': 'force_installed',
           'update_url': 'https://example.com/update_url',
-          'update_url_enforced': True,
+          'override_update_url': True,
         },
         '*': {
           'installation_mode': 'blocked',
@@ -8832,7 +8885,7 @@
 
       This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Linux version 83, when support for the legacy certificate verifier on Linux is planned to be removed.
 
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Mac OS X version 91, when support for the legacy certificate verifier on Mac OS X is planned to be removed.
+      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Mac OS X version 92, when support for the legacy certificate verifier on Mac OS X is planned to be removed.
       ''',
     },
     {
@@ -14370,15 +14423,21 @@
         },
         'extension2': {
           'allowCorporateKeyUsage': False
+        },
+        'com.example.app': {
+          'allowCorporateKeyUsage': True
+        },
+        'com.example.app2': {
+          'allowCorporateKeyUsage': False
         }
       },
       'id': 302,
       'caption': 'Key Permissions',
       'tags': [],
-      'desc': '''Setting the policy grants access to corporate keys to extensions. Keys are designated for corporate usage only if they're generated using the chrome.enterprise.platformKeys API on a managed account. Users can't grant or withdraw access to corporate keys to or from extensions.
+      'desc': '''Setting the policy grants access to corporate keys to extensions or Android applications. Keys are designated for corporate usage only if they're generated using the chrome.enterprise.platformKeys API on a managed account. Users can't grant or withdraw access to corporate keys to or from extensions or Android applications.
 
-      By default, an extension can't use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to False for that extension. Only if allowCorporateKeyUsage is set to True for an extension can it use any platform key marked for corporate usage to sign arbitrary data. Only grant this permission if the extension is trusted to secure access to the key against attackers.''',
-      'arc_support': 'Android apps cannot get access to corporate keys. This policy has no effect on them.',
+      By default, an extension or an Android applications can't use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to False for it. Only if allowCorporateKeyUsage is set to True for an extension or an Android application can it use any platform key marked for corporate usage to sign arbitrary data. Only grant this permission if the extension or the Android application is trusted to secure access to the key against attackers.''',
+      'arc_support': 'Corporate keys can be used by Android applications that are installed and listed in this policy.',
     },
     {
       'name': 'WelcomePageOnOSUpgradeEnabled',
@@ -21783,11 +21842,16 @@
           'type': 'object',
           'properties': {
             'service_provider': { 'type': 'string' },
+            'enabled_event_names': {
+              'type': 'array',
+              'items': { 'type': 'string' },
+            },
           },
         },
       },
       'example_value': [{
         'service_provider': 'Google',
+        'enabled_event_names': ['passwordChangedEvent', 'sensitiveDataEvent'],
       }],
       'features': {
         'dynamic_refresh': True,
@@ -21801,7 +21865,7 @@
       'tags': [],
       'desc': '''List of Chrome Enterprise Connectors services settings to be applied to the <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR">OnSecurityEvent</ph> Enterprise Connector, which triggers when a security event occurs in Chrome. This includes negative verdicts from analysis Enterprise Connectors, password reuse, navigations to unsafe pages and other security sensitive user actions.
 
-      The <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD">service_provider</ph> field identifies which reporting service provider the settings correspond to.
+      The <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD">service_provider</ph> field identifies which reporting service provider the settings correspond to and the <ph name="ENTERPRISE_CONNECTOR_ENABLED_EVENT_NAMES_FIELD">enabled_event_names</ph> field identifies which events are enabled for this provider.
 
       This policy can only be set from the Google Admin console.'''
     },
@@ -23599,7 +23663,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['file://printing/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:86-90', 'chrome_os:86-90'],
+      'supported_on': ['chrome.*:86-87', 'chrome_os:86-87'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -23622,6 +23687,35 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'desc': '''This policy controls whether <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> deprecation warnings are shown to users in the print preview dialog or settings pages.
       Setting this policy to True will hide the deprecation warnings.
       Setting this policy to False or leaving it unset will show the deprecation warnings.''',
+    },
+    {
+      'name': 'EnableDeprecatedPrivetPrinting',
+      'owners': ['file://printing/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:89-93', 'chrome_os:89-93'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable deprecated privet printing',
+        },
+        {
+          'value': False,
+          'caption': 'Disable deprecated privet printing',
+        },
+      ],
+      'example_value': True,
+      'default': False,
+      'id': 815,
+      'caption': '''Enable deprecated privet printing''',
+      'tags': [],
+      'desc': '''This policy controls whether any available privet printers are shown to users in the print preview dialog.
+      Setting this policy to Enabled will show available privet printers.
+      Setting this policy to Disabled or leaving it unset will result in privet printers not appearing in print preview, as this printing method is deprecated.''',
     },
     {
       'name': 'DataLeakPreventionRulesList',
@@ -24681,6 +24775,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'RemoteAccessHostAllowFileTransfer',
         'RemoteAccessHostEnableUserInterface',
         'RemoteAccessHostAllowRemoteAccessConnections',
+        'RemoteAccessHostMaximumSessionDurationMinutes',
       ],
     },
     {
@@ -25127,6 +25222,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 813,
+  'highest_id_currently_used': 816,
   'highest_atomic_group_id_currently_used': 40
 }

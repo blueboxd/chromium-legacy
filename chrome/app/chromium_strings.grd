@@ -287,7 +287,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS when Crostini is installed.">
-          Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux (Beta)<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
+          Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux development environment (Beta)<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_SAFETY_INFORMATION" desc="The safety label in the About box." translateable="false">
           Not used in Chromium. Placeholder to keep resource maps in sync.
@@ -731,11 +731,23 @@ Chromium is unable to recover your settings.
 
       <!-- Dice Web Signin Interception Bubble-->
       <if expr="not chromeos and not is_android">
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
-          Create your own profile in Chromium?
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V1" desc="Title of the web signin interception bubble">
+          Continue in a new Chromium profile?
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_CONSUMER_BUBBLE_DESC" desc="Body of the web signin interception bubble when the new account is managed and the existing account is personal">
-          To separate personal and <ph name="NEW_USER">$1<ex>example.com</ex></ph> browsing, create a new profile in Chromium
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V2" desc="Title of the web signin interception bubble">
+          Move account to a new Chromium profile?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V3" desc="Title of the web signin interception bubble">
+          Separate Chromium profile?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_TITLE" desc="Title for the profile switch interception bubble">
+          Switch to existing Chromium profile?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_DESC" desc="Description for the profile switch interception bubble">
+          A Chromium profile with this account already exists
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC" desc="Body of the web signin interception bubble">
+          <ph name="EXISTING_USER">$1<ex>Elisa</ex></ph> is already signed in to this Chromium profile. To keep your browsing separate, Chromium can create your own profile for you.
         </message>
       </if>
 
@@ -1198,6 +1210,12 @@ Chromium is unable to recover your settings.
         <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_TITLE" desc="Title for the local profile customiztion screen on the picker.">
           Customize your Chromium profile
         </message>
+        <message name="IDS_PROFILE_PICKER_IPH_FOR_PROFILES_TEXT" desc="Text of the IPH bubble for introducing profiles.">
+          Each profile holds its own Chromium info like bookmarks, history, passwords, and more
+        </message>
+        <message name="IDS_PROFILE_PICKER_IPH_FOR_ADD_PROFILE_TEXT" desc="Text of the IPH bubble for adding new profiles.">
+          If you share a device, friends and family can browse separately and set up Chromium just the way they want
+        </message>
       </if>
 
       <!-- Rosetta installation for protected media -->
@@ -1229,8 +1247,8 @@ Chromium is unable to recover your settings.
         </message>
       </if>
 
-      <!-- ChromeBeta bubble -->
-      <message name="IDS_CHROMEBETA_RELAUNCH_FOOTER_MESSAGE" desc="Text that shows in the footer of the Chrome Beta bubble when relaunch is needed for changes to take effect.">
+      <!-- ChromeLabs bubble -->
+      <message name="IDS_CHROMELABS_RELAUNCH_FOOTER_MESSAGE" desc="Text that shows in the footer of the Chrome Labs bubble when relaunch is needed for changes to take effect.">
         Your changes will take effect the next time you relaunch Chromium.
       </message>
     </messages>

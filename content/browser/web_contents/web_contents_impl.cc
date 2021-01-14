@@ -1405,7 +1405,10 @@ class WebContentsImpl::AXTreeSnapshotCombiner
 };
 
 void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
-                                            ui::AXMode ax_mode) {
+                                            ui::AXMode ax_mode,
+                                            bool exclude_offscreen,
+                                            size_t max_nodes,
+                                            base::TimeDelta timeout) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RequestAXTreeSnapshot",
                         "mode", ax_mode.ToString());
   // Send a request to each of the frames in parallel. Each one will return
@@ -1416,13 +1419,19 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
   auto combiner =
       base::MakeRefCounted<AXTreeSnapshotCombiner>(std::move(callback));
 
-  RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner.get(), ax_mode);
+  auto params = mojom::SnapshotAccessibilityTreeParams::New();
+  params->ax_mode = ax_mode.mode();
+  params->exclude_offscreen = exclude_offscreen;
+  params->max_nodes = max_nodes;
+  params->timeout = timeout;
+  RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner.get(),
+                                        std::move(params));
 }
 
 void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(
     FrameTreeNode* root_node,
     AXTreeSnapshotCombiner* combiner,
-    ui::AXMode ax_mode) {
+    mojom::SnapshotAccessibilityTreeParamsPtr params) {
   OPTIONAL_TRACE_EVENT0(
       "content", "WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame");
   for (FrameTreeNode* frame_tree_node : frame_tree_.Nodes()) {
@@ -1430,11 +1439,11 @@ void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(
         node_.GetInnerWebContentsInFrame(frame_tree_node);
     if (inner_contents) {
       inner_contents->RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner,
-                                                            ax_mode);
+                                                            params.Clone());
     } else {
       bool is_root = frame_tree_node == root_node;
       frame_tree_node->current_frame_host()->RequestAXTreeSnapshot(
-          combiner->AddFrame(is_root), ax_mode);
+          combiner->AddFrame(is_root), params.Clone());
     }
   }
 }
@@ -1851,8 +1860,8 @@ bool WebContentsImpl::IsConnectedToHidDevice() {
   return hid_active_frame_count_ > 0;
 }
 
-bool WebContentsImpl::HasNativeFileSystemHandles() {
-  return native_file_system_handle_count_ > 0;
+bool WebContentsImpl::HasFileSystemAccessHandles() {
+  return file_system_access_handle_count_ > 0;
 }
 
 bool WebContentsImpl::HasPictureInPictureVideo() {
@@ -8240,9 +8249,9 @@ void WebContentsImpl::DecrementHidActiveFrameCount() {
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
-void WebContentsImpl::IncrementNativeFileSystemHandleCount() {
+void WebContentsImpl::IncrementFileSystemAccessHandleCount() {
   OPTIONAL_TRACE_EVENT0(
-      "content", "WebContentsImpl::IncrementNativeFileSystemHandleCount");
+      "content", "WebContentsImpl::IncrementFileSystemAccessHandleCount");
   // Trying to invalidate the tab state while being destroyed could result in a
   // use after free.
   if (IsBeingDestroyed())
@@ -8251,16 +8260,16 @@ void WebContentsImpl::IncrementNativeFileSystemHandleCount() {
   // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
   // to update both the tab-level usage indicator and the usage indicator in the
   // omnibox.
-  native_file_system_handle_count_++;
-  if (native_file_system_handle_count_ == 1) {
+  file_system_access_handle_count_++;
+  if (file_system_access_handle_count_ == 1) {
     NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
         INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
   }
 }
 
-void WebContentsImpl::DecrementNativeFileSystemHandleCount() {
+void WebContentsImpl::DecrementFileSystemAccessHandleCount() {
   OPTIONAL_TRACE_EVENT0(
-      "content", "WebContentsImpl::DecrementNativeFileSystemHandleCount");
+      "content", "WebContentsImpl::DecrementFileSystemAccessHandleCount");
   // Trying to invalidate the tab state while being destroyed could result in a
   // use after free.
   if (IsBeingDestroyed())
@@ -8269,9 +8278,9 @@ void WebContentsImpl::DecrementNativeFileSystemHandleCount() {
   // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
   // to update both the tab-level usage indicator and the usage indicator in the
   // omnibox.
-  DCHECK_NE(0u, native_file_system_handle_count_);
-  native_file_system_handle_count_--;
-  if (native_file_system_handle_count_ == 0) {
+  DCHECK_NE(0u, file_system_access_handle_count_);
+  file_system_access_handle_count_--;
+  if (file_system_access_handle_count_ == 0) {
     NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
         INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
   }

@@ -1578,11 +1578,21 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   // "off", or from an automatic ARIA live value, e.g. from role="status".
   // TODO(dmazzoni): remove this const_cast.
   AtomicString aria_live;
-  cached_live_region_root_ =
-      IsLiveRegionRoot()
-          ? const_cast<AXObject*>(this)
-          : (ParentObjectIfExists() ? ParentObjectIfExists()->LiveRegionRoot()
-                                    : nullptr);
+  if (GetNode() && IsA<Document>(GetNode())) {
+    // The document is never a live region root. This extra bit of logic also
+    // protects against going up the parent chain from a popup document, into
+    // a parent document with unclean layout.
+    cached_live_region_root_ = nullptr;
+  } else if (RoleValue() == ax::mojom::blink::Role::kInlineTextBox) {
+    // Inline text boxes do not need live region properties.
+    cached_live_region_root_ = nullptr;
+  } else {
+    cached_live_region_root_ =
+        IsLiveRegionRoot()
+            ? const_cast<AXObject*>(this)
+            : (ParentObjectIfExists() ? ParentObjectIfExists()->LiveRegionRoot()
+                                      : nullptr);
+  }
   cached_aria_column_index_ = ComputeAriaColumnIndex();
   cached_aria_row_index_ = ComputeAriaRowIndex();
 
@@ -4351,22 +4361,6 @@ ax::mojom::blink::Role AXObject::AriaRoleToWebCoreRole(const String& value) {
   }
 
   return role;
-}
-
-bool AXObject::NameFromSelectedOption(bool recursive) const {
-  switch (RoleValue()) {
-    // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
-    case ax::mojom::blink::Role::kComboBoxGrouping:
-    case ax::mojom::blink::Role::kComboBoxMenuButton:
-    case ax::mojom::blink::Role::kListBox:
-      return recursive;
-    // This can be either a button widget with a non-false value of
-    // aria-haspopup or a select element with size of 1.
-    case ax::mojom::blink::Role::kPopUpButton:
-      return DynamicTo<HTMLSelectElement>(*GetNode()) ? recursive : false;
-    default:
-      return false;
-  }
 }
 
 bool AXObject::SupportsNameFromContents(bool recursive) const {

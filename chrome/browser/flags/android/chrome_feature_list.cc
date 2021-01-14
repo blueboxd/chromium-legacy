@@ -194,6 +194,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kKitKatSupported,
     &kNotificationSuspender,
     &kOfflineIndicatorV2,
+    &kOfflineMeasurementsBackgroundTask,
     &kOmniboxSpareRenderer,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
@@ -547,7 +548,10 @@ const base::Feature kNotificationSuspender{"NotificationSuspender",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOfflineMeasurementsBackgroundTask{
+    "OfflineMeasurementsBackgroundTask", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

@@ -17,10 +17,10 @@ class WebAccessibleResourcesManifestTest : public ChromeManifestTest {
                                int manifest_version = 3) {
     constexpr char kManifestStub[] =
         R"({
-        "name": "Test",
-        "version": "0.1",
-        "manifest_version": %d,
-        "web_accessible_resources": %s
+            "name": "Test",
+            "version": "0.1",
+            "manifest_version": %d,
+            "web_accessible_resources": %s
         })";
     base::Value manifest_value = base::test::ParseJson(base::StringPrintf(
         kManifestStub, manifest_version, web_accessible_resources.c_str()));
@@ -125,11 +125,12 @@ TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResourcesV3Valid) {
               "unexpected_key": ["allowed"]
             }
           ])"},
-      {"Succeed if only the use_dynamic_url key is set, but not others.",
+      {"Succeed if use_dynamic_url key is true, irrespective of matches or "
+       "extension_ids.",
        R"([
             {
               "resources": ["test"],
-              "use_dynamic_url": false
+              "use_dynamic_url": true
             }
           ])"},
   };
@@ -161,6 +162,16 @@ TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResourcesV3Invalid) {
               "resources": ["error"]
             }
         ])",
+       "Invalid value for 'web_accessible_resources[0]'. Entry "
+       "must at least have resources, and one other valid key."},
+      {"Error if use_dynamic_url is false, and missing extension_ids or "
+       "matches.",
+       R"([
+            {
+              "resources": ["test"],
+              "use_dynamic_url": false
+            }
+          ])",
        "Invalid value for 'web_accessible_resources[0]'. Entry "
        "must at least have resources, and one other valid key."},
       {"Error if incorrect keyed object type is present.",
@@ -214,7 +225,8 @@ TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResourcesV3Invalid) {
             }
         ])",
        "Invalid value for 'web_accessible_resources[0]'. Invalid "
-       "match pattern."}};
+       "match pattern."},
+  };
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(base::StringPrintf("Error: '%s'", test_case.title));
     LoadAndExpectError(GetManifestData(test_case.web_accessible_resources),
@@ -225,12 +237,13 @@ TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResourcesV3Invalid) {
 // Succeed if site requesting resource exists in matches.
 TEST_F(WebAccessibleResourcesManifestTest,
        WebAccessibleResourcesOriginRequestingResourceExistsInMatches) {
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess(GetManifestData(R"([
-    {
-      "resources": ["test"],
-      "matches": ["https://allowed.example/*"]
-    }
-  ])")));
+  scoped_refptr<Extension> extension(LoadAndExpectSuccess(GetManifestData(
+      R"([
+        {
+          "resources": ["test"],
+          "matches": ["https://allowed.example/*"]
+        }
+    ])")));
   EXPECT_TRUE(
       WebAccessibleResourcesInfo::HasWebAccessibleResources(extension.get()));
   EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
@@ -252,7 +265,7 @@ TEST_F(WebAccessibleResourcesManifestTest,
             "resources": ["test"],
             "matches": ["https://error.example/*"],
           }
-    ])";
+      ])";
   LoadAndExpectError(GetManifestData(kWebAccessibleResources, 2),
                      "Invalid value for 'web_accessible_resources[0]'. Value "
                      "is not a string.");
@@ -274,16 +287,16 @@ TEST_F(WebAccessibleResourcesManifestTest,
                                   "abcdefghijklmnopabcdefghijklmnop") {
     constexpr char kManifestStub[] =
         R"({
-        "name": "Test",
-        "version": "0.1",
-        "manifest_version": 3,
-        "web_accessible_resources": [
-          {
-            "resources": ["test"],
-            "extension_ids": ["%s"]
-          }
-        ]
-      })";
+              "name": "Test",
+              "version": "0.1",
+              "manifest_version": 3,
+              "web_accessible_resources": [
+                {
+                  "resources": ["test"],
+                  "extension_ids": ["%s"]
+                }
+              ]
+          })";
     base::Value manifest_value = base::test::ParseJson(
         base::StringPrintf(kManifestStub, extension_id.c_str()));
     EXPECT_EQ(base::Value::Type::DICTIONARY, manifest_value.type());
@@ -300,4 +313,37 @@ TEST_F(WebAccessibleResourcesManifestTest,
       extension2.get(), "inaccessible", initiator_origin));
   EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
       extension1.get(), "test", initiator_origin));
+}
+
+// Tests wildcards
+TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResourcesWildcard) {
+  struct {
+    const char* title;
+    const char* web_accessible_resources;
+  } test_cases[] = {
+      {"Succeed if text based wildcard is used.",
+       R"([
+            {
+              "resources": ["test"],
+              "matches": ["<all_urls>"]
+            }
+       ])"},
+      {"Succeed if asterisk based wildcard is used.",
+       R"([
+            {
+              "resources": ["test"],
+              "matches": ["*://*/*"]
+            }
+       ])"},
+  };
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf("Error: '%s'", test_case.title));
+    scoped_refptr<Extension> extension(LoadAndExpectSuccess(
+        GetManifestData(test_case.web_accessible_resources)));
+    EXPECT_TRUE(
+        WebAccessibleResourcesInfo::HasWebAccessibleResources(extension.get()));
+    EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+        extension.get(), "test",
+        url::Origin::Create(GURL("https://allowed.example"))));
+  }
 }

@@ -356,7 +356,7 @@
     },
     {
       name: "CompositeRelativeKeyframes",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CompositeSVG",
@@ -654,6 +654,9 @@
       status: "test",
     },
     {
+      name: "CullRectUpdate",
+    },
+    {
       name: "CustomElementDefaultStyle",
       status: "experimental",
     },
@@ -932,10 +935,6 @@
       name:"ForceEagerMeasureMemory",
     },
     {
-      name: "ForceLoadAtTop",
-      origin_trial_feature_name: "ForceLoadAtTop",
-    },
-    {
       name: "ForceOverlayFullscreenVideo",
     },
     {
@@ -1036,6 +1035,10 @@
       name: "InterestCohortAPI",
       origin_trial_feature_name: "InterestCohortAPI",
       origin_trial_allows_third_party: true,
+    },
+    {
+      name: "InterestCohortFeaturePolicy",
+      status: "experimental",
     },
     {
       name: "IntersectionObserverDocumentScrollingElementRoot",
@@ -1167,8 +1170,7 @@
     },
     {
       name:"MeasureMemory",
-      origin_trial_feature_name: "MeasureMemory",
-      status:"experimental",
+      status:"stable",
     },
     {
       name: "MediaCapabilitiesDynamicRange",
@@ -2178,8 +2180,7 @@
     },
     {
       name: "WebHID",
-      origin_trial_feature_name: "WebHID",
-      status: {"Android": "", "default": "experimental"},
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "WebID",

@@ -2033,7 +2033,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.SelectFileDialogImgCount" units="images"
-    expires_after="M90">
+    expires_after="M96">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -2045,7 +2045,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.SelectFileDialogScope" enum="SelectFileDialogScope"
-    expires_after="M90">
+    expires_after="M96">
   <owner>peter@chromium.org</owner>
   <owner>finnur@chromium.org</owner>
   <summary>
@@ -2228,7 +2228,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.AndroidX.ApiCall" enum="AndroidXWebkitApiCall"
-    expires_after="2021-01-29">
+    expires_after="2022-01-31">
   <owner>laisminchillo@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -2295,6 +2295,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.CookieManager.SameSiteAttributeValue"
     enum="CookieSameSiteString" expires_after="M90">
+  <obsolete>
+    Removed Jan 2021 for cleanup (no longer needed): https://crbug.com/1165012
+  </obsolete>
   <owner>chlily@chromium.org</owner>
   <owner>torne@chromium.org</owner>
   <summary>
@@ -2307,6 +2310,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.CookieManager.SameSiteNoneIsSecure"
     enum="Boolean" expires_after="M90">
+  <obsolete>
+    Removed Jan 2021 for cleanup (no longer needed): https://crbug.com/1165012
+  </obsolete>
   <owner>chlily@chromium.org</owner>
   <owner>torne@chromium.org</owner>
   <summary>

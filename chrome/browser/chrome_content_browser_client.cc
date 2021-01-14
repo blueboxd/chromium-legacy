@@ -60,6 +60,7 @@
 #include "chrome/browser/device_api/device_service_impl.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/federated_learning/floc_eligibility_observer.h"
@@ -89,6 +90,7 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/payments/payment_handler_navigation_throttle.h"
@@ -4071,8 +4073,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       WellKnownChangePasswordNavigationThrottle::MaybeCreateThrottleFor(handle),
       &throttles);
 
+  policy::PolicyService* policy_service = nullptr;
+  Profile* profile = Profile::FromBrowserContext(
+      handle->GetWebContents()->GetBrowserContext());
+  if (profile && profile->GetProfilePolicyConnector())
+    policy_service = profile->GetProfilePolicyConnector()->policy_service();
+
   throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
-      handle, handle->GetWebContents()->GetBrowserContext()));
+      handle, handle->GetWebContents()->GetBrowserContext(), policy_service));
 
   // Before setting up SSL error detection, configure SSLErrorHandler to invoke
   // the relevant extension API whenever an SSL interstitial is shown.
@@ -4134,8 +4142,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
         &throttles);
   }
 
-  Profile* profile = Profile::FromBrowserContext(
-      handle->GetWebContents()->GetBrowserContext());
   if (profile && profile->GetPrefs()) {
     MaybeAddThrottle(
         security_interstitials::InsecureFormNavigationThrottle::
@@ -4404,13 +4410,18 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
-    bool is_enterprise_lookup_enabled =
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
+    auto* connectors_service =
+        enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
+            browser_context);
+    bool has_valid_dm_token =
+        connectors_service &&
+        connectors_service->GetDMTokenForRealTimeUrlCheck().has_value();
+    bool is_enterprise_lookup_enabled =
         safe_browsing::RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
-            profile->GetPrefs(), policy::GetDMToken(profile).is_valid(),
-            profile->IsOffTheRecord());
+            profile->GetPrefs(), has_valid_dm_token, profile->IsOffTheRecord());
 #else
-        false;
+    bool is_enterprise_lookup_enabled = false;
 #endif
     bool is_consumer_lookup_enabled =
         safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(

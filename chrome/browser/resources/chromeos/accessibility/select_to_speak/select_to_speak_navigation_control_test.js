@@ -512,9 +512,10 @@ TEST_F(
             // asserting that TTS resumed with the proper rate.
             setTimeout(
                 this.newCallback(() => {
-                  // Should resume TTS at the sentence boundary.
+                  // Should resume TTS at the sentence boundary with adjusted
+                  // rate.
                   assertTrue(this.mockTts.currentlySpeaking());
-                  assertEquals(this.mockTts.getOptions().rate, 1.5);
+                  assertEquals(this.mockTts.getOptions().rate, 1.8);
                   assertEquals(this.mockTts.pendingUtterances().length, 1);
                   this.assertEqualsCollapseWhitespace(
                       this.mockTts.pendingUtterances()[0], 'Paragraph 1');
@@ -524,7 +525,7 @@ TEST_F(
     });
 
 TEST_F('SelectToSpeakNavigationControlTest', 'RetainsSpeedChange', function() {
-  chrome.settingsPrivate.setPref('settings.tts.speech_rate', 1.2);
+  chrome.settingsPrivate.setPref('settings.tts.speech_rate', 1.0);
   const bodyHtml = `
     <p id="p1">Paragraph 1</p>'
   `;
@@ -684,3 +685,35 @@ TEST_F('SelectToSpeakNavigationControlTest', 'ResizeWhilePlaying', function() {
         resizeButton.doDefault();
       });
 });
+
+TEST_F(
+    'SelectToSpeakNavigationControlTest',
+    'RemainsActiveAfterCompletingUtterance', function() {
+      const bodyHtml = '<p id="p1">Paragraph 1</p>';
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelectedElement('p1', bodyHtml), () => {
+            // Simulate starting and completing TTS.
+            this.triggerReadSelectedText();
+            this.mockTts.finishPendingUtterance();
+
+            // Should remain in speaking state.
+            assertEquals(selectToSpeak.state_, SelectToSpeakState.SPEAKING);
+          });
+    });
+
+TEST_F(
+    'SelectToSpeakNavigationControlTest',
+    'AutoDismissesIfNavigationControlsDisabled', function() {
+      // Disable navigation controls via settings.
+      chrome.storage.sync.set({'navigationControls': false});
+      const bodyHtml = '<p id="p1">Paragraph 1</p>';
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelectedElement('p1', bodyHtml), () => {
+            // Simulate starting and completing TTS.
+            this.triggerReadSelectedText();
+            this.mockTts.finishPendingUtterance();
+
+            // Should auto-dismiss.
+            assertEquals(selectToSpeak.state_, SelectToSpeakState.INACTIVE);
+          });
+    });

@@ -521,6 +521,16 @@ static_library("browser") {
     "federated_learning/floc_remote_permission_service_factory.h",
     "file_select_helper.cc",
     "file_select_helper.h",
+    "file_system_access/chrome_file_system_access_permission_context.cc",
+    "file_system_access/chrome_file_system_access_permission_context.h",
+    "file_system_access/file_system_access_permission_context_factory.cc",
+    "file_system_access/file_system_access_permission_context_factory.h",
+    "file_system_access/file_system_access_permission_request_manager.cc",
+    "file_system_access/file_system_access_permission_request_manager.h",
+    "file_system_access/file_system_access_tab_helper.cc",
+    "file_system_access/file_system_access_tab_helper.h",
+    "file_system_access/origin_scoped_file_system_access_permission_context.cc",
+    "file_system_access/origin_scoped_file_system_access_permission_context.h",
     "file_util_service.cc",
     "file_util_service.h",
     "flag_descriptions.cc",
@@ -838,16 +848,6 @@ static_library("browser") {
     "metrics/usage_scenario_data_store.h",
     "metrics/variations/chrome_variations_service_client.cc",
     "metrics/variations/chrome_variations_service_client.h",
-    "native_file_system/chrome_native_file_system_permission_context.cc",
-    "native_file_system/chrome_native_file_system_permission_context.h",
-    "native_file_system/native_file_system_permission_context_factory.cc",
-    "native_file_system/native_file_system_permission_context_factory.h",
-    "native_file_system/native_file_system_permission_request_manager.cc",
-    "native_file_system/native_file_system_permission_request_manager.h",
-    "native_file_system/native_file_system_tab_helper.cc",
-    "native_file_system/native_file_system_tab_helper.h",
-    "native_file_system/origin_scoped_native_file_system_permission_context.cc",
-    "native_file_system/origin_scoped_native_file_system_permission_context.h",
     "native_window_notification_source.h",
     "navigation_predictor/navigation_predictor.cc",
     "navigation_predictor/navigation_predictor.h",
@@ -2011,7 +2011,6 @@ static_library("browser") {
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/internals/web_app:mojo_bindings",
-    "//chrome/browser/ui/webui/interventions_internals:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/read_later:mojo_bindings",
@@ -2187,6 +2186,7 @@ static_library("browser") {
     "//components/safe_browsing/core:file_type_policies",
     "//components/safe_browsing/core:public",
     "//components/safe_browsing/core/browser",
+    "//components/safe_browsing/core/browser/sync",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_policy_handler",
     "//components/safe_browsing/core/db:database_manager",
@@ -3477,6 +3477,8 @@ static_library("browser") {
       "browsing_data/chrome_browsing_data_lifetime_manager.h",
       "browsing_data/chrome_browsing_data_lifetime_manager_factory.cc",
       "browsing_data/chrome_browsing_data_lifetime_manager_factory.h",
+      "cart/cart_db.cc",
+      "cart/cart_db.h",
       "cart/cart_handler.cc",
       "cart/cart_handler.h",
       "cart/cart_service.cc",
@@ -4140,6 +4142,7 @@ static_library("browser") {
       "webauthn/observable_authenticator_list.h",
     ]
     deps += [
+      ":cart_db_content_proto",
       ":theme_properties",
       "//base/util/memory_pressure",
       "//base/util/timer",
@@ -4516,6 +4519,7 @@ static_library("browser") {
       "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/components/quick_answers",
       "//chromeos/components/sync_wifi",
+      "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus",
       "//chromeos/geolocation",
@@ -4635,6 +4639,7 @@ static_library("browser") {
       "platform_util_lacros.cc",
     ]
     deps += [
+      "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/ui/frame",
@@ -6586,7 +6591,6 @@ grit("dev_ui_browser_resources") {
     "//chrome/browser/media/feeds:mojo_bindings_js",
     "//chrome/browser/resources/web_app_internals:components",
     "//chrome/browser/ui/webui/internals/web_app:mojo_bindings_js",
-    "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
     "//components/site_engagement/core/mojom:mojo_bindings_webui_js",
   ]
   if (is_android) {
@@ -7003,4 +7007,10 @@ if (is_android) {
 proto_library("status_proto") {
   sources = [ "policy/messaging_layer/util/status.proto" ]
   generate_python = false
+}
+
+if (!is_android) {
+  proto_library("cart_db_content_proto") {
+    sources = [ "cart/cart_db_content.proto" ]
+  }
 }

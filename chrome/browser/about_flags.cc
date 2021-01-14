@@ -4730,6 +4730,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPdfViewerUpdateDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFViewerUpdate)},
 
+    {"pdf-viewer-document-properties",
+     flag_descriptions::kPdfViewerDocumentPropertiesName,
+     flag_descriptions::kPdfViewerDocumentPropertiesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfViewerDocumentProperties)},
+
     {"pdf-viewer-presentation-mode",
      flag_descriptions::kPdfViewerPresentationModeName,
      flag_descriptions::kPdfViewerPresentationModeDescription, kOsDesktop,
@@ -5561,11 +5566,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kPrintServerScaling)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"autofill-off-no-server-data",
-     flag_descriptions::kAutofillOffNoServerDataName,
-     flag_descriptions::kAutofillOffNoServerDataDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillOffNoServerData)},
-
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPortals)},
@@ -5671,6 +5671,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncRequiresPoliciesLoadedName,
      flag_descriptions::kEnableSyncRequiresPoliciesLoadedDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncRequiresPoliciesLoaded)},
+
+    {"enable-policy-blocklist-throttle-requires-policies-loaded",
+     flag_descriptions::
+         kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedName,
+     flag_descriptions::
+         kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         policy::features::kPolicyBlocklistThrottleRequiresPoliciesLoaded)},
 
 #if !defined(OS_ANDROID)
     {"form-controls-dark-mode", flag_descriptions::kFormControlsDarkModeName,
@@ -6498,12 +6507,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableTranslateSubFramesName,
      flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateSubFrames)},
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"suggested-content-toggle", flag_descriptions::kSuggestedContentToggleName,
-     flag_descriptions::kSuggestedContentToggleDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kSuggestedContentToggle)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
     {"enable-media-feeds", flag_descriptions::kEnableMediaFeedsName,

@@ -21,7 +21,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
+#include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
@@ -585,7 +585,7 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
     // Launch directories and files passed to system web apps should
     // automatically be granted write permission. Users should not get
     // permission prompts. So we auto deny them (if they show up).
-    NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
+    FileSystemAccessPermissionRequestManager::FromWebContents(web_contents)
         ->set_auto_response_for_test(permissions::PermissionAction::DENIED);
 
     // Wait for launchParams.
@@ -712,7 +712,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
   WaitForTestSystemAppInstall();
 
   // Test for sensitive directory (which are otherwise blocked by
-  // NativeFileSystem API). It is safe to use |chrome::DIR_DEFAULT_DOWNLOADS|,
+  // FileSystemAccess API). It is safe to use |chrome::DIR_DEFAULT_DOWNLOADS|,
   // because InProcBrowserTest fixture sets up different download directory for
   // each test cases.
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -725,7 +725,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-// Base class for testing File Handling and Native File System with Chrome OS
+// Base class for testing File Handling and File System Access with Chrome OS
 // File System Provider features.
 class SystemWebAppManagerLaunchDirectoryFileSystemProviderBrowserTest
     : public SystemWebAppManagerLaunchDirectoryBrowserTest {
@@ -848,7 +848,7 @@ IN_PROC_BROWSER_TEST_P(
                          kTestPngFile)));
 }
 
-// Test that the Native File System implementation doesn't cause a crash when
+// Test that the File System Access implementation doesn't cause a crash when
 // writing to readonly files.
 IN_PROC_BROWSER_TEST_P(
     SystemWebAppManagerLaunchDirectoryFileSystemProviderBrowserTest,
@@ -872,7 +872,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(content::ExecuteScript(web_contents, "(function() {})();"));
 }
 
-// Test that the Native File System implementation doesn't cause a crash when
+// Test that the File System Access implementation doesn't cause a crash when
 // deleting readonly files.
 IN_PROC_BROWSER_TEST_P(
     SystemWebAppManagerLaunchDirectoryFileSystemProviderBrowserTest,
@@ -1126,9 +1126,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, PRE_Upgrade) {
             GetManager().GetAppIds().size());
 }
 
-// Test is consistently failing: crbug/1162044
-IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest,
-                       DISABLED_Upgrade) {
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, Upgrade) {
   WaitForSystemAppsSynchronized();
   const auto& app_ids = GetManager().GetAppIds();
 

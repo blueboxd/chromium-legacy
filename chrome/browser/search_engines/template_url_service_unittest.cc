@@ -581,13 +581,18 @@ TEST_F(TemplateURLServiceTest, ClearBrowsingData_Keywords) {
   AddKeywordWithDate("name4", "key4", "http://foo4", std::string(),
                      std::string(), std::string(), true, std::string(),
                      now + one_day, Time(), Time());
-  // Try the other three states.
-  AddKeywordWithDate("name5", "key5", "http://foo5", "http://suggest5",
-                     std::string(), "http://icon5", false, "UTF-8;UTF-16", now,
-                     Time(), Time());
-  AddKeywordWithDate("name6", "key6", "http://foo6", "http://suggest6",
-                     std::string(), "http://icon6", false, "UTF-8;UTF-16",
-                     month_ago, Time(), Time());
+  // Add a non-replaceable engine, to verify we don't never remove those.
+  AddKeywordWithDate("user_engine_name", "user_engine_key", "http://foo5",
+                     "http://suggest5", std::string(), "http://icon5", false,
+                     "UTF-8;UTF-16", now, Time(), Time());
+  // Also add a replaceable engine that's marked as the Default Search Engine.
+  // We also need to verify we never remove those. https://crbug.com/1166372
+  TemplateURL* replaceable_dse = AddKeywordWithDate(
+      "replaceable_dse_name", "replaceable_dse_key", "http://foo6",
+      "http://suggest6", std::string(), "http://icon6", true, "UTF-8;UTF-16",
+      month_ago, Time(), Time());
+  ASSERT_THAT(replaceable_dse, NotNull());
+  model()->SetUserSelectedDefaultSearchProvider(replaceable_dse);
 
   // We just added a few items, validate them.
   EXPECT_EQ(6U, model()->GetTemplateURLs().size());
@@ -608,13 +613,15 @@ TEST_F(TemplateURLServiceTest, ClearBrowsingData_Keywords) {
   EXPECT_EQ(0U,
             model()->GetTemplateURLs()[0]->date_created().ToInternalValue());
 
-  EXPECT_EQ(ASCIIToUTF16("key5"), model()->GetTemplateURLs()[1]->keyword());
+  EXPECT_EQ(ASCIIToUTF16("user_engine_key"),
+            model()->GetTemplateURLs()[1]->keyword());
   EXPECT_FALSE(model()->GetTemplateURLs()[1]->safe_for_autoreplace());
   EXPECT_EQ(now.ToInternalValue(),
             model()->GetTemplateURLs()[1]->date_created().ToInternalValue());
 
-  EXPECT_EQ(ASCIIToUTF16("key6"), model()->GetTemplateURLs()[2]->keyword());
-  EXPECT_FALSE(model()->GetTemplateURLs()[2]->safe_for_autoreplace());
+  EXPECT_EQ(ASCIIToUTF16("replaceable_dse_key"),
+            model()->GetTemplateURLs()[2]->keyword());
+  EXPECT_TRUE(model()->GetTemplateURLs()[2]->safe_for_autoreplace());
   EXPECT_EQ(month_ago.ToInternalValue(),
             model()->GetTemplateURLs()[2]->date_created().ToInternalValue());
 
@@ -986,7 +993,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   model()->SetUserSelectedDefaultSearchProvider(user_dse);
   EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
 
-  // Remove bing. It will not be restored because of the extension below.
+  // Remove bing. Despite the extension added below, it will still be restored.
   TemplateURL* bing = model()->GetTemplateURLForKeyword(
       ASCIIToUTF16("bing.com"));
   ASSERT_TRUE(bing);
@@ -1005,7 +1012,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   model()->Remove(yahoo);
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("yahoo.com")));
 
-  // Now perform the actual repair that should restore Yahoo.
+  // Now perform the actual repair that should restore Yahoo and Bing.
   model()->RepairPrepopulatedSearchEngines();
 
   // Google is default.
@@ -1015,17 +1022,17 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   EXPECT_EQ("www.google.com",
             google->GenerateSearchURL(model()->search_terms_data()).host());
 
-  // Bing was repaired, but the NORMAL engine is still gone because the bing
-  // extension caused the prepopulated engine to be auto-deleted.
+  // Bing was repaired, verify that the NORMAL prepopulated engine is still back
+  // even though the bing extension outranks the prepopulated engin.
   bing = nullptr;
   for (TemplateURL* turl : model()->GetTemplateURLs()) {
     if (turl->keyword() == ASCIIToUTF16("bing.com") &&
-        turl->type() == TemplateURL::NORMAL) {
+        turl->type() == TemplateURL::NORMAL && turl->prepopulate_id() > 0) {
       bing = turl;
       break;
     }
   }
-  EXPECT_FALSE(bing);
+  EXPECT_THAT(bing, NotNull());
 
   // Yahoo was repaired and is now restored.
   yahoo = model()->GetTemplateURLForKeyword(ASCIIToUTF16("yahoo.com"));
@@ -1904,19 +1911,20 @@ TEST_F(TemplateURLServiceTest, ReplaceableEngineUpdateHandlesKeywordConflicts) {
 }
 
 // Verifies that we favor prepopulated engines over other safe_for_autoreplace()
-// engines, even if they are newer. https://crbug.com/1164024
+// engines, even if they are newer. Also verifies that we never remove the
+// prepopulated engine, even if outranked. https://crbug.com/1164024
 TEST_F(TemplateURLServiceTest, KeywordConflictFavorsPrepopulatedEngines) {
   test_util()->VerifyLoad();
 
-  // Add prepopulated engine with prepopulate_id == 42.
+  // Add prepopulated engine with prepopulate_id == 42, created at time == 10.
   TemplateURL* prepopulated = model()->Add(CreateKeywordWithDate(
       model(), "prepopulated", "common_keyword", "http://test1", std::string(),
       std::string(), std::string(), true, 42, "UTF-8",
-      base::Time::FromTimeT(0)));
-  ASSERT_TRUE(prepopulated);
+      base::Time::FromTimeT(10)));
+  ASSERT_THAT(prepopulated, NotNull());
   TemplateURLData prepopulated_data = prepopulated->data();
 
-  // Add a newer autogenerated engine with the same keyword.
+  // Add a newer (time == 20) autogenerated engine with the same keyword.
   TemplateURL* newer_autogenerated_engine = AddKeywordWithDate(
       "autogenerated", "common_keyword", "http://test2", std::string(),
       std::string(), std::string(), true, "UTF-8", base::Time::FromTimeT(20));
@@ -1928,6 +1936,34 @@ TEST_F(TemplateURLServiceTest, KeywordConflictFavorsPrepopulatedEngines) {
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("common_keyword")));
   EXPECT_TRUE(TemplateURL::MatchesData(prepopulated, &prepopulated_data,
                                        model()->search_terms_data()));
+
+  // Now add a non-replaceable (user-added) and newer engine, which should
+  // outrank the prepopulated engine.
+  std::string prepopulated_guid = prepopulated->sync_guid();
+  TemplateURL* newer_user_engine = AddKeywordWithDate(
+      "user_engine", "common_keyword", "http://test2", std::string(),
+      std::string(), std::string(), false, "UTF-8", base::Time::FromTimeT(20));
+
+  // Verify that the user engine takes over, but that we didn't remove the
+  // prepopulated engine during deduplication (it can still be found by guid).
+  ASSERT_THAT(newer_user_engine, NotNull());
+  ASSERT_EQ(newer_user_engine,
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("common_keyword")));
+  EXPECT_EQ(prepopulated, model()->GetTemplateURLForGUID(prepopulated_guid));
+
+  // Verify the prepopulated engine is "unmasked" if we remove the user engine.
+  model()->Remove(newer_user_engine);
+  EXPECT_EQ(prepopulated,
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("common_keyword")));
+
+  // Adding a prepopulated engine must never fail, even if it's outranked
+  // immediately, because the DSE repair mechanism relies on that. Verify this
+  // by adding a worse prepopulated engine than our existing one (time == 0).
+  TemplateURL* worse_prepopulated = model()->Add(CreateKeywordWithDate(
+      model(), "worse_prepopulated", "common_keyword", "http://test1",
+      std::string(), std::string(), std::string(), true, 42, "UTF-8",
+      base::Time::FromTimeT(0)));
+  ASSERT_THAT(worse_prepopulated, NotNull());
 }
 
 TEST_F(TemplateURLServiceTest, CheckNonreplaceableEnginesKeywordsConflicts) {

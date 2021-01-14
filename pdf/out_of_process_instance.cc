@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
+#include "base/i18n/time_formatting.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -139,6 +140,8 @@ constexpr char kJSSubject[] = "subject";
 constexpr char kJSKeywords[] = "keywords";
 constexpr char kJSCreator[] = "creator";
 constexpr char kJSProducer[] = "producer";
+constexpr char kJSCreationDate[] = "creationDate";
+constexpr char kJSModDate[] = "modDate";
 constexpr char kJSCanSerializeDocument[] = "canSerializeDocument";
 // Get password (Plugin -> Page)
 constexpr char kJSGetPasswordType[] = "getPassword";
@@ -1218,7 +1221,7 @@ void OutOfProcessInstance::DoPaint(const std::vector<gfx::Rect>& paint_rects,
 
     for (const auto& background_part : background_parts_) {
       gfx::Rect intersection =
-          gfx::IntersectRects(RectFromPPRect(background_part.location), rect);
+          gfx::IntersectRects(background_part.location, rect);
       if (!intersection.IsEmpty()) {
         FillRect(intersection, background_part.color);
         ready->push_back(PaintReadyRect(intersection, image_data_));
@@ -1246,15 +1249,14 @@ void OutOfProcessInstance::CalculateBackgroundParts() {
 
   // Add the left, right, and bottom rectangles.  Note: we assume only
   // horizontal centering.
-  BackgroundPart part = {pp::Rect(0, 0, left_width, bottom),
-                         GetBackgroundColor()};
+  BackgroundPart part = {gfx::Rect(left_width, bottom), GetBackgroundColor()};
   if (!part.location.IsEmpty())
     background_parts_.push_back(part);
-  part.location = pp::Rect(right_start, 0, right_width, bottom);
+  part.location = gfx::Rect(right_start, 0, right_width, bottom);
   if (!part.location.IsEmpty())
     background_parts_.push_back(part);
-  part.location = pp::Rect(0, bottom, plugin_size().width(),
-                           plugin_size().height() - bottom);
+  part.location = gfx::Rect(0, bottom, plugin_size().width(),
+                            plugin_size().height() - bottom);
   if (!part.location.IsEmpty())
     background_parts_.push_back(part);
 }
@@ -2454,6 +2456,20 @@ void OutOfProcessInstance::SendMetadata() {
   if (!document_metadata.producer.empty()) {
     metadata_data.Set(pp::Var(kJSProducer),
                       pp::Var(document_metadata.producer));
+  }
+
+  if (!document_metadata.creation_date.is_null()) {
+    metadata_data.Set(
+        pp::Var(kJSCreationDate),
+        pp::Var(base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(
+            document_metadata.creation_date))));
+  }
+
+  if (!document_metadata.mod_date.is_null()) {
+    metadata_data.Set(
+        pp::Var(kJSModDate),
+        pp::Var(base::UTF16ToUTF8(
+            base::TimeFormatShortDateAndTime(document_metadata.mod_date))));
   }
 
   metadata_data.Set(

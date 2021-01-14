@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#import "ios/web/common/uikit_ui_util.h"
 #include "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -62,6 +63,11 @@ base::RefCountedMemory* FakeWebClient::GetDataResourceBytes(
       resource_id);
 }
 
+std::vector<JavaScriptFeature*> FakeWebClient::GetJavaScriptFeatures(
+    BrowserState* browser_state) const {
+  return java_script_features_;
+}
+
 NSString* FakeWebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
   return early_page_script_ ? early_page_script_ : @"";
@@ -74,6 +80,11 @@ NSString* FakeWebClient::GetDocumentStartScriptForAllFrames(
 
 void FakeWebClient::SetPluginNotSupportedText(const base::string16& text) {
   plugin_not_supported_text_ = text;
+}
+
+void FakeWebClient::SetJavaScriptFeatures(
+    std::vector<JavaScriptFeature*> features) {
+  java_script_features_ = features;
 }
 
 void FakeWebClient::SetEarlyPageScript(NSString* page_script) {
@@ -118,7 +129,7 @@ void FakeWebClient::PrepareErrorPage(
 }
 
 UIView* FakeWebClient::GetWindowedContainer() {
-  return UIApplication.sharedApplication.keyWindow.rootViewController.view;
+  return GetAnyKeyWindow().rootViewController.view;
 }
 
 UserAgentType FakeWebClient::GetDefaultUserAgent(

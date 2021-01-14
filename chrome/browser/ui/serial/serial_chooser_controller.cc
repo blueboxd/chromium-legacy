@@ -49,12 +49,23 @@ SerialChooserController::~SerialChooserController() {
     RunCallback(/*port=*/nullptr);
 }
 
+bool SerialChooserController::ShouldShowHelpButton() const {
+  return false;
+}
+
 base::string16 SerialChooserController::GetNoOptionsText() const {
   return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
 }
 
 base::string16 SerialChooserController::GetOkButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_SERIAL_PORT_CHOOSER_CONNECT_BUTTON_TEXT);
+}
+
+std::pair<base::string16, base::string16>
+SerialChooserController::GetThrobberLabelAndTooltip() const {
+  return {
+      l10n_util::GetStringUTF16(IDS_SERIAL_PORT_CHOOSER_LOADING_LABEL),
+      l10n_util::GetStringUTF16(IDS_SERIAL_PORT_CHOOSER_LOADING_LABEL_TOOLTIP)};
 }
 
 size_t SerialChooserController::NumOptions() const {

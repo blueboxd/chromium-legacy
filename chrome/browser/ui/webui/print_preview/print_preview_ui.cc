@@ -380,14 +380,10 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 
   source->AddBoolean("isEnterpriseManaged", webui::IsEnterpriseManaged());
 
-  bool cloud_print_deprecation_warnings_suppressed = true;
-  source->AddBoolean("cloudPrintDeprecationWarningsSuppressed",
-                     cloud_print_deprecation_warnings_suppressed);
-
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   source->AddBoolean(
       "forceEnablePrivetPrinting",
-      cloud_print_deprecation_warnings_suppressed ||
+      profile->GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting) ||
           base::FeatureList::IsEnabled(features::kForceEnablePrivetPrinting));
 #endif
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service_factory.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/safe_browsing/core/browser/sync/sync_utils.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
@@ -43,6 +45,7 @@ ChromeEnterpriseRealTimeUrlLookupServiceFactory::
           "ChromeEnterpriseRealTimeUrlLookupService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(VerdictCacheManagerFactory::GetInstance());
+  DependsOn(enterprise_connectors::ConnectorsServiceFactory::GetInstance());
 }
 
 KeyedService*
@@ -68,8 +71,11 @@ ChromeEnterpriseRealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
   return new ChromeEnterpriseRealTimeUrlLookupService(
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
       VerdictCacheManagerFactory::GetForProfile(profile), profile,
-      ProfileSyncServiceFactory::GetForProfile(profile), profile->GetPrefs(),
-      GetProfileManagementStatus(browser_policy_connector),
+      base::BindRepeating(&safe_browsing::SyncUtils::IsHistorySyncEnabled,
+                          ProfileSyncServiceFactory::GetForProfile(profile)),
+      enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
+          profile),
+      profile->GetPrefs(), GetProfileManagementStatus(browser_policy_connector),
       is_under_advanced_protection, profile->IsOffTheRecord());
 }
 

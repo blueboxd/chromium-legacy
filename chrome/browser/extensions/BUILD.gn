@@ -205,6 +205,8 @@ static_library("extensions") {
     "api/image_writer_private/destroy_partitions_operation.h",
     "api/image_writer_private/error_messages.cc",
     "api/image_writer_private/error_messages.h",
+    "api/image_writer_private/extraction_properties.cc",
+    "api/image_writer_private/extraction_properties.h",
     "api/image_writer_private/image_writer_private_api.cc",
     "api/image_writer_private/image_writer_private_api.h",
     "api/image_writer_private/image_writer_utility_client.cc",
@@ -215,12 +217,12 @@ static_library("extensions") {
     "api/image_writer_private/operation_manager.h",
     "api/image_writer_private/removable_storage_provider.cc",
     "api/image_writer_private/removable_storage_provider.h",
-    "api/image_writer_private/unzip_helper.cc",
-    "api/image_writer_private/unzip_helper.h",
     "api/image_writer_private/write_from_file_operation.cc",
     "api/image_writer_private/write_from_file_operation.h",
     "api/image_writer_private/write_from_url_operation.cc",
     "api/image_writer_private/write_from_url_operation.h",
+    "api/image_writer_private/zip_extractor.cc",
+    "api/image_writer_private/zip_extractor.h",
     "api/instance_id/instance_id_api.cc",
     "api/instance_id/instance_id_api.h",
     "api/language_settings_private/language_settings_private_api.cc",
@@ -378,6 +380,10 @@ static_library("extensions") {
     "api/tab_groups/tab_groups_api.h",
     "api/tab_groups/tab_groups_constants.cc",
     "api/tab_groups/tab_groups_constants.h",
+    "api/tab_groups/tab_groups_event_router.cc",
+    "api/tab_groups/tab_groups_event_router.h",
+    "api/tab_groups/tab_groups_event_router_factory.cc",
+    "api/tab_groups/tab_groups_event_router_factory.h",
     "api/tab_groups/tab_groups_util.cc",
     "api/tab_groups/tab_groups_util.h",
     "api/tabs/app_base_window.cc",
@@ -939,12 +945,23 @@ static_library("extensions") {
   }
 
   if (is_chromeos_lacros || is_chromeos_ash) {
-    sources += [ "api/enterprise_platform_keys/enterprise_platform_keys_api.h" ]
-    deps += [ "//chromeos/crosapi/mojom" ]
+    sources += [
+      "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
+      "api/enterprise_platform_keys/enterprise_platform_keys_api.h",
+      "api/platform_keys/platform_keys_api.h",
+    ]
+    deps += [
+      "//chromeos/crosapi/cpp",
+      "//chromeos/crosapi/mojom",
+    ]
     if (is_chromeos_lacros) {
       sources += [
+        "api/enterprise_device_attributes/enterprise_device_attributes_api_lacros.cc",
+        "api/enterprise_device_attributes/enterprise_device_attributes_api_lacros.h",
         "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.cc",
         "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.h",
+        "api/platform_keys/platform_keys_api_lacros.cc",
+        "api/platform_keys/platform_keys_api_lacros.h",
       ]
       deps += [ "//chromeos/lacros" ]
     }
@@ -956,8 +973,8 @@ static_library("extensions") {
       "api/certificate_provider/certificate_provider_api.h",
       "api/crash_report_private/crash_report_private_api.cc",
       "api/crash_report_private/crash_report_private_api.h",
-      "api/enterprise_device_attributes/enterprise_device_attributes_api.cc",
-      "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
+      "api/enterprise_device_attributes/enterprise_device_attributes_api_ash.cc",
+      "api/enterprise_device_attributes/enterprise_device_attributes_api_ash.h",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.cc",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.h",
       "api/enterprise_platform_keys/enterprise_platform_keys_api_ash.cc",
@@ -987,8 +1004,8 @@ static_library("extensions") {
       "api/networking_cast_private/networking_cast_private_api.h",
       "api/networking_private/networking_private_ui_delegate_chromeos.cc",
       "api/networking_private/networking_private_ui_delegate_chromeos.h",
-      "api/platform_keys/platform_keys_api.cc",
-      "api/platform_keys/platform_keys_api.h",
+      "api/platform_keys/platform_keys_api_ash.cc",
+      "api/platform_keys/platform_keys_api_ash.h",
       "api/platform_keys/verify_trust_api.cc",
       "api/platform_keys/verify_trust_api.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.cc",

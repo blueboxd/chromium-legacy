@@ -34,6 +34,7 @@ using performance_manager::mojom::blink::WebMemoryAttributionPtr;
 using performance_manager::mojom::blink::WebMemoryBreakdownEntryPtr;
 using performance_manager::mojom::blink::WebMemoryMeasurement;
 using performance_manager::mojom::blink::WebMemoryMeasurementPtr;
+using performance_manager::mojom::blink::WebMemoryUsagePtr;
 
 namespace blink {
 
@@ -61,7 +62,8 @@ ScriptPromise MeasureMemoryController::StartMeasurement(
     ExceptionState& exception_state) {
   if (!IsMeasureMemoryAvailable(LocalDOMWindow::From(script_state))) {
     exception_state.ThrowSecurityError(
-        "performance.measureMemory is not available in this context");
+        "performance.measureUserAgentSpecificMemory is not available in"
+        " this context");
     return ScriptPromise();
   }
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -175,7 +177,20 @@ MemoryBreakdownEntry* ConvertBreakdown(
     attribution.push_back(ConvertAttribution(entry));
   }
   result->setAttribution(attribution);
-  result->setUserAgentSpecificTypes({});
+  result->setTypes({});
+  return result;
+}
+
+MemoryBreakdownEntry* CreateUnattributedBreakdown(
+    const WebMemoryUsagePtr& memory,
+    const WTF::String& memory_type) {
+  auto* result = MemoryBreakdownEntry::Create();
+  DCHECK(memory);
+  result->setBytes(memory->bytes);
+  result->setAttribution({});
+  Vector<String> types;
+  types.push_back(memory_type);
+  result->setTypes(types);
   return result;
 }
 
@@ -183,7 +198,7 @@ MemoryBreakdownEntry* EmptyBreakdown() {
   auto* result = MemoryBreakdownEntry::Create();
   result->setBytes(0);
   result->setAttribution({});
-  result->setUserAgentSpecificTypes({});
+  result->setTypes({});
   return result;
 }
 
@@ -194,6 +209,10 @@ MemoryMeasurement* ConvertResult(const WebMemoryMeasurementPtr& measurement) {
     if (entry->memory)
       breakdown.push_back(ConvertBreakdown(entry));
   }
+  // Add breakdowns for memory that isn't attributed to an execution context.
+  breakdown.push_back(
+      CreateUnattributedBreakdown(measurement->shared_memory, "Shared"));
+  // TODO(1085129): Report memory usage of detached frames once implemented.
   // Add an empty breakdown entry as required by the spec.
   // See https://github.com/WICG/performance-measure-memory/issues/10.
   breakdown.push_back(EmptyBreakdown());

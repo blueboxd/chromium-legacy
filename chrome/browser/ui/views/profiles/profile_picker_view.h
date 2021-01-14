@@ -85,6 +85,7 @@ class ProfilePickerView : public views::WidgetDelegateView,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void OnThemeChanged() override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
@@ -99,6 +100,8 @@ class ProfilePickerView : public views::WidgetDelegateView,
   bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
+  void NavigationStateChanged(content::WebContents* source,
+                              content::InvalidateTypes changed_flags) override;
 
   // IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
@@ -108,6 +111,8 @@ class ProfilePickerView : public views::WidgetDelegateView,
   // Builds the views hieararchy.
   void BuildLayout();
 
+  void UpdateToolbarColor();
+
   // Shows a screen with `url` in `contents` and potentially `show_toolbar`. If
   // `url` is empty, it only shows `contents` with its currently loaded url.
   void ShowScreen(content::WebContents* contents,
@@ -115,6 +120,9 @@ class ProfilePickerView : public views::WidgetDelegateView,
                   bool show_toolbar);
 
   void BackButtonPressed(const ui::Event& event);
+
+  // Checks whether the sign-in flow is in progress.
+  bool IsSigningIn() const;
 
   // Helper functions to deal with the lack of extended account info.
   void SetExtendedAccountInfoTimeoutForTesting(base::TimeDelta timeout);
@@ -127,6 +135,10 @@ class ProfilePickerView : public views::WidgetDelegateView,
                                   bool enterprise_sync_consent_needed);
   void FinishSignedInCreationFlowImpl(BrowserOpenedCallback callback,
                                       bool enterprise_sync_consent_needed);
+
+  // Finishes the flow by finalizing the profile and continuing the SAML sign-in
+  // in a browser window.
+  void FinishSignedInCreationFlowForSAML();
 
   // Internal callback to finish the last steps of the signed-in creation flow.
   void OnBrowserOpened(BrowserOpenedCallback finish_flow_callback,

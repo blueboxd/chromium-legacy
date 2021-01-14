@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import {eventToPromise} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/webui/test_util.m.js';
-import {ViewerPropertiesDialogElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-properties-dialog.js';
-import {PDFViewerElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
+import {PDFViewerElement, ViewerPropertiesDialogElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
 
 const viewer = /** @type {!PDFViewerElement} */ (
     document.body.querySelector('pdf-viewer'));
@@ -56,8 +55,8 @@ const tests = [
      ['author', 'Chromium Authors'],
      ['subject', 'Testing'],
      ['keywords', 'testing,chromium,pdfium,document,info'],
-     ['created', '-'],
-     ['modified', '-'],
+     ['created', '2/5/20, 7:39:12 AM'],
+     ['modified', '2/6/20, 1:42:34 AM'],
      ['application', 'Your Preferred Text Editor'],
      ['pdf-producer', 'fixup_pdf_template.py'],
      ['pdf-version', '1.7'],

@@ -31,6 +31,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
@@ -397,8 +398,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // YES if Voice Search should be started when the new tab animation is
   // finished.
   BOOL _startVoiceSearchAfterNewTabAnimation;
-  // YES if a load was cancelled due to typing in the location bar.
-  BOOL _locationBarEditCancelledLoad;
   // YES if waiting for a foreground tab due to expectNewForegroundTab.
   BOOL _expectingForegroundTab;
 
@@ -1707,6 +1706,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           0, self.thumbStripPanHandler.revealedHeight);
     }
   }
+
+  id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
+  [webViewProxy surfaceSizeChanged];
+
+  crash_keys::SetCurrentOrientation(GetInterfaceOrientation(),
+                                    [[UIDevice currentDevice] orientation]);
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
@@ -2906,7 +2911,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                   adjustTransformForRTL:CGAffineTransformMakeTranslation(
                                             0, self.tabStripView.frame.size
                                                    .height)];
-    self.tabStripView.hidden = YES;
     [self.contentArea addSubview:self.tabStripSnapshot];
     AddSameConstraints(self.tabStripSnapshot, self.tabStripView);
   }
@@ -2984,7 +2988,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
-  self.tabStripView.hidden = (viewRevealState != ViewRevealState::Hidden);
   [self.tabStripSnapshot removeFromSuperview];
   self.bottomPosition = (viewRevealState == ViewRevealState::Revealed);
 
@@ -4356,26 +4359,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [[OmniboxGeolocationController sharedInstance]
       locationBarDidResignFirstResponder:self.browserState];
 
-  // If a load was cancelled by an omnibox edit, but nothing is loading when
-  // editing ends (i.e., editing was cancelled), restart the cancelled load.
-  if (_locationBarEditCancelledLoad) {
-    _locationBarEditCancelledLoad = NO;
-
-    web::WebState* webState = self.currentWebState;
-    if (!_isShutdown && webState && ![self.helper isToolbarLoading:webState])
-      webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
-                                               false /* check_for_repost */);
-  }
   [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:NO];
-}
-
-- (void)locationBarBeganEdit {
-  // On handsets, if a page is currently loading it should be stopped.
-  if (![self canShowTabStrip] &&
-      [self.helper isToolbarLoading:self.currentWebState]) {
-    WebNavigationBrowserAgent::FromBrowser(self.browser)->StopLoading();
-    _locationBarEditCancelledLoad = YES;
-  }
 }
 
 - (LocationBarModel*)locationBarModel {

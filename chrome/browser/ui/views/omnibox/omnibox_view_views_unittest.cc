@@ -800,13 +800,13 @@ TEST_F(OmniboxViewViewsTest,
   omnibox_view()->SetTextAndSelectedRanges(base::ASCIIToUTF16("user text"),
                                            {gfx::Range(9, 9)});
   ASSERT_FALSE(omnibox_view()->IsSelectAll());
-  ASSERT_TRUE(omnibox_view()->SelectionAtEnd());
+  ASSERT_TRUE(omnibox_view()->GetSelectionAtEnd());
 
   // Simulate a renderer-initated focus event. Expect the cursor position to be
   // preserved, and that the omnibox did not select-all the text.
   omnibox_view()->SetFocus(/*is_user_initiated=*/false);
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
-  EXPECT_TRUE(omnibox_view()->SelectionAtEnd());
+  EXPECT_TRUE(omnibox_view()->GetSelectionAtEnd());
 }
 
 TEST_F(OmniboxViewViewsTest, Emphasis) {
@@ -949,13 +949,10 @@ TEST_F(OmniboxViewViewsTest, BlurNeverExitsKeywordMode) {
 }
 
 TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardBuffer clipboard_buffer = ui::ClipboardBuffer::kCopyPaste;
   command_updater()->UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
 
   // Test command is disabled for an empty clipboard.
-  clipboard->Clear(clipboard_buffer);
-  EXPECT_FALSE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
+  omnibox_view()->set_clipboard_text(base::string16());
 
   // Test input that's a valid URL.
   base::string16 expected_text =
@@ -964,8 +961,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 #else
       base::ASCIIToUTF16("Pa&ste and go to https://test.com");
 #endif
-  ui::ScopedClipboardWriter(clipboard_buffer)
-      .WriteText(base::ASCIIToUTF16("https://test.com/"));
+  omnibox_view()->set_clipboard_text(base::ASCIIToUTF16("https://test.com/"));
   base::string16 returned_text =
       omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
@@ -978,8 +974,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 #else
       base::ASCIIToUTF16("Pa&ste and go to test.com");
 #endif
-  ui::ScopedClipboardWriter(clipboard_buffer)
-      .WriteText(base::ASCIIToUTF16("test.com"));
+  omnibox_view()->set_clipboard_text(base::ASCIIToUTF16("test.com"));
   returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
   EXPECT_EQ(expected_text, returned_text);
@@ -993,8 +988,8 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
       base::WideToUTF16(
           L"Pa&ste and search for \x201Cthis is a test sentence\x201D");
 #endif
-  ui::ScopedClipboardWriter(clipboard_buffer)
-      .WriteText(base::ASCIIToUTF16("this is a test sentence"));
+  omnibox_view()->set_clipboard_text(
+      base::ASCIIToUTF16("this is a test sentence"));
   returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
   EXPECT_EQ(expected_text, returned_text);

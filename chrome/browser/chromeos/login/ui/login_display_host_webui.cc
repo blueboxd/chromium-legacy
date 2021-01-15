@@ -399,7 +399,7 @@ bool CanPlayStartupSound() {
   bool found =
       chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
   return found && device.stable_device_id_version &&
-         device.type != chromeos::AudioDeviceType::AUDIO_TYPE_OTHER;
+         device.type != AudioDeviceType::kOther;
 }
 
 }  // namespace
@@ -453,7 +453,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  manager->Initialize(SOUND_STARTUP,
+  manager->Initialize(static_cast<int>(Sound::kStartup),
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 
   login_display_ = std::make_unique<LoginDisplayWebUI>();
@@ -1097,8 +1097,8 @@ void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
       base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs)) {
     return;
   }
-  AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
-                                          PlaySoundOption::ALWAYS);
+  AccessibilityManager::Get()->PlayEarcon(Sound::kStartup,
+                                          PlaySoundOption::kAlways);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

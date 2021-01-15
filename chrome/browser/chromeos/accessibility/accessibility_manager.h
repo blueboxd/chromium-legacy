@@ -52,6 +52,7 @@ namespace chromeos {
 class AccessibilityExtensionLoader;
 class DictationChromeos;
 class SelectToSpeakEventHandlerDelegate;
+enum class Sound;
 
 enum AccessibilityNotificationType {
   ACCESSIBILITY_MANAGER_SHUTDOWN,
@@ -89,11 +90,11 @@ class AccessibilityPanelWidgetObserver;
 
 enum class PlaySoundOption {
   // The sound is always played.
-  ALWAYS = 0,
+  kAlways = 0,
 
   // The sound is played only if spoken feedback is enabled, and
   // --ash-disable-system-sounds is not set.
-  ONLY_IF_SPOKEN_FEEDBACK_ENABLED,
+  kOnlyIfSpokenFeedbackEnabled,
 };
 
 // AccessibilityManager changes the statuses of accessibility features
@@ -262,7 +263,7 @@ class AccessibilityManager
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // the their mapped event has occurred. The |sound_key| enums can be found in
   // chromeos/audio/chromeos_sounds.h.
-  bool PlayEarcon(int sound_key, PlaySoundOption option);
+  bool PlayEarcon(Sound sound_key, PlaySoundOption option);
 
   // Forward an accessibility gesture from the touch exploration controller
   // to ChromeVox.

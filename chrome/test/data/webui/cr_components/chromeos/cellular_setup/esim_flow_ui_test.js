@@ -64,10 +64,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
     confirmationCodeInput.value = 'CONFIRMATION_CODE';
     assertFalse(confirmationCodeInput.invalid);
 
-    // Next button should now be enabled.
+    // Forward button should now be enabled.
     assertTrue(
-        eSimPage.buttonState.next ===
-        cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+        eSimPage.buttonState.forward === cellularSetup.ButtonState.ENABLED);
 
     eSimPage.navigateForward();
     return confirmationCodeInput;
@@ -94,10 +93,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
       // Insert an activation code.
       activationCodePage.$$('#activationCode').value = 'ACTIVATION_CODE';
 
-      // Next button should now be enabled.
+      // Forward button should now be enabled.
       assertTrue(
-          eSimPage.buttonState.next ===
-          cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+          eSimPage.buttonState.forward === cellularSetup.ButtonState.ENABLED);
     });
 
     test('Invalid activation code', async function() {
@@ -285,7 +283,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
       // Simulate pressing 'Skip'.
       assertTrue(
           eSimPage.buttonState.skipDiscovery ===
-          cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+          cellularSetup.ButtonState.ENABLED);
       eSimPage.navigateForward();
       Polymer.dom.flush();
 
@@ -296,10 +294,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
       // Insert an activation code.
       activationCodePage.$$('#activationCode').value = 'ACTIVATION_CODE';
 
-      // Simulate pressing 'Next'.
+      // Simulate pressing 'Forward'.
       assertTrue(
-          eSimPage.buttonState.next ===
-          cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+          eSimPage.buttonState.forward === cellularSetup.ButtonState.ENABLED);
       eSimPage.navigateForward();
       await flushAsync();
 
@@ -313,15 +310,12 @@ suite('CrComponentsEsimFlowUiTest', function() {
       profileList.selectItem(profileList.items[0]);
       Polymer.dom.flush();
 
-      // The 'Next' button should now be enabled.
+      // The 'Forward' button should now be enabled.
       assertTrue(
-          eSimPage.buttonState.next ===
-          cellularSetup.ButtonState.SHOWN_AND_ENABLED);
-      assertTrue(
-          eSimPage.buttonState.skipDiscovery ===
-          cellularSetup.ButtonState.HIDDEN);
+          eSimPage.buttonState.forward === cellularSetup.ButtonState.ENABLED);
+      assertFalse(!!eSimPage.buttonState.skipDiscovery);
 
-      // Simulate pressing 'Next'.
+      // Simulate pressing 'Forward'.
       eSimPage.navigateForward();
       await flushAsync();
 
@@ -342,15 +336,12 @@ suite('CrComponentsEsimFlowUiTest', function() {
       profileListUI.selectItem(profileListUI.items[0]);
       Polymer.dom.flush();
 
-      // The 'Next' button should now be enabled.
+      // The 'Forward' button should now be enabled.
       assertTrue(
-          eSimPage.buttonState.next ===
-          cellularSetup.ButtonState.SHOWN_AND_ENABLED);
-      assertTrue(
-          eSimPage.buttonState.skipDiscovery ===
-          cellularSetup.ButtonState.HIDDEN);
+          eSimPage.buttonState.forward === cellularSetup.ButtonState.ENABLED);
+      assertFalse(!!eSimPage.buttonState.skipDiscovery);
 
-      // Simulate pressing 'Next'.
+      // Simulate pressing 'Forward'.
       eSimPage.navigateForward();
       await flushAsync();
 
@@ -362,10 +353,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
           chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess);
       confirmationCodePage.$$('#confirmationCode').value = 'CONFIRMATION_CODE';
 
-      // Next button should now be enabled.
+      // Forward button should now be enabled.
       assertTrue(
-          eSimPage.buttonState.next ===
-          cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+          eSimPage.buttonState.forward === cellularSetup.ButtonState.ENABLED);
 
       eSimPage.navigateForward();
 

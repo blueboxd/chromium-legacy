@@ -32,8 +32,7 @@ Polymer({
    * @private
    */
   isButtonHidden_(buttonName) {
-    const state = this.getButtonBarState_(buttonName);
-    return state === cellularSetup.ButtonState.HIDDEN;
+    return !this.getButtonBarState_(buttonName);
   },
 
   /**
@@ -43,7 +42,7 @@ Polymer({
    */
   isButtonDisabled_(buttonName) {
     const state = this.getButtonBarState_(buttonName);
-    return state === cellularSetup.ButtonState.SHOWN_BUT_DISABLED;
+    return state === cellularSetup.ButtonState.DISABLED;
   },
 
   /** @private */
@@ -67,7 +66,7 @@ Polymer({
   },
 
   /** @private */
-  onNextButtonClicked_() {
+  onForwardButtonClicked_() {
     this.fire('forward-nav-requested');
   },
 
@@ -85,15 +84,15 @@ Polymer({
         return this.buttonState.cancel;
       case cellularSetup.Button.DONE:
         return this.buttonState.done;
-      case cellularSetup.Button.NEXT:
-        return this.buttonState.next;
+      case cellularSetup.Button.FORWARD:
+        return this.buttonState.forward;
       case cellularSetup.Button.TRY_AGAIN:
         return this.buttonState.tryAgain;
       case cellularSetup.Button.SKIP_DISCOVERY:
         return this.buttonState.skipDiscovery;
       default:
         assertNotReached();
-        return cellularSetup.ButtonState.SHOWN_AND_ENABLED;
+        return cellularSetup.ButtonState.ENABLED;
     }
   }
 });

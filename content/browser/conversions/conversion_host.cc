@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
@@ -153,13 +154,9 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
   // If the impression's conversion destination does not match the final top
   // frame origin of this new navigation ignore it.
-  if (impression.conversion_destination !=
-      navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin()) {
-    return;
-  }
-
-  if (!GetContentClient()->browser()->AllowConversionMeasurement(
-          web_contents()->GetBrowserContext())) {
+  if (net::SchemefulSite(impression.conversion_destination) !=
+      net::SchemefulSite(
+          navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin())) {
     return;
   }
 
@@ -169,6 +166,14 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   const url::Origin& reporting_origin = !impression.reporting_origin
                                             ? impression_origin
                                             : *impression.reporting_origin;
+
+  if (!GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+          web_contents()->GetBrowserContext(),
+          ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+          &impression_origin, nullptr /* conversion_origin */,
+          &reporting_origin)) {
+    return;
+  }
 
   // Conversion measurement is only allowed in secure contexts.
   if (!network::IsOriginPotentiallyTrustworthy(impression_origin) ||
@@ -180,6 +185,7 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   }
 
   base::Time impression_time = base::Time::Now();
+
   const ConversionPolicy& policy = conversion_manager->GetConversionPolicy();
   StorableImpression storable_impression(
       policy.GetSanitizedImpressionData(impression.impression_data),
@@ -210,10 +216,11 @@ void ConversionHost::RegisterConversion(
   if (!conversion_manager)
     return;
 
+  url::Origin conversion_origin = render_frame_host->GetLastCommittedOrigin();
+
   // Only allow conversion registration on secure pages with a secure conversion
   // redirects.
-  if (!network::IsOriginPotentiallyTrustworthy(
-          render_frame_host->GetLastCommittedOrigin()) ||
+  if (!network::IsOriginPotentiallyTrustworthy(conversion_origin) ||
       !network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin)) {
     mojo::ReportBadMessage(
         "blink.mojom.ConversionHost can only be used in secure contexts with a "
@@ -221,16 +228,21 @@ void ConversionHost::RegisterConversion(
     return;
   }
 
-  if (!GetContentClient()->browser()->AllowConversionMeasurement(
-          web_contents()->GetBrowserContext())) {
+  if (!GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+          web_contents()->GetBrowserContext(),
+          ContentBrowserClient::ConversionMeasurementOperation::kConversion,
+          nullptr /* impression_origin */, &conversion_origin,
+          &conversion->reporting_origin)) {
     return;
   }
+
+  net::SchemefulSite conversion_destination(
+      render_frame_host->GetLastCommittedOrigin());
 
   StorableConversion storable_conversion(
       conversion_manager->GetConversionPolicy().GetSanitizedConversionData(
           conversion->conversion_data),
-      render_frame_host->GetLastCommittedOrigin(),
-      conversion->reporting_origin);
+      conversion_destination, conversion->reporting_origin);
 
   if (conversion_page_metrics_)
     conversion_page_metrics_->OnConversion(storable_conversion);

@@ -1311,11 +1311,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "enable-avif",
-    "owners": [ "wtc", "dalecurtis" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-background-blur",
     "owners": [ "newcomer" ],
     "expiry_milestone": 86
@@ -3441,6 +3436,11 @@
     "name": "notification-scheduler-debug-options",
     "owners": [ "//chrome/browser/notifications/scheduler/OWNERS" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "ntp-cache-one-google-bar",
+    "owners": [ "aee", "mahmadi", "tiborg" ],
+    "expiry_milestone": 92
   },
   {
     "name": "ntp-chrome-cart-module",

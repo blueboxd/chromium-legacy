@@ -2290,14 +2290,41 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromiumAndroidLinker.RelroAvailableImmediately"
+    enum="BooleanRelroAvailableImmediately" expires_after="2021-07-07">
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Recorded when RELRO is replaced with a shared memory region, in all
+    processes consuming RELRO. Indicates whether the shared RELRO was available
+    synchronously right after the native library was loaded. ModernLinker only.
+  </summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.RelroProvidedSuccessfully"
+    enum="BooleanSuccess" expires_after="2021-07-07">
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Recorded when the native library is loaded by the Chromium linker, and an
+    attempt to spawn a shared RELRO region is made. Indicates whether the
+    attempt was a success. If the number of samples from
+    &quot;ChromiumAndroidLinker.RelroAvailableImmediately&quot; where the
+    availability was not immediate is large compared to the counts of successful
+    RELRO spawns, it would indicate potential startup performance improvements
+    when starting child process(es) during early browser startup phases.
+    ModernLinker only.
+  </summary>
+</histogram>
+
 <histogram name="ChromiumAndroidLinker.RelroSharingStatus"
     enum="RelroSharingStatus" expires_after="2021-05-06">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
-    In each process that has successfully loaded the native library indicates
-    whether using shared RELRO was attempted and what the result was. Currently
-    it is only reported in ModernLinker.
+    Recorded when RELRO is replaced with a shared memory region, in all
+    processes consuming RELRO. Indicates whether the replacement was a success.
+    ModernLinker only.
   </summary>
 </histogram>
 
@@ -3226,6 +3253,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     when supplied an origin filter. Recorded when the conversion database
     finishes performing a clear operation. Note that filters may vary in size
     and computation complexity, skewing this metric aribtrarily.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.Storage.CreationTime" units="ms"
+    expires_after="M95">
+  <owner>johnidel@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the time it took to initialize a new conversions database from
+    scratch. Recorded when the conversion database finishes initialization.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.Storage.MigrationTime" units="ms"
+    expires_after="M95">
+  <owner>johnidel@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the time it took to migrate a preexisting conversions database to
+    the latest schema. Recorded when the conversion database finishes
+    initialization.
   </summary>
 </histogram>
 
@@ -7377,191 +7425,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Errors that an unprivileged attachment broker encounters while trying to
     broker attachments.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.AfterClick.Mainframe.CookieWaitTime"
-    units="ms" expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the amount of time that the navigation to a previously prefetched
-    page was delayed because cookies had to be copied from the isolated cookie
-    jar.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.AfterClick.Subresources.UsedCache"
-    enum="BooleanCacheHit" expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records whether a previously prefetched subresource from an Isolated
-    Prerender was served from cache when its page was later navigated to.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.BodyLength" units="bytes"
-    expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the response body length as cached in memory encountered when
-    isolated prefetching a mainframe HTML resource from the Google Search Result
-    Page. Recorded for non-network error prefetches only.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.ConnectTime" units="ms"
-    expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the time taken to establish a socket connection when isolated
-    prefetching a mainframe HTML resource from the Google Search Result Page.
-    Recorded for non-network error prefetches only.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.CookiesToCopy"
-    units="count" expires_after="M90">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the number of cookies that needed to be copied from the prefetch
-    navigation to the user's profile after a prefetched link is navigated to.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.NetError"
-    enum="NetErrorCodes" expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the Net Error encountered when isolated prefetching a mainframe HTML
-    resource from the Google Search Result Page. Recorded for every completed
-    prefetch.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.RespCode"
-    enum="HttpResponseCode" expires_after="M90">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the HTTP response code encountered isolated prefetching a mainframe
-    HTML resource from the Google Search Result Page. Recorded for non-network
-    error prefetches only. Redirects are not included here.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.RetryAfter" units="ms"
-    expires_after="M90">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the duration of a Retry-After header on a 503 response to a
-    mainframe prefetch request.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.TotalRedirects"
-    units="count" expires_after="M90">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the total number of redirects encountered while doing all the
-    prefetches on an eligible Google Search Result page. Only recorded when at
-    least one prefetch was attempted.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Mainframe.TotalTime" units="ms"
-    expires_after="M90">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the total time taken when isolated prefetching a mainframe HTML
-    resource from the Google Search Result Page. Recorded for successful
-    non-network error prefetches only.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Subresources.NetError"
-    enum="NetErrorCodes" expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the net error encountered when prefetching a single subresource
-    during Isolated Prerenders.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Subresources.Quantity"
-    units="count" expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the number of subresources that were NoStatePrefetch'd during an
-    Isolated Prerender. Recorded once for each page that is NoStatePrefetch'd
-    during Isolated Prerenders.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Prefetch.Subresources.RespCode"
-    enum="HttpResponseCode" expires_after="M90">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the HTTP response code encountered when prefetching a single
-    subresource during Isolated Prerenders.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Proxy.Fallback.NetError"
-    enum="NetErrorCodes" expires_after="M95">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the Net Error encountered when Chrome did a fallback from the
-    prefetch proxy. Recorded only on fallbacks.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.Proxy.RespCode" enum="HttpResponseCode"
-    expires_after="M95">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the HTTP response code encountered when connecting to the prefetch
-    proxy CONNECT tunnel. Recorded every time Chrome gets CONNECT tunnel
-    response headers.
-  </summary>
-</histogram>
-
-<histogram name="IsolatedPrerender.SpareRenderer.CountStartedOnSRP"
-    units="count" expires_after="2021-06-20">
-  <owner>robertogden@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the number of spare renderers that were attempted to be started on
-    the SRP, when the feature param is enabled.
   </summary>
 </histogram>
 
@@ -16474,8 +16337,11 @@ should be kept until we use this API.  -->
   </details>
 </histogram>
 
-<histogram name="TPM.EarlyResetDuringCommand" units="count" expires_after="M85">
-  <owner>semenzato@google.com</owner>
+<histogram name="TPM.EarlyResetDuringCommand" units="count"
+    expires_after="2021-12-21">
+  <owner>apronin@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     Reported at boot if the previous boot session was interrupted in the middle
     of a TPM command during the first 30 seconds of uptime.
@@ -16994,7 +16860,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Viewport.DidScalePage" enum="BooleanDidScalePage"
-    expires_after="M90">
+    expires_after="M97">
   <owner>bokan@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -17006,7 +16872,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Viewport.MaxPageScale" enum="PageScaleFactorRange"
-    expires_after="2021-06-20">
+    expires_after="M97">
   <owner>bokan@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -17020,11 +16886,12 @@ regressions. -->
 </histogram>
 
 <histogram name="Viewport.MetaTagType" enum="MetaTagTypeEnum"
-    expires_after="M95">
+    expires_after="M97">
   <owner>bokan@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
     The viewport meta tag type seen on each page load. Only recorded on Android.
+    Recorded when the page finishes loading.
   </summary>
 </histogram>
 

@@ -76,7 +76,8 @@ void CullRect::Move(const FloatSize& offset) {
 }
 
 void CullRect::ApplyTransform(const TransformPaintPropertyNode& transform) {
-  if (transform.ScrollNode()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      transform.ScrollNode()) {
     DCHECK(!RuntimeEnabledFeatures::CullRectUpdateEnabled());
     // TODO(wangxianzhu): Remove this code path for CullRectUpdate.
     ApplyScrollTranslation(transform, transform);
@@ -98,6 +99,9 @@ void CullRect::ApplyTransformWithoutExpansion(
 CullRect::ApplyTransformResult CullRect::ApplyScrollTranslation(
     const TransformPaintPropertyNode& root_transform,
     const TransformPaintPropertyNode& scroll_translation) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+         RuntimeEnabledFeatures::CullRectUpdateEnabled());
+
   const auto* scroll = scroll_translation.ScrollNode();
   DCHECK(scroll);
 

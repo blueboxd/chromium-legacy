@@ -215,8 +215,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
 BLINK_COMMON_EXPORT extern const base::Feature kAppCache;
 BLINK_COMMON_EXPORT extern const base::Feature kAppCacheRequireOriginTrial;
 
-BLINK_COMMON_EXPORT extern const base::Feature kAVIF;
-
 BLINK_COMMON_EXPORT extern const base::Feature
     kAlignFontDisplayAutoTimeoutWithLCPGoal;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -357,6 +355,13 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortAPIOriginTrial;
 
 BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortFeaturePolicy;
+
+// Flags used to test DocumentPolicy's default value being controlled by
+// different runtime flag states.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kDocumentPolicyRuntimeFlag1ForTest;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kDocumentPolicyRuntimeFlag2ForTest;
 
 }  // namespace features
 }  // namespace blink

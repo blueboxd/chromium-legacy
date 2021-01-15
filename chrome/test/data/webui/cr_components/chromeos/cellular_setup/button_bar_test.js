@@ -31,7 +31,7 @@ suite('CellularSetupButtonBarTest', function() {
     buttonBar.buttonState = {
       backward: state,
       cancel: state,
-      next: state,
+      forward: state,
       tryAgain: state,
       done: state,
       skipDiscovery: state,
@@ -64,31 +64,31 @@ suite('CellularSetupButtonBarTest', function() {
   }
 
   test('individual buttons appear if enabled', function() {
-    setStateForAllButtons(cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+    setStateForAllButtons(cellularSetup.ButtonState.ENABLED);
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#backward')));
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#cancel')));
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#tryAgain')));
-    assertTrue(isButtonShownAndEnabled(buttonBar.$$('#next')));
+    assertTrue(isButtonShownAndEnabled(buttonBar.$$('#forward')));
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#done')));
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#skipDiscovery')));
   });
 
   test('individual buttons appear but are diabled', function() {
-    setStateForAllButtons(cellularSetup.ButtonState.SHOWN_BUT_DISABLED);
+    setStateForAllButtons(cellularSetup.ButtonState.DISABLED);
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#backward')));
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#cancel')));
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#tryAgain')));
-    assertTrue(isButtonShownAndDisabled(buttonBar.$$('#next')));
+    assertTrue(isButtonShownAndDisabled(buttonBar.$$('#forward')));
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#done')));
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#skipDiscovery')));
   });
 
   test('individual buttons are hidden', function() {
-    setStateForAllButtons(cellularSetup.ButtonState.HIDDEN);
+    setStateForAllButtons(undefined);
     assertTrue(isButtonHidden(buttonBar.$$('#backward')));
     assertTrue(isButtonHidden(buttonBar.$$('#cancel')));
     assertTrue(isButtonHidden(buttonBar.$$('#tryAgain')));
-    assertTrue(isButtonHidden(buttonBar.$$('#next')));
+    assertTrue(isButtonHidden(buttonBar.$$('#forward')));
     assertTrue(isButtonHidden(buttonBar.$$('#done')));
     assertTrue(isButtonHidden(buttonBar.$$('#skipDiscovery')));
   });

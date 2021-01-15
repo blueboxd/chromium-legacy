@@ -190,6 +190,21 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="HTML"/>
 </enum>
 
+<enum name="AccessibilityTreeUnserializeError">
+  <summary>
+    Tracks the type of failure that occured when unserializing the accessibility
+    tree.
+  </summary>
+  <int value="0" label="No Root"/>
+  <int value="1" label="Not In Tree"/>
+  <int value="2" label="Creation Pending"/>
+  <int value="3" label="Duplicate Child"/>
+  <int value="4" label="Creation Pending For Child"/>
+  <int value="5" label="Reparent"/>
+  <int value="6" label="Pending Nodes"/>
+  <int value="7" label="Pending Changes"/>
+</enum>
+
 <enum name="AccessibilityWinAPIEnum">
   <summary>
     Track which Windows accessibility APIs are being called by clients.
@@ -3653,6 +3668,27 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="UNREADABLE_INPUT"/>
   <int value="4" label="PLATFORM_FAILURE"/>
   <int value="5" label="INSUFFICIENT_RESOURCES"/>
+</enum>
+
+<enum name="ArmCpuPart">
+  <summary>
+    Defines a subset of ARM CPU (implementer, part-number) pairs composed as a
+    20-bit number. This is a non-exhaustive enumeration.
+  </summary>
+  <int value="269320" label="ARM Cortex-A8"/>
+  <int value="269321" label="ARM Cortex-A9"/>
+  <int value="269326" label="ARM Cortex-A17"/>
+  <int value="269327" label="ARM Cortex-A15"/>
+  <int value="269335" label="ARM Cortex-R7"/>
+  <int value="269336" label="ARM Cortex-R8"/>
+  <int value="269575" label="ARM Cortex-A57"/>
+  <int value="269576" label="ARM Cortex-A72"/>
+  <int value="269577" label="ARM Cortex-A73"/>
+  <int value="269578" label="ARM Cortex-A75"/>
+  <int value="269579" label="ARM Cortex-A76"/>
+  <int value="269580" label="ARM Neoverse N1"/>
+  <int value="269581" label="ARM Cortex-A77"/>
+  <int value="269633" label="ARM Cortex-A78"/>
 </enum>
 
 <enum name="AshAutoNightLightNotificationState">
@@ -8613,6 +8649,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Reloaded"/>
 </enum>
 
+<enum name="BooleanRelroAvailableImmediately">
+  <int value="0" label="Available Later"/>
+  <int value="1" label="Available Immediately"/>
+</enum>
+
 <enum name="BooleanRemoved">
   <int value="0" label="Not removed"/>
   <int value="1" label="Removed"/>
@@ -9500,6 +9541,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="2" label="Quick Settings"/>
   <int value="3" label="Stylus Palette"/>
   <int value="4" label="Power Menu"/>
+  <int value="5" label="Snip Key"/>
 </enum>
 
 <enum name="CapturePixelFormat">
@@ -14621,6 +14663,14 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="0" label="Was not finished"/>
   <int value="1" label="Finished with &quot;Got It&quot; button"/>
   <int value="2" label="Finished with &quot;Keep Exploring&quot; button"/>
+</enum>
+
+<enum name="CrosSelectToSpeakOverrideSpeechRateMultiplier">
+  <int value="50" label="0.5"/>
+  <int value="100" label="1.0"/>
+  <int value="120" label="1.2"/>
+  <int value="150" label="1.5"/>
+  <int value="200" label="2.0"/>
 </enum>
 
 <enum name="CrosSelectToSpeakSpeechPitch">
@@ -23861,6 +23911,7 @@ Called by update_document_policy_enum.py.-->
   <int value="131072" label="DEPRECATED_BLOCKED_MATURE"/>
   <int value="262144" label="DISABLE_REMOTELY_FOR_MALWARE"/>
   <int value="524288" label="DISABLE_REINSTALL"/>
+  <int value="1048576" label="DISABLE_NOT_ALLOWLISTED"/>
 </enum>
 
 <enum name="ExtensionEvents">
@@ -30941,6 +30992,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3771" label="AddressSpaceUnknownSecureContextNavigatedToPrivate"/>
   <int value="3772"
       label="AddressSpaceUnknownNonSecureContextNavigatedToPrivate"/>
+  <int value="3773" label="RTCPeerConnectionSdpSemanticsPlanB"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41195,6 +41247,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Other"/>
   <int value="1" label="Chrome Custom Tab"/>
   <int value="2" label="Trusted Web Activity"/>
+  <int value="3" label="Recents (aka App Overview)"/>
+  <int value="4" label="Recents or Back"/>
+  <int value="5" label="Foreground when Locked (Power Button)"/>
 </enum>
 
 <enum name="LauncherRankingItemType">
@@ -41589,6 +41644,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Unknown"/>
   <int value="10" label="Iframe"/>
   <int value="11" label="Timeout"/>
+  <int value="12" label="BlockList"/>
 </enum>
 
 <enum name="LinkMonitorFailureType">
@@ -43340,6 +43396,7 @@ from previous Chrome versions.
   <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
   <int value="-1238992816" label="ShelfDimming:enabled"/>
   <int value="-1237921078" label="SyncUSSNigori:enabled"/>
+  <int value="-1237821073" label="SharedHighlightingUseBlocklist:enabled"/>
   <int value="-1237621246" label="WebXRGamepadSupport:disabled"/>
   <int value="-1236065190" label="HardwareMediaKeyHandling:disabled"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
@@ -44492,6 +44549,7 @@ from previous Chrome versions.
   <int value="-135584175" label="EnableAggregatedMlAppRanking:enabled"/>
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
+  <int value="-132082004" label="CacheOneGoogleBar:enabled"/>
   <int value="-131673218" label="FileHandlingAPI:disabled"/>
   <int value="-131257916" label="OmniboxCompactSuggestions:disabled"/>
   <int value="-130318058" label="ExoGamepadVibration:enabled"/>
@@ -44649,6 +44707,7 @@ from previous Chrome versions.
   <int value="1558582" label="ResamplingInputEvents:enabled"/>
   <int value="2070488" label="EnablePasswordsAccountStorageSavingUi:disabled"/>
   <int value="3826348" label="DarkenWebsitesCheckboxInThemesSetting:disabled"/>
+  <int value="4588113" label="CacheOneGoogleBar:disabled"/>
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
@@ -45687,6 +45746,7 @@ from previous Chrome versions.
   <int value="1019623058" label="ash-enable-shelf-model-synchronization"/>
   <int value="1019857902"
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
+  <int value="1021848000" label="SharedHighlightingUseBlocklist:disabled"/>
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
   <int value="1023668536" label="PrintServerUi:enabled"/>
@@ -55597,6 +55657,10 @@ Called by update_net_trust_anchors.py.-->
     The download was successfully verified, but the model info contained in the
     model info file was invalid.
   </int>
+  <int value="10" label="Failed to verify download publisher">
+    The download was a valid CRX file but came from a publisher that is
+    untrusted.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideProcessHintsResult">
@@ -61711,6 +61775,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="kOffTheRecordProfile"/>
   <int value="4" label="kDownloadInProgress"/>
   <int value="5" label="kAppControllerMac"/>
+  <int value="6" label="kClearingBrowsingData"/>
 </enum>
 
 <enum name="ProfileMenuActionableItem">
@@ -66666,6 +66731,42 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Scanner not found"/>
   <int value="2" label="Unsupported Scan To path"/>
   <int value="3" label="Save to disk failed"/>
+</enum>
+
+<enum name="ScanJobSettingsColorMode">
+  <int value="0" label="Black and white"/>
+  <int value="1" label="Grayscale"/>
+  <int value="2" label="Color"/>
+</enum>
+
+<enum name="ScanJobSettingsFileType">
+  <int value="0" label="JPG"/>
+  <int value="1" label="PDF"/>
+  <int value="2" label="PNG"/>
+</enum>
+
+<enum name="ScanJobSettingsPageSize">
+  <int value="0" label="A4"/>
+  <int value="1" label="Letter"/>
+  <int value="2" label="Max"/>
+</enum>
+
+<enum name="ScanJobSettingsResolution">
+  <int value="0" label="Unexpected dpi"/>
+  <int value="1" label="75 dpi"/>
+  <int value="2" label="100 dpi"/>
+  <int value="3" label="150 dpi"/>
+  <int value="4" label="200 dpi"/>
+  <int value="5" label="300 dpi"/>
+  <int value="6" label="600 dpi"/>
+</enum>
+
+<enum name="ScanJobSettingsSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Flatbed"/>
+  <int value="2" label="ADF Simplex"/>
+  <int value="3" label="ADF Duplex"/>
+  <int value="4" label="Default"/>
 </enum>
 
 <enum name="ScheduledNavigationType">
@@ -73206,6 +73307,7 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Timed Out"/>
   <int value="13" label="Stopped Due To Memory Pressure"/>
   <int value="14" label="Skipped Due To Memory Pressure"/>
+  <int value="15" label="Failure When Requesting Bitmap"/>
 </enum>
 
 <enum name="TabbedPaintPreviewExitCause">

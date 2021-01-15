@@ -198,13 +198,49 @@ void ShowFailureNotification() {
                    /*optional_fields=*/{}, /*delegate=*/nullptr);
 }
 
+// Returns the ID of the message or the title for the notification based on
+// |allowance| and |for_title|.
+int GetDisabledNotificationMessageId(CaptureAllowance allowance,
+                                     bool for_title) {
+  switch (allowance) {
+    case CaptureAllowance::kDisallowedByPolicy:
+      return for_title ? IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_TITLE
+                       : IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_MESSAGE;
+    case CaptureAllowance::kDisallowedByDlp:
+      return for_title ? IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_TITLE
+                       : IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_MESSAGE;
+    case CaptureAllowance::kDisallowedByHdcp:
+      return for_title ? IDS_ASH_SCREEN_CAPTURE_HDCP_STOPPED_TITLE
+                       : IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE;
+    case CaptureAllowance::kAllowed:
+      NOTREACHED();
+      return IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_MESSAGE;
+  }
+}
+
+// Shows a notification informing the user that Capture Mode operations are
+// currently disabled. |allowance| identifies the reason why the operation is
+// currently disabled.
+void ShowDisabledNotification(CaptureAllowance allowance) {
+  DCHECK(allowance != CaptureAllowance::kAllowed);
+  ShowNotification(
+      kScreenCaptureNotificationId,
+      GetDisabledNotificationMessageId(allowance, /*for_title=*/true),
+      GetDisabledNotificationMessageId(allowance, /*for_title=*/false),
+      /*optional_fields=*/{}, /*delegate=*/nullptr,
+      message_center::SystemNotificationWarningLevel::CRITICAL_WARNING,
+      allowance == CaptureAllowance::kDisallowedByHdcp
+          ? kCaptureModeIcon
+          : vector_icons::kBusinessIcon);
+}
+
 // Shows a notification informing the user that video recording was stopped. If
 // |for_hdcp| is true, then this was due to a content-enforced protection,
 // otherwise it was due to DLP which is admin enforced.
 void ShowVideoRecordingStoppedNotification(bool for_hdcp) {
   ShowNotification(
       kScreenCaptureStoppedNotificationId,
-      for_hdcp ? IDS_ASH_SCREEN_CAPTURE_STOPPED_TITLE
+      for_hdcp ? IDS_ASH_SCREEN_CAPTURE_HDCP_STOPPED_TITLE
                : IDS_ASH_SCREEN_CAPTURE_DLP_STOPPED_TITLE,
       for_hdcp ? IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE
                : IDS_ASH_SCREEN_CAPTURE_DLP_STOPPED_MESSAGE,
@@ -412,10 +448,6 @@ void CaptureModeController::EndVideoRecording(EndRecordingReason reason) {
   TerminateRecordingUiElements();
 }
 
-void CaptureModeController::OpenFeedbackDialog() {
-  delegate_->OpenFeedbackDialog();
-}
-
 void CaptureModeController::SetWindowProtectionMask(aura::Window* window,
                                                     uint32_t protection_mask) {
   if (protection_mask == display::CONTENT_PROTECTION_METHOD_NONE)
@@ -493,6 +525,26 @@ void CaptureModeController::StartVideoRecordingImmediatelyForTesting() {
   DCHECK(IsActive());
   DCHECK_EQ(type_, CaptureModeType::kVideo);
   OnVideoRecordCountDownFinished();
+}
+
+void CaptureModeController::OnRecordedWindowChangingRoot(
+    aura::Window* window,
+    aura::Window* new_root) {
+  DCHECK(is_recording_in_progress_);
+  DCHECK(video_recording_watcher_);
+  DCHECK_EQ(window, video_recording_watcher_->window_being_recorded());
+  DCHECK(recording_service_remote_);
+  DCHECK(new_root);
+
+  // When a window being recorded changes displays either due to a display
+  // getting disconnected, or moved by the user, the stop-recording button
+  // should follow that window to that display.
+  capture_mode_util::SetStopRecordingButtonVisibility(window->GetRootWindow(),
+                                                      false);
+  capture_mode_util::SetStopRecordingButtonVisibility(new_root, true);
+
+  recording_service_remote_->OnRecordedWindowChangingRoot(
+      new_root->GetFrameSinkId(), new_root->GetBoundsInRootWindow().size());
 }
 
 bool CaptureModeController::ShouldBlockRecordingForContentProtection(
@@ -671,8 +723,7 @@ void CaptureModeController::OnRecordingServiceDisconnected() {
   OnRecordingEnded(/*success=*/false);
 }
 
-CaptureModeController::CaptureAllowance
-CaptureModeController::IsCaptureAllowedByEnterprisePolicies(
+CaptureAllowance CaptureModeController::IsCaptureAllowedByEnterprisePolicies(
     const CaptureParams& capture_params) const {
   if (!delegate_->IsCaptureAllowedByPolicy()) {
     return CaptureAllowance::kDisallowedByPolicy;
@@ -696,6 +747,9 @@ void CaptureModeController::TerminateRecordingUiElements() {
       video_recording_watcher_->window_being_recorded()->GetRootWindow(),
       false);
   video_recording_watcher_.reset();
+
+  capture_mode_util::TriggerAccessibilityAlert(
+      IDS_ASH_SCREEN_CAPTURE_ALERT_RECORDING_STOPPED);
 }
 
 void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
@@ -720,6 +774,9 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
 
   ++num_consecutive_screenshots_;
   num_consecutive_screenshots_scheduler_.Reset();
+
+  capture_mode_util::TriggerAccessibilityAlert(
+      IDS_ASH_SCREEN_CAPTURE_ALERT_SCREENSHOT_CAPTURED);
 }
 
 void CaptureModeController::CaptureVideo(const CaptureParams& capture_params) {
@@ -735,6 +792,9 @@ void CaptureModeController::CaptureVideo(const CaptureParams& capture_params) {
   capture_mode_session_->StartCountDown(
       base::BindOnce(&CaptureModeController::OnVideoRecordCountDownFinished,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  capture_mode_util::TriggerAccessibilityAlert(
+      IDS_ASH_SCREEN_CAPTURE_ALERT_RECORDING_STARTING);
 }
 
 void CaptureModeController::OnImageCaptured(
@@ -884,40 +944,6 @@ void CaptureModeController::HandleNotificationClicked(
       kScreenCaptureNotificationId, /*by_user=*/false);
 }
 
-/* static */
-int CaptureModeController::GetDisabledNotificationMessageId(
-    CaptureModeController::CaptureAllowance allowance) {
-  switch (allowance) {
-    case CaptureAllowance::kDisallowedByPolicy:
-      return IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_MESSAGE;
-    case CaptureAllowance::kDisallowedByDlp:
-      return IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_MESSAGE;
-    case CaptureAllowance::kDisallowedByHdcp:
-      return IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE;
-    case CaptureAllowance::kAllowed:
-      NOTREACHED();
-      return IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_MESSAGE;
-  }
-}
-
-/* static */
-void CaptureModeController::ShowDisabledNotification(
-    CaptureModeController::CaptureAllowance allowance) {
-  DCHECK(allowance != CaptureAllowance::kAllowed);
-  int message_id = GetDisabledNotificationMessageId(allowance);
-  ShowNotification(
-      kScreenCaptureNotificationId,
-      allowance == CaptureAllowance::kDisallowedByDlp
-          ? IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_TITLE
-          : IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_TITLE,
-      message_id,
-      /*optional_fields=*/{}, /*delegate=*/nullptr,
-      message_center::SystemNotificationWarningLevel::CRITICAL_WARNING,
-      allowance == CaptureAllowance::kDisallowedByHdcp
-          ? kCaptureModeIcon
-          : vector_icons::kBusinessIcon);
-}
-
 base::FilePath CaptureModeController::BuildImagePath() const {
   return BuildPathNoExtension(kScreenshotFileNameFmtStr, base::Time::Now())
       .AddExtension("png");
@@ -970,6 +996,10 @@ void CaptureModeController::OnVideoRecordCountDownFinished() {
   // destroyed, this should be a no-op.
   if (!IsActive())
     return;
+
+  // Do not trigger an alert when exiting the session, since we end the session
+  // to start recording.
+  capture_mode_session_->set_a11y_alert_on_session_exit(false);
 
   const base::Optional<CaptureParams> capture_params = GetCaptureParams();
   // Stop the capture session now, so the bar doesn't show up in the captured

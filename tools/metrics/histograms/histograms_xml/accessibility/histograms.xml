@@ -337,6 +337,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosSelectToSpeak.OverrideSpeechRateMultiplier"
+    enum="CrosSelectToSpeakOverrideSpeechRateMultiplier"
+    expires_after="2021-11-30">
+  <owner>ajitnarayanan@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The multiplier with which the user overrode the speech rate setting in
+    Select-to-Speak. By default, the global Text-to-Speech setting is used,
+    which the user can temporarily override. The override multiplier is stored
+    as a sparse histogram with values (100 * multiple). For example, a speech
+    rate multiplier of 1.0 (default) will be seen as 100. Emitted once every
+    time playback starts, including on resume after pause or change of
+    selection.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosSelectToSpeak.StartSpeechMethod"
     enum="CrosSelectToSpeakStartSpeechMethod" expires_after="2021-06-20">
   <owner>katie@chromium.org</owner>
@@ -830,6 +846,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE"
         summary="moves endpoint by the given range."/>
   </token>
+</histogram>
+
+<histogram name="Accessibility.Reliability.Tree.UnserializeError"
+    enum="AccessibilityTreeUnserializeError" expires_after="M93">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>janewman@microsoft.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks the type of failure that occured when unserializing the accessibility
+    tree. When an error in unserialization occurs, this is emitted and
+    unserialization aborts. In the case of a tree with multiple issues, only the
+    first error is recorded. Refer to AXTree::Unserialize for details.
+  </summary>
 </histogram>
 
 <histogram name="Accessibility.Shortcuts.CrosDockedMagnifier"

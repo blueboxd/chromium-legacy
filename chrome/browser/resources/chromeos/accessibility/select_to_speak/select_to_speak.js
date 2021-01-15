@@ -107,8 +107,11 @@ export class SelectToSpeak {
     /** @private {chrome.automation.AutomationNode} */
     this.desktop_;
 
-    /** @private {?chrome.automation.AutomationNode} */
-    this.panel_ = null;
+    /**
+     * Button in the floating panel, useful for restoring focus to the panel.
+     * @private {?chrome.automation.AutomationNode}
+     */
+    this.panelButton_ = null;
 
     /** @private {number|undefined} */
     this.intervalRef_;
@@ -142,7 +145,8 @@ export class SelectToSpeak {
     /**
      * The node groups to be spoken. We process content into node groups and
      * pass one node group at a time to the TTS engine. Note that we do not use
-     * node groups for user-selected text in Gsuite. See readNodesInSelection_.
+     * node groups for user-selected text in Gsuite. See more details in
+     * readNodesBetweenPositions_.
      * @private {!Array<!ParagraphUtils.NodeGroup>}
      */
     this.currentNodeGroups_ = [];
@@ -225,8 +229,7 @@ export class SelectToSpeak {
     this.intervalId_;
 
     /** @private {Audio} */
-    this.null_selection_tone_ =
-        new Audio('select_to_speak/earcons/null_selection.ogg');
+    this.null_selection_tone_ = new Audio('earcons/null_selection.ogg');
 
     /** @private {PrefsManager} */
     this.prefsManager_ = new PrefsManager();
@@ -283,7 +286,21 @@ export class SelectToSpeak {
    * @return {!ParagraphUtils.NodeGroup|undefined}
    */
   getCurrentNodeGroup_() {
+    if (this.currentNodeGroups_.length === 0) {
+      return undefined;
+    }
     return this.currentNodeGroups_[this.currentNodeGroupIndex_];
+  }
+
+  /**
+   * Gets the last node group from current selection.
+   * @return {!ParagraphUtils.NodeGroup|undefined}
+   */
+  getLastNodeGroup_() {
+    if (this.currentNodeGroups_.length === 0) {
+      return undefined;
+    }
+    return this.currentNodeGroups_[this.currentNodeGroups_.length - 1];
   }
 
   /**
@@ -377,7 +394,7 @@ export class SelectToSpeak {
         windowParent.children.length === 1 &&
         windowParent.children[0].className ===
             SELECT_TO_SPEAK_MENU_CLASS_NAME) {
-      this.panel_ = windowParent;
+      this.panelButton_ = focusedNode;
     }
   }
 
@@ -447,19 +464,24 @@ export class SelectToSpeak {
     }
 
     this.cancelIfSpeaking_(true /* clear the focus ring */);
-    this.readNodesInSelection_(firstPosition, lastPosition, focusedNode);
+    this.readNodesBetweenPositions_(
+        firstPosition, lastPosition, true /* userRequested */, focusedNode);
   }
 
   /**
-   * Reads nodes between the first and last position selected by the user.
+   * Reads nodes between positions.
    * @param {NodeUtils.Position} firstPosition The first position at which to
    *     start reading.
    * @param {NodeUtils.Position} lastPosition The last position at which to
    *     stop reading.
-   * @param {AutomationNode} focusedNode The node with user focus.
+   * @param {boolean} userRequested Whether the selection is explicitly
+   *     requested by the user. If true, we will clear focus ring and record the
+   *     event.
+   * @param {AutomationNode=} focusedNode The node with user focus.
    * @private
    */
-  readNodesInSelection_(firstPosition, lastPosition, focusedNode) {
+  readNodesBetweenPositions_(
+      firstPosition, lastPosition, userRequested, focusedNode) {
     const nodes = [];
     let selectedNode = firstPosition.node;
     if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
@@ -509,21 +531,25 @@ export class SelectToSpeak {
         // was whitespace or invisible. Clear the ending offset because it
         // relates to a node that doesn't exist.
         this.startSpeechQueue_(nodes, {
-          clearFocusRing: true,
+          clearFocusRing: userRequested,
           startCharIndex: firstPosition.offset,
           isUserSelectedContent: true
         });
       } else {
         this.startSpeechQueue_(nodes, {
-          clearFocusRing: true,
+          clearFocusRing: userRequested,
           startCharIndex: firstPosition.offset,
           endCharIndex: lastPosition.offset,
           isUserSelectedContent: true
         });
       }
-      this.initializeScrollingToOffscreenNodes_(focusedNode.root);
-      MetricsUtils.recordStartEvent(
-          MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
+      if (focusedNode) {
+        this.initializeScrollingToOffscreenNodes_(focusedNode.root);
+      }
+      if (userRequested) {
+        MetricsUtils.recordStartEvent(
+            MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
+      }
     } else {
       // Gsuite apps include webapps beyond Docs, see getGSuiteAppRoot and
       // GSUITE_APP_REGEXP.
@@ -546,8 +572,10 @@ export class SelectToSpeak {
           matchAboutBlank: true,
           code: 'document.execCommand("copy");'
         });
-        MetricsUtils.recordStartEvent(
-            MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
+        if (userRequested) {
+          MetricsUtils.recordStartEvent(
+              MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
+        }
       });
     }
   }
@@ -608,11 +636,13 @@ export class SelectToSpeak {
   focusPanel_() {
     // Used cached panel node if possible to avoid expensive desktop.find().
     // Note: Checking role attribute to see if node is still valid.
-    if (this.panel_ && this.panel_.role) {
-      this.panel_.focus();
+    if (this.panelButton_ && this.panelButton_.role) {
+      // The panel itself isn't focusable, so set focus to most recently
+      // focused panel button.
+      this.panelButton_.focus();
       return;
     }
-    this.panel_ = null;
+    this.panelButton_ = null;
 
     // Fallback to more expensive method of finding panel.
     const menuView = this.desktop_.find(
@@ -620,8 +650,8 @@ export class SelectToSpeak {
     if (menuView !== null && menuView.parent &&
         menuView.parent.className === TRAY_BUBBLE_VIEW_CLASS_NAME) {
       // The menu view's parent is the TrayBubbleView can can be assigned focus.
-      this.panel_ = menuView.parent;
-      this.panel_.focus();
+      this.panelButton_ = menuView.find({role: RoleType.TOGGLE_BUTTON});
+      this.panelButton_.focus();
     }
   }
 
@@ -678,12 +708,11 @@ export class SelectToSpeak {
   }
 
   /**
-   * Resume the TTS. If there is no remaining content in this paragraph, we will
-   * navigate to the next paragraph. If there is still content in this
-   * paragraph, STS behaves differently depending on the resume status. If we
-   * resume from a user-trigger pause, we will resume from the start of the
-   * current sentence. If we resume from the end of user-selected content, we
-   * will continue reading remaining content.
+   * Resume the TTS. If there is remaining user-selected content, STS will read
+   * from the current position to the end of the user-selected content. If there
+   * is no remaining user-selected content, STS will read from the current
+   * position to the end of the current paragraph. If there is no content left
+   * in this paragraph, we navigate to the next paragraph.
    * @private
    */
   resume_() {
@@ -692,36 +721,50 @@ export class SelectToSpeak {
       return;
     }
     const currentNodeGroup = this.getCurrentNodeGroup_();
-
+    const endNodeGroup = this.getLastNodeGroup_();
     // If there is no processed node group, that means the user has not selected
     // anything. Ignore the resume command.
-    if (!currentNodeGroup) {
+    if (!currentNodeGroup || !endNodeGroup) {
       return;
     }
+
+    // Get the current position. If we did not find a position based on the
+    // |this.currentCharIndex_|, that means we have reached the end of current
+    // node group. We fallback to the end position.
+    const currentPosition = NodeUtils.getPositionFromNodeGroup(
+        currentNodeGroup, this.currentCharIndex_, true /* fallbackToEnd */);
+
+    // Get the end position of the user-selected content. If
+    // |endNodeGroup.endOffset| is undefined, that means we did not apply
+    // offset. We fallback to the end position.
+    const endPosition = NodeUtils.getPositionFromNodeGroup(
+        endNodeGroup, endNodeGroup.endOffset, true /* fallbackToEnd */);
+
+    if (NodeUtils.getDirectionBetweenPositions(currentPosition, endPosition) ===
+        constants.Dir.FORWARD) {
+      // If the end position is after the current position, we still have
+      // user-selected content and STS reads nodes from the current position to
+      // the end position.
+      this.readNodesBetweenPositions_(
+          currentPosition, endPosition, false /* userRequested */);
+      return;
+    }
+
+    // If we have passed the user-selected content, STS should speak the content
+    // from the current position to the end of the current node group.
     const {nodes: remainingNodes, offset} =
-        NodeUtils.getNextNodesInParagraphFromNodeGroup(
-            currentNodeGroup, this.currentCharIndex_, constants.Dir.FORWARD);
-    // There is no remaining nodes in this paragraph so we navigate to the next
+        NodeUtils.getNextNodesInParagraphFromPosition(
+            currentPosition, constants.Dir.FORWARD);
+
+    // If there is no remaining nodes in this paragraph, we navigate to the next
     // paragraph.
     if (remainingNodes.length === 0) {
       this.navigateToNextParagraph_(constants.Dir.FORWARD);
       return;
     }
 
-    if (this.isUserSelectedContent_ ||
-        SentenceUtils.isSentenceStart(
-            currentNodeGroup, this.currentCharIndex_)) {
-      // If we are resuming from the end of user-selected content or if we are
-      // at the start of the current sentence, we should start reading the
-      // remaining content.
-      this.startSpeechQueue_(
-          remainingNodes, {clearFocusRing: false, startCharIndex: offset});
-      return;
-    }
-
-    // If the current position is not a sentence start, navigate to the start of
-    // this sentence.
-    this.navigateToNextSentence_(constants.Dir.BACKWARD);
+    this.startSpeechQueue_(
+        remainingNodes, {clearFocusRing: false, startCharIndex: offset});
   }
 
   /**
@@ -1486,6 +1529,9 @@ export class SelectToSpeak {
     }
     if (this.shouldShowNavigationControls_()) {
       options.rate = this.getSpeechRate_();
+      // Log speech rate multiple applied by Select-to-speak.
+      MetricsUtils.recordSpeechRateOverrideMultiplier(
+          this.speechRateMultiplier_);
     }
 
     const nodeGroupText = nodeGroup.text || '';
@@ -1518,6 +1564,7 @@ export class SelectToSpeak {
       } else if (event.type === 'interrupted' || event.type === 'cancelled') {
         if (!this.shouldShowNavigationControls_()) {
           this.onStateChanged_(SelectToSpeakState.INACTIVE);
+          return;
         }
         if (this.state_ === SelectToSpeakState.SELECTING) {
           // Do not go into inactive state if navigation controls are enabled
@@ -1525,14 +1572,10 @@ export class SelectToSpeak {
           // to select new nodes while STS is active without first exiting.
           return;
         }
-        if (!this.pauseCompleteCallback_) {
-          // Auto dismiss when navigation control is not enabled. In addition,
-          // if the interrupted or cancelled events are not triggered by
-          // |this.pause_| (e.g., from stopAll_), we should leave STS as
-          // INACTIVE. Currently, we check |this.pauseCompleteCallback_| as a
+        if (this.pauseCompleteCallback_) {
+          // Set to paused state if interruption/cancelled event triggered from
+          // a pause. Currently, we check |this.pauseCompleteCallback_| as a
           // proxy to see if the interrupted events are from |this.pause_|.
-          this.onStateChanged_(SelectToSpeakState.INACTIVE);
-        } else {
           this.updatePauseStatusFromTtsEvent_(true /* shouldPause */);
         }
       } else if (event.type === 'end') {
@@ -1650,6 +1693,7 @@ export class SelectToSpeak {
     } else {
       // Remove all text after the end index so it is not spoken.
       nodeGroup.text = nodeGroup.text.substr(0, offset);
+      nodeGroup.endOffset = offset;
     }
   }
 
@@ -1958,9 +2002,6 @@ export class SelectToSpeak {
   isPanel_(node) {
     if (!node) {
       return false;
-    }
-    if (node === this.panel_) {
-      return true;
     }
 
     // Determine if the node is part of the floating panel or the reading speed

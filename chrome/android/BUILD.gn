@@ -339,6 +339,7 @@ android_library("chrome_java") {
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/signin/ui/android:java",
     "//chrome/browser/tab:java",
+    "//chrome/browser/tab_group:java",
     "//chrome/browser/tabmodel:factory_java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/tabpersistence:java",
@@ -705,7 +706,6 @@ python2_action("chrome_android_java_google_api_keys_srcjar") {
 
 java_cpp_enum("chrome_android_java_enums_srcjar") {
   sources = [
-    "//chrome/browser/android/chrome_session_state.h",
     "//chrome/browser/android/customtabs/detached_resource_request.h",
     "//chrome/browser/android/explore_sites/explore_sites_bridge.h",
     "//chrome/browser/android/explore_sites/explore_sites_feature.h",
@@ -842,6 +842,8 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/signin/ui/android:junit",
     "//chrome/browser/tab:java",
     "//chrome/browser/tab:junit",
+    "//chrome/browser/tab_group:java",
+    "//chrome/browser/tab_group:junit",
     "//chrome/browser/tabmodel:factory_java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/tabmodel/internal:java",
@@ -1100,6 +1102,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/signin/ui/android:java",
     "//chrome/browser/signin/ui/android:javatests",
     "//chrome/browser/tab:java",
+    "//chrome/browser/tab_group:java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/tabmodel/internal:java",
     "//chrome/browser/tabpersistence:java",
@@ -3317,7 +3320,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java",
     "java/src/org/chromium/chrome/browser/feedback/ScreenshotTask.java",
     "java/src/org/chromium/chrome/browser/firstrun/FirstRunUtils.java",
-    "java/src/org/chromium/chrome/browser/flags/ChromeSessionState.java",
     "java/src/org/chromium/chrome/browser/gesturenav/OverscrollSceneLayer.java",
     "java/src/org/chromium/chrome/browser/history/BrowsingHistoryBridge.java",
     "java/src/org/chromium/chrome/browser/history/HistoryDeletionBridge.java",
@@ -3325,6 +3327,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/historyreport/HistoryReportJniBridge.java",
     "java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
     "java/src/org/chromium/chrome/browser/infobar/AutofillCreditCardFillingInfoBar.java",
+    "java/src/org/chromium/chrome/browser/infobar/AutofillOfferNotificationInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/AutofillSaveCardInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/DataReductionPromoInfoBarDelegate.java",
     "java/src/org/chromium/chrome/browser/infobar/DownloadProgressInfoBar.java",

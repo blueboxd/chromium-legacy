@@ -66,6 +66,15 @@ cr.define('cellular_setup', function() {
       },
 
       /**
+       * Whether a loading indicator should be shown for the current page.
+       * @private {boolean}
+       */
+      showPageLoadingIndicator_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
        * Profiles fetched that have status kPending.
        * @type {!Array<!chromeos.cellularSetup.mojom.ESimProfileRemote>}
        * @private
@@ -169,6 +178,7 @@ cr.define('cellular_setup', function() {
      *     response
      */
     handleProfileInstallResponse_(response) {
+      this.showPageLoadingIndicator_ = false;
       if (response.result ===
           chromeos.cellularSetup.mojom.ProfileInstallResult
               .kErrorNeedsConfirmationCode) {
@@ -221,49 +231,34 @@ cr.define('cellular_setup', function() {
         case ESimUiState.PROFILE_SEARCH:
         case ESimUiState.ACTIVATION_CODE_ENTRY:
           buttonState = {
-            backward: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
+            backward: cellularSetup.ButtonState.ENABLED,
             cancel: this.delegate.shouldShowCancelButton() ?
-                cellularSetup.ButtonState.SHOWN_AND_ENABLED :
-                cellularSetup.ButtonState.HIDDEN,
-            done: cellularSetup.ButtonState.HIDDEN,
-            next: cellularSetup.ButtonState.SHOWN_BUT_DISABLED,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.HIDDEN,
+                cellularSetup.ButtonState.ENABLED :
+                undefined,
+            forward: cellularSetup.ButtonState.DISABLED,
           };
           break;
         case ESimUiState.CONFIRMATION_CODE_ENTRY:
           buttonState = {
-            backward: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
+            backward: cellularSetup.ButtonState.ENABLED,
             cancel: this.delegate.shouldShowCancelButton() ?
-                cellularSetup.ButtonState.SHOWN_AND_ENABLED :
-                cellularSetup.ButtonState.HIDDEN,
-            done: cellularSetup.ButtonState.HIDDEN,
+                cellularSetup.ButtonState.ENABLED :
+                undefined,
             // TODO(crbug.com/1093185) Add a "Confirm" button state.
-            next: cellularSetup.ButtonState.SHOWN_BUT_DISABLED,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.HIDDEN,
+            forward: cellularSetup.ButtonState.DISABLED,
           };
           break;
         case ESimUiState.PROFILE_SELECTION:
           buttonState = {
-            backward: cellularSetup.ButtonState.HIDDEN,
             cancel: this.delegate.shouldShowCancelButton() ?
-                cellularSetup.ButtonState.SHOWN_AND_ENABLED :
-                cellularSetup.ButtonState.HIDDEN,
-            done: cellularSetup.ButtonState.HIDDEN,
-            next: cellularSetup.ButtonState.HIDDEN,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
+                cellularSetup.ButtonState.ENABLED :
+                undefined,
+            skipDiscovery: cellularSetup.ButtonState.ENABLED,
           };
           break;
         case ESimUiState.SETUP_FINISH:
           buttonState = {
-            backward: cellularSetup.ButtonState.HIDDEN,
-            cancel: cellularSetup.ButtonState.HIDDEN,
-            done: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            next: cellularSetup.ButtonState.HIDDEN,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.HIDDEN,
+            done: cellularSetup.ButtonState.ENABLED,
           };
           break;
         default:
@@ -276,25 +271,21 @@ cr.define('cellular_setup', function() {
     /** @private */
     onActivationCodeUpdated_(event) {
       if (event.detail.activationCode) {
-        this.set(
-            'buttonState.next', cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+        this.set('buttonState.forward', cellularSetup.ButtonState.ENABLED);
       } else {
-        this.set(
-            'buttonState.next', cellularSetup.ButtonState.SHOWN_BUT_DISABLED);
+        this.set('buttonState.forward', cellularSetup.ButtonState.DISABLED);
       }
     },
 
     /** @private */
     onSelectedProfileChanged_() {
       if (this.selectedProfile_) {
-        this.set('buttonState.skipDiscovery', cellularSetup.ButtonState.HIDDEN);
-        this.set(
-            'buttonState.next', cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+        this.set('buttonState.skipDiscovery', undefined);
+        this.set('buttonState.forward', cellularSetup.ButtonState.ENABLED);
       } else {
+        this.set('buttonState.forward', undefined);
         this.set(
-            'buttonState.skipDiscovery',
-            cellularSetup.ButtonState.SHOWN_AND_ENABLED);
-        this.set('buttonState.next', cellularSetup.ButtonState.HIDDEN);
+            'buttonState.skipDiscovery', cellularSetup.ButtonState.ENABLED);
       }
     },
 
@@ -303,16 +294,16 @@ cr.define('cellular_setup', function() {
       // TODO(crbug.com/1093185) Change this to updating a "Confirm" button's
       // state.
       if (this.confirmationCode_) {
-        this.set(
-            'buttonState.next', cellularSetup.ButtonState.SHOWN_AND_ENABLED);
+        this.set('buttonState.forward', cellularSetup.ButtonState.ENABLED);
       } else {
-        this.set(
-            'buttonState.next', cellularSetup.ButtonState.SHOWN_BUT_DISABLED);
+        this.set('buttonState.forward', cellularSetup.ButtonState.DISABLED);
       }
     },
 
     /** SubflowBehavior override */
     navigateForward() {
+      this.showError_ = false;
+      this.showPageLoadingIndicator_ = true;
       switch (this.state_) {
         case ESimUiState.ACTIVATION_CODE_ENTRY:
           // Assume installing the profile doesn't require a confirmation
@@ -329,6 +320,7 @@ cr.define('cellular_setup', function() {
             this.selectedProfile_.installProfile('').then(
                 this.handleProfileInstallResponse_.bind(this));
           } else {
+            this.showPageLoadingIndicator_ = false;
             this.state_ = ESimUiState.ACTIVATION_CODE_ENTRY;
           }
           break;

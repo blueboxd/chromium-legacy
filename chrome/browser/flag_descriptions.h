@@ -1489,6 +1489,9 @@ extern const char kZeroCopyDescription[];
 extern const char kEnableVulkanName[];
 extern const char kEnableVulkanDescription[];
 
+extern const char kSharedHighlightingUseBlocklistName[];
+extern const char kSharedHighlightingUseBlocklistDescription[];
+
 // Android --------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
@@ -1924,6 +1927,9 @@ extern const char kGlobalMediaControlsCastStartStopDescription[];
 
 extern const char kMuteNotificationsDuringScreenShareName[];
 extern const char kMuteNotificationsDuringScreenShareDescription[];
+
+extern const char kNtpCacheOneGoogleBarName[];
+extern const char kNtpCacheOneGoogleBarDescription[];
 
 extern const char kNtpIframeOneGoogleBarName[];
 extern const char kNtpIframeOneGoogleBarDescription[];
@@ -2833,11 +2839,6 @@ extern const char kEnableEphemeralGuestProfilesOnDesktopDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-extern const char kEnableAVIFName[];
-extern const char kEnableAVIFDescription[];
-#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
 extern const char kClickToCallUIName[];

@@ -92,9 +92,6 @@ class ASH_EXPORT CaptureModeController
 
   void EndVideoRecording(EndRecordingReason reason);
 
-  // Called when the feedback button on the capture bar is pressed.
-  void OpenFeedbackDialog();
-
   // Sets the |protection_mask| that is currently set on the given |window|. If
   // the |protection_mask| is |display::CONTENT_PROTECTION_METHOD_NONE|, then
   // the window will no longer be tracked.
@@ -125,8 +122,19 @@ class ASH_EXPORT CaptureModeController
   // video recording right away for testing purposes.
   void StartVideoRecordingImmediatelyForTesting();
 
+  CaptureModeDelegate* delegate_for_testing() const { return delegate_.get(); }
+
  private:
   friend class CaptureModeTestApi;
+  friend class VideoRecordingWatcher;
+
+  // Called by |video_recording_watcher_| to inform us that the |window| being
+  // recorded (i.e. |is_recording_in_progress_| is true) is about to move to a
+  // |new_root|. This is needed so we can inform the recording service of this
+  // change so that it can switch its capture target to the new root's frame
+  // sink.
+  void OnRecordedWindowChangingRoot(aura::Window* window,
+                                    aura::Window* new_root);
 
   // Returns true if screen recording needs to be blocked due to protected
   // content. |window| is the window being recorded or desired to be recorded.
@@ -161,12 +169,6 @@ class ASH_EXPORT CaptureModeController
   // Returns whether doing a screen capture is currently allowed by enterprise
   // policies and a reason otherwise.
   // ShouldBlockRecordingForContentProtection() should be used for HDCP checks.
-  enum class CaptureAllowance {
-    kAllowed,
-    kDisallowedByDlp,
-    kDisallowedByPolicy,
-    kDisallowedByHdcp
-  };
   CaptureAllowance IsCaptureAllowedByEnterprisePolicies(
       const CaptureParams& capture_params) const;
 
@@ -216,15 +218,6 @@ class ASH_EXPORT CaptureModeController
   void HandleNotificationClicked(const base::FilePath& screen_capture_path,
                                  const CaptureModeType type,
                                  base::Optional<int> button_index);
-
-  // Returns the message for the notification based on |allowance|.
-  static int GetDisabledNotificationMessageId(
-      CaptureModeController::CaptureAllowance allowance);
-  // Shows a notification informing the user that Capture Mode operations are
-  // currently disabled. |allowance| identifies the reason why the operation is
-  // currently disabled.
-  static void ShowDisabledNotification(
-      CaptureModeController::CaptureAllowance allowance);
 
   // Builds a path for a file of an image screenshot, or a video screen
   // recording, builds with display index if there are

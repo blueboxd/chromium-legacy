@@ -685,6 +685,7 @@ static void UpdateAnimationBaseComputedStyle(StyleResolverState& state,
 
 scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     Element* element,
+    const StyleRecalcContext& style_recalc_context,
     const ComputedStyle* default_parent,
     const ComputedStyle* default_layout_parent,
     RuleMatchingBehavior matching_behavior) {
@@ -710,8 +711,9 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  ApplyBaseStyle(element, state, cascade, cascade.MutableMatchResult(),
-                 matching_behavior, can_cache_animation_base_computed_style);
+  ApplyBaseStyle(element, style_recalc_context, state, cascade,
+                 cascade.MutableMatchResult(), matching_behavior,
+                 can_cache_animation_base_computed_style);
 
   if (ApplyAnimatedStyle(state, cascade)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
@@ -825,6 +827,7 @@ void StyleResolver::ApplyMathMLCustomStyleProperties(
 
 void StyleResolver::ApplyBaseStyle(
     Element* element,
+    const StyleRecalcContext& style_recalc_context,
     StyleResolverState& state,
     StyleCascade& cascade,
     MatchResult& match_result,
@@ -851,12 +854,15 @@ void StyleResolver::ApplyBaseStyle(
           DocumentElementUserAgentDeclarations());
     }
 
-    ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                   match_result, state.Style(),
-                                   state.Style()->InsideLink());
+    ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+                                   selector_filter_, match_result,
+                                   state.Style(), state.Style()->InsideLink());
 
     MatchAllRules(state, collector,
                   matching_behavior != kMatchAllRulesExcludingSMIL);
+
+    if (collector.MatchedResult().DependsOnContainerQueries())
+      state.Style()->SetDependsOnContainerQueries(true);
 
     if (tracker_)
       AddMatchedRulesToTracker(collector);
@@ -972,8 +978,11 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
     }
     state.Style()->SetStyleType(pseudo_style_request.pseudo_id);
 
+    // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+    StyleRecalcContext style_recalc_context;
     // Check UA, user and author rules.
-    ElementRuleCollector collector(state.ElementContext(), selector_filter_,
+    ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+                                   selector_filter_,
                                    cascade.MutableMatchResult(), state.Style(),
                                    state.Style()->InsideLink());
     collector.SetPseudoElementStyleRequest(pseudo_style_request);
@@ -1138,8 +1147,10 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
   MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 match_result, state.Style(),
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
+  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+                                 selector_filter_, match_result, state.Style(),
                                  EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   CollectPseudoRulesForElement(*element, collector, kPseudoIdNone,
@@ -1153,9 +1164,11 @@ StyleResolver::CascadedValuesForElement(Element* element, PseudoId pseudo_id) {
   state.SetStyle(ComputedStyle::Create());
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
-  ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 cascade.MutableMatchResult(), state.Style(),
-                                 EInsideLink::kNotInsideLink);
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
+  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+                                 selector_filter_, cascade.MutableMatchResult(),
+                                 state.Style(), EInsideLink::kNotInsideLink);
   collector.SetPseudoElementStyleRequest(PseudoElementStyleRequest(pseudo_id));
   MatchAllRules(state, collector, false /* include_smil_properties */);
 
@@ -1170,8 +1183,10 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
   MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 match_result, state.Style(),
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
+  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+                                 selector_filter_, match_result, state.Style(),
                                  EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingCSSRules);
   // TODO(obrufau): support collecting rules for nested ::marker
@@ -1516,8 +1531,10 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
   StyleResolverState state(GetDocument(), element);
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  ApplyBaseStyle(&element, state, cascade, cascade.MutableMatchResult(),
-                 kMatchAllRules, true);
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
+  ApplyBaseStyle(&element, style_recalc_context, state, cascade,
+                 cascade.MutableMatchResult(), kMatchAllRules, true);
   ApplyInterpolations(state, cascade, interpolations);
 
   return state.TakeStyle();
@@ -1587,9 +1604,11 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!watched_selectors_rule_set)
     return;
 
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
   MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 match_result, state.Style(),
+  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+                                 selector_filter_, match_result, state.Style(),
                                  state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   collector.SetIncludeEmptyRules(true);

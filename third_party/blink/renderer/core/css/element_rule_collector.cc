@@ -60,12 +60,15 @@ unsigned AdjustLinkMatchType(EInsideLink inside_link,
 
 }  // namespace
 
-ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
-                                           const SelectorFilter& filter,
-                                           MatchResult& result,
-                                           ComputedStyle* style,
-                                           EInsideLink inside_link)
+ElementRuleCollector::ElementRuleCollector(
+    const ElementResolveContext& context,
+    const StyleRecalcContext& style_recalc_context,
+    const SelectorFilter& filter,
+    MatchResult& result,
+    ComputedStyle* style,
+    EInsideLink inside_link)
     : context_(context),
+      style_recalc_context_(style_recalc_context),
       selector_filter_(filter),
       style_(style),
       pseudo_style_request_(kPseudoIdNone),
@@ -201,6 +204,8 @@ void ElementRuleCollector::CollectMatchingRulesForList(
       continue;
     }
     if (auto* container_query = rule_data->GetContainerQuery()) {
+      result_.SetDependsOnContainerQueries();
+
       // TODO(crbug.com/1145970): Propagate actual ContainerQueryEvaluator
       // instance from the container.
       // For now a fixed container size of 500x500 is used.

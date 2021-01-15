@@ -53,6 +53,7 @@ class TestPredictionModelDownloadObserver
 enum class PredictionModelDownloadFileStatus {
   kVerifiedCrxWithGoodModelFiles,
   kVerifiedCrxWithNoFiles,
+  kVerifiedCrxWithInvalidPublisher,
   kVerifiedCrxWithBadModelInfoFile,
   kVerifiedCrxWithInvalidModelInfo,
   kVerfiedCrxWithValidModelInfoNoModelFile,
@@ -135,6 +136,8 @@ class PredictionModelDownloadManagerTest : public testing::Test {
     switch (file_status) {
       case PredictionModelDownloadFileStatus::kUnverifiedFile:
         return temp_dir_.GetPath().AppendASCII("unverified.crx3");
+      case PredictionModelDownloadFileStatus::kVerifiedCrxWithInvalidPublisher:
+        return temp_dir_.GetPath().AppendASCII("invalidpublisher.crx3");
       case PredictionModelDownloadFileStatus::kVerifiedCrxWithNoFiles:
         return temp_dir_.GetPath().AppendASCII("nofiles.crx3");
       case PredictionModelDownloadFileStatus::kVerifiedCrxWithBadModelInfoFile:
@@ -166,15 +169,6 @@ class PredictionModelDownloadManagerTest : public testing::Test {
       if (!path_exists)
         return true;
 
-      base::File::Error file_error = base::File::GetLastFileError();
-      // In the event this does not fix the flake, log the error so we know what
-      // it is.
-      // TODO(crbug/1156112): Remove this log once the flake has been resolved.
-      DLOG(ERROR) << "Path Exists Error: " << file_error;
-
-      if (file_error != base::File::FILE_ERROR_ACCESS_DENIED)
-        return !path_exists;
-
       // Retry if the last file error is access denied since it's likely that
       // the file is in the process of being deleted.
     }
@@ -182,19 +176,32 @@ class PredictionModelDownloadManagerTest : public testing::Test {
 
  private:
   void WriteFileForStatus(PredictionModelDownloadFileStatus status) {
-    if (status == PredictionModelDownloadFileStatus::kVerifiedCrxWithNoFiles ||
+    base::FilePath source_root_dir;
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+    if (status == PredictionModelDownloadFileStatus::
+                      kVerifiedCrxWithInvalidPublisher ||
         status == PredictionModelDownloadFileStatus::kUnverifiedFile) {
-      base::FilePath path;
-      base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-      base::FilePath crx_path = path.AppendASCII("components")
-                                    .AppendASCII("test")
-                                    .AppendASCII("data")
-                                    .AppendASCII("crx_file");
+      base::FilePath crx_file_source_dir =
+          source_root_dir.AppendASCII("components")
+              .AppendASCII("test")
+              .AppendASCII("data")
+              .AppendASCII("crx_file");
       std::string crx_file =
           status == PredictionModelDownloadFileStatus::kUnverifiedFile
               ? "unsigned.crx3"
-              : "valid_publisher.crx3";
-      ASSERT_TRUE(base::CopyFile(crx_path.AppendASCII(crx_file),
+              : "valid_publisher.crx3";  // Despite name, wrong publisher.
+      ASSERT_TRUE(base::CopyFile(crx_file_source_dir.AppendASCII(crx_file),
+                                 GetFilePathForDownloadFileStatus(status)));
+      return;
+    }
+
+    if (status == PredictionModelDownloadFileStatus::kVerifiedCrxWithNoFiles) {
+      base::FilePath invalid_crx_model = source_root_dir.AppendASCII("chrome")
+                                             .AppendASCII("test")
+                                             .AppendASCII("data")
+                                             .AppendASCII("optimization_guide")
+                                             .AppendASCII("invalid_model.crx3");
+      ASSERT_TRUE(base::CopyFile(invalid_crx_model,
                                  GetFilePathForDownloadFileStatus(status)));
       return;
     }
@@ -415,6 +422,28 @@ TEST_F(PredictionModelDownloadManagerTest, UnverifiedFileShouldDeleteTempFile) {
       "OptimizationGuide.PredictionModelDownloadManager."
       "DownloadStatus",
       PredictionModelDownloadStatus::kFailedCrxVerification, 1);
+}
+
+TEST_F(PredictionModelDownloadManagerTest,
+       VerifiedCrxWithInvalidPublisherShouldDeleteTempFile) {
+  base::HistogramTester histogram_tester;
+
+  TestPredictionModelDownloadObserver observer;
+  download_manager()->AddObserver(&observer);
+
+  SetDownloadSucceeded(
+      "model",
+      PredictionModelDownloadFileStatus::kVerifiedCrxWithInvalidPublisher);
+  RunUntilIdle();
+
+  EXPECT_FALSE(observer.last_ready_model().has_value());
+  EXPECT_TRUE(HasPathBeenDeleted(GetFilePathForDownloadFileStatus(
+      PredictionModelDownloadFileStatus::kVerifiedCrxWithInvalidPublisher)));
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelDownloadManager."
+      "DownloadStatus",
+      PredictionModelDownloadStatus::kFailedCrxInvalidPublisher, 1);
 }
 
 TEST_F(PredictionModelDownloadManagerTest,

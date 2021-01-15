@@ -636,9 +636,6 @@ const base::Feature kAppCache{"AppCache", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppCacheRequireOriginTrial{
     "AppCacheRequireOriginTrial", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the AV1 Image File Format (AVIF).
-const base::Feature kAVIF{"AVIF", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Make all pending 'display: auto' web fonts enter the swap or failure period
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts
 // do not become a source of bad LCP.
@@ -868,6 +865,12 @@ const base::Feature kInterestCohortAPIOriginTrial{
 // Enable the availability of the "interest-cohort" feature policy.
 const base::Feature kInterestCohortFeaturePolicy{
     "InterestCohortFeaturePolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Flags only used for testing purposes. No effect when enabled.
+const base::Feature kDocumentPolicyRuntimeFlag1ForTest{
+    "kDocumentPolicyRuntimeFlag1ForTest", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDocumentPolicyRuntimeFlag2ForTest{
+    "kDocumentPolicyRuntimeFlag2ForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

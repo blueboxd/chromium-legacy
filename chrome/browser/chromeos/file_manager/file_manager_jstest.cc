@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(CanvasFileManagerJsTest, ImageOrientation) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {
-  RunTestURL("foreground/js/import_controller_unittest_gen.html");
+  RunTestURL("foreground/js/import_controller_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImporterCommonTest) {
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
-  RunTestURL("foreground/js/task_controller_unittest_gen.html");
+  RunTestURL("foreground/js/task_controller_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {

@@ -60,7 +60,9 @@ import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.ChromeNextTabPolicySupplier;
+import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
+import org.chromium.chrome.browser.app.tabmodel.TabbedModeTabModelOrchestrator;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
@@ -97,7 +99,6 @@ import org.chromium.chrome.browser.incognito.IncognitoTabSnapshotController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.infobar.SyncErrorInfoBar;
-import org.chromium.chrome.browser.intent.IntentMetadata;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -152,6 +153,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
+import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.translate.TranslateIntentHandler;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
@@ -247,6 +249,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private ToolbarControlContainer mControlContainer;
 
+    private TabbedModeTabModelOrchestrator mTabModelOrchestrator;
     private TabModelSelectorImpl mTabModelSelectorImpl;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelSelectorTabModelObserver mTabModelObserver;
@@ -283,7 +286,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private ChromeInactivityTracker mInactivityTracker;
 
     // Supplier for a dependency to inform about the type of intent used to launch Chrome.
-    private OneshotSupplierImpl<IntentMetadata> mIntentMetadataOneshotSupplier =
+    private OneshotSupplierImpl<ToolbarIntentMetadata> mIntentMetadataOneshotSupplier =
             new OneshotSupplierImpl<>();
 
     // Time at which an intent was received and handled.
@@ -1141,7 +1144,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             }
 
             mIntentMetadataOneshotSupplier.set(
-                    new IntentMetadata(isMainIntentFromLauncher, isIntentWithEffect));
+                    new ToolbarIntentMetadata(isMainIntentFromLauncher, isIntentWithEffect));
 
             // If we have tabs to reparent and getSavedInstanceState() is non-null, then the tabs
             // are coming from night mode tab reparenting. In this case, reparenting happens
@@ -1628,7 +1631,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     @Override
-    protected TabModelSelector createTabModelSelector() {
+    protected TabModelOrchestrator createTabModelOrchestrator() {
+        mTabModelOrchestrator = new TabbedModeTabModelOrchestrator();
+        return mTabModelOrchestrator;
+    }
+
+    @Override
+    protected void createTabModels() {
         assert mTabModelSelectorImpl == null;
 
         Bundle savedInstanceState = getSavedInstanceState();
@@ -1639,17 +1648,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
 
         mNextTabPolicySupplier = new ChromeNextTabPolicySupplier(mOverviewModeBehaviorSupplier);
-        mTabModelSelectorImpl =
-                (TabModelSelectorImpl) TabWindowManagerSingleton.getInstance().requestSelector(
-                        this, this, mNextTabPolicySupplier, index);
-        if (mTabModelSelectorImpl == null) {
-            Toast.makeText(
-                         this, getString(R.string.unsupported_number_of_windows), Toast.LENGTH_LONG)
-                    .show();
+
+        boolean tabModelWasCreated =
+                mTabModelOrchestrator.createTabModels(this, this, mNextTabPolicySupplier, index);
+        if (!tabModelWasCreated) {
             finish();
-            return null;
+            return;
         }
 
+        mTabModelSelectorImpl = mTabModelOrchestrator.getTabModelSelector();
         mTabModelSelectorImpl.addObserver(new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabStateInitialized() {
@@ -1673,13 +1680,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mAppIndexingUtil = new AppIndexingUtil(mTabModelSelectorImpl);
 
         if (startIncognito) mTabModelSelectorImpl.selectModel(true);
-
-        return mTabModelSelectorImpl;
     }
 
     @Override
     protected LaunchCauseMetrics createLaunchCauseMetrics() {
-        return new TabbedActivityLaunchCauseMetrics();
+        return new TabbedActivityLaunchCauseMetrics(this);
     }
 
     @Override
@@ -2221,6 +2226,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         if (mTabDelegateFactory != null) mTabDelegateFactory.destroy();
         super.onDestroyInternal();
+    }
+
+    @Override
+    protected void destroyTabModels() {
+        if (mTabModelOrchestrator != null) {
+            mTabModelOrchestrator.destroy();
+        }
     }
 
     @Override

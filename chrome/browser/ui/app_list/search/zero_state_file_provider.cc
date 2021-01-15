@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/app_list/search/file_chip_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#include "components/prefs/pref_service.h"
 
 using file_manager::file_tasks::FileTasksObserver;
 
@@ -48,6 +50,11 @@ internal::ValidAndInvalidResults ValidateFiles(
   return {valid, invalid};
 }
 
+bool IsSuggestedContentEnabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      chromeos::prefs::kSuggestedContentEnabled);
+}
+
 }  // namespace
 
 ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
@@ -59,10 +66,6 @@ ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
 
   auto* notifier =
       file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_);
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "Apps.AppList.ZeroStateFileProvider.NotifierCreationSuccess",
-      notifier != nullptr);
 
   if (notifier) {
     file_tasks_observer_.Add(notifier);
@@ -117,7 +120,8 @@ void ZeroStateFileProvider::SetSearchResults(
     new_results.emplace_back(std::make_unique<ZeroStateFileResult>(
         filepath_score.first, filepath_score.second, profile_));
     // Add suggestion chip file results
-    if (app_list_features::IsSuggestedFilesEnabled()) {
+    if (app_list_features::IsSuggestedFilesEnabled() &&
+        IsSuggestedContentEnabled(profile_)) {
       new_results.emplace_back(std::make_unique<FileChipResult>(
           filepath_score.first, filepath_score.second, profile_));
     }

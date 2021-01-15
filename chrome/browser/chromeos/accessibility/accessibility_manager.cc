@@ -278,40 +278,42 @@ AccessibilityManager::AccessibilityManager() {
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
-  manager->Initialize(SOUND_SHUTDOWN,
+  manager->Initialize(static_cast<int>(Sound::kShutdown),
                       bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
   manager->Initialize(
-      SOUND_SPOKEN_FEEDBACK_ENABLED,
+      static_cast<int>(Sound::kSpokenFeedbackEnabled),
       bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV));
   manager->Initialize(
-      SOUND_SPOKEN_FEEDBACK_DISABLED,
+      static_cast<int>(Sound::kSpokenFeedbackDisabled),
       bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV));
-  manager->Initialize(SOUND_PASSTHROUGH,
+  manager->Initialize(static_cast<int>(Sound::kPassthrough),
                       bundle.GetRawDataResource(IDR_SOUND_PASSTHROUGH_WAV));
-  manager->Initialize(SOUND_EXIT_SCREEN,
+  manager->Initialize(static_cast<int>(Sound::kExitScreen),
                       bundle.GetRawDataResource(IDR_SOUND_EXIT_SCREEN_WAV));
-  manager->Initialize(SOUND_ENTER_SCREEN,
+  manager->Initialize(static_cast<int>(Sound::kEnterScreen),
                       bundle.GetRawDataResource(IDR_SOUND_ENTER_SCREEN_WAV));
-  manager->Initialize(SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH,
-                      bundle.GetRawDataResource(
-                          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV));
-  manager->Initialize(SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW,
-                      bundle.GetRawDataResource(
-                          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV));
-  manager->Initialize(SOUND_TOUCH_TYPE,
+  manager->Initialize(
+      static_cast<int>(Sound::kSpokenFeedbackToggleCountdownHigh),
+      bundle.GetRawDataResource(
+          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV));
+  manager->Initialize(
+      static_cast<int>(Sound::kSpokenFeedbackToggleCountdownLow),
+      bundle.GetRawDataResource(
+          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV));
+  manager->Initialize(static_cast<int>(Sound::kTouchType),
                       bundle.GetRawDataResource(IDR_SOUND_TOUCH_TYPE_WAV));
-  manager->Initialize(SOUND_DICTATION_END,
+  manager->Initialize(static_cast<int>(Sound::kDictationEnd),
                       bundle.GetRawDataResource(IDR_SOUND_DICTATION_END_WAV));
-  manager->Initialize(SOUND_DICTATION_START,
+  manager->Initialize(static_cast<int>(Sound::kDictationStart),
                       bundle.GetRawDataResource(IDR_SOUND_DICTATION_START_WAV));
   manager->Initialize(
-      SOUND_DICTATION_CANCEL,
+      static_cast<int>(Sound::kDictationCancel),
       bundle.GetRawDataResource(IDR_SOUND_DICTATION_CANCEL_WAV));
-  manager->Initialize(SOUND_STARTUP,
+  manager->Initialize(static_cast<int>(Sound::kStartup),
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 
   if (VolumeAdjustSoundEnabled()) {
-    manager->Initialize(chromeos::SOUND_VOLUME_ADJUST,
+    manager->Initialize(static_cast<int>(Sound::kVolumeAdjust),
                         bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
   }
 
@@ -559,16 +561,15 @@ void AccessibilityManager::OnViewFocusedInArc(const gfx::Rect& bounds_in_screen,
                                                              is_editable);
 }
 
-bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
-  DCHECK(sound_key < chromeos::SOUND_COUNT);
+bool AccessibilityManager::PlayEarcon(Sound sound_key, PlaySoundOption option) {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(kAshDisableSystemSounds))
     return false;
-  if (option == PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED &&
+  if (option == PlaySoundOption::kOnlyIfSpokenFeedbackEnabled &&
       !IsSpokenFeedbackEnabled()) {
     return false;
   }
-  return audio::SoundsManager::Get()->Play(sound_key);
+  return audio::SoundsManager::Get()->Play(static_cast<int>(sound_key));
 }
 
 void AccessibilityManager::OnTwoFingerTouchStart() {
@@ -607,8 +608,9 @@ bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
 
 bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
   return audio::SoundsManager::Get()->Play(
-      tick_count % 2 ? SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH
-                     : SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW);
+      tick_count % 2
+          ? static_cast<int>(Sound::kSpokenFeedbackToggleCountdownHigh)
+          : static_cast<int>(Sound::kSpokenFeedbackToggleCountdownLow));
 }
 
 void AccessibilityManager::HandleAccessibilityGesture(
@@ -1055,12 +1057,12 @@ void AccessibilityManager::OnActiveOutputNodeChanged() {
 
   AudioDevice device;
   CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
-  if (device.type == AudioDeviceType::AUDIO_TYPE_OTHER)
+  if (device.type == AudioDeviceType::kOther)
     return;
 
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   if (GetStartupSoundEnabled()) {
-    PlayEarcon(SOUND_STARTUP, PlaySoundOption::ALWAYS);
+    PlayEarcon(Sound::kStartup, PlaySoundOption::kAlways);
     return;
   }
 
@@ -1070,7 +1072,7 @@ void AccessibilityManager::OnActiveOutputNodeChanged() {
     if (user_manager::known_user::GetBooleanPref(
             account_ids[i], kUserSpokenFeedbackEnabled, &val) &&
         val) {
-      PlayEarcon(SOUND_STARTUP, PlaySoundOption::ALWAYS);
+      PlayEarcon(Sound::kStartup, PlaySoundOption::kAlways);
       break;
     }
   }
@@ -1222,11 +1224,12 @@ void AccessibilityManager::ActiveUserChanged(user_manager::User* active_user) {
 }
 
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {
-  if (!PlayEarcon(SOUND_SHUTDOWN,
-                  PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED)) {
+  if (!PlayEarcon(Sound::kShutdown,
+                  PlaySoundOption::kOnlyIfSpokenFeedbackEnabled)) {
     return base::TimeDelta();
   }
-  return audio::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
+  return audio::SoundsManager::Get()->GetDuration(
+      static_cast<int>(Sound::kShutdown));
 }
 
 base::CallbackListSubscription AccessibilityManager::RegisterCallback(
@@ -1311,8 +1314,8 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
 
 void AccessibilityManager::PlayVolumeAdjustSound() {
   if (VolumeAdjustSoundEnabled()) {
-    PlayEarcon(chromeos::SOUND_VOLUME_ADJUST,
-               chromeos::PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
+    PlayEarcon(Sound::kVolumeAdjust,
+               PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
   }
 }
 
@@ -1407,7 +1410,7 @@ void AccessibilityManager::PostLoadChromeVox() {
                                              base::DoNothing());
   }
 
-  PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
+  PlayEarcon(Sound::kSpokenFeedbackEnabled, PlaySoundOption::kAlways);
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
@@ -1447,7 +1450,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName, {},
                                           base::DoNothing());
 
-  PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
+  PlayEarcon(Sound::kSpokenFeedbackDisabled, PlaySoundOption::kAlways);
 
   RemoveFocusRings(extension_misc::kChromeVoxExtensionId);
 

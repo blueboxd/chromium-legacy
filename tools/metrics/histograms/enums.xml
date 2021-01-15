@@ -8857,6 +8857,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Translated"/>
 </enum>
 
+<enum name="BooleanUnavailable">
+  <int value="0" label="Available"/>
+  <int value="1" label="Unavailable"/>
+</enum>
+
 <enum name="BooleanUnderlay">
   <int value="0" label="Overlay Mode"/>
   <int value="1" label="Underlay Mode"/>
@@ -30993,6 +30998,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3772"
       label="AddressSpaceUnknownNonSecureContextNavigatedToPrivate"/>
   <int value="3773" label="RTCPeerConnectionSdpSemanticsPlanB"/>
+  <int value="3774" label="FetchRespondWithNoResponseWithUsedRequestBody"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41250,6 +41256,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Recents (aka App Overview)"/>
   <int value="4" label="Recents or Back"/>
   <int value="5" label="Foreground when Locked (Power Button)"/>
+  <int value="6" label="Main Chrome Launcher Icon"/>
+  <int value="7"
+      label="Main Chrome Launcher Icon Shortcuts (New Tab shortcuts)"/>
 </enum>
 
 <enum name="LauncherRankingItemType">
@@ -43151,6 +43160,7 @@ from previous Chrome versions.
   <int value="-1450657485" label="EnableHardwareMirrorMode:enabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
   <int value="-1449590570" label="RestrictGamepadAccess:enabled"/>
+  <int value="-1449358747" label="RemoveStatusBarInWebApps:enabled"/>
   <int value="-1448511207" label="UseMessagesStagingUrl:disabled"/>
   <int value="-1447147245" label="VideoPlayerNativeControls:enabled"/>
   <int value="-1446625028" label="CrostiniUsbAllowUnsupported:enabled"/>
@@ -45548,6 +45558,7 @@ from previous Chrome versions.
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="811726957" label="SlideTopChromeWithPageScrolls:enabled"/>
   <int value="812710781" label="SyncUSSBookmarks:disabled"/>
+  <int value="813302293" label="RemoveStatusBarInWebApps:disabled"/>
   <int value="813999334" label="HistoryManipulationIntervention:enabled"/>
   <int value="816907702" label="GlobalMediaControlsSeamlessTransfer:disabled"/>
   <int value="817393533" label="GlobalMediaControlsModernUI:disabled"/>

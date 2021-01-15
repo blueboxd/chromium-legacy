@@ -112,6 +112,22 @@
             ]
         }
     ],
+    "AndroidAutofillQueryServerFieldTypes": [
+        {
+            "platforms": [
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AndroidAutofillQueryServerFieldTypes"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidDarkSearch": [
         {
             "platforms": [
@@ -2676,21 +2692,6 @@
                     },
                     "enable_features": [
                         "DownloadProgressInfoBar"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DownloadRename": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DownloadRename"
                     ]
                 }
             ]
@@ -5431,29 +5432,6 @@
             ]
         }
     ],
-    "ProactivelySwapBrowsingInstance": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithCrossSiteReuseProcess",
-                    "params": {
-                        "level": "CrossSiteReuseProcess"
-                    },
-                    "enable_features": [
-                        "ProactivelySwapBrowsingInstance"
-                    ]
-                }
-            ]
-        }
-    ],
     "ProbabilisticCryptidRenderer": [
         {
             "platforms": [
@@ -6211,23 +6189,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafetyCheckIOS"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SaveEditedPDFForm": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SaveEditedPDFForm"
                     ]
                 }
             ]

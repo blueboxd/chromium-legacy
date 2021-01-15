@@ -5,18 +5,40 @@
 package org.chromium.chrome.browser.metrics;
 
 import android.app.Activity;
+import android.content.Intent;
+
+import org.chromium.base.IntentUtils;
+import org.chromium.chrome.browser.IntentHandler;
 
 /**
  * LaunchCauseMetrics for ChromeTabbedActivity.
  */
 public class TabbedActivityLaunchCauseMetrics extends LaunchCauseMetrics {
+    private final Activity mActivity;
+
     public TabbedActivityLaunchCauseMetrics(Activity activity) {
         super(activity);
+        mActivity = activity;
     }
 
     @Override
     public @LaunchCause int computeLaunchCause() {
-        // TODO(https://crbug.com/1163961): Implement ChromeTabbedActivity launch cause metrics.
+        Intent launchIntent = mActivity.getIntent();
+        if (launchIntent == null) return LaunchCause.OTHER;
+
+        if (IntentUtils.isMainIntentFromLauncher(launchIntent)) {
+            return LaunchCause.MAIN_LAUNCHER_ICON;
+        }
+
+        if (IntentUtils.safeGetBooleanExtra(
+                    launchIntent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false)
+                && IntentHandler.wasIntentSenderChrome(launchIntent)) {
+            return LaunchCause.MAIN_LAUNCHER_ICON_SHORTCUT;
+        }
+
+        // TODO(https://crbug.com/1163961): Implement remaining ChromeTabbedActivity launch cause
+        // metrics.
+
         return LaunchCause.OTHER;
     }
 }

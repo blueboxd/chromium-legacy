@@ -105,7 +105,18 @@ class PrintPreviewHandlerChromeOS::AccessTokenService
 
 PrintPreviewHandlerChromeOS::PrintPreviewHandlerChromeOS() {}
 
-PrintPreviewHandlerChromeOS::~PrintPreviewHandlerChromeOS() {}
+PrintPreviewHandlerChromeOS::~PrintPreviewHandlerChromeOS() {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kPrintServerScaling)) {
+    return;
+  }
+  Profile* profile = Profile::FromWebUI(web_ui());
+  auto* cups_manager =
+      CupsPrintersManagerFactory::GetForBrowserContext(profile);
+  if (cups_manager) {
+    auto* print_servers_manager = cups_manager->GetPrintServersManager();
+    print_servers_manager->RemoveObserver(this);
+  }
+}
 
 void PrintPreviewHandlerChromeOS::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -132,9 +143,9 @@ void PrintPreviewHandlerChromeOS::RegisterMessages() {
           base::Unretained(this)));
   if (base::FeatureList::IsEnabled(chromeos::features::kPrintServerScaling)) {
     web_ui()->RegisterMessageCallback(
-        "choosePrintServer",
+        "choosePrintServers",
         base::BindRepeating(
-            &PrintPreviewHandlerChromeOS::HandleChoosePrintServer,
+            &PrintPreviewHandlerChromeOS::HandleChoosePrintServers,
             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "getPrintServersConfig",
@@ -321,7 +332,7 @@ void PrintPreviewHandlerChromeOS::OnPrinterStatusUpdated(
   ResolveJavascriptCallback(base::Value(callback_id), cups_printer_status);
 }
 
-void PrintPreviewHandlerChromeOS::HandleChoosePrintServer(
+void PrintPreviewHandlerChromeOS::HandleChoosePrintServers(
     const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
 

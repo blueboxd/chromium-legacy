@@ -3406,6 +3406,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsAttentionBadgingCrOSName,
      flag_descriptions::kDesktopPWAsAttentionBadgingCrOSDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kDesktopPWAsAttentionBadgingCrOSChoices)},
+    {"enable-desktop-pwas-remove-status-bar",
+     flag_descriptions::kDesktopPWAsRemoveStatusBarName,
+     flag_descriptions::kDesktopPWAsRemoveStatusBarDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kRemoveStatusBarInWebApps)},
     {"enable-desktop-pwas-elided-extensions-menu",
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuName,
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuDescription, kOsDesktop,
@@ -7007,12 +7011,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeLabsDescription, kOsLinux | kOsMac | kOsWin,
      FEATURE_VALUE_TYPE(features::kChromeLabs)},
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"launcher-search-normalization",
      flag_descriptions::kEnableLauncherSearchNormalizationName,
      flag_descriptions::kEnableLauncherSearchNormalizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableLauncherSearchNormalization)},
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-first-party-sets", flag_descriptions::kEnableFirstPartySetsName,
      flag_descriptions::kEnableFirstPartySetsDescription, kOsAll,

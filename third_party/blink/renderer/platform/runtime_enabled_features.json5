@@ -1068,7 +1068,7 @@
       // provides a convenient way for testing legacy layout code path in blink
       // unit tests.
       name: "LayoutNG",
-      implied_by: ["LayoutNGGrid", "BidiCaretAffinity"],
+      implied_by: ["LayoutNGGrid", "BidiCaretAffinity", "CSSContainerQueries"],
       status: "stable",
     },
     {
@@ -1083,11 +1083,6 @@
     {
       name: "LayoutNGForControls",
       depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
-      name: "LayoutNGFragmentItem",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal", "EditingNG"],
       status: "stable",
     },
     {
@@ -1107,7 +1102,7 @@
     },
     {
       name: "LayoutNGLayoutOverflow",
-      depends_on: ["LayoutNG", "LayoutNGFragmentItem"],
+      depends_on: ["LayoutNG"],
       status: "stable",
     },
     {
@@ -1724,6 +1719,13 @@
     {
       name: "RTCQuicTransport",
       origin_trial_feature_name: "RTCQuicTransport",
+      status: "experimental",
+    },
+    // Enables the use of |RTCRtpTransceiver::setOfferedRtpHeaderExtensions|,
+    // |RTCRtpTransceiver::headerExtensionsToOffer|, and
+    // |RTCRtpTransceiver::headerExtensionsNegotiated|.
+    {
+      name: "RTCRtpHeaderExtensionControl",
       status: "experimental",
     },
     // Enables the use of |RTCRtpTransceiver::stop()|

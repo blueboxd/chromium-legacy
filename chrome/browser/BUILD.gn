@@ -2468,7 +2468,7 @@ static_library("browser") {
       "tflite_experiment/tflite_experiment_switches.h",
     ]
 
-    deps += [ "//chrome/services/machine_learning" ]
+    public_deps += [ "//chrome/services/machine_learning" ]
   }
 
   # Platforms that have a network diagnostics dialog. All others fall through
@@ -3495,10 +3495,8 @@ static_library("browser") {
       "component_updater/intervention_policy_database_component_installer.h",
       "component_updater/soda_component_installer.cc",
       "component_updater/soda_component_installer.h",
-      "component_updater/soda_en_us_component_installer.cc",
-      "component_updater/soda_en_us_component_installer.h",
-      "component_updater/soda_ja_jp_component_installer.cc",
-      "component_updater/soda_ja_jp_component_installer.h",
+      "component_updater/soda_language_pack_component_installer.cc",
+      "component_updater/soda_language_pack_component_installer.h",
       "content_settings/generated_cookie_prefs.cc",
       "content_settings/generated_cookie_prefs.h",
       "content_settings/generated_notification_pref.cc",
@@ -6160,6 +6158,8 @@ static_library("browser") {
       "sessions/session_service.h",
       "sessions/session_service_factory.cc",
       "sessions/session_service_factory.h",
+      "sessions/session_service_log.cc",
+      "sessions/session_service_log.h",
       "sessions/session_service_utils.cc",
       "sessions/session_service_utils.h",
       "sessions/tab_loader.cc",

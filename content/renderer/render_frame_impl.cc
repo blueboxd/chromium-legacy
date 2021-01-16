@@ -431,7 +431,6 @@ void FillNavigationParamsRequest(
   navigation_params->http_method = WebString::FromASCII(
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method);
-  navigation_params->ip_address_space = commit_params.ip_address_space;
 
   if (common_params.referrer->url.is_valid()) {
     WebString referrer = WebSecurityPolicy::GenerateReferrerHeader(
@@ -1149,7 +1148,8 @@ std::unique_ptr<blink::WebPolicyContainer> ToWebPolicyContainer(
     return nullptr;
 
   return std::make_unique<blink::WebPolicyContainer>(
-      blink::WebPolicyContainerDocumentPolicies{in->policies->referrer_policy},
+      blink::WebPolicyContainerDocumentPolicies{in->policies->referrer_policy,
+                                                in->policies->ip_address_space},
       std::move(in->remote));
 }
 
@@ -2069,9 +2069,6 @@ void RenderFrameImpl::Initialize(blink::WebFrame* parent) {
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
   GetContentClient()->renderer()->RenderFrameCreated(this);
-  // Dispatch events for the initial empty document after all frame observers
-  // have been created.
-  RunScriptsAtDocumentElementAvailable();
 
   // blink::WebAudioOutputIPCFactory::io_task_runner_ may be null in tests.
   auto& factory = blink::WebAudioOutputIPCFactory::GetInstance();
@@ -3638,9 +3635,9 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   WebPluginInfo info;
   std::string mime_type;
   bool found = false;
-  Send(new FrameHostMsg_GetPluginInfo(
-      routing_id_, params.url, frame_->Top()->GetSecurityOrigin(),
-      params.mime_type.Utf8(), &found, &info, &mime_type));
+  GetPepperHost()->GetPluginInfo(params.url, frame_->Top()->GetSecurityOrigin(),
+                                 params.mime_type.Utf8(), &found, &info,
+                                 &mime_type);
   if (!found)
     return nullptr;
 
@@ -6164,11 +6161,11 @@ bool RenderFrameImpl::IsBrowserSideNavigationPending() {
   return browser_side_navigation_pending_;
 }
 
-void RenderFrameImpl::LoadHTMLString(const std::string& html,
-                                     const GURL& base_url,
-                                     const std::string& text_encoding,
-                                     const GURL& unreachable_url,
-                                     bool replace_current_item) {
+void RenderFrameImpl::LoadHTMLStringForTesting(const std::string& html,
+                                               const GURL& base_url,
+                                               const std::string& text_encoding,
+                                               const GURL& unreachable_url,
+                                               bool replace_current_item) {
   AssertNavigationCommits assert_navigation_commits(
       this, kMayReplaceInitialEmptyDocument);
 

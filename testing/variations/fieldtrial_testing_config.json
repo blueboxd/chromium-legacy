@@ -1774,25 +1774,6 @@
             ]
         }
     ],
-    "CodeCacheDeletionWithoutFilter": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CodeCacheDeletionWithoutFilter"
-                    ]
-                }
-            ]
-        }
-    ],
     "CompositeCrossOriginIframes": [
         {
             "platforms": [
@@ -3167,24 +3148,6 @@
             ]
         }
     ],
-    "FormControlsRefresh": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FormControlsRefresh"
-                    ]
-                }
-            ]
-        }
-    ],
     "FreezeBackgroundTabOnNetworkIdle": [
         {
             "platforms": [
@@ -3864,6 +3827,29 @@
             ]
         }
     ],
+    "KeyboardAccessoryPaymentOffer": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:keyboard_accessory_payment_offer_iph_trigger;comparator:<3;window:90;storage:360",
+                        "event_used": "name:keyboard_accessory_payment_suggestion_accepted;comparator:<2;window:90;storage:360",
+                        "session_rate": "any",
+                        "session_rate_impact": "IPH_KeyboardAccessoryBarSwiping"
+                    },
+                    "enable_features": [
+                        "IPH_KeyboardAccessoryPaymentOffer",
+                        "kAutofillEnableOffersInClankKeyboardAccessory"
+                    ]
+                }
+            ]
+        }
+    ],
     "KeyboardAccessorySwipingIPH": [
         {
             "platforms": [
@@ -4172,24 +4158,6 @@
             ]
         }
     ],
-    "MediaFeeds": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MediaFeeds"
-                    ]
-                }
-            ]
-        }
-    ],
     "MediaFoundationAsyncH264Encoding": [
         {
             "platforms": [
@@ -4215,25 +4183,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MediaFoundationVP8Decoding"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MediaHistory": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseMediaHistoryStore"
                     ]
                 }
             ]
@@ -7179,21 +7128,6 @@
             ]
         }
     ],
-    "UrgentDiscardingFromPerformanceManager": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200129",
-                    "enable_features": [
-                        "UrgentDiscardingFromPerformanceManager"
-                    ]
-                }
-            ]
-        }
-    ],
     "UseFluentLanguageModel": [
         {
             "platforms": [
@@ -7279,23 +7213,6 @@
                     "name": "UserAgentClientHintRollout",
                     "enable_features": [
                         "UserAgentClientHint"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UserDataSnapshot": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "UserDataSnapshot",
-                    "enable_features": [
-                        "UserDataSnapshot"
                     ]
                 }
             ]

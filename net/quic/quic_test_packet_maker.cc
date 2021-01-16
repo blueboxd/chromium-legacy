@@ -495,6 +495,35 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
+    uint64_t num,
+    bool include_version,
+    quic::QuicStreamId data_stream_id,
+    absl::string_view data,
+    quic::QuicStreamId rst_stream_id,
+    quic::QuicRstStreamErrorCode error_code,
+    uint64_t largest_received,
+    uint64_t smallest_received,
+    quic::QuicErrorCode quic_error,
+    const std::string& quic_error_details,
+    uint64_t frame_type) {
+  InitializeHeader(num, include_version);
+
+  AddQuicAckFrame(largest_received, smallest_received);
+
+  AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
+  if (version_.HasIetfQuicFrames()) {
+    AddQuicStopSendingFrame(rst_stream_id, error_code);
+  }
+  AddQuicRstStreamFrame(rst_stream_id, error_code);
+
+  AddQuicAckFrame(largest_received, smallest_received);
+  AddQuicConnectionCloseFrame(quic_error, quic_error_details, frame_type);
+
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
     uint64_t num,
     bool include_version,
@@ -1194,7 +1223,8 @@ void QuicTestPacketMaker::AddQuicConnectionCloseFrame(
     const std::string& quic_error_details,
     uint64_t frame_type) {
   auto* close_frame = new quic::QuicConnectionCloseFrame(
-      version_.transport_version, quic_error, quic_error_details, frame_type);
+      version_.transport_version, quic_error, quic::NO_IETF_QUIC_ERROR,
+      quic_error_details, frame_type);
   frames_.push_back(quic::QuicFrame(close_frame));
   DVLOG(1) << "Adding frame: " << frames_.back();
 }

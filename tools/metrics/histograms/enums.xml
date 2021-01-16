@@ -42468,6 +42468,7 @@ from previous Chrome versions.
       label="AllowDownloadResumptionWithoutStrongValidators:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
   <int value="-2056351013" label="AutofillUpdatedCardUnmaskPromptUi:enabled"/>
+  <int value="-2056198604" label="InterestFeedV2Hearts:disabled"/>
   <int value="-2054612904" label="BuiltInModuleInfra:enabled"/>
   <int value="-2053860791" label="XGEOVisibleNetworks:enabled"/>
   <int value="-2048927838" label="AutoplayWhitelistSettings:enabled"/>
@@ -43605,6 +43606,7 @@ from previous Chrome versions.
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
   <int value="-1056860259"
       label="OmniboxEnableClipboardProviderImageSuggestions:enabled"/>
+  <int value="-1056629722" label="AssistantIntentTranslateInfo:enabled"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
   <int value="-1055845287" label="SensorContentSetting:enabled"/>
   <int value="-1052782474" label="enable-cloud-devices"/>
@@ -46385,6 +46387,7 @@ from previous Chrome versions.
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
   <int value="1609059016" label="CupsIppPrintingBackend:enabled"/>
   <int value="1611522475" label="AutofillPrimaryInfoStyleExperiment:disabled"/>
+  <int value="1611838284" label="CellularUseExternalEuicc:enabled"/>
   <int value="1612206633" label="CCTModuleCustomHeader:enabled"/>
   <int value="1612446645" label="enable-weak-memorycache"/>
   <int value="1612871297" label="WebPayments:disabled"/>
@@ -46578,6 +46581,7 @@ from previous Chrome versions.
       label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:enabled"/>
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
   <int value="1796592669" label="InstalledAppsInCbd:disabled"/>
+  <int value="1797872070" label="CellularUseExternalEuicc:disabled"/>
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
@@ -46590,6 +46594,7 @@ from previous Chrome versions.
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
   <int value="1810258949" label="DisplayLocking:enabled"/>
   <int value="1810311887" label="WebAssemblyThreads:enabled"/>
+  <int value="1811744551" label="InterestFeedV2Hearts:enabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1813370929"
       label="MigrateDefaultChromeAppToWebAppsNonGSuite:enabled"/>
@@ -46713,6 +46718,7 @@ from previous Chrome versions.
   <int value="1920894670"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:enabled"/>
   <int value="1923052799" label="CrostiniUseDlc:disabled"/>
+  <int value="1923496816" label="AssistantIntentTranslateInfo:disabled"/>
   <int value="1923780021" label="PrivacyReorderedAndroid:enabled"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
@@ -56618,6 +56624,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="END_HIDDEN">
     Page became hidden, but is still active.
   </int>
+  <int value="11" label="END_APP_BACKGROUND">
+    The metrics were flushed because the app entered the background.
+  </int>
 </enum>
 
 <enum name="PageLifecycleStateTransition">
@@ -61971,6 +61980,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="PromoBrowserCommandEnum">
   <int value="0" label="Unknown Command"/>
+  <int value="1" label="Open Safety Check"/>
+  <int value="2" label="Open SafeBrowsing Enhanced Protection"/>
 </enum>
 
 <enum name="ProtectorError">
@@ -65102,6 +65113,20 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="RESOLVE_SPECULATIVE_FAIL"/>
   <int value="4" label="RESOLVE_ABORT"/>
   <int value="5" label="RESOLVE_SPECULATIVE_ABORT"/>
+</enum>
+
+<enum name="ResolutionComparison">
+  <int value="0" label="Requested width larger than capture"/>
+  <int value="1" label="Requested width smaller than capture"/>
+  <int value="2" label="Requested height larger than capture"/>
+  <int value="3" label="Requested height smaller than capture"/>
+  <int value="4" label="Requested resolution equals capture"/>
+  <int value="5" label="Requested width and height larger than capture"/>
+  <int value="6"
+      label="Requested width smaller, and height larger than capture"/>
+  <int value="7"
+      label="Requested width larger and height smaller than capture"/>
+  <int value="8" label="Requested width and height smaller than capture"/>
 </enum>
 
 <enum name="ResolutionUnspecWasteCategory">

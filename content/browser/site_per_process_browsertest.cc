@@ -666,7 +666,9 @@ class UpdateViewportIntersectionMessageFilter
   }
 
   void UpdateViewportIntersection(
-      blink::mojom::ViewportIntersectionStatePtr intersection_state) override {
+      blink::mojom::ViewportIntersectionStatePtr intersection_state,
+      const base::Optional<blink::FrameVisualProperties>& visual_properties)
+      override {
     intersection_state_ = std::move(intersection_state);
     msg_received_ = true;
     if (run_loop_)
@@ -731,6 +733,15 @@ void SitePerProcessBrowserTestBase::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
+}
+
+void SitePerProcessBrowserTestBase::ForceUpdateViewportIntersection(
+    FrameTreeNode* frame_tree_node,
+    const blink::mojom::ViewportIntersectionState& intersection_state) {
+  frame_tree_node->render_manager()
+      ->GetProxyToParent()
+      ->cross_process_frame_connector()
+      ->UpdateViewportIntersectionInternal(intersection_state);
 }
 
 //
@@ -13272,7 +13283,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   while (true) {
     auto* rwh_b = child_b->current_frame_host()->GetRenderWidgetHost();
     base::Optional<blink::VisualProperties> properties =
-        rwh_b->GetLastVisualPropertiesSentToRendererForTesting();
+        rwh_b->LastComputedVisualProperties();
     if (properties && cc::MathUtil::IsFloatNearlyTheSame(
                           properties->compositing_scale_factor, 0.5f)) {
       break;
@@ -13288,7 +13299,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   while (true) {
     auto* rwh_c = child_c->current_frame_host()->GetRenderWidgetHost();
     base::Optional<blink::VisualProperties> properties =
-        rwh_c->GetLastVisualPropertiesSentToRendererForTesting();
+        rwh_c->LastComputedVisualProperties();
     if (properties && cc::MathUtil::IsFloatNearlyTheSame(
                           properties->compositing_scale_factor, 0.5f)) {
       break;
@@ -13303,7 +13314,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   while (true) {
     auto* rwh_d = child_d->current_frame_host()->GetRenderWidgetHost();
     base::Optional<blink::VisualProperties> properties =
-        rwh_d->GetLastVisualPropertiesSentToRendererForTesting();
+        rwh_d->LastComputedVisualProperties();
     if (properties && cc::MathUtil::IsFloatNearlyTheSame(
                           properties->compositing_scale_factor, 0.25f)) {
       break;
@@ -13343,7 +13354,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   while (true) {
     auto* rwh_b = child_b->current_frame_host()->GetRenderWidgetHost();
     base::Optional<blink::VisualProperties> properties =
-        rwh_b->GetLastVisualPropertiesSentToRendererForTesting();
+        rwh_b->LastComputedVisualProperties();
     if (properties && cc::MathUtil::IsFloatNearlyTheSame(
                           properties->compositing_scale_factor, 0.5f)) {
       break;
@@ -13362,7 +13373,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   while (true) {
     auto* rwh_b = child_b->current_frame_host()->GetRenderWidgetHost();
     base::Optional<blink::VisualProperties> properties =
-        rwh_b->GetLastVisualPropertiesSentToRendererForTesting();
+        rwh_b->LastComputedVisualProperties();
     if (properties && !cc::MathUtil::IsFloatNearlyTheSame(
                           properties->compositing_scale_factor, 0.5f)) {
       EXPECT_GT(properties->compositing_scale_factor, 0.0f);
@@ -13860,10 +13871,10 @@ class EnableForceZoomContentClient : public TestContentBrowserClient {
  public:
   EnableForceZoomContentClient() = default;
 
-  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+  void OverrideWebkitPrefs(WebContents* web_contents,
                            blink::web_pref::WebPreferences* prefs) override {
     DCHECK(old_client_);
-    old_client_->OverrideWebkitPrefs(render_view_host, prefs);
+    old_client_->OverrideWebkitPrefs(web_contents, prefs);
     prefs->force_enable_zoom = true;
   }
 
@@ -15379,7 +15390,7 @@ class DoubleTapZoomContentBrowserClient : public TestContentBrowserClient {
   DoubleTapZoomContentBrowserClient() = default;
 
   void OverrideWebkitPrefs(
-      content::RenderViewHost* rvh,
+      content::WebContents* web_contents,
       blink::web_pref::WebPreferences* web_prefs) override {
     web_prefs->double_tap_to_zoom_enabled = true;
   }
@@ -16464,10 +16475,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, MainFrameScrollOffset) {
   b1_intersection_state.viewport_intersection.set_height(
       b1_intersection_state.viewport_intersection.height() - 7);
 
-  b1_node->render_manager()
-      ->GetProxyToParent()
-      ->cross_process_frame_connector()
-      ->UpdateViewportIntersection(b1_intersection_state);
+  ForceUpdateViewportIntersection(b1_node, b1_intersection_state);
 
   auto b2_intersection_state = b2_node->render_manager()
                                    ->GetProxyToParent()
@@ -16480,10 +16488,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, MainFrameScrollOffset) {
   b2_intersection_state.viewport_intersection.set_height(
       b2_intersection_state.viewport_intersection.height() - 7);
 
-  b2_node->render_manager()
-      ->GetProxyToParent()
-      ->cross_process_frame_connector()
-      ->UpdateViewportIntersection(b2_intersection_state);
+  ForceUpdateViewportIntersection(b2_node, b2_intersection_state);
 
   // Once IPC's have been flushed to the C frames, we should see conflicting
   // values for main_frame_scroll_offset.

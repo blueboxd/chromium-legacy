@@ -20,6 +20,8 @@ namespace chromeos {
 namespace cellular_setup {
 namespace {
 
+const char useExternalEuiccLoadTimeDataName[] = "useExternalEuicc";
+
 constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"activationCode", IDS_CELLULAR_SETUP_ESIM_PAGE_ACTIVATION_CODE},
     {"cancel", IDS_CANCEL},
@@ -33,6 +35,7 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"next", IDS_CELLULAR_SETUP_NEXT_LABEL},
     {"tryAgain", IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL},
     {"skipDiscovery", IDS_CELLULAR_SETUP_SKIP_DISCOVERY_LABEL},
+    {"confirm", IDS_CELLULAR_SETUP_CONFIRM_LABEL},
     {"simDetectPageTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE},
     {"simDetectPageErrorTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_TITLE},
     {"simDetectPageErrorMessage",
@@ -108,6 +111,9 @@ void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
 void AddNonStringLoadTimeData(content::WebUIDataSource* html_source) {
   for (const auto& entry : GetBooleanValues())
     html_source->AddBoolean(entry.name, entry.value);
+  html_source->AddBoolean(useExternalEuiccLoadTimeDataName,
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kCellularUseExternalEuicc));
 }
 
 void AddNonStringLoadTimeDataToDict(base::DictionaryValue* dict) {

@@ -12,7 +12,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -24,20 +23,12 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
-import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.ui.base.WindowAndroid;
 
 /** Implementation of the {@link LocationBarLayout} that is displayed for widget searches. */
 public class SearchActivityLocationBarLayout extends LocationBarLayout {
-    /** Delegates calls out to the containing Activity. */
-    public static interface Delegate {
-        /** The user hit the back button. */
-        void backKeyPressed();
-    }
-
-    private Delegate mDelegate;
     private boolean mPendingSearchPromoDecision;
     private boolean mPendingBeginQuery;
     private boolean mHasWindowFocus;
@@ -50,35 +41,17 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     }
 
-    /** Set the {@link Delegate}. */
-    void setDelegate(Delegate delegate) {
-        mDelegate = delegate;
-    }
-
     @Override
     public void initialize(@NonNull AutocompleteCoordinator autocompleteCoordinator,
             @NonNull UrlBarCoordinator urlCoordinator, @NonNull StatusCoordinator statusCoordinator,
             @NonNull LocationBarDataProvider locationBarDataProvider,
             @NonNull WindowDelegate windowDelegate, @NonNull WindowAndroid windowAndroid,
-            @NonNull VoiceRecognitionHandler voiceRecognitionHandler,
-            @NonNull OneshotSupplier<AssistantVoiceSearchService>
-                    assistantVoiceSearchServiceSupplier) {
+            @NonNull VoiceRecognitionHandler voiceRecognitionHandler) {
         super.initialize(autocompleteCoordinator, urlCoordinator, statusCoordinator,
-                locationBarDataProvider, windowDelegate, windowAndroid, voiceRecognitionHandler,
-                assistantVoiceSearchServiceSupplier);
+                locationBarDataProvider, windowDelegate, windowAndroid, voiceRecognitionHandler);
         mPendingSearchPromoDecision = LocaleManager.getInstance().needToCheckForSearchEnginePromo();
         getAutocompleteCoordinator().setShouldPreventOmniboxAutocomplete(
                 mPendingSearchPromoDecision);
-    }
-
-    @Override
-    public void backKeyPressed() {
-        mDelegate.backKeyPressed();
-    }
-
-    @Override
-    protected void setUrl(String url) {
-        // Explicitly do nothing.  The tab is invisible, so showing its URL would be confusing.
     }
 
     @Override

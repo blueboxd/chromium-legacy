@@ -1532,6 +1532,9 @@ extern const char kAppNotificationStatusMessagingDescription[];
 extern const char kAssistantIntentPageUrlName[];
 extern const char kAssistantIntentPageUrlDescription[];
 
+extern const char kAssistantIntentTranslateInfoName[];
+extern const char kAssistantIntentTranslateInfoDescription[];
+
 extern const char kAsyncDnsName[];
 extern const char kAsyncDnsDescription[];
 
@@ -1671,6 +1674,9 @@ extern const char kInterestFeedNoticeCardAutoDismissDescription[];
 
 extern const char kInterestFeedV2Name[];
 extern const char kInterestFeedV2Description[];
+
+extern const char kInterestFeedV2HeartsName[];
+extern const char kInterestFeedV2HeartsDescription[];
 
 extern const char kInterestFeedV1ClickAndViewActionsConditionalUploadName[];
 extern const char
@@ -2204,6 +2210,9 @@ extern const char kCdmFactoryDaemonDescription[];
 
 extern const char kCellularUseAttachApnName[];
 extern const char kCellularUseAttachApnDescription[];
+
+extern const char kCellularUseExternalEuiccName[];
+extern const char kCellularUseExternalEuiccDescription[];
 
 extern const char kConnectivityDiagnosticsWebUiName[];
 extern const char kConnectivityDiagnosticsWebUiDescription[];

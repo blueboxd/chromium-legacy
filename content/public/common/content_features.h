@@ -35,7 +35,6 @@ CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivationMouse;
 CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
 CONTENT_EXPORT extern const base::Feature kCacheStorageParallelOps;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
-CONTENT_EXPORT extern const base::Feature kCanvasOopRasterization;
 CONTENT_EXPORT extern const base::Feature
     kClearCrossBrowsingContextGroupMainFrameName;
 CONTENT_EXPORT extern const base::Feature kClickPointerEvent;
@@ -194,6 +193,7 @@ CONTENT_EXPORT extern const base::Feature kWebUIReportOnlyTrustedTypes;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrArModule;
+CONTENT_EXPORT extern const base::Feature kWebXrHandInput;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrIncubations;
 

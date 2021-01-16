@@ -1103,6 +1103,20 @@
     "label": "//ash/keyboard/ui:keyboard_unittests",
     "type": "windowed_test_launcher",
   },
+  "lacros_tast_tests_amd64_generic": {
+    "label": "//chromeos/lacros:lacros_tast_tests_amd64_generic",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+  },
+  "lacros_tast_tests_eve": {
+    "label": "//chromeos/lacros:lacros_tast_tests_eve",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+  },
   "lacros_chrome_browsertests": {
     "label": "//chrome/test:lacros_chrome_browsertests",
     "type": "windowed_test_launcher",
@@ -1935,6 +1949,10 @@
     "type": "console_test_launcher",
   },
   "weblayer_instrumentation_test_versions_apk": {
+    "args":  [
+      "--replace-system-package",
+      "org.chromium.weblayer.shell,apks/WebLayerShellSystemWebView.apk"
+    ],
     "label": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_versions_apk",
     "type": "console_test_launcher",
   },

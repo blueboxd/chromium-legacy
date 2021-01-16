@@ -1062,8 +1062,12 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   return visual_properties;
 }
 
+bool RenderWidgetHostImpl::UpdateVisualProperties(bool propagate) {
+  return SynchronizeVisualProperties(false, propagate);
+}
+
 bool RenderWidgetHostImpl::SynchronizeVisualProperties() {
-  return SynchronizeVisualProperties(false);
+  return SynchronizeVisualProperties(false, true);
 }
 
 bool RenderWidgetHostImpl::SynchronizeVisualPropertiesIgnoringPendingAck() {
@@ -1072,7 +1076,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualPropertiesIgnoringPendingAck() {
 }
 
 bool RenderWidgetHostImpl::SynchronizeVisualProperties(
-    bool scroll_focused_node_into_view) {
+    bool scroll_focused_node_into_view,
+    bool propagate) {
   // If the RenderViewHost is inactive, then there is no RenderWidget that can
   // receive visual properties yet, even though we are setting them on the
   // browser side. Wait until there is a local main frame with a RenderWidget
@@ -1125,7 +1130,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
-  blink_widget_->UpdateVisualProperties(*visual_properties);
+  if (propagate)
+    blink_widget_->UpdateVisualProperties(*visual_properties);
 
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
@@ -1772,12 +1778,10 @@ void RenderWidgetHostImpl::RemoveInputEventObserver(
 
 void RenderWidgetHostImpl::AddObserver(RenderWidgetHostObserver* observer) {
   observers_.AddObserver(observer);
-  observers_size_for_debug_++;
 }
 
 void RenderWidgetHostImpl::RemoveObserver(RenderWidgetHostObserver* observer) {
   observers_.RemoveObserver(observer);
-  observers_size_for_debug_--;
 }
 
 void RenderWidgetHostImpl::GetScreenInfo(blink::ScreenInfo* result) {
@@ -2230,28 +2234,11 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {
-  // TODO(https://crbug.com/1153966): Turns this back into a DCHECK once the bug
-  // is fixed.
-  CHECK(!destroyed_);
+  DCHECK(!destroyed_);
   destroyed_ = true;
 
-  // TODO(https://crbug.com/1153966): This is instrumentation about a bug
-  // happening while iterating on the |observers_|. Remove this when the bug
-  // will be fixed.
-  base::WeakPtr<RenderWidgetHostImpl> weak_ptr = GetWeakPtr();
-  int observer_list_iteration_before_call = 0;
-  int observer_list_iteration_after_call = 0;
-  int observer_list_size = observers_size_for_debug_;
-  base::debug::Alias(&observer_list_iteration_before_call);
-  base::debug::Alias(&observer_list_iteration_after_call);
-  base::debug::Alias(&observer_list_size);
-
-  for (auto& observer : observers_) {
-    observer_list_iteration_before_call++;
+  for (auto& observer : observers_)
     observer.RenderWidgetHostDestroyed(this);
-    observer_list_iteration_after_call++;
-    CHECK(weak_ptr);
-  }
 
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, Source<RenderWidgetHost>(this),
@@ -2958,7 +2945,7 @@ RenderWidgetHostImpl::GetFrameWidgetInputHandler() {
 }
 
 base::Optional<blink::VisualProperties>
-RenderWidgetHostImpl::GetLastVisualPropertiesSentToRendererForTesting() {
+RenderWidgetHostImpl::LastComputedVisualProperties() const {
   if (!old_visual_properties_)
     return base::nullopt;
   return *old_visual_properties_;

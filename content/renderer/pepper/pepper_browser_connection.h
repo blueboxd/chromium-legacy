@@ -61,6 +61,23 @@ class PepperBrowserConnection
   // Called when the renderer deletes an in-process instance.
   void DidDeleteInProcessInstance(PP_Instance instance);
 
+  // Called when the renderer creates an out of process instance.
+  void DidCreateOutOfProcessPepperInstance(int32_t plugin_child_id,
+                                           int32_t pp_instance,
+                                           bool is_external,
+                                           int32_t render_frame_id,
+                                           const GURL& document_url,
+                                           const GURL& plugin_url,
+                                           bool is_priviledged_context);
+
+  // Called when the renderer deletes an out of process instance.
+  void DidDeleteOutOfProcessPepperInstance(int32_t plugin_child_id,
+                                           int32_t pp_instance,
+                                           bool is_external);
+
+  // Return a bound PepperIOHost. This may return null in unittests.
+  mojom::PepperIOHost* GetIOHost();
+
  private:
   // RenderFrameObserver implementation.
   void OnDestruct() override;
@@ -69,9 +86,6 @@ class PepperBrowserConnection
   void OnMsgCreateResourceHostsFromHostReply(
       int32_t sequence_number,
       const std::vector<int>& pending_resource_host_ids);
-
-  // Return a bound PepperIOHost. This may return null in unittests.
-  mojom::PepperIOHost* GetIOHost();
 
   // Return the next sequence number.
   int32_t GetNextSequence();

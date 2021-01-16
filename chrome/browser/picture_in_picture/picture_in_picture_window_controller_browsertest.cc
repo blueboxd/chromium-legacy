@@ -1953,8 +1953,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 
 // Tests that a Next Track button is displayed in the Picture-in-Picture window
 // when Media Session Action "nexttrack" is handled by the website.
+// TODO(crbug.com/1167236): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_NextTrackButtonVisibility DISABLED_NextTrackButtonVisibility
+#else
+#define MAYBE_NextTrackButtonVisibility NextTrackButtonVisibility
+#endif
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
-                       NextTrackButtonVisibility) {
+                       MAYBE_NextTrackButtonVisibility) {
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureWindowSizePage));
   ASSERT_NE(GetOverlayWindow(), nullptr);
@@ -2256,9 +2262,9 @@ class ChromeContentBrowserClientOverrideWebAppScope
   ~ChromeContentBrowserClientOverrideWebAppScope() override = default;
 
   void OverrideWebkitPrefs(
-      content::RenderViewHost* rvh,
+      content::WebContents* web_contents,
       blink::web_pref::WebPreferences* web_prefs) override {
-    ChromeContentBrowserClient::OverrideWebkitPrefs(rvh, web_prefs);
+    ChromeContentBrowserClient::OverrideWebkitPrefs(web_contents, web_prefs);
 
     web_prefs->web_app_scope = web_app_scope_;
   }

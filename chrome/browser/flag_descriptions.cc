@@ -2629,6 +2629,13 @@ const char kAssistantIntentPageUrlDescription[] =
     "Include the current page's URL in the Assistant voice transcription "
     "intent.";
 
+const char kAssistantIntentTranslateInfoName[] =
+    "Translate info in Assistant intent";
+const char kAssistantIntentTranslateInfoDescription[] =
+    "Include page translation details in the Assistant voice transcription "
+    "intent. This includes the page's URL and its original, current, and "
+    "default target language.";
+
 const char kAsyncDnsName[] = "Async DNS resolver";
 const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
 
@@ -2873,6 +2880,9 @@ const char kInterestFeedV2Name[] = "Interest Feed v2";
 const char kInterestFeedV2Description[] =
     "Show content suggestions on the New Tab Page and Start Surface using the "
     "new Feed Component.";
+
+const char kInterestFeedV2HeartsName[] = "Interest Feed v2 Hearts";
+const char kInterestFeedV2HeartsDescription[] = "Enable hearts on Feedv2.";
 
 const char kInterestFeedV1ClickAndViewActionsConditionalUploadName[] =
     "Interest Feed V1 clicks/views conditional upload";
@@ -3818,6 +3828,11 @@ const char kCellularUseAttachApnDescription[] =
     "Use the mobile operator database to set explicitly an Attach APN "
     "for the LTE connections rather than letting the modem decide which "
     "attach APN to use or retrieve it from the network";
+
+const char kCellularUseExternalEuiccName[] = "Use external Euicc";
+const char kCellularUseExternalEuiccDescription[] =
+    "When enabled Cellular Setup and Settings UI will use the first available "
+    "external Euicc.";
 
 const char kConnectivityDiagnosticsWebUiName[] =
     "Connectivity Diagnostics WebUI";

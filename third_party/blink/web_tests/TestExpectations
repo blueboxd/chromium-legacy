@@ -71,7 +71,6 @@ crbug.com/1132260 http/tests/devtools/console/console-bad-stacktrace.js [ Pass F
 crbug.com/1132260 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
 crbug.com/1132260 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
 crbug.com/1132260 inspector-protocol/page/frameAttachedStacktrace.js [ Pass Failure ]
-crbug.com/1164469 inspector-protocol/performance-timeline/largest-contentful-paint.js [ Pass Failure ]
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
@@ -1457,7 +1456,6 @@ crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-p
 crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Pass Failure Timeout ]
 # Sheriff: 2020-05-18
 crbug.com/1083820 [ Mac ] fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Pass Failure ]
-crbug.com/1083824 geolocation-api/watchPosition-page-visibility.html [ Pass Failure Timeout ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -5879,3 +5877,8 @@ crbug.com/1164459 [ Mac10.15 ] external/wpt/preload/download-resources.html [ Pa
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-order.html [ Failure ]
 
 crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/dedicated-worker.https.html [ Timeout ]
+
+# Sheriff 2021-01-15
+crbug.com/1167210 [ Mac ] virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-15.html [ Pass Failure ]
+crbug.com/1167222 http/tests/websocket/multiple-connections-throttled.html [ Pass Failure ]
+crbug.com/1167309 fast/canvas/canvas-createImageBitmap-drawImage.html [ Pass Failure ]

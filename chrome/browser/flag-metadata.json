@@ -228,6 +228,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "assistant-intent-translate-info",
+    "owners": [ "jds", "chrome-language" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "audio-player-js-modules",
     "owners": [ "lucmult", "jboulic", "simmonsjosh" ],
     "expiry_milestone": 91
@@ -480,6 +485,11 @@
   {
     "name": "cellular-use-attach-apn",
     "owners": [ "vpalatin", "ejcaruso", "chromeos-cellular-platform@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "cellular-use-external-euicc",
+    "owners": [ "azeemarshad", "khorimoto", "cros-connectivity@google.com" ],
     "expiry_milestone": 95
   },
   {
@@ -2631,6 +2641,11 @@
     // This enables the use of extensions on chrome:// URLs. This is useful for
     // a11y extensions as well as for debugging.
     "expiry_milestone": -1
+  },
+  {
+    "name": "feed-v2-hearts",
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 96
   },
   {
     "name": "file-handling-api",

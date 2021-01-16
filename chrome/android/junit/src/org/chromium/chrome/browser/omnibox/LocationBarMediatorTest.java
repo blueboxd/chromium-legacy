@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
@@ -13,17 +14,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -39,9 +40,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import org.chromium.base.BuildConfig;
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -61,6 +66,7 @@ import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -72,9 +78,17 @@ import java.util.List;
 
 /** Unit tests for LocationBarMediator. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(shadows = {LocationBarMediatorTest.ShadowUrlUtilities.class})
 @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)
 public class LocationBarMediatorTest {
+    @Implements(UrlUtilities.class)
+    static class ShadowUrlUtilities {
+        @Implementation
+        public static boolean isNTPUrl(String url) {
+            return false;
+        }
+    }
+
     private static final String TEST_URL = "http://www.example.org";
 
     @Rule
@@ -85,9 +99,7 @@ public class LocationBarMediatorTest {
     public JniMocker mJniMocker = new JniMocker();
 
     @Mock
-    LocationBarLayout mLocationBarLayout;
-    @Mock
-    Context mContext;
+    private LocationBarLayout mLocationBarLayout;
     @Mock
     private TemplateUrlService mTemplateUrlService;
     @Mock
@@ -126,6 +138,8 @@ public class LocationBarMediatorTest {
     private TemplateUrl mGoogleSearchEngine;
     @Mock
     private TemplateUrl mNonGoogleSearchEngine;
+    @Mock
+    private BackKeyBehaviorDelegate mOverrideBackKeyBehaviorDelegate;
 
     @Captor
     private ArgumentCaptor<Runnable> mRunnableCaptor;
@@ -137,14 +151,15 @@ public class LocationBarMediatorTest {
 
     @Before
     public void setUp() {
-        doReturn(mContext).when(mLocationBarLayout).getContext();
         doReturn(mTemplateUrlService).when(mTemplateUrlServiceSupplier).get();
         mJniMocker.mock(ProfileJni.TEST_HOOKS, mProfileNativesJniMock);
         mJniMocker.mock(OmniboxPrerenderJni.TEST_HOOKS, mPrerenderJni);
         SearchEngineLogoUtils.setDelegateForTesting(mSearchEngineDelegate);
-        mMediator = new LocationBarMediator(mLocationBarLayout, mLocationBarDataProvider,
-                mAssistantVoiceSearchSupplier, mProfileSupplier, mPrivacyPreferencesManager,
-                mOverrideUrlLoadingDelegate, mLocaleManager, mTemplateUrlServiceSupplier);
+
+        mMediator = new LocationBarMediator(/* context= */ RuntimeEnvironment.application,
+                mLocationBarLayout, mLocationBarDataProvider, mProfileSupplier,
+                mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate, mLocaleManager,
+                mTemplateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate);
         mMediator.setCoordinators(mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
         SearchEngineLogoUtils.setDelegateForTesting(mSearchEngineDelegate);
     }
@@ -152,14 +167,14 @@ public class LocationBarMediatorTest {
     @Test
     public void testVoiceSearchService_initializedWithNative() {
         mMediator.onFinishNativeInitialization();
-        verify(mAssistantVoiceSearchSupplier).set(notNull());
+        assertNotNull(mMediator.getAssistantVoiceSearchServiceSupplierForTesting().get());
     }
 
     @Test
     @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)
     public void testVoiceSearchService_initializedWithNative_featureDisabled() {
         mMediator.onFinishNativeInitialization();
-        verify(mAssistantVoiceSearchSupplier).set(notNull());
+        assertNotNull(mMediator.getAssistantVoiceSearchServiceSupplierForTesting().get());
     }
 
     @Test
@@ -197,7 +212,9 @@ public class LocationBarMediatorTest {
     public void testRevertChanges_unFocused() {
         doReturn("http://url.com").when(mLocationBarDataProvider).getCurrentUrl();
         mMediator.revertChanges();
-        verify(mLocationBarLayout).setUrl("http://url.com");
+        verify(mLocationBarLayout)
+                .setUrlBarText(mLocationBarDataProvider.getUrlBarData(),
+                        UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
     }
 
     @Test
@@ -217,10 +234,10 @@ public class LocationBarMediatorTest {
                 .prerenderMaybe(
                         anyLong(), any(), anyString(), anyString(), anyLong(), any(), any());
 
+        mMediator.setUrl("originalUrl", null);
         doReturn(true).when(mPrivacyPreferencesManager).shouldPrerender();
         doReturn(true).when(mLocationBarDataProvider).hasTab();
         doReturn(mTab).when(mLocationBarDataProvider).getTab();
-        doReturn("originalUrl").when(mLocationBarLayout).getOriginalUrl();
         doReturn(456L).when(mAutocompleteCoordinator).getCurrentNativeAutocompleteResult();
         doReturn("text").when(mUrlCoordinator).getTextWithoutAutocomplete();
         doReturn(true).when(mUrlCoordinator).shouldAutocomplete();
@@ -441,14 +458,16 @@ public class LocationBarMediatorTest {
         assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_BACK, mKeyEvent));
 
         verify(mKeyDispatcherState).handleUpEvent(mKeyEvent);
-        verify(mLocationBarLayout).backKeyPressed();
+        verify(mOverrideBackKeyBehaviorDelegate).handleBackKeyPressed();
     }
 
     @Test
     public void testOnKey_escape() {
         doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
         assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_ESCAPE, mKeyEvent));
-        verify(mLocationBarLayout).setUrl(mLocationBarDataProvider.getCurrentUrl());
+        verify(mLocationBarLayout)
+                .setUrlBarText(mLocationBarDataProvider.getUrlBarData(),
+                        UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
     }
 
     @Test
@@ -540,6 +559,67 @@ public class LocationBarMediatorTest {
                 .updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
                                                       mLocationBarDataProvider.isIncognito()),
                         false, SearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
+    }
+
+    @Test
+    public void testUpdateAssistantVoiceSearchDrawablesAndColors() {
+        AssistantVoiceSearchService avs = Mockito.mock(AssistantVoiceSearchService.class);
+        ColorStateList csl = Mockito.mock(ColorStateList.class);
+        doReturn(csl).when(avs).getMicButtonColorStateList(anyInt(), anyObject());
+        mMediator.setAssistantVoiceSearchServiceForTesting(avs);
+
+        verify(mLocationBarLayout).setMicButtonTint(csl);
+    }
+
+    @Test
+    public void testUpdateAssistantVoiceSearchDrawablesAndColors_serviceNull() {
+        mMediator.updateAssistantVoiceSearchDrawableAndColors();
+        // If the service is null, the update method bails out.
+        verify(mLocationBarLayout, Mockito.times(0)).setMicButtonTint(/* arbitrary value */ null);
+    }
+
+    @Test
+    public void testUpdateUseDarkColors() {
+        mMediator.updateUseDarkColors();
+        verify(mLocationBarLayout).setDeleteButtonTint(anyObject());
+        verify(mStatusCoordinator).setUseDarkColors(false);
+        verify(mAutocompleteCoordinator)
+                .updateVisualsForState(/* useDarkColors= */ false, /* incognito= */ false);
+    }
+
+    @Test
+    public void testUpdateUseDarkColors_setUseDarkTextColors() {
+        String url = "https://www.google.com";
+        UrlBarData urlBarData = UrlBarData.forUrl(url);
+        doReturn(urlBarData).when(mLocationBarDataProvider).getUrlBarData();
+        doReturn(url).when(mLocationBarDataProvider).getCurrentUrl();
+        doReturn(true).when(mUrlCoordinator).setUseDarkTextColors(false);
+
+        mMediator.updateUseDarkColors();
+        verify(mLocationBarLayout).setDeleteButtonTint(anyObject());
+        verify(mLocationBarLayout)
+                .setUrlBarText(
+                        urlBarData, UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
+        verify(mStatusCoordinator).setUseDarkColors(false);
+        verify(mAutocompleteCoordinator)
+                .updateVisualsForState(/* useDarkColors= */ false, /* incognito= */ false);
+    }
+
+    @Test
+    public void testSetUrl() {
+        String url = "http://url.com";
+        UrlBarData urlBarData = UrlBarData.forUrl(url);
+        mMediator.setUrl(url, urlBarData);
+
+        verify(mLocationBarLayout)
+                .setUrlBarText(
+                        urlBarData, UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
+
+        doReturn(true).when(mUrlCoordinator).hasFocus();
+        doReturn(true).when(mLocationBarLayout).isUrlBarFocusedWithoutAnimations();
+        mMediator.setUrl(url, urlBarData);
+
+        verify(mLocationBarLayout).setUrlBarFocus(false, null, OmniboxFocusReason.UNFOCUS);
     }
 
     private ArgumentMatcher<UrlBarData> matchesUrlBarDataForQuery(String query) {

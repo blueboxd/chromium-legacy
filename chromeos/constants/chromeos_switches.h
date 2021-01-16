@@ -25,9 +25,6 @@ namespace switches {
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kAggressiveCacheDiscardThreshold[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kAggressiveTabDiscardThreshold[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAggressiveThreshold[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kAllowFailedPolicyFetchForTest[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAllowRAInDevMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAppAutoLaunched[];
@@ -57,12 +54,9 @@ extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcTosHostForTests[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kArcTransitionMigrationRequired[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperSmall[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kConservativeThreshold[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosRegionsMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosRegionsModeHide[];
@@ -92,9 +86,6 @@ extern const char kDisableLoginAnimations[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableMachineCertRequest[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableMultiDisplayLayout[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableNewZIPUnpacker[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableOOBEChromeVoxHintTimerForTesting[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisablePerUserTimezone[];
@@ -108,8 +99,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableArc[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableArcVm[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableCastReceiver[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableChromevoxDeveloperOption[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableConsumerKiosk[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTabletFormFactor[];
@@ -153,8 +142,6 @@ extern const char kFakeArcRecommendedAppsForTesting[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kFingerprintSensorLocation[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kForceCertVerifierBuiltin[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceDevToolsAvailable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kForceFirstRunUI[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -190,7 +177,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kNeedArcMigrationPolicyCheck[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kNoteTakingAppIds[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeEulaUrlForTests[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeForceShowScreen[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kOobeForceTabletFirstRun[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeGuestSession[];

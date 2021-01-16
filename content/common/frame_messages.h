@@ -218,16 +218,6 @@ IPC_STRUCT_TRAITS_BEGIN(network::mojom::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(source)
 IPC_STRUCT_TRAITS_END()
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
-  IPC_STRUCT_TRAITS_MEMBER(render_process_id)
-  IPC_STRUCT_TRAITS_MEMBER(render_frame_id)
-  IPC_STRUCT_TRAITS_MEMBER(document_url)
-  IPC_STRUCT_TRAITS_MEMBER(plugin_url)
-  IPC_STRUCT_TRAITS_MEMBER(is_potentially_secure_plugin_context)
-IPC_STRUCT_TRAITS_END()
-#endif
-
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
@@ -243,75 +233,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-// Return information about a plugin for the given URL and MIME
-// type. If there is no matching plugin, |found| is false.
-// |actual_mime_type| is the actual mime type supported by the
-// found plugin.
-IPC_SYNC_MESSAGE_CONTROL4_3(FrameHostMsg_GetPluginInfo,
-                            int /* render_frame_id */,
-                            GURL /* url */,
-                            url::Origin /* main_frame_origin */,
-                            std::string /* mime_type */,
-                            bool /* found */,
-                            content::WebPluginInfo /* plugin info */,
-                            std::string /* actual_mime_type */)
-
-// A renderer sends this to the browser process when it wants to create a ppapi
-// plugin.  The browser will create the plugin process if necessary, and will
-// return a handle to the channel on success.
-//
-// The plugin_child_id is the ChildProcessHost ID assigned in the browser
-// process. This ID is valid only in the context of the browser process and is
-// used to identify the proper process when the renderer notifies it that the
-// plugin is hung.
-//
-// |embedder_origin| provides the origin of the frame that embeds the plugin
-// (i.e. the origin of the document that contains the <embed> html tag).
-// |embedder_origin| needs to be included in the message payload, because the
-// message is received and handled on the IO thread in the browser process
-// (where it is not possible to consult
-// RenderFrameHostImpl::GetLastCommittedOrigin).
-//
-// On error an empty string and null handles are returned.
-IPC_SYNC_MESSAGE_CONTROL3_3(FrameHostMsg_OpenChannelToPepperPlugin,
-                            url::Origin /* embedder_origin */,
-                            base::FilePath /* path */,
-                            base::Optional<url::Origin>, /* origin_lock */
-                            IPC::ChannelHandle /* handle to channel */,
-                            base::ProcessId /* plugin_pid */,
-                            int /* plugin_child_id */)
-
-// Notification that a plugin has created a new plugin instance. The parameters
-// indicate:
-//  - The plugin process ID that we're creating the instance for.
-//  - The instance ID of the instance being created.
-//  - A PepperRendererInstanceData struct which contains properties from the
-//    renderer which are associated with the plugin instance. This includes the
-//    routing ID of the associated RenderFrame and the URL of plugin.
-//  - Whether the plugin we're creating an instance for is external or internal.
-//
-// This message must be sync even though it returns no parameters to avoid
-// a race condition with the plugin process. The plugin process sends messages
-// to the browser that assume the browser knows about the instance. We need to
-// make sure that the browser actually knows about the instance before we tell
-// the plugin to run.
-IPC_SYNC_MESSAGE_CONTROL4_0(
-    FrameHostMsg_DidCreateOutOfProcessPepperInstance,
-    int /* plugin_child_id */,
-    int32_t /* pp_instance */,
-    content::PepperRendererInstanceData /* creation_data */,
-    bool /* is_external */)
-
-// Notification that a plugin has destroyed an instance. This is the opposite of
-// the "DidCreate" message above.
-IPC_MESSAGE_CONTROL3(FrameHostMsg_DidDeleteOutOfProcessPepperInstance,
-                     int /* plugin_child_id */,
-                     int32_t /* pp_instance */,
-                     bool /* is_external */)
-
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params

@@ -60,18 +60,23 @@ const char kUsageMessage[] =
     "Usage: %s [options]\n"
     "\n"
     "Options:\n"
+
+#if defined(OS_LINUX)
     "  --audio-pipe-name=<pipe> - Sets the pipe name to capture audio on "
     "Linux.\n"
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_APPLE)
+    "  --list-audio-devices     - List all audio devices and their device "
+    "UID.\n"
+#endif  // defined(OS_APPLE)
+
     "  --console                - Runs the daemon interactively.\n"
-    "  --daemon-pipe=<pipe>     - Specifies the pipe to connect to the "
-    "daemon.\n"
     "  --elevate=<binary>       - Runs <binary> elevated.\n"
     "  --host-config=<config>   - Specifies the host configuration.\n"
     "  --help, -?               - Prints this message.\n"
     "  --type                   - Specifies process type.\n"
     "  --version                - Prints the host version and exits.\n"
-    "  --window-id=<id>         - Specifies a window to remote,"
-    " instead of the whole desktop.\n"
     "  --evaluate-type=<type>   - Evaluates the capability of the host.\n";
 
 void Usage(const base::FilePath& program_name) {

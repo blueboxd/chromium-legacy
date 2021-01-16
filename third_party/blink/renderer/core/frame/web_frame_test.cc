@@ -7298,7 +7298,7 @@ TEST_F(WebFrameTest, MainFrameIntersectionChanged) {
   auto intersection_state = blink::mojom::blink::ViewportIntersectionState::New(
       viewport_intersection, mainframe_intersection, gfx::Rect(),
       occlusion_state, gfx::Size(), gfx::Point(), transform);
-  static_cast<WebFrameWidgetImpl*>(widget)->SetViewportIntersection(
+  static_cast<WebFrameWidgetImpl*>(widget)->ApplyViewportIntersectionForTesting(
       std::move(intersection_state));
   EXPECT_EQ(client.MainFrameIntersection(), blink::WebRect(100, 100, 200, 140));
 }
@@ -7478,7 +7478,9 @@ TEST_F(WebFrameTest, IPAddressSpace) {
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
     params->is_browser_initiated = true;
-    params->ip_address_space = value;
+    params->policy_container = std::make_unique<WebPolicyContainer>(
+        WebPolicyContainerDocumentPolicies(), mojo::NullAssociatedRemote());
+    params->policy_container->policies.ip_address_space = value;
     web_view_helper.LocalMainFrame()->CommitNavigation(std::move(params),
                                                        nullptr);
     frame_test_helpers::PumpPendingRequestsForFrameToLoad(
@@ -8841,6 +8843,19 @@ TEST_F(WebFrameSwapTest, SwapMainFrame) {
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
   EXPECT_EQ("hello", content);
+}
+
+TEST_F(WebFrameSwapTest, SwapMainFrameWithPageScaleReset) {
+  WebView()->SetDefaultPageScaleLimits(1, 2);
+  WebView()->SetPageScaleFactor(1.25);
+  EXPECT_EQ(1.25, WebView()->PageScaleFactor());
+
+  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
+  MainFrame()->Swap(remote_frame);
+  EXPECT_EQ(1.0, WebView()->PageScaleFactor());
+  // Note: if we were to extend this test to call frame_test_helpers::LoadFrame
+  // as in WebFrameSwapTest.SwapMainFrame, then an appropriate binding must be
+  // provided for the AssociatedRemote.
 }
 
 TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
@@ -10651,7 +10666,8 @@ class TestViewportIntersection : public FakeRemoteFrameHost {
 
   // FakeRemoteFrameHost:
   void UpdateViewportIntersection(
-      mojom::blink::ViewportIntersectionStatePtr intersection_state) override {
+      mojom::blink::ViewportIntersectionStatePtr intersection_state,
+      const base::Optional<FrameVisualProperties>& visual_properties) override {
     intersection_state_ = std::move(intersection_state);
   }
 
@@ -13503,7 +13519,7 @@ TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
   blink::mojom::FrameOcclusionState occlusion_state =
       blink::mojom::FrameOcclusionState::kUnknown;
 
-  static_cast<WebFrameWidgetImpl*>(widget)->SetViewportIntersection(
+  static_cast<WebFrameWidgetImpl*>(widget)->ApplyViewportIntersectionForTesting(
       blink::mojom::blink::ViewportIntersectionState::New(
           viewport_intersection, mainframe_intersection, viewport_intersection,
           occlusion_state, gfx::Size(), gfx::Point(), viewport_transform));

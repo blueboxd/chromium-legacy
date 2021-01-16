@@ -33,10 +33,6 @@ const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
 const char kAggressiveCacheDiscardThreshold[] = "aggressive-cache-discard";
 
-const char kAggressiveTabDiscardThreshold[] = "aggressive-tab-discard";
-
-const char kAggressiveThreshold[] = "aggressive";
-
 // If this flag is passed, failed policy fetches will not cause profile
 // initialization to fail. This is useful for tests because it means that
 // tests don't have to mock out the policy infrastructure.
@@ -145,13 +141,6 @@ const char kArcStartMode[] = "arc-start-mode";
 // Sets ARC Terms Of Service hostname url for testing.
 const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
 
-// If this flag is present then the device had ARC M available and gets ARC N
-// when updating.
-// TODO(pmarko): Remove this when we assess that it's not necessary anymore:
-// crbug.com/761348.
-const char kArcTransitionMigrationRequired[] =
-    "arc-transition-migration-required";
-
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
 // their primary means of connecting to the internet.
@@ -168,8 +157,6 @@ const char kChildWallpaperLarge[] = "child-wallpaper-large";
 // Default small wallpaper to use for kids accounts (as path to trusted,
 // non-user-writable JPEG file).
 const char kChildWallpaperSmall[] = "child-wallpaper-small";
-
-const char kConservativeThreshold[] = "conservative";
 
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
@@ -234,9 +221,6 @@ const char kDisableLoginAnimations[] = "disable-login-animations";
 
 // Disables requests for an enterprise machine certificate during attestation.
 const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
-
-// Disables the multiple display layout UI.
-const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 
 // Disables the ChromeVox hint timer in OOBE, which can lead to unexpected
 // behavior during tests.
@@ -363,11 +347,6 @@ const char kFakeArcRecommendedAppsForTesting[] =
 // "keyboard-bottom-left", keyboard-bottom-right", "keyboard-top-right".
 const char kFingerprintSensorLocation[] = "fingerprint-sensor-location";
 
-// Forces Chrome to use CertVerifyProcBuiltin for verification of server
-// certificates, ignoring the status of
-// net::features::kCertVerifierBuiltinFeature.
-const char kForceCertVerifierBuiltin[] = "force-cert-verifier-builtin";
-
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
@@ -489,11 +468,6 @@ const char kNeedArcMigrationPolicyCheck[] = "need-arc-migration-policy-check";
 // An optional comma-separated list of IDs of apps that can be used to take
 // notes. If unset, a hardcoded list is used instead.
 const char kNoteTakingAppIds[] = "note-taking-app-ids";
-
-// Forces OOBE/login to force show a comma-separated list of screens from
-// chromeos::kScreenNames in oobe_screen.cc. Supported screens are:
-//   user-image
-const char kOobeForceShowScreen[] = "oobe-force-show-screen";
 
 // Allows the eula url to be overridden for tests.
 const char kOobeEulaUrlForTests[] = "oobe-eula-url-for-tests";

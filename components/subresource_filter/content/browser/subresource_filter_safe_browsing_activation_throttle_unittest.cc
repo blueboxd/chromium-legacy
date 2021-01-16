@@ -120,7 +120,6 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
       const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>());
   MOCK_METHOD0(GetProfileInteractionManager,
                subresource_filter::ProfileInteractionManager*());
-  MOCK_METHOD0(OnReloadRequested, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
@@ -613,7 +612,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, ActivationList) {
        safe_browsing::SB_THREAT_TYPE_API_ABUSE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
       {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
-       safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
+       safe_browsing::SB_THREAT_TYPE_BLOCKLISTED_RESOURCE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
       {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE,

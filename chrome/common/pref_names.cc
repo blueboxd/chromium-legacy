@@ -1242,6 +1242,22 @@ const char kSodaEnUsConfigPath[] =
 const char kSodaJaJpConfigPath[] =
     "accessibility.captions.soda_ja_jp_config_path";
 
+// The file path of the de-DE Speech On-Device API (SODA) configuration file.
+const char kSodaDeDeConfigPath[] =
+    "accessibility.captions.soda_de_de_config_path";
+
+// The file path of the es-ES Speech On-Device API (SODA) configuration file.
+const char kSodaEsEsConfigPath[] =
+    "accessibility.captions.soda_es_es_config_path";
+
+// The file path of the fr-FR Speech On-Device API (SODA) configuration file.
+const char kSodaFrFrConfigPath[] =
+    "accessibility.captions.soda_fr_fr_config_path";
+
+// The file path of the it-IT Speech On-Device API (SODA) configuration file.
+const char kSodaItItConfigPath[] =
+    "accessibility.captions.soda_it_it_config_path";
+
 // The scheduled time to clean up the Speech On-Device API (SODA) files from the
 // device.
 const char kSodaScheduledDeletionTime[] =
@@ -3150,7 +3166,9 @@ const char kSecurityTokenSessionNotificationScheduledDomain[] =
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
-// Boolean pref indicating whether user has dismissed the cart module on NTP.
-const char kCartModuleDismissed[] = "cart_module_dismissed";
+// Boolean pref indicating whether user has hidden the cart module on NTP.
+const char kCartModuleHidden[] = "cart_module_hidden";
+// Boolean pref indicating whether user has removed the cart module on NTP.
+const char kCartModuleRemoved[] = "cart_module_removed";
 #endif
 }  // namespace prefs

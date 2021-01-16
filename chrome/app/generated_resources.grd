@@ -1158,8 +1158,8 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
           Move window to <ph name="USER_NAME">$1<ex>User name</ex></ph> (<ph name="USER_EMAIL">$2<ex>john@google.com</ex></ph>)
         </message>
-        <message name="IDS_ASSIGN_TO_DESKS_MENU" desc="The text label of the Assign to Desks submenu">
-          Assign to desk
+        <message name="IDS_MOVE_TO_DESKS_MENU" desc="The text label of the Move to Desks submenu">
+          Move window to desk
         </message>
         <message name="IDS_ASSIGN_TO_ALL_DESKS" desc="The text label of the Assign to All Desks menu item">
           All desks
@@ -10827,6 +10827,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_DESC" desc="The description on a dialog informing the user that the website wants to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> wants to see the make and model of your security key
+      </message>
+      <message name="IDS_WEBAUTHN_REQUEST_ENTERPRISE_ATTESTATION_PERMISSION_TITLE" desc="Title of a dialog informing the user that the website wants to read the serial number of the user's security key. A security key is a physical device used for authentication.">
+        Allow this site to identify your security key?
+      </message>
+      <message name="IDS_WEBAUTHN_REQUEST_ENTERPRISE_ATTESTATION_PERMISSION_DESC" desc="The description on a dialog informing the user that the website wants to wants to read the serial number of the user's security key. A security key is a physical device used for authentication. The word 'issued' here means that the company linked to the website had the security key specially manufactured and, typically, the user is an employee of that company who received the security key as part of their employment.">
+        <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> issued your security key and wants to learn its ID number. The site will know exactly which security key you're using.
       </message>
       <message name="IDS_WEBAUTHN_ALLOW_ATTESTATION" desc="Label on button to allow a website to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         Allow

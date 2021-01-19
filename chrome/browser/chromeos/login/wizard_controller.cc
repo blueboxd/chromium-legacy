@@ -472,7 +472,7 @@ void WizardController::AdvanceToScreenAfterHIDDetection(
     // Use the saved screen preference from Local State.
     const std::string screen_pref =
         GetLocalState()->GetString(prefs::kOobeScreenPending);
-    if (!screen_pref.empty())
+    if (!screen_pref.empty() && HasScreen(PrefToScreenId(screen_pref)))
       actual_first_screen = PrefToScreenId(screen_pref);
     else
       actual_first_screen = WelcomeView::kScreenId;
@@ -1928,10 +1928,11 @@ void WizardController::ShowErrorScreen() {
 void WizardController::OnAccessibilityStatusChanged(
     const AccessibilityStatusEventDetails& details) {
   enum AccessibilityNotificationType type = details.notification_type;
-  if (type == ACCESSIBILITY_MANAGER_SHUTDOWN) {
+  if (type == AccessibilityNotificationType::kManagerShutdown) {
     accessibility_subscription_ = {};
     return;
-  } else if (type != ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK || !details.enabled) {
+  } else if (type != AccessibilityNotificationType::kToggleSpokenFeedback ||
+             !details.enabled) {
     return;
   }
 

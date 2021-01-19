@@ -720,9 +720,6 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
-extern const char kGuestOsExternalProtocolName[];
-extern const char kGuestOsExternalProtocolDescription[];
-
 extern const char kH264DecoderBufferIsCompleteFrameName[];
 extern const char kH264DecoderBufferIsCompleteFrameDescription[];
 
@@ -1347,6 +1344,9 @@ extern const char kTabHoverCardImagesDescription[];
 
 extern const char kTabOutlinesInLowContrastThemesName[];
 extern const char kTabOutlinesInLowContrastThemesDescription[];
+
+extern const char kTextFragmentColorChangeName[];
+extern const char kTextFragmentColorChangeDescription[];
 
 extern const char kTintCompositedContentName[];
 extern const char kTintCompositedContentDescription[];

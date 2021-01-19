@@ -3209,10 +3209,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-enable-dlc", flag_descriptions::kCrostiniEnableDlcName,
      flag_descriptions::kCrostiniEnableDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniEnableDlc)},
-    {"guest-os-external-protocol",
-     flag_descriptions::kGuestOsExternalProtocolName,
-     flag_descriptions::kGuestOsExternalProtocolDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kGuestOsExternalProtocol)},
     {"pluginvm-show-camera-permissions",
      flag_descriptions::kPluginVmShowCameraPermissionsName,
      flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
@@ -6996,6 +6992,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobilePwaInstallUseBottomSheetDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(webapps::features::kPwaInstallUseBottomSheet)},
 #endif
+
+    {"text-fragment-color-change",
+     flag_descriptions::kTextFragmentColorChangeName,
+     flag_descriptions::kTextFragmentColorChangeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kTextFragmentColorChange)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

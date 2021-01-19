@@ -28,8 +28,6 @@
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
-namespace chromeos {
-
 namespace {
 
 // The duration of time to ignore focus changes after the last mouse event.
@@ -299,8 +297,9 @@ void MagnificationManager::UpdateMagnifierFromPrefs() {
     SetMagnifierEnabledInternal(enabled);
   }
 
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-                                          fullscreen_magnifier_enabled_);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleScreenMagnifier,
+      fullscreen_magnifier_enabled_);
 
   if (!AccessibilityManager::Get())
     return;
@@ -315,8 +314,8 @@ void MagnificationManager::UpdateDockedMagnifierFromPrefs() {
 
   PrefService* prefs = profile_->GetPrefs();
   const bool enabled = prefs->GetBoolean(ash::prefs::kDockedMagnifierEnabled);
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_DOCKED_MAGNIFIER,
-                                          enabled);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleDockedMagnifier, enabled);
 
   if (!AccessibilityManager::Get())
     return;
@@ -365,5 +364,3 @@ void MagnificationManager::HandleFocusChanged(const gfx::Rect& bounds_in_screen,
   ash::DockedMagnifierController::Get()->CenterOnPoint(
       bounds_in_screen.CenterPoint());
 }
-
-}  // namespace chromeos

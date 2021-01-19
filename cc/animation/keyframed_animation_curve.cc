@@ -403,24 +403,16 @@ bool KeyframedTransformAnimationCurve::PreservesAxisAlignment() const {
   return true;
 }
 
-bool KeyframedTransformAnimationCurve::IsTranslation() const {
-  for (const auto& keyframe : keyframes_) {
-    if (!keyframe->Value().IsTranslation() && !keyframe->Value().IsIdentity())
-      return false;
-  }
-  return true;
-}
-
 bool KeyframedTransformAnimationCurve::MaximumScale(float* max_scale) const {
   DCHECK_GE(keyframes_.size(), 2ul);
   *max_scale = 0.f;
   for (auto& keyframe : keyframes_) {
     float keyframe_scale = 0.f;
     if (!keyframe->Value().ScaleComponent(&keyframe_scale))
-      return false;
-    *max_scale = fmax(*max_scale, keyframe_scale);
+      continue;
+    *max_scale = std::max(*max_scale, keyframe_scale);
   }
-  return true;
+  return *max_scale > 0.f;
 }
 
 std::unique_ptr<KeyframedFilterAnimationCurve>

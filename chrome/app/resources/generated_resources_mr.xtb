@@ -338,6 +338,7 @@
 <translation id="1378848228640136848">{NUM_COMPROMISED,plural, =0{एकही पासवर्ड धोक्यात नाही}=1{एक धोक्यात असलेला पासवर्ड}other{{NUM_COMPROMISED} धोक्यात असलेले पासवर्ड}}</translation>
 <translation id="1380028686461971526">नेटवर्कशी आपोआप कनेक्ट करा</translation>
 <translation id="1380436189840894976">गुप्त मोड कसाही बंद करायचा?</translation>
+<translation id="1383597849754832576">स्पीच फाइल डाउनलोड करू शकत नाही. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="1383861834909034572">पूर्ण झाल्यानंतर उघडेल</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1386791642444521222">प्रत्‍यक्ष सिम अ‍ॅक्टिव्हेट करा</translation>
@@ -898,6 +899,7 @@
 <translation id="1984417487208496350">संरक्षण नाही (शिफारस केली जात नाही)</translation>
 <translation id="1987317783729300807">खाती</translation>
 <translation id="1989112275319619282">ब्राउझ करा</translation>
+<translation id="1990046457226896323">स्पीच फाइल डाउनलोड केल्या आहेत</translation>
 <translation id="1990512225220753005">या पेजवर शॉर्टकट दाखवू नका</translation>
 <translation id="1992397118740194946">सेट नाही</translation>
 <translation id="1992924914582925289">डिव्हाइसमधून काढून टाका</translation>
@@ -1260,6 +1262,7 @@
 <translation id="2399699884460174994">सूचना सुरू केल्या आहेत</translation>
 <translation id="2399939490305346086">सिक्युरिटी की साइन इन डेटा</translation>
 <translation id="2400664245143453337">त्वरित अपडेट आवश्यक आहे</translation>
+<translation id="2406153734066939945">ही प्रोफाइल आणि तिचा डेटा हटवायचा आहे का?</translation>
 <translation id="2408018932941436077">कार्ड सेव्ह करत आहे</translation>
 <translation id="2408955596600435184">तुमचा पिन प्रविष्‍ट करा</translation>
 <translation id="241082044617551207">अज्ञात प्लग-इन</translation>
@@ -1354,7 +1357,6 @@
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2502441965851148920">स्वयंचलित अपडेट सक्षम केली आहेत. तुमच्या ॲडमिनिस्ट्रेटरने मॅन्युअल अपडेट अक्षम केली आहेत.</translation>
 <translation id="2502719318159902502">पूर्ण अ‍ॅक्सेस</translation>
-<translation id="2505127913256479918">हे पर्यवेक्षित खाते लवकरच काढले जाईल</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{स्क्रीन #}other{स्क्रीन #}}</translation>
 <translation id="2505402373176859469"><ph name="TOTAL_SIZE" /> पैकी <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="250704661983564564">डिस्प्ले व्यवस्था</translation>
@@ -1378,6 +1380,7 @@
 <translation id="2526590354069164005">डेस्कटॉप</translation>
 <translation id="2526619973349913024">अपडेटासाठी तपासा</translation>
 <translation id="2527167509808613699">कोणत्याही प्रकारचे कनेक्शन</translation>
+<translation id="2530166226437958497">ट्रबलशूटिंग</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="253434972992662860">&amp;विराम द्या</translation>
 <translation id="2534460670861217804">सुरक्षित HTTP प्रॉक्सी</translation>
@@ -2096,7 +2099,6 @@
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> इंस्टॉल केले जाईल.</translation>
 <translation id="3380365263193509176">अज्ञात एरर</translation>
 <translation id="3382073616108123819">अरेरे! या डिव्हाइससाठी डिव्हाइस अभिज्ञापक निर्धारित करण्यात सिस्टम अयशस्वी.</translation>
-<translation id="3382086682569279540">तुम्ही व्यवस्थापित करत असलेले खाते लवकरच काढले जाईल</translation>
 <translation id="3382200254148930874">पर्यवेक्षण थांबवत आहे...</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">विभाजक</translation>
@@ -2554,6 +2556,7 @@
 <translation id="3857807444929313943">उचला, नंतर पुन्हा स्पर्श करा</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: सिंक करणे थांबवले</translation>
 <translation id="3861638017150647085">वापरकर्ता नाव "<ph name="USERNAME" />" उपलब्ध नाही</translation>
+<translation id="3861977424605124250">स्टार्टअपच्‍या वेळी दाखवा</translation>
 <translation id="3862693525629180217">बिल्ट-इन सेन्सर वापरून पडताळणी करा</translation>
 <translation id="3862788408946266506">'kiosk_only' मॅनिफेस्ट विशेषता असलेले अ‍ॅप Chrome OS कियोस्क मोडमध्ये इंस्टॉल केले जाणे आवश्यक आहे</translation>
 <translation id="3865414814144988605">रिझोल्युशन</translation>
@@ -3192,6 +3195,7 @@
 <translation id="4627442949885028695">दुसर्‍या डिव्हाइस वरून सुरू ठेवा</translation>
 <translation id="4628757576491864469">डिव्हाइस</translation>
 <translation id="4628762811416793313">Linux कंटेनर सेटअप पूर्ण झाला नाही. कृपया पुन्हा प्रयत्न करा.</translation>
+<translation id="4629521233550547305"><ph name="PROFILE_NAME" /> प्रोफाइल उघडा</translation>
 <translation id="4633003931260532286">एक्स्टेंशनला किमान आवृत्ती "<ph name="IMPORT_VERSION" />" सह "<ph name="IMPORT_NAME" />" ची गरज आहे, परंतु केवळ आवृत्ती "<ph name="INSTALLED_VERSION" />" इंस्टॉल केली गेली आहे</translation>
 <translation id="4633757335284074492">Google Drive वर बॅकअप घ्या. डेटा कधीही सहजपणे रिस्टोअर करा किंवा डिव्हाइस स्विच करा. या बॅकअपमध्ये अ‍ॅप डेटा समाविष्ट आहे. बॅकअप Google वर अपलोड केले जातात आणि तुमच्या मुलाचा Google खाते पासवर्ड वापरून एंक्रिप्ट केले जातात.</translation>
 <translation id="4634575639321169635">ऑफिस किंवा वैयक्तिक वापरासाठी हे डिव्हाइस सेट करा</translation>
@@ -3666,7 +3670,6 @@
 <translation id="5213891612754844763">प्रॉक्सी सेटिग्ज दर्शवा</translation>
 <translation id="5215502535566372932">देश निवडा</translation>
 <translation id="521582610500777512">फोटो टाकून दिला</translation>
-<translation id="5217189792977407501">डेस्कला असाइन करा</translation>
 <translation id="5222403284441421673">असुरक्षित डाउनलोड ब्लॉक केले</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="52232769093306234">पॅकिंग अयशस्वी झाले.</translation>
@@ -3853,7 +3856,6 @@
 <translation id="5435779377906857208"><ph name="HOST" /> ला तुमचे स्थान अ‍ॅक्सेस करण्याची नेहमी अनुमती द्या</translation>
 <translation id="5436492226391861498">प्रॉक्झी टनलसाठी प्रतीक्षा करत आहे...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> शोधा:</translation>
-<translation id="543806387003274181">कृपया आता तुमच्या फाइल सेव्ह करा आणि नवीन खाते तयार करा.</translation>
 <translation id="5439680044267106777">वगळा आणि नवीन प्रोफाइल सेट करा</translation>
 <translation id="544083962418256601">शॉर्टकट तयार करा...</translation>
 <translation id="5442228125690314719">डिस्क इमेज तयार करताना एरर आली. कृपया पुन्हा प्रयत्न करा.</translation>
@@ -5450,6 +5452,7 @@
 <translation id="7280649757394340890">टेक्‍स्‍ट टू स्‍पीच व्हॉइस सेटिंग्ज</translation>
 <translation id="7280877790564589615">परवानगीची विनंती केली</translation>
 <translation id="7282992757463864530">इन्फोबार</translation>
+<translation id="7283555985781738399">अतिथी मोड</translation>
 <translation id="7284411326658527427">प्रत्येक व्यक्ती स्वतःचे खाते पर्सनलाइझ करू शकते आणि डेटा खाजगी ठेवू शकते.</translation>
 <translation id="7287143125007575591">ॲक्सेस नाकारला.</translation>
 <translation id="7287411021188441799">डीफॉल्ट बॅकग्राउंड रिस्टोअर करा</translation>
@@ -5828,6 +5831,7 @@
 <translation id="7716781361494605745">Netscape प्रमाणपत्र अधिकृतता धोरण URL</translation>
 <translation id="7717014941119698257">डाउनलोड करत आहे: <ph name="STATUS" /></translation>
 <translation id="7717134585801378441">साइट तुमचे स्थान विचारू शकतात (शिफारस केलेले)</translation>
+<translation id="771721654176725387">यामुळे या डिव्‍हाइसवरून तुमचा ब्राउझिंग डेटा कायमचा हटवला जाईल. डेटा रिकव्हर करण्यासाठी, हे म्हणून सिंक करणे सुरू करा</translation>
 <translation id="7717845620320228976">अपडेट तपासा</translation>
 <translation id="7719367874908701697">पेज झूम करा</translation>
 <translation id="7719588063158526969">डिव्हाइसचे नाव खूप मोठे आहे</translation>
@@ -6107,6 +6111,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8017176852978888182">Linux ने शेअर केलेल्या डिरेक्टरी</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">शॉर्टकट संपादित केला</translation>
+<translation id="8018298733481692628">ही प्रोफाइल हटवायची आहे का?</translation>
 <translation id="8018313076035239964">वेबसाइट कोणती माहिती वापरू शकतात आणि कोणती आशय तुम्हाला दर्शवू शकतात ते नियंत्रित करा</translation>
 <translation id="8023801379949507775">एक्स्टेंशन त्वरित अपडेट करा</translation>
 <translation id="8026334261755873520">ब्राउझिंग डेटा साफ करा</translation>
@@ -6464,7 +6469,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8438566539970814960">शोध आणि ब्राउझ करणे चांगले करा</translation>
 <translation id="8439506636278576865">या भाषेमध्ये पेज भाषांतरीत करण्यासाठी ऑफर</translation>
 <translation id="8440630305826533614">Linux ॲप्स</translation>
-<translation id="8443338615972234259">आता तुमच्या व्यवस्थापित वापरकर्त्यासाठी नवीन खाते तयार करा.</translation>
 <translation id="8446884382197647889">अधिक जाणून घ्या</translation>
 <translation id="8447409163267621480">एकतर Ctrl किंवा Alt समाविष्‍ट करा</translation>
 <translation id="8448729345478502352">तुमच्या स्क्रीनवर आयटम लहान किंवा मोठे करा</translation>
@@ -6944,6 +6948,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8973596347849323817">तुमच्या गरजा पूर्ण करण्यासाठी तुम्ही हे डिव्हाइस कस्टम करू शकता. ही ॲक्सेसिबिलिटी वैशिष्ट्ये नंतर सेटिंग्जमध्ये बदलली जाऊ शकतात.</translation>
 <translation id="897414447285476047">कनेक्शनमधील समस्येमुळे डेस्टिनेशन फाइल अपूर्ण राहिली.</translation>
 <translation id="897525204902889653">क्वारंटाइन सेवा</translation>
+<translation id="8975396729541388937">तुम्हाला मिळालेल्या ईमेलमधील लिंकवर क्लिक करून कधीही सदस्यत्व रद्द करा.</translation>
 <translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" आणि इतर एक टॅब}other{"<ph name="TAB_TITLE" />" आणि इतर # टॅब}}</translation>
 <translation id="8977811652087512276">चुकीचा पासवर्ड किंवा करप्ट फाइल</translation>
 <translation id="8978154919215542464">ऑन - सर्वकाही सिंक करत आहे</translation>

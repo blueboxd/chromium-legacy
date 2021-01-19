@@ -2898,11 +2898,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "guest-os-external-protocol",
-    "owners": [ "joelhockey", "crostini-syd" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "h264-decoder-is-buffer-complete-frame",
     "owners": [ "jkardatzke", "mcasas" ],
     "expiry_milestone": 89
@@ -3107,7 +3102,7 @@
   },
   {
     "name": "ios-shared-highlighting-color-change",
-    "owners": [ "cheickcisse" ],
+    "owners": [ "cheickcisse@google.com" ],
     "expiry_milestone": 92
   },
   {
@@ -4145,7 +4140,7 @@
   },
   {
     "name": "record-snapshot-size",
-    "owners": ["eugenebut","bling-flags@google.com"],
+    "owners": ["edchin","bling-flags@google.com"],
     "expiry_milestone": 91
   },
   {
@@ -4720,6 +4715,11 @@
     "name": "tabbed-app-overflow-menu-three-button-actionbar",
     "owners": [ "gangwu" ],
     "expiry_milestone": 91
+  },
+  {
+    "name": "text-fragment-color-change",
+    "owners": [ "cheickcisse@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "textfield-focus-on-tap-up",

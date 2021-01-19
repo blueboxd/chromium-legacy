@@ -400,10 +400,6 @@ const base::Feature kFsNosymfollow{"FsNosymfollow",
 const base::Feature kGesturePropertiesDBusService{
     "GesturePropertiesDBusService", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable Guest OS external protocol handling.
-const base::Feature kGuestOsExternalProtocol{"GuestOsExternalProtocol",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables editing with handwriting gestures within the virtual keyboard.
 const base::Feature kHandwritingGestureEditing{
     "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -618,10 +614,6 @@ const base::Feature kShowBluetoothDeviceBattery{
 // Shows the Play Store icon in Demo Mode.
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Shows individual steps during Demo Mode setup.
-const base::Feature kShowStepsInDemoModeSetup{"ShowStepsInDemoModeSetup",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{

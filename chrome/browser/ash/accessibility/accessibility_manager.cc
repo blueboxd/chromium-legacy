@@ -37,7 +37,7 @@
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/ash/accessibility/accessibility_extension_loader.h"
-#include "chrome/browser/ash/accessibility/dictation_chromeos.h"
+#include "chrome/browser/ash/accessibility/dictation.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/accessibility/select_to_speak_event_handler_delegate.h"
 #include "chrome/browser/browser_process.h"
@@ -93,12 +93,12 @@
 #include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
 
+namespace extension_ime_util = chromeos::extension_ime_util;
+namespace input_method = chromeos::input_method;
 using extensions::api::braille_display_private::BrailleController;
 using extensions::api::braille_display_private::DisplayState;
 using extensions::api::braille_display_private::KeyEvent;
 using extensions::api::braille_display_private::StubBrailleController;
-
-namespace chromeos {
 
 namespace {
 
@@ -118,7 +118,7 @@ const char kUserBluetoothBrailleDisplayAddress[] =
 // The name of the Brltty upstart job.
 constexpr char kBrlttyUpstartJobName[] = "brltty";
 
-static chromeos::AccessibilityManager* g_accessibility_manager = nullptr;
+static AccessibilityManager* g_accessibility_manager = nullptr;
 
 static BrailleController* g_braille_controller_for_test = nullptr;
 
@@ -152,7 +152,7 @@ void RestartBrltty(const std::string& address) {
 
 bool VolumeAdjustSoundEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableVolumeAdjustSound);
+      ash::switches::kDisableVolumeAdjustSound);
 }
 
 std::string AccessibilityPrivateEnumForAction(
@@ -278,42 +278,42 @@ AccessibilityManager::AccessibilityManager() {
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
-  manager->Initialize(static_cast<int>(Sound::kShutdown),
+  manager->Initialize(static_cast<int>(ash::Sound::kShutdown),
                       bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
   manager->Initialize(
-      static_cast<int>(Sound::kSpokenFeedbackEnabled),
+      static_cast<int>(ash::Sound::kSpokenFeedbackEnabled),
       bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV));
   manager->Initialize(
-      static_cast<int>(Sound::kSpokenFeedbackDisabled),
+      static_cast<int>(ash::Sound::kSpokenFeedbackDisabled),
       bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV));
-  manager->Initialize(static_cast<int>(Sound::kPassthrough),
+  manager->Initialize(static_cast<int>(ash::Sound::kPassthrough),
                       bundle.GetRawDataResource(IDR_SOUND_PASSTHROUGH_WAV));
-  manager->Initialize(static_cast<int>(Sound::kExitScreen),
+  manager->Initialize(static_cast<int>(ash::Sound::kExitScreen),
                       bundle.GetRawDataResource(IDR_SOUND_EXIT_SCREEN_WAV));
-  manager->Initialize(static_cast<int>(Sound::kEnterScreen),
+  manager->Initialize(static_cast<int>(ash::Sound::kEnterScreen),
                       bundle.GetRawDataResource(IDR_SOUND_ENTER_SCREEN_WAV));
   manager->Initialize(
-      static_cast<int>(Sound::kSpokenFeedbackToggleCountdownHigh),
+      static_cast<int>(ash::Sound::kSpokenFeedbackToggleCountdownHigh),
       bundle.GetRawDataResource(
           IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV));
   manager->Initialize(
-      static_cast<int>(Sound::kSpokenFeedbackToggleCountdownLow),
+      static_cast<int>(ash::Sound::kSpokenFeedbackToggleCountdownLow),
       bundle.GetRawDataResource(
           IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV));
-  manager->Initialize(static_cast<int>(Sound::kTouchType),
+  manager->Initialize(static_cast<int>(ash::Sound::kTouchType),
                       bundle.GetRawDataResource(IDR_SOUND_TOUCH_TYPE_WAV));
-  manager->Initialize(static_cast<int>(Sound::kDictationEnd),
+  manager->Initialize(static_cast<int>(ash::Sound::kDictationEnd),
                       bundle.GetRawDataResource(IDR_SOUND_DICTATION_END_WAV));
-  manager->Initialize(static_cast<int>(Sound::kDictationStart),
+  manager->Initialize(static_cast<int>(ash::Sound::kDictationStart),
                       bundle.GetRawDataResource(IDR_SOUND_DICTATION_START_WAV));
   manager->Initialize(
-      static_cast<int>(Sound::kDictationCancel),
+      static_cast<int>(ash::Sound::kDictationCancel),
       bundle.GetRawDataResource(IDR_SOUND_DICTATION_CANCEL_WAV));
-  manager->Initialize(static_cast<int>(Sound::kStartup),
+  manager->Initialize(static_cast<int>(ash::Sound::kStartup),
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 
   if (VolumeAdjustSoundEnabled()) {
-    manager->Initialize(static_cast<int>(Sound::kVolumeAdjust),
+    manager->Initialize(static_cast<int>(ash::Sound::kVolumeAdjust),
                         bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
   }
 
@@ -360,15 +360,15 @@ AccessibilityManager::AccessibilityManager() {
       base::BindRepeating(&AccessibilityManager::PlayVolumeAdjustSound,
                           base::Unretained(this)));
 
-  CrasAudioHandler::Get()->AddAudioObserver(this);
+  ash::CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
 AccessibilityManager::~AccessibilityManager() {
   CHECK(this == g_accessibility_manager);
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_MANAGER_SHUTDOWN,
-                                          false);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kManagerShutdown, false);
   NotifyAccessibilityStatusChanged(details);
-  CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  ash::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
 
@@ -432,8 +432,9 @@ void AccessibilityManager::EnableLargeCursor(bool enabled) {
 }
 
 void AccessibilityManager::OnLargeCursorChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
-                                          IsLargeCursorEnabled());
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleLargeCursor,
+      IsLargeCursorEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -457,8 +458,8 @@ bool AccessibilityManager::IsStickyKeysEnabled() const {
 }
 
 void AccessibilityManager::OnStickyKeysChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_STICKY_KEYS,
-                                          IsStickyKeysEnabled());
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleStickyKeys, IsStickyKeysEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -497,8 +498,8 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
 
   spoken_feedback_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-                                          enabled);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleSpokenFeedback, enabled);
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
@@ -533,7 +534,8 @@ bool AccessibilityManager::IsHighContrastEnabled() const {
 
 void AccessibilityManager::OnHighContrastChanged() {
   AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE, IsHighContrastEnabled());
+      AccessibilityNotificationType::kToggleHighContrastMode,
+      IsHighContrastEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -561,7 +563,8 @@ void AccessibilityManager::OnViewFocusedInArc(const gfx::Rect& bounds_in_screen,
                                                              is_editable);
 }
 
-bool AccessibilityManager::PlayEarcon(Sound sound_key, PlaySoundOption option) {
+bool AccessibilityManager::PlayEarcon(ash::Sound sound_key,
+                                      PlaySoundOption option) {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(kAshDisableSystemSounds))
     return false;
@@ -609,8 +612,8 @@ bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
 bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
   return audio::SoundsManager::Get()->Play(
       tick_count % 2
-          ? static_cast<int>(Sound::kSpokenFeedbackToggleCountdownHigh)
-          : static_cast<int>(Sound::kSpokenFeedbackToggleCountdownLow));
+          ? static_cast<int>(ash::Sound::kSpokenFeedbackToggleCountdownHigh)
+          : static_cast<int>(ash::Sound::kSpokenFeedbackToggleCountdownLow));
 }
 
 void AccessibilityManager::HandleAccessibilityGesture(
@@ -751,8 +754,9 @@ bool AccessibilityManager::IsVirtualKeyboardEnabled() const {
 }
 
 void AccessibilityManager::OnVirtualKeyboardChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-                                          IsVirtualKeyboardEnabled());
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleVirtualKeyboard,
+      IsVirtualKeyboardEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -771,8 +775,8 @@ bool AccessibilityManager::IsMonoAudioEnabled() const {
 }
 
 void AccessibilityManager::OnMonoAudioChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_MONO_AUDIO,
-                                          IsMonoAudioEnabled());
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleMonoAudio, IsMonoAudioEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -796,8 +800,9 @@ bool AccessibilityManager::IsCaretHighlightEnabled() const {
 }
 
 void AccessibilityManager::OnCaretHighlightChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
-                                          IsCaretHighlightEnabled());
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleCaretHighlight,
+      IsCaretHighlightEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -817,8 +822,9 @@ bool AccessibilityManager::IsCursorHighlightEnabled() const {
 }
 
 void AccessibilityManager::OnCursorHighlightChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_CURSOR_HIGHLIGHT,
-                                          IsCursorHighlightEnabled());
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleCursorHighlight,
+      IsCursorHighlightEnabled());
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -849,8 +855,8 @@ void AccessibilityManager::OnFocusHighlightChanged() {
   // ChromeVox does its own focus highlighting.
   if (IsSpokenFeedbackEnabled())
     enabled = false;
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT,
-                                          enabled);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleFocusHighlight, enabled);
   NotifyAccessibilityStatusChanged(details);
 
   // TODO(crbug.com/1096759): Load or unload the AccessibilityCommon extension
@@ -913,8 +919,8 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
 
   select_to_speak_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK,
-                                          enabled);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleSelectToSpeak, enabled);
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
@@ -925,7 +931,7 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
     // Construct a delegate to connect SelectToSpeak and its EventHandler in
     // ash.
     select_to_speak_event_handler_delegate_ =
-        std::make_unique<chromeos::SelectToSpeakEventHandlerDelegate>();
+        std::make_unique<SelectToSpeakEventHandlerDelegate>();
   } else {
     select_to_speak_loader_->Unload();
     select_to_speak_event_handler_delegate_.reset();
@@ -973,8 +979,8 @@ void AccessibilityManager::OnSwitchAccessChanged() {
     return;
   switch_access_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SWITCH_ACCESS,
-                                          enabled);
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleSwitchAccess, enabled);
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
@@ -1041,9 +1047,9 @@ void AccessibilityManager::InputMethodChanged(
     input_method::InputMethodManager* manager,
     Profile* /* profile */,
     bool show_message) {
-    ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
-        manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
-        manager->IsAltGrUsedByCurrentInputMethod());
+  ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
+      manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
+      manager->IsAltGrUsedByCurrentInputMethod());
   const chromeos::input_method::InputMethodDescriptor descriptor =
       manager->GetActiveIMEState()->GetCurrentInputMethod();
   braille_ime_current_ =
@@ -1052,17 +1058,17 @@ void AccessibilityManager::InputMethodChanged(
 
 void AccessibilityManager::OnActiveOutputNodeChanged() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kFirstExecAfterBoot))
+          ash::switches::kFirstExecAfterBoot))
     return;
 
-  AudioDevice device;
-  CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
-  if (device.type == AudioDeviceType::kOther)
+  ash::AudioDevice device;
+  ash::CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
+  if (device.type == ash::AudioDeviceType::kOther)
     return;
 
-  CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  ash::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   if (GetStartupSoundEnabled()) {
-    PlayEarcon(Sound::kStartup, PlaySoundOption::kAlways);
+    PlayEarcon(ash::Sound::kStartup, PlaySoundOption::kAlways);
     return;
   }
 
@@ -1072,7 +1078,7 @@ void AccessibilityManager::OnActiveOutputNodeChanged() {
     if (user_manager::known_user::GetBooleanPref(
             account_ids[i], kUserSpokenFeedbackEnabled, &val) &&
         val) {
-      PlayEarcon(Sound::kStartup, PlaySoundOption::kAlways);
+      PlayEarcon(ash::Sound::kStartup, PlaySoundOption::kAlways);
       break;
     }
   }
@@ -1224,12 +1230,12 @@ void AccessibilityManager::ActiveUserChanged(user_manager::User* active_user) {
 }
 
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {
-  if (!PlayEarcon(Sound::kShutdown,
+  if (!PlayEarcon(ash::Sound::kShutdown,
                   PlaySoundOption::kOnlyIfSpokenFeedbackEnabled)) {
     return base::TimeDelta();
   }
   return audio::SoundsManager::Get()->GetDuration(
-      static_cast<int>(Sound::kShutdown));
+      static_cast<int>(ash::Sound::kShutdown));
 }
 
 base::CallbackListSubscription AccessibilityManager::RegisterCallback(
@@ -1241,7 +1247,8 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
     const AccessibilityStatusEventDetails& details) {
   callback_list_.Notify(details);
 
-  if (details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
+  if (details.notification_type ==
+      AccessibilityNotificationType::kToggleDictation) {
     ash::AccessibilityController::Get()->SetDictationActive(details.enabled);
     ash::AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
     return;
@@ -1250,8 +1257,11 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   // Update system tray menu visibility. Prefs tracked inside ash handle their
   // own updates to avoid race conditions (pref updates are asynchronous between
   // chrome and ash).
-  if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
-      details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
+  // TODO(hferreiro): repeated condition
+  if (details.notification_type ==
+          AccessibilityNotificationType::kToggleScreenMagnifier ||
+      details.notification_type ==
+          AccessibilityNotificationType::kToggleDictation) {
     ash::AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
   }
 }
@@ -1314,7 +1324,7 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
 
 void AccessibilityManager::PlayVolumeAdjustSound() {
   if (VolumeAdjustSoundEnabled()) {
-    PlayEarcon(Sound::kVolumeAdjust,
+    PlayEarcon(ash::Sound::kVolumeAdjust,
                PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
   }
 }
@@ -1410,7 +1420,7 @@ void AccessibilityManager::PostLoadChromeVox() {
                                              base::DoNothing());
   }
 
-  PlayEarcon(Sound::kSpokenFeedbackEnabled, PlaySoundOption::kAlways);
+  PlayEarcon(ash::Sound::kSpokenFeedbackEnabled, PlaySoundOption::kAlways);
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
@@ -1450,7 +1460,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName, {},
                                           base::DoNothing());
 
-  PlayEarcon(Sound::kSpokenFeedbackDisabled, PlaySoundOption::kAlways);
+  PlayEarcon(ash::Sound::kSpokenFeedbackDisabled, PlaySoundOption::kAlways);
 
   RemoveFocusRings(extension_misc::kChromeVoxExtensionId);
 
@@ -1545,7 +1555,7 @@ bool AccessibilityManager::ToggleDictation() {
     return false;
 
   if (!dictation_.get())
-    dictation_ = std::make_unique<DictationChromeos>(profile_);
+    dictation_ = std::make_unique<Dictation>(profile_);
 
   return dictation_->OnToggleDictation();
 }
@@ -1733,5 +1743,3 @@ void AccessibilityManager::OnSelectToSpeakPanelAction(
   event_router->DispatchEventWithLazyListener(
       extension_misc::kSelectToSpeakExtensionId, std::move(event));
 }
-
-}  // namespace chromeos

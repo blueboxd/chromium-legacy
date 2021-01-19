@@ -63,12 +63,12 @@ void UpdateGoogleSpeechSynthesisKeepAliveCount(content::BrowserContext* context,
 
 void UpdateGoogleSpeechSynthesisKeepAliveCountOnReload(
     content::BrowserContext* browser_context) {
-  if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+  if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
     UpdateGoogleSpeechSynthesisKeepAliveCount(browser_context,
                                               true /* increment */);
   }
 
-  if (chromeos::AccessibilityManager::Get()->IsSelectToSpeakEnabled()) {
+  if (AccessibilityManager::Get()->IsSelectToSpeakEnabled()) {
     UpdateGoogleSpeechSynthesisKeepAliveCount(browser_context,
                                               true /* increment */);
   }
@@ -135,10 +135,9 @@ TtsEngineExtensionObserverChromeOS::TtsEngineExtensionObserverChromeOS(
   event_router->RegisterObserver(this, tts_engine_events::kOnStop);
 
   accessibility_status_subscription_ =
-      chromeos::AccessibilityManager::Get()->RegisterCallback(
-          base::BindRepeating(
-              &TtsEngineExtensionObserverChromeOS::OnAccessibilityStatusChanged,
-              base::Unretained(this)));
+      AccessibilityManager::Get()->RegisterCallback(base::BindRepeating(
+          &TtsEngineExtensionObserverChromeOS::OnAccessibilityStatusChanged,
+          base::Unretained(this)));
 }
 
 TtsEngineExtensionObserverChromeOS::~TtsEngineExtensionObserverChromeOS() =
@@ -227,12 +226,13 @@ void TtsEngineExtensionObserverChromeOS::OnExtensionUnloaded(
 }
 
 void TtsEngineExtensionObserverChromeOS::OnAccessibilityStatusChanged(
-    const chromeos::AccessibilityStatusEventDetails& details) {
-  if (details.notification_type != chromeos::AccessibilityNotificationType::
-                                       ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK &&
-      details.notification_type != chromeos::AccessibilityNotificationType::
-                                       ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK)
+    const AccessibilityStatusEventDetails& details) {
+  if (details.notification_type !=
+          AccessibilityNotificationType::kToggleSpokenFeedback &&
+      details.notification_type !=
+          AccessibilityNotificationType::kToggleSelectToSpeak) {
     return;
+  }
 
   // Google speech synthesis might not be loaded yet. If it isn't, the call in
   // |OnExtensionLoaded| will do the increment. If it is, the call below will

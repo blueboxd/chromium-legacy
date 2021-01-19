@@ -43,7 +43,9 @@ enum class RemoveCompromisedCredentialsReason {
   kRemove = 1,
   // If a password was considered phished on a site later marked as legitimate.
   kMarkSiteAsLegitimate = 2,
-  kMaxValue = kMarkSiteAsLegitimate
+  // If the compromised credentials was updated via sync.
+  kSyncUpdate = 3,
+  kMaxValue = kSyncUpdate
 };
 
 // Represents information about the particular compromised credentials.
@@ -108,16 +110,6 @@ class InsecureCredentialsTable {
 
   // Gets all the rows in the database for |parent_key|.
   std::vector<CompromisedCredentials> GetRows(FormPrimaryKey parent_key) const;
-
-  // Removes all compromised credentials created between |remove_begin|
-  // inclusive and |remove_end| exclusive. If |url_filter| is not null, only
-  // compromised credentials for matching signon_realms are removed. Returns
-  // true if the SQL completed successfully.
-  // TODO(crbug/1137775): remove the method.
-  bool RemoveRowsByUrlAndTime(
-      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
-      base::Time remove_begin,
-      base::Time remove_end);
 
   // Returns all compromised credentials from the database.
   std::vector<CompromisedCredentials> GetAllRows();

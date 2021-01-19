@@ -1361,7 +1361,6 @@
 <translation id="2501920221385095727">स्टिकी बटन</translation>
 <translation id="2502441965851148920">अपने आप अपडेट सक्षम किए गए हैं. मैन्युअल अपडेट आपके व्यवस्थापक के द्वारा अक्षम किए गए हैं.</translation>
 <translation id="2502719318159902502">पूरा ऐक्सेस</translation>
-<translation id="2505127913256479918">निगरानी में रखे गए इस उपयोगकर्ता खाते को जल्द ही हटा दिया जाएगा</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{स्क्रीन #}one{स्क्रीन #}other{स्क्रीन #}}</translation>
 <translation id="2505402373176859469"><ph name="TOTAL_SIZE" /> में से <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="250704661983564564">डिसप्ले की सेटिंग</translation>
@@ -2104,7 +2103,6 @@
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> स्थापित कर दिया जाएगा.</translation>
 <translation id="3380365263193509176">अज्ञात गड़बड़ी</translation>
 <translation id="3382073616108123819">ओह!  सिस्‍टम इस डिवाइस के लिए डिवाइस पहचानकर्ता का निर्धारण नहीं कर सका.</translation>
-<translation id="3382086682569279540">आप जिस खाते को प्रबंधित करते हैं उसे जल्द ही हटा दिया जाएगा</translation>
 <translation id="3382200254148930874">निगरानी की सुविधा बंद की जा रही है...</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">विभाजक</translation>
@@ -3677,7 +3675,6 @@
 <translation id="5213891612754844763">प्रॉक्सी सेटिंग दिखाएं</translation>
 <translation id="5215502535566372932">देश चुनें</translation>
 <translation id="521582610500777512">फ़ोटो को छोड़ दिया गया था</translation>
-<translation id="5217189792977407501">डेस्क को सौंपें</translation>
 <translation id="5222403284441421673">डाउनलोड हो रही असुरक्षित फ़ाइल ब्लॉक की गई</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="52232769093306234">पैक नहीं किया जा सका.</translation>
@@ -3864,7 +3861,6 @@
 <translation id="5435779377906857208"><ph name="HOST" /> को, हमेशा अपनी जगह की जानकारी को ऐक्सेस करने की अनुमति दें</translation>
 <translation id="5436492226391861498">प्रॉक्सी टनेल की प्रतीक्षा कर रहा है...</translation>
 <translation id="5436510242972373446">खोजें <ph name="SITE_NAME" />:</translation>
-<translation id="543806387003274181">कृपया अपनी फ़ाइलें सेव करें और अभी नया खाता बनाएं.</translation>
 <translation id="5439680044267106777">नई प्रोफ़ाइल सेट अप करें</translation>
 <translation id="544083962418256601">शॉर्टकट बनाएं...</translation>
 <translation id="5442228125690314719">डिस्क इमेज बनाते समय गड़बड़ी हुई. कृपया फिर से कोशिश करें.</translation>
@@ -5841,7 +5837,7 @@
 <translation id="7716781361494605745">Netscape प्रमाणन प्राधिकरण नीति यूआरएल</translation>
 <translation id="7717014941119698257">डाउनलोड हो रहा है: <ph name="STATUS" /></translation>
 <translation id="7717134585801378441">साइटें आपकी जगह की जानकारी के लिए पूछ सकती हैं (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
-<translation id="771721654176725387">ऐसा करने पर, इस डिवाइस से आपका ब्राउज़िंग डेटा हमेशा के लिए मिट जाएगा. डेटा को वापस पाने के लिए, सिंक करने की सुविधा को इसके तौर पर चालू करें</translation>
+<translation id="771721654176725387">ऐसा करने पर, इस डिवाइस से आपका ब्राउज़िंग डेटा हमेशा के लिए मिट जाएगा. डेटा वापस पाने के लिए, इससे सिंक करें</translation>
 <translation id="7717845620320228976">देखें कि अपडेट उपलब्ध हैं या नहीं</translation>
 <translation id="7719367874908701697">पेज ज़ूम</translation>
 <translation id="7719588063158526969">डिवाइस का नाम बहुत लंबा है</translation>
@@ -6480,7 +6476,6 @@
 <translation id="8438566539970814960">खोजों और ब्राउज़िंग को बेहतर बनाएं</translation>
 <translation id="8439506636278576865">इस भाषा में पृष्ठों का अनुवाद करने का ऑफ़र दें</translation>
 <translation id="8440630305826533614">Linux ऐप्लिकेशन</translation>
-<translation id="8443338615972234259">निगरानी में रखे गए अपने उपयोगकर्ता के लिए कृपया अभी एक नया खाता बनाएं.</translation>
 <translation id="8446884382197647889">ज़्यादा जानें</translation>
 <translation id="8447409163267621480">Ctrl या Alt में से किसी एक को शामिल करें</translation>
 <translation id="8448729345478502352">अपनी स्क्रीन पर मौजूद आइटम को छोटा या बड़ा करें</translation>
@@ -6960,7 +6955,7 @@
 <translation id="8973596347849323817">आप इस डिवाइस में अपनी ज़रूरतों के हिसाब से पसंद के मुताबिक बना सकते हैं. ये सुलभता सुविधाएं बाद में सेटिंग में बदली जा सकती हैं.</translation>
 <translation id="897414447285476047">कनेक्शन में समस्या आने के कारण गंतव्य फ़ाइल अधूरी रह गई थी.</translation>
 <translation id="897525204902889653">क्वॉरंटीन सेवा</translation>
-<translation id="8975396729541388937">आपको भेजे गए ईमेल में दिए गए लिंक पर क्लिक करके, आप किसी भी समय सदस्यता छोड़ सकते हैं.</translation>
+<translation id="8975396729541388937">आपको जो ईमेल मिला है उसमें दिए गए लिंक पर क्लिक करके, आप किसी भी समय सदस्यता छोड़ सकते हैं.</translation>
 <translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" और 1 अन्य टैब}one{"<ph name="TAB_TITLE" />" और # अन्य टैब}other{"<ph name="TAB_TITLE" />" और # अन्य टैब}}</translation>
 <translation id="8977811652087512276">गलत पासवर्ड या खराब फ़ाइल</translation>
 <translation id="8978154919215542464">चालू - सब कुछ सिंक करें</translation>

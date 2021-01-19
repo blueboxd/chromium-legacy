@@ -999,28 +999,6 @@
             ]
         }
     ],
-    "AutofillPruneSuggestions": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillPruneSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillRefillWithRendererIds": [
         {
             "platforms": [
@@ -1037,82 +1015,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillRefillWithRendererIds"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillRefreshStyleAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillRefreshStyleAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillTokenPrefixMatching": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillTokenPrefixMatching"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillUseImprovedLabelDisambiguation": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUseImprovedLabelDisambiguation"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillUseMobileLabelDisambiguation": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_ShowAll",
-                    "params": {
-                        "variant": "show-all"
-                    },
-                    "enable_features": [
-                        "AutofillUseMobileLabelDisambiguation"
                     ]
                 }
             ]
@@ -5268,21 +5170,6 @@
             ]
         }
     ],
-    "PermissionPromptUICocoa": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "BlockPromptsEnabled",
-                    "enable_features": [
-                        "BlockPromptsIfDismissedOften"
-                    ]
-                }
-            ]
-        }
-    ],
     "PersistentHistograms": [
         {
             "platforms": [
@@ -5586,9 +5473,10 @@
                     "name": "EnabledStitchAndTrending",
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
-                        "experiment_tag": "{enableTrending: true}",
+                        "experiment_tag": "{enableTrending: true, maxTrendingQueries: 8}",
                         "image_prefetch_mode": "top",
                         "is_unmetered_network_required": "false",
+                        "max_trending_tile_impressions": "1",
                         "most_visited_max_rows_normal_screen": "2",
                         "most_visited_max_rows_small_screen": "1",
                         "small_screen_height_threshold_dp": "700"
@@ -5597,7 +5485,8 @@
                         "QueryTiles",
                         "QueryTilesInNTP",
                         "QueryTilesInOmnibox",
-                        "QueryTilesLocalOrdering"
+                        "QueryTilesLocalOrdering",
+                        "QueryTilesRemoveTrendingAfterInactivity"
                     ],
                     "disable_features": [
                         "QueryTilesEnableQueryEditing"
@@ -7024,28 +6913,6 @@
             ]
         }
     ],
-    "TrustedTypes": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TrustedDOMTypes"
-                    ]
-                }
-            ]
-        }
-    ],
     "TurnOffStreamingMediaCaching": [
         {
             "platforms": [
@@ -7153,27 +7020,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseInProgressDownloadManagerForDownloadService"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UsePreferredIntervalForVideo": [
-        {
-            "platforms": [
-                "chromeos",
-                "mac",
-                "windows",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "NumOfFramesToToggleInterval": "6"
-                    },
-                    "enable_features": [
-                        "UsePreferredIntervalForVideo"
                     ]
                 }
             ]
@@ -7710,25 +7556,6 @@
             "experiments": [
                 {
                     "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "WebRTC-Bwe-MaxRttLimit": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "persist,limit:3s,fraction:.8,interval:1s"
                 }
             ]
         }

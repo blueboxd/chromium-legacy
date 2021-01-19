@@ -183,8 +183,6 @@ extern const base::Feature kGamepadVibration;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGesturePropertiesDBusService;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kGuestOsExternalProtocol;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kHelpAppSearchServiceIntegration;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeMojoDecoder;
@@ -282,8 +280,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowBluetoothDeviceBattery;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kShowStepsInDemoModeSetup;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSmartDimExperimentalComponent;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -389,5 +385,13 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldUseV2DeviceSync();
 
 }  // namespace features
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace features {
+using namespace ::chromeos::features;
+}
+}  // namespace ash
 
 #endif  // CHROMEOS_CONSTANTS_CHROMEOS_FEATURES_H_

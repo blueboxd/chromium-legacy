@@ -98,6 +98,13 @@ const base::Feature kAutofillEnableDependentLocalityParsing{
 const base::Feature kAutofillEnableHideSuggestionsUI{
     "AutofillEnableHideSuggestionsUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to save the first number in a form with multiple phone
+// numbers instead of aborting the import.
+// TODO(crbug.com/1167484) Remove once launched
+const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers{
+    "AutofillEnableImportWhenMultiplePhoneNumbers",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled and user has single account, a footer indicating user's e-mail
 // address and profile picture will appear at the bottom of InfoBars which has
 // corresponding account indication footer flags on.
@@ -338,6 +345,13 @@ const char kAutofillUseMobileLabelDisambiguationParameterShowOne[] = "show-one";
 // TODO(crbug/1131038): Remove once it's launched.
 const base::Feature kAutofillUseUniqueRendererIDsOnIOS{
     "AutofillUseUniqueRendererIDsOnIOS", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the creation of new address profiles is enabled in settings
+// on IOS.
+// TODO(crbug/1167105): Remove once it's launched.
+const base::Feature kAutofillEnableNewAddressProfileCreationInSettingsOnIOS{
+    "AutofillEnableNewAddressProfileCreationInSettingsOnIOS",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)

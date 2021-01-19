@@ -74,7 +74,6 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/performance_monitor/process_monitor.h"
-#include "chrome/browser/performance_monitor/system_monitor.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
@@ -730,8 +729,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 #endif
 
   ThreadProfiler::SetMainThreadTaskRunner(base::ThreadTaskRunnerHandle::Get());
-
-  system_monitor_ = performance_monitor::SystemMonitor::Create();
 
   // TODO(sebmarchand): Allow this to be created earlier if startup tracing is
   // enabled.
@@ -1730,7 +1727,11 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   DCHECK(base::CurrentUIThread::IsSet());
 
-  performance_monitor::ProcessMonitor::GetInstance()->StartGatherCycle();
+  // The ProcessMonitor is responsible for gathering important processes
+  // metrics.
+  // TODO(1167290): Can this be moved to PreMainMessageLoopStart() without
+  //                impacting those metrics?
+  performance_monitor::ProcessMonitor::Get()->StartGatherCycle();
 
   g_run_loop->Run();
 

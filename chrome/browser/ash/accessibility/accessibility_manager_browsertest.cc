@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
@@ -39,6 +40,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
+namespace extension_ime_util = chromeos::extension_ime_util;
 using chromeos::input_method::InputMethodManager;
 using chromeos::input_method::InputMethodUtil;
 using chromeos::input_method::InputMethodDescriptors;
@@ -48,8 +50,6 @@ using extensions::api::braille_display_private::DisplayState;
 using extensions::api::braille_display_private::KeyEvent;
 using extensions::api::braille_display_private::MockBrailleController;
 using testing::WithParamInterface;
-
-namespace chromeos {
 
 namespace {
 
@@ -74,14 +74,17 @@ class MockAccessibilityObserver {
 
   bool observed() const { return observed_; }
   bool observed_enabled() const { return observed_enabled_; }
-  int observed_type() const { return observed_type_; }
+  base::Optional<AccessibilityNotificationType> observed_type() const {
+    return observed_type_;
+  }
 
   void reset() { observed_ = false; }
 
  private:
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details) {
-    if (details.notification_type != ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
+    if (details.notification_type !=
+        AccessibilityNotificationType::kToggleScreenMagnifier) {
       observed_type_ = details.notification_type;
       observed_enabled_ = details.enabled;
       observed_ = true;
@@ -90,7 +93,7 @@ class MockAccessibilityObserver {
 
   bool observed_ = false;
   bool observed_enabled_ = false;
-  int observed_type_ = -1;
+  base::Optional<AccessibilityNotificationType> observed_type_;
 
   base::CallbackListSubscription accessibility_subscription_;
 
@@ -328,70 +331,80 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   SetSpokenFeedbackEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSpokenFeedback);
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetSpokenFeedbackEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSpokenFeedback);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetHighContrastEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleHighContrastMode);
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
   SetHighContrastEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleHighContrastMode);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleVirtualKeyboard);
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleVirtualKeyboard);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetMonoAudioEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleMonoAudio);
   EXPECT_TRUE(IsMonoAudioEnabled());
 
   observer.reset();
   SetMonoAudioEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleMonoAudio);
   EXPECT_FALSE(IsMonoAudioEnabled());
 
   observer.reset();
   SetSelectToSpeakEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSelectToSpeak);
   EXPECT_TRUE(IsSelectToSpeakEnabled());
 
   observer.reset();
   SetSelectToSpeakEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSelectToSpeak);
   EXPECT_FALSE(IsSelectToSpeakEnabled());
 }
 
@@ -402,70 +415,80 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   SetSpokenFeedbackEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSpokenFeedback);
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetSpokenFeedbackEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSpokenFeedback);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetHighContrastEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleHighContrastMode);
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
   SetHighContrastEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleHighContrastMode);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleVirtualKeyboard);
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleVirtualKeyboard);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetMonoAudioEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleMonoAudio);
   EXPECT_TRUE(IsMonoAudioEnabled());
 
   observer.reset();
   SetMonoAudioEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleMonoAudio);
   EXPECT_FALSE(IsMonoAudioEnabled());
 
   observer.reset();
   SetSelectToSpeakEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSelectToSpeak);
   EXPECT_TRUE(IsSelectToSpeakEnabled());
 
   observer.reset();
   SetSelectToSpeakEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK);
+  EXPECT_EQ(observer.observed_type(),
+            AccessibilityNotificationType::kToggleSelectToSpeak);
   EXPECT_FALSE(IsSelectToSpeakEnabled());
 }
 
@@ -677,8 +700,8 @@ class AccessibilityManagerUserTypeTest
     if (GetParam() == user_manager::USER_TYPE_GUEST) {
       guest_session_ = std::make_unique<GuestSessionMixin>(&mixin_host_);
     } else if (GetParam() == user_manager::USER_TYPE_CHILD) {
-      logged_in_user_mixin_ = std::make_unique<LoggedInUserMixin>(
-          &mixin_host_, LoggedInUserMixin::LogInType::kChild,
+      logged_in_user_mixin_ = std::make_unique<chromeos::LoggedInUserMixin>(
+          &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
           embedded_test_server(), this);
     }
   }
@@ -702,7 +725,7 @@ class AccessibilityManagerUserTypeTest
 
   std::unique_ptr<GuestSessionMixin> guest_session_;
 
-  std::unique_ptr<LoggedInUserMixin> logged_in_user_mixin_;
+  std::unique_ptr<chromeos::LoggedInUserMixin> logged_in_user_mixin_;
 
   MockBrailleController braille_controller_;
 
@@ -761,5 +784,3 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsBrailleImeActive());
 }
-
-}  // namespace chromeos

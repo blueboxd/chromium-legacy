@@ -813,7 +813,7 @@ const base::Feature kWebAppEnableProtocolHandlers{
 // without conversion to I420.
 const base::Feature kWebRtcLibvpxEncodeNV12 {
   "WebRtcLibvpxEncodeNV12",
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -868,6 +868,11 @@ const base::Feature kDocumentPolicyRuntimeFlag1ForTest{
     "kDocumentPolicyRuntimeFlag1ForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDocumentPolicyRuntimeFlag2ForTest{
     "kDocumentPolicyRuntimeFlag2ForTest", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Changes the default background color of the Text Fragment from
+// bright yellow rgb(255, 255, 0) to light purple rgb(233, 210, 253)
+const base::Feature kTextFragmentColorChange{"TextFragmentColorChange",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

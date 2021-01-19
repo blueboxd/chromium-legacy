@@ -770,10 +770,6 @@ const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
 const char kEnableGpuServiceLoggingDescription[] =
     "Enable printing the actual GL driver calls.";
 
-const char kGuestOsExternalProtocolName[] = "Guest OS External Protocol";
-const char kGuestOsExternalProtocolDescription[] =
-    "Enable Guest OS external protocol handlers";
-
 const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
 const char kEnablePreviewsCoinFlipDescription[] =
     "Enable coin flip experimentation of Previews.";
@@ -2313,6 +2309,11 @@ const char kTabOutlinesInLowContrastThemesName[] =
 const char kTabOutlinesInLowContrastThemesDescription[] =
     "Expands the range of situations in which tab outline strokes are "
     "displayed, improving accessiblity in dark and incognito mode.";
+
+const char kTextFragmentColorChangeName[] = "Text Fragment color change";
+const char kTextFragmentColorChangeDescription[] =
+    "Changes the Text Fragment background color"
+    "away from the default yellow.";
 
 const char kTintCompositedContentName[] = "Tint composited content";
 const char kTintCompositedContentDescription[] =

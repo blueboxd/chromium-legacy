@@ -426,21 +426,6 @@ void PasswordStore::GetMatchingCompromisedCredentials(
   }
 }
 
-void PasswordStore::RemoveCompromisedCredentialsByUrlAndTime(
-    base::RepeatingCallback<bool(const GURL&)> url_filter,
-    base::Time remove_begin,
-    base::Time remove_end,
-    base::OnceClosure completion) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  auto callback = base::BindOnce(
-      &PasswordStore::RemoveCompromisedCredentialsByUrlAndTimeInternal, this,
-      std::move(url_filter), remove_begin, remove_end, std::move(completion));
-
-  ScheduleTask(base::BindOnce(
-      &PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange, this,
-      std::move(callback)));
-}
-
 void PasswordStore::AddFieldInfo(const FieldInfo& field_info) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(
@@ -725,6 +710,15 @@ PasswordStoreChangeList PasswordStore::UpdateLoginSync(
       ScheduleFindAndUpdateAffiliatedWebLogins(form);
   }
   return UpdateLoginImpl(form, error);
+}
+
+bool PasswordStore::UpdateCompromisedCredentialsSync(
+    const PasswordForm& form,
+    base::span<const CompromisedCredentials> credentials) {
+  RemoveCompromisedCredentialsImpl(
+      form.signon_realm, form.username_value,
+      RemoveCompromisedCredentialsReason::kSyncUpdate);
+  return AddCompromisedCredentialsSync(credentials);
 }
 
 PasswordStoreChangeList PasswordStore::RemoveLoginSync(
@@ -1081,19 +1075,6 @@ void PasswordStore::UnblocklistInternal(
   }
   if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
-}
-
-bool PasswordStore::RemoveCompromisedCredentialsByUrlAndTimeInternal(
-    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
-    base::Time remove_begin,
-    base::Time remove_end,
-    base::OnceClosure completion) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  bool result = RemoveCompromisedCredentialsByUrlAndTimeImpl(
-      url_filter, remove_begin, remove_end);
-  if (completion)
-    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
-  return result;
 }
 
 void PasswordStore::RemoveFieldInfoByTimeInternal(

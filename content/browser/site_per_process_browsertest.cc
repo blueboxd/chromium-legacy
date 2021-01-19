@@ -13187,8 +13187,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(compositing_rect.Contains(visible_rect));
 }
 
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       NestedIframeTransformedIntoViewViewportIntersection) {
+// TODO(crbug.com/1168036): Flaky test.
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessBrowserTest,
+    DISABLED_NestedIframeTransformedIntoViewViewportIntersection) {
   GURL http_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_frame_transformed_into_viewport.html"));
   EXPECT_TRUE(NavigateToURL(shell(), http_url));
@@ -13237,8 +13239,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
 // Test that the compositing scale factor for an out-of-process iframe are set
 // and updated correctly, including accounting for all intermediate transforms.
+// TODO(crbug.com/1164391): Flaky test.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       CompositingScaleFactorInNestedFrameTest) {
+                       DISABLED_CompositingScaleFactorInNestedFrameTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_scaled_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

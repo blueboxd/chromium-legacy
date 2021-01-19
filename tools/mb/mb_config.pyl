@@ -283,6 +283,7 @@
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot',
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
 
+      'Linux Builder (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux Viz': 'release_trybot',
       'linux-ash-chromium-builder-fyi-rel': 'chromeos_with_codecs_release_bot',
       'linux-lacros-builder-fyi-rel': 'lacros_on_linux_release_bot',
@@ -2091,6 +2092,10 @@
       'gpu_tests', 'release_bot', 'minimal_symbols', 'disable_nacl',
     ],
 
+    'gpu_tests_release_bot_reclient': [
+      'gpu_tests', 'release_bot_reclient',
+    ],
+
     'gpu_tests_release_bot_x86_minimal_symbols': [
       'gpu_tests', 'release_bot', 'x86', 'minimal_symbols',
     ],
@@ -3209,6 +3214,10 @@
       'gn_args': 'proprietary_codecs=true',
     },
 
+    'reclient': {
+      'gn_args': 'use_rbe=true',
+    },
+
     'release': {
       'gn_args': 'is_debug=false',
     },
@@ -3221,6 +3230,10 @@
     # in order to give consistent results for WebRTC codec-dependent tests.
     'release_bot_blink': {
       'mixins': ['release', 'static', 'goma', 'chrome_with_codecs'],
+    },
+
+    'release_bot_reclient': {
+      'mixins': ['release', 'static', 'reclient'],
     },
 
     'release_java': {

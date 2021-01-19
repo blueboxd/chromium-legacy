@@ -73,7 +73,9 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
   DCHECK(agent_);
 }
 
-ExecutionContext::~ExecutionContext() = default;
+ExecutionContext::~ExecutionContext() {
+  DCHECK(is_context_destroyed_);
+}
 
 // static
 ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {
@@ -450,7 +452,6 @@ void ExecutionContext::Trace(Visitor* visitor) const {
   visitor->Trace(timers_);
   visitor->Trace(context_lifecycle_observer_set_);
   visitor->Trace(origin_trial_context_);
-  ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }

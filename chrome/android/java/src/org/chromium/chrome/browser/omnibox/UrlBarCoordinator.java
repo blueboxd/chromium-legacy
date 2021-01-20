@@ -173,6 +173,14 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
         return mUrlBar.hasFocus();
     }
 
+    /* package */ void requestFocus() {
+        mUrlBar.requestFocus();
+    }
+
+    /* package */ void clearFocus() {
+        mUrlBar.clearFocus();
+    }
+
     /**
      * Controls keyboard visibility.
      *
@@ -180,7 +188,7 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
      * @param shouldDelayHiding When true, keyboard hide operation will be delayed slightly to
      *         improve the animation smoothness.
      */
-    /* package */ void setKeyboardVisibility(boolean showKeyboard, boolean shouldDelayHiding) {
+    public void setKeyboardVisibility(boolean showKeyboard, boolean shouldDelayHiding) {
         // Cancel pending jobs to prevent any possibility of keyboard flicker.
         mUrlBar.removeCallbacks(mKeyboardHideTask);
 

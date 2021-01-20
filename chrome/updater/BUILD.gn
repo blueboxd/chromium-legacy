@@ -25,6 +25,17 @@ group("updater") {
   }
 }
 
+group("all") {
+  testonly = true
+
+  if (is_win || is_mac) {
+    deps = [
+      ":updater",
+      "//chrome/updater/test/test_app",
+    ]
+  }
+}
+
 # Conditional build is needed, otherwise the analyze script on Linux
 # requires all targets and it is going to include the targets below.
 if (is_win || is_mac) {
@@ -102,6 +113,8 @@ if (is_win || is_mac) {
       "crx_downloader_factory.h",
       "external_constants.cc",
       "external_constants.h",
+      "external_constants_builder.cc",
+      "external_constants_builder.h",
       "external_constants_impl.h",
       "external_constants_override.cc",
       "external_constants_override.h",
@@ -168,7 +181,6 @@ if (is_win || is_mac) {
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
         "external_constants_win.cc",
-        "installer_win.cc",
         "lib_util_win.cc",
         "prefs_win.cc",
         "service_factory_win.cc",
@@ -183,7 +195,6 @@ if (is_win || is_mac) {
       ":version_header",
       "//base",
       "//base:i18n",
-      "//chrome/updater/device_management",
       "//components/crash/core/common:crash_key",
       "//components/crx_file:crx_file",
       "//components/prefs",
@@ -194,13 +205,17 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
+      # //chrome/updater:lib and //chrome/updater/win:lib behave as one unit
+      # for linking purposes. Targets depending on the latter must use
+      # the former as a dependency.
+      allow_circular_includes_from = [ "//chrome/updater/win:lib" ]
       deps += [
         "//chrome/updater/app/server/win:updater_idl_idl",
         "//chrome/updater/app/server/win:updater_internal_idl_idl",
         "//chrome/updater/app/server/win:updater_legacy_idl_idl",
         "//chrome/updater/win:constants",
-        "//chrome/updater/win:lib",
       ]
+      public_deps = [ "//chrome/updater/win:lib" ]
     }
 
     if (is_mac) {
@@ -319,6 +334,7 @@ if (is_win || is_mac) {
     sources = [
       "app/app_server_unittest.cc",
       "enum_traits_unittest.cc",
+      "external_constants_builder_unittest.cc",
       "external_constants_override_unittest.cc",
       "external_constants_unittest.cc",
       "external_constants_unittest.h",
@@ -372,7 +388,6 @@ if (is_win || is_mac) {
         "//chrome/updater/app/server/win:updater_internal_idl_idl",
         "//chrome/updater/app/server/win:updater_legacy_idl_idl",
         "//chrome/updater/win:constants",
-        "//chrome/updater/win:lib",
         "//chrome/updater/win:updater_tests",
       ]
 

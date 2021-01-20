@@ -178,7 +178,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           this,
           features::IsAppSupportEnabled(),
           features::IsWaitSchedulingEnabled())),
-      chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_(
           std::make_unique<AssistantSettingsImpl>(context, this)),
       assistant_proxy_(std::make_unique<AssistantProxy>()),
@@ -207,7 +206,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   // |libassistant_service_host| which requires |platform_api_| in its
   // constructor.
   // To solve this chicken-and-egg problem, we need a separe Initialize() call.
-  assistant_proxy_->Initialize(libassistant_service_host_.get());
+  assistant_proxy_->Initialize(libassistant_service_host_.get(),
+                               std::move(pending_url_loader_factory));
 
   audio_input_host_ = delegate_->CreateAudioInputHost();
 
@@ -503,9 +503,7 @@ void AssistantManagerServiceImpl::StopActiveInteraction(
 
 void AssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {
-  SendVoicelessInteraction(CreateEditReminderInteraction(client_id),
-                           /*description=*/std::string(),
-                           /*is_user_initiated=*/true);
+  conversation_controller_proxy().StartEditReminderInteraction(client_id);
 }
 
 void AssistantManagerServiceImpl::StartScreenContextInteraction(
@@ -560,41 +558,13 @@ void AssistantManagerServiceImpl::RemoveAssistantInteractionSubscriber(
 void AssistantManagerServiceImpl::RetrieveNotification(
     const AssistantNotification& notification,
     int action_index) {
-  const std::string& notification_id = notification.server_id;
-  const std::string& consistency_token = notification.consistency_token;
-  const std::string& opaque_token = notification.opaque_token;
-
-  const std::string request_interaction =
-      SerializeNotificationRequestInteraction(
-          notification_id, consistency_token, opaque_token, action_index);
-
-  SendVoicelessInteraction(request_interaction,
-                           /*description=*/"RequestNotification",
-                           /*is_user_initiated=*/true);
+  conversation_controller_proxy().RetrieveNotification(notification,
+                                                       action_index);
 }
 
 void AssistantManagerServiceImpl::DismissNotification(
     const AssistantNotification& notification) {
-  // |assistant_manager_internal()| may not exist if we are dismissing
-  // notifications as part of a shutdown sequence.
-  if (!assistant_manager_internal())
-    return;
-
-  const std::string& notification_id = notification.server_id;
-  const std::string& consistency_token = notification.consistency_token;
-  const std::string& opaque_token = notification.opaque_token;
-  const std::string& grouping_key = notification.grouping_key;
-
-  const std::string dismissed_interaction =
-      SerializeNotificationDismissedInteraction(
-          notification_id, consistency_token, opaque_token, {grouping_key});
-
-  assistant_client::VoicelessOptions options;
-  options.obfuscated_gaia_id = notification.obfuscated_gaia_id;
-
-  assistant_manager_internal()->SendVoicelessInteraction(
-      dismissed_interaction, /*description=*/"DismissNotification", options,
-      [](auto) {});
+  conversation_controller_proxy().DismissNotification(notification);
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedInternal(
@@ -1025,7 +995,7 @@ void AssistantManagerServiceImpl::InitAssistant(
   DCHECK(!IsServiceStarted());
 
   service_controller().Start(
-      action_module_.get(), &chromium_api_delegate_,
+      action_module_.get(),
       /*assistant_manager_delegate=*/this,
       /*conversation_state_listener=*/this,
       /*device_state_listener=*/this,
@@ -1309,13 +1279,7 @@ void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {
 
 void AssistantManagerServiceImpl::SendAssistantFeedback(
     const AssistantFeedback& assistant_feedback) {
-  const std::string interaction = CreateSendFeedbackInteraction(
-      assistant_feedback.assistant_debug_info_allowed,
-      assistant_feedback.description, assistant_feedback.screenshot_png);
-
-  SendVoicelessInteraction(interaction,
-                           /*description=*/"send feedback with details",
-                           /*is_user_initiated=*/false);
+  conversation_controller_proxy().SendAssistantFeedback(assistant_feedback);
 }
 
 void AssistantManagerServiceImpl::UpdateMediaState() {

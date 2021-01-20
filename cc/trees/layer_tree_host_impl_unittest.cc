@@ -13886,14 +13886,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, FadedOutPaintedScrollbarHitTest) {
 
   // MouseDown on the track of a scrollbar with opacity 0 should not produce a
   // scroll.
-  scrollbar->set_scrollbar_painted_opacity(0);
+  scrollbar->SetScrollbarPaintedOpacity(0);
   InputHandlerPointerResult result = GetInputHandler().MouseDown(
       gfx::PointF(350, 100), /*jump_key_modifier*/ false);
   EXPECT_EQ(result.scroll_offset.y(), 0u);
 
   // MouseDown on the track of a scrollbar with opacity > 0 should produce a
   // scroll.
-  scrollbar->set_scrollbar_painted_opacity(1);
+  scrollbar->SetScrollbarPaintedOpacity(1);
   result = GetInputHandler().MouseDown(gfx::PointF(350, 100),
                                        /*jump_key_modifier*/ false);
   EXPECT_GT(result.scroll_offset.y(), 0u);
@@ -14620,7 +14620,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, MainThreadFallback) {
   // InputHandlerPointerResult should return a zero offset. This will cause the
   // main thread to handle the scroll.
   GetScrollNode(scroll_layer)->main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
+      MainThreadScrollingReason::kThreadedScrollingDisabled;
   compositor_threaded_scrolling_result = GetInputHandler().MouseDown(
       gfx::PointF(350, 500), /*jump_key_modifier*/ false);
   GetInputHandler().MouseUp(gfx::PointF(350, 500));

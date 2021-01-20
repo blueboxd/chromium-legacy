@@ -3007,7 +3007,7 @@ Unknown properties are collapsed to zero. -->
   <int value="25" label="Omnibox, Assistant"/>
   <int value="26" label="Omnibox, Search History"/>
   <int value="27" label="Omnibox, Search Suggest"/>
-  <int value="28" label="Omnibox, Personalzied Suggestion"/>
+  <int value="28" label="Omnibox, Personalized Suggestion"/>
   <int value="29" label="Zero State Local File"/>
   <int value="30" label="Drive Quick Access"/>
   <int value="31" label="Assistant"/>
@@ -3017,6 +3017,8 @@ Unknown properties are collapsed to zero. -->
   <int value="35" label="Remote App"/>
   <int value="36" label="Borealis App"/>
   <int value="37" label="Help App"/>
+  <int value="38" label="Omnibox, Search Suggest Entity"/>
+  <int value="39" label="Omnibox, Navsuggest"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
@@ -30492,7 +30494,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3283" label="OBSOLETE_LocationFragmentDirectiveAccessed"/>
   <int value="3284" label="CanvasRenderingContext"/>
   <int value="3285" label="SchemefulSameSiteContextDowngrade"/>
-  <int value="3286" label="OriginIsolationHeader"/>
+  <int value="3286" label="OriginAgentClusterHeader"/>
   <int value="3287" label="V8WasmSimdOpcodes"/>
   <int value="3288" label="GridRowGapPercent"/>
   <int value="3289" label="GridRowGapPercentIndefinite"/>
@@ -43139,6 +43141,7 @@ from previous Chrome versions.
       label="OverrideLanguagePrefsForHrefTranslate:enabled"/>
   <int value="-1473878093" label="HideArcMediaNotifications:disabled"/>
   <int value="-1473668019" label="token-binding:disabled"/>
+  <int value="-1473537658" label="DeprecateLowUsageCodecs:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
   <int value="-1472825316" label="ContextualSearchLongpressResolve:enabled"/>
   <int value="-1471021059"
@@ -45158,6 +45161,7 @@ from previous Chrome versions.
   <int value="414937629" label="MediaNotificationsCounter:enabled"/>
   <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="415395210" label="TrimOnMemoryPressure:enabled"/>
+  <int value="416116189" label="DeprecateLowUsageCodecs:enabled"/>
   <int value="416691040" label="SendTabToSelfOmniboxSendingAnimation:disabled"/>
   <int value="416887895" label="enable-password-change-support"/>
   <int value="417709910"
@@ -47663,7 +47667,7 @@ from previous Chrome versions.
 <enum name="MainThreadScrollingReason">
   <int value="0" label="Not scrolling on main"/>
   <int value="1" label="Background attachment fixed"/>
-  <int value="2" label="Non layer viewport constrained"/>
+  <int value="2" label="Non layer viewport constrained (obsolete)"/>
   <int value="3" label="Threaded scrolling disabled"/>
   <int value="4" label="Scrollbar scrolling"/>
   <int value="5" label="Frame overlay"/>

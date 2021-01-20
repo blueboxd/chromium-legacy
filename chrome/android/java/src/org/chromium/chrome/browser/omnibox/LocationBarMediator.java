@@ -19,6 +19,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CallbackController;
 import org.chromium.base.CommandLine;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -84,6 +85,7 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
     private TemplateUrl mSearchEngine;
     private final Context mContext;
     private final BackKeyBehaviorDelegate mBackKeyBehavior;
+    private final WindowAndroid mWindowAndroid;
     private String mOriginalUrl = "";
 
     private boolean mNativeInitialized;
@@ -96,7 +98,8 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
             @NonNull OverrideUrlLoadingDelegate overrideUrlLoadingDelegate,
             @NonNull LocaleManager localeManager,
             @NonNull OneshotSupplier<TemplateUrlService> templateUrlServiceSupplier,
-            @NonNull BackKeyBehaviorDelegate backKeyBehavior) {
+            @NonNull BackKeyBehaviorDelegate backKeyBehavior,
+            @NonNull WindowAndroid windowAndroid) {
         mContext = context;
         mLocationBarLayout = locationBarLayout;
         mLocationBarDataProvider = locationBarDataProvider;
@@ -110,6 +113,7 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
         mPrivacyPreferencesManager = privacyPreferencesManager;
         mTemplateUrlServiceSupplier = templateUrlServiceSupplier;
         mBackKeyBehavior = backKeyBehavior;
+        mWindowAndroid = windowAndroid;
     }
 
     /**
@@ -173,6 +177,7 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
             mLocationBarLayout.post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
+        updateMicButtonState();
     }
 
     /*package */ void setUrlFocusChangeFraction(float fraction) {
@@ -186,7 +191,6 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
     /* package */ void setVoiceRecognitionHandlerForTesting(
             VoiceRecognitionHandler voiceRecognitionHandler) {
         mVoiceRecognitionHandler = voiceRecognitionHandler;
-        mLocationBarLayout.setVoiceRecognitionHandlerForTesting(voiceRecognitionHandler);
     }
 
     /* package */ void setAssistantVoiceSearchServiceForTesting(
@@ -381,6 +385,24 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
                 urlBarData, UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
     }
 
+    /* package */ void deleteButtonClicked(View view) {
+        if (!mNativeInitialized) return;
+        RecordUserAction.record("MobileOmniboxDeleteUrl");
+        mLocationBarLayout.setUrlBarTextEmpty();
+        updateButtonVisibility();
+    }
+
+    /* package */ void micButtonClicked(View view) {
+        if (!mNativeInitialized) return;
+        RecordUserAction.record("MobileOmniboxVoiceSearch");
+        mVoiceRecognitionHandler.startVoiceRecognition(
+                VoiceRecognitionHandler.VoiceInteractionSource.OMNIBOX);
+    }
+
+    /* package */ void setUrlFocusChangeInProgress(boolean inProgress) {
+        mLocationBarLayout.setUrlFocusChangeInProgress(inProgress);
+    }
+
     // Private methods
 
     private void setProfile(Profile profile) {
@@ -448,13 +470,18 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
         }
     }
 
+    private void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.OmniboxFocusReason", reason, OmniboxFocusReason.NUM_ENTRIES);
+    }
+
     // LocationBarData.Observer implementation
     // Using the default empty onSecurityStateChanged.
     // Using the default empty onTitleChanged.
 
     @Override
     public void onIncognitoStateChanged() {
-        mLocationBarLayout.updateMicButtonState();
+        updateMicButtonState();
     }
 
     @Override
@@ -492,7 +519,37 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
 
     @Override
     public void setUrlBarFocus(boolean shouldBeFocused, @Nullable String pastedText, int reason) {
-        mLocationBarLayout.setUrlBarFocus(shouldBeFocused, pastedText, reason);
+        boolean urlHasFocus = mLocationBarLayout.isUrlBarFocused();
+        if (shouldBeFocused) {
+            if (!urlHasFocus) recordOmniboxFocusReason(reason);
+            if (reason == OmniboxFocusReason.FAKE_BOX_TAP
+                    || reason == OmniboxFocusReason.FAKE_BOX_LONG_PRESS
+                    || reason == OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS
+                    || reason == OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP) {
+                mLocationBarLayout.setUrlFocusedFromFakebox(true);
+            }
+
+            if (reason == OmniboxFocusReason.QUERY_TILES_NTP_TAP) {
+                mLocationBarLayout.setUrlFocusedFromFakebox(true);
+                mLocationBarLayout.setUrlFocusedFromQueryTiles(true);
+            }
+
+            if (urlHasFocus && mLocationBarLayout.isUrlBarFocusedWithoutAnimations()) {
+                mLocationBarLayout.handleUrlFocusAnimation(true);
+            } else {
+                mUrlCoordinator.requestFocus();
+            }
+        } else {
+            assert pastedText == null;
+            mUrlCoordinator.clearFocus();
+        }
+
+        if (pastedText != null) {
+            // This must be happen after requestUrlFocus(), which changes the selection.
+            mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(pastedText),
+                    UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
+            mLocationBarLayout.forceOnTextChanged();
+        }
     }
 
     @Override
@@ -555,7 +612,9 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
 
     @Override
     public void updateMicButtonState() {
-        mLocationBarLayout.updateMicButtonState();
+        mLocationBarLayout.setVoiceSearchEnabled(mVoiceRecognitionHandler != null
+                && mVoiceRecognitionHandler.isVoiceSearchEnabled());
+        updateButtonVisibility();
     }
 
     @Override
@@ -569,7 +628,7 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
 
         // Ensure the UrlBar has focus before entering text. If the UrlBar is not focused,
         // autocomplete text will be updated but the visible text will not.
-        mLocationBarLayout.setUrlBarFocus(
+        setUrlBarFocus(
                 /*shouldBeFocused=*/true, /*pastedText=*/null, OmniboxFocusReason.SEARCH_QUERY);
         mLocationBarLayout.setUrlBarText(UrlBarData.forNonUrlText(query),
                 UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
@@ -584,12 +643,12 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
 
     @Override
     public AutocompleteCoordinator getAutocompleteCoordinator() {
-        return mLocationBarLayout.getAutocompleteCoordinator();
+        return mAutocompleteCoordinator;
     }
 
     @Override
     public WindowAndroid getWindowAndroid() {
-        return mLocationBarLayout.getWindowAndroid();
+        return mWindowAndroid;
     }
 
     // UrlBarDelegate implementation.
@@ -621,9 +680,8 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
 
     @Override
     public void gestureDetected(boolean isLongPress) {
-        mLocationBarLayout.recordOmniboxFocusReason(isLongPress
-                        ? OmniboxFocusReason.OMNIBOX_LONG_PRESS
-                        : OmniboxFocusReason.OMNIBOX_TAP);
+        recordOmniboxFocusReason(isLongPress ? OmniboxFocusReason.OMNIBOX_LONG_PRESS
+                                             : OmniboxFocusReason.OMNIBOX_TAP);
     }
 
     // OnKeyListener implementation.

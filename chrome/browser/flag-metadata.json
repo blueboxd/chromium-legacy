@@ -273,16 +273,6 @@
     "expiry_milestone": 72
   },
   {
-    "name": "autofill-enable-card-nickname-management",
-    "owners": [ "siyua", "sujiezhu@google.com" ],
-    "expiry_milestone": 92
-  },
-  {
-    "name": "autofill-enable-card-nickname-upstream",
-    "owners": [ "siyua", "sujiezhu@google.com" ],
-    "expiry_milestone": 94
-  },
-  {
     "name": "autofill-enable-company-name",
     "owners": [ "sebsg" ],
     "expiry_milestone": 73
@@ -848,6 +838,11 @@
     "name": "delay-competing-low-priority-requests",
     "owners": [ "dom", "chrome-loading@google.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "deprecate-low-usage-codecs",
+    "owners": [ "dalecurtis", "sweyn" ],
+    "expiry_milestone": 92
   },
   {
     "name": "desktop-in-product-help-snooze",
@@ -4858,8 +4853,8 @@
   },
   {
     "name": "updated_cellular_activation_ui",
-    "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-system-services@google.com" ],
-    "expiry_milestone": 89
+    "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-connectivity@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "url-blocklist-ios",

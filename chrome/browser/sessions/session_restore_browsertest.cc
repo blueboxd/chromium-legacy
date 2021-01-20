@@ -121,10 +121,8 @@ class SessionRestoreTest : public InProcessBrowserTest {
     if (strcmp(test_info->name(), "NoSessionRestoreNewWindowChromeOS") != 0) {
       // Undo the effect of kBrowserAliveWithNoWindows in defaults.cc so that we
       // can get these test to work without quitting.
-      SessionServiceTestHelper helper(
-          SessionServiceFactory::GetForProfile(browser()->profile()));
+      SessionServiceTestHelper helper(browser()->profile());
       helper.SetForceBrowserNotAliveWithNoWindows(true);
-      helper.ReleaseService();
     }
 #endif
   }
@@ -164,10 +162,8 @@ class SessionRestoreTest : public InProcessBrowserTest {
 
     // Ensure the session service factory is started, even if it was explicitly
     // shut down.
-    SessionServiceTestHelper helper(
-        SessionServiceFactory::GetForProfileForSessionRestore(profile));
+    SessionServiceTestHelper helper(profile);
     helper.SetForceBrowserNotAliveWithNoWindows(true);
-    helper.ReleaseService();
 
     // Create a new window, which should trigger session restore.
     if (url.is_empty()) {
@@ -524,18 +520,28 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Creates a tabbed browser and popup and makes sure we restore both.
-// Disabled for mac-arm64 bot stabilization: https://crbug.com/1154345
-// Also disabled for Mac flakiness in general: https://crbug.com/1158715
-// Also disabled for cross-platform flakiness in general: https://crbug.com/1166756
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, DISABLED_NormalAndPopup) {
+// NOTE: If this flakes, please disable and update https://crbug.com/1166756.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
   // Open a popup.
   Browser* popup = CreateBrowserForPopup(browser()->profile());
   ASSERT_EQ(2u, active_browser_list_->size());
+
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(browser()->profile());
+  SessionServiceTestHelper test_helper(session_service);
+  auto backend_task_runner = test_helper.GetBackendTaskRunner();
 
   // Simulate an exit by shutting down the session service. If we don't do this
   // the first window close is treated as though the user closed the window
   // and won't be restored.
   SessionServiceFactory::ShutdownForProfile(browser()->profile());
+
+  // Ensure the session service finishes writing. This is necessary as the
+  // code following this creates a new SessionService, which will use a
+  // different task runner for reading/writing to the same files.
+  base::RunLoop run_loop;
+  backend_task_runner->PostNonNestableTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
 
   // Restart and make sure we have two windows.
   CloseBrowserSynchronously(popup);
@@ -1335,10 +1341,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, CloseSingleTabRestoresNothing) {
 
   // Ensure the session service factory is started, even if it was explicitly
   // shut down.
-  SessionServiceTestHelper helper(
-      SessionServiceFactory::GetForProfileForSessionRestore(profile));
+  SessionServiceTestHelper helper(profile);
   helper.SetForceBrowserNotAliveWithNoWindows(true);
-  helper.ReleaseService();
 
   chrome::NewEmptyWindow(profile);
 
@@ -1375,10 +1379,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Ensure the session service factory is started, even if it was explicitly
   // shut down.
-  SessionServiceTestHelper helper(
-      SessionServiceFactory::GetForProfileForSessionRestore(profile));
+  SessionServiceTestHelper helper(profile);
   helper.SetForceBrowserNotAliveWithNoWindows(true);
-  helper.ReleaseService();
 
   // Create a new browser by navigating to the test page.
   GURL url = ui_test_utils::GetTestUrl(

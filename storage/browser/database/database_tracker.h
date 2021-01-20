@@ -57,15 +57,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) OriginInfo {
   base::Time LastModified() const { return last_modified_; }
   void GetAllDatabaseNames(std::vector<base::string16>* databases) const;
   int64_t GetDatabaseSize(const base::string16& database_name) const;
-  base::string16 GetDatabaseDescription(
-      const base::string16& database_name) const;
-  base::Time GetDatabaseLastModified(const base::string16& database_name) const;
 
  protected:
   struct DBInfo {
-    base::string16 description;
     int64_t size;
-    base::Time last_modified;
   };
   OriginInfo(const std::string& origin_identifier, int64_t total_size);
 
@@ -98,7 +93,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   };
 
   DatabaseTracker(const base::FilePath& profile_path,
-                  bool is_off_the_record,
+                  bool is_incognito,
                   SpecialStoragePolicy* special_storage_policy,
                   QuotaManagerProxy* quota_manager_proxy);
 
@@ -141,12 +136,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   bool IsDatabaseScheduledForDeletion(const std::string& origin_identifier,
                                       const base::string16& database_name);
 
-  // Deletes a single database. Returns net::OK on success, net::FAILED on
-  // failure, or net::ERR_IO_PENDING and |callback| is invoked upon completion,
-  // if non-null.
-  int DeleteDatabase(const std::string& origin_identifier,
-                     const base::string16& database_name,
-                     net::CompletionOnceCallback callback);
+  // Deletes a single database.
+  //
+  // `callback` must be non-null, and is invoked upon completion with a
+  // net::Error, which will most likely be net::OK or net::FAILED. `callback`
+  // may be called before this method returns.
+  void DeleteDatabase(const std::string& origin_identifier,
+                      const base::string16& database_name,
+                      net::CompletionOnceCallback callback);
 
   // Delete any databases that have been touched since the cutoff date that's
   // supplied, omitting any that match IDs within |protected_origins|.
@@ -164,18 +161,16 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   virtual int DeleteDataForOrigin(const url::Origin& origin,
                                   net::CompletionOnceCallback callback);
 
-  bool IsOffTheRecordProfile() const { return is_off_the_record_; }
+  bool IsIncognitoProfile() const { return is_incognito_; }
 
-  const base::File* GetOffTheRecordFile(
-      const base::string16& vfs_file_path) const;
-  const base::File* SaveOffTheRecordFile(const base::string16& vfs_file_path,
-                                         base::File file);
-  void CloseOffTheRecordFileHandle(const base::string16& vfs_file_path);
-  bool HasSavedOffTheRecordFileHandle(
-      const base::string16& vfs_file_path) const;
+  const base::File* GetIncognitoFile(const base::string16& vfs_file_path) const;
+  const base::File* SaveIncognitoFile(const base::string16& vfs_file_path,
+                                      base::File file);
+  void CloseIncognitoFileHandle(const base::string16& vfs_file_path);
+  bool HasSavedIncognitoFileHandle(const base::string16& vfs_file_path) const;
 
   // Shutdown the database tracker, deleting database files if the tracker is
-  // used for an OffTheRecord profile.
+  // used for an Incognito profile.
   void Shutdown();
   // Disables the exit-time deletion of session-only data.
   void SetForceKeepSessionState();
@@ -204,13 +199,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
       if (new_size != old_size)
         total_size_ += new_size - old_size;
     }
-    void SetDatabaseDescription(const base::string16& database_name,
-                                const base::string16& description) {
-      database_info_[database_name].description = description;
-    }
-    void SetDatabaseLastModified(const base::string16& database_name,
-                                 const base::Time& last_modified) {
-      database_info_[database_name].last_modified = last_modified;
+    void UpdateLastModified(base::Time last_modified) {
       if (last_modified > last_modified_)
         last_modified_ = last_modified;
     }
@@ -219,9 +208,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   // virtual for unit-testing only.
   virtual ~DatabaseTracker();
 
-  // Deletes the directory that stores all DBs in OffTheRecord mode, if it
+  // Deletes the directory that stores all DBs in Incognito mode, if it
   // exists.
-  void DeleteOffTheRecordDBDirectory();
+  void DeleteIncognitoDBDirectory();
 
   // Deletes session-only databases. Blocks databases from being created/opened.
   void ClearSessionOnlyOrigins();
@@ -279,7 +268,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   base::FilePath GetOriginDirectory(const std::string& origin_identifier);
 
   bool is_initialized_ = false;
-  const bool is_off_the_record_;
+  const bool is_incognito_;
   bool force_keep_session_state_ = false;
   bool shutting_down_ = false;
   const base::FilePath profile_path_;
@@ -312,20 +301,20 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   // The database tracker thread we're supposed to run file IO on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // When in OffTheRecord mode, store a DELETE_ON_CLOSE handle to each
-  // main DB and journal file that was accessed. When the OffTheRecord profile
+  // When in Incognito mode, store a DELETE_ON_CLOSE handle to each
+  // main DB and journal file that was accessed. When the Incognito profile
   // goes away (or when the browser crashes), all these handles will be
   // closed, and the files will be deleted.
-  std::map<base::string16, base::File*> off_the_record_file_handles_;
+  std::map<base::string16, base::File*> incognito_file_handles_;
 
-  // In a non-OffTheRecord profile, all DBs in an origin are stored in a
-  // directory named after the origin. In an OffTheRecord profile though, we do
+  // In a non-Incognito profile, all DBs in an origin are stored in a
+  // directory named after the origin. In an Incognito profile though, we do
   // not want the directory structure to reveal the origins visited by the user
   // (in case the browser process crashes and those directories are not
   // deleted). So we use this map to assign directory names that do not reveal
   // this information.
-  std::map<std::string, base::string16> off_the_record_origin_directories_;
-  int off_the_record_origin_directories_generator_ = 0;
+  std::map<std::string, base::string16> incognito_origin_directories_;
+  int incognito_origin_directories_generator_ = 0;
 
   FRIEND_TEST_ALL_PREFIXES(DatabaseTracker, TestHelper);
 };

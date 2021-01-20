@@ -3934,6 +3934,35 @@ TEST_F(StyleEngineTest, MarkStyleDirtyFromContainerRecalc) {
   EXPECT_NE(old_inner_style, new_inner_style);
 }
 
+TEST_F(StyleEngineTest, VideoControlsReject) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <video controls></video>
+    <div id="target"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // If the Stats() were already enabled, we would not start with 0 counts.
+  EXPECT_FALSE(engine.Stats());
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+  EXPECT_EQ(0u, stats->rules_rejected);
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  target->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // There should be no UA rules for a div to reject
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+  EXPECT_EQ(0u, stats->rules_rejected);
+}
+
 TEST_F(StyleEngineTest, FastRejectForHostChild) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
@@ -4014,6 +4043,28 @@ TEST_F(StyleEngineTest, RejectSlottedSelector) {
 
   // Should fast reject ".notfound ::slotted(span)"
   EXPECT_EQ(1u, stats->rules_fast_rejected);
+}
+
+TEST_F(StyleEngineTest, AudioUAStyleNameSpace) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <audio id="html-audio"></audio>
+  )HTML");
+  Element* html_audio = GetDocument().getElementById("html-audio");
+  Element* audio = GetDocument().createElementNS("http://dummyns", "audio",
+                                                 ASSERT_NO_EXCEPTION);
+  GetDocument().body()->appendChild(audio);
+  UpdateAllLifecyclePhases();
+
+  // display:none UA rule for audio element should not apply outside html.
+  EXPECT_TRUE(audio->GetComputedStyle());
+  EXPECT_FALSE(html_audio->GetComputedStyle());
+
+  FloatSize page_size(400, 400);
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size, 1);
+
+  // Also for printing.
+  EXPECT_TRUE(audio->GetComputedStyle());
+  EXPECT_FALSE(html_audio->GetComputedStyle());
 }
 
 }  // namespace blink

@@ -492,6 +492,10 @@ void LayerTreeHost::CommitComplete() {
     client_->DidCompletePageScaleAnimation();
     did_complete_scale_animation_ = false;
   }
+
+  for (auto& closure : committed_document_transition_callbacks_)
+    std::move(closure).Run();
+  committed_document_transition_callbacks_.clear();
 }
 
 void LayerTreeHost::SetLayerTreeFrameSink(
@@ -804,8 +808,8 @@ void LayerTreeHost::DidObserveFirstScrollDelay(
 
 void LayerTreeHost::AddDocumentTransitionRequest(
     std::unique_ptr<DocumentTransitionRequest> request) {
-  // TODO(vmpstr): Propagate this to viz after activation.
-  request->TakeCommitCallback().Run();
+  document_transition_requests_.push_back(std::move(request));
+  SetNeedsCommit();
 }
 
 bool LayerTreeHost::DoUpdateLayers() {
@@ -1228,6 +1232,13 @@ void LayerTreeHost::SetViewportRectAndScale(
       local_surface_id_from_parent_;
   SetLocalSurfaceIdFromParent(local_surface_id_from_parent);
 
+  TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "LayerTreeHostSize",
+                                  TRACE_ID_LOCAL(this));
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("cc", "LayerTreeHostSize",
+                                    TRACE_ID_LOCAL(this), "size",
+                                    device_viewport_rect.ToString(), "lsid",
+                                    local_surface_id_from_parent.ToString());
+
   bool device_viewport_rect_changed = false;
   if (device_viewport_rect_ != device_viewport_rect) {
     device_viewport_rect_ = device_viewport_rect;
@@ -1619,6 +1630,16 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   if (delegated_ink_metadata_)
     tree_impl->set_delegated_ink_metadata(std::move(delegated_ink_metadata_));
+
+  // Transfer page transition directives.
+  for (auto& request : document_transition_requests_) {
+    // Store the commit callback on LayerTreeHost, so that we can invoke them in
+    // CommitComplete.
+    committed_document_transition_callbacks_.push_back(
+        request->TakeCommitCallback());
+    tree_impl->AddDocumentTransitionRequest(std::move(request));
+  }
+  document_transition_requests_.clear();
 }
 
 void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
@@ -1889,6 +1910,11 @@ void LayerTreeHost::SetDelegatedInkMetadata(
     std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
   delegated_ink_metadata_ = std::move(metadata);
   SetNeedsCommit();
+}
+
+std::vector<std::unique_ptr<DocumentTransitionRequest>>
+LayerTreeHost::TakeDocumentTransitionRequestsForTesting() {
+  return std::move(document_transition_requests_);
 }
 
 }  // namespace cc

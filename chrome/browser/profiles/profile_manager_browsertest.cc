@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -53,10 +52,6 @@
 #endif
 
 namespace {
-
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-const char kEphemeralProfilePath[] = "Ephemeral profile";
-#endif
 
 const ProfileManager::CreateCallback kOnProfileSwitchDoNothing;
 
@@ -783,13 +778,6 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerEphemeralGuestProfileBrowserTest,
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  // Force the number of guest profiles created so that we have the same guest
-  // profile name in the post test.
-  // It's important to call this early in the test, before the guest profile
-  // path is computed for the first time.
-  g_browser_process->local_state()->SetInteger(prefs::kGuestProfilesNumCreated,
-                                               1u);
-
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -797,7 +785,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerEphemeralGuestProfileBrowserTest,
 
   // Create an ephemeral profile.
   base::FilePath ephemeral_profile_path =
-      profile_manager->user_data_dir().AppendASCII(kEphemeralProfilePath);
+      profile_manager->GenerateNextProfileDirectoryPath();
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       ephemeral_profile_path,
@@ -832,23 +820,10 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerEphemeralGuestProfileBrowserTest,
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  // It's important to call this early in the test, before the guest profile
-  // path is computed for the first time.
-  g_browser_process->local_state()->SetInteger(prefs::kGuestProfilesNumCreated,
-                                               1u);
-
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
-  base::FilePath ephemeral_profile_path =
-      profile_manager->user_data_dir().AppendASCII(kEphemeralProfilePath);
-  g_browser_process->local_state()->SetInteger(prefs::kGuestProfilesNumCreated,
-                                               0u);
-  base::FilePath guest_profile_path = profile_manager->GetGuestProfilePath();
   // Check that ephemeral profiles got deleted.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_FALSE(base::DirectoryExists(guest_profile_path));
-  EXPECT_FALSE(base::DirectoryExists(ephemeral_profile_path));
   EXPECT_EQ(1u, storage.GetNumberOfProfiles(true));
 }
 

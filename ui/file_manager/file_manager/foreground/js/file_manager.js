@@ -49,6 +49,7 @@
 // #import {ProvidersModel} from './providers_model.m.js';
 // #import {ThumbnailModel} from './metadata/thumbnail_model.m.js';
 // #import {MetadataModel} from './metadata/metadata_model.m.js';
+// #import {ContentMetadataProvider} from './metadata/content_metadata_provider.m.js';
 // #import {FilteredVolumeManager} from '../../../base/js/filtered_volume_manager.m.js';
 // #import {LaunchParam} from './launch_param.m.js';
 // #import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
@@ -589,6 +590,15 @@
   }
 
   /**
+   * Returns the last URL visited with visitURL() (e.g. for "Manage in Drive").
+   * Used by the integration tests.
+   * @return {string}
+   */
+  getLastVisitedURL() {
+    return util.getLastVisitedURL();
+  }
+
+  /**
    * One time initialization for app state controller to load view option from
    * local storage.
    * @return {!Promise<void>}
@@ -1001,6 +1011,14 @@
       DialogType.SELECT_OPEN_MULTI_FILE,
       DialogType.FULL_PAGE,
     ]);
+
+    if (util.isFilesJsModulesEnabled()) {
+      ContentMetadataProvider.configure(
+          'foreground/js/metadata_dispatcher.m.js', /*isModule=*/ true);
+    } else if (window.isSWA) {
+      ContentMetadataProvider.configure(
+          'foreground/js/metadata/metadata_dispatcher.js');
+    }
 
     // Create the metadata cache.
     assert(this.volumeManager_);

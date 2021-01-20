@@ -59,15 +59,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) OriginInfo {
   int64_t GetDatabaseSize(const base::string16& database_name) const;
 
  protected:
-  struct DBInfo {
-    int64_t size;
-  };
   OriginInfo(const std::string& origin_identifier, int64_t total_size);
 
   std::string origin_identifier_;
   int64_t total_size_;
   base::Time last_modified_;
-  std::map<base::string16, DBInfo> database_info_;
+  std::map<base::string16, int64_t> database_sizes_;
 };
 
 // This class manages the main database and keeps track of open databases.
@@ -145,21 +142,26 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
                       const base::string16& database_name,
                       net::CompletionOnceCallback callback);
 
-  // Delete any databases that have been touched since the cutoff date that's
-  // supplied, omitting any that match IDs within |protected_origins|.
-  // Returns net::OK on success, net::FAILED if not all databases could be
-  // deleted, and net::ERR_IO_PENDING and |callback| is invoked upon completion,
-  // if non-null. Protected origins, according the the SpecialStoragePolicy,
-  // are not deleted by this method.
-  int DeleteDataModifiedSince(const base::Time& cutoff,
-                              net::CompletionOnceCallback callback);
+  // Deletes databases touched since `cutoff`.
+  //
+  // Does not delete databases belonging to origins designated as protected by
+  // the SpecialStoragePolicy passed to the DatabaseTracker constructor.
+  //
+  // `callback` must must be non-null, and is invoked upon completion with a
+  // net::Error. The status will be net::OK on success, or net::FAILED if not
+  // all databases could be deleted. `callback` may be called before this method
+  // returns.
+  void DeleteDataModifiedSince(const base::Time& cutoff,
+                               net::CompletionOnceCallback callback);
 
-  // Delete all databases that belong to the given origin. Returns net::OK on
-  // success, net::FAILED if not all databases could be deleted, and
-  // net::ERR_IO_PENDING and |callback| is invoked upon completion, if non-null.
-  // virtual for unit testing only
-  virtual int DeleteDataForOrigin(const url::Origin& origin,
-                                  net::CompletionOnceCallback callback);
+  // Deletes all databases that belong to the given origin.
+  //
+  // `callback` must must be non-null, and is invoked upon completion with a
+  // net::Error. The status will be net::OK on success, or net::FAILED if not
+  // all databases could be deleted. `callback` may be called before this method
+  // returns.
+  virtual void DeleteDataForOrigin(const url::Origin& origin,
+                                   net::CompletionOnceCallback callback);
 
   bool IsIncognitoProfile() const { return is_incognito_; }
 
@@ -192,10 +194,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
     }
     void SetDatabaseSize(const base::string16& database_name,
                          int64_t new_size) {
-      int64_t old_size = 0;
-      if (database_info_.find(database_name) != database_info_.end())
-        old_size = database_info_[database_name].size;
-      database_info_[database_name].size = new_size;
+      // If the name does not exist in the map, operator[] creates a new entry
+      // with a default-constructed value. The default-constructed value for
+      // int64_t is zero (0), which is exactly what we want `old_size` to be set
+      // to in this case.
+      int64_t& database_size = database_sizes_[database_name];
+      int64_t old_size = database_size;
+
+      database_size = new_size;
       if (new_size != old_size)
         total_size_ += new_size - old_size;
     }

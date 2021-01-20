@@ -17158,6 +17158,18 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="7" label="FallbackFailure"/>
 </enum>
 
+<enum name="DevToolsDeveloperResourceScheme">
+  <int value="0" label="SchemeOther"/>
+  <int value="1" label="SchemeUnknown"/>
+  <int value="2" label="SchemeHttp"/>
+  <int value="3" label="SchemeHttps"/>
+  <int value="4" label="SchemeHttpLocalhost"/>
+  <int value="5" label="SchemeHttpsLocalhost"/>
+  <int value="6" label="SchemeData"/>
+  <int value="7" label="SchemeFile"/>
+  <int value="8" label="SchemeBlob"/>
+</enum>
+
 <enum name="DevToolsDualScreenDeviceEmulated">
   <int value="0" label="Dual-screen or fold device selected"/>
   <int value="1" label="Dual-screen span mode selected"/>
@@ -41280,6 +41292,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Main Chrome Launcher Icon"/>
   <int value="7"
       label="Main Chrome Launcher Icon Shortcuts (New Tab shortcuts)"/>
+  <int value="8" label="Home screen widget (eg. Search or Bookmarks)"/>
 </enum>
 
 <enum name="LauncherRankingItemType">
@@ -46223,6 +46236,7 @@ from previous Chrome versions.
       label="PrefetchMainResourceNetworkIsolationKey:disabled"/>
   <int value="1411679884"
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:enabled"/>
+  <int value="1412874669" label="EnableRestrictedWebApis:enabled"/>
   <int value="1413158119" label="WebRtcRemoteEventLog:disabled"/>
   <int value="1413334779" label="WebPaymentsMinimalUI:enabled"/>
   <int value="1413948819" label="NupPrinting:enabled"/>
@@ -46985,6 +46999,7 @@ from previous Chrome versions.
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2138146331" label="OmniboxVoiceSearchAlwaysVisible:enabled"/>
   <int value="2139048614" label="UseSurfaceLayerForVideo:enabled"/>
+  <int value="2139520082" label="EnableRestrictedWebApis:disabled"/>
   <int value="2140453427"
       label="MigrateDefaultChromeAppToWebAppsGSuite:enabled"/>
   <int value="2141067485" label="SystemWebApps:enabled"/>
@@ -75074,6 +75089,9 @@ Full version information for the fingerprint enum values:
   <int value="4"
       label="Failed to load the upgraded HTTPS URL because of a net error,
              fell back to the HTTP URL."/>
+  <int value="5"
+      label="Received a redirect. This doesn't necessarily imply that the
+             HTTPS load succeeded or failed."/>
 </enum>
 
 <enum name="TypeOfVideoInFrame">

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
 import("//ui/file_manager/base/gn/js_test_gen_html.gni")
@@ -700,6 +701,7 @@ js_library("elements_importer.m") {
 }
 
 js_library("deferred_elements.m") {
+  visibility += [ "//ui/file_manager:*" ]
   deps = [
     "//ui/file_manager/file_manager/foreground/elements:files_format_dialog.m",
     "//ui/file_manager/file_manager/foreground/elements:files_message.m",
@@ -713,6 +715,7 @@ js_library("deferred_elements.m") {
     "//ui/file_manager/file_manager/foreground/elements:xf_circular_progress.m",
     "//ui/file_manager/file_manager/foreground/elements:xf_display_panel.m",
     "//ui/file_manager/file_manager/foreground/elements:xf_panel_item.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
   ]
 }
 
@@ -855,6 +858,7 @@ js_library("file_manager.m") {
     ":spinner_controller.m",
     ":task_controller.m",
     ":toolbar_controller.m",
+    "metadata:content_metadata_provider.m",
     "metadata:metadata_model.m",
     "metadata:thumbnail_model.m",
     "ui:a11y_announce.m",
@@ -2140,4 +2144,48 @@ js_modulizer("modulize") {
                          "cr.filebrowser.DefaultTaskDialog|DefaultTaskDialog",
                          "window.importElementsPromise|importElements",
                        ]
+}
+
+preprocess_folder =
+    rebase_path(
+        "$target_gen_dir/../../../preprocessed/file_manager/foreground/js",
+        root_build_dir)
+
+optimize_webui("build") {
+  host = "file_manager"
+
+  input = preprocess_folder
+  js_module_in_files = [
+    "main.m.js",
+    "deferred_elements.m.js",
+  ]
+
+  js_out_files = [
+    "main.m.rollup.js",
+    "deferred_elements.m.rollup.js",
+    "shared.m.rollup.js",
+  ]
+
+  deps = [
+    ":main.m",
+    "//ui/file_manager:preprocess_generated",
+    "//ui/file_manager:preprocess_static",
+    "//ui/webui/resources:preprocess",
+  ]
+}
+
+optimize_webui("build_worker") {
+  host = "file_manager"
+
+  input = preprocess_folder
+  js_module_in_files = [ "metadata/metadata_dispatcher.m.js" ]
+
+  js_out_files = [ "metadata_dispatcher.m.rollup.js" ]
+
+  deps = [
+    "metadata:metadata_dispatcher.m",
+    "//ui/file_manager:preprocess_generated",
+    "//ui/file_manager:preprocess_static",
+    "//ui/webui/resources:preprocess",
+  ]
 }

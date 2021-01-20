@@ -674,6 +674,7 @@ crbug.com/613753 external/wpt/css/css-tables/border-spacing-included-in-sizes-00
 crbug.com/353580 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children-005.html [ Failure ]
 crbug.com/1108224 external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
 crbug.com/958381 external/wpt/css/css-tables/tentative/position-sticky-container.html [ Failure ]
+crbug.com/958381 external/wpt/css/css-tables/tentative/table-height-redistribution.html [ Failure ]
 
 # [css-contain]
 
@@ -2522,6 +2523,10 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
@@ -5943,6 +5948,8 @@ crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-em
 crbug.com/1167210 [ Mac ] virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-15.html [ Pass Failure ]
 crbug.com/1167222 http/tests/websocket/multiple-connections-throttled.html [ Pass Failure ]
 crbug.com/1167309 fast/canvas/canvas-createImageBitmap-drawImage.html [ Pass Failure ]
+
+crbug.com/1168373 [ Debug ] http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Failure ]
 
 # DevTools roll
 crbug.com/1050549 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]

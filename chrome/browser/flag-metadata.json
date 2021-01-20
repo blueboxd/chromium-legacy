@@ -1573,12 +1573,12 @@
   {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 91
   },
   {
     "name": "enable-experimental-accessibility-language-detection-dynamic",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 91
   },
   {
     "name": "enable-experimental-accessibility-switch-access-text",
@@ -2171,6 +2171,11 @@
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-restricted-web-apis",
+    "owners": [ "anqing", "apotapchuk" ],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-save-data",

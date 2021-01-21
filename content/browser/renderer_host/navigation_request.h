@@ -343,8 +343,6 @@ class CONTENT_EXPORT NavigationRequest
   // The NavigationRequest can be deleted while BeginNavigation() is called.
   void BeginNavigation();
 
-  void ForceCSPForResponse(const std::string& csp);
-
   const mojom::CommonNavigationParams& common_params() const {
     return *common_params_;
   }
@@ -661,9 +659,6 @@ class CONTENT_EXPORT NavigationRequest
 
   bool ua_change_requires_reload() const { return ua_change_requires_reload_; }
 
-  const network::mojom::ContentSecurityPolicy* required_csp() {
-    return required_csp_.get();
-  }
   void SetRequiredCSP(network::mojom::ContentSecurityPolicyPtr csp);
   network::mojom::ContentSecurityPolicyPtr TakeRequiredCSP();
 
@@ -965,6 +960,27 @@ class CONTENT_EXPORT NavigationRequest
   };
   AboutSrcDocCheckResult CheckAboutSrcDoc() const;
 
+  // When the embedder requires the use of Content Security Policy via Embedded
+  // Enforcement, framed documents must either:
+  // 1. Use the 'allow-csp-from' header to opt-into enforcement.
+  // 2. Enforce its own CSP that subsumes the required CSP.
+  // Framed documents that fail to do either of these will be blocked.
+  //
+  // See:
+  // - https://w3c.github.io/webappsec-cspee/#required-csp-header
+  // - https://w3c.github.io/webappsec-cspee/#allow-csp-from-header
+  //
+  // SetupCSPEmbeddedEnforcement() retrieve the iframe 'csp' attribute applying.
+  // CheckCSPEmbeddedEnforcement() inspects the response headers. It decides if
+  // the 'csp' attribute should be installed into the child. This might also
+  // block it and display an error page instead.
+  void SetupCSPEmbeddedEnforcement();
+  enum class CSPEmbeddedEnforcementResult {
+    ALLOW_RESPONSE,
+    BLOCK_RESPONSE,
+  };
+  CSPEmbeddedEnforcementResult CheckCSPEmbeddedEnforcement();
+
   // Called before a commit. Updates the history index and length held in
   // CommitNavigationParams. This is used to update this shared state with the
   // renderer process.
@@ -1150,10 +1166,11 @@ class CONTENT_EXPORT NavigationRequest
   NavigationControllerImpl* GetNavigationController();
 
   // Compute the sandbox policy of the document to be loaded. This is called
-  // once the final response is known. It is based on the current FramePolicy
-  // and the response's CSP.
+  // once the final response is known. It is based on the current FramePolicy,
+  // the response's CSP and the embedder's HTMLIframeElement.csp.
   void ComputeSandboxFlagsToCommit(
-      const network::mojom::URLResponseHead* response_head);
+      const network::mojom::URLResponseHead* response_head,
+      network::mojom::ContentSecurityPolicy* required_csp);
 
   // DCHECK that tranistioning from the current state to |state| valid. This
   // does nothing in non-debug builds.

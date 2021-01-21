@@ -4724,6 +4724,7 @@ others/histograms.xml -->
   <int value="22" label="Failed to show"/>
   <int value="23" label="Disabled proactive help setting"/>
   <int value="24" label="Base64 decoding error"/>
+  <int value="25" label="The user rejected the bottom sheet onboarding"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptOnboarding">
@@ -23211,6 +23212,7 @@ Called by update_document_policy_enum.py.-->
   <int value="816" label="BrowserLabsEnabled"/>
   <int value="817" label="WindowOcclusionEnabled"/>
   <int value="818" label="DeviceAllowMGSToStoreDisplayProperties"/>
+  <int value="819" label="WebXRImmersiveArEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -38208,6 +38210,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="WINDOW_SHOWN"/>
   <int value="1" label="UNDERLINED"/>
   <int value="2" label="REVERTED"/>
+  <int value="3" label="USER_ACCEPTED_AUTOCORRECT"/>
 </enum>
 
 <enum name="IMECommitType">
@@ -43645,6 +43648,7 @@ from previous Chrome versions.
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
   <int value="-1064302126"
       label="OmniboxAlternateMatchDescriptionSeparator:enabled"/>
+  <int value="-1062534902" label="SyncingCompromisedCredentials:disabled"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
   <int value="-1061203892" label="VideoToolboxVp9Decoding:disabled"/>
   <int value="-1060574877"
@@ -44947,6 +44951,7 @@ from previous Chrome versions.
   <int value="183208826" label="TabGroups:enabled"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
   <int value="186463628" label="DnsOverHttps:disabled"/>
+  <int value="187109402" label="SyncingCompromisedCredentials:enabled"/>
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
   <int value="189777537" label="DisableInitialMostVisitedFadeIn:enabled"/>

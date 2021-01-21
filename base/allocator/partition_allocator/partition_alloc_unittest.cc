@@ -18,6 +18,7 @@
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/bits.h"
@@ -858,17 +859,18 @@ TEST_F(PartitionAllocTest, AllocSizes) {
 TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   void* ptr;
   void* slot_start;
-  size_t requested_size, actual_size, predicted_size;
+  size_t requested_size, actual_capacity, predicted_capacity;
 
   // Allocate something small.
   requested_size = 511 - kExtraAllocSize;
-  predicted_size = allocator.root()->ActualSize(requested_size);
+  predicted_capacity =
+      allocator.root()->AllocationCapacityFromRequestedSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
   slot_start = reinterpret_cast<char*>(ptr) - allocator.root()->extras_offset;
-  actual_size = allocator.root()->GetSize(ptr);
-  EXPECT_EQ(predicted_size, actual_size);
-  EXPECT_LT(requested_size, actual_size);
+  actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
+  EXPECT_EQ(predicted_capacity, actual_capacity);
+  EXPECT_LT(requested_size, actual_capacity);
 #if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; ++offset) {
@@ -884,13 +886,14 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   // Allocate a size that should be a perfect match for a bucket, because it
   // is an exact power of 2.
   requested_size = (256 * 1024) - kExtraAllocSize;
-  predicted_size = allocator.root()->ActualSize(requested_size);
+  predicted_capacity =
+      allocator.root()->AllocationCapacityFromRequestedSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
   slot_start = reinterpret_cast<char*>(ptr) - allocator.root()->extras_offset;
-  actual_size = allocator.root()->GetSize(ptr);
-  EXPECT_EQ(predicted_size, actual_size);
-  EXPECT_EQ(requested_size, actual_size);
+  actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
+  EXPECT_EQ(predicted_capacity, actual_capacity);
+  EXPECT_EQ(requested_size, actual_capacity);
 #if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; offset += 877) {
@@ -903,20 +906,22 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
 #endif
   allocator.root()->Free(ptr);
 
-  // Allocate a size that is a system page smaller than a bucket. GetSize()
-  // should return a larger size than we asked for now.
+  // Allocate a size that is a system page smaller than a bucket.
+  // AllocationCapacityFromPtr() should return a larger size than we asked for
+  // now.
   size_t num = 64;
   while (num * SystemPageSize() >= 1024 * 1024) {
     num /= 2;
   }
   requested_size = num * SystemPageSize() - SystemPageSize() - kExtraAllocSize;
-  predicted_size = allocator.root()->ActualSize(requested_size);
+  predicted_capacity =
+      allocator.root()->AllocationCapacityFromRequestedSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
   slot_start = reinterpret_cast<char*>(ptr) - allocator.root()->extras_offset;
-  actual_size = allocator.root()->GetSize(ptr);
-  EXPECT_EQ(predicted_size, actual_size);
-  EXPECT_EQ(requested_size + SystemPageSize(), actual_size);
+  actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
+  EXPECT_EQ(predicted_capacity, actual_capacity);
+  EXPECT_EQ(requested_size + SystemPageSize(), actual_capacity);
 #if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; offset += 4999) {
@@ -930,13 +935,14 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
 
   // Allocate the maximum allowed bucketed size.
   requested_size = kMaxBucketed - kExtraAllocSize;
-  predicted_size = allocator.root()->ActualSize(requested_size);
+  predicted_capacity =
+      allocator.root()->AllocationCapacityFromRequestedSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
   slot_start = reinterpret_cast<char*>(ptr) - allocator.root()->extras_offset;
-  actual_size = allocator.root()->GetSize(ptr);
-  EXPECT_EQ(predicted_size, actual_size);
-  EXPECT_EQ(requested_size, actual_size);
+  actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
+  EXPECT_EQ(predicted_capacity, actual_capacity);
+  EXPECT_EQ(requested_size, actual_capacity);
 #if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; offset += 4999) {
@@ -950,18 +956,19 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
 
   // Check that we can write at the end of the reported size too.
   char* char_ptr = reinterpret_cast<char*>(ptr);
-  *(char_ptr + (actual_size - 1)) = 'A';
+  *(char_ptr + (actual_capacity - 1)) = 'A';
   allocator.root()->Free(ptr);
 
   // Allocate something very large, and uneven.
   if (IsLargeMemoryDevice()) {
     requested_size = 512 * 1024 * 1024 - 1;
-    predicted_size = allocator.root()->ActualSize(requested_size);
+    predicted_capacity =
+        allocator.root()->AllocationCapacityFromRequestedSize(requested_size);
     ptr = allocator.root()->Alloc(requested_size, type_name);
     EXPECT_TRUE(ptr);
-    actual_size = allocator.root()->GetSize(ptr);
-    EXPECT_EQ(predicted_size, actual_size);
-    EXPECT_LT(requested_size, actual_size);
+    actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
+    EXPECT_EQ(predicted_capacity, actual_capacity);
+    EXPECT_LT(requested_size, actual_capacity);
     // Unlike above, don't test for PartitionAllocGetSlotOffset. Such large
     // allocations are direct-mapped, for which one can't easily obtain the
     // offset.
@@ -970,8 +977,9 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
 
   // Too large allocation.
   requested_size = MaxDirectMapped() + 1;
-  predicted_size = allocator.root()->ActualSize(requested_size);
-  EXPECT_EQ(requested_size, predicted_size);
+  predicted_capacity =
+      allocator.root()->AllocationCapacityFromRequestedSize(requested_size);
+  EXPECT_EQ(requested_size, predicted_capacity);
 }
 
 #if defined(PA_HAS_64_BITS_POINTERS)
@@ -998,7 +1006,8 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
   for (size_t i = 0; i < num_slots; ++i) {
     char* ptr = static_cast<char*>(ptrs[i]);
     for (size_t offset = 0; offset < requested_size; offset += 13) {
-      EXPECT_EQ(allocator.root()->GetSize(ptr), requested_size);
+      EXPECT_EQ(allocator.root()->AllocationCapacityFromPtr(ptr),
+                requested_size);
       EXPECT_EQ(PartitionAllocGetSlotOffset(static_cast<char*>(ptr) + offset),
                 offset + allocator.root()->extras_offset);
     }
@@ -1023,7 +1032,8 @@ TEST_F(PartitionAllocTest, Realloc) {
   // Test that growing an allocation with realloc() copies everything from the
   // old allocation.
   size_t size = SystemPageSize() - kExtraAllocSize;
-  EXPECT_EQ(size, allocator.root()->ActualSize(size));
+  // Confirm size fills the entire slot.
+  ASSERT_EQ(size, allocator.root()->AllocationCapacityFromRequestedSize(size));
   ptr = allocator.root()->Alloc(size, type_name);
   memset(ptr, 'A', size);
   ptr2 = allocator.root()->Realloc(ptr, size + 1, type_name);
@@ -1036,7 +1046,8 @@ TEST_F(PartitionAllocTest, Realloc) {
 #endif
 
   // Test that shrinking an allocation with realloc() also copies everything
-  // from the old allocation.
+  // from the old allocation. Use |size - 1| to test what happens to the extra
+  // space before the cookie.
   ptr = allocator.root()->Realloc(ptr2, size - 1, type_name);
   EXPECT_NE(ptr2, ptr);
   char* char_ptr = static_cast<char*>(ptr);
@@ -1048,21 +1059,54 @@ TEST_F(PartitionAllocTest, Realloc) {
 
   allocator.root()->Free(ptr);
 
+  // Single-slot slot spans...
+  // Test that growing an allocation with realloc() copies everything from the
+  // old allocation.
+  size = 200000;
+  // Confirm size doesn't fill the entire slot.
+  ASSERT_LT(size, allocator.root()->AllocationCapacityFromRequestedSize(size));
+  ptr = allocator.root()->Alloc(size, type_name);
+  memset(ptr, 'A', size);
+  ptr2 = allocator.root()->Realloc(ptr, size * 2, type_name);
+  EXPECT_NE(ptr, ptr2);
+  char_ptr2 = static_cast<char*>(ptr2);
+  EXPECT_EQ('A', char_ptr2[0]);
+  EXPECT_EQ('A', char_ptr2[size - 1]);
+#if DCHECK_IS_ON()
+  EXPECT_EQ(kUninitializedByte, static_cast<unsigned char>(char_ptr2[size]));
+#endif
+
+  // Test that shrinking an allocation with realloc() also copies everything
+  // from the old allocation.
+  ptr = allocator.root()->Realloc(ptr2, size / 2, type_name);
+  EXPECT_NE(ptr2, ptr);
+  char_ptr = static_cast<char*>(ptr);
+  EXPECT_EQ('A', char_ptr[0]);
+  EXPECT_EQ('A', char_ptr[size / 2 - 1]);
+#if DCHECK_IS_ON()
+  // For single-slot slot spans, the cookie is always placed immediately after
+  // the allocation.
+  EXPECT_EQ(kCookieValue[0], static_cast<unsigned char>(char_ptr[size / 2]));
+#endif
+
+  allocator.root()->Free(ptr);
+
   // Test that shrinking a direct mapped allocation happens in-place.
   size = kMaxBucketed + 16 * SystemPageSize();
   ptr = allocator.root()->Alloc(size, type_name);
-  size_t actual_size = allocator.root()->GetSize(ptr);
+  size_t actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
   ptr2 = allocator.root()->Realloc(ptr, kMaxBucketed + 8 * SystemPageSize(),
                                    type_name);
   EXPECT_EQ(ptr, ptr2);
-  EXPECT_EQ(actual_size - 8 * SystemPageSize(),
-            allocator.root()->GetSize(ptr2));
+  EXPECT_EQ(actual_capacity - 8 * SystemPageSize(),
+            allocator.root()->AllocationCapacityFromPtr(ptr2));
 
   // Test that a previously in-place shrunk direct mapped allocation can be
   // expanded up again within its original size.
   ptr = allocator.root()->Realloc(ptr2, size - SystemPageSize(), type_name);
   EXPECT_EQ(ptr2, ptr);
-  EXPECT_EQ(actual_size - SystemPageSize(), allocator.root()->GetSize(ptr));
+  EXPECT_EQ(actual_capacity - SystemPageSize(),
+            allocator.root()->AllocationCapacityFromPtr(ptr));
 
   // Test that a direct mapped allocation is performed not in-place when the
   // new size is small enough.
@@ -2525,7 +2569,8 @@ TEST_F(PartitionAllocTest, FundamentalAlignment) {
     EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr3) % fundamental_alignment,
               static_cast<uintptr_t>(0));
 
-    EXPECT_EQ(allocator.root()->GetSize(ptr) % fundamental_alignment,
+    EXPECT_EQ(allocator.root()->AllocationCapacityFromPtr(ptr) %
+                  fundamental_alignment,
               static_cast<uintptr_t>(0));
 
     allocator.root()->Free(ptr);

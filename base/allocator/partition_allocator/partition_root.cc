@@ -571,10 +571,10 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
   bool overridden = false;
-  size_t actual_old_size;
+  size_t old_usable_size;
   if (UNLIKELY(!no_hooks && hooks_enabled)) {
     overridden = PartitionAllocHooks::ReallocOverrideHookIfEnabled(
-        &actual_old_size, ptr);
+        &old_usable_size, ptr);
   }
   if (LIKELY(!overridden)) {
     auto* slot_span =
@@ -584,6 +584,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
       internal::ScopedGuard<thread_safe> guard{lock_};
       // TODO(palmer): See if we can afford to make this a CHECK.
       PA_DCHECK(IsValidSlotSpan(slot_span));
+      old_usable_size = GetUsableSize(ptr);
 
       if (UNLIKELY(slot_span->bucket->is_direct_mapped())) {
         // We may be able to perform the realloc in place by changing the
@@ -600,16 +601,14 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
       return ptr;
     }
 
-    const size_t actual_new_size = ActualSize(new_size);
-    actual_old_size = GetSize(ptr);
-
     // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
     // new size is a significant percentage smaller. We could do the same if we
     // determine it is a win.
-    if (actual_new_size == actual_old_size) {
-      // Trying to allocate a block of size |new_size| would give us a block of
-      // the same size as the one we've already got, so re-use the allocation
-      // after updating statistics (and cookies, if present).
+    if (AllocationCapacityFromRequestedSize(new_size) ==
+        AllocationCapacityFromPtr(ptr)) {
+      // Trying to allocate |new_size| would use the same amount of underlying
+      // memory as we're already using, so re-use the allocation after updating
+      // statistics (and cookies, if present).
       if (slot_span->CanStoreRawSize()) {
         size_t new_raw_size = AdjustSizeForExtrasAdd(new_size);
         slot_span->SetRawSize(new_raw_size);
@@ -635,11 +634,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
     internal::PartitionExcessiveAllocationSize(new_size);
   }
 
-  size_t copy_size = actual_old_size;
-  if (new_size < copy_size)
-    copy_size = new_size;
-
-  memcpy(ret, ptr, copy_size);
+  memcpy(ret, ptr, std::min(old_usable_size, new_size));
   Free(ptr);
   return ret;
 #endif

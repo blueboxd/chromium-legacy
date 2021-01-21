@@ -1494,6 +1494,12 @@ void NavigationRequest::BeginNavigation() {
   if (IsForMhtmlSubframe())
     is_mhtml_or_subframe_ = true;
 
+  // TODO(antoniosartori): This takes a snapshot of the 'csp' attribute. This
+  // should be done at the beginning of the navigation instead. Otherwise, the
+  // attribute might have change while waiting for the beforeunload handlers to
+  // complete.
+  SetupCSPEmbeddedEnforcement();
+
   if (!NeedsUrlLoader()) {
     // The types of pages that don't need a URL Loader should never get served
     // from the BackForwardCache.
@@ -1503,7 +1509,17 @@ void NavigationRequest::BeginNavigation() {
     // it immediately.
     EnterChildTraceEvent("ResponseStarted", this);
 
-    ComputeSandboxFlagsToCommit(/*response_head=*/nullptr);
+    // |CheckCSPEmbeddedEnforcement()| below populates the |required_csp_|. No
+    // URLs will be blocked, because they are either:
+    // - allowing blanket enforcement of CSP (about:blank, about:srcdoc, ...).
+    // - MHTML document, not supported by CSPEE (https://crbug.com/1164353).
+    if (CheckCSPEmbeddedEnforcement() ==
+        CSPEmbeddedEnforcementResult::BLOCK_RESPONSE) {
+      NOTREACHED();
+      base::debug::DumpWithoutCrashing();
+    }
+
+    ComputeSandboxFlagsToCommit(/*response_head=*/nullptr, required_csp_.get());
 
     // Same-document navigations occur in the currently loaded document. See
     // also RenderFrameHostManager::DidCreateNavigationRequest() which will
@@ -2247,7 +2263,18 @@ void NavigationRequest::OnResponseStarted(
   if (is_mhtml_archive)
     is_mhtml_or_subframe_ = true;
 
-  ComputeSandboxFlagsToCommit(response_head_.get());
+  if (CheckCSPEmbeddedEnforcement() ==
+      CSPEmbeddedEnforcementResult::BLOCK_RESPONSE) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CSP),
+        true /* skip_throttles */, base::nullopt /* error_page_content*/,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
+    return;
+  }
+
+  ComputeSandboxFlagsToCommit(response_head_.get(), required_csp_.get());
 
   // The navigation may have encountered a header that requests isolation for
   // the url's origin. Before we pick the renderer, make sure we update the
@@ -3231,7 +3258,8 @@ void NavigationRequest::CommitErrorPage(
   // flags from their parent/opener. Document loaded from the network
   // shouldn't have any influence over Chrome's internal error page. We should
   // define our own flags, preferably the strictest ones instead.
-  ComputeSandboxFlagsToCommit(/*response_head=*/nullptr);
+  ComputeSandboxFlagsToCommit(/*response_head=*/nullptr,
+                              /*required_csp=*/nullptr);
 
   ReadyToCommitNavigation(true);
   // Use a separate cache shard, and no cookies, for error pages.
@@ -3804,6 +3832,130 @@ NavigationRequest::AboutSrcDocCheckResult NavigationRequest::CheckAboutSrcDoc()
   // about:srcdoc, except session history navigations.
 
   return AboutSrcDocCheckResult::ALLOW_REQUEST;
+}
+
+void NavigationRequest::SetupCSPEmbeddedEnforcement() {
+  if (IsInMainFrame())
+    return;
+  // TODO(https://crbug.com/11129645): MHTML iframe not supported yet.
+  if (IsForMhtmlSubframe())
+    return;
+
+  // TODO(antoniosartori): Probably we should have taken a snapshot of the 'csp'
+  // attribute at the beginning of the navigation and not now, since the
+  // beforeunload handlers might have modified it in the meantime.
+  // See pull request about the spec:
+  // https://github.com/w3c/webappsec-cspee/pull/11
+  network::mojom::ContentSecurityPolicyPtr frame_csp_attribute =
+      frame_tree_node()->csp_attribute()
+          ? frame_tree_node()->csp_attribute()->Clone()
+          : nullptr;
+  if (frame_csp_attribute) {
+    // TODO(antoniosartori): Maybe we should revisit what 'self' means in the
+    // 'csp' attribute.
+    const GURL& url = GetURL();
+    frame_csp_attribute->self_origin = network::mojom::CSPSource::New(
+        url.scheme(), url.host(), url.EffectiveIntPort(), "", false, false);
+  }
+
+  const network::mojom::ContentSecurityPolicy* parent_required_csp =
+      frame_tree_node()->parent()->required_csp();
+
+  std::vector<network::mojom::ContentSecurityPolicyPtr> frame_csp;
+  frame_csp.push_back(std::move(frame_csp_attribute));
+  std::string error_message;
+  if (network::IsValidRequiredCSPAttr(frame_csp, parent_required_csp,
+                                      error_message)) {
+    // If |frame_csp| is valid then it is not null.
+    SetRequiredCSP(std::move(frame_csp[0]));
+    return;
+  }
+
+  if (frame_csp[0]) {
+    GetParentFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StringPrintf("The frame 'csp' attribute ('%s') is invalid and "
+                           "will be discarded: %s",
+                           frame_csp[0]->header->header_value.c_str(),
+                           error_message.c_str()));
+  }
+
+  if (parent_required_csp) {
+    SetRequiredCSP(parent_required_csp->Clone());
+  }
+  // TODO(antoniosartori): Consider instead blocking the navigation here,
+  // since this seems to be insecure
+  // (cf. https://github.com/w3c/webappsec-cspee/pull/11).
+}
+
+NavigationRequest::CSPEmbeddedEnforcementResult
+NavigationRequest::CheckCSPEmbeddedEnforcement() {
+  // We enforce CSPEE only for frames, not for portals.
+  if (IsInMainFrame())
+    return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
+
+  if (IsSameDocument() || IsServedFromBackForwardCache())
+    return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
+
+  if (!required_csp_)
+    return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
+
+  // The |response()| can be null for navigations that do not require a
+  // URLLoader (about:blank, about:srcdoc, ...)
+  const network::mojom::AllowCSPFromHeaderValue* allow_csp_from =
+      response() ? response()->parsed_headers->allow_csp_from.get() : nullptr;
+
+  if (network::AllowsBlanketEnforcementOfRequiredCSP(
+          GetParentFrame()->GetLastCommittedOrigin(), GetURL(),
+          allow_csp_from)) {
+    // Enforce the required CSPs on the frame by passing them down to blink
+    // TODO(antoniosartori): When CSP are part of the PolicyContainer,
+    // forced_content_security_policies should be removed.
+    commit_params_->forced_content_security_policies.push_back(
+        required_csp_->header->header_value);
+    return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
+  }
+
+  // All the URLs that do not |NeedsUrlLoader()| allows blanket enforcement of
+  // CSP, Except for MHTML iframe.
+  // TODO(arthursonzogni): Make MHTML response to use the normal loading path,
+  // by introducing their own MHTML UrlLoader. Then CSPEE can be supported.
+  if (!response()) {
+    // TODO(https://crbug.com/11129645): Remove MHTML edge case, once MHTML
+    // documents are handled through the standard code path with its own
+    // URLLoaderFactory.
+    CHECK(IsForMhtmlSubframe());
+    return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
+  }
+
+  std::string sanitized_blocked_url =
+      GetRedirectChain().front().GetOrigin().spec();
+  if (allow_csp_from && allow_csp_from->is_error_message()) {
+    GetParentFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StringPrintf("The value of the 'Allow-CSP-From' response header "
+                           "returned by %s is invalid: %s",
+                           sanitized_blocked_url.c_str(),
+                           allow_csp_from->get_error_message().c_str()));
+  }
+
+  if (network::Subsumes(*required_csp_,
+                        response()->parsed_headers->content_security_policy)) {
+    return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
+  }
+
+  GetParentFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kError,
+      base::StringPrintf(
+          "Refused to display '%s' in a frame. The embedder requires it to "
+          "enforce the following Content Security Policy: '%s'. However, the "
+          "frame neither accepts that policy using the Allow-CSP-From header "
+          "nor delivers a Content Security Policy which is at least as strong "
+          "as that one.",
+          sanitized_blocked_url.c_str(),
+          required_csp_->header->header_value.c_str()));
+
+  return CSPEmbeddedEnforcementResult::BLOCK_RESPONSE;
 }
 
 void NavigationRequest::UpdateCommitNavigationParamsHistory() {
@@ -5129,10 +5281,6 @@ void NavigationRequest::SetSilentlyIgnoreErrors() {
   silently_ignore_errors_ = true;
 }
 
-void NavigationRequest::ForceCSPForResponse(const std::string& csp) {
-  commit_params_->forced_content_security_policies.push_back(csp);
-}
-
 // static
 NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
   return static_cast<NavigationRequest*>(handle);
@@ -5312,7 +5460,8 @@ NavigationRequest::TakeCookieObservers() {
 }
 
 void NavigationRequest::ComputeSandboxFlagsToCommit(
-    const network::mojom::URLResponseHead* response_head) {
+    const network::mojom::URLResponseHead* response_head,
+    network::mojom::ContentSecurityPolicy* required_csp) {
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());
   DCHECK(!IsErrorPage());
@@ -5327,6 +5476,11 @@ void NavigationRequest::ComputeSandboxFlagsToCommit(
       *sandbox_flags_to_commit_ |= csp->sandbox;
     }
   }
+
+  // If the embedee opts in, the embedder can force its HTMLIframeElement.csp
+  // attribute to be used by the embedee.
+  if (required_csp)
+    *sandbox_flags_to_commit_ |= required_csp->sandbox;
 
   // The URL of a document loaded from a MHTML archive is controlled by the
   // Content-Location header. This can be set to an arbitrary URL. This is

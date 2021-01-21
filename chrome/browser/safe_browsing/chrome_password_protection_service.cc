@@ -374,8 +374,7 @@ ChromePasswordProtectionService::GetUrlDisplayExperiment() const {
 }
 
 void ChromePasswordProtectionService::ShowModalWarning(
-    content::WebContents* web_contents,
-    RequestOutcome outcome,
+    PasswordProtectionRequest* request,
     LoginReputationClientResponse::VerdictType verdict_type,
     const std::string& verdict_token,
     ReusedPasswordAccountType password_type) {
@@ -388,6 +387,8 @@ void ChromePasswordProtectionService::ShowModalWarning(
               ReusedPasswordAccountType::SAVED_PASSWORD &&
           base::FeatureList::IsEnabled(
               safe_browsing::kPasswordProtectionForSavedPasswords)));
+  content::WebContents* web_contents = request->web_contents();
+  RequestOutcome outcome = request->request_outcome();
   // Don't show warning again if there is already a modal warning showing.
   if (IsModalWarningShowingInWebContents(web_contents))
     return;
@@ -1205,7 +1206,7 @@ std::string ChromePasswordProtectionService::GetOrganizationName(
 // Disabled on Android, because enterprise reporting extension is not supported.
 #if !defined(OS_ANDROID)
 void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
-    content::WebContents* web_contents,
+    PasswordProtectionRequest* request,
     const std::string& username,
     PasswordType password_type,
     bool is_phishing_url) {
@@ -1235,7 +1236,7 @@ void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
             profile_);
     if (router) {
       router->OnPolicySpecifiedPasswordReuseDetected(
-          web_contents->GetLastCommittedURL(), username_or_email,
+          request->web_contents()->GetLastCommittedURL(), username_or_email,
           is_phishing_url);
     }
   }

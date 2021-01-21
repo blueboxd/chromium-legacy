@@ -723,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
-  // Connect to heart rate device and ensure the gatt service is connected.
+  // Connect to heart rate device and ensure the GATT service is connected.
   EXPECT_EQ(kHeartRateUUIDString, content::EvalJs(web_contents_, R"(
     var gatt;
     var gattserverdisconnectedPromise;
@@ -758,8 +758,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
   // Wait for gattserverdisconnect event.
   EXPECT_EQ("event fired",
-            content::EvalJs(web_contents_, "gattserverdisconnectedPromise ")
-                .ExtractString());
+            content::EvalJs(web_contents_, "gattserverdisconnectedPromise "));
 
   // Ensure the service is disconnected.
   EXPECT_THAT(content::EvalJs(web_contents_, R"((async() => {
@@ -835,14 +834,13 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
   BluetoothChooserContext* context =
       BluetoothChooserContextFactory::GetForProfile(browser()->profile());
   const auto objects = context->GetGrantedObjects(origin, origin);
-  EXPECT_EQ(2ul, objects.size());
+  EXPECT_EQ(2u, objects.size());
 
   // Send first advertisement and wait for the event to be resolved.
   adapter_->SimulateDeviceAdvertisementReceived(kDeviceAddress,
                                                 "advertisement_name1");
-  EXPECT_EQ(
-      "advertisement_name1|",
-      content::EvalJs(web_contents_, "first_device_promise").ExtractString());
+  EXPECT_EQ("advertisement_name1|",
+            content::EvalJs(web_contents_, "first_device_promise"));
 
   // Revoke the permission.
   context->RevokeObjectPermission(origin, origin, objects.at(0)->value);
@@ -858,9 +856,8 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
   adapter_->SimulateDeviceAdvertisementReceived(kDeviceAddress2,
                                                 "advertisement_name2");
 
-  EXPECT_EQ(
-      "advertisement_name1|second_device_advertisement_name2",
-      content::EvalJs(web_contents_, "second_device_promise").ExtractString());
+  EXPECT_EQ("advertisement_name1|second_device_advertisement_name2",
+            content::EvalJs(web_contents_, "second_device_promise"));
 }
 
 }  // namespace

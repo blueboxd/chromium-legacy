@@ -540,6 +540,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "clear-cross-browsing-context-group-main-frame-name",
+    "owners": [ "shuuran", "kaustubhag" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "clear-old-browsing-data",
     "owners": [ "dullweber" ],
     "expiry_milestone": 78
@@ -666,6 +671,11 @@
     "name": "contextual-search-translations",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "contextual-search-twv-impl",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
+    "expiry_milestone": 100
   },
   {
     "name": "continuous-search",
@@ -2641,6 +2651,12 @@
     // This enables the use of extensions on chrome:// URLs. This is useful for
     // a11y extensions as well as for debugging.
     "expiry_milestone": -1
+  },
+  {
+    "name": "external-pci-devices-allowed",
+    "owners": [ "rajatja@google.com", "czajka@google.com",
+                "cros-peripherals@google.com" ],
+    "expiry_milestone": 94
   },
   {
     "name": "feed-v2-hearts",

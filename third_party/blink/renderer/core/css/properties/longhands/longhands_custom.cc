@@ -1439,6 +1439,8 @@ const blink::Color CaretColor::ColorIncludingFallback(
   // the background to ensure good visibility and contrast.
   StyleColor result = auto_color.IsAutoColor() ? StyleColor::CurrentColor()
                                                : auto_color.ToStyleColor();
+  if (style.ShouldForceColor(result))
+    return style.GetInternalForcedCurrentColor();
   return result.Resolve(style.GetCurrentColor(), style.UsedColorScheme());
 }
 
@@ -1450,6 +1452,16 @@ const CSSValue* CaretColor::CSSValueFromComputedStyleInternal(
   if (allow_visited_style) {
     return cssvalue::CSSColorValue::Create(
         style.VisitedDependentColor(*this).Rgb());
+  }
+
+  StyleAutoColor auto_color = style.CaretColor();
+  // TODO(rego): We may want to adjust the caret color if it's the same as
+  // the background to ensure good visibility and contrast.
+  StyleColor result = auto_color.IsAutoColor() ? StyleColor::CurrentColor()
+                                               : auto_color.ToStyleColor();
+  if (style.ShouldForceColor(result)) {
+    return cssvalue::CSSColorValue::Create(
+        style.GetInternalForcedCurrentColor().Rgb());
   }
 
   // https://drafts.csswg.org/cssom/#resolved-values
@@ -2800,7 +2812,10 @@ const CSSValue* FloodColor::ParseSingleValue(
 const blink::Color FloodColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  return style.ResolvedColor(style.FloodColor());
+  StyleColor flood_color = style.FloodColor();
+  if (style.ShouldForceColor(flood_color))
+    return style.GetInternalForcedCurrentColor();
+  return style.ResolvedColor(flood_color);
 }
 
 const CSSValue* FloodColor::CSSValueFromComputedStyleInternal(
@@ -3695,6 +3710,8 @@ const blink::Color InternalVisitedCaretColor::ColorIncludingFallback(
   StyleAutoColor auto_color = style.InternalVisitedCaretColor();
   StyleColor result = auto_color.IsAutoColor() ? StyleColor::CurrentColor()
                                                : auto_color.ToStyleColor();
+  if (style.ShouldForceColor(result))
+    return style.GetInternalForcedVisitedCurrentColor();
   return result.Resolve(style.GetInternalVisitedCurrentColor(),
                         style.UsedColorScheme());
 }
@@ -4285,7 +4302,10 @@ const CSSValue* LightingColor::ParseSingleValue(
 const blink::Color LightingColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  return style.ResolvedColor(style.LightingColor());
+  StyleColor lighting_color = style.LightingColor();
+  if (style.ShouldForceColor(lighting_color))
+    return style.GetInternalForcedCurrentColor();
+  return style.ResolvedColor(lighting_color);
 }
 
 const CSSValue* LightingColor::CSSValueFromComputedStyleInternal(
@@ -6482,7 +6502,10 @@ const CSSValue* StopColor::ParseSingleValue(
 const blink::Color StopColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  return style.ResolvedColor(style.StopColor());
+  StyleColor stop_color = style.StopColor();
+  if (style.ShouldForceColor(stop_color))
+    return style.GetInternalForcedCurrentColor();
+  return style.ResolvedColor(stop_color);
 }
 
 const CSSValue* StopColor::CSSValueFromComputedStyleInternal(

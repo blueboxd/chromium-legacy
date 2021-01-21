@@ -675,6 +675,7 @@ crbug.com/353580 external/wpt/css/css-tables/height-distribution/percentage-sizi
 crbug.com/1108224 external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
 crbug.com/958381 external/wpt/css/css-tables/tentative/position-sticky-container.html [ Failure ]
 crbug.com/958381 external/wpt/css/css-tables/tentative/table-height-redistribution.html [ Failure ]
+crbug.com/958381 external/wpt/css/css-tables/tentative/paint/background-image-column-collapsed.html [ Failure ]
 
 # [css-contain]
 
@@ -2523,6 +2524,11 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Crash ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Crash ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-010.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Timeout ]
@@ -4481,7 +4487,6 @@ crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 # These tests load resources from file:///gen/... .
 crbug.com/919639 [ Fuchsia ] fast/speech/scripted/speechrecognition-re-restart.html [ Failure ]
 crbug.com/919639 [ Fuchsia ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure ]
-crbug.com/919639 [ Fuchsia ] webmidi/permission.html [ Failure ]
 
 # These tests timeout when using Scenic ozone platform.
 crbug.com/1067477 [ Fuchsia ] fast/media/matchmedium-query-api.html [ Skip ]
@@ -5951,5 +5956,10 @@ crbug.com/1167309 fast/canvas/canvas-createImageBitmap-drawImage.html [ Pass Fai
 
 crbug.com/1168373 [ Debug ] http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Failure ]
 
+# Sheriff 2021-01-20
+crbug.com/1168522 external/wpt/focus/iframe-activeelement-after-focusing-out-iframes.html [ Pass Failure ]
+
 # DevTools roll
 crbug.com/1050549 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
+crbug.com/1050549 http/tests/devtools/console/console-correct-suggestions.js [ Pass Failure ]
+crbug.com/1050549 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure ]

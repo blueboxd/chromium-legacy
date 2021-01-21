@@ -1226,6 +1226,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_ENABLE_HOTSPOT_NO_RECEPTION_STATE_TOOLTIP" desc="Tooltip message that indicates to the user that the Enable Hotspot feature is disabled because their phone does not have mobile data.">
         Your phone must have mobile data to provide a hotspot
       </message>
+      <message name="IDS_ASH_PROJECTOR_KEY_IDEA_MARKED" desc="Message content on the toast that appears when a key idea is marked">
+        Marked as a key idea
+      </message>
       <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL" desc="The label next to the stylus battery indicator when the battery level is below 24%">
         Low
       </message>
@@ -1522,6 +1525,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING" desc="The label used when a network connection is connecting. [CHAR_LIMIT=14]">
         Connecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE" desc="The label used in quick settings to indicate an unactivated cellular network that can be clicked to launch activation through setup flow. [CHAR_LIMIT=14]">
+        Click to activate
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SECURED" desc="a11y label used when a Wi-Fi network is secured. [CHAR_LIMIT=14]">
         Secured

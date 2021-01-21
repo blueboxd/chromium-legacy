@@ -2245,16 +2245,8 @@ component("base") {
 
   if (using_sanitizer) {
     data += [ "//tools/valgrind/asan/" ]
-    if (is_win) {
-      data +=
-          [ "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer.exe" ]
-    } else {
-      data += [ "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer" ]
-    }
-    if (is_linux) {
-      # llvm-symbolizer uses libstdc++ from the clang package.
-      data += [ "//third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6" ]
-    }
+    data_deps +=
+        [ "//build/config/clang:llvm-symbolizer_data($host_toolchain)" ]
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -2523,6 +2515,12 @@ test("base_perftests") {
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
     shard_timeout = 600
+  }
+
+  if (!is_official_build) {
+    # The extra data tables required by stack traces are turned off for official
+    # build, only do stack trace perftest for unofficial build
+    sources += [ "debug/stack_trace_perftest.cc" ]
   }
 }
 

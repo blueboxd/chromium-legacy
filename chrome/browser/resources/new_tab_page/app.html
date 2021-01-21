@@ -71,7 +71,7 @@
   }
 
   ntp-realbox {
-    margin-bottom: 32px;
+    margin-bottom: 16px;
   }
 
   ntp-realbox,
@@ -89,10 +89,14 @@
   }
 
   ntp-most-visited[dark] {
+    --icon-button-color-active: var(--google-grey-refresh-300);
+    --icon-button-color: white;
     --tile-hover-color: rgba(255, 255, 255, .1);
   }
 
-  ntp-middle-slot-promo:not([hidden]) + ntp-module-wrapper,
+  /* ~ because the dom-if results in a template between the middle-slot-promo
+     and the first ntp-module-wrapper. */
+  ntp-middle-slot-promo:not([hidden]) ~ ntp-module-wrapper,
   ntp-module-wrapper + ntp-module-wrapper {
     margin-top: 16px;
   }
@@ -103,17 +107,13 @@
     display: none;
   }
 
-  #customizeButtonSpacer {
-    flex-grow: 1;
-  }
-
   #customizeButtonContainer {
     align-self: flex-end;
     background-color: var(--ntp-background-override-color);
     border-radius: calc(.5 * var(--cr-button-height));
     bottom: 16px;
     margin-inline-end: 16px;
-    position: sticky;
+    position: fixed;
   }
 
   :host([show-background-image_]) #customizeButtonContainer {
@@ -233,6 +233,12 @@
     font-size: .75rem;
   }
 
+  #contentBottomSpacer {
+    flex-shrink: 0;
+    height: 32px;
+    width: 1px;
+  }
+
   svg {
     position: fixed;
   }
@@ -247,10 +253,12 @@
         hidden$="[[!oneGoogleBarLoaded_]]">
     </ntp-iframe>
   </template>
-  <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
-      single-colored$="[[singleColoredLogo_]]" dark="[[theme_.isDark]]"
-      background-color="[[backgroundColor_]]">
-  </ntp-logo>
+  <template is="dom-if" if="[[logoEnabled_]]">
+    <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
+        single-colored$="[[singleColoredLogo_]]" dark="[[theme_.isDark]]"
+        background-color="[[backgroundColor_]]">
+    </ntp-logo>
+  </template>
   <ntp-realbox id="realbox" on-open-voice-search="onOpenVoiceSearch_"
       theme="[[theme_.searchBox]]" shown$="[[realboxShown_]]">
   </ntp-realbox>
@@ -262,9 +270,11 @@
             use-title-pill$="[[theme_.shortcutUseTitlePill]]">
         </ntp-most-visited>
       </template>
-      <ntp-middle-slot-promo
-          on-ntp-middle-slot-promo-loaded="onMiddleSlotPromoLoaded_">
-      </ntp-middle-slot-promo>
+      <template is="dom-if" if="[[middleSlotPromoEnabled_]]">
+        <ntp-middle-slot-promo
+            on-ntp-middle-slot-promo-loaded="onMiddleSlotPromoLoaded_">
+        </ntp-middle-slot-promo>
+      </template>
       <template is="dom-repeat" items="[[moduleDescriptors_]]" id="modules"
           on-dom-change="onModulesLoaded_">
         <ntp-module-wrapper descriptor="[[item]]"
@@ -285,7 +295,6 @@
           [[backgroundImageAttribution2_]]
         </div>
       </a>
-      <div id="customizeButtonSpacer"></div>
       <!-- cr-button has a transparent background. This leads to incorrect
            results when a custom background is set. Therefore, wrap customize
            button in container to enfore solid background color. -->
@@ -305,6 +314,7 @@
       </div>
     </template>
   </dom-if>
+  <div id="contentBottomSpacer"></div>
 </div>
 <dom-if if="[[showVoiceSearchOverlay_]]" restamp>
   <template>

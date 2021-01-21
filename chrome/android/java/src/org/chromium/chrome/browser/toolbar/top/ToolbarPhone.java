@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
+import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -62,7 +63,6 @@ import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
-import org.chromium.chrome.browser.toolbar.NewTabPageDelegate;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
@@ -2137,8 +2137,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                     mLayoutLocationBarInFocusedMode = false;
                     requestLayout();
                 }
-                mLocationBar.getPhoneCoordinator().finishUrlFocusChange(hasFocus,
-                        shouldShowKeyboard,
+                mLocationBar.finishUrlFocusChange(hasFocus, shouldShowKeyboard,
                         getToolbarDataProvider().shouldShowLocationBarInOverviewMode());
                 mUrlFocusChangeInProgress = false;
             }

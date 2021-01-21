@@ -664,9 +664,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                    initWithCommandDispatcher:self.mainInterface.browser
                                                  ->GetCommandDispatcher()]];
 
-  if (IsSceneStartupSupported() &&
-      base::FeatureList::IsEnabled(kEnableFullPageScreenshot)) {
-    if (@available(iOS 13, *)) {
+  if (@available(iOS 14, *)) {
+    if (IsSceneStartupSupported() &&
+        base::FeatureList::IsEnabled(kEnableFullPageScreenshot)) {
       self.screenshotDelegate = [[ScreenshotDelegate alloc]
           initWithBrowserInterfaceProvider:self.browserViewWrangler];
       [self.sceneState.scene.screenshotService
@@ -677,12 +677,13 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Only create the restoration helper if the session with the current session
   // id was backed up successfully.
   if (self.sceneState.appState.sessionRestorationRequired) {
+    Browser* mainBrowser = self.mainInterface.browser;
     if (!IsMultiwindowSupported() ||
         [CrashRestoreHelper
-            isBackedUpSessionID:self.sceneState.sceneSessionID]) {
+            isBackedUpSessionID:self.sceneState.sceneSessionID
+                   browserState:mainBrowser->GetBrowserState()]) {
       self.sceneState.appState.startupInformation.restoreHelper =
-          [[CrashRestoreHelper alloc]
-              initWithBrowser:self.mainInterface.browser];
+          [[CrashRestoreHelper alloc] initWithBrowser:mainBrowser];
     }
   }
 

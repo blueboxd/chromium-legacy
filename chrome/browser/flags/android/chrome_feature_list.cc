@@ -172,6 +172,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
     &kContextualSearchTapDisableOverride,
+    &kContextualSearchThinWebViewImplementation,
     &kContextualSearchTranslations,
     &kDirectActions,
     &kDownloadFileProvider,
@@ -410,7 +411,7 @@ const base::Feature kChromeShareLongScreenshot{
     "ChromeShareLongScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeShareQRCode{"ChromeShareQRCode",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeShareScreenshot{"ChromeShareScreenshot",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -419,7 +420,7 @@ const base::Feature kChromeSharingHub{"ChromeSharingHub",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeSharingHubV15{"ChromeSharingHubV15",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeStartupDelegate{"ChromeStartupDelegate",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -473,6 +474,10 @@ const base::Feature kContextualSearchSecondTap{
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchThinWebViewImplementation{
+    "ContextualSearchThinWebViewImplementation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTranslations{
     "ContextualSearchTranslations", base::FEATURE_DISABLED_BY_DEFAULT};

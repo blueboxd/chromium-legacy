@@ -894,25 +894,6 @@
             ]
         }
     ],
-    "AutofillEnableStickyBubbleAndUpdatedLogging": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillEnableFixedPaymentsBubbleLogging",
-                        "AutofillEnableStickyPaymentsBubble"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillEnableSupportForMoreStructureInNames": [
         {
             "platforms": [
@@ -1252,6 +1233,21 @@
                     "enable_features": [
                         "CBCMPolicyInvalidations",
                         "CBCMRemoteCommands"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CalculateNativeWinOcclusionCheckVirtualDesktopUsed": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CalculateNativeWinOcclusionCheckVirtualDesktopUsed"
                     ]
                 }
             ]
@@ -3210,27 +3206,6 @@
                     },
                     "enable_features": [
                         "HeapProfilerReporting"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HostResolverDispatch": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "0:0:0:0:0:0:64",
-                    "enable_features": [
-                        "DNSConcurrencyDoesNotUseFeatures"
                     ]
                 }
             ]
@@ -7648,7 +7623,7 @@
             ]
         }
     ],
-    "WebViewZeroCopyVideo": [
+    "WebViewZeroCopyVideoWithParam": [
         {
             "platforms": [
                 "android_webview"
@@ -7656,6 +7631,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "WebViewZeroCopyVideoBlocklist": ""
+                    },
                     "enable_features": [
                         "WebViewZeroCopyVideo"
                     ]

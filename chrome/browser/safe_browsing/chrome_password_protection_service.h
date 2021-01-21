@@ -109,8 +109,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       content::WebContents* web_contents,
       PasswordType password_type);
 
-  void ShowModalWarning(content::WebContents* web_contents,
-                        RequestOutcome outcome,
+  void ShowModalWarning(PasswordProtectionRequest* request,
                         LoginReputationClientResponse::VerdictType verdict_type,
                         const std::string& verdict_token,
                         ReusedPasswordAccountType password_type) override;
@@ -192,7 +191,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
   // |username| can be an email address or a username for a non-GAIA or
   // saved-password reuse. No validation has been done on it.
-  void MaybeReportPasswordReuseDetected(content::WebContents* web_contents,
+  void MaybeReportPasswordReuseDetected(PasswordProtectionRequest* request,
                                         const std::string& username,
                                         PasswordType password_type,
                                         bool is_phishing_url) override;

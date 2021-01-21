@@ -287,6 +287,8 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE =
             "ContextualSearchTapDisableOverride";
+    public static final String CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION =
+            "ContextualSearchThinWebViewImplementation";
     public static final String CONTEXTUAL_SEARCH_TRANSLATIONS = "ContextualSearchTranslations";
     public static final String CONTINUOUS_SEARCH = "ContinuousSearch";
     public static final String COOKIES_WITHOUT_SAME_SITE_MUST_BE_SECURE =
@@ -401,7 +403,6 @@ public abstract class ChromeFeatureList {
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
-    public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
     public static final String SAFETY_CHECK_ANDROID = "SafetyCheckAndroid";

@@ -141,8 +141,7 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
   virtual void ShowModalWarning(
-      content::WebContents* web_contents,
-      RequestOutcome outcome,
+      PasswordProtectionRequest* request,
       LoginReputationClientResponse::VerdictType verdict_type,
       const std::string& verdict_token,
       ReusedPasswordAccountType password_type) = 0;
@@ -156,7 +155,7 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
 #if !defined(OS_ANDROID)
   // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
   virtual void MaybeReportPasswordReuseDetected(
-      content::WebContents* web_contents,
+      PasswordProtectionRequest* request,
       const std::string& username,
       PasswordType password_type,
       bool is_phishing_url) = 0;

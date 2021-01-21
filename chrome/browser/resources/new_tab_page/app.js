@@ -191,9 +191,21 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
+      logoEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('logoEnabled'),
+      },
+
+      /** @private */
       shortcutsEnabled_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('shortcutsEnabled'),
+      },
+
+      /** @private */
+      middleSlotPromoEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('middleSlotPromoEnabled'),
       },
 
       /** @private */
@@ -517,7 +529,8 @@ class AppElement extends PolymerElement {
    * @private
    */
   computePromoAndModulesLoaded_() {
-    return this.middleSlotPromoLoaded_ &&
+    return (!loadTimeData.getBoolean('middleSlotPromoEnabled') ||
+            this.middleSlotPromoLoaded_) &&
         (!loadTimeData.getBoolean('modulesEnabled') || this.modulesLoaded_);
   }
 

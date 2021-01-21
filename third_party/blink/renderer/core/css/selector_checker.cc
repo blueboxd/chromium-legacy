@@ -1027,7 +1027,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return !element.GetDocument().GetPage()->GetFocusController().IsActive();
     case CSSSelector::kPseudoState: {
       return element.DidAttachInternals() &&
-             element.EnsureElementInternals().HasState(selector.Argument());
+             element.EnsureElementInternals().HasState(selector.Value());
     }
     case CSSSelector::kPseudoHorizontal:
     case CSSSelector::kPseudoVertical:
@@ -1112,6 +1112,12 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
         return false;
       return true;
     }
+    case CSSSelector::kPseudoTargetText:
+      if (!is_ua_rule_) {
+        UseCounter::Count(context.element->GetDocument(),
+                          WebFeature::kCSSSelectorTargetText);
+      }
+      FALLTHROUGH;
     default:
       DCHECK_NE(mode_, kQueryingRules);
       result.dynamic_pseudo =

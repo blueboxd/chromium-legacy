@@ -78,6 +78,8 @@ class LocationBarPhone extends LocationBarLayout {
         // This branch will be hit if the search engine logo experiment is enabled and we should
         // show the logo.
         if (shouldShowSearchEngineLogo) {
+            mFirstVisibleFocusedView = mStatusView;
+
             // When the search engine icon is enabled, icons are translations into the parent view's
             // padding area. Set clip padding to false to prevent them from getting clipped.
             setClipToPadding(false);
@@ -108,19 +110,6 @@ class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {
-        if (hasFocus) {
-            // Remove the focus of this view once the URL field has taken focus as this view no
-            // longer needs it.
-            setFocusable(false);
-            setFocusableInTouchMode(false);
-        }
-        setUrlFocusChangeInProgress(true);
-        updateShouldAnimateIconChanges();
-        super.onUrlFocusChange(hasFocus);
-    }
-
-    @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
         boolean needsCanvasRestore = false;
         if (child == mUrlBar && mUrlActionContainer.getVisibility() == VISIBLE) {
@@ -145,23 +134,9 @@ class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    public void finishUrlFocusChange(boolean hasFocus, boolean shouldShowKeyboard) {
-        super.finishUrlFocusChange(hasFocus, shouldShowKeyboard);
-        if (!hasFocus) {
-            mUrlActionContainer.setVisibility(GONE);
-        }
-        mStatusCoordinator.onUrlAnimationFinished(hasFocus);
-    }
-
-    @Override
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
         updateMicButtonVisibility();
-    }
-
-    @Override
-    public void updateShouldAnimateIconChanges() {
-        notifyShouldAnimateIconChanges(isUrlBarFocused() || isUrlFocusChangeInProgress());
     }
 
     @Override

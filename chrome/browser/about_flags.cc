@@ -2608,6 +2608,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchSecondTapName,
      flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
+    {"contextual-search-twv-impl",
+     flag_descriptions::kContextualSearchThinWebViewImplementationName,
+     flag_descriptions::kContextualSearchThinWebViewImplementationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kContextualSearchThinWebViewImplementation)},
     {"contextual-search-translations",
      flag_descriptions::kContextualSearchTranslationsName,
      flag_descriptions::kContextualSearchTranslationsDescription, kOsAndroid,
@@ -5488,6 +5494,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"print-server-scaling", flag_descriptions::kPrintServerScalingName,
      flag_descriptions::kPrintServerScalingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrintServerScaling)},
+
+    {"external-pci-devices-allowed",
+     flag_descriptions::kExternalPciDevicesAllowedName,
+     flag_descriptions::kExternalPciDevicesAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kExternalPciDevicesAllowed)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
@@ -6973,6 +6984,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRestrictedWebApisName,
      flag_descriptions::kEnableRestrictedWebApisDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnableRestrictedWebApis)},
+
+    {"clear-cross-browsing-context-group-main-frame-name",
+     flag_descriptions::kClearCrossBrowsingContextGroupMainFrameNameName,
+     flag_descriptions::kClearCrossBrowsingContextGroupMainFrameNameDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         features::kClearCrossBrowsingContextGroupMainFrameName)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -1304,6 +1304,38 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Media.D3D11.H264Status" enum="MediaStatusCode"
+    expires_after="2021-06-13">
+  <owner>liberato@chromium.org</owner>
+  <owner>tmathmeyer@chromium.org</owner>
+  <summary>
+    This records the media::StatusCode from the H264 accelerator. It is emitted
+    when the accelerator encounters an error during decoding.
+  </summary>
+</histogram>
+
+<histogram name="Media.D3D11.NotifyErrorStatus" enum="MediaStatusCode"
+    expires_after="2021-06-13">
+  <owner>liberato@chromium.org</owner>
+  <owner>tmathmeyer@chromium.org</owner>
+  <summary>
+    This records the media::StatusCode that was sent to NotifyError. kOk is not
+    recorded here. It is recorded when D3D11VideoDecoder reports an error to the
+    client. For decoder failures, an additional status code may be logged by the
+    accelerator -- see Media.D3D11{H264,VP9}Status for that.
+  </summary>
+</histogram>
+
+<histogram name="Media.D3D11.VP9Status" enum="MediaStatusCode"
+    expires_after="2021-06-13">
+  <owner>liberato@chromium.org</owner>
+  <owner>tmathmeyer@chromium.org</owner>
+  <summary>
+    This records the media::StatusCode from the VP9 accelerator. It is emitted
+    when the accelerator encounters an error during decoding.
+  </summary>
+</histogram>
+
 <histogram name="Media.D3D11.WasVideoSupported"
     enum="D3D11VideoNotSupportedReason" expires_after="2021-06-13">
   <owner>liberato@chromium.org</owner>
@@ -2829,6 +2861,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Pepper.PlayedSound" enum="Boolean"
     expires_after="2021-03-01">
+  <obsolete>
+    Deprecated as of 2021/01.
+  </obsolete>
   <owner>mlamouri@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -4717,7 +4752,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Cloud.PrefAtDialogOpen" enum="BooleanEnabled"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -4727,7 +4762,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Cloud.PrefAtInit" enum="BooleanEnabled"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -4922,7 +4957,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Provider.Version" enum="MediaRouteProviderVersion"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -4932,7 +4967,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Provider.WakeReason"
-    enum="MediaRouteProviderWakeReason" expires_after="2021-05-16">
+    enum="MediaRouteProviderWakeReason" expires_after="2022-02-01">
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -4941,7 +4976,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Provider.Wakeup" enum="MediaRouteProviderWakeup"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>

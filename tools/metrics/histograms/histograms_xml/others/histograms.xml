@@ -2985,7 +2985,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="ContextMenu.CancelSystemTouches" enum="BooleanHit"
     expires_after="2021-06-20">
   <owner>michaeldo@chromium.org</owner>
-  <owner>src/ios/web/web_state/ui/OWNERS</owner>
+  <owner>src/ios/web/OWNERS</owner>
   <summary>
     Logs true when the system touches are cancelled in order to show the Context
     Menu instead of performing a default system action. Only logged on iOS.
@@ -2995,7 +2995,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="ContextMenu.DelayedElementDetails"
     enum="ContextMenuDelayedElementDetails" expires_after="2021-05-23">
   <owner>michaeldo@chromium.org</owner>
-  <owner>src/ios/web/web_state/ui/OWNERS</owner>
+  <owner>src/ios/web/OWNERS</owner>
   <summary>
     Logged when DOM element details are not yet available when the user
     completes a long press. Also logs if the context menu was shown once the
@@ -3008,7 +3008,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="ContextMenu.DOMElementFrame" enum="ContextMenuDOMElementFrame"
     expires_after="2021-05-23">
   <owner>michaeldo@chromium.org</owner>
-  <owner>src/ios/web/web_state/ui/OWNERS</owner>
+  <owner>src/ios/web/OWNERS</owner>
   <summary>
     Logged when the Context Menu will be displayed. Also logs if the element for
     the last touch was found in the main frame or a iframe. Only logged on iOS.
@@ -3191,7 +3191,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="ContextMenu.WaitingForElementDetails" enum="BooleanHit"
     expires_after="2021-05-23">
   <owner>michaeldo@chromium.org</owner>
-  <owner>src/ios/web/web_state/ui/OWNERS</owner>
+  <owner>src/ios/web/OWNERS</owner>
   <summary>
     Logs true when the context menu gesture recognizer fully recognizes a long
     press, but is still waiting on the DOM element details before the context
@@ -9595,8 +9595,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
+    name="Nearby.Share.Certificates.Manager.BluetoothMacAddressPresentForPrivateCertificateCreation"
+    enum="BooleanPresent" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records whether or not a Bluetooth MAC address was able to be fetched during
+    the local device's private certificate creation. Emitted after private
+    certificates attempt to be created, which typically occurs every three days
+    if Nearby Share is enabled. This will only be emitted once if multiple
+    certificates are created at a time, for example, when all certificates are
+    created after onboarding.
+  </summary>
+</histogram>
+
+<histogram
     name="Nearby.Share.Certificates.Manager.BluetoothMacAddressSetInPrivateCertificate"
     enum="BooleanSet" expires_after="2021-08-19">
+  <obsolete>
+    Replaced 01/2021 with
+    Nearby.Share.Certificates.Manager.BluetoothMacAddressPresentForPrivateCertificateCreation
+  </obsolete>
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -11123,18 +11142,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="PerformanceHints.Observer.HintForURLResult"
     enum="PerformanceHintsObserverHintForURLResult" expires_after="2021-05-30">
-  <owner>jds@chromium.org</owner>
+  <owner>jds@google.com</owner>
   <owner>src/chrome/browser/performance_hints/OWNERS</owner>
   <summary>
     Records the result of querying PerformanceHintsObserver for a URL-specific
     performance hint. This enables tracking how often the
     OptimizationGuideDecider provides a hint in time for a HintForURL request.
+
+    This is recorded once for each surface shown (e.g. once per link context
+    menu opened).
   </summary>
 </histogram>
 
 <histogram name="PerformanceHints.Observer.PerformanceClassForURL"
-    enum="PerformanceHintsPerformanceClass" expires_after="2021-01-24">
-  <owner>jds@chromium.org</owner>
+    enum="PerformanceHintsPerformanceClass" expires_after="2021-05-30">
+  <owner>jds@google.com</owner>
   <owner>src/chrome/browser/performance_hints/OWNERS</owner>
   <summary>
     Records the PerformanceClass determined for a given URL. This value
@@ -11146,13 +11168,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram base="true" name="PerformanceHints.Observer.SourceLookupStatus"
     enum="PerformanceHintsObserverSourceLookupStatus"
     expires_after="2021-05-30">
-  <owner>jds@chromium.org</owner>
+  <owner>jds@google.com</owner>
   <owner>src/chrome/browser/performance_hints/OWNERS</owner>
   <summary>
     Records the result of a hint lookup in a single source (e.g. link hints of
     the current page, the page's OptimizationMetadata, etc). See the
     PerformanceHintsSource suffix for name completions. All source suffix
     histograms should have the same total count.
+
+    This is recorded for each source once per surface shown (e.g. each source is
+    recorded once per link context menu opened).
   </summary>
 </histogram>
 
@@ -12579,6 +12604,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     when the the hosting WebUIBubbleDialogView's Widget is first created and
     when the widget is destroyed. This is logged on Desktop only.
   </summary>
+</histogram>
+
+<histogram name="ReadingList.{ReadStatus}.Count.{Variation}" units="count"
+    expires_after="M92">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    The number of {ReadStatus} items in the reading list. Recorded {Variation}.
+  </summary>
+  <token key="ReadStatus">
+    <variant name="Read" summary="read"/>
+    <variant name="Unread" summary="unread"/>
+  </token>
+  <token key="Variation">
+    <variant name="OnModelLoaded"
+        summary="when the reading list model is loaded"/>
+    <variant name="OnUMAUpload" summary="every UMA upload"/>
+  </token>
 </histogram>
 
 <histogram name="RecoveryComponent.Event" enum="RecoveryComponentEvent"
@@ -17078,7 +17121,7 @@ regressions. -->
 
 <histogram name="VoiceInteraction.AssistantActionPerformed{Source}"
     enum="AssistantActionPerformed" expires_after="2021-04-04">
-  <owner>jds@chromium.org</owner>
+  <owner>jds@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
     Android: The action performed by Assistant upon being invoked during a voice

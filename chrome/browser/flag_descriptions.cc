@@ -362,6 +362,12 @@ const char kClientStorageAccessContextAuditingName[] =
 const char kClientStorageAccessContextAuditingDescription[] =
     "Record the first-party contexts in which client-side storage was accessed";
 
+const char kClearCrossBrowsingContextGroupMainFrameNameName[] =
+    "Clear window name in top-level cross-browsing-context-group navigation";
+const char kClearCrossBrowsingContextGroupMainFrameNameDescription[] =
+    "Clear the preserved window.name when it's a top-level navigation that "
+    "swaps browsing context group.";
+
 const char kDarkLightTestName[] = "Dark/light mode of system UI";
 const char kDarkLightTestDescription[] =
     "Enables the dark/light mode of system UI, which includes shelf, launcher, "
@@ -1129,6 +1135,12 @@ const char kEffectiveConnectionTypeSlow2GOnCellularDescription[] =
 const char kEffectiveConnectionType2GDescription[] = "2G";
 const char kEffectiveConnectionType3GDescription[] = "3G";
 const char kEffectiveConnectionType4GDescription[] = "4G";
+
+const char kExternalPciDevicesAllowedName[] = "Allow external PCI devices";
+const char kExternalPciDevicesAllowedDescription[] =
+    "Enables the use of "
+    "External PCI devices (including some thunderbolt and SD Express devices "
+    "that use PCI tunneling)";
 
 const char kFileHandlingAPIName[] = "File Handling API";
 const char kFileHandlingAPIDescription[] =
@@ -2771,6 +2783,12 @@ const char kContextualSearchSecondTapName[] =
 const char kContextualSearchSecondTapDescription[] =
     "Enables triggering on a second tap gesture even when Ranker would "
     "normally suppress that tap.";
+
+const char kContextualSearchThinWebViewImplementationName[] =
+    "Use Contextual Search ThinWebView implementation";
+const char kContextualSearchThinWebViewImplementationDescription[] =
+    "Use ThinWebView and BottomSheet based implementation for Contextual"
+    "Search.";
 
 const char kContextualSearchTranslationsName[] =
     "Contextual Search translations";

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
-import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
-
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -35,6 +33,8 @@ import org.chromium.ui.widget.Toast;
  * StatusView is a location bar's view displaying status (icons and/or text).
  */
 public class StatusView extends LinearLayout {
+    public static final int ICON_ANIMATION_DURATION_MS = 225;
+
     @VisibleForTesting
     static class StatusViewDelegate {
         /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */
@@ -102,33 +102,31 @@ public class StatusView extends LinearLayout {
      */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        if (mLocationBarDataProvider != null
-                && mDelegate.shouldShowSearchEngineLogo(mLocationBarDataProvider.isIncognito())) {
-            LinearLayout.LayoutParams layoutParams =
-                    new LinearLayout.LayoutParams(mIconView.getLayoutParams());
-            layoutParams.setMarginEnd(0);
-            layoutParams.width =
-                    getResources().getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
-            mIconView.setLayoutParams(layoutParams);
-            // Setup the padding once we're loaded, the other padding changes will happen with post-
-            // layout positioning.
-            setPaddingRelative(getPaddingStart(), getPaddingTop(),
-                    getResources().getDimensionPixelOffset(
-                            R.dimen.sei_location_bar_icon_end_padding),
-                    getPaddingBottom());
-            // Note: the margins and implicit padding were removed from the status view for the
-            // dse icon experiment. Moving padding values that were there to the verbose status
-            // text view and the verbose text extra space.
-            mVerboseStatusTextView.setPaddingRelative(
-                    getResources().getDimensionPixelSize(
-                            R.dimen.sei_location_bar_verbose_start_padding_verbose_text),
-                    mVerboseStatusTextView.getPaddingTop(), mVerboseStatusTextView.getPaddingEnd(),
-                    mVerboseStatusTextView.getPaddingBottom());
-            layoutParams = new LinearLayout.LayoutParams(mStatusExtraSpace.getLayoutParams());
-            layoutParams.width = getResources().getDimensionPixelSize(
-                    R.dimen.sei_location_bar_status_extra_padding_width);
-            mStatusExtraSpace.setLayoutParams(layoutParams);
-        }
+        if (!mDelegate.isSearchEngineLogoEnabled()) return;
+
+        LinearLayout.LayoutParams layoutParams =
+                new LinearLayout.LayoutParams(mIconView.getLayoutParams());
+        layoutParams.setMarginEnd(0);
+        layoutParams.width =
+                getResources().getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
+        mIconView.setLayoutParams(layoutParams);
+        // Setup the padding once we're loaded, the other padding changes will happen with post-
+        // layout positioning.
+        setPaddingRelative(getPaddingStart(), getPaddingTop(),
+                getResources().getDimensionPixelOffset(R.dimen.sei_location_bar_icon_end_padding),
+                getPaddingBottom());
+        // Note: the margins and implicit padding were removed from the status view for the
+        // dse icon experiment. Moving padding values that were there to the verbose status
+        // text view and the verbose text extra space.
+        mVerboseStatusTextView.setPaddingRelative(
+                getResources().getDimensionPixelSize(
+                        R.dimen.sei_location_bar_verbose_start_padding_verbose_text),
+                mVerboseStatusTextView.getPaddingTop(), mVerboseStatusTextView.getPaddingEnd(),
+                mVerboseStatusTextView.getPaddingBottom());
+        layoutParams = new LinearLayout.LayoutParams(mStatusExtraSpace.getLayoutParams());
+        layoutParams.width = getResources().getDimensionPixelSize(
+                R.dimen.sei_location_bar_status_extra_padding_width);
+        mStatusExtraSpace.setLayoutParams(layoutParams);
     }
 
     /**
@@ -167,7 +165,7 @@ public class StatusView extends LinearLayout {
             updateIncognitoBadgeEndPadding();
             mIconView.animate()
                     .alpha(1.0f)
-                    .setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
+                    .setDuration(ICON_ANIMATION_DURATION_MS)
                     .withEndAction(() -> {
                         mAnimatingStatusIconShow = false;
                         // Wait until the icon is visible so the bounds will be properly set.
@@ -186,7 +184,7 @@ public class StatusView extends LinearLayout {
             // back and forth between secure and insecure sites, which seems like a glitch.
             // See bug: crbug.com/919449
             mIconView.animate()
-                    .setDuration(mAnimationsEnabled ? URL_FOCUS_CHANGE_ANIMATION_DURATION_MS : 0)
+                    .setDuration(mAnimationsEnabled ? ICON_ANIMATION_DURATION_MS : 0)
                     .alpha(0.0f)
                     .withEndAction(() -> {
                         mIconView.setVisibility(View.GONE);
@@ -249,8 +247,7 @@ public class StatusView extends LinearLayout {
 
                 // Note: crossfade controls blending, not animation.
                 newImage.setCrossFadeEnabled(true);
-                newImage.startTransition(
-                        mAnimationsEnabled ? URL_FOCUS_CHANGE_ANIMATION_DURATION_MS : 0);
+                newImage.startTransition(mAnimationsEnabled ? ICON_ANIMATION_DURATION_MS : 0);
 
                 // Update the touch delegate only if the icons are swapped without animating the
                 // image view.

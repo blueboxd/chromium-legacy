@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
-#include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
@@ -53,6 +52,9 @@ class VmCameraMicManager : public media::CameraActiveClientObserver,
       (1 << static_cast<size_t>(DeviceType::kMic)) |
       (1 << static_cast<size_t>(DeviceType::kCamera))};
 
+  static constexpr base::TimeDelta kDebounceTime =
+      base::TimeDelta::FromMilliseconds(300);
+
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnVmCameraMicActiveChanged(VmCameraMicManager*) {}
@@ -82,49 +84,7 @@ class VmCameraMicManager : public media::CameraActiveClientObserver,
 
   static constexpr NotificationType kNoNotification{};
 
-  class VmInfo {
-   public:
-    VmInfo();
-    VmInfo(const VmInfo&);
-    ~VmInfo();
-
-    NotificationType notification_type() const { return notification_type_; }
-
-    void SetMicActive(bool active);
-    void SetCameraAccessing(bool accessing);
-    void SetCameraPrivacyIsOn(bool on);
-
-   private:
-    void OnCameraUpdated();
-
-    bool camera_accessing_ = false;
-    // We don't actually need to store this separately for each VM, but this
-    // makes code simpler.
-    bool camera_privacy_is_on_ = false;
-
-    NotificationType notification_type_;
-  };
-
-  class VmNotificationObserver : public message_center::NotificationObserver {
-   public:
-    using OpenSettingsFunction = base::RepeatingCallback<void(Profile*)>;
-
-    VmNotificationObserver();
-    ~VmNotificationObserver();
-
-    void Initialize(Profile* profile, OpenSettingsFunction open_settings);
-
-    base::WeakPtr<NotificationObserver> GetWeakPtr();
-
-    // message_center::NotificationObserver:
-    void Click(const base::Optional<int>& button_index,
-               const base::Optional<base::string16>& reply) override;
-
-   private:
-    Profile* profile_ = nullptr;
-    OpenSettingsFunction open_settings_;
-    base::WeakPtrFactory<VmNotificationObserver> weak_ptr_factory_{this};
-  };
+  class VmInfo;
 
   void MaybeSubscribeToCameraService(bool should_use_cros_camera_service);
 
@@ -139,22 +99,18 @@ class VmCameraMicManager : public media::CameraActiveClientObserver,
   // CrasAudioHandler::AudioObserver
   void OnNumberOfInputStreamsWithPermissionChanged() override;
 
+  void SetCameraAccessing(VmType vm, bool accessing);
+  void SetCameraPrivacyIsOn(bool is_on);
+  void SetMicActive(VmType vm, bool active);
+
   static std::string GetNotificationId(VmType vm, NotificationType type);
 
-  void UpdateVmInfoAndNotifications(VmType vm,
-                                    void (VmInfo::*updator)(bool),
-                                    bool value);
+  void UpdateVmInfo(VmType vm, void (VmInfo::*updator)(bool), bool value);
   void NotifyActiveChanged();
 
-  void OpenNotification(VmType vm, NotificationType type);
-  void CloseNotification(VmType vm, NotificationType type);
-
   Profile* primary_profile_ = nullptr;
-  VmNotificationObserver crostini_vm_notification_observer_;
-  VmNotificationObserver plugin_vm_notification_observer_;
-  base::flat_map<VmType, VmInfo> vm_info_map_;
+  std::map<VmType, VmInfo> vm_info_map_;
 
-  base::RetainingOneShotTimer observer_timer_;
   base::ObserverList<Observer> observers_;
 };
 

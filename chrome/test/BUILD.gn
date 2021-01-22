@@ -1752,6 +1752,7 @@ if (!is_android) {
       sources += [
         "../browser/apps/app_service/notifications_browsertest.cc",
         "../browser/apps/app_service/web_apps_base_browsertest.cc",
+        "../browser/apps/icon_standardizer_unittest.cc",
         "../browser/policy/accessibility_policy_browsertest.cc",
         "../browser/policy/arc_policy_browsertest.cc",
         "../browser/policy/assistant_policy_browsertest.cc",
@@ -3647,6 +3648,7 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/upload/record_handler_impl_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_upload_request_builder_unittest.cc",
     "../browser/policy/messaging_layer/upload/upload_client_unittest.cc",
+    "../browser/policy/messaging_layer/util/report_queue_manual_test_context_unittest.cc",
     "../browser/policy/messaging_layer/util/shared_queue_unittest.cc",
     "../browser/policy/messaging_layer/util/shared_vector_unittest.cc",
     "../browser/policy/messaging_layer/util/status_macros_unittest.cc",
@@ -5008,7 +5010,6 @@ test("unit_tests") {
       "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
       "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.cc",
       "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h",
-      "../browser/ui/app_list/icon_standardizer_unittest.cc",
       "../browser/ui/app_list/md_icon_normalizer_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_app_data_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_app_reinstall_search_provider_unittest.cc",

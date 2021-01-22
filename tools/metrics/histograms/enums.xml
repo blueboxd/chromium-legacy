@@ -11514,6 +11514,7 @@ histogram as enum -->
   <int value="0" label="Text"/>
   <int value="1" label="Bitmap"/>
   <int value="2" label="Html"/>
+  <int value="3" label="File"/>
 </enum>
 
 <enum name="ClipboardHistoryPlaceholderStringType">
@@ -24449,6 +24450,7 @@ Called by update_extension_histograms.py.-->
   <int value="472" label="TAB_GROUPS_ON_MOVED"/>
   <int value="473" label="TAB_GROUPS_ON_REMOVED"/>
   <int value="474" label="TAB_GROUPS_ON_UPDATED"/>
+  <int value="475" label="FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -26062,6 +26064,7 @@ Called by update_extension_histograms.py.-->
   <int value="1537" label="VIRTUALKEYBOARDPRIVATE_GETCLIPBOARDHISTORY"/>
   <int value="1538" label="VIRTUALKEYBOARDPRIVATE_DELETECLIPBOARDITEM"/>
   <int value="1539" label="FILEMANAGERPRIVATE_ISTABLETMODEENABLED"/>
+  <int value="1540" label="FILEMANAGERPRIVATE_NOTIFYDRIVEDIALOGRESULT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -38619,6 +38622,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Installed"/>
   <int value="8" label="Failed"/>
   <int value="9" label="Canceled"/>
+</enum>
+
+<enum name="InputEventTypeForResponsivenessMetric">
+  <int value="0" label="mousedown"/>
+  <int value="1" label="click"/>
+  <int value="2" label="keydown"/>
+  <int value="3" label="pointerup"/>
 </enum>
 
 <enum name="InputMethodCategory">
@@ -59767,11 +59777,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="3"
       label="PluginVM DLC not installed as dlcservice/update_engine is busy."/>
   <int value="4" label="PluginVM DLC not installed due to reboot required."/>
+  <int value="5"
+      label="PluginVM DLC not installed due to insufficient disk space."/>
 </enum>
 
 <enum name="PluginVmLaunchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error"/>
+  <int value="2" label="Invalid license"/>
+  <int value="3" label="VM missing"/>
+  <int value="4" label="Expired license"/>
+  <int value="5" label="Network error"/>
 </enum>
 
 <enum name="PluginVmSetupFailureReason">
@@ -59798,6 +59814,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="INSUFFICIENT_DISK_SPACE"/>
   <int value="24" label="INVALID_LICENSE"/>
   <int value="25" label="OFFLINE"/>
+  <int value="26" label="LIST_VM_DISKS_FAILED"/>
 </enum>
 
 <enum name="PluginVmSetupResult">
@@ -59819,6 +59836,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="User cancelled without starting installation"/>
   <int value="15"
       label="User cancelled setup while validating Plugin VM license"/>
+  <int value="16" label="User cancelled while starting the dispatcher"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum">

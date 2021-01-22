@@ -38,7 +38,6 @@ import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
 import {PDFViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
-import {ToolbarManager} from './toolbar_manager.js';
 
 
 /**
@@ -73,7 +72,6 @@ let GetThumbnailMessageData;
 
 /**
  * @typedef {{
- *   hasUnsavedChanges: (boolean|undefined),
  *   fileName: string,
  *   dataToSave: !ArrayBuffer
  * }}
@@ -233,12 +231,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       },
 
       /** @private */
-      pdfFormSaveEnabled_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /** @private */
       presentationModeEnabled_: {
         type: Boolean,
         value: false,
@@ -317,9 +309,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
     /** @private {boolean} */
     this.toolbarEnabled_ = false;
-
-    /** @private {?ToolbarManager} */
-    this.toolbarManager_ = null;
 
     /** @private {?PdfNavigator} */
     this.navigator_ = null;
@@ -424,11 +413,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       this.getToolbar_().hidden = false;
     }
 
-    if (!this.pdfViewerUpdateEnabled_) {
-      this.toolbarManager_ = new ToolbarManager(
-          window, this.getToolbar_(), this.getZoomToolbar_());
-    }
-
     // Setup the keyboard event listener.
     document.addEventListener(
         'keydown',
@@ -461,15 +445,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     }
 
     switch (e.key) {
-      case 'Tab':
-        this.toolbarManager_.showToolbarsForKeyboardNavigation();
-        return;
-      case 'Escape':
-        this.toolbarManager_.hideSingleToolbarLayer();
-        return;
       case 'g':
         if (this.toolbarEnabled_ && (e.ctrlKey || e.metaKey) && e.altKey) {
-          this.toolbarManager_.showToolbars();
           this.getToolbar_().selectPageNumber();
         }
         return;
@@ -478,11 +455,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
           this.getZoomToolbar_().fitToggleFromHotKey();
         }
         return;
-    }
-
-    // Show toolbars as a fallback.
-    if (!(e.shiftKey || e.ctrlKey || e.altKey)) {
-      this.toolbarManager_.showToolbars();
     }
   }
 
@@ -495,10 +467,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
   handleKeyEvent_(e) {
     if (shouldIgnoreKeyEvents() || e.defaultPrevented) {
       return;
-    }
-
-    if (!this.pdfViewerUpdateEnabled_) {
-      this.toolbarManager_.hideToolbarsAfterTimeout();
     }
 
     // Let the viewport handle directional key events.
@@ -622,17 +590,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
           await this.pluginController_.save(SaveRequestType.ANNOTATION);
       // Data always exists when save is called with requestType = ANNOTATION.
       const result = /** @type {!RequiredSaveResult} */ (saveResult);
-      if (result.hasUnsavedChanges) {
-        assert(!loadTimeData.getBoolean('pdfFormSaveEnabled'));
-        try {
-          await this.$$('#form-warning').show();
-        } catch (e) {
-          // The user aborted entering annotation mode. Revert to the plugin.
-          this.getToolbar_().annotationMode = false;
-          this.updateProgress(100);
-          return;
-        }
-      }
+
       record(UserAction.ENTER_ANNOTATION_MODE);
       this.annotationMode_ = true;
       this.hasEnteredAnnotationMode_ = true;
@@ -707,20 +665,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     }
   }
 
-  /** @override */
-  onFitToChanged(e) {
-    super.onFitToChanged(e);
-
-    if (this.pdfViewerUpdateEnabled_) {
-      return;
-    }
-
-    if (e.detail === FittingType.FIT_TO_PAGE ||
-        e.detail === FittingType.FIT_TO_HEIGHT) {
-      this.toolbarManager_.forceHideTopToolbar();
-    }
-  }
-
   /** @private */
   onPresentClick_() {
     assert(this.presentationModeEnabled_);
@@ -784,9 +728,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
   onTwoUpViewChanged_(e) {
     const twoUpViewEnabled = e.detail;
     this.currentController.setTwoUpView(twoUpViewEnabled);
-    if (!this.pdfViewerUpdateEnabled_) {
-      this.toolbarManager_.forceHideTopToolbar();
-    }
     recordTwoUpViewEnabled(twoUpViewEnabled);
   }
 
@@ -826,9 +767,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       this.loadProgress_ = progress;
     }
     super.updateProgress(progress);
-    if (progress === 100 && !this.pdfViewerUpdateEnabled_) {
-      this.toolbarManager_.hideToolbarsAfterTimeout();
-    }
   }
 
   /** @private */
@@ -877,7 +815,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
         loadTimeData.getBoolean('documentPropertiesEnabled');
     this.pdfAnnotationsEnabled_ =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    this.pdfFormSaveEnabled_ = loadTimeData.getBoolean('pdfFormSaveEnabled');
     this.presentationModeEnabled_ =
         loadTimeData.getBoolean('presentationModeEnabled');
     this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
@@ -993,15 +930,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @override */
   forceFit(view) {
-    if (!this.pdfViewerUpdateEnabled_) {
-      if (view === FittingType.FIT_TO_PAGE ||
-          view === FittingType.FIT_TO_HEIGHT) {
-        this.toolbarManager_.forceHideTopToolbar();
-      }
-      this.getZoomToolbar_().forceFit(view);
-    } else {
-      this.getToolbarNew_().forceFit(view);
-    }
+    this.getToolbarNew_().forceFit(view);
   }
 
   /** @override */
@@ -1157,8 +1086,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     let saveMode;
     if (this.hasEnteredAnnotationMode_) {
       saveMode = SaveRequestType.ANNOTATION;
-    } else if (
-        loadTimeData.getBoolean('pdfFormSaveEnabled') && this.hasEdits_) {
+    } else if (this.hasEdits_) {
       saveMode = SaveRequestType.EDITED;
     } else {
       saveMode = SaveRequestType.ORIGINAL;

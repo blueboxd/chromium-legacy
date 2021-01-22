@@ -502,11 +502,11 @@ void Navigate(NavigateParams* params) {
       (!params->browser ||
        !web_app::IsBrowserForSystemWebApp(params->browser,
                                           capturing_system_app_type.value()))) {
-    params->browser = web_app::LaunchSystemWebApp(
-        params->initiating_profile, capturing_system_app_type.value(),
-        params->url);
+    web_app::LaunchSystemWebAppAsync(params->initiating_profile,
+                                     capturing_system_app_type.value(),
+                                     {.url = params->url});
 
-    // It's okay to early return here, because LaunchSystemWebApp uses a
+    // It's okay to early return here, because LaunchSystemWebAppAsync uses a
     // different logic to choose (and create if necessary) a browser window for
     // system apps.
     //
@@ -771,7 +771,6 @@ bool IsHostAllowedInIncognito(const GURL& url) {
   if (scheme == chrome::kChromeSearchScheme) {
     return host != chrome::kChromeUIThumbnailHost &&
            host != chrome::kChromeUIThumbnailHost2 &&
-           host != chrome::kChromeUIThumbnailListHost &&
            host != chrome::kChromeUISuggestionsHost;
   }
 
@@ -805,7 +804,6 @@ bool IsHostAllowedInIncognito(const GURL& url) {
          host != chrome::kChromeUIBookmarksHost &&
          host != chrome::kChromeUIThumbnailHost &&
          host != chrome::kChromeUIThumbnailHost2 &&
-         host != chrome::kChromeUIThumbnailListHost &&
          host != chrome::kChromeUISuggestionsHost &&
          host != chrome::kChromeUIDevicesHost &&
          host != chrome::kChromeUINewTabPageHost;

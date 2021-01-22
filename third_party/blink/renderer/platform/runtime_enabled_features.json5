@@ -441,6 +441,10 @@
       status: "experimental",
     },
     {
+      name: "CSSAspectRatioInterpolation",
+      status: "experimental",
+    },
+    {
       name: "CSSAspectRatioProperty",
       status: "stable",
     },
@@ -1819,7 +1823,7 @@
     {
       name: "SecurePaymentConfirmation",
       origin_trial_feature_name: "SecurePaymentConfirmation",
-      origin_trial_os: ["mac"],
+      origin_trial_os: ["mac", "win"],
       status: "experimental",
     },
     {

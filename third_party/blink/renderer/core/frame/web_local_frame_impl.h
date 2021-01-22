@@ -193,7 +193,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebRange MarkedRange() const override;
   bool FirstRectForCharacterRange(unsigned location,
                                   unsigned length,
-                                  WebRect&) const override;
+                                  gfx::Rect&) const override;
   bool ExecuteCommand(const WebString&) override;
   bool ExecuteCommand(const WebString&, const WebString& value) override;
   bool IsCommandEnabled(const WebString&) const override;
@@ -296,11 +296,11 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
-  WebSize SpoolSizeInPixelsForTesting(const WebSize& page_size_in_pixels,
-                                      uint32_t page_count) override;
+  gfx::Size SpoolSizeInPixelsForTesting(const gfx::Size& page_size_in_pixels,
+                                        uint32_t page_count) override;
   void PrintPagesForTesting(cc::PaintCanvas*,
-                            const WebSize& page_size_in_pixels,
-                            const WebSize& spool_size_in_pixels) override;
+                            const gfx::Size& page_size_in_pixels,
+                            const gfx::Size& spool_size_in_pixels) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
   gfx::Point GetPositionInViewportForTesting() const override;
   void WasHidden() override;

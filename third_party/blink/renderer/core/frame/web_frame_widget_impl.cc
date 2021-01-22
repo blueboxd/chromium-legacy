@@ -1613,15 +1613,6 @@ void WebFrameWidgetImpl::SetBrowserControlsParams(
   widget_base_->LayerTreeHost()->SetBrowserControlsParams(params);
 }
 
-cc::LayerTreeDebugState WebFrameWidgetImpl::GetLayerTreeDebugState() {
-  return widget_base_->LayerTreeHost()->GetDebugState();
-}
-
-void WebFrameWidgetImpl::SetLayerTreeDebugState(
-    const cc::LayerTreeDebugState& state) {
-  widget_base_->LayerTreeHost()->SetDebugState(state);
-}
-
 void WebFrameWidgetImpl::SynchronouslyCompositeForTesting(
     base::TimeTicks frame_time) {
   widget_base_->LayerTreeHost()->CompositeForTest(frame_time, false);
@@ -1891,7 +1882,7 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
 }
 
 void WebFrameWidgetImpl::InitializeCompositing(
-    scheduler::WebThreadScheduler* main_thread_scheduler,
+    scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
@@ -1899,7 +1890,7 @@ void WebFrameWidgetImpl::InitializeCompositing(
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
-      main_thread_scheduler, task_graph_runner, is_for_child_local_root_,
+      agent_group_scheduler, task_graph_runner, is_for_child_local_root_,
       screen_info, std::move(ukm_recorder_factory), settings,
       input_handler_weak_ptr_factory_.GetWeakPtr());
 
@@ -2967,14 +2958,14 @@ void WebFrameWidgetImpl::GetEditContextBoundsInWindow(
   WebInputMethodController* controller = GetActiveWebInputMethodController();
   if (!controller)
     return;
-  WebRect control_bounds;
-  WebRect selection_bounds;
+  gfx::Rect control_bounds;
+  gfx::Rect selection_bounds;
   controller->GetLayoutBounds(&control_bounds, &selection_bounds);
   *edit_context_control_bounds =
-      widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(control_bounds));
+      widget_base_->BlinkSpaceToEnclosedDIPs(control_bounds);
   if (controller->IsEditContextActive()) {
     *edit_context_selection_bounds =
-        widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(selection_bounds));
+        widget_base_->BlinkSpaceToEnclosedDIPs(selection_bounds);
   }
 }
 
@@ -3287,13 +3278,12 @@ void WebFrameWidgetImpl::GetCompositionCharacterBoundsInWindow(
     return;
   blink::WebInputMethodController* controller =
       focused_frame->GetInputMethodController();
-  blink::WebVector<blink::WebRect> bounds_from_blink;
+  blink::WebVector<gfx::Rect> bounds_from_blink;
   if (!controller->GetCompositionCharacterBounds(bounds_from_blink))
     return;
 
   for (auto& rect : bounds_from_blink) {
-    bounds_in_dips->push_back(
-        widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(rect)));
+    bounds_in_dips->push_back(widget_base_->BlinkSpaceToEnclosedDIPs(rect));
   }
 }
 
@@ -3317,14 +3307,13 @@ WebFrameWidgetImpl::GetImeTextSpansInfo(
   Vector<ui::mojom::blink::ImeTextSpanInfoPtr> ime_text_spans_info;
 
   for (const auto& ime_text_span : ime_text_spans) {
-    WebRect webrect;
+    gfx::Rect rect;
     unsigned length = ime_text_span.end_offset - ime_text_span.start_offset;
     focused_frame->FirstRectForCharacterRange(ime_text_span.start_offset,
-                                              length, webrect);
+                                              length, rect);
 
     ime_text_spans_info.push_back(ui::mojom::blink::ImeTextSpanInfo::New(
-        ime_text_span,
-        widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(webrect))));
+        ime_text_span, widget_base_->BlinkSpaceToEnclosedDIPs(rect)));
   }
   return ime_text_spans_info;
 }
@@ -3661,6 +3650,15 @@ void WebFrameWidgetImpl::SetScreenInfoAndSize(
 
 float WebFrameWidgetImpl::GetCompositingScaleFactor() {
   return compositing_scale_factor_;
+}
+
+const cc::LayerTreeDebugState& WebFrameWidgetImpl::GetLayerTreeDebugState() {
+  return widget_base_->LayerTreeHost()->GetDebugState();
+}
+
+void WebFrameWidgetImpl::SetLayerTreeDebugState(
+    const cc::LayerTreeDebugState& state) {
+  widget_base_->LayerTreeHost()->SetDebugState(state);
 }
 
 void WebFrameWidgetImpl::NotifyCompositingScaleFactorChanged(

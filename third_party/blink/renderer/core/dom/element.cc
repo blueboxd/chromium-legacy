@@ -2015,10 +2015,7 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
   return visible_rect;
 }
 
-void Element::ClientQuads(Vector<FloatQuad>& quads) {
-  GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript);
-
+void Element::ClientQuads(Vector<FloatQuad>& quads) const {
   LayoutObject* element_layout_object = GetLayoutObject();
   if (!element_layout_object)
     return;
@@ -2027,7 +2024,7 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
   // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
   // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
   // codepath below.
-  auto* svg_element = DynamicTo<SVGElement>(this);
+  const auto* svg_element = DynamicTo<SVGElement>(this);
   if (svg_element && !element_layout_object->IsSVGRoot() &&
       !element_layout_object->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
@@ -2048,6 +2045,8 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
 }
 
 DOMRectList* Element::getClientRects() {
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavaScript);
   Vector<FloatQuad> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
@@ -2060,11 +2059,11 @@ DOMRectList* Element::getClientRects() {
   return MakeGarbageCollected<DOMRectList>(quads);
 }
 
-DOMRect* Element::getBoundingClientRect() {
+FloatRect Element::GetBoundingClientRectNoLifecycleUpdate() const {
   Vector<FloatQuad> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
-    return DOMRect::Create();
+    return FloatRect();
 
   FloatRect result = quads[0].BoundingBox();
   for (wtf_size_t i = 1; i < quads.size(); ++i)
@@ -2074,7 +2073,13 @@ DOMRect* Element::getBoundingClientRect() {
   DCHECK(element_layout_object);
   GetDocument().AdjustFloatRectForScrollAndAbsoluteZoom(result,
                                                         *element_layout_object);
-  return DOMRect::FromFloatRect(result);
+  return result;
+}
+
+DOMRect* Element::getBoundingClientRect() {
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavaScript);
+  return DOMRect::FromFloatRect(GetBoundingClientRectNoLifecycleUpdate());
 }
 
 const AtomicString& Element::computedRole() {
@@ -2869,9 +2874,9 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   }
 
   if (child_change.TraversePseudoElements(*this)) {
-    UpdatePseudoElement(kPseudoIdBackdrop, child_change);
-    UpdatePseudoElement(kPseudoIdMarker, child_change);
-    UpdatePseudoElement(kPseudoIdBefore, child_change);
+    UpdatePseudoElement(kPseudoIdBackdrop, child_change, style_recalc_context);
+    UpdatePseudoElement(kPseudoIdMarker, child_change, style_recalc_context);
+    UpdatePseudoElement(kPseudoIdBefore, child_change, style_recalc_context);
   }
 
   if (child_change.TraverseChildren(*this)) {
@@ -2895,7 +2900,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   }
 
   if (child_change.TraversePseudoElements(*this)) {
-    UpdatePseudoElement(kPseudoIdAfter, child_change);
+    UpdatePseudoElement(kPseudoIdAfter, child_change, style_recalc_context);
 
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
@@ -4798,7 +4803,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
 
   scoped_refptr<ComputedStyle> result =
       GetDocument().GetStyleResolver().PseudoStyleForElement(
-          this,
+          this, style_recalc_context,
           PseudoElementStyleRequest(
               pseudo_element_specifier,
               PseudoElementStyleRequest::kForComputedStyle),
@@ -4915,9 +4920,13 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
   // The StyleUpdatePhase tells where we are in the process of updating style
   // and layout tree.
 
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
+
   PseudoElement* element = GetPseudoElement(kPseudoIdFirstLetter);
   if (!element) {
-    element = CreatePseudoElementIfNeeded(kPseudoIdFirstLetter);
+    element =
+        CreatePseudoElementIfNeeded(kPseudoIdFirstLetter, style_recalc_context);
     // If we are in Element::AttachLayoutTree, don't mess up the ancestor flags
     // for layout tree attachment/rebuilding. We will unconditionally call
     // AttachLayoutTree for the created pseudo element immediately after this
@@ -4951,9 +4960,6 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
       remaining_text_layout_object !=
       To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject();
 
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
-
   if (phase == StyleUpdatePhase::kAttachLayoutTree) {
     // RemainingTextLayoutObject should have been cleared from DetachLayoutTree.
     DCHECK(!To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject());
@@ -4983,13 +4989,17 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
   }
 }
 
-void Element::UpdatePseudoElement(PseudoId pseudo_id,
-                                  const StyleRecalcChange change) {
+void Element::UpdatePseudoElement(
+    PseudoId pseudo_id,
+    const StyleRecalcChange change,
+    const StyleRecalcContext& style_recalc_context) {
   PseudoElement* element = GetPseudoElement(pseudo_id);
   if (!element) {
-    if ((element = CreatePseudoElementIfNeeded(pseudo_id))) {
+    if ((element =
+             CreatePseudoElementIfNeeded(pseudo_id, style_recalc_context))) {
       // ::before and ::after can have a nested ::marker
-      element->CreatePseudoElementIfNeeded(kPseudoIdMarker);
+      element->CreatePseudoElementIfNeeded(kPseudoIdMarker,
+                                           style_recalc_context);
       element->SetNeedsReattachLayoutTree();
     }
     return;
@@ -4997,8 +5007,6 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
 
   if (change.ShouldUpdatePseudoElement(*element)) {
     if (CanGeneratePseudoElement(pseudo_id)) {
-      // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-      StyleRecalcContext style_recalc_context;
       element->RecalcStyle(change.ForPseudoElement(), style_recalc_context);
       if (!element->NeedsReattachLayoutTree())
         return;
@@ -5010,7 +5018,9 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
   }
 }
 
-PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
+PseudoElement* Element::CreatePseudoElementIfNeeded(
+    PseudoId pseudo_id,
+    const StyleRecalcContext& style_recalc_context) {
   if (!CanGeneratePseudoElement(pseudo_id))
     return nullptr;
   if (pseudo_id == kPseudoIdFirstLetter) {
@@ -5021,9 +5031,6 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
   PseudoElement* pseudo_element = PseudoElement::Create(this, pseudo_id);
   EnsureElementRareData().SetPseudoElement(pseudo_id, pseudo_element);
   pseudo_element->InsertedInto(*this);
-
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
 
   scoped_refptr<ComputedStyle> pseudo_style =
       pseudo_element->StyleForLayoutObject(style_recalc_context);
@@ -5122,10 +5129,13 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
 scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
     const PseudoElementStyleRequest& request,
     const ComputedStyle* parent_style) {
-  return StyleForPseudoElement(request, parent_style);
+  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
+  StyleRecalcContext style_recalc_context;
+  return StyleForPseudoElement(style_recalc_context, request, parent_style);
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
+    const StyleRecalcContext& style_recalc_context,
     const PseudoElementStyleRequest& request,
     const ComputedStyle* parent_style) {
   const ComputedStyle* style = GetComputedStyle();
@@ -5148,7 +5158,7 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
       }
     }
     return GetDocument().GetStyleResolver().PseudoStyleForElement(
-        this, request, style, layout_parent_style);
+        this, style_recalc_context, request, style, layout_parent_style);
   }
 
   if (!parent_style)
@@ -5158,12 +5168,10 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     scoped_refptr<ComputedStyle> result;
     if (IsPseudoElement()) {
       result = GetDocument().GetStyleResolver().PseudoStyleForElement(
-          parentElement(),
+          parentElement(), style_recalc_context,
           PseudoElementStyleRequest(To<PseudoElement>(this)->GetPseudoId()),
           parent_style, parent_style);
     } else {
-      // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-      StyleRecalcContext style_recalc_context;
       result = GetDocument().GetStyleResolver().StyleForElement(
           this, style_recalc_context, parent_style, parent_style);
     }
@@ -5173,7 +5181,7 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
   }
 
   return GetDocument().GetStyleResolver().PseudoStyleForElement(
-      this, request, parent_style, parent_style);
+      this, style_recalc_context, request, parent_style, parent_style);
 }
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {

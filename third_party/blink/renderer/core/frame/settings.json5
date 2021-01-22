@@ -251,7 +251,7 @@
     {
       name: "threadedScrollingEnabled",
       initial: true,
-      invalidate: ["Style"],
+      invalidate: ["Style", "ViewportPaintProperties"],
     },
 
     // Used in web tests for gesture tap highlights. Makes the highlights square
@@ -1093,11 +1093,6 @@
       name: "textAutosizingWindowSizeOverride",
       invalidate: ["TextAutosizing"],
       type: "IntSize",
-    },
-    {
-      name: "WebXRImmersiveArAllowed",
-      initial: true,
-      type: "bool",
     },
   ],
 }

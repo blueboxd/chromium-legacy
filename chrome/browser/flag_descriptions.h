@@ -140,6 +140,9 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
+extern const char kAutofillEnableOfferNotificationName[];
+extern const char kAutofillEnableOfferNotificationDescription[];
+
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryName[];
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[];
 
@@ -934,6 +937,8 @@ extern const char kOmniboxRichAutocompletionShowAdditionalTextName[];
 extern const char kOmniboxRichAutocompletionShowAdditionalTextDescription[];
 extern const char kOmniboxRichAutocompletionSplitName[];
 extern const char kOmniboxRichAutocompletionSplitDescription[];
+extern const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesName[];
+extern const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesDescription[];
 extern const char kOmniboxRichAutocompletionPromisingName[];
 extern const char kOmniboxRichAutocompletionPromisingDescription[];
 
@@ -1092,9 +1097,6 @@ extern const char kPrerender2Description[];
 
 extern const char kPreviewsAllowedName[];
 extern const char kPreviewsAllowedDescription[];
-
-extern const char kPrintJobManagementAppName[];
-extern const char kPrintJobManagementAppDescription[];
 
 extern const char kPrintSaveToDriveName[];
 extern const char kPrintSaveToDriveDescription[];
@@ -1686,6 +1688,9 @@ extern const char kInterestFeedV2Description[];
 
 extern const char kInterestFeedV2HeartsName[];
 extern const char kInterestFeedV2HeartsDescription[];
+
+extern const char kFeedShareName[];
+extern const char kFeedShareDescription[];
 
 extern const char kInterestFeedV1ClickAndViewActionsConditionalUploadName[];
 extern const char

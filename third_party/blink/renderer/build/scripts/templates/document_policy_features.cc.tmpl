@@ -1,7 +1,6 @@
 {% from 'templates/macros.tmpl' import license, source_files_for_generated_file %}
 {{license()}}
 
-{{ source_files_for_generated_file(template_file, input_files) }}
 
 #include "base/no_destructor.h"
 #include "base/feature_list.h"
@@ -33,13 +32,8 @@ const DocumentPolicyFeatureInfoMap& GetDocumentPolicyFeatureInfoMap() {
       {%- for flag, default_value in feature.default_value_behind_flag %}
         {%- if not loop.first %} else {% endif %}
         if (base::FeatureList::IsEnabled(features::k{{flag}})) {
-          map.insert_or_assign(
-            mojom::DocumentPolicyFeature::k{{feature.name}},
-            DocumentPolicyFeatureInfo {
-              "{{feature.document_policy_name}}",
-              {{parse_default_value(default_value, feature.value_type)}}
-            }
-          );
+          map.find(mojom::DocumentPolicyFeature::k{{feature.name}})->second.default_value =
+            {{parse_default_value(default_value, feature.value_type)}};
         }
       {%- endfor %}
     {%- endif %}

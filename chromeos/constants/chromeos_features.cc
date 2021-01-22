@@ -322,7 +322,7 @@ const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables JS modules for Files app.
 const base::Feature kFilesJsModules{"FilesJsModules",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables JS modules for Audio Player.
 const base::Feature kAudioPlayerJsModules{"AudioPlayerJsModules",
@@ -531,10 +531,6 @@ const base::Feature kPrinterStatus{"PrinterStatus",
 // dialog.
 const base::Feature kPrinterStatusDialog{"PrinterStatusDialog",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to enable the Print Job Management App.
-const base::Feature kPrintJobManagementApp{"PrintJobManagementApp",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Changes Print Preview Save to Drive to use local Drive.
 const base::Feature kPrintSaveToDrive{"PrintSaveToDrive",

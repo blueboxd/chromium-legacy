@@ -141,6 +141,7 @@
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
+#include "components/webapps/common/switches.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
@@ -1090,6 +1091,23 @@ const FeatureEntry::FeatureVariation
                 {"RichAutocompletionSplitTitleCompletion", "true"},
                 {"RichAutocompletionSplitCompletionMinChar", "3"}},
             2,
+            nullptr,
+        }};
+
+const FeatureEntry::FeatureVariation
+    kOmniboxRichAutocompletionPreferUrlsOverPrefixesVariations[] = {
+        {
+            "Prefer prefixes",
+            (FeatureEntry::FeatureParam[]){},
+            0,
+            nullptr,
+        },
+        {
+            "Prefer URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompletePreferUrlsOverPrefixes",
+                 "true"}},
+            1,
             nullptr,
         }};
 
@@ -3313,7 +3331,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"bypass-app-banner-engagement-checks",
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)},
+     SINGLE_VALUE_TYPE(webapps::switches::kBypassAppBannerEngagementChecks)},
     // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
     {"enable-desktop-pwas-app-icon-shortcuts-menu",
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
@@ -3617,6 +3635,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"feed-v2-hearts", flag_descriptions::kInterestFeedV2HeartsName,
      flag_descriptions::kInterestFeedV2HeartsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2Hearts)},
+    {"feed-share", flag_descriptions::kFeedShareName,
+     flag_descriptions::kFeedShareDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kFeedShare)},
     {"web-feed", flag_descriptions::kWebFeedName,
      flag_descriptions::kWebFeedDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kWebFeed)},
@@ -4147,6 +4168,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kRichAutocompletion,
                                     kOmniboxRichAutocompletionSplitVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"omnibox-rich-autocompletion-prefer-urls-over-prefixes",
+     flag_descriptions::kOmniboxRichAutocompletionPreferUrlsOverPrefixesName,
+     flag_descriptions::
+         kOmniboxRichAutocompletionPreferUrlsOverPrefixesDescription,
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kRichAutocompletion,
+         kOmniboxRichAutocompletionPreferUrlsOverPrefixesVariations,
+         "OmniboxBundledExperimentV1")},
     {"omnibox-rich-autocompletion-promising",
      flag_descriptions::kOmniboxRichAutocompletionPromisingName,
      flag_descriptions::kOmniboxRichAutocompletionPromisingDescription,
@@ -5444,10 +5474,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"printer-status-dialog", flag_descriptions::kPrinterStatusDialogName,
      flag_descriptions::kPrinterStatusDialogDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrinterStatusDialog)},
-
-    {"print-job-management-app", flag_descriptions::kPrintJobManagementAppName,
-     flag_descriptions::kPrintJobManagementAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPrintJobManagementApp)},
 
     {"enable-phone-hub", flag_descriptions::kPhoneHubName,
      flag_descriptions::kPhoneHubDescription, kOsCrOS,
@@ -6997,6 +7023,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncingCompromisedCredentialsDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSyncingCompromisedCredentials)},
+
+    {"autofill-enable-offer-notification",
+     flag_descriptions::kAutofillEnableOfferNotificationName,
+     flag_descriptions::kAutofillEnableOfferNotificationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOfferNotification)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

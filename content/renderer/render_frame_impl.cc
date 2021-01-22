@@ -1603,7 +1603,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
           mojom::ViewWidgetType::kTopLevel,
       /*hidden=*/true, render_view->widgets_never_composited());
   web_frame_widget->InitializeCompositing(
-      compositor_deps->GetWebMainThreadScheduler(),
+      agent_scheduling_group.agent_group_scheduler(),
       compositor_deps->GetTaskGraphRunner(),
       params->visual_properties.screen_info,
       compositor_deps->CreateUkmRecorderFactory(),
@@ -1773,7 +1773,7 @@ void RenderFrameImpl::CreateFrame(
         /*is_for_nested_main_frame=*/false,
         /*hidden=*/true, render_view->widgets_never_composited());
     web_frame_widget->InitializeCompositing(
-        compositor_deps->GetWebMainThreadScheduler(),
+        agent_scheduling_group.agent_group_scheduler(),
         compositor_deps->GetTaskGraphRunner(),
         widget_params->visual_properties.screen_info,
         compositor_deps->CreateUkmRecorderFactory(),
@@ -1817,7 +1817,7 @@ void RenderFrameImpl::CreateFrame(
         /*is_for_nested_main_frame=*/false,
         /*hidden=*/true, render_view->widgets_never_composited());
     web_frame_widget->InitializeCompositing(
-        compositor_deps->GetWebMainThreadScheduler(),
+        agent_scheduling_group.agent_group_scheduler(),
         compositor_deps->GetTaskGraphRunner(),
         widget_params->visual_properties.screen_info,
         compositor_deps->CreateUkmRecorderFactory(),
@@ -4442,11 +4442,11 @@ void RenderFrameImpl::ShowDeferredContextMenu(
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 
-void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
+void RenderFrameImpl::FrameRectsChanged(const gfx::Rect& frame_rect) {
   // To limit the number of IPCs, only notify the browser when the rect's size
   // changes, not when the position changes. The size needs to be replicated if
   // the iframe goes out-of-process.
-  gfx::Size frame_size(frame_rect.width, frame_rect.height);
+  gfx::Size frame_size = frame_rect.size();
   if (!frame_size_ || *frame_size_ != frame_size) {
     frame_size_ = frame_size;
     GetFrameHost()->FrameSizeChanged(frame_size);
@@ -4454,7 +4454,7 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::OnMainFrameIntersectionChanged(
-    const blink::WebRect& mainframe_intersection_rect) {
+    const gfx::Rect& mainframe_intersection_rect) {
   if (!mainframe_intersection_rect_ ||
       mainframe_intersection_rect != mainframe_intersection_rect_) {
     mainframe_intersection_rect_ = mainframe_intersection_rect;

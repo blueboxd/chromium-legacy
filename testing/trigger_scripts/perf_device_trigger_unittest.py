@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env vpython
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -53,7 +53,8 @@ class FakeTriggerer(perf_device_trigger.PerfDeviceTriggerer):
     del verbose #unused
     self._swarming_runs.append(args)
 
-  def run_swarming_go(self, args, verbose):
+  def run_swarming_go(self, args, verbose, _json_path, _shard_index, _shard,
+                      _merged_json=None):
     self._triggered_with_swarming_go += 1
     self.run_swarming(args, verbose)
 
@@ -72,8 +73,6 @@ class UnitTest(unittest.TestCase):
         'trigger',
         '--swarming',
         'http://foo_server',
-        '--auth-service-account-json',
-        '/creds/test_service_account',
         '--dimension',
         'pool',
         'chrome-perf-fyi',
@@ -182,9 +181,6 @@ class UnitTest(unittest.TestCase):
       self.assertTrue('query' in triggerer._swarming_runs[i])
       self.assertTrue(self.list_contains_sublist(
         triggerer._swarming_runs[i], ['-S', 'foo_server']))
-      self.assertTrue(self.list_contains_sublist(
-        triggerer._swarming_runs[i], ['--auth-service-account-json',
-                                      '/creds/test_service_account']))
 
   def get_triggered_shard_to_bot(self, triggerer, num_shards):
     self.assert_query_swarming_args(triggerer, num_shards)

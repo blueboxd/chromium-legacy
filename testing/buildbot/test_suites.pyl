@@ -847,6 +847,8 @@
 
     'chromium_swarm_android_gtests': {
       'base_unittests': {},
+      'chrome_modern_public_bundle_fake_modules_smoke_test': {},
+      'chrome_modern_public_bundle_smoke_test': {},
       'content_browsertests': {
         'swarming': {
           'shards': 10,
@@ -872,6 +874,7 @@
           'shards': 5,
         },
       },
+      'weblayer_bundle_test': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -1687,7 +1690,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Mac',
+              'os': 'Mac-10.13',
             },
           ],
         }
@@ -1696,7 +1699,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Mac',
+              'os': 'Mac-10.13',
             },
           ],
         },
@@ -3925,6 +3928,11 @@
     },
 
     'linux_ozone_x11_only_gtests': {
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
       'ozone_x11_unittests': {},
       'x11_unittests': {},
     },
@@ -4011,60 +4019,6 @@
 
     'monochrome_public_apk_checker_isolated_script': {
       'monochrome_public_apk_checker': {},
-    },
-
-    # These tests will be run on the main waterfall.
-    'network_service_android_gtests': {
-      'network_service_out_of_process_chrome_public_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'args': [
-          '--disable-features=NetworkServiceInProcess',
-        ],
-        'mixins': [
-          'chrome-gold-service-account',
-          'skia_gold_test',
-          'enable_resultdb',
-        ],
-        'test': 'chrome_public_test_apk',
-      },
-      'network_service_out_of_process_components_browsertests': {
-        'args': [
-          '--disable-features=NetworkServiceInProcess',
-        ],
-        'test': 'components_browsertests',
-      },
-      'network_service_out_of_process_content_browsertests': {
-        'args': [
-          '--disable-features=NetworkServiceInProcess',
-        ],
-        'swarming': {
-          'shards': 5,
-        },
-        'test': 'content_browsertests',
-      },
-      'network_service_out_of_process_content_shell_test_apk': {
-        'swarming': {
-          'shards': 5,
-        },
-        'args': [
-          '--disable-features=NetworkServiceInProcess',
-        ],
-        'test': 'content_shell_test_apk',
-      },
-      'network_service_webview_instrumentation_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'args': [
-          # TODO(crbug.com/882650): WebView currently does not support running network
-          # service OOP.
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter',
-        ],
-        'test': 'webview_instrumentation_test_apk',
-      },
     },
 
     'network_service_fyi_gtests': {
@@ -5198,7 +5152,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_android_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
@@ -5213,7 +5166,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_android_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
@@ -5228,7 +5180,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_android_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
@@ -5252,7 +5203,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_android_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
@@ -5291,7 +5241,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_android_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
@@ -5320,7 +5269,6 @@
     #   'chromium_gtests',
     #   'chromium_gtests_for_devices_with_graphical_output',
     #   'linux_flavor_specific_chromium_gtests',
-    #   'network_service_android_gtests',
     #   'non_skia_renderer_gtests',
     #   'system_webview_shell_instrumentation_tests', # Not an experimental test
     #   'vr_platform_specific_chromium_gtests',
@@ -5363,7 +5311,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_android_gtests',
       'vr_platform_specific_chromium_gtests',
     ],
 

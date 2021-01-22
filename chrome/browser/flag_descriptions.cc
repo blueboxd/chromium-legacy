@@ -212,6 +212,12 @@ const char kAutofillEnableGoogleIssuedCardDescription[] =
     "When enabled, Google-issued cards will be available in the autofill "
     "suggestions.";
 
+const char kAutofillEnableOfferNotificationName[] =
+    "Enable Autofill offers and rewards notification";
+const char kAutofillEnableOfferNotificationDescription[] =
+    "When enabled, a notification will be displayed on page navigation if the "
+    "domain has an eligible credit card linked offer or reward.";
+
 const char kAutofillEnableOffersInClankKeyboardAccessoryName[] =
     "Enable Autofill offers in keyboard accessory";
 const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[] =
@@ -1603,6 +1609,11 @@ const char kOmniboxRichAutocompletionSplitName[] =
 const char kOmniboxRichAutocompletionSplitDescription[] =
     "Allow splitting the user input to intermix with autocompletions; e.g., "
     "the user input 'x z' could be autocompleted as 'x [y ]z'.";
+const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesName[] =
+    "Omnibox Rich Autocompletion Prefer URLs over prefixes";
+const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesDescription[] =
+    "When the input matches both a suggestion's title's prefix and its URL's "
+    "non-prefix, autocomplete the URL.";
 const char kOmniboxRichAutocompletionPromisingName[] =
     "Omnibox Rich Autocompletion Promising Combinations";
 const char kOmniboxRichAutocompletionPromisingDescription[] =
@@ -1878,11 +1889,6 @@ const char kPreviewsAllowedDescription[] =
     "Allows previews to be shown subject to specific preview types being "
     "enabled and the client experiencing specific triggering conditions. "
     "May be used as a kill-switch to turn off all potential preview types.";
-
-const char kPrintJobManagementAppName[] = "Print Management App";
-const char kPrintJobManagementAppDescription[] =
-    "Enables the print management app that allows Chrome OS users to view "
-    "and manage their native print jobs.";
 
 const char kPrintSaveToDriveName[] = "Print Save to Drive locally";
 const char kPrintSaveToDriveDescription[] =
@@ -2901,6 +2907,9 @@ const char kInterestFeedV2Description[] =
 
 const char kInterestFeedV2HeartsName[] = "Interest Feed v2 Hearts";
 const char kInterestFeedV2HeartsDescription[] = "Enable hearts on Feedv2.";
+
+const char kFeedShareName[] = "Share from feed";
+const char kFeedShareDescription[] = "Allow feed articles to be shared.";
 
 const char kInterestFeedV1ClickAndViewActionsConditionalUploadName[] =
     "Interest Feed V1 clicks/views conditional upload";

@@ -277,6 +277,8 @@ class CORE_EXPORT WebFrameWidgetImpl
                               int relative_cursor_pos) override;
   void ImeFinishComposingTextForPlugin(bool keep_selection) override;
   float GetCompositingScaleFactor() override;
+  const cc::LayerTreeDebugState& GetLayerTreeDebugState() override;
+  void SetLayerTreeDebugState(const cc::LayerTreeDebugState& state) override;
 
   // WebFrameWidget overrides.
   void InitializeNonCompositing(WebNonCompositedWidgetClient* client) override;
@@ -332,7 +334,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // WebWidget overrides.
   void InitializeCompositing(
-      scheduler::WebThreadScheduler* main_thread_scheduler,
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
@@ -464,9 +466,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   // when hiding. The bottom controls scroll immediately and never translate the
   // content (only clip it).
   void SetBrowserControlsParams(cc::BrowserControlsParams params);
-
-  cc::LayerTreeDebugState GetLayerTreeDebugState();
-  void SetLayerTreeDebugState(const cc::LayerTreeDebugState& state);
 
   // Return the compositor LayerTreeHost.
   cc::LayerTreeHost* LayerTreeHostForTesting() const;

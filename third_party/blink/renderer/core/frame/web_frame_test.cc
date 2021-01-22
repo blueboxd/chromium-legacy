@@ -4175,7 +4175,7 @@ TEST_F(WebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
   WebLocalFrame* main_frame = web_view_helper.LocalMainFrame();
   main_frame->ExecuteScript(WebScriptSource("selectRange();"));
 
-  WebRect old_rect;
+  gfx::Rect old_rect;
   main_frame->FirstRectForCharacterRange(0, 5, old_rect);
 
   gfx::PointF visual_offset(100, 130);
@@ -4183,13 +4183,13 @@ TEST_F(WebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
   web_view_helper.GetWebView()->SetPageScaleFactor(scale);
   web_view_helper.GetWebView()->SetVisualViewportOffset(visual_offset);
 
-  WebRect rect;
+  gfx::Rect rect;
   main_frame->FirstRectForCharacterRange(0, 5, rect);
 
-  EXPECT_EQ((old_rect.x - visual_offset.x()) * scale, rect.x);
-  EXPECT_EQ((old_rect.y - visual_offset.y()) * scale, rect.y);
-  EXPECT_EQ(old_rect.width * scale, rect.width);
-  EXPECT_EQ(old_rect.height * scale, rect.height);
+  EXPECT_EQ((old_rect.x() - visual_offset.x()) * scale, rect.x());
+  EXPECT_EQ((old_rect.y() - visual_offset.y()) * scale, rect.y());
+  EXPECT_EQ(old_rect.width() * scale, rect.width());
+  EXPECT_EQ(old_rect.height() * scale, rect.height());
 }
 class TestReloadDoesntRedirectWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
@@ -7359,14 +7359,14 @@ class TestMainFrameIntersectionChanged
 
   // frame_test_helpers::TestWebFrameClient:
   void OnMainFrameIntersectionChanged(
-      const WebRect& intersection_rect) override {
+      const gfx::Rect& intersection_rect) override {
     main_frame_intersection_ = intersection_rect;
   }
 
-  WebRect MainFrameIntersection() const { return main_frame_intersection_; }
+  gfx::Rect MainFrameIntersection() const { return main_frame_intersection_; }
 
  private:
-  WebRect main_frame_intersection_;
+  gfx::Rect main_frame_intersection_;
 };
 
 TEST_F(WebFrameTest, MainFrameIntersectionChanged) {
@@ -7393,7 +7393,7 @@ TEST_F(WebFrameTest, MainFrameIntersectionChanged) {
       occlusion_state, gfx::Size(), gfx::Point(), transform);
   static_cast<WebFrameWidgetImpl*>(widget)->ApplyViewportIntersectionForTesting(
       std::move(intersection_state));
-  EXPECT_EQ(client.MainFrameIntersection(), blink::WebRect(100, 100, 200, 140));
+  EXPECT_EQ(client.MainFrameIntersection(), gfx::Rect(100, 100, 200, 140));
 }
 
 class TestSameDocumentWithImageWebFrameClient
@@ -8748,8 +8748,7 @@ TEST_F(WebFrameTest, PrintingBasic)
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
 
   WebPrintParams print_params;
-  print_params.print_content_area.width = 500;
-  print_params.print_content_area.height = 500;
+  print_params.print_content_area.set_size(gfx::Size(500, 500));
 
   uint32_t page_count = frame->PrintBegin(print_params, WebNode());
   EXPECT_EQ(1u, page_count);
@@ -13142,9 +13141,8 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
 
 static void TestFramePrinting(WebLocalFrameImpl* frame) {
   WebPrintParams print_params;
-  WebSize page_size(500, 500);
-  print_params.print_content_area.width = page_size.width;
-  print_params.print_content_area.height = page_size.height;
+  gfx::Size page_size(500, 500);
+  print_params.print_content_area.set_size(page_size);
   EXPECT_EQ(1u, frame->PrintBegin(print_params, WebNode()));
   PaintRecorder recorder;
   frame->PrintPagesForTesting(recorder.beginRecording(IntRect()), page_size,
@@ -13220,9 +13218,8 @@ TEST_F(WebFrameTest, FirstLetterHasDOMNodeIdWhenPrinting) {
 
   // Print the page and capture the PaintRecord.
   WebPrintParams print_params;
-  WebSize page_size(500, 500);
-  print_params.print_content_area.width = page_size.width;
-  print_params.print_content_area.height = page_size.height;
+  gfx::Size page_size(500, 500);
+  print_params.print_content_area.set_size(page_size);
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   EXPECT_EQ(1u, frame->PrintBegin(print_params, WebNode()));
   PaintRecorder recorder;
@@ -13474,8 +13471,7 @@ TEST_F(WebFrameSimTest, PageOrientation) {
 
   auto* frame = WebView().MainFrame()->ToWebLocalFrame();
   WebPrintParams print_params;
-  print_params.print_content_area.width = page_size.width();
-  print_params.print_content_area.height = page_size.height();
+  print_params.print_content_area.set_size(page_size);
   EXPECT_EQ(4u, frame->PrintBegin(print_params, WebNode()));
 
   WebPrintPageDescription description;
@@ -13918,7 +13914,7 @@ TEST_F(WebFrameTest, RemoteFrameCompositingScaleFactor) {
 
   // The compositing scale factor tells the OOPIF compositor to raster at a
   // lower scale since the frame is scaled down in the parent webview.
-  EXPECT_EQ(remote_frame->GetCompositingRect(), WebRect(0, 0, 1600, 1200));
+  EXPECT_EQ(remote_frame->GetCompositingRect(), gfx::Rect(0, 0, 1600, 1200));
   EXPECT_EQ(remote_frame->GetCompositingScaleFactor(), 0.5f);
 }
 
@@ -13956,7 +13952,7 @@ TEST_F(WebFrameTest, RotatedRemoteFrameCompositingScaleFactor) {
 
   // The compositing scale factor tells the OOPIF compositor to raster at a
   // lower scale since the frame is scaled down in the parent webview.
-  EXPECT_EQ(remote_frame->GetCompositingRect(), WebRect(0, 0, 1600, 1200));
+  EXPECT_EQ(remote_frame->GetCompositingRect(), gfx::Rect(0, 0, 1600, 1200));
   EXPECT_EQ(remote_frame->GetCompositingScaleFactor(), 0.5f);
 }
 

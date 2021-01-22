@@ -813,6 +813,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/browser_controls/android:junit",
     "//chrome/browser/contextmenu:java",
+    "//chrome/browser/continuous_search/internal:junit",
     "//chrome/browser/device:java",
     "//chrome/browser/device:junit",
     "//chrome/browser/download/android:java",
@@ -2730,10 +2731,6 @@ if (enable_arcore) {
     }
 
     additional_apks = [ "//net/android:net_test_support_apk" ]
-    proguard_enabled = !is_java_debug
-    if (proguard_enabled && !enable_proguard_obfuscation) {
-      proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
-    }
   }
 }
 

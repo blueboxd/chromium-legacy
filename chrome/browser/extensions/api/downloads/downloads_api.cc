@@ -1036,7 +1036,8 @@ ExtensionFunction::ResponseAction DownloadsDownloadFunction::Run() {
   std::unique_ptr<download::DownloadUrlParameters> download_params(
       new download::DownloadUrlParameters(
           download_url, source_process_id(),
-          render_frame_host()->GetRoutingID(), traffic_annotation));
+          render_frame_host() ? render_frame_host()->GetRoutingID() : -1,
+          traffic_annotation));
 
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {
@@ -1360,7 +1361,7 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
                      download_id));
   // DownloadDangerPrompt deletes itself
   if (on_prompt_created_ && !on_prompt_created_->is_null())
-    on_prompt_created_->Run(prompt);
+    std::move(*on_prompt_created_).Run(prompt);
   // Function finishes in DangerPromptCallback().
 }
 
@@ -1694,8 +1695,8 @@ void ExtensionDownloadsEventRouter::OnDeterminingFilename(
   json->SetString(kFilenameKey, suggested_path.LossyDisplayName());
   DispatchEvent(events::DOWNLOADS_ON_DETERMINING_FILENAME,
                 downloads::OnDeterminingFilename::kEventName, false,
-                base::Bind(&OnDeterminingFilenameWillDispatchCallback,
-                           &any_determiners, data),
+                base::BindRepeating(&OnDeterminingFilenameWillDispatchCallback,
+                                    &any_determiners, data),
                 std::move(json));
   if (!any_determiners) {
     data->CallFilenameCallback();

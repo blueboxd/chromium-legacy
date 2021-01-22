@@ -34,6 +34,24 @@ class AX_EXPORT AXNode final {
   // kInvalidAXID.
   static constexpr AXID kInvalidAXID = 0;
 
+  // Replacement character used to represent an embedded (or, additionally for
+  // text navigation, an empty) object. Encoded in UTF16 format. Part of the
+  // Unicode Standard.
+  //
+  // On some platforms, most objects are represented in the text of their
+  // parents with a special "embedded object character" and not with their
+  // actual text contents. Also on the same platforms, if a node has only
+  // ignored descendants, i.e., it appears to be empty to assistive software, we
+  // need to treat it as a character and a word boundary.
+  //
+  // Note that we cannot use L"..." because it works correctly only on Windows.
+  // TODO(nektar): Consider using UTF8 encoding instead, "\xEF\xBF\xBC".
+  static constexpr base::char16 kEmbeddedCharacter[] = {0xFFFC, 0x0000};
+  // We compute the embedded character's length instead of manually typing it in
+  // order to avoid the two variables getting out of sync in a future update.
+  static constexpr int kEmbeddedCharacterLength =
+      int{sizeof(kEmbeddedCharacter) / sizeof(base::char16) - 1};
+
   // Interface to the tree class that owns an AXNode. We use this instead
   // of letting AXNode have a pointer to its AXTree directly so that we're
   // forced to think twice before calling an AXTree interface that might not
@@ -308,15 +326,28 @@ class AX_EXPORT AXNode final {
   //
   // This is how displayed text and embedded objects are represented in
   // ATK and IAccessible2 APIs.
-  std::string GetHypertext() const;
+  //
+  // TODO(nektar): Consider changing the return value to std::string.
+  base::string16 GetHypertext() const;
 
-  // Returns the text of this node and all descendant nodes; including text
-  // found in embedded objects.
+  // Returns the text that is found inside this node and all its descendants;
+  // including text found in embedded objects.
   //
   // Only text displayed on screen is included. Text from ARIA and HTML
   // attributes that is either not displayed on screen, or outside this node, is
   // not returned.
   std::string GetInnerText() const;
+
+  // Returns the length of the text (in UTF16 code units) that is found inside
+  // this node and all its descendants; including text found in embedded
+  // objects.
+  //
+  // Only text displayed on screen is counted. Text from ARIA and HTML
+  // attributes that is either not displayed on screen, or outside this node, is
+  // not included.
+  //
+  // The length of the text is in UTF8 code units, not in grapheme clusters.
+  int GetInnerTextLength() const;
 
   // Returns a string representing the language code.
   //
@@ -425,7 +456,8 @@ class AX_EXPORT AXNode final {
   // element.
   bool IsEmbeddedGroup() const;
 
-  // Returns true if node has ignored state or ignored role.
+  // Returns true if this node has the ignored state or the ignored role.
+  // Focused nodes are, by design, not ignored.
   bool IsIgnored() const;
 
   // Some nodes are not ignored but should be skipped during text navigation.
@@ -433,19 +465,30 @@ class AX_EXPORT AXNode final {
   // encountering a splitter during character and word navigation.
   bool IsIgnoredForTextNavigation() const;
 
-  // Returns true if node is invisible or ignored.
+  // Returns true if node is invisible, or if it is ignored as determined by
+  // `AXNode::IsIgnored()`.
   bool IsInvisibleOrIgnored() const;
 
-  // Returns true if node is focused within this tree.
-  bool IsFocusedWithinThisTree() const;
+  // Returns true if this node is focused in the current tree. Every
+  // accessibility tree may have its own independent focus, e.g. an iframe may
+  // have a different focus from the main web page.
+  bool IsFocusedInThisTree() const;
 
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to any
   // platform's accessibility layer.
   bool IsChildOfLeaf() const;
 
+  // Returns true if this is a leaf node that has no inner text. Note that all
+  // descendants of a leaf node are not exposed to any platform's accessibility
+  // layer, but they may be used to compute the node's inner text. Note also
+  // that, ignored nodes (leaf or otherwise) do not expose their inner text or
+  // hypertext to the platforms' accessibility layer, but they expose the inner
+  // text or hypertext of their unignored descendants.
+  bool IsEmptyLeaf() const;
+
   // Returns true if this is a leaf node, meaning all its
-  // children should not be exposed to any platform's native accessibility
+  // descendants should not be exposed to any platform's accessibility
   // layer.
   //
   // The definition of a leaf includes nodes with children that are exclusively

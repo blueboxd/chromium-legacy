@@ -177,6 +177,9 @@ void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
       GURL(chrome::kChromeUINewTabURL));
 
   browser->tab_strip_model()->ReplaceWebContentsAt(0, std::move(saml_wc));
+
+  ProfileMetrics::LogProfileAddSignInFlowOutcome(
+      ProfileMetrics::ProfileAddSignInFlowOutcome::kSAML);
 }
 
 class ProfilePickerWidget : public views::Widget {
@@ -343,6 +346,17 @@ ProfilePickerView::~ProfilePickerView() {
     new_profile_contents_->SetDelegate(nullptr);
   if (system_profile_contents_)
     system_profile_contents_->SetDelegate(nullptr);
+
+  // Log profile creation flow abortion.
+  if (signed_in_profile_being_created_ && state_ != kFinalizing) {
+    if (name_for_signed_in_profile_.empty()) {
+      ProfileMetrics::LogProfileAddSignInFlowOutcome(
+          ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedBeforeSignIn);
+    } else {
+      ProfileMetrics::LogProfileAddSignInFlowOutcome(
+          ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedAfterSignIn);
+    }
+  }
 }
 
 void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
@@ -500,6 +514,9 @@ void ProfilePickerView::OnProfileForSigninCreated(
   // Mark this profile ephemeral so that it is deleted upon next startup if the
   // browser crashes before finishing the flow.
   entry->SetIsEphemeral(true);
+  // Mark this profile as omitted so that it is not displayed in the list of
+  // profiles.
+  entry->SetIsOmitted(true);
 
   // Record that the sign in process starts (its end is recorded automatically
   // by the instance of DiceTurnSyncOnHelper constructed later on).
@@ -926,6 +943,7 @@ void ProfilePickerView::FinishSignedInCreationFlowImpl(
     return;
   }
 
+  entry->SetIsOmitted(false);
   if (!signed_in_profile_being_created_->GetPrefs()->GetBoolean(
           prefs::kForceEphemeralProfiles)) {
     // Unmark this profile ephemeral so that it isn't deleted upon next startup.

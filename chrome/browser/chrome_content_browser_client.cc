@@ -1181,6 +1181,11 @@ bool IsErrorPageAutoReloadEnabled() {
   return true;
 }
 
+bool IsTopChromeWebUIURL(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) &&
+         base::EndsWith(url.host_piece(), chrome::kChromeUITopChromeDomain);
+}
+
 }  // namespace
 
 // Generate a pseudo-random permutation of the following brand/version pairs:
@@ -1369,9 +1374,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
   registry->RegisterListPref(prefs::kAutoplayWhitelist);
-#endif
-#if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kWebXRImmersiveArEnabled, true);
 #endif
 }
 
@@ -1717,6 +1719,11 @@ bool ChromeContentBrowserClient::ShouldUseSpareRenderProcessHost(
   if (!profile)
     return false;
 
+  // Top Chrome WebUI should share a RendererProcessHost. Return false here to
+  // ensure the Spare Renderer is not assigned.
+  if (IsTopChromeWebUIURL(site_url))
+    return false;
+
 #if !defined(OS_ANDROID)
   // Instant renderers should not use a spare process, because they require
   // passing switches::kInstantProcess to the renderer process when it
@@ -1991,6 +1998,11 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
   // It has to be a valid URL for us to check for an extension.
   if (!url.is_valid())
     return false;
+
+  // Top Chrome WebUI should try to share a RenderProcessHost with other
+  // existing Top Chrome WebUI.
+  if (IsTopChromeWebUIURL(url))
+    return true;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -3614,14 +3626,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->text_track_window_radius = style->window_radius;
   }
 
-#if defined(OS_ANDROID)
-  // If the pref is not set, the default value (true) will be used:
-  web_prefs->webxr_immersive_ar_allowed =
-      prefs->GetBoolean(prefs::kWebXRImmersiveArEnabled);
-#endif
-
-  for (ChromeContentBrowserClientParts* parts : extra_parts_)
-    parts->OverrideWebkitPrefs(web_contents, web_prefs);
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->OverrideWebkitPrefs(web_contents, web_prefs);
 }
 
 bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(

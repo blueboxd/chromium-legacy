@@ -602,6 +602,15 @@ if (is_android) {
       add_unwind_tables_in_apk = true
     }
 
+    if (enable_arcore) {
+      # If AR is supported, we should also include WebXR's AR enterprise policy
+      # browsertest. The test should not be enabled when AR features are not
+      # enabled, since we won't be able to distinguish whether the test cases
+      # are failing due to absence of AR, or due to an issue with propagating
+      # the enterprise policy setting.
+      sources += [ "../browser/android/vr/webxr_policy_browsertest.cc" ]
+    }
+
     data = [
       "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
       "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
@@ -3087,7 +3096,11 @@ if (!is_android) {
     }
     if (enable_basic_printing &&
         (is_win || is_mac || is_linux || is_chromeos)) {
-      sources += [ "../browser/printing/print_backend_browsertest.cc" ]
+      sources += [
+        "../browser/printing/print_backend_browsertest.cc",
+        "../services/printing/print_backend_service_test_impl.cc",
+        "../services/printing/print_backend_service_test_impl.h",
+      ]
       deps += [
         "//chrome/services/printing:lib",
         "//printing:test_support",
@@ -3224,6 +3237,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/message_center_lacros_browsertest.cc",
       "../browser/lacros/metrics_reporting_lacros_browsertest.cc",
       "../browser/lacros/overview_lacros_browsertest.cc",
+      "../browser/lacros/popup_lacros_browsertest.cc",
       "../browser/lacros/screen_manager_lacros_browsertest.cc",
       "../browser/lacros/tablet_mode_lacros_browsertest.cc",
     ]
@@ -3330,11 +3344,14 @@ script_test("performance_test_suite") {
     "//gpu:gpu_perftests",
     "//media:media_perftests",
     "//testing:run_perf_test",
-    "//third_party/angle/src/tests:angle_perftests",
   ]
 
-  if (build_dawn_tests) {
+  if (build_dawn_tests && !is_chromeos_lacros) {
     data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests" ]
+  }
+
+  if (!is_chromeos_lacros) {
+    data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
   }
 
   if (!is_android && !is_fuchsia) {
@@ -3640,6 +3657,7 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/public/report_queue_configuration_unittest.cc",
     "../browser/policy/messaging_layer/public/report_queue_unittest.cc",
     "../browser/policy/messaging_layer/storage/resources/resource_interface_unittest.cc",
+    "../browser/policy/messaging_layer/storage/storage_queue_stress_test.cc",
     "../browser/policy/messaging_layer/storage/storage_queue_unittest.cc",
     "../browser/policy/messaging_layer/storage/storage_unittest.cc",
     "../browser/policy/messaging_layer/storage/test_storage_module.cc",
@@ -4744,6 +4762,7 @@ test("unit_tests") {
 
       # NTP is in native code on Android.
       "../browser/cart/cart_service_unittest.cc",
+      "../browser/search/drive/drive_service_unittest.cc",
       "../browser/search/ntp_features_unittest.cc",
       "../browser/search/task_module/task_module_service_unittest.cc",
     ]
@@ -5752,7 +5771,10 @@ test("unit_tests") {
   }
 
   if (is_linux || is_chromeos || is_mac || is_win) {
-    sources += [ "../browser/enterprise/connectors/file_system/box_api_call_flow_unittests.cc" ]
+    sources += [
+      "../browser/enterprise/connectors/file_system/box_access_token_fetcher_unittests.cc",
+      "../browser/enterprise/connectors/file_system/box_api_call_flow_unittests.cc",
+    ]
   }
 
   if (enable_plugins) {

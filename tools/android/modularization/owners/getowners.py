@@ -21,7 +21,6 @@ import time
 from typing import Dict, List, Optional, Tuple
 
 import owners_data
-import owners_dir_metadata
 import owners_exporter
 import owners_git
 import owners_input
@@ -43,6 +42,11 @@ def main():
       '--limit-to-dir',
       help='Limit to a single directory. Used to restrict a smaller scope for '
       'debugging.')
+  # TODO(crbug.com/1135347): --dirmd-dir is currently unused, but will be used
+  # to parse DIR_METADATA files.
+  arg_parser.add_argument(
+      '--dirmd-path',
+      help="Path to dirmd. If not specified, assume it's in PATH.")
   arguments = arg_parser.parse_args()
 
   start_time = time.time()
@@ -54,12 +58,9 @@ def main():
   paths_to_search = owners_input.get_android_folders(chromium_root,
                                                      arguments.limit_to_dir)
 
-  all_dir_metadata = owners_dir_metadata.read_raw_dir_metadata(chromium_root)
-
   with multiprocessing.Pool() as p:
-    data = p.map(
-        functools.partial(_process_requested_path, chromium_root,
-                          all_dir_metadata), paths_to_search)
+    data = p.map(functools.partial(_process_requested_path, chromium_root),
+                 paths_to_search)
 
   owners_exporter.to_json_file(data, arguments.output)
   print(f'Exported to {arguments.output}')
@@ -68,18 +69,14 @@ def main():
 
 
 def _process_requested_path(
-    chromium_root: str, all_dir_metadata: Dict,
-    requested_path: owners_data.RequestedPath
+    chromium_root: str, requested_path: owners_data.RequestedPath
 ) -> Tuple[owners_data.RequestedPath, owners_data.PathData]:
   '''Gets the necessary information from the git repository.'''
 
   owners_file = _find_owners_file(chromium_root, requested_path.path)
   owners = _build_owners_info(chromium_root, owners_file)
   git_data = _fetch_git_data(chromium_root, requested_path)
-  dir_metadata = owners_dir_metadata.build_dir_metadata(chromium_root,
-                                                        all_dir_metadata,
-                                                        requested_path)
-  path_data = owners_data.PathData(owners, git_data, dir_metadata)
+  path_data = owners_data.PathData(owners, git_data)
   return (requested_path, path_data)
 
 
@@ -187,6 +184,12 @@ def _build_owners_info(chromium_root: str,
         continue
       elif line.startswith('file://'):
         owners.file_inherited = line[len('file://'):].strip()
+      elif line.startswith('# COMPONENT:'):
+        owners.component = line[len('# COMPONENT:'):].strip()
+      elif line.startswith('# TEAM:'):
+        owners.team = line[len('# TEAM:'):].strip()
+      elif line.startswith('# OS:'):
+        owners.os = line[len('# OS:'):].strip()
       elif line.startswith('#'):
         continue
       elif line.startswith('per-file'):
@@ -218,7 +221,13 @@ def _propagate_down_owner_variables(chromium_root: str,
       return
     if not owners.owners and parent_owners.owners:
       owners.owners.extend(parent_owners.owners)
-    if owners.owners:
+    if not owners.component and parent_owners.component:
+      owners.component = parent_owners.component
+    if not owners.team and parent_owners.team:
+      owners.team = parent_owners.team
+    if not owners.os and parent_owners.os:
+      owners.os = parent_owners.os
+    if owners.owners and owners.component and owners.team and owners.os:
       return
     visited.add(parent_owners.owners_file)
 

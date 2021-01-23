@@ -1007,13 +1007,12 @@
         # high_dpi_blink_web_tests provides coverage for
         # running Layout Tests with forced device scale factor.
         'args': [
-          '--additional-driver-flag=--force-device-scale-factor=1.5',
+          '--flag-specific=highdpi',
 
           # layout test failures are retried 3 times when '--test-list' is not
           # passed, but 0 times when '--test-list' is passed. We want to always
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/force-device-scale-factor=1.5',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -4818,9 +4817,20 @@
       }
     },
 
-    'weblayer_instrumentation_version_tests': {
+    'weblayer_instrumentation_version_x86_marshmallow_10_tests': {
       'weblayer_instrumentation_test_versions_apk': {
-      }
+	'args': [
+	  '--webview-apk-path=apks/AOSP_SystemWebView.apk',
+        ],
+      },
+    },
+
+    'weblayer_instrumentation_version_x86_pie_oreo_tests': {
+      'weblayer_instrumentation_test_versions_apk': {
+	'args': [
+	  '--webview-apk-path=apks/SystemWebView.apk',
+        ],
+      },
     },
 
     'weblayer_shell_wpt': {
@@ -6405,13 +6415,26 @@
   ##############################################################################
 
   'matrix_compound_suites': {
-    'android_weblayer_x86_gtests': {
+    'android_weblayer_x86_marshmallow_10_gtests': {
+      'weblayer_instrumentation_version_x86_marshmallow_10_tests': {
+        'variants': [
+          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MILESTONE',
+          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
+          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
+          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE',
+          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
+          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
+        ]
+      }
+    },
+
+    'android_weblayer_x86_pie_oreo_gtests': {
       'weblayer_instrumentation_tests': {
         'variants': [
           {'identifier': 'ToT_Tests'}
         ]
       },
-      'weblayer_instrumentation_version_tests': {
+      'weblayer_instrumentation_version_x86_pie_oreo_tests': {
         'variants': [
           'WEBLAYER_IMPL_SKEW_TESTS_NTH_MILESTONE',
           'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',

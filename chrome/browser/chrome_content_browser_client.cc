@@ -714,6 +714,33 @@ const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
 #endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
         // !defined(ADDRESS_SANITIZER)
 
+bool IsSSLErrorOverrideAllowedForUrl(const GURL& request_url,
+                                     PrefService* prefs) {
+  DCHECK(request_url.SchemeIsCryptographic());
+
+  if (!prefs->GetBoolean(prefs::kSSLErrorOverrideAllowed))
+    return false;
+
+  if (!prefs->GetList(prefs::kSSLErrorOverrideAllowedForUrls))
+    return true;
+
+  base::Value::ConstListView allow_list_urls =
+      prefs->GetList(prefs::kSSLErrorOverrideAllowedForUrls)->GetList();
+  if (allow_list_urls.empty())
+    return true;
+
+  for (auto const& value : allow_list_urls) {
+    ContentSettingsPattern pattern =
+        ContentSettingsPattern::FromString(value.GetString());
+    if (pattern == ContentSettingsPattern::Wildcard() || !pattern.IsValid())
+      continue;
+    if (pattern.Matches(request_url))
+      return true;
+  }
+
+  return false;
+}
+
 // Wrapper for SSLErrorHandler::HandleSSLError() that supplies //chrome-level
 // parameters.
 void HandleSSLErrorWrapper(
@@ -739,7 +766,7 @@ void HandleSSLErrorWrapper(
       std::move(ssl_cert_reporter), std::move(blocking_page_ready_callback),
       g_browser_process->network_time_tracker(), captive_portal_service,
       std::make_unique<ChromeSecurityBlockingPageFactory>(),
-      profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed));
+      IsSSLErrorOverrideAllowedForUrl(request_url, profile->GetPrefs()));
 }
 
 enum AppLoadedInTabSource {
@@ -1376,6 +1403,11 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
   registry->RegisterListPref(prefs::kAutoplayWhitelist);
+#endif
+  registry->RegisterBooleanPref(prefs::kSSLErrorOverrideAllowed, true);
+  registry->RegisterListPref(prefs::kSSLErrorOverrideAllowedForUrls);
+#if defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kWebXRImmersiveArEnabled, true);
 #endif
 }
 
@@ -3631,8 +3663,14 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->text_track_window_radius = style->window_radius;
   }
 
-  for (size_t i = 0; i < extra_parts_.size(); ++i)
-    extra_parts_[i]->OverrideWebkitPrefs(web_contents, web_prefs);
+#if defined(OS_ANDROID)
+  // If the pref is not set, the default value (true) will be used:
+  web_prefs->webxr_immersive_ar_allowed =
+      prefs->GetBoolean(prefs::kWebXRImmersiveArEnabled);
+#endif
+
+  for (ChromeContentBrowserClientParts* parts : extra_parts_)
+    parts->OverrideWebkitPrefs(web_contents, web_prefs);
 }
 
 bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(

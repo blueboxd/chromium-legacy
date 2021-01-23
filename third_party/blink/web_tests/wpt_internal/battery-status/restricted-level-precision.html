@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="/gen/services/device/public/mojom/battery_monitor.mojom.js"></script>
+<script src="resources/mock-battery-monitor.js"></script>
+<script>
+promise_test(async _ => {
+  const levelFullPrecision = 0.556789;
+  const levelRounded = 0.56;
+
+  setAndFireMockBatteryInfo(false, 10, 20, levelFullPrecision);
+
+  const battery = await navigator.getBattery();
+  assert_equals(battery.level, levelRounded);
+}, 'battery level is reported with restricted precision');
+</script>
+</body>
+</html>

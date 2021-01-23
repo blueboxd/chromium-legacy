@@ -1726,7 +1726,6 @@
           'dimension_sets': [
             {
               'device_os': 'OPR3.170623.008',
-              'device_playstore_version': '12.8.23-all',
               'device_type': 'marlin',
               'os': 'Android',
             },
@@ -2016,6 +2015,11 @@
         ],
       },
       'chromeos-betty-pi-arc-chrome-beta': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
+      'chromeos-betty-pi-arc-chrome-dchecks': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
         ],

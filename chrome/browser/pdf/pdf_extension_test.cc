@@ -490,10 +490,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // has the correct URL for the PDF extension.
 // TODO(wjmaclean): Are there any attributes we can/should test with respect to
 // the extension's loaded html?
-// TODO(https://crbug.com/1034972): Re-enable. Flaky on all platforms.
-// Temporarily re-enabling on all platforms to collect diagnostic data.
+// TODO(https://crbug.com/1126876): Re-enable. Flaky on all linux, chromeos and
+// windows.
+#if defined(OS_WIN) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PdfExtensionLoadedInGuest DISABLED_PdfExtensionLoadedInGuest
+#else
+#define MAYBE_PdfExtensionLoadedInGuest PdfExtensionLoadedInGuest
+#endif
 IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
-                       PdfExtensionLoadedInGuest) {
+                       MAYBE_PdfExtensionLoadedInGuest) {
   // Load test HTML, and verify the text area has focus.
   GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -992,6 +998,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PageChange) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Metrics) {
   RunTestsInJsModule("metrics_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPasswordDialog) {
+  RunTestsInJsModule("viewer_password_dialog_test.js", "encrypted.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ArrayBufferAllocator) {

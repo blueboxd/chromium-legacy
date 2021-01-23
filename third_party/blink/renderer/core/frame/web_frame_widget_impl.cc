@@ -3531,12 +3531,12 @@ void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoRect(
 }
 
 void WebFrameWidgetImpl::ZoomToFindInPageRect(
-    const WebRect& rect_in_root_frame) {
+    const gfx::Rect& rect_in_root_frame) {
   if (ForMainFrame()) {
     View()->ZoomToFindInPageRect(rect_in_root_frame);
   } else {
     GetAssociatedFrameWidgetHost()->ZoomToFindInPageRectInMainFrame(
-        gfx::Rect(rect_in_root_frame));
+        rect_in_root_frame);
   }
 }
 
@@ -3807,7 +3807,9 @@ void WebFrameWidgetImpl::WasShown(bool was_evicted) {
   if (was_evicted) {
     ForEachRemoteFrameControlledByWidget(
         WTF::BindRepeating([](RemoteFrame* remote_frame) {
-          remote_frame->Client()->WasEvicted();
+          // On eviction, the last SurfaceId is invalidated. We need to
+          // allocate a new id.
+          remote_frame->ResendVisualProperties();
         }));
   }
 }

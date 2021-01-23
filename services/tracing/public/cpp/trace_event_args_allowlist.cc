@@ -50,6 +50,7 @@ const char* const kMemoryPressureEventsAllowedArgs[] = {
     "level", "listener_creation_info", nullptr};
 
 const AllowlistEntry kEventArgsAllowlist[] = {
+    // Thread and process names are now recorded in perfetto.
     {"__metadata", "thread_name", nullptr},
     {"__metadata", "process_name", nullptr},
     {"__metadata", "process_uptime_seconds", nullptr},
@@ -86,6 +87,8 @@ const AllowlistEntry kEventArgsAllowlist[] = {
      kMemoryPressureEventsAllowedArgs},
     {"renderer_host", "*", kRendererHostAllowedArgs},
     {"shutdown", "*", nullptr},
+    // Now recorded in perfetto proto:
+    // perfetto/trace/track_event/chrome_content_settings_event_info.proto.
     {"startup", "PrefProvider::PrefProvider", nullptr},
     {"startup", "TestAllowlist*", nullptr},
     {"toplevel", "*", nullptr},

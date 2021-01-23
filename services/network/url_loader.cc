@@ -83,8 +83,6 @@ using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
 
-// TODO: this duplicates some of PopulateResourceResponse in
-// content/browser/loader/resource_loader.cc
 void PopulateResourceResponse(net::URLRequest* request,
                               bool is_load_timing_enabled,
                               int32_t options,
@@ -612,7 +610,7 @@ URLLoader::URLLoader(
 
   SetFetchMetadataHeaders(url_request_.get(), request_mode_,
                           has_user_activation_, request_destination_, nullptr,
-                          *factory_params_);
+                          *factory_params_, origin_access_list_);
 
   if (request.update_first_party_url_on_redirect) {
     url_request_->set_first_party_url_policy(
@@ -1145,7 +1143,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   MaybeRemoveSecHeaders(url_request_.get(), redirect_info.new_url);
   SetFetchMetadataHeaders(url_request_.get(), request_mode_,
                           has_user_activation_, request_destination_,
-                          &redirect_info.new_url, *factory_params_);
+                          &redirect_info.new_url, *factory_params_,
+                          origin_access_list_);
 
   url_loader_client_->OnReceiveRedirect(redirect_info, std::move(response));
 }
@@ -2195,23 +2194,6 @@ bool URLLoader::ShouldForceIgnoreSiteForCookies(
           origin_access_list_->CheckAccessState(
               request.request_initiator.value(), request.url)) {
     return true;
-  }
-  // Try again against the `factory_bound_access_patterns` to also cover the
-  // ActiveTab permission that the extension might have been granted.
-  if (factory_params_->factory_bound_access_patterns) {
-    cors::OriginAccessList factory_bound_origin_access_list;
-    factory_bound_origin_access_list.SetAllowListForOrigin(
-        factory_params_->factory_bound_access_patterns->source_origin,
-        factory_params_->factory_bound_access_patterns->allow_patterns);
-    factory_bound_origin_access_list.SetBlockListForOrigin(
-        factory_params_->factory_bound_access_patterns->source_origin,
-        factory_params_->factory_bound_access_patterns->block_patterns);
-    if (request.request_initiator.has_value() &&
-        cors::OriginAccessList::AccessState::kAllowed ==
-            factory_bound_origin_access_list.CheckAccessState(
-                request.request_initiator.value(), request.url)) {
-      return true;
-    }
   }
 
   // Convert `site_for_cookies` into an origin (an opaque origin if

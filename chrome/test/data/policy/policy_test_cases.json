@@ -4807,6 +4807,18 @@
     ]
   },
 
+  "SSLErrorOverrideAllowedForUrls": {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "SSLErrorOverrideAllowedForUrls": ["google.com"] },
+        "prefs": {
+          "ssl.error_override_allowed_for_urls": {"value" : ["google.com"] }
+        }
+      }
+    ]
+  },
+
   "AllowDinosaurEasterEgg": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_tests": [
@@ -8330,7 +8342,7 @@
   },
   "ClearBrowsingDataOnExitList": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "policy_pref_mapping_test": [
+    "policy_pref_mapping_tests": [
       {
         "policies": { "ClearBrowsingDataOnExitList": ["browsing_history"] },
         "prefs": { "browser.clear_data.clear_on_exit": { "value": ["browsing_history"]}}
@@ -8368,5 +8380,22 @@
         "prefs": {"browser_labs_enabled": {"value": false, "location": "user_profile"}}
       }
     ]
-    }
+  },
+
+  "WebXRImmersiveArEnabled": {
+    "os": ["android"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "WebXRImmersiveArEnabled": false
+        },
+        "prefs": {
+          "webxr.immersive_ar_enabled": {
+            "value": false,
+            "location": "user_profile"
+          }
+        }
+      }
+    ]
+  }
 }

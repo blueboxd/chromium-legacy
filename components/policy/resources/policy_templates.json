@@ -1016,6 +1016,7 @@
         'DeviceOffHours',
         'SuggestedContentEnabled',
         'DeviceShowLowDiskSpaceNotification',
+        'WebXRImmersiveArEnabled',
       ],
     },
     {
@@ -7679,7 +7680,7 @@
           'caption': '''Lock the current session.''',
         },
       ],
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:90-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -7695,7 +7696,7 @@
       'owners': ['fabiansommer@chromium.org, emaxx@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:90-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -14449,6 +14450,31 @@
       'desc': '''Setting the policy to Enabled or leaving it unset lets users click through warning pages <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> shows when users navigate to sites that have SSL errors.
 
       Setting the policy to Disabled prevent users from clicking through any warning pages.''',
+    },
+    {
+      'name': 'SSLErrorOverrideAllowedForUrls',
+      'owners': ['agl@chromium.org', 'niarci@microsoft.com'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:90-', 'chrome_os:90-', 'android:90-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 819,
+      'caption': '''Allow proceeding from the SSL warning page on specific pages''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites where a user can click through warning pages <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> shows when users navigate to sites that have SSL errors. Users will not be able to click through SSL warning pages on sites that are not on this list.
+
+      If <ph name="SSL_ERROR_OVERRIDE_ALLOWED_POLICY_NAME">SSLErrorOverrideAllowed</ph> is Disabled, this policy does nothing.
+
+      Leaving the policy unset means <ph name="SSL_ERROR_OVERRIDE_ALLOWED_POLICY_NAME">SSLErrorOverrideAllowed</ph> applies for all sites.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
     },
     {
       'name': 'QuicAllowed',
@@ -24361,6 +24387,39 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       When this policy not set or is set to True, the signin interception dialog triggers when a Google account is added on the web, and the user may benefit from moving this account to another (new or existing) profile.
 
       When this is set to False, the signin interception dialog does not trigger.''',
+    },
+    {
+      'name': 'WebXRImmersiveArEnabled',
+      'owners': ['bialpio@chromium.org', 'xr-dev@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:90-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '''Allow creating <ph name="WEBXR_API_NAME_SHORT">WebXR</ph>'s <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph> sessions''',
+        },
+        {
+          'value': False,
+          'caption': '''Prevent creating <ph name="WEBXR_API_NAME_SHORT">WebXR</ph>'s <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph> sessions''',
+        },
+      ],
+      'example_value': True,
+      'id': 820,
+      'default': True,
+      'caption': '''Allow creating <ph name="WEBXR_API_NAME_SHORT">WebXR</ph>'s <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph> sessions''',
+      'tags': ['website-sharing'],
+      'desc': '''Configures whether the sites that the user navigates to are allowed to create immersive Augmented Reality sessions using <ph name="WEBXR_API_NAME">WebXR Device API</ph>.
+
+      When this policy is unset or enabled, the <ph name="WEBXR_API_NAME">WebXR Device API</ph> will accept <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph> during session creation, thus allowing the users to enter Augmented Reality experiences.
+
+      When this policy is disabled, the <ph name="WEBXR_API_NAME">WebXR Device API</ph> will reject requests to create sessions with mode set to <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph>. The existing <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph> sessions (if any) will not be terminated.
+
+      For more details about <ph name="WEBXR_AR_SESSION_ENUM_VALUE">"immersive-ar"</ph> sessions, please see <ph name="WEBXR_AR_MODULE_API_NAME">WebXR Augmented Reality Module</ph> specfication.'''
     }
   ],
 
@@ -25287,6 +25346,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 818,
+  'highest_id_currently_used': 820,
   'highest_atomic_group_id_currently_used': 40
 }

@@ -201,6 +201,7 @@
 #include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
@@ -5029,6 +5030,11 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   }
   params->request_id = internal_data->request_id();
 
+  params->unload_start = GetWebFrame()->Performance().UnloadStart();
+  params->unload_end = GetWebFrame()->Performance().UnloadEnd();
+  params->commit_navigation_end =
+      GetWebFrame()->Performance().CommitNavigationEnd();
+
   return params;
 }
 
@@ -6341,7 +6347,7 @@ gfx::RectF RenderFrameImpl::ElementBoundsInWindow(
       element.BoundsInViewport()));
 }
 
-void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
+void RenderFrameImpl::ConvertViewportToWindow(gfx::Rect* rect) {
   *rect = GetLocalRootWebFrameWidget()->BlinkSpaceToEnclosedDIPs(*rect);
 }
 

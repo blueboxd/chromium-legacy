@@ -6943,6 +6943,16 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="Blacklist disabled."/>
 </enum>
 
+<enum name="BlinkSubresourceRedirectIneligibility">
+  <int value="0" label="Javascript created, same-origin resource"/>
+  <int value="1" label="Javascript created, cross-origin resource"/>
+  <int value="2"
+      label="Restricted by Content-Security-Policy default-src directive"/>
+  <int value="3"
+      label="Restricted by Content-Security-Policy img-src directive"/>
+  <int value="4" label="Crossorigin attribute was set"/>
+</enum>
+
 <enum name="BloatedRendererHandlingInBrowser">
   <int value="0" label="Reloaded the bloated tab"/>
   <int value="1" label="Cannot reload the bloated tab"/>
@@ -9273,6 +9283,12 @@ Called by update_bad_message_reasons.py.-->
   <int value="25" label="Rounded rect doesn't match clip rect."/>
   <int value="26" label="Rounded rect doesn't have uniform corner radii."/>
   <int value="27" label="Too many quads."/>
+</enum>
+
+<enum name="CameraPrivacySwitchEvent">
+  <int value="0" label="Camera privacy switch toggled on"/>
+  <int value="1" label="Camera privacy switch toggled off"/>
+  <int value="2" label="Camera privacy switch on notification shown"/>
 </enum>
 
 <enum name="CancelableTaskStatus">
@@ -17857,6 +17873,16 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="1" label="Failed"/>
 </enum>
 
+<enum name="DirectSocketPermissionFailureType">
+  <int value="0" label="PermissionsPolicy"/>
+  <int value="1" label="TransientActivation"/>
+  <int value="2" label="UserDialog"/>
+  <int value="3" label="ResolvingToNonPublic"/>
+  <int value="4" label="RateLimiting"/>
+  <int value="5" label="CORS"/>
+  <int value="6" label="EnterprisePolicy"/>
+</enum>
+
 <enum name="DirectWriteFontFallbackResult">
   <int value="0" label="Failed: no font matched"/>
   <int value="1" label="Success: mapped from cache"/>
@@ -20290,6 +20316,36 @@ Called by update_document_policy_enum.py.-->
 <enum name="DXVADXVersion">
   <int value="0" label="D3D9"/>
   <int value="1" label="D3D11"/>
+</enum>
+
+<enum name="DXVALifetimeProgression">
+  <int value="0" label="kInitializeStarted">
+    A decoder has started the initialization step.
+  </int>
+  <int value="1" label="kDX11InitializeSucceeded">
+    A decoder has completed the initialization step for DX11 successfully.
+  </int>
+  <int value="2" label="kDX11PlaybackFailedBeforeFirstFrame">
+    A decoder failed DX11 playback without sending a frame to the client.
+  </int>
+  <int value="3" label="kDX11PlaybackFailedAfterFirstFrame">
+    A decoder failed DX11 playback after sending a frame to the client.
+  </int>
+  <int value="4" label="kDX11PlaybackSucceeded">
+    A decoder has finished playing with DX11.
+  </int>
+  <int value="5" label="kDX9InitializeSucceeded">
+    A decoder has completed the initialization step for DX9 successfully.
+  </int>
+  <int value="6" label="kDX9PlaybackFailedBeforeFirstFrame">
+    A decoder failed DX9 playback without sending a frame to the client.
+  </int>
+  <int value="7" label="kDX9PlaybackFailedAfterFirstFrame">
+    A decoder failed DX9 playback after sending a frame to the client.
+  </int>
+  <int value="8" label="kDX9PlaybackSucceeded">
+    A decoder has finished playing with DX9.
+  </int>
 </enum>
 
 <enum name="EAPInnerProtocol">
@@ -23219,6 +23275,8 @@ Called by update_document_policy_enum.py.-->
   <int value="816" label="BrowserLabsEnabled"/>
   <int value="817" label="WindowOcclusionEnabled"/>
   <int value="818" label="DeviceAllowMGSToStoreDisplayProperties"/>
+  <int value="819" label="SSLErrorOverrideAllowedForUrls"/>
+  <int value="820" label="WebXRImmersiveArEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31032,6 +31090,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3778" label="V8TCPSocket_RemoteAddress_AttributeGetter"/>
   <int value="3779" label="V8TCPSocket_RemotePort_AttributeGetter"/>
   <int value="3780" label="CSSSelectorTargetText"/>
+  <int value="3781" label="PopupElement"/>
+  <int value="3782" label="V8HTMLPopupElement_Show_Method"/>
+  <int value="3783" label="V8HTMLPopupElement_Hide_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41253,7 +41314,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="LanguageSettingsActionType">
   <int value="0" label="Unknown"/>
-  <int value="1" label="Click on the 'Add Language' button"/>
+  <int value="1" label="Click on the 'Add Language' button">
+    Removed for Android in M89. Still in Desktop and iOS.
+  </int>
   <int value="2" label="Language added"/>
   <int value="3" label="Language removed"/>
   <int value="4" label="Disable global 'Offer to translate' by switch"/>
@@ -41261,12 +41324,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Disable 'Offer to translate' for single language"/>
   <int value="7" label="Enable 'Offer to translate' for single language"/>
   <int value="8" label="Language list reordered"/>
+  <int value="9" label="Change Chrome Language">Windows and Android only</int>
+  <int value="10" label="Change Target Language"/>
 </enum>
 
 <enum name="LanguageSettingsPageType">
   <int value="0" label="Main"/>
   <int value="1" label="Add Language"/>
   <int value="2" label="Language Details">iOS only.</int>
+  <int value="3" label="Chrome Language">Windows and Android only</int>
+  <int value="4" label="Advanced Language Settings"/>
+  <int value="5" label="Target Language"/>
 </enum>
 
 <enum name="LargestContentfulPaint.TerminationState">

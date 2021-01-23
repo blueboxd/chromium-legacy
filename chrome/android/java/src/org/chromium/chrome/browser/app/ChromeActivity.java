@@ -53,6 +53,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
+import org.chromium.base.supplier.UnownedUserDataSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
@@ -112,6 +113,7 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
+import org.chromium.chrome.browser.layouts.LayoutManagerAppUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
@@ -135,6 +137,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
+import org.chromium.chrome.browser.share.ShareDelegateSupplier;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.Tab;
@@ -277,8 +280,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private CompositorViewHolder mCompositorViewHolder;
     private ObservableSupplierImpl<LayoutManagerImpl> mLayoutManagerSupplier =
             new ObservableSupplierImpl<>();
-    private ObservableSupplierImpl<ShareDelegate> mShareDelegateSupplier =
-            new ObservableSupplierImpl<>();
+    private UnownedUserDataSupplier<ShareDelegate> mShareDelegateSupplier;
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
     private SnackbarManager mSnackbarManager;
@@ -350,6 +352,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void performPreInflationStartup() {
+        // Setup UnownedUserData suppliers before they're used.
+        mShareDelegateSupplier = new ShareDelegateSupplier(getWindowAndroid());
+
         // Make sure the root coordinator is created prior to calling super to ensure all the
         // activity lifecycle events are called.
         mRootUiCoordinator = createRootUiCoordinator();
@@ -1281,6 +1286,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mTabModelSelectorTabObserver = null;
         }
 
+        // TODO(1168131): Destruction and detaching of the LayoutManager should be moved to the
+        //                RootUiCoordinator.
+        if (mLayoutManagerSupplier.get() != null) {
+            LayoutManagerAppUtils.detach(mLayoutManagerSupplier.get());
+        }
+
         if (mCompositorViewHolder != null) {
             if (mCompositorViewHolder.getLayoutManager() != null) {
                 mCompositorViewHolder.getLayoutManager().removeSceneChangeObserver(this);
@@ -1321,6 +1332,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             BookmarkBridge bookmarkBridge = mBookmarkBridgeSupplier.get();
             if (bookmarkBridge != null) bookmarkBridge.destroy();
             mBookmarkBridgeSupplier = null;
+        }
+
+        if (mShareDelegateSupplier != null) {
+            mShareDelegateSupplier.destroy();
+            mShareDelegateSupplier = null;
         }
 
         mActivityTabProvider.destroy();
@@ -1789,6 +1805,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void initializeCompositorContent(LayoutManagerImpl layoutManager, View urlBar,
             ViewGroup contentContainer, ControlContainer controlContainer) {
+        // TODO(1168131): The responsibility of managing the availability of the LayoutManager
+        //                should be moved to the RootUiCoordinator.
+        LayoutManagerAppUtils.attach(getWindowAndroid(), layoutManager);
         mLayoutManagerSupplier.set(layoutManager);
 
         layoutManager.addSceneChangeObserver(this);
@@ -2421,7 +2440,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Note: order matters here because the call to super will recreate the activity.
         // Note: it's possible for this method to be called before mNightModeReparentingController
         // is constructed.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_TAB_REPARENTING)
+        if (FeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_TAB_REPARENTING)
                 && mTabReparentingController != null) {
             mTabReparentingController.prepareTabsForReparenting();
         }
@@ -2457,5 +2477,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @VisibleForTesting
     public Configuration getSavedConfigurationForTesting() {
         return mConfig;
+    }
+
+    @VisibleForTesting
+    public boolean deferredStartupPostedForTesting() {
+        return mDeferredStartupPosted;
     }
 }

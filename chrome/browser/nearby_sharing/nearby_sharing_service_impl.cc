@@ -598,8 +598,28 @@ NearbySharingServiceImpl::ClearForegroundReceiveSurfaces() {
   return status;
 }
 
-bool NearbySharingServiceImpl::IsInHighVisibility() {
+bool NearbySharingServiceImpl::IsInHighVisibility() const {
   return in_high_visibility;
+}
+
+bool NearbySharingServiceImpl::IsTransferring() const {
+  return is_transferring_;
+}
+
+bool NearbySharingServiceImpl::IsReceivingFile() const {
+  return is_receiving_files_;
+}
+
+bool NearbySharingServiceImpl::IsSendingFile() const {
+  return is_sending_files_;
+}
+
+bool NearbySharingServiceImpl::IsScanning() const {
+  return is_scanning_;
+}
+
+bool NearbySharingServiceImpl::IsConnecting() const {
+  return is_connecting_;
 }
 
 NearbySharingService::StatusCodes NearbySharingServiceImpl::SendAttachments(
@@ -1054,6 +1074,11 @@ void NearbySharingServiceImpl::SuspendDone() {
   InvalidateSurfaceState();
 }
 
+void NearbySharingServiceImpl::ScreenStateChanged(bool is_screen_on) {
+  NS_LOG(VERBOSE) << __func__ << ": " << is_screen_on;
+  InvalidateSurfaceState();
+}
+
 base::ObserverList<TransferUpdateCallback>&
 NearbySharingServiceImpl::GetReceiveCallbacksFromState(
     ReceiveSurfaceState state) {
@@ -1377,6 +1402,13 @@ void NearbySharingServiceImpl::InvalidateScanningState() {
     return;
   }
 
+  if (!power_client_->IsScreenOn()) {
+    StopScanning();
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping discovery because the screen is off.";
+    return;
+  }
+
   if (!process_manager_->IsActiveProfile(profile_)) {
     NS_LOG(VERBOSE) << __func__
                     << ": Stopping discovery because profile was not active";
@@ -1444,6 +1476,14 @@ void NearbySharingServiceImpl::InvalidateFastInitiationAdvertising() {
     NS_LOG(VERBOSE)
         << __func__
         << ": Stopping fast init advertising because the system is suspended.";
+    return;
+  }
+
+  if (!power_client_->IsScreenOn()) {
+    StopFastInitiationAdvertising();
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Stopping fast init advertising because the screen is off.";
     return;
   }
 
@@ -1515,6 +1555,13 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
     NS_LOG(VERBOSE)
         << __func__
         << ": Stopping advertising because the system is suspended.";
+    return;
+  }
+
+  if (!power_client_->IsScreenOn()) {
+    StopAdvertising();
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping advertising because the screen is off.";
     return;
   }
 
@@ -1692,6 +1739,7 @@ void NearbySharingServiceImpl::StopAdvertising() {
 void NearbySharingServiceImpl::StartScanning() {
   DCHECK(profile_);
   DCHECK(!power_client_->IsSuspended());
+  DCHECK(power_client_->IsScreenOn());
   DCHECK(settings_.GetEnabled());
   DCHECK(!is_screen_locked_);
   DCHECK(HasAvailableConnectionMediums());
@@ -3115,10 +3163,6 @@ void NearbySharingServiceImpl::OnIncomingConnectionDisconnected(
                           .build());
   }
   UnregisterShareTarget(share_target);
-}
-
-bool NearbySharingServiceImpl::IsTransferring() const {
-  return is_transferring_;
 }
 
 void NearbySharingServiceImpl::OnOutgoingConnectionDisconnected(

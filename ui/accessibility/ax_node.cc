@@ -4,10 +4,11 @@
 
 #include "ui/accessibility/ax_node.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -417,6 +418,9 @@ void AXNode::Destroy() {
 }
 
 bool AXNode::IsDescendantOf(const AXNode* ancestor) const {
+  if (!ancestor)
+    return false;
+
   if (this == ancestor)
     return true;
   if (parent())
@@ -1282,13 +1286,15 @@ bool AXNode::IsEmptyLeaf() const {
 }
 
 bool AXNode::IsLeaf() const {
-  // A node is a leaf if it has no descendants, regardless whether it is ignored
-  // or not.
+  // A node is a leaf if it has no descendants, i.e. if it is at the bottom of
+  // the tree, regardless whether it is ignored or not.
   if (children().empty())
     return true;
 
-  // Leaf nodes with descendants should always be exposed to the platforms'
-  // accessibility layer.
+  // Ignored nodes with any kind of descendants, (ignored or unignored), cannot
+  // be leaves because: A) If some of their descendants are unignored then those
+  // descendants need to be exposed to the platform layer, and B) If all of
+  // their descendants are ignored they are still not at the bottom of the tree.
   if (IsIgnored())
     return false;
 
@@ -1346,13 +1352,12 @@ bool AXNode::IsInListMarker() const {
   if (data().role == ax::mojom::Role::kListMarker)
     return true;
 
-  // List marker node's children can only be text elements.
+  // The children of a list marker node can only be text nodes.
   if (!IsText())
     return false;
 
-  // There is no need to iterate over all the ancestors of the current anchor
-  // since a list marker node only has children on 2 levels.
-  // i.e.:
+  // There is no need to iterate over all the ancestors of the current node
+  // since a list marker has descendants that are only 2 levels deep, i.e.:
   // AXLayoutObject role=kListMarker
   // ++StaticText
   // ++++InlineTextBox

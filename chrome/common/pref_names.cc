@@ -383,6 +383,11 @@ const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 // proceed anyway. Otherwise, proceeding is not possible.
 const char kSSLErrorOverrideAllowed[] = "ssl.error_override_allowed";
 
+// List of URLs for which the SSL interstitial should allow users to proceed
+// anyway. Ignored if kSSLErrorOverrideAllowed is false.
+const char kSSLErrorOverrideAllowedForUrls[] =
+    "ssl.error_override_allowed_for_urls";
+
 // Enum that specifies whether Incognito mode is:
 // 0 - Enabled. Default behaviour. Default mode is available on demand.
 // 1 - Disabled. User cannot browse pages in Incognito mode.
@@ -3173,4 +3178,11 @@ const char kCartModuleHidden[] = "cart_module_hidden";
 // Boolean pref indicating whether user has removed the cart module on NTP.
 const char kCartModuleRemoved[] = "cart_module_removed";
 #endif
+
+#if defined(OS_ANDROID)
+// Boolean pref controlling whether immersive AR sessions are enabled
+// in WebXR Device API.
+const char kWebXRImmersiveArEnabled[] = "webxr.immersive_ar_enabled";
+#endif
+
 }  // namespace prefs

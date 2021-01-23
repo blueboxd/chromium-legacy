@@ -455,6 +455,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSSLErrorOverrideAllowed,
     prefs::kSSLErrorOverrideAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kSSLErrorOverrideAllowedForUrls,
+    prefs::kSSLErrorOverrideAllowedForUrls,
+    base::Value::Type::LIST },
   { key::kHardwareAccelerationModeEnabled,
     prefs::kHardwareAccelerationModeEnabled,
     base::Value::Type::BOOLEAN },
@@ -1324,6 +1327,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kLacrosAllowed,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+  { key::kWebXRImmersiveArEnabled,
+    prefs::kWebXRImmersiveArEnabled,
+    base::Value::Type::BOOLEAN },
+#endif  // defined(OS_ANDROID)
 
 };
 // clang-format on

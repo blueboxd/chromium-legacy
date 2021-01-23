@@ -166,6 +166,7 @@ extern const char kWebKitForceEnableZoom[];
 extern const char kWebKitPasswordEchoEnabled[];
 #endif
 extern const char kSSLErrorOverrideAllowed[];
+extern const char kSSLErrorOverrideAllowedForUrls[];
 extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
 #if defined(OS_ANDROID)
@@ -1111,6 +1112,10 @@ extern const char kSecurityTokenSessionNotificationScheduledDomain[];
 #if !defined(OS_ANDROID)
 extern const char kCartModuleHidden[];
 extern const char kCartModuleRemoved[];
+#endif
+
+#if defined(OS_ANDROID)
+extern const char kWebXRImmersiveArEnabled[];
 #endif
 
 }  // namespace prefs

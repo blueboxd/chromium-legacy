@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.share.long_screenshots;
 import android.app.Activity;
 
 import org.chromium.chrome.browser.paint_preview.PaintPreviewCompositorUtils;
+import org.chromium.chrome.browser.share.long_screenshots.bitmap_generation.EntryManager;
+import org.chromium.chrome.browser.share.long_screenshots.bitmap_generation.LongScreenshotsEntry;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
@@ -17,9 +19,8 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
  * Handles the long screenshot action in the Sharing Hub and launches the screenshot editor.
  */
 public class LongScreenshotsCoordinator extends ScreenshotCoordinator {
-    private LongScreenshotsTabService mLongScreenshotsTabService;
-
-    private static final String DIR_NAME = "long_screenshots_dir";
+    private Activity mActivity;
+    private LongScreenshotsMediator mMediator;
 
     /**
      * Constructs a new ScreenshotCoordinator which may launch the editor, or a fallback.
@@ -35,6 +36,7 @@ public class LongScreenshotsCoordinator extends ScreenshotCoordinator {
             BottomSheetController sheetController,
             ImageEditorModuleProvider imageEditorModuleProvider) {
         super(activity, tab, chromeOptionShareCallback, sheetController, imageEditorModuleProvider);
+        mActivity = activity;
 
         PaintPreviewCompositorUtils.warmupCompositor();
     }
@@ -52,7 +54,8 @@ public class LongScreenshotsCoordinator extends ScreenshotCoordinator {
             @Override
             public void onResult(int status) {
                 mScreenshot = entry.getBitmap();
-                launchSharesheet();
+                mMediator = new LongScreenshotsMediator(mActivity, entryManager);
+                mMediator.showAreaSelectionDialog();
             }
         });
     }

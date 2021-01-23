@@ -2514,6 +2514,13 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm [ Timeout ]
+crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.NaN.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/webmessaging/without-ports/011.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.negative.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.zero.worker.html [ Timeout ]
 crbug.com/626703 virtual/v8-off-thread-finalization/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-1-sharedworker.html [ Timeout ]
 crbug.com/626703 virtual/v8-off-thread-finalization/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-1-worker.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.html [ Timeout ]
@@ -4548,9 +4555,6 @@ crbug.com/882689 http/tests/security/cookies/third-party-cookie-blocking-worker.
 # Sheriff 2018-09-19
 crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
 
-# Sheriff 2018-10-09
-crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
-
 # Sheriff 2018-10-15
 crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font-matching.html [ Failure Pass ]
 
@@ -4792,7 +4796,6 @@ crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.
 crbug.com/838348 virtual/portals/external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
 
 # Sheriff 2019-04-17
-crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
 crbug.com/953591 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 crbug.com/953591 [ Win ] transforms/matrix-02.html [ Pass Failure ]
 crbug.com/938884 http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Timeout Pass ]

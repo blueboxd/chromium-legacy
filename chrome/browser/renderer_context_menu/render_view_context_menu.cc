@@ -150,8 +150,8 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
-#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/menu_item.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
@@ -226,10 +226,8 @@
 #endif
 
 using base::UserMetricsAction;
+using blink::ContextMenuData;
 using blink::ContextMenuDataEditFlags;
-using blink::WebContextMenuData;
-using blink::WebString;
-using blink::WebURL;
 using blink::mojom::ContextMenuDataMediaType;
 using content::BrowserContext;
 using content::ChildProcessSecurityPolicy;
@@ -555,12 +553,12 @@ void OnProfileCreated(const GURL& link_url,
 }
 
 bool DoesInputFieldTypeSupportEmoji(
-    blink::ContextMenuDataInputFieldType text_input_type) {
+    blink::mojom::ContextMenuDataInputFieldType text_input_type) {
   // Disable emoji for input types that definitely do not support emoji.
   switch (text_input_type) {
-    case blink::ContextMenuDataInputFieldType::kNumber:
-    case blink::ContextMenuDataInputFieldType::kTelephone:
-    case blink::ContextMenuDataInputFieldType::kOther:
+    case blink::mojom::ContextMenuDataInputFieldType::kNumber:
+    case blink::mojom::ContextMenuDataInputFieldType::kTelephone:
+    case blink::mojom::ContextMenuDataInputFieldType::kOther:
       return false;
     default:
       return true;
@@ -1613,7 +1611,7 @@ void RenderViewContextMenu::AppendCopyLinkToTextItem() {
 void RenderViewContextMenu::AppendPrintItem() {
   if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
       (params_.media_type == ContextMenuDataMediaType::kNone ||
-       params_.media_flags & WebContextMenuData::kMediaCanPrint) &&
+       params_.media_flags & ContextMenuData::kMediaCanPrint) &&
       params_.misspelled_word.empty()) {
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   }
@@ -1627,7 +1625,7 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
 }
 
 void RenderViewContextMenu::AppendRotationItems() {
-  if (params_.media_flags & WebContextMenuData::kMediaCanRotate) {
+  if (params_.media_flags & ContextMenuData::kMediaCanRotate) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
                                     IDS_CONTENT_CONTEXT_ROTATECW);
@@ -2018,21 +2016,21 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // Media control commands should all be disabled if the player is in an
     // error state.
     case IDC_CONTENT_CONTEXT_PLAYPAUSE:
-      return (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
+      return (params_.media_flags & ContextMenuData::kMediaInError) == 0;
 
     // Loop command should be disabled if the player is in an error state.
     case IDC_CONTENT_CONTEXT_LOOP:
-      return (params_.media_flags & WebContextMenuData::kMediaCanLoop) != 0 &&
-             (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
+      return (params_.media_flags & ContextMenuData::kMediaCanLoop) != 0 &&
+             (params_.media_flags & ContextMenuData::kMediaInError) == 0;
 
     // Mute and unmute should also be disabled if the player has no audio.
     case IDC_CONTENT_CONTEXT_MUTE:
-      return (params_.media_flags & WebContextMenuData::kMediaHasAudio) != 0 &&
-             (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
+      return (params_.media_flags & ContextMenuData::kMediaHasAudio) != 0 &&
+             (params_.media_flags & ContextMenuData::kMediaInError) == 0;
 
     case IDC_CONTENT_CONTEXT_CONTROLS:
-      return (params_.media_flags &
-              WebContextMenuData::kMediaCanToggleControls) != 0;
+      return (params_.media_flags & ContextMenuData::kMediaCanToggleControls) !=
+             0;
 
     case IDC_CONTENT_CONTEXT_ROTATECW:
     case IDC_CONTENT_CONTEXT_ROTATECCW: {
@@ -2044,7 +2042,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           IsPdfPluginURL(GetDocumentURL(params_)) && IsHTML5Fullscreen();
 #endif
       return !is_pdf_viewer_fullscreen &&
-             (params_.media_flags & WebContextMenuData::kMediaCanRotate) != 0;
+             (params_.media_flags & ContextMenuData::kMediaCanRotate) != 0;
     }
 
     case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
@@ -2058,7 +2056,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // Currently, a media element can be opened in a new tab iff it can
       // be saved. So rather than duplicating the MediaCanSave flag, we rely
       // on that here.
-      return !!(params_.media_flags & WebContextMenuData::kMediaCanSave);
+      return !!(params_.media_flags & ContextMenuData::kMediaCanSave);
 
     case IDC_SAVE_PAGE:
       return IsSavePageEnabled();
@@ -2137,7 +2135,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_PICTUREINPICTURE:
       return !!(params_.media_flags &
-                WebContextMenuData::kMediaCanPictureInPicture);
+                ContextMenuData::kMediaCanPictureInPicture);
 
     case IDC_CONTENT_CONTEXT_EMOJI:
       return params_.is_editable;
@@ -2170,14 +2168,13 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 
   // See if the video is set to looping.
   if (id == IDC_CONTENT_CONTEXT_LOOP)
-    return (params_.media_flags & WebContextMenuData::kMediaLoop) != 0;
+    return (params_.media_flags & ContextMenuData::kMediaLoop) != 0;
 
   if (id == IDC_CONTENT_CONTEXT_CONTROLS)
-    return (params_.media_flags & WebContextMenuData::kMediaControls) != 0;
+    return (params_.media_flags & ContextMenuData::kMediaControls) != 0;
 
   if (id == IDC_CONTENT_CONTEXT_PICTUREINPICTURE)
-    return (params_.media_flags & WebContextMenuData::kMediaPictureInPicture) !=
-           0;
+    return (params_.media_flags & ContextMenuData::kMediaPictureInPicture) != 0;
 
   if (id == IDC_CONTENT_CONTEXT_EMOJI)
     return false;
@@ -2691,7 +2688,7 @@ bool RenderViewContextMenu::IsSaveAsEnabled() const {
     return false;
 
   const GURL& url = params_.src_url;
-  bool can_save = (params_.media_flags & WebContextMenuData::kMediaCanSave) &&
+  bool can_save = (params_.media_flags & ContextMenuData::kMediaCanSave) &&
                   url.is_valid() &&
                   ProfileIOData::IsHandledProtocol(url.scheme());
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2748,7 +2745,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
 
 bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
   if (params_.media_type != ContextMenuDataMediaType::kNone &&
-      !(params_.media_flags & WebContextMenuData::kMediaCanPrint)) {
+      !(params_.media_flags & ContextMenuData::kMediaCanPrint)) {
     return false;
   }
 
@@ -3003,7 +3000,7 @@ void RenderViewContextMenu::ExecLoadImage() {
 }
 
 void RenderViewContextMenu::ExecPlayPause() {
-  bool play = !!(params_.media_flags & WebContextMenuData::kMediaPaused);
+  bool play = !!(params_.media_flags & ContextMenuData::kMediaPaused);
   if (play)
     base::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
   else
@@ -3015,7 +3012,7 @@ void RenderViewContextMenu::ExecPlayPause() {
 }
 
 void RenderViewContextMenu::ExecMute() {
-  bool mute = !(params_.media_flags & WebContextMenuData::kMediaMuted);
+  bool mute = !(params_.media_flags & ContextMenuData::kMediaMuted);
   if (mute)
     base::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
   else

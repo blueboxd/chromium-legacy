@@ -1339,6 +1339,9 @@ crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-profile-parti
 crbug.com/803276 [ Mac ] inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 
+# For win10, see crbug.com/955109
+crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
+
 crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/904592 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 crbug.com/904592 [ Win ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
@@ -5171,13 +5174,6 @@ crbug.com/1043675 [ Win ] external/wpt/css/filter-effects/backdrop-filter-basic-
 crbug.com/1043675 [ Win ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
 crbug.com/1043675 [ Win ] svg/custom/svg-root-with-opacity.html [ Failure ]
 
-# TODO(michaelludwig): Rebaseline after landing Skia change
-crbug.com/1169366 css3/filters/effect-reference-colorspace-hw.html [ Pass Failure ]
-crbug.com/1169366 css3/filters/effect-reference-hw.html [ Pass Failure ]
-crbug.com/1169366 css3/filters/effect-reference-subregion-hw.html [ Pass Failure ]
-crbug.com/1169366 css3/filters/effect-reference-zoom-hw.html [ Pass Failure ]
-crbug.com/1169366 svg/dynamic-updates/SVGFESpecularLightingElement-dom-kernelUnitLength-attr.html [ Pass Failure ]
-
 # Required to land DevTools change
 crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Pass Failure ]
 crbug.com/106759 http/tests/devtools/sources/debugger-console/debugger-command-line-api.js [ Pass Failure ]
@@ -5873,3 +5869,7 @@ crbug.com/1169908 http/tests/devtools/profiler/cpu-profiler-bottom-up-large-tree
 
 # Sheriff 2018-01-25
 crbug.com/893869 css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
+crbug.com/1155125 [ Linux ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
+
+# DevTools roll
+crbug.com/1134103 http/tests/devtools/unit/view-location.js [ Skip ]

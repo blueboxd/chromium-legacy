@@ -554,6 +554,9 @@ void DiceTurnSyncOnHelper::ShowSyncConfirmationUI() {
         base::BindOnce(&DiceTurnSyncOnHelper::FinishSyncSetupAndDelete,
                        weak_pointer_factory_.GetWeakPtr()));
   } else {
+    // The sync disabled dialog has an explicit "sign-out" label for the
+    // LoginUIService::ABORT_SYNC action, force the mode to remove the account.
+    signin_aborted_mode_ = SigninAbortedMode::REMOVE_ACCOUNT;
     delegate_->ShowSyncDisabledConfirmation(
         base::BindOnce(&DiceTurnSyncOnHelper::FinishSyncSetupAndDelete,
                        weak_pointer_factory_.GetWeakPtr()));
@@ -580,7 +583,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       break;
     }
-    case LoginUIService::ABORT_SYNC:
+    case LoginUIService::ABORT_SYNC: {
       auto* primary_account_mutator =
           identity_manager_->GetPrimaryAccountMutator();
       DCHECK(primary_account_mutator);
@@ -589,6 +592,12 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       AbortAndDelete();
       return;
+    }
+    // No explicit action when the ui gets closed. If the embedder wants the
+    // helper to abort sync in this case, it must redirect this action to
+    // ABORT_SYNC.
+    case LoginUIService::UI_CLOSED:
+      break;
   }
   delete this;
 }

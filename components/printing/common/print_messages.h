@@ -126,22 +126,6 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
   IPC_STRUCT_TRAITS_MEMBER(to)
 IPC_STRUCT_TRAITS_END()
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PreviewIds)
-  IPC_STRUCT_TRAITS_MEMBER(request_id)
-  IPC_STRUCT_TRAITS_MEMBER(ui_id)
-IPC_STRUCT_TRAITS_END()
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PageSizeMargins)
-  IPC_STRUCT_TRAITS_MEMBER(content_width)
-  IPC_STRUCT_TRAITS_MEMBER(content_height)
-  IPC_STRUCT_TRAITS_MEMBER(margin_left)
-  IPC_STRUCT_TRAITS_MEMBER(margin_right)
-  IPC_STRUCT_TRAITS_MEMBER(margin_top)
-  IPC_STRUCT_TRAITS_MEMBER(margin_bottom)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PrintPagesParams)
   // Parameters to render the page as a printed page. It must always be the same
   // value for all the document.
@@ -163,51 +147,6 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPrintContentParams)
   IPC_STRUCT_TRAITS_MEMBER(subframe_content_info)
 IPC_STRUCT_TRAITS_END()
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Parameters to describe the to-be-rendered preview document.
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidStartPreviewParams)
-  // Total page count for the rendered preview. (Not the number of pages the
-  // user selected to print.)
-  IPC_STRUCT_TRAITS_MEMBER(page_count)
-
-  // The list of 0-based page numbers that will be rendered.
-  IPC_STRUCT_TRAITS_MEMBER(pages_to_render)
-
-  // number of pages per sheet and should be greater or equal to 1.
-  IPC_STRUCT_TRAITS_MEMBER(pages_per_sheet)
-
-  // Physical size of the page, including non-printable margins.
-  IPC_STRUCT_TRAITS_MEMBER(page_size)
-
-  // Scaling % to fit to page
-  IPC_STRUCT_TRAITS_MEMBER(fit_to_page_scaling)
-IPC_STRUCT_TRAITS_END()
-
-// Parameters to describe a rendered preview page.
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPreviewPageParams)
-  // Page's content including metafile data and subframe info.
-  IPC_STRUCT_TRAITS_MEMBER(content)
-
-  // |page_number| is zero-based and should not be negative.
-  IPC_STRUCT_TRAITS_MEMBER(page_number)
-
-  // Cookie for the document to ensure correctness.
-  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
-IPC_STRUCT_TRAITS_END()
-
-// Parameters to describe the final rendered preview document.
-IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPreviewDocumentParams)
-  // Document's content including metafile data and subframe info.
-  IPC_STRUCT_TRAITS_MEMBER(content)
-
-  // Cookie for the document to ensure correctness.
-  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
-
-  // Store the expected pages count.
-  IPC_STRUCT_TRAITS_MEMBER(expected_pages_count)
-IPC_STRUCT_TRAITS_END()
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
 // Parameters to describe a rendered page.
 IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPrintDocumentParams)
   // Document's content including metafile data and subframe info.
@@ -227,44 +166,5 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPrintDocumentParams)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the renderer to the browser.
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Notify the browser the about the to-be-rendered print preview document.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidStartPreview,
-                    printing::mojom::DidStartPreviewParams /* params */,
-                    printing::mojom::PreviewIds /* ids */)
-
-// Notify the browser of preparing to print the document, for cases where
-// the document will be collected from the individual pages instead of being
-// provided by an extra metafile at end containing all pages.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrepareDocumentForPreview,
-                    int /* document_cookie */,
-                    printing::mojom::PreviewIds /* ids */)
-
-// Notify the browser of the default page layout according to the currently
-// selected printer and page size.
-// |printable_area_in_points| Specifies the printable area in points.
-// |has_custom_page_size_style| is true when the printing frame has a custom
-// page size css otherwise false.
-IPC_MESSAGE_ROUTED4(
-    PrintHostMsg_DidGetDefaultPageLayout,
-    printing::mojom::PageSizeMargins /* page layout in points */,
-    gfx::Rect /* printable area in points */,
-    bool /* has custom page size style */,
-    printing::mojom::PreviewIds /* ids */)
-
-// Notify the browser a print preview page has been rendered.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPreviewPage,
-                    printing::mojom::DidPreviewPageParams /* params */,
-                    printing::mojom::PreviewIds /* ids */)
-
-// Sends back to the browser the complete rendered document (non-draft mode,
-// used for printing) that was requested by a PrintMsg_PrintPreview message.
-// The memory handle in this message is already valid in the browser process.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_MetafileReadyForPrinting,
-                    printing::mojom::DidPreviewDocumentParams /* params */,
-                    printing::mojom::PreviewIds /* ids */)
-
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #endif  // COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_

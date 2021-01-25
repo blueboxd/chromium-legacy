@@ -65,13 +65,6 @@ crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-o
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
 
-# Temporarily disable until Chrome DevTools change has rolled.
-crbug.com/1132260 http/tests/devtools/components/linkifier.js [ Pass Failure ]
-crbug.com/1132260 http/tests/devtools/console/console-bad-stacktrace.js [ Pass Failure ]
-crbug.com/1132260 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
-crbug.com/1132260 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
-crbug.com/1132260 inspector-protocol/page/frameAttachedStacktrace.js [ Pass Failure ]
-
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
 crbug.com/887140 virtual/hdr/color-jpeg-with-color-profile.html [ Failure ]
@@ -2511,6 +2504,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webmessaging/with-ports/011.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
@@ -5875,3 +5870,6 @@ crbug.com/1050549 http/tests/devtools/extensions/extensions-timeline-api.js [ Pa
 
 # Sheriff 2021-01-22
 crbug.com/1169908 http/tests/devtools/profiler/cpu-profiler-bottom-up-large-tree-search.js [ Pass Timeout ]
+
+# Sheriff 2018-01-25
+crbug.com/893869 css3/masking/mask-repeat-space-padding.html [ Failure Pass ]

@@ -61,19 +61,16 @@ views::Widget* TabGroupEditorBubbleView::Show(
     views::View* anchor_view,
     bool stop_context_menu_propagation) {
   // If |header_view| is not null, use |header_view| as the |anchor_view|.
-  BubbleDialogDelegateView* tab_group_editor_bubble_view =
+  TabGroupEditorBubbleView* tab_group_editor_bubble_view =
       new TabGroupEditorBubbleView(
           browser, group, header_view ? header_view : anchor_view, anchor_rect,
           header_view, stop_context_menu_propagation);
   views::Widget* const widget =
       BubbleDialogDelegateView::CreateBubble(tab_group_editor_bubble_view);
   tab_group_editor_bubble_view->set_adjust_if_offscreen(true);
+  tab_group_editor_bubble_view->SizeToContents();
   widget->Show();
   return widget;
-}
-
-ui::ModalType TabGroupEditorBubbleView::GetModalType() const {
-  return ui::MODAL_TYPE_NONE;
 }
 
 views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
@@ -112,6 +109,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   set_margins(gfx::Insets());
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetModalType(ui::MODAL_TYPE_NONE);
 
   const base::string16 title = browser_->tab_strip_model()
                                    ->group_model()

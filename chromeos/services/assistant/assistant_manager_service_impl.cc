@@ -48,6 +48,7 @@
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/utils.h"
+#include "chromeos/services/libassistant/public/mojom/android_app_info.mojom.h"
 #include "chromeos/services/libassistant/public/mojom/speech_recognition_observer.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "libassistant/shared/internal_api/alarm_timer_manager.h"
@@ -167,8 +168,13 @@ bool ShouldPutLogsInHomeDirectory() {
 
 libassistant::mojom::AndroidAppInfoPtr ToAndroidAppInfoPtr(
     const AndroidAppInfo& app_info) {
-  return libassistant::mojom::AndroidAppInfo::New(
-      app_info.package_name, app_info.version, app_info.localized_app_name);
+  auto result = libassistant::mojom::AndroidAppInfo::New();
+
+  result->package_name = app_info.package_name;
+  result->version = app_info.version;
+  result->localized_app_name = app_info.localized_app_name;
+
+  return result;
 }
 
 }  // namespace
@@ -198,6 +204,29 @@ class SpeechRecognitionObserverWrapper
   void OnSpeechLevelUpdated(float speech_level_in_decibels) override {
     for (auto& it : interaction_subscribers_)
       it.OnSpeechLevelUpdated(speech_level_in_decibels);
+  }
+
+  void OnSpeechRecognitionStart() override {
+    for (auto& it : interaction_subscribers_)
+      it.OnSpeechRecognitionStarted();
+  }
+
+  void OnIntermediateResult(const std::string& high_confidence_text,
+                            const std::string& low_confidence_text) override {
+    for (auto& it : interaction_subscribers_) {
+      it.OnSpeechRecognitionIntermediateResult(high_confidence_text,
+                                               low_confidence_text);
+    }
+  }
+
+  void OnSpeechRecognitionEnd() override {
+    for (auto& it : interaction_subscribers_)
+      it.OnSpeechRecognitionEndOfUtterance();
+  }
+
+  void OnFinalResult(const std::string& recognized_text) override {
+    for (auto& it : interaction_subscribers_)
+      it.OnSpeechRecognitionFinalResult(recognized_text);
   }
 
  private:
@@ -937,40 +966,6 @@ void AssistantManagerServiceImpl::OnMediaControlAction(
     return;
   }
   // TODO(llin): Handle media.SEEK_RELATIVE.
-}
-
-void AssistantManagerServiceImpl::OnRecognitionStateChanged(
-    assistant_client::ConversationStateListener::RecognitionState state,
-    const assistant_client::ConversationStateListener::RecognitionResult&
-        recognition_result) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnRecognitionStateChanged,
-                     state, recognition_result);
-
-  switch (state) {
-    case assistant_client::ConversationStateListener::RecognitionState::STARTED:
-      for (auto& it : interaction_subscribers_)
-        it.OnSpeechRecognitionStarted();
-      break;
-    case assistant_client::ConversationStateListener::RecognitionState::
-        INTERMEDIATE_RESULT:
-      for (auto& it : interaction_subscribers_) {
-        it.OnSpeechRecognitionIntermediateResult(
-            recognition_result.high_confidence_text,
-            recognition_result.low_confidence_text);
-      }
-      break;
-    case assistant_client::ConversationStateListener::RecognitionState::
-        END_OF_UTTERANCE:
-      for (auto& it : interaction_subscribers_)
-        it.OnSpeechRecognitionEndOfUtterance();
-      break;
-    case assistant_client::ConversationStateListener::RecognitionState::
-        FINAL_RESULT:
-      for (auto& it : interaction_subscribers_) {
-        it.OnSpeechRecognitionFinalResult(recognition_result.recognized_speech);
-      }
-      break;
-  }
 }
 
 void AssistantManagerServiceImpl::OnRespondingStarted(bool is_error_response) {

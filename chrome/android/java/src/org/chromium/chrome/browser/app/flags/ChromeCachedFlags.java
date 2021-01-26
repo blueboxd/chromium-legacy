@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -92,6 +93,7 @@ public class ChromeCachedFlags {
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS,
                 ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS,
+                StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB,
                 StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES,
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
@@ -108,6 +110,9 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX,
                 TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP,
+                ShoppingPersistedTabData.TIME_TO_LIVE_MS,
+                ShoppingPersistedTabData.DISPLAY_TIME_MS,
+                ShoppingPersistedTabData.ENDPOINT,
                 TabUiFeatureUtilities.ENABLE_PRICE_TRACKING,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,

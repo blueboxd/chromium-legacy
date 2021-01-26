@@ -819,8 +819,7 @@
                 {
                     "name": "AllEnabledFeatures",
                     "enable_features": [
-                        "AutofillFixFillableFieldTypes",
-                        "AutofillUseNewSectioningMethod"
+                        "AutofillFixFillableFieldTypes"
                     ]
                 }
             ]
@@ -2943,6 +2942,21 @@
             ]
         }
     ],
+    "FeedPrivacyNoticeCardAutoDismiss": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210119",
+                    "enable_features": [
+                        "InterestFeedNoticeCardAutoDismiss"
+                    ]
+                }
+            ]
+        }
+    ],
     "FillingPasswordsFromAnyOrigin": [
         {
             "platforms": [
@@ -4007,26 +4021,6 @@
             ]
         }
     ],
-    "MetricsDownsampleConsistently": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MetricsDownsampleConsistently"
-                    ]
-                }
-            ]
-        }
-    ],
     "MixedFormInterstitial": [
         {
             "platforms": [
@@ -4383,7 +4377,6 @@
                         "MaxZeroSuggestMatches": "10",
                         "OmniboxDynamicMaxAutocompleteIncreasedLimit": "10",
                         "OmniboxDynamicMaxAutocompleteUrlCutoff": "2",
-                        "OmniboxLocalZeroSuggestAgeThreshold": "7",
                         "OmniboxMaxURLMatches": "7",
                         "RichAutocompletionAutocompleteNonPrefixAll": "true",
                         "RichAutocompletionAutocompleteTitles": "true",
@@ -4395,8 +4388,6 @@
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
-                        "OmniboxLocalZeroSuggestAgeThreshold",
-                        "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
@@ -4425,7 +4416,6 @@
                 {
                     "name": "AndroidExperiments",
                     "params": {
-                        "OmniboxLocalZeroSuggestAgeThreshold": "7",
                         "OmniboxMaxURLMatches": "7",
                         "OmniboxMaxZeroSuggestMatches": "15",
                         "UIMaxAutocompleteMatches": "8",
@@ -4435,10 +4425,9 @@
                         "OmniboxAdaptiveSuggestionsCount",
                         "OmniboxCompactSuggestions",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
-                        "OmniboxLocalZeroSuggestAgeThreshold",
-                        "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
+                        "OmniboxMostVisitedTiles",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
@@ -4587,7 +4576,7 @@
             ]
         }
     ],
-    "OmniboxSpareRenderer": [
+    "OmniboxSpareRendererGWS": [
         {
             "platforms": [
                 "android"
@@ -4742,6 +4731,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PageInfoV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageLoadMetricsTimerDelay": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "10MS",
+                    "params": {
+                        "BufferTimerDelayMillis": "10"
+                    },
+                    "enable_features": [
+                        "PageLoadMetricsTimerDelay"
                     ]
                 }
             ]
@@ -6050,6 +6061,24 @@
             ]
         }
     ],
+    "SpacesM2": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DiceWebSigninInterception",
+                        "NewProfilePicker"
+                    ]
+                }
+            ]
+        }
+    ],
     "SplitCacheByNetworkIsolationKey": [
         {
             "platforms": [
@@ -6240,10 +6269,8 @@
                     "name": "Enabled",
                     "params": {
                         "allow_to_refetch": "true",
-                        "enable_search_term_chip": "true",
-                        "enable_search_term_chip_adaptive_icon": "true",
                         "tab_grid_layout_android_new_tab": "NewTabVariation",
-                        "tab_grid_layout_android_new_tab_tile": "NewTabTile"
+                        "thumbnail_aspect_ratio": "0.85"
                     },
                     "enable_features": [
                         "TabGridLayoutAndroid"
@@ -7625,6 +7652,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WinrtSensorsImplementation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "XsurfaceMetricsReporting": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "XsurfaceMetricsReporting"
                     ]
                 }
             ]

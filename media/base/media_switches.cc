@@ -385,7 +385,7 @@ const base::Feature kGlobalMediaControlsForCast{
 
 // Allow Global Media Controls in system tray of CrOS.
 const base::Feature kGlobalMediaControlsForChromeOS{
-    "GlobalMediaControlsForChromeOS", base::FEATURE_DISABLED_BY_DEFAULT};
+    "GlobalMediaControlsForChromeOS", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<kCrosGlobalMediaControlsPinOptions>::Option
     kCrosGlobalMediaControlsParamOptions[] = {
@@ -467,6 +467,12 @@ const base::Feature kVaapiAV1Decoder{"VaapiAV1Decoder",
 // Enable VA-API hardware low power encoder for all codecs on intel Gen9x gpu.
 const base::Feature kVaapiLowPowerEncoderGen9x{
     "VaapiLowPowerEncoderGen9x", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Deny specific (likely small) resolutions for VA-API hardware decode and
+// encode acceleration.
+// TOOD(b/171041334): Enable by default once the ARC++ hw codecs issue is fixed.
+const base::Feature kVaapiEnforceVideoMinMaxResolution{
+    "VaapiEnforceVideoMinMaxResolution", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",

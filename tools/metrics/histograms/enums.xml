@@ -6191,7 +6191,7 @@ others/histograms.xml -->
   <int value="10" label="Renderer debug URL"/>
   <int value="11" label="Not enabled and not needed for back-forward cache"/>
   <int value="14" label="Same-document navigation"/>
-  <int value="15" label="Same-page navigation"/>
+  <int value="15" label="Same-URL navigation"/>
   <int value="16" label="The current history entry will get replaced"/>
   <int value="17" label="Reload"/>
   <int value="18" label="Guest"/>
@@ -31101,6 +31101,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3781" label="PopupElement"/>
   <int value="3782" label="V8HTMLPopupElement_Show_Method"/>
   <int value="3783" label="V8HTMLPopupElement_Hide_Method"/>
+  <int value="3784" label="WindowOpenWithAdditionalBoolParameter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -44123,6 +44124,8 @@ from previous Chrome versions.
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
   <int value="-714543772" label="enable-gpu-service-logging"/>
   <int value="-714043324" label="OutOfBlinkCORS:enabled"/>
+  <int value="-713104676"
+      label="DisablePeripheralDataAccessProtection:enabled"/>
   <int value="-711991950" label="SiteExplorationUi:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>
@@ -45922,6 +45925,8 @@ from previous Chrome versions.
   <int value="1028817487"
       label="OmniboxOnFocusSuggestionsContextualWeb:disabled"/>
   <int value="1030608602" label="AutofillAssistantProactiveHelp:enabled"/>
+  <int value="1031281564"
+      label="DisablePeripheralDataAccessProtection:disabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
@@ -64924,7 +64929,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     Enumerates names of Mojo interfaces that are requests through
     RenderFrameHostImpl::GetInterface.
   </summary>
-  <int value="4595745" label="blink.mojom.NativeFileSystemManager"/>
+  <int value="4595745" label="blink.mojom.FileSystemAccessManager"/>
   <int value="28688772" label="snippets_internals.mojom.PageHandlerFactory"/>
   <int value="39256405" label="device.mojom.Geolocation"/>
   <int value="70273688" label="device.mojom.VRService"/>
@@ -68678,6 +68683,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
   <int value="6" label="TAB_GROUP"/>
   <int value="7" label="WEBAPP_NOTIFICATION"/>
+  <int value="8" label="FEED"/>
 </enum>
 
 <enum name="SharingActionSource">
@@ -77464,6 +77470,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Video thumbnail request completed"/>
 </enum>
 
+<enum name="VideoTutorials.LanguagePickerAction">
+  <int value="0" label="Back press"/>
+  <int value="1" label="Close"/>
+  <int value="2" label="Watch"/>
+</enum>
+
 <enum name="VideoTutorials.UserAction">
   <int value="0" label="Change language"/>
   <int value="1" label="Watch next video"/>
@@ -77471,6 +77483,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Share"/>
   <int value="4" label="Close"/>
   <int value="5" label="Back pressed when showing video player"/>
+  <int value="6" label="Open shared video"/>
+  <int value="7" label="Invalid shared URL"/>
+  <int value="8" label="IPH Shown on NTP"/>
+  <int value="9" label="IPH clicked"/>
+  <int value="10" label="IPH dismissed"/>
+  <int value="11" label="Played from recap"/>
 </enum>
 
 <enum name="VideoTutorials.WatchState">
@@ -78745,7 +78763,7 @@ others/histograms.xml -->
 <enum name="WebOTPServiceDestroyedReason">
   <int value="0" label="Navigated to new page"/>
   <int value="1" label="Navigated to existing page"/>
-  <int value="2" label="Nagivated to same page"/>
+  <int value="2" label="(Deprecated) Nagivated to same page"/>
 </enum>
 
 <enum name="WebOTPServiceInfobarAction">

@@ -37,7 +37,6 @@ SWARMING_GO = os.path.join(SRC_DIR, 'tools', 'luci-go',
 def _convert_to_go_swarming_args(args):
   go_args = []
   map_flags = {'--dimension', '--env', '--env-prefix', '--named-cache'}
-  has_opt_dim = False
   i = 0
   while i < len(args):
     current_arg = args[i]
@@ -56,16 +55,6 @@ def _convert_to_go_swarming_args(args):
       # https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/client/cmd/swarming/lib/trigger.go;l=458-465;drc=ef40d3f3503c2cc7bb0f3f6807b14a39bafb6ce4
       go_args.append('{}:{}={}'.format(path, name, version))
       i += 1
-    elif current_arg == '--optional-dimension':
-      assert not has_opt_dim, ('Go swarming only supports one '
-                               '--optional-dimension, got: %s (index=%d)') % (
-                                   args[i:i + 3], i)
-      has_opt_dim = True
-
-      k, v, exp = args[i:i + 3]
-      # https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/client/cmd/swarming/lib/trigger.go;l=243;drc=ef40d3f3503c2cc7bb0f3f6807b14a39bafb6ce4
-      go_args.append('{}={}:{}'.format(k, v, exp))
-      i += 3
   return go_args
 
 
@@ -352,14 +341,4 @@ class BaseTestTriggerer(object):
     parser.add_argument('--shard-index', type=int, default=None,
                         help='Which shard to trigger. Duplicated from the '
                              '`swarming.py trigger` command.')
-    BaseTestTriggerer.add_use_swarming_go_arg(parser)
     return parser
-
-  @staticmethod
-  def add_use_swarming_go_arg(parser):
-    # TODO(crbug.com/1127205): remove this.
-    parser.add_argument(
-        '--use-swarming-go',
-        default=False,
-        action='store_true',
-        help='Uses swarming Go CLI to trigger tasks.')

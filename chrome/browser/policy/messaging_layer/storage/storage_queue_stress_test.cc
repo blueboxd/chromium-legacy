@@ -42,7 +42,7 @@ namespace reporting {
 namespace {
 
 constexpr size_t kTotalQueueStarts = 4;
-constexpr size_t kTotalWritesPerStart = 256;
+constexpr size_t kTotalWritesPerStart = 16;
 constexpr char kDataPrefix[] = "Rec";
 
 // Usage (in tests only):
@@ -130,7 +130,8 @@ class TestUploadClient : public StorageQueue::UploaderInterface {
                            sequencing_information.generation_id()));
         if (it != last_record_digest_map_->end() && it->second.has_value()) {
           ASSERT_THAT(it->second.value(),
-                      Eq(wrapped_record.last_record_digest()));
+                      Eq(wrapped_record.last_record_digest()))
+              << "seq_id=" << sequencing_information.sequencing_id();
         }
       }
     }

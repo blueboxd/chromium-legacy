@@ -254,6 +254,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_PRICE_DROP" desc="Label for notification that indicates there is a lower price in an open tab, within a list of notification categories. [CHAR-LIMIT=32]">
+        Price drop alerts
+      </message>
 
       <message name="IDS_UNSUPPORTED" desc="Message displayed to the user when an attempted action is not supported.">
         Unsupported
@@ -2936,6 +2939,9 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
       <message name="IDS_MENU_FIND_IN_PAGE" desc="Menu item allowing users to find text within the current page. [CHAR-LIMIT=27]">
         Find in page
+      </message>
+      <message name="IDS_MENU_FOLLOW" desc="Menu item allowing users to follow the current website. [CHAR-LIMIT=27]">
+        Follow
       </message>
       <message name="IDS_MENU_PAINT_PREVIEW_SHOW" desc="Menu item allowing users to capture and show a paint preview of a page. [CHAR-LIMIT=27]" translateable="false">
         Show Paint Preview

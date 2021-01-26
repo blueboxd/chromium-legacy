@@ -436,7 +436,7 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"defaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER},
@@ -1469,8 +1469,8 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
     {"safetyCheckParentButton", IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON},
     {"safetyCheckParentButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON_ARIA_LABEL},
-    {"safetyCheckParentButtonAriaLabelReload",
-     IDS_SETTINGS_CHECK_PASSWORDS_AGAIN},
+    {"safetyCheckParentRunAgainButtonAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_PARENT_RUN_AGAIN_BUTTON_ARIA_LABEL},
     {"safetyCheckIconRunningAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_ICON_RUNNING_ARIA_LABEL},
     {"safetyCheckIconSafeAriaLabel",
@@ -2271,7 +2271,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 void AddSystemStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"systemPageTitle", IDS_SETTINGS_SYSTEM},
@@ -2450,12 +2450,13 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   AddChromeOSSettingsStrings(html_source);
+#else
+  AddDefaultBrowserStrings(html_source);
+  AddSystemStrings(html_source);
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  AddDefaultBrowserStrings(html_source);
   AddImportDataStrings(html_source);
-  AddSystemStrings(html_source);
 #endif
   AddExtensionsStrings(html_source);
 

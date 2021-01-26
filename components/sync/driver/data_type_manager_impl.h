@@ -30,6 +30,8 @@ struct DataTypeConfigurationStats;
 class DataTypeManagerImpl : public DataTypeManager,
                             public ModelLoadManagerDelegate {
  public:
+  // TODO(crbug.com/1170318): Get rid of the |initial_types| param, it doesn't
+  // seem to actually do anything.
   DataTypeManagerImpl(
       ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
@@ -74,6 +76,27 @@ class DataTypeManagerImpl : public DataTypeManager,
   };
   using DataTypeConfigStateMap = std::map<ModelType, DataTypeConfigState>;
 
+  struct AssociationTypesInfo {
+    AssociationTypesInfo();
+    AssociationTypesInfo(const AssociationTypesInfo& other);
+    ~AssociationTypesInfo();
+
+    // Pending types. This is generally the same as
+    // |configuration_types_queue_.front()|.
+    ModelTypeSet types;
+    // Types that have just been downloaded. This includes types that had
+    // previously encountered an error and had to be purged.
+    // This is a subset of |types|.
+    ModelTypeSet first_sync_types;
+    // Time at which |types| began downloading.
+    base::Time download_start_time;
+    // Time at which |types| finished downloading.
+    base::Time download_ready_time;
+    // The set of types that are higher priority, and were therefore blocking
+    // the download of |types|.
+    ModelTypeSet higher_priority_types_before;
+  };
+
   // Return model types in |state_map| that match |state|.
   static ModelTypeSet GetDataTypesInState(
       DataTypeConfigState state,
@@ -84,10 +107,9 @@ class DataTypeManagerImpl : public DataTypeManager,
                                 ModelTypeSet types,
                                 DataTypeConfigStateMap* state_map);
 
-  // Prepare the parameters for the configurer's configuration. Returns the set
-  // of types that are already ready for configuration.
-  ModelTypeSet PrepareConfigureParams(
-      ModelTypeConfigurer::ConfigureParams* params);
+  // Prepare the parameters for the configurer's configuration.
+  ModelTypeConfigurer::ConfigureParams PrepareConfigureParams(
+      const AssociationTypesInfo& association_types_info);
 
   // Abort configuration and stop all data types due to configuration errors.
   void Abort(ConfigureStatus status);
@@ -128,12 +150,17 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Start configuration of next set of types in |configuration_types_queue_|
   // (if any exist, does nothing otherwise).
   void StartNextConfiguration(ModelTypeSet higher_priority_types_before);
-  void ConfigurationCompleted(ModelTypeSet configured_types,
+  void ConfigurationCompleted(AssociationTypesInfo association_types_info,
+                              ModelTypeSet configured_types,
                               ModelTypeSet succeeded_configuration_types,
                               ModelTypeSet failed_configuration_types);
 
-  void RecordConfigurationStats(ModelTypeSet types);
-  void RecordConfigurationStatsImpl(ModelType type);
+  void RecordConfigurationStats(
+      const AssociationTypesInfo& association_types_info);
+  void RecordConfigurationStatsImpl(
+      const AssociationTypesInfo& association_types_info,
+      ModelType type,
+      ModelTypeSet same_priority_types_configured_before);
 
   void StopImpl(ShutdownReason reason);
 
@@ -190,34 +217,6 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // Types waiting to be configured, prioritized (highest priority first).
   base::queue<ModelTypeSet> configuration_types_queue_;
-
-  // Pending types and related time tracking info.
-  struct AssociationTypesInfo {
-    AssociationTypesInfo();
-    AssociationTypesInfo(const AssociationTypesInfo& other);
-    ~AssociationTypesInfo();
-
-    // Pending types. This is generally the same as
-    // |configuration_types_queue_.front()|.
-    ModelTypeSet types;
-    // Types that have just been downloaded. This includes types that had
-    // previously encountered an error and had to be purged.
-    // This is a subset of |types|.
-    ModelTypeSet first_sync_types;
-    // Types that were already already downloaded at configuration time.
-    ModelTypeSet ready_types;
-    // Time at which |types| began downloading.
-    base::Time download_start_time;
-    // Time at which |types| finished downloading.
-    base::Time download_ready_time;
-    // The set of types that are higher priority, and were therefore blocking
-    // the download of |types|.
-    ModelTypeSet higher_priority_types_before;
-    // The subset of |types| that were successfully configured. Populated
-    // one-by-one as types finish configuring.
-    ModelTypeSet configured_types;
-  };
-  base::Optional<AssociationTypesInfo> association_types_info_;
 
   // The encryption handler lets the DataTypeManager know the state of sync
   // datatype encryption.

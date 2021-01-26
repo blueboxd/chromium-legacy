@@ -324,7 +324,9 @@ void WebPagePopupImpl::Initialize(WebViewImpl* opener_web_view,
   page_clients.chrome_client = chrome_client_.Get();
 
   Settings& main_settings = opener_web_view_->GetPage()->GetSettings();
-  page_ = Page::CreateNonOrdinary(page_clients);
+  page_ = Page::CreateNonOrdinary(page_clients, opener_web_view_->GetPage()
+                                                    ->GetPageScheduler()
+                                                    ->GetAgentGroupScheduler());
   page_->GetSettings().SetAcceleratedCompositingEnabled(true);
   page_->GetSettings().SetScriptEnabled(true);
   page_->GetSettings().SetAllowScriptsToCloseWindows(true);
@@ -451,6 +453,10 @@ void WebPagePopupImpl::InitializeCompositing(
                                       screen_info,
                                       std::move(ukm_recorder_factory), settings,
                                       /*frame_widget_input_handler=*/nullptr);
+  cc::LayerTreeDebugState debug_state =
+      widget_base_->LayerTreeHost()->GetDebugState();
+  debug_state.TurnOffHudInfoDisplay();
+  widget_base_->LayerTreeHost()->SetDebugState(debug_state);
 }
 
 scheduler::WebRenderWidgetSchedulingState*

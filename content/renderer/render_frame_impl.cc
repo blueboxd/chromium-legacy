@@ -1008,8 +1008,6 @@ void FillMiscNavigationParams(
     navigation_params->origin_to_commit =
         commit_params.origin_to_commit.value();
   }
-  navigation_params->sandbox_flags = commit_params.sandbox_flags;
-
   navigation_params->appcache_host_id =
       commit_params.appcache_host_id.value_or(base::UnguessableToken());
 
@@ -2637,7 +2635,7 @@ void RenderFrameImpl::ExtractSmartClipData(
     ExtractSmartClipDataCallback callback) {
   blink::WebString clip_text;
   blink::WebString clip_html;
-  blink::WebRect clip_rect;
+  gfx::Rect clip_rect;
   GetWebFrame()->ExtractSmartClipData(rect, clip_text, clip_html, clip_rect);
   std::move(callback).Run(clip_text.Utf16(), clip_html.Utf16(), clip_rect);
 }
@@ -6182,7 +6180,6 @@ void RenderFrameImpl::LoadHTMLStringForTesting(const std::string& html,
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = base_url;
-  navigation_params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
   WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",
                                           WebString::FromUTF8(text_encoding),
                                           html);

@@ -7,7 +7,6 @@ package org.chromium.chrome.features.start_surface;
 import static android.os.Build.VERSION_CODES.P;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.action.ViewActions.replaceText;
@@ -43,6 +42,7 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -55,6 +55,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.GeneralLocation;
@@ -189,6 +190,12 @@ public class StartSurfaceTest {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
         ChromeApplicationTestUtils.waitUntilChromeInBackground();
+    }
+
+    private void pressBack() {
+        // ChromeTabbedActivity expects the native libraries to be loaded when back is pressed.
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
+        Espresso.pressBack();
     }
 
     @Before
@@ -909,7 +916,7 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/false"})
     public void testSearchInSingleSurface() {
         if (!mImmediateReturn) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
@@ -934,6 +941,7 @@ public class StartSurfaceTest {
         CriteriaHelper.pollUiThread(this::isOverviewVisible);
         onView(allOf(withId(R.id.search_box_text), isDisplayed()));
         TextView urlBar = mActivityTestRule.getActivity().findViewById(R.id.url_bar);
+        Assert.assertFalse(urlBar.isFocused());
         onView(withId(R.id.search_box_text)).perform(click());
         Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
     }
@@ -1691,6 +1699,118 @@ public class StartSurfaceTest {
         CriteriaHelper.pollUiThread(() -> cta.getLayoutManager().overviewVisible());
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @DisableIf.Build(sdk_is_less_than = P, message = "https://crbug.com/1170553")
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1170553")
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
+    public void testOmnibox_FocusedOnNewTabInSingleSurface() {
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(this::isOverviewVisible);
+        waitForTabModel();
+        assertThat(
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
+                equalTo(1));
+
+        // Launches a new Tab from the Start surface, and verifies the omnibox is focused.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getTabCreator(false).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 2, 0);
+        onView(allOf(withId(R.id.url_bar), isDisplayed()));
+
+        TextView urlBar = mActivityTestRule.getActivity().findViewById(R.id.url_bar);
+        CriteriaHelper.pollUiThread(this::isKeyboardShown);
+        Assert.assertTrue(urlBar.isFocused());
+        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
+        assertEquals(
+                mActivityTestRule.getActivity().findViewById(R.id.toolbar_buttons).getVisibility(),
+                View.INVISIBLE);
+
+        // Navigates the new created Tab.
+        TestThreadUtils.runOnUiThreadBlocking(() -> urlBar.setText("about:blank"));
+        onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
+
+        // Launches a new Tab from the newly navigated tab, and verifies the omnibox is focused.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getTabCreator(false).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 3, 0);
+        onView(allOf(withId(R.id.search_box_text), isDisplayed()));
+        CriteriaHelper.pollUiThread(this::isKeyboardShown);
+        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
+        Assert.assertTrue(urlBar.isFocused());
+        assertEquals(
+                mActivityTestRule.getActivity().findViewById(R.id.toolbar_buttons).getVisibility(),
+                View.INVISIBLE);
+
+        // Navigates the Tab to show home button.
+        TestThreadUtils.runOnUiThreadBlocking(() -> urlBar.setText("about:blank"));
+        onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
+
+        // Goes to the Start surface from tapping home button, and navigate from the Omnibox. The
+        // new created Tab shouldn't get focus.
+        onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.home_button), isDisplayed()));
+        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        CriteriaHelper.pollUiThread(this::isOverviewVisible);
+
+        onView(allOf(withId(R.id.search_box_text), isDisplayed()))
+                .perform(replaceText("about:blank"));
+        onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
+        waitForView(withId(R.id.primary_tasks_surface_view), VIEW_GONE);
+
+        TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 4, 0);
+        onView(allOf(withId(R.id.search_box_text), isDisplayed()));
+        onView(allOf(withId(R.id.toolbar_buttons), isDisplayed()));
+        Assert.assertFalse(urlBar.isFocused());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @DisableIf.Build(sdk_is_less_than = P, message = "https://crbug.com/1170553")
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1170553")
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
+    public void testOmnibox_FocusedOnNewTabInSingleSurface_WithBackButton() {
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(this::isOverviewVisible);
+        waitForTabModel();
+        assertThat(
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
+                equalTo(1));
+
+        // Launches a new Tab from the Start surface, and verify the omnibox is focused.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getTabCreator(false).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 2, 0);
+        onView(allOf(withId(R.id.search_box_text), isDisplayed()));
+
+        TextView urlBar = mActivityTestRule.getActivity().findViewById(R.id.url_bar);
+        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
+        CriteriaHelper.pollUiThread(this::isKeyboardShown);
+        Assert.assertTrue(urlBar.isFocused());
+        assertEquals(
+                mActivityTestRule.getActivity().findViewById(R.id.toolbar_buttons).getVisibility(),
+                View.INVISIBLE);
+
+        // Verifies that if the new created tab doesn't navigate, tapping back button will deleted
+        // it from the TabModel.
+        TestThreadUtils.runOnUiThreadBlocking(() -> urlBar.clearFocus());
+        // Back to the Start surface.
+        pressBack();
+        CriteriaHelper.pollUiThread(this::isOverviewVisible);
+        TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 1, 0);
+    }
+
+    private boolean isKeyboardShown() {
+        Activity activity = mActivityTestRule.getActivity();
+        return mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                activity, activity.getCurrentFocus());
     }
 
     private static Matcher<View> isView(final View targetView) {

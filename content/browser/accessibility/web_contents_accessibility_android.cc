@@ -939,6 +939,8 @@ void WebContentsAccessibilityAndroid::Click(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj,
                                             jint unique_id) {
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return;
 
   // If it's a heading consisting of only a link, click the link.
   if (node->IsHeadingLink()) {
@@ -946,7 +948,11 @@ void WebContentsAccessibilityAndroid::Click(JNIEnv* env,
         node->InternalChildrenBegin().get());
   }
 
-  if (node)
+  // Only perform the default action on a node that is enabled. Having the
+  // ACTION_CLICK action on the node is not sufficient, since TalkBack won't
+  // announce a control as disabled unless it's also marked as clickable, so
+  // disabled nodes are secretly clickable if we do not check here.
+  if (node->IsEnabled())
     node->manager()->DoDefaultAction(*node);
 }
 
@@ -1058,7 +1064,8 @@ jint WebContentsAccessibilityAndroid::FindElementType(
     const JavaParamRef<jobject>& obj,
     jint start_id,
     const JavaParamRef<jstring>& element_type_str,
-    jboolean forwards) {
+    jboolean forwards,
+    jboolean can_wrap_to_last_element) {
   BrowserAccessibilityAndroid* start_node = GetAXFromUniqueID(start_id);
   if (!start_node)
     return 0;
@@ -1081,9 +1088,7 @@ jint WebContentsAccessibilityAndroid::FindElementType(
                                : OneShotAccessibilityTreeSearch::BACKWARDS);
   tree_search.SetResultLimit(1);
   tree_search.SetImmediateDescendantsOnly(false);
-  // SetCanWrapToLastElement needs to be set as true after talkback pushes its
-  // corresponding change for b/29103330.
-  tree_search.SetCanWrapToLastElement(false);
+  tree_search.SetCanWrapToLastElement(can_wrap_to_last_element);
   tree_search.SetOnscreenOnly(false);
   tree_search.AddPredicate(predicate);
 

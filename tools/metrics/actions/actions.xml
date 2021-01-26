@@ -16224,7 +16224,7 @@ should be able to be added at any place in this file.
 
 <action name="NativeFileSystemAPI.OpenedBubble">
   <owner>mek@chromium.org</owner>
-  <owner>src/content/browser/native_file_system/OWNERS</owner>
+  <owner>src/content/browser/file_system_access/OWNERS</owner>
   <description>
     Recorded any time the user opens the usage indicator bubble for the Native
     File System API.
@@ -16233,7 +16233,7 @@ should be able to be added at any place in this file.
 
 <action name="NativeFileSystemAPI.RevokePermissions">
   <owner>mek@chromium.org</owner>
-  <owner>src/content/browser/native_file_system/OWNERS</owner>
+  <owner>src/content/browser/file_system_access/OWNERS</owner>
   <description>
     Recorded any time the user revokes all Native File System API permissions
     from the usage indicator bubble.
@@ -27337,6 +27337,15 @@ should be able to be added at any place in this file.
       label="For tab switcher with tab groups."/>
   <suffix name="TabSwitcherButton" label="For tab switcher button."/>
   <suffix name="TranslateMenuButton" label="For translate menu button."/>
+  <suffix name="VideoTutorial_NTP_ChromeIntro"
+      label="For Chrome intro video tutorial."/>
+  <suffix name="VideoTutorial_NTP_Download"
+      label="For download video tutorial."/>
+  <suffix name="VideoTutorial_NTP_Search" label="For search video tutorial."/>
+  <suffix name="VideoTutorial_NTP_Summary"
+      label="For video tutorial summary card."/>
+  <suffix name="VideoTutorial_NTP_VoiceSearch"
+      label="For voice search video tutorial."/>
   <suffix name="WebUITabStrip" label="For the WebUI tab strip."/>
   <affected-action name="InProductHelp.NotifyEvent.IPH"/>
   <affected-action name="InProductHelp.NotifyUsedEvent.IPH"/>

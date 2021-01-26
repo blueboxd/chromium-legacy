@@ -14595,8 +14595,8 @@ should be kept until we remove incident reporting. -->
     Recorded on navigations with a ProcessReusePolicy of
     REUSE_PENDING_OR_COMMITTED_SITE (mostly subframe navigations). Measures the
     time since a RenderProcessHost hosting the destination URL was last
-    destroyed, up to 7 seconds. If no host matching the destination was recently
-    destroyed, a sentinel value of 20 seconds is used.
+    destroyed, up to 10 seconds. If no host matching the destination was
+    recently destroyed, a sentinel value of 20 seconds is used.
   </summary>
 </histogram>
 
@@ -16113,6 +16113,9 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Thumbnails.CopyFromSurfaceTime" units="ms" expires_after="M90">
+  <obsolete>
+    Removed 01/2021.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>pbos@chromium.org</owner>
   <summary>
@@ -16144,6 +16147,9 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Thumbnails.ProcessBitmapTime" units="ms" expires_after="M90">
+  <obsolete>
+    Removed 01/2021.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>pbos@chromium.org</owner>
   <summary>
@@ -16421,12 +16427,14 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="TouchScreen.MissedTOUCHEVENTF_UP" enum="BooleanHit"
-    expires_after="M77">
-  <owner>nzolghadr@chromium.org</owner>
+    expires_after="M95">
+  <owner>girard@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
-    The touch device driver failed to send a TOUCHEVENTF_UP, and chromium
-    generated a simulated event to maintain consistency/correctness.
+    Recorded when a touch event excludes an active touch (a touch-id/dwId that
+    previously generated a TOUCHEVENTF_DOWN, and has not since generated a
+    TOUCHEVENTF_UP). Chromium generates a simulated event to maintain
+    consistency/correctness. Only recorded on Windows.
 
     This workaround will be removed once usage drops off. See
     https://crbug.com/811273 for details.
@@ -17287,7 +17295,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.UnexpectedResultSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-01-24">
+    enum="VoiceInteractionEventSource" expires_after="2021-05-30">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>

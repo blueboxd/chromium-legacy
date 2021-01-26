@@ -24,14 +24,23 @@
 
 // Includes for `IsEnabledForEarlyAccess()`.
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 
 namespace {
 
+// When this feature is enabled, certs are available to everyone.
+const base::Feature kLacrosEnableCerts{"LacrosEnableCerts",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // TODO(crbug.com/1145946): Enable certificate database initialization for
 // everyone when the policy stack is ready (expected to happen before Feb 2021).
 bool IsEnabledForEarlyAccess(Profile* profile) {
+  if (base::FeatureList::IsEnabled(kLacrosEnableCerts)) {
+    return true;
+  }
+
   static base::NoDestructor<base::flat_set<std::string>> allowlist{
       {"bartfab@google.com",       "darin@google.com",
        "dhaddock@google.com",      "edcourtney@google.com",
@@ -52,7 +61,8 @@ bool IsEnabledForEarlyAccess(Profile* profile) {
        "sinhak@google.com",        "songsuk@google.com",
        "srinivassista@google.com", "svenzheng@google.com",
        "willmcleod@google.com",    "ythjkt@google.com",
-       "yusukes@google.com"}};
+       "yusukes@google.com",       "nrpeter@google.com",
+       "miersh@managedchrome.com"}};
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   return base::Contains(*allowlist, identity_manager

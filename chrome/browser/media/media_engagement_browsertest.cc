@@ -18,10 +18,12 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -34,8 +36,8 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/browser/prerender_handle.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
@@ -740,15 +742,15 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, MAYBE_Ignored) {
   const GURL& url = http_server().GetURL("/engagement_test.html");
 
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
+  prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+      prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
           browser()->profile());
-  ASSERT_TRUE(prerender_manager);
+  ASSERT_TRUE(no_state_prefetch_manager);
 
   prerender::test_utils::TestNoStatePrefetchContentsFactory*
       no_state_prefetch_contents_factory =
           new prerender::test_utils::TestNoStatePrefetchContentsFactory();
-  prerender_manager->SetNoStatePrefetchContentsFactoryForTest(
+  no_state_prefetch_manager->SetNoStatePrefetchContentsFactoryForTest(
       no_state_prefetch_contents_factory);
 
   content::SessionStorageNamespace* storage_namespace =
@@ -760,8 +762,8 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, MAYBE_Ignored) {
           prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle =
-      prerender_manager->AddPrerenderFromOmnibox(url, storage_namespace,
-                                                 gfx::Size(640, 480));
+      no_state_prefetch_manager->AddPrerenderFromOmnibox(url, storage_namespace,
+                                                         gfx::Size(640, 480));
 
   ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
 
@@ -788,6 +790,9 @@ class MediaEngagementSessionRestoreBrowserTest
 
     std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
         KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
+    std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive(
+        new ScopedProfileKeepAlive(profile,
+                                   ProfileKeepAliveOrigin::kBrowserWindow));
     CloseBrowserSynchronously(browser());
 
     chrome::NewEmptyWindow(profile);

@@ -722,24 +722,35 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AbstractInlineTextBox* inline_text_box,
     return nullptr;
 
   if (!parent) {
-    Node* text_parent = inline_text_box->GetLineLayoutItem().GetNode();
-    DCHECK(text_parent);
-    DCHECK(IsA<Text>(text_parent));
-    parent = GetOrCreate(text_parent);
-    DCHECK(parent);
+    Node* text_parent = inline_text_box->GetNode();
+    if (text_parent) {
+      DCHECK(IsA<Text>(text_parent));
+      parent = GetOrCreate(text_parent);
+    } else {
+      LayoutObject* anonymous_text_parent = inline_text_box->GetLayoutObject();
+      DCHECK(anonymous_text_parent);
+      DCHECK(anonymous_text_parent->IsText());
+      parent = GetOrCreate(anonymous_text_parent);
+    }
+    DCHECK(parent) << "No parent for textbox: " << inline_text_box;
   }
 
   if (AXObject* obj = Get(inline_text_box)) {
-    if (obj->CachedParentObject())
+#if DCHECK_IS_ON()
+    if (obj->CachedParentObject()) {
+      // AXInlineTextbox objects can't get a new parent, unlike other types of
+      // accessible objects that can get a new parent because they moved or
+      // because of aria-owns.
       DCHECK_EQ(obj->CachedParentObject()->GetNode(), parent->GetNode());
+      DCHECK_EQ(obj->CachedParentObject()->GetLayoutObject(),
+                parent->GetLayoutObject());
+    }
+#endif
     obj->SetParent(parent);
     return obj;
   }
 
   AXObject* new_obj = CreateFromInlineTextBox(inline_text_box);
-
-  // Will crash later if we have two objects for the same inlineTextBox.
-  DCHECK(!Get(inline_text_box));
 
   const AXID axid = AssociateAXID(new_obj);
 
@@ -769,28 +780,6 @@ AXObject* AXObjectCacheImpl::CreateAndInit(ax::mojom::blink::Role role,
 
   obj->Init(parent);
   return obj;
-}
-
-ContainerNode* FindParentTable(Node* node) {
-  ContainerNode* parent = node->parentNode();
-  while (parent && !IsA<HTMLTableElement>(*parent))
-    parent = parent->parentNode();
-  return parent;
-}
-
-void AXObjectCacheImpl::ContainingTableRowsOrColsMaybeChanged(Node* node) {
-  // Any containing table must recompute its rows and columns on insertion or
-  // removal of a <tr> or <td>.
-  // Get parent table from DOM, because AXObject/layout tree are incomplete.
-  ContainerNode* containing_table = nullptr;
-  if (IsA<HTMLTableCellElement>(node) || IsA<HTMLTableRowElement>(node))
-    containing_table = FindParentTable(node);
-
-  if (containing_table) {
-    AXObject* ax_table = Get(containing_table);
-    if (ax_table)
-      ax_table->SetNeedsToUpdateChildren();
-  }
 }
 
 void AXObjectCacheImpl::RemoveAXObjectsInLayoutSubtree(AXObject* subtree) {
@@ -1436,10 +1425,8 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* optional_node,
   if (obj && !obj->IsDetached())
     obj->ChildrenChanged();
 
-  if (optional_node) {
-    ContainingTableRowsOrColsMaybeChanged(optional_node);
+  if (optional_node)
     relation_cache_->UpdateRelatedTree(optional_node, obj);
-  }
 }
 
 void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {

@@ -371,9 +371,16 @@ class PictureInPicturePixelComparisonBrowserTest
   std::unique_ptr<SkBitmap> result_bitmap_;
 };
 
+// This is disabled due to flakiness: https://crbug.com/1171245.
+#if defined(OS_MAC)
+#define MAYBE_VideoPlay DISABLED_VideoPlay
+#else
+#define MAYBE_VideoPlay VideoPlay
+#endif
 // Plays a video and then trigger Picture-in-Picture. Grabs a screenshot of
 // Picture-in-Picture window and verifies it's as expected.
-IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
+IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest,
+                       MAYBE_VideoPlay) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(FILE_PATH_LITERAL(
@@ -407,10 +414,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   EXPECT_TRUE(CompareImages(GetResultBitmap(), expected_image));
 }
 
+// This is disabled due to flakiness: https://crbug.com/1171245.
+#if defined(OS_MAC)
+#define MAYBE_PlayAndPauseControls DISABLED_PlayAndPauseControls
+#else
+#define MAYBE_PlayAndPauseControls PlayAndPauseControls
+#endif
 // Plays a video in PiP. Trigger the play and pause control in PiP by using a
 // mouse move. Capture the images and verift they are expected.
 IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest,
-                       PlayAndPauseControls) {
+                       MAYBE_PlayAndPauseControls) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(FILE_PATH_LITERAL(

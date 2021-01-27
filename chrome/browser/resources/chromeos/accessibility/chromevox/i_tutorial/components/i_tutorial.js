@@ -15,20 +15,12 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Curriculum, Screen} from './constants.js';
+import {Curriculum, InteractionMedium, Screen} from './constants.js';
+import {LessonMenu} from './lesson_menu.js';
+import {MainMenu} from './main_menu.js';
 import {NavigationButtons} from './navigation_buttons.js';
 import {TutorialCommon} from './tutorial_common.js';
 import {TutorialLesson} from './tutorial_lesson.js';
-
-/**
- * The user’s interaction medium. Influences tutorial content.
- * @enum {string}
- */
-const InteractionMedium = {
-  KEYBOARD: 'keyboard',
-  TOUCH: 'touch',
-  BRAILLE: 'braille',
-};
 
 /**
  * The types of nudges given by the tutorial.
@@ -74,7 +66,8 @@ Polymer({
     // An index into |includedLessons|.
     activeLessonIndex: {type: Number, value: -1},
 
-    activeLessonNum: {type: Number, value: -1},
+    /** @type {number} */
+    activeLessonId: {type: Number, value: -1},
 
     numLessons: {type: Number, value: 0},
 
@@ -95,6 +88,37 @@ Polymer({
     nudgeArray: {type: Array},
 
     isPracticeAreaActive: {type: Boolean, value: false},
+
+    /** @private {Array<!{title: string, curriculum: Curriculum}>} */
+    mainMenuButtonData_: {
+      type: Array,
+      value: [
+        {
+          title: 'tutorial_quick_orientation_title',
+          curriculum: Curriculum.QUICK_ORIENTATION,
+        },
+        {
+          title: 'tutorial_essential_keys_title',
+          curriculum: Curriculum.ESSENTIAL_KEYS,
+        },
+        {
+          title: 'tutorial_navigation_title',
+          curriculum: Curriculum.NAVIGATION,
+        },
+        {
+          title: 'tutorial_command_references_title',
+          curriculum: Curriculum.COMMAND_REFERENCES,
+        },
+        {
+          title: 'tutorial_sounds_and_settings_title',
+          curriculum: Curriculum.SOUNDS_AND_SETTINGS,
+        },
+        {
+          title: 'tutorial_resources_title',
+          curriculum: Curriculum.RESOURCES,
+        }
+      ]
+    },
 
     lessonData: {
       type: Array,
@@ -347,24 +371,25 @@ Polymer({
    * @param {!MouseEvent} evt
    * @private
    */
-  chooseCurriculum(evt) {
-    const id = evt.target.id;
-    if (id === 'quickOrientationButton') {
-      this.curriculum = Curriculum.QUICK_ORIENTATION;
-    } else if (id === 'essentialKeysButton') {
-      this.curriculum = Curriculum.ESSENTIAL_KEYS;
-    } else if (id === 'navigationButton') {
-      this.curriculum = Curriculum.NAVIGATION;
-    } else if (id === 'commandReferencesButton') {
-      this.curriculum = Curriculum.COMMAND_REFERENCES;
-    } else if (id === 'soundsAndSettingsButton') {
-      this.curriculum = Curriculum.SOUNDS_AND_SETTINGS;
-    } else if (id === 'resourcesButton') {
-      this.curriculum = Curriculum.RESOURCES;
-    } else {
-      throw new Error('Invalid target for chooseCurriculum: ' + evt.target.id);
-    }
+  onMainMenuButtonClicked_(evt) {
+    const detail =
+        /** @type {!{title: string, curriculum: Curriculum}} */ (evt.detail);
+    this.curriculum = detail.curriculum;
     this.showLessonMenu();
+  },
+
+  /**
+   * @param {!MouseEvent} evt
+   * @private
+   */
+  onLessonMenuButtonClicked_(evt) {
+    const detail =
+        /**
+           @type {!{title: string, curriculums: Array<Curriculum>, lessonId:
+               number}}
+         */
+        (evt.detail);
+    this.showLessonFromId_(detail.lessonId);
   },
 
   showNextLesson() {
@@ -382,7 +407,20 @@ Polymer({
   },
 
   /**
-   * @param {number} index
+   * @param {number} lessonId
+   * @private
+   */
+  showLessonFromId_(lessonId) {
+    for (let i = 0; i < this.includedLessons.length; ++i) {
+      const lesson = this.includedLessons[i];
+      if (lessonId === lesson.lessonId) {
+        this.showLesson(i);
+      }
+    }
+  },
+
+  /**
+   * @param {number} index An index into |this.includedLessons|.
    * @private
    */
   showLesson(index) {
@@ -396,9 +434,9 @@ Polymer({
 
     this.activeLessonIndex = index;
 
-    // Lessons observe activeLessonNum. When updated, lessons automatically
+    // Lessons observe activeLessonId. When updated, lessons automatically
     // update their visibility.
-    this.activeLessonNum = this.includedLessons[index].lessonNum;
+    this.activeLessonId = this.includedLessons[index].lessonId;
 
     const lesson = this.getCurrentLesson();
     if (lesson.autoInteractive) {
@@ -419,7 +457,6 @@ Polymer({
   /** @private */
   showMainMenu() {
     this.activeScreen = Screen.MAIN_MENU;
-    this.$.mainMenuHeader.focus();
   },
 
   /** @private */
@@ -430,8 +467,6 @@ Polymer({
       this.activeScreen = Screen.LESSON;
     } else {
       this.activeScreen = Screen.LESSON_MENU;
-      this.createLessonShortcuts();
-      this.$.lessonMenuHeader.focus();
     }
   },
 
@@ -443,7 +478,7 @@ Polymer({
   /** @private */
   updateIncludedLessons() {
     this.includedLessons = [];
-    this.activeLessonNum = -1;
+    this.activeLessonId = -1;
     this.activeLessonIndex = -1;
     this.numLessons = 0;
     const lessons = this.$.lessonContainer.children;
@@ -459,7 +494,6 @@ Polymer({
       }
     }
     this.numLessons = this.includedLessons.length;
-    this.createLessonShortcuts();
   },
 
   /** @private */
@@ -469,34 +503,23 @@ Polymer({
     }
   },
 
-  /** @private */
-  createLessonShortcuts() {
-    // Clear previous lesson shortcuts, as the user may have chosen a new
-    // curriculum or medium for the tutorial.
-    this.$.lessonShortcuts.innerHTML = '';
-
-    // Create shortcuts for each included lesson.
-    let count = 1;
-    for (const lesson of this.includedLessons) {
-      const shortcut = document.createElement('cr-link-row');
-      shortcut.addEventListener('click', this.showLesson.bind(this, count - 1));
-      shortcut.label = this.getMsg(lesson.title);
-      shortcut.classList.add('hr');
-      this.$.lessonShortcuts.appendChild(shortcut);
-      count += 1;
-    }
-  },
-
-
   // Methods for computing attributes and properties.
 
   /**
-   * @param {Screen} activeScreen
-   * @return {boolean}
+   * @return {Array<!{title: string, curriculums: !Array<!Curriculum>, lessonId:
+   *     number}>}
    * @private
    */
-  shouldHideMainMenu(activeScreen) {
-    return activeScreen !== Screen.MAIN_MENU;
+  computeLessonMenuButtonData_() {
+    const data = [];
+    for (let i = 0; i < this.lessonData.length; ++i) {
+      data.push({
+        title: this.lessonData[i].title,
+        curriculums: this.lessonData[i].curriculums,
+        lessonId: i
+      });
+    }
+    return data;
   },
 
   /**
@@ -506,37 +529,6 @@ Polymer({
    */
   shouldHideLessonContainer(activeScreen) {
     return activeScreen !== Screen.LESSON;
-  },
-
-  /**
-   * @param {Screen} activeScreen
-   * @return {boolean}
-   * @private
-   */
-  shouldHideLessonMenu(activeScreen) {
-    return activeScreen !== Screen.LESSON_MENU;
-  },
-
-  /**
-   * @param {Curriculum} curriculum
-   * @return {string}
-   * @private
-   */
-  computeLessonMenuHeader(curriculum) {
-    let numLessons = 0;
-    for (let i = 0; i < this.lessonData.length; ++i) {
-      if (this.lessonData[i].curriculums.includes(curriculum)) {
-        numLessons += 1;
-      }
-    }
-    // Remove underscores and capitalize the first letter of each word.
-    const words = curriculum.split('_');
-    for (let i = 0; i < words.length; ++i) {
-      words[i] = words[i][0].toUpperCase() + words[i].substring(1);
-    }
-    const curriculumCopy = words.join(' ');
-    return this.getMsg(
-        'tutorial_lesson_menu_header', [curriculumCopy, numLessons]);
   },
 
   /** @private */
@@ -633,7 +625,7 @@ Polymer({
     if (type === NudgeType.PRACTICE_AREA) {
       // Convert hint strings into functions that will request speech for those
       // strings.
-      const hints = this.lessonData[this.activeLessonNum].hints;
+      const hints = this.lessonData[this.activeLessonId].hints;
       for (const hint of hints) {
         this.nudgeArray.push(
             this.requestSpeech.bind(this, hint, QueueMode.INTERJECT));

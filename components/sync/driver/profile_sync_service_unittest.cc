@@ -250,10 +250,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   void PopulatePrefsForNthSync() {
     // Set first sync time before initialize to simulate a complete sync setup.
+    SyncTransportDataPrefs transport_data_prefs(prefs());
     SyncPrefs sync_prefs(prefs());
-    sync_prefs.SetCacheGuid(kTestCacheGuid);
-    sync_prefs.SetBirthday(FakeSyncEngine::kTestBirthday);
-    sync_prefs.SetLastSyncedTime(base::Time::Now());
+    transport_data_prefs.SetCacheGuid(kTestCacheGuid);
+    transport_data_prefs.SetBirthday(FakeSyncEngine::kTestBirthday);
+    transport_data_prefs.SetLastSyncedTime(base::Time::Now());
     sync_prefs.SetSyncRequested(true);
     sync_prefs.SetSelectedTypes(
         /*keep_everything_synced=*/true,
@@ -293,10 +294,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
       ConfigureReason* reason_dest) {
     return base::BindLambdaForTesting(
         [reason_dest](ConfigureReason reason) { *reason_dest = reason; });
-  }
-
-  invalidation::ProfileIdentityProvider* identity_provider() {
-    return profile_sync_service_bundle_.identity_provider();
   }
 
   signin::IdentityManager* identity_manager() {
@@ -396,9 +393,10 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
 
   // Mimic a sync cycle (transport-only) having completed earlier.
   const base::Time kLastSyncedTime = base::Time::Now();
-  sync_prefs.SetLastSyncedTime(kLastSyncedTime);
-  sync_prefs.SetCacheGuid(kTestCacheGuid);
-  sync_prefs.SetBirthday(FakeSyncEngine::kTestBirthday);
+  SyncTransportDataPrefs transport_data_prefs(prefs());
+  transport_data_prefs.SetLastSyncedTime(kLastSyncedTime);
+  transport_data_prefs.SetCacheGuid(kTestCacheGuid);
+  transport_data_prefs.SetBirthday(FakeSyncEngine::kTestBirthday);
 
   service()->Initialize();
 
@@ -411,8 +409,8 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   // The local sync data shouldn't be cleared.
-  EXPECT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
-  EXPECT_EQ(kLastSyncedTime, sync_prefs.GetLastSyncedTime());
+  EXPECT_EQ(kTestCacheGuid, transport_data_prefs.GetCacheGuid());
+  EXPECT_EQ(kLastSyncedTime, transport_data_prefs.GetLastSyncedTime());
 }
 
 TEST_F(ProfileSyncServiceTest, ModelTypesForTransportMode) {
@@ -708,32 +706,6 @@ TEST_F(ProfileSyncServiceTest, SyncRequestedSetToFalseIfStartsSignedOut) {
 
   // There's no signed-in user, so SyncRequested should have been set to false.
   EXPECT_FALSE(service()->GetUserSettings()->IsSyncRequested());
-}
-
-TEST_F(ProfileSyncServiceTest, IdentityProvider_GetActiveAccountId) {
-  // Sign-in and enable sync.
-  SignIn();
-  CreateService(ProfileSyncService::MANUAL_START);
-  InitializeForNthSync();
-  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
-            identity_provider()->GetActiveAccountId());
-
-  // Sign out.
-  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
-  DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::SIGNOUT_TEST,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
-  // Wait for ProfileSyncService to be notified.
-  base::RunLoop().RunUntilIdle();
-
-  // The identity provider should show no active account.
-  EXPECT_EQ(CoreAccountId(), identity_provider()->GetActiveAccountId());
-
-  // Change account.
-  identity_test_env()->MakePrimaryAccountAvailable("new_user@gmail.com");
-  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
-            identity_provider()->GetActiveAccountId());
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1134,26 +1106,26 @@ TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
   CreateService(ProfileSyncService::MANUAL_START);
   InitializeForNthSync();
 
-  SyncPrefs sync_prefs(prefs());
-  ASSERT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
+  SyncTransportDataPrefs transport_data_prefs(prefs());
+  ASSERT_EQ(PRODUCT_VERSION, transport_data_prefs.GetLastRunVersion());
 
-  sync_prefs.SetPassphrasePrompted(true);
+  transport_data_prefs.SetPassphrasePrompted(true);
 
   // Until a datatype requests startup while a passphrase is required the
   // passphrase prompt bit should remain set.
-  EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
+  EXPECT_TRUE(transport_data_prefs.IsPassphrasePrompted());
   TriggerPassphraseRequired();
-  EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
+  EXPECT_TRUE(transport_data_prefs.IsPassphrasePrompted());
 
   // Because the last version was unset, this run should be treated as a new
   // version and force a prompt.
   TriggerDataTypeStartRequest();
-  EXPECT_FALSE(sync_prefs.IsPassphrasePrompted());
+  EXPECT_FALSE(transport_data_prefs.IsPassphrasePrompted());
 
   // At this point further datatype startup request should have no effect.
-  sync_prefs.SetPassphrasePrompted(true);
+  transport_data_prefs.SetPassphrasePrompted(true);
   TriggerDataTypeStartRequest();
-  EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
+  EXPECT_TRUE(transport_data_prefs.IsPassphrasePrompted());
 }
 
 // Test that when ProfileSyncService receives actionable error
@@ -1317,15 +1289,16 @@ TEST_F(ProfileSyncServiceTest, ShouldProvideDisableReasonsAfterShutdown) {
 }
 
 TEST_F(ProfileSyncServiceTest, ShouldPopulateAccountIdCachedInPrefs) {
-  SyncPrefs sync_prefs(prefs());
+  SyncTransportDataPrefs transport_data_prefs(prefs());
 
   SignIn();
   CreateService(ProfileSyncService::MANUAL_START);
   InitializeForNthSync();
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  ASSERT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
-  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kTestUser), sync_prefs.GetGaiaId());
+  ASSERT_EQ(kTestCacheGuid, transport_data_prefs.GetCacheGuid());
+  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kTestUser),
+            transport_data_prefs.GetGaiaId());
 }
 
 #if defined(OS_ANDROID)
@@ -1367,38 +1340,39 @@ TEST_F(ProfileSyncServiceTest, DecoupleFromMasterSyncIfSignsOut) {
 
 TEST_F(ProfileSyncServiceTest,
        ShouldNotPopulateAccountIdCachedInPrefsWithLocalSync) {
-  SyncPrefs sync_prefs(prefs());
+  SyncTransportDataPrefs transport_data_prefs(prefs());
 
   SignIn();
   CreateServiceWithLocalSyncBackend();
   InitializeForNthSync();
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  ASSERT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
-  EXPECT_TRUE(sync_prefs.GetGaiaId().empty());
+  ASSERT_EQ(kTestCacheGuid, transport_data_prefs.GetCacheGuid());
+  EXPECT_TRUE(transport_data_prefs.GetGaiaId().empty());
 }
 
 // Verifies that local sync transport data is thrown away if there is a mismatch
 // between the account ID cached in SyncPrefs and the actual one.
 TEST_F(ProfileSyncServiceTest,
        ShouldClearLocalSyncTransportDataDueToAccountIdMismatch) {
-  SyncPrefs sync_prefs(prefs());
+  SyncTransportDataPrefs transport_data_prefs(prefs());
 
   SignIn();
   CreateService(ProfileSyncService::MANUAL_START);
   PopulatePrefsForNthSync();
-  ASSERT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
+  ASSERT_EQ(kTestCacheGuid, transport_data_prefs.GetCacheGuid());
 
   // Manually override the authenticated account ID, which should be detected
   // during initialization.
-  sync_prefs.SetGaiaId("corrupt_gaia_id");
+  transport_data_prefs.SetGaiaId("corrupt_gaia_id");
 
   service()->Initialize();
 
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_NE(kTestCacheGuid, sync_prefs.GetCacheGuid());
-  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kTestUser), sync_prefs.GetGaiaId());
+  EXPECT_NE(kTestCacheGuid, transport_data_prefs.GetCacheGuid());
+  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kTestUser),
+            transport_data_prefs.GetGaiaId());
 }
 
 TEST_F(ProfileSyncServiceTestWithSyncInvalidationsServiceCreated,

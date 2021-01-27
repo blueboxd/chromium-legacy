@@ -1152,6 +1152,9 @@ crbug.com/958381 [ Win ] virtual/text-antialias/hyphen-min-preferred-width.html 
 crbug.com/958381 [ Mac ] virtual/layout_ng_block_frag/fragmentation/fragmented-table-cell.html [ Failure ]
 crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.html [ Failure ]
 
+# Asan underinvalidation failure. Skip while investigating
+crbug.com/958381 paint/tables/huge-table-composited-scroll-collapsed-borders.html [ Skip ]
+
 # TablesNG ends
 
 # ====== LayoutNG-only failures until here ======
@@ -2464,6 +2467,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
+crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-2.html [ Failure ]
 crbug.com/1170337 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.small.html [ Pass Timeout ]
 crbug.com/1170337 [ Mac ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.html [ Pass Timeout ]
 crbug.com/1170337 [ Mac ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.small.html [ Pass Timeout ]
@@ -2624,7 +2629,6 @@ crbug.com/626703 [ Mac ] external/wpt/pointerevents/compat/pointerevent_mouse-po
 crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/content-security-policy/frame-src/frame-src-same-document.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/transform-streams/patched-global.any.serviceworker.html [ Timeout ]

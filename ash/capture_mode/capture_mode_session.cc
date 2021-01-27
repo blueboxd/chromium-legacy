@@ -613,6 +613,9 @@ void CaptureModeSession::StartCountDown(
   label_view->StartCountDown(std::move(countdown_finished_callback));
   UpdateCaptureLabelWidgetBounds(/*animate=*/true);
 
+  UpdateCursor(display::Screen::GetScreen()->GetCursorScreenPoint(),
+               /*is_touch=*/false);
+
   // Fade out the capture bar.
   ui::Layer* capture_bar_layer = capture_mode_bar_widget_->GetLayer();
   ui::ScopedLayerAnimationSettings capture_bar_settings(
@@ -622,6 +625,9 @@ void CaptureModeSession::StartCountDown(
   capture_bar_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   capture_bar_layer->SetOpacity(0.f);
+
+  // Do a repaint to hide the affordance circles.
+  RepaintRegion();
 
   // Fade out the shield if it's recording fullscreen.
   if (controller_->source() == CaptureModeSource::kFullscreen) {
@@ -876,11 +882,13 @@ void CaptureModeSession::PaintCaptureRegion(gfx::Canvas* canvas) {
         radius, focus_ring_flags);
   };
 
-  if (is_selecting_region_ ||
-      capture_mode_util::ShouldHideDragAffordance(fine_tune_position_)) {
+  if (is_selecting_region_ || fine_tune_position_ != FineTunePosition::kNone) {
     maybe_draw_focus_ring(focused_fine_tune_position_);
     return;
   }
+
+  if (IsInCountDownAnimation())
+    return;
 
   // Draw the drag affordance circles.
   cc::PaintFlags circle_flags;
@@ -916,6 +924,9 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
     event->StopPropagation();
     return;
   }
+
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return;
 
   gfx::Point screen_location = event->location();
   aura::Window* event_target = static_cast<aura::Window*>(event->target());
@@ -1133,13 +1144,12 @@ void CaptureModeSession::OnLocatedEventPressed(
     return;
   }
 
-  if (fine_tune_position_ != FineTunePosition::kNone)
-    ++num_capture_region_adjusted_;
-
   // In order to hide the drag affordance circles on click, we need to repaint
   // the capture region.
-  if (capture_mode_util::ShouldHideDragAffordance(fine_tune_position_))
+  if (fine_tune_position_ != FineTunePosition::kNone) {
+    ++num_capture_region_adjusted_;
     RepaintRegion();
+  }
 
   if (fine_tune_position_ != FineTunePosition::kCenter &&
       fine_tune_position_ != FineTunePosition::kNone) {
@@ -1576,6 +1586,11 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   if (tablet_mode_controller->InTabletMode() &&
       !tablet_mode_controller->IsInDevTabletMode()) {
     cursor_setter_->HideCursor();
+    return;
+  }
+
+  if (IsInCountDownAnimation()) {
+    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
     return;
   }
 

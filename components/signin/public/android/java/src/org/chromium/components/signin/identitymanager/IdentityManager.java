@@ -13,7 +13,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 
@@ -142,13 +141,6 @@ public class IdentityManager {
         return IdentityManagerJni.get().getAccountsWithRefreshTokens(mNativeIdentityManager);
     }
 
-    // TODO(https://crbug.com/1046746): Remove this after migrating internal usages.
-    /** @deprecated Use {@link #getPrimaryAccountInfo(int)} instead. */
-    @Deprecated
-    public @Nullable CoreAccountInfo getPrimaryAccountInfo() {
-        return getPrimaryAccountInfo(ConsentLevel.SYNC);
-    }
-
     /**
      * Provides access to the core information of the user's primary account.
      * Returns non-null if the primary account was set AND the required consent level was granted,
@@ -187,27 +179,6 @@ public class IdentityManager {
     }
 
     /**
-     * Call this method to retrieve an OAuth2 access token for the given account and scope. Please
-     * note that this method expects a scope with 'oauth2:' prefix.
-     *
-     * @deprecated Use getAccessToken instead. crbug.com/1014098: This method is available as a
-     *         workaround for a callsite where native is not initialized yet.
-     *
-     * @param accountManagerFacade AccountManagerFacade to request the access token from.
-     * @param account the account to get the access token for.
-     * @param scope The scope to get an auth token for (with Android-style 'oauth2:' prefix).
-     * @param callback called on successful and unsuccessful fetching of auth token.
-     */
-    @MainThread
-    @Deprecated
-    public static void getAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
-            Account account, String scope, GetAccessTokenCallback callback) {
-        // TODO(crbug.com/934688) The following should call a JNI method instead.
-        ProfileOAuth2TokenServiceDelegate.getAccessTokenWithFacade(
-                accountManagerFacade, account, scope, callback);
-    }
-
-    /**
      * Called by native to invalidate an OAuth2 token. Please note that the token is invalidated
      * asynchronously.
      */
@@ -217,26 +188,6 @@ public class IdentityManager {
 
         // TODO(crbug.com/934688) The following should call a JNI method instead.
         mProfileOAuth2TokenServiceDelegate.invalidateAccessToken(accessToken);
-    }
-
-    /**
-     * Invalidates the old token (if non-null/non-empty) and asynchronously generates a new one.
-     *
-     * @deprecated Use invalidateAccessToken and getAccessToken instead. TODO(crbug.com/1002894):
-     *         This method is needed by InvalidationClientService which is not necessary anymore.
-     *
-     * @param accountManagerFacade AccountManagerFacade to request the access token from.
-     * @param account the account to get the access token for.
-     * @param oldToken The old token to be invalidated or null.
-     * @param scope The scope to get an auth token for (with Android-style 'oauth2:' prefix).
-     * @param callback called on successful and unsuccessful fetching of auth token.
-     */
-    @Deprecated
-    public static void getNewAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
-            Account account, @Nullable String oldToken, String scope,
-            GetAccessTokenCallback callback) {
-        ProfileOAuth2TokenServiceDelegate.getNewAccessTokenWithFacade(
-                accountManagerFacade, account, oldToken, scope, callback);
     }
 
     @NativeMethods

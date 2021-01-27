@@ -323,6 +323,14 @@ const OFFLINE_INFO_BANNER_COUNTER_LIMIT = 3;
       style.href = constants.HOLDING_SPACE_WELCOME_CSS;
       style.setAttribute('holding-space-welcome-style', '');
       this.document_.head.appendChild(style);
+
+      // The holding space welcome banner has inline styles to prevent it from
+      // being made visible to the user before its dynamically added styles have
+      // fully loaded. Once dynamically added styles have loaded, inline styles
+      // must be removed so that the banner can be made visible.
+      style.onload = () => {
+        this.holdingSpaceWelcomeBanner_.removeAttribute('style');
+      };
     }
 
     const wrapper = util.createChild(
@@ -635,16 +643,24 @@ const OFFLINE_INFO_BANNER_COUNTER_LIMIT = 3;
 
     await this.ready_;
 
+    if (!this.showWelcome_) {
+      this.showHoldingSpaceWelcomeBanner_(false);
+      return;
+    }
+
     // The holding space feature is only allowed for specific volume types so
     // its banner should only be shown for those volumes. Note that the holding
     // space banner is explicitly disallowed from showing in `DRIVE` to prevent
     // the possibility of it being shown alongside the Drive banner.
     const allowedVolumeTypes = HoldingSpaceUtil.getAllowedVolumeTypes();
-    const currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
-    if (!currentVolumeInfo ||
-        !allowedVolumeTypes.includes(currentVolumeInfo.volumeType) ||
-        currentVolumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
-      return;
+    const currentRootType = this.directoryModel_.getCurrentRootType();
+    if (!util.isRecentRootType(currentRootType)) {
+      const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+      if (!volumeInfo || !allowedVolumeTypes.includes(volumeInfo.volumeType) ||
+          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
+        this.showHoldingSpaceWelcomeBanner_(false);
+        return;
+      }
     }
 
     // The holding space banner should not be shown after having been shown

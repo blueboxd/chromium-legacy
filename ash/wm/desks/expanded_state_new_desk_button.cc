@@ -8,6 +8,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/zero_state_button.h"
@@ -41,8 +43,9 @@ gfx::Rect GetExpandedStateNewDeskButtonBounds(aura::Window* root_window) {
 // The button belongs to ExpandedStateNewDeskButton.
 class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
  public:
-  InnerNewDeskButton()
-      : DeskButtonBase(base::string16(), kBorderCornerRadius, kCornerRadius) {
+  InnerNewDeskButton(ExpandedStateNewDeskButton* outer_button)
+      : DeskButtonBase(base::string16(), kBorderCornerRadius, kCornerRadius),
+        outer_button_(outer_button) {
     paint_contents_only_ = true;
   }
   InnerNewDeskButton(const InnerNewDeskButton&) = delete;
@@ -68,6 +71,7 @@ class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
 
   // Update the button's enable/disable state based on current desks state.
   void UpdateButtonState() override {
+    outer_button_->UpdateLabelColor();
     const bool enabled = DesksController::Get()->CanCreateDesks();
 
     // Notify the overview highlight if we are about to be disabled.
@@ -90,36 +94,61 @@ class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
         color_provider->GetRippleAttributes(background_color_).inkdrop_opacity);
     SchedulePaint();
   }
+
+ private:
+  ExpandedStateNewDeskButton* outer_button_;
 };
 
 }  // namespace
 
 ExpandedStateNewDeskButton::ExpandedStateNewDeskButton(DesksBarView* bar_view)
     : bar_view_(bar_view),
-      new_desk_button_(AddChildView(std::make_unique<InnerNewDeskButton>())),
+      new_desk_button_(
+          AddChildView(std::make_unique<InnerNewDeskButton>(this))),
       label_(AddChildView(std::make_unique<views::Label>())) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
   label_->SetText(l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON));
   label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  label_->SetBackgroundColor(AshColorProvider::Get()->GetShieldLayerColor(
+      AshColorProvider::ShieldLayerType::kShield80));
+  UpdateLabelColor();
 }
 
 void ExpandedStateNewDeskButton::Layout() {
+  // Layout the button until |mini_views_| have been created. This button only
+  // needs to be laid out in the expanded desks bar where the |mini_views_| is
+  // always not empty.
+  if (bar_view_->mini_views().empty())
+    return;
+
   const gfx::Rect new_desk_button_bounds = GetExpandedStateNewDeskButtonBounds(
       bar_view_->GetWidget()->GetNativeWindow()->GetRootWindow());
   new_desk_button_->SetBoundsRect(new_desk_button_bounds);
 
-  const gfx::Size label_size = label_->GetPreferredSize();
+  const gfx::Size label_size =
+      bar_view_->mini_views()[0]->desk_name_view()->GetPreferredSize();
   label_->SetBoundsRect(gfx::Rect(
       gfx::Point(
           (new_desk_button_bounds.width() - label_size.width()) / 2,
-          new_desk_button_bounds.bottom() + kNewDeskButtonAndNameSpacing),
+          new_desk_button_bounds.bottom() -
+              bar_view_->mini_views()[0]->GetPreviewBorderInsets().bottom() +
+              kNewDeskButtonAndNameSpacing),
       label_size));
 }
 
 void ExpandedStateNewDeskButton::UpdateButtonState() {
   new_desk_button_->UpdateButtonState();
+}
+
+void ExpandedStateNewDeskButton::UpdateLabelColor() {
+  const SkColor label_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary);
+  label_->SetEnabledColor(
+      DesksController::Get()->CanCreateDesks()
+          ? label_color
+          : AshColorProvider::Get()->GetDisabledColor(label_color));
 }
 
 }  // namespace ash

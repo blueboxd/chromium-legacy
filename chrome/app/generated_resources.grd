@@ -4200,9 +4200,6 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_PROMPT_WARNING_USERS_PRIVATE" desc="Permission string for access to user accounts.">
           Read and change allowlisted users
         </message>
-        <message name="IDS_EXTENSION_PROMPT_WARNING_DISPLAY_SOURCE" desc="Permission string for access to Display Source API.">
-          Send audio and video to displays on the local network
-        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_TAB_PAGE_OVERRIDE" desc="Permission string for extensions that override the new tab page.">
           Replace the page you see when opening a new tab
         </message>
@@ -8051,6 +8048,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cancel sign in
       </message>
 
+      <!--  Sync Confirmation section of the tab modal signin flow -->
+      <message name="IDS_WORK_PROFILE_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
+        Add Profile
+      </message>
+
       <!-- Dice Web Signin Interception Bubble-->
       <if expr="not chromeos and not is_android">
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_NEW_PROFILE_BUTTON_LABEL" desc="Label of the confirmation button in the web signin interception bubble">
@@ -11197,11 +11199,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <message name="IDS_NAME_WINDOW_PROMPT_TITLE"
              desc="Title of the prompt to choose a new name for a window.">
-      Set Window Name
-    </message>
-    <message name="IDS_NAME_WINDOW_PROMPT_WINDOW_NAME"
-             desc="Label of the textfield to choose a new name for a window.">
-      Window name
+      Name this window
     </message>
     <message name="IDS_COMMANDER_LABEL"
              desc="Label to identify the Commander feature in Task Manager">

@@ -305,6 +305,7 @@
           'gtest_tests': 'lacros_tast_tests_eve',
           'isolated_scripts': 'chrome_sizes',
         },
+        'os_type': 'chromeos',
       },
       'linux-chrome': {
         'additional_compile_targets': [
@@ -1228,6 +1229,20 @@
         'test_suites': {
           'gtest_tests': 'android_weblayer_x86_pie_oreo_gtests',
         }
+      },
+      'android-weblayer-pie-x86-wpt-fyi-rel': {
+        'mixins': [
+          'enable_resultdb',
+          'pie-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'weblayer_shell_wpt',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
       },
     },
   },
@@ -6254,7 +6269,7 @@
     'name': 'internal.chromeos.fyi',
     'mixins': ['chrome-tester-service-account'],
     'machines': {
-      'chromeos-amd64-generic-lacros-chrome': {
+      'chromeos-amd64-generic-lacros-chrome-fyi': {
         'additional_compile_targets': [
           'chrome',
         ],

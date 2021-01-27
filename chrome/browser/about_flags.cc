@@ -1466,6 +1466,13 @@ const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
      nullptr}};
 #if !defined(OS_ANDROID)
 
+const FeatureEntry::FeatureParam kNtpChromeCartModuleFakeData[] = {
+    {ntp_features::kNtpChromeCartModuleDataParam, "fake"}};
+const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
+    {"- Fake Data", kNtpChromeCartModuleFakeData,
+     base::size(kNtpChromeCartModuleFakeData), nullptr},
+};
+
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpStatefulTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
@@ -3689,11 +3696,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidDarkSearchDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAndroidDarkSearch)},
 
-    {"enable-android-night-mode-tab-reparenting",
-     flag_descriptions::kAndroidNightModeTabReparentingName,
-     flag_descriptions::kAndroidNightModeTabReparentingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidNightModeTabReparenting)},
-
     {"enable-android-layout-change-tab-reparenting",
      flag_descriptions::kAndroidLayoutChangeTabReparentingName,
      flag_descriptions::kAndroidLayoutChangeTabReparentingDescription,
@@ -4544,7 +4546,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"ntp-chrome-cart-module", flag_descriptions::kNtpChromeCartModuleName,
      flag_descriptions::kNtpChromeCartModuleDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpChromeCartModule)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpChromeCartModule,
+                                    kNtpChromeCartModuleVariations,
+                                    "NtpChromeCartModule")},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)

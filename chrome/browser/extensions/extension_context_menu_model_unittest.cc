@@ -61,7 +61,7 @@
 #include "ui/gfx/image/image.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #endif
 
 namespace extensions {
@@ -106,6 +106,9 @@ scoped_refptr<const Extension> BuildExtensionWithActionType(
       builder.SetAction(ExtensionBuilder::ActionType::ACTION);
       break;
   }
+
+  builder.SetManifestKey("manifest_version",
+                         GetManifestVersionForActionType(type));
 
   return builder.Build();
 }

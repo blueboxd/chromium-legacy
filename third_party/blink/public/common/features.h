@@ -147,8 +147,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kDisableForceDeferInChildFrames;
 
-BLINK_COMMON_EXPORT extern const base::Feature kCompositeCrossOriginIframes;
-
 BLINK_COMMON_EXPORT extern const base::Feature kTransformInterop;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
@@ -356,6 +354,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortAPIOriginTrial;
 BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortFeaturePolicy;
 
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentColorChange;
+
+BLINK_COMMON_EXPORT extern const base::Feature kDisableDocumentDomainByDefault;
 
 }  // namespace features
 }  // namespace blink

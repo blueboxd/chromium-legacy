@@ -485,10 +485,6 @@ const base::Feature kDisableForceDeferInChildFrames{
 const base::Feature kSubresourceRedirect{"SubresourceRedirect",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When 'enabled', all cross-origin iframes will get a compositing layer.
-const base::Feature kCompositeCrossOriginIframes{
-    "CompositeCrossOriginIframes", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, enforces new interoperable semantics for 3D transforms.
 // See crbug.com/1008483.
 const base::Feature kTransformInterop{"TransformInterop",
@@ -867,6 +863,9 @@ const base::Feature kInterestCohortFeaturePolicy{
 // bright yellow rgb(255, 255, 0) to light purple rgb(233, 210, 253)
 const base::Feature kTextFragmentColorChange{"TextFragmentColorChange",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDisableDocumentDomainByDefault{
+    "DisableDocumentDomainByDefault", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

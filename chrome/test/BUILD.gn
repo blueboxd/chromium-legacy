@@ -2418,12 +2418,12 @@ if (!is_android) {
         "../browser/ash/accessibility/switch_access_browsertest.cc",
         "../browser/ash/accessibility/touch_exploration_controller_browsertest.cc",
         "../browser/ash/account_manager/account_manager_policy_controller_browsertest.cc",
+        "../browser/ash/app_mode/arc/arc_kiosk_app_manager_browsertest.cc",
+        "../browser/ash/app_mode/kiosk_app_manager_browsertest.cc",
+        "../browser/ash/app_mode/kiosk_app_update_service_browsertest.cc",
+        "../browser/ash/app_mode/kiosk_crash_restore_browsertest.cc",
+        "../browser/ash/app_mode/web_app/web_kiosk_app_data_browsertest.cc",
         "../browser/chrome_main_browsertest.cc",
-        "../browser/chromeos/app_mode/arc/arc_kiosk_app_manager_browsertest.cc",
-        "../browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc",
-        "../browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc",
-        "../browser/chromeos/app_mode/kiosk_crash_restore_browsertest.cc",
-        "../browser/chromeos/app_mode/web_app/web_kiosk_app_data_browsertest.cc",
         "../browser/chromeos/apps/apk_web_app_installer_browsertest.cc",
         "../browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge_browsertest.cc",
         "../browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher_browsertest.cc",
@@ -3157,16 +3157,6 @@ if (!is_android) {
       ]
     }
 
-    if (use_aura) {
-      if (enable_wifi_display) {
-        sources += [
-          "../../extensions/browser/api/display_source/display_source_apitestbase.cc",
-          "../../extensions/browser/api/display_source/display_source_apitestbase.h",
-          "../browser/extensions/api/display_source/display_source_wifi_display_apitest.cc",
-        ]
-      }
-    }
-
     if (is_chromeos_ash || ((is_linux || is_chromeos_lacros) && use_dbus)) {
       sources += [ "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc" ]
     }
@@ -3657,7 +3647,6 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/public/report_queue_configuration_unittest.cc",
     "../browser/policy/messaging_layer/public/report_queue_unittest.cc",
     "../browser/policy/messaging_layer/storage/resources/resource_interface_unittest.cc",
-    "../browser/policy/messaging_layer/storage/storage_queue_stress_test.cc",
     "../browser/policy/messaging_layer/storage/storage_queue_unittest.cc",
     "../browser/policy/messaging_layer/storage/storage_unittest.cc",
     "../browser/policy/messaging_layer/storage/test_storage_module.cc",
@@ -4072,6 +4061,7 @@ test("unit_tests") {
       "../browser/ui/webui/discards/graph_dump_impl_unittest.cc",
       "../browser/ui/webui/favicon_source_unittest.cc",
       "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
+      "../browser/ui/webui/signin/work_profile_confirmation_handler_unittest.cc",
       "../browser/upgrade_detector/build_state_unittest.cc",
       "../browser/upgrade_detector/mock_build_state_observer.cc",
       "../browser/upgrade_detector/mock_build_state_observer.h",
@@ -4761,6 +4751,7 @@ test("unit_tests") {
       "../browser/feedback/system_logs/log_sources/crash_ids_source_unittest.cc",
 
       # NTP is in native code on Android.
+      "../browser/cart/cart_handler_unittest.cc",
       "../browser/cart/cart_service_unittest.cc",
       "../browser/search/drive/drive_service_unittest.cc",
       "../browser/search/ntp_features_unittest.cc",

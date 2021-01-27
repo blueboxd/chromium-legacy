@@ -46,7 +46,6 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
@@ -2502,7 +2501,23 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   // Note that after ResizeObserver has settled, we also run intersection
   // observations that need to be delievered in post-layout. This process can
   // also dirty layout, which will run this loop again.
+
+  // A LocalFrameView can be unthrottled at this point, but become throttled as
+  // it advances through lifecycle stages. If that happens, it will prevent
+  // subsequent passes through the loop from updating the newly-throttled views.
+  // To avoid that, we lock in the set of unthrottled views before entering the
+  // loop.
+  HeapVector<Member<LocalFrameView>> unthrottled_frame_views;
+  ForAllNonThrottledLocalFrameViews(
+      [&unthrottled_frame_views](LocalFrameView& frame_view) {
+        unthrottled_frame_views.push_back(&frame_view);
+      });
+
   while (true) {
+    for (LocalFrameView* frame_view : unthrottled_frame_views) {
+      frame_view->Lifecycle().EnsureStateAtMost(
+          DocumentLifecycle::kVisualUpdatePending);
+    }
     bool run_more_lifecycle_phases =
         RunStyleAndLayoutLifecyclePhases(target_state);
     if (!run_more_lifecycle_phases)
@@ -3857,33 +3872,6 @@ void LocalFrameView::SetLayoutSizeInternal(const IntSize& size) {
   SetNeedsLayout();
 }
 
-void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
-  // TODO(wangxianzhu): Support ChromeClient::VisibleContentRectForPainting()
-  // with CompositeAfterPaint.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  // Paint the whole rect if ClipsContent is false, meaning that the whole
-  // document should be recorded. This occurs if:
-  // - A paint preview is being captured.
-  // - WebPreferences::record_whole_document is true.
-  if (!frame_->ClipsContent())
-    return;
-
-  // By default we consider the bounds of the FrameView to be what is considered
-  // visible for the Frame.
-  IntRect visible_rect = IntRect(IntPoint(), Size());
-  // Non-main frames always clip to their FrameView bounds. Main frames can
-  // have this behaviour modified by devtools.
-  if (frame_->IsMainFrame()) {
-    // If devtools is overriding the viewport, then the FrameView's bounds are
-    // not what we should paint, instead we should paint inside the bounds
-    // specified by devtools.
-    GetPage()->GetChromeClient().OverrideVisibleRectForMainFrame(*frame_,
-                                                                 &visible_rect);
-  }
-  paint_rect->Intersect(visible_rect);
-}
-
 void LocalFrameView::DidChangeScrollOffset() {
   GetFrame().Client()->DidChangeScrollOffset();
   if (GetFrame().IsMainFrame()) {
@@ -4403,12 +4391,9 @@ void LocalFrameView::CrossOriginToMainFrameChanged() {
 }
 
 void LocalFrameView::CrossOriginToParentFrameChanged() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kCompositeCrossOriginIframes)) {
-    if (LayoutView* layout_view = GetLayoutView()) {
-      if (PaintLayer* root_layer = layout_view->Layer())
-        root_layer->SetNeedsCompositingInputsUpdate();
-    }
+  if (LayoutView* layout_view = GetLayoutView()) {
+    if (PaintLayer* root_layer = layout_view->Layer())
+      root_layer->SetNeedsCompositingInputsUpdate();
   }
 }
 
@@ -4550,9 +4535,6 @@ bool LocalFrameView::ShouldThrottleRendering() const {
   auto* local_frame_root_view = GetFrame().LocalFrameRoot().View();
   if (local_frame_root_view->IsUpdatingLifecycle() &&
       intersection_observation_state_ == kRequired && !IsDisplayLocked()) {
-    // Pre-paint guarantees that sticky positioning is finalized and hit testing
-    // is available (needed for HitTestForOcclusion, called from
-    // IntersectionGeometry).
     return Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean;
   }
 

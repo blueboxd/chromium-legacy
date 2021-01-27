@@ -459,7 +459,13 @@ void ProfileSyncService::CredentialsChanged() {
   // then shut down. This happens when the user signs out on the web, i.e. we're
   // in the "Sync paused" state.
   if (!IsEngineAllowedToRun()) {
-    // This will notify observers if appropriate.
+    // If the engine currently exists, then StopImpl() will notify observers
+    // anyway. Otherwise, notify them here. (One relevant case is when entering
+    // the PAUSED state before the engine was created, e.g. during deferred
+    // startup.)
+    if (!engine_) {
+      NotifyObservers();
+    }
     StopImpl(KEEP_DATA);
     return;
   }
@@ -895,7 +901,6 @@ void ProfileSyncService::UpdateEngineInitUMA(bool success) const {
 }
 
 void ProfileSyncService::OnEngineInitialized(
-    ModelTypeSet initial_types,
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const std::string& birthday,
@@ -939,8 +944,8 @@ void ProfileSyncService::OnEngineInitialized(
 
   data_type_manager_ =
       sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
-          initial_types, debug_info_listener, &data_type_controllers_, &crypto_,
-          engine_.get(), this);
+          debug_info_listener, &data_type_controllers_, &crypto_, engine_.get(),
+          this);
 
   crypto_.SetSyncEngine(GetAuthenticatedAccountInfo(), engine_.get());
 

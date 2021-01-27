@@ -5043,12 +5043,31 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Feed.CardAction.ManageActivity">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'manage activity' option from the Feed header menu.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.CardAction.ManageInterests">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <description>
-    The user selected the 'manage interests' option for a Feed card.
+    The user selected the 'manage interests' option from the Feed header menu.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.ManageReactions">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>
+    The user selected the 'manage reactions' option from the Feed header menu.
   </description>
 </action>
 
@@ -9283,7 +9302,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOSBookmarkManagerCloseWithSwipe">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes bookmark manager by swiping down. iOS-only.
@@ -9387,7 +9406,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOSHistoryCloseWithSwipe">
-  <owner>eugenebut@google.com</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes History using swipe down gesture. iOS-only.
@@ -9395,7 +9414,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOSInspectPageVisited">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <description>
     Recorded when the user loads the chrome://inspect page on iOS.
@@ -9452,7 +9471,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOSReadingListCloseWithSwipe">
-  <owner>eugenebut@google.com</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Recorded when a user closes Reading List with swipe down gesture. iOS-only.
@@ -13887,7 +13906,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileHistoryClose">
-  <owner>eugenebut@google.com</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <description>Recorded when a user closes History on iOS.</description>
 </action>
@@ -14810,7 +14829,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReadingListClose">
-  <owner>eugenebut@google.com</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <description>Recorded when a user closes Reading List on iOS.</description>
 </action>
@@ -14947,7 +14966,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReportAnIssueClosed">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <description>
     The user dismissed Report An Issue screen by cancelling or submitting
@@ -15881,8 +15900,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileWebContextMenuOpenJS">
-  <owner>gambard@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 2021/01/26 as the feature has been removed.
+  </obsolete>
   <owner>michaeldo@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
   <description>
     Recorded when user taps Open Java Script in context menu. iOS only.
   </description>
@@ -23588,6 +23610,22 @@ should be able to be added at any place in this file.
   <description>
     Recorded when the user chooses to undo (abort) the sign in process. It
     closes sign in page without signing user in.
+  </description>
+</action>
+
+<action name="Signin_WorkProfilePrompt_Add">
+  <owner>ydago@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to add a work profile in the work profile
+    confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_WorkProfilePrompt_Cancel">
+  <owner>ydago@chromium.org</owner>
+  <description>
+    Recorded when the user chooses not to add a work profile in the work profile
+    confirmation dialog.
   </description>
 </action>
 

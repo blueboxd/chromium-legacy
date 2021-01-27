@@ -510,7 +510,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // contents.
   virtual void RequestToLockMouse(WebContents* web_contents,
                                   bool user_gesture,
-                                  bool last_unlocked_by_target) {}
+                                  bool last_unlocked_by_target);
 
   // Notification that the page has lost the mouse lock.
   virtual void LostMouseLock() {}
@@ -518,7 +518,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Requests keyboard lock. Once the request is approved or rejected,
   // GotResponseToKeyboardLockRequest() will be called on |web_contents|.
   virtual void RequestKeyboardLock(WebContents* web_contents,
-                                   bool esc_key_locked) {}
+                                   bool esc_key_locked);
 
   // Notification that the keyboard lock request has been canceled.
   virtual void CancelKeyboardLockRequest(WebContents* web_contents) {}
@@ -713,10 +713,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // eviction and displayed until a new frame is generated. If false, a white
   // solid color is displayed instead.
   virtual bool ShouldShowStaleContentOnEviction(WebContents* source);
-
-  // Determine if the frame is of a low priority.
-  virtual bool IsFrameLowPriority(WebContents* web_contents,
-                                  RenderFrameHost* render_frame_host);
 
   // Returns the user-visible WebContents that is responsible for the activity
   // in the provided WebContents. For example, this delegate may be aware that

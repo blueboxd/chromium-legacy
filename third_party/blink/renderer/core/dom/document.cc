@@ -214,6 +214,7 @@
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html/html_popup_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/html/html_title_element.h"
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
@@ -2838,38 +2839,6 @@ void Document::EnsurePaintLocationDataValidForNode(
   // For all nodes we must have up-to-date style and have performed layout to do
   // any location-based calculation.
   UpdateStyleAndLayout(reason);
-
-  // The location of elements that are position: sticky is not known until
-  // compositing inputs are cleaned. Therefore, for any elements that are either
-  // sticky or are in a sticky sub-tree (e.g. are affected by a sticky element),
-  // we need to also clean compositing inputs.
-  if (View() && node->GetLayoutObject() &&
-      node->GetLayoutObject()->StyleRef().SubtreeIsSticky()) {
-    bool success = false;
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // In CAP, compositing inputs are cleaned as part of PrePaint.
-      success = View()->UpdateAllLifecyclePhasesExceptPaint(reason);
-    } else {
-      success = View()->UpdateLifecycleToCompositingInputsClean(reason);
-    }
-    // The lifecycle update should always succeed, because forced lifecycles
-    // from script are never throttled.
-    DCHECK(success);
-  }
-}
-
-bool Document::IsPaintLocationDataValidForNode(const Node* node) const {
-  DocumentLifecycle::LifecycleState required_state =
-      DocumentLifecycle::kLayoutClean;
-  if (View() && node->GetLayoutObject() &&
-      node->GetLayoutObject()->StyleRef().SubtreeIsSticky()) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      required_state = DocumentLifecycle::kCompositingAssignmentsClean;
-    } else {
-      required_state = DocumentLifecycle::kCompositingInputsClean;
-    }
-  }
-  return Lifecycle().GetState() >= required_state;
 }
 
 bool Document::IsPageBoxVisible(uint32_t page_index) {
@@ -5841,6 +5810,14 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
+  const String document_policy_error =
+      "Setting `document.domain` is disabled by document policy.";
+  if (!dom_window_->IsFeatureEnabled(
+          mojom::blink::DocumentPolicyFeature::kDocumentDomain,
+          ReportOptions::kReportOnFailure, document_policy_error)) {
+    return;
+  }
+
   if (dom_window_->IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kDocumentDomain)) {
     exception_state.ThrowSecurityError(
@@ -7384,6 +7361,22 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
+void Document::PushNewPopupElement(HTMLPopupElement* popup) {
+  DCHECK(!popup_element_stack_.Contains(popup));
+  popup_element_stack_.push_back(popup);
+  AddToTopLayer(popup);
+}
+
+void Document::PopPopupElement(HTMLPopupElement* popup) {
+  DCHECK(popup_element_stack_.back() == popup);
+  popup_element_stack_.pop_back();
+  RemoveFromTopLayer(popup);
+}
+
+HTMLPopupElement* Document::TopmostPopupElement() {
+  return popup_element_stack_.IsEmpty() ? nullptr : popup_element_stack_.back();
+}
+
 void Document::exitPointerLock() {
   if (!GetPage())
     return;
@@ -8167,6 +8160,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(lists_invalidated_at_document_);
   visitor->Trace(node_lists_);
   visitor->Trace(top_layer_elements_);
+  visitor->Trace(popup_element_stack_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
   visitor->Trace(elem_sheet_);

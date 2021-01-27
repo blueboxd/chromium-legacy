@@ -103,8 +103,9 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
 #if defined(OS_WIN)
-  bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                        RendererSpawnFlags flags) override;
+  bool PreSpawnChild(sandbox::TargetPolicy* policy,
+                     sandbox::policy::SandboxType sandbox_type,
+                     ChildSpawnFlags flags) override;
 #endif
   std::string GetAcceptLangs(BrowserContext* context) override;
   void GetHyphenationDictionary(
@@ -145,7 +146,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;
-  bool block_popups_ = false;
+  bool block_popups_ = true;
   bool screen_orientation_changed_ = false;
 
   // Stores the FakeBluetoothChooserFactory that produces FakeBluetoothChoosers.

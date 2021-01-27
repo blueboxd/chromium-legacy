@@ -91,7 +91,6 @@
 #include "third_party/blink/public/common/page_state/page_state_serialization.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -222,7 +221,7 @@ std::string DumpFailLoad(WebContents* web_contents,
 }
 
 // Draws a selection rect into a bitmap.
-void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
+void DrawSelectionRect(const SkBitmap& bitmap, const gfx::Rect& wr) {
   // Render a red rectangle bounding selection rect
   cc::SkiaPaintCanvas canvas(bitmap);
   cc::PaintFlags flags;
@@ -231,7 +230,7 @@ void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
   flags.setAntiAlias(true);
   flags.setStrokeWidth(1.0f);
   SkIRect rect;  // Bounding rect
-  rect.setXYWH(wr.x, wr.y, wr.width, wr.height);
+  rect.setXYWH(wr.x(), wr.y(), wr.width(), wr.height());
   canvas.drawIRect(rect, flags);
 }
 
@@ -684,7 +683,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   test_url_ = GURL();
   prefs_ = blink::web_pref::WebPreferences();
   should_override_prefs_ = false;
-  WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
+  WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(true);
   WebTestContentBrowserClient::Get()->ResetMockClipboardHosts();
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
   WebTestContentBrowserClient::Get()->ResetFakeBluetoothDelegate();

@@ -211,8 +211,6 @@ public abstract class ChromeFeatureList {
             "AndroidLayoutChangeTabReparenting";
     public static final String ANDROID_MANAGED_BY_MENU_ITEM = "AndroidManagedByMenuItem";
     public static final String ANDROID_MULTIPLE_DISPLAY = "AndroidMultipleDisplay";
-    public static final String ANDROID_NIGHT_MODE_TAB_REPARENTING =
-            "AndroidNightModeTabReparenting";
     public static final String ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE =
             "AndroidPartnerCustomizationPhenotype";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
@@ -339,6 +337,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_SPINNER_ALWAYS_ANIMATE =
             "InterestFeedSpinnerAlwaysAnimate";
     public static final String INTEREST_FEED_V2 = "InterestFeedV2";
+    public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";

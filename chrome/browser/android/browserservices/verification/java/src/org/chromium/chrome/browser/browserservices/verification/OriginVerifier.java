@@ -45,10 +45,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.inject.Inject;
-
-import dagger.Reusable;
-
 /**
  * Use to check that an app has a Digital Asset Link relationship with the given origin.
  *
@@ -59,6 +55,9 @@ import dagger.Reusable;
  * One instance of this object should be created per package, but {@link #start} may be called
  * multiple times to verify different origins. This object has a native counterpart that will be
  * kept alive as it is serving requests, but destroyed once all requests are finished.
+ *
+ * Most classes that are Activity-scoped should take an {@link OriginVerifierFactory} and use that
+ * to get instances of this.
  */
 @JNINamespace("customtabs")
 public class OriginVerifier {
@@ -73,6 +72,7 @@ public class OriginVerifier {
     private final Map<Origin, Set<OriginVerificationListener>> mListeners = new HashMap<>();
     private long mVerificationStartTime;
     private final MetricsListener mMetricsListener;
+    private final VerificationResultStore mVerificationResultStore;
     @Nullable
     private WebContents mWebContents;
     @Nullable
@@ -117,28 +117,6 @@ public class OriginVerifier {
         default void recordVerificationTime(long duration, boolean online) {}
     }
 
-    /**
-     * Factory that can be injected by Dagger.
-     */
-    @Reusable
-    public static class Factory {
-        @Inject
-        public Factory() {}
-
-        public OriginVerifier create(String packageName, @Relation int relation,
-                @Nullable WebContents webContents, @Nullable ExternalAuthUtils externalAuthUtils,
-                MetricsListener metricsListener) {
-            return new OriginVerifier(
-                    packageName, relation, webContents, externalAuthUtils, metricsListener);
-        }
-
-        public OriginVerifier create(String packageName, @Relation int relation,
-                @Nullable WebContents webContents, @Nullable ExternalAuthUtils externalAuthUtils) {
-            return create(packageName, relation, webContents, externalAuthUtils,
-                    new MetricsListener() {});
-        }
-    }
-
     /** Small helper class to post a result of origin verification. */
     private class VerifiedCallback implements Runnable {
         private final Origin mOrigin;
@@ -166,7 +144,7 @@ public class OriginVerifier {
     /** Clears all known relations. */
     @VisibleForTesting
     public static void clearCachedVerificationsForTesting() {
-        VerificationResultStore.clearStoredRelationships();
+        VerificationResultStore.getInstance().clearStoredRelationships();
         if (sVerificationOverrides.get() != null) {
             sVerificationOverrides.get().clear();
         }
@@ -228,7 +206,7 @@ public class OriginVerifier {
     private static boolean wasPreviouslyVerified(String packageName, String signatureFingerprint,
             Origin origin, @Relation int relation) {
         return shouldOverrideVerification(packageName, origin, relation)
-                || VerificationResultStore.isRelationshipSaved(
+                || VerificationResultStore.getInstance().isRelationshipSaved(
                         new Relationship(packageName, signatureFingerprint, origin, relation));
     }
 
@@ -256,12 +234,12 @@ public class OriginVerifier {
      * @param relation Digital Asset Links {@link Relation} to use during verification.
      * @param webContents The web contents of the tab used for reporting errors to DevTools. Can be
      *         null if unavailable.
-     * @param externalAuthUtils The auth utils used to check if an origin is allowlisted to bypass
-     *         verification. Can be null.
+     * @param externalAuthUtils The auth utils used to check if an origin is allowlisted to bypass/
+     * @param verificationResultStore The {@link VerificationResultStore} for persisting results.
      */
     public OriginVerifier(String packageName, @Relation int relation,
             @Nullable WebContents webContents, @Nullable ExternalAuthUtils externalAuthUtils,
-            MetricsListener metricsListener) {
+            MetricsListener metricsListener, VerificationResultStore verificationResultStore) {
         mPackageName = packageName;
         PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
         mSignatureFingerprint =
@@ -271,6 +249,7 @@ public class OriginVerifier {
         mWebContents = webContents;
         mExternalAuthUtils = externalAuthUtils;
         mMetricsListener = metricsListener;
+        mVerificationResultStore = verificationResultStore;
     }
 
     /**
@@ -416,7 +395,7 @@ public class OriginVerifier {
     private void originVerified(Origin origin, boolean originVerified, Boolean online) {
         if (originVerified) {
             Log.d(TAG, "Adding: %s for %s", mPackageName, origin);
-            VerificationResultStore.addRelationship(
+            mVerificationResultStore.addRelationship(
                     new Relationship(mPackageName, mSignatureFingerprint, origin, mRelation));
         } else {
             Log.d(TAG,
@@ -452,9 +431,9 @@ public class OriginVerifier {
         Relationship relationship =
                 new Relationship(mPackageName, mSignatureFingerprint, origin, mRelation);
         if (originVerified) {
-            VerificationResultStore.addRelationship(relationship);
+            mVerificationResultStore.addRelationship(relationship);
         } else {
-            VerificationResultStore.removeRelationship(relationship);
+            mVerificationResultStore.removeRelationship(relationship);
         }
     }
 
@@ -463,7 +442,7 @@ public class OriginVerifier {
      */
     private void checkForSavedResult(Origin origin) {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            boolean verified = VerificationResultStore.isRelationshipSaved(
+            boolean verified = mVerificationResultStore.isRelationshipSaved(
                     new Relationship(mPackageName, mSignatureFingerprint, origin, mRelation));
 
             mMetricsListener.recordVerificationResult(verified
@@ -480,7 +459,7 @@ public class OriginVerifier {
     @CalledByNative
     public static void clearBrowsingData() {
         // TODO(peconn): Move this over to VerificationResultStore.
-        VerificationResultStore.clearStoredRelationships();
+        VerificationResultStore.getInstance().clearStoredRelationships();
     }
 
     @NativeMethods

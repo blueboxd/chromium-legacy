@@ -86,6 +86,11 @@ class BuildConfigGenerator extends DefaultTask {
      */
      boolean useDedicatedAndroidxDir
 
+     /**
+      * Whether to ignore DEPS file.
+      */
+     boolean ignoreDEPS
+
     @TaskAction
     void main() {
         skipLicenses = skipLicenses || project.hasProperty("skipLicenses")
@@ -103,6 +108,9 @@ class BuildConfigGenerator extends DefaultTask {
         def downloadTasks = []
         graph.dependencies.values().each { dependency ->
             if (excludeDependency(dependency)) {
+                return
+            }
+            if (useDedicatedAndroidxDir && dependency.id.startsWith("androidx_")) {
                 return
             }
             logger.debug "Processing ${dependency.name}: \n${jsonDump(dependency)}"
@@ -153,8 +161,10 @@ class BuildConfigGenerator extends DefaultTask {
 
         // 3. Generate the root level build files
         updateBuildTargetDeclaration(graph, repositoryPath, normalisedRepoPath)
-        updateDepsDeclaration(graph, cipdBucket, stripFromCipdPath, repositoryPath,
-                              "${normalisedRepoPath}/../../DEPS")
+        if (!ignoreDEPS) {
+            updateDepsDeclaration(graph, cipdBucket, stripFromCipdPath, repositoryPath,
+                                  "${normalisedRepoPath}/../../DEPS")
+        }
         dependencyDirectories.sort { path1, path2 -> return path1.compareTo(path2) }
         updateReadmeReferenceFile(dependencyDirectories,
                                   "${normalisedRepoPath}/additional_readme_paths.json")
@@ -256,6 +266,8 @@ class BuildConfigGenerator extends DefaultTask {
             def matcher = BUILD_GN_GEN_PATTERN.matcher(buildFile.getText())
             if (!matcher.find()) throw new IllegalStateException("BUILD.gn insertion point not found.")
             out = matcher.replaceFirst(out)
+        } else {
+            out = "import(\"//build/config/android/rules.gni\")\n" + out
         }
         buildFile.write(out)
     }
@@ -303,7 +315,7 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId, String dependencyExtension) {
-        if (isPlayServicesTarget(dependencyId)) {
+        if (dependencyExtension == "aar" && isPlayServicesTarget(dependencyId)) {
             if (Pattern.matches(".*cast_framework.*", dependencyId)) {
                 sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
                 sb.append('  # Can only safely remove them when R8 will strip the path that accesses them.\n')
@@ -539,6 +551,29 @@ class BuildConfigGenerator extends DefaultTask {
             case 'com_android_tools_desugar_jdk_libs_configuration':
                 sb.append('  enable_bytecode_checks = false\n')
                 break
+            case 'com_google_firebase_firebase_common':
+                sb.append('\n')
+                sb.append('  # Ignore missing kotlin.KotlinVersion definition in\n')
+                sb.append('  # com.google.firebase.platforminfo.KotlinDetector.\n')
+                sb.append('  enable_bytecode_checks = false\n')
+                break
+            case 'com_google_firebase_firebase_components':
+                sb.append('\n')
+                sb.append('  # Can\'t find com.google.firebase.components.Component\\$ComponentType.\n')
+                sb.append('  enable_bytecode_checks = false\n')
+                break
+            case 'com_google_firebase_firebase_installations':
+            case 'com_google_firebase_firebase_installations_interop':
+                sb.append('\n')
+                sb.append('  # Can\'t find com.google.auto.value.AutoValue\\$Builder.\n')
+                sb.append('  enable_bytecode_checks = false\n')
+                break
+            case 'com_google_firebase_firebase_messaging':
+                sb.append('\n')
+                sb.append('  # We removed the datatransport dependency to reduce binary size.\n')
+                sb.append('  # The library works without it as it\'s only used for logging.\n')
+                sb.append('  enable_bytecode_checks = false\n')
+                break
         }
     }
 
@@ -558,6 +593,9 @@ class BuildConfigGenerator extends DefaultTask {
 
         depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
             if (excludeDependency(dependency)) {
+                return
+            }
+            if (useDedicatedAndroidxDir && dependency.id.startsWith("androidx_")) {
                 return
             }
             def depPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"

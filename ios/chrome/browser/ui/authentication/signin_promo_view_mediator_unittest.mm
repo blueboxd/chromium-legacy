@@ -163,7 +163,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Expects the signin promo view to be configured with no accounts on the
   // device.
   void ExpectNoAccountsConfiguration() {
-    OCMExpect([signin_promo_view_ setMode:IdentityPromoViewModeNoAccounts]);
+    OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeNoAccounts]);
     NSString* title = GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
     OCMExpect([signin_promo_view_ setAccessibilityLabel:title]);
     OCMExpect([primary_button_ setTitle:title forState:UIControlStateNormal]);
@@ -184,14 +184,14 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   void ExpectSigninWithAccountConfiguration() {
     EXPECT_EQ(expected_default_identity_, mediator_.defaultIdentity);
     OCMExpect(
-        [signin_promo_view_ setMode:IdentityPromoViewModeSigninWithAccount]);
+        [signin_promo_view_ setMode:SigninPromoViewModeSigninWithAccount]);
     OCMExpect([signin_promo_view_
         setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
           image_view_profile_image_ = value;
           return YES;
         }]]);
-    NSString* name = expected_default_identity_.userFullName.length
-                         ? expected_default_identity_.userFullName
+    NSString* name = expected_default_identity_.userGivenName.length
+                         ? expected_default_identity_.userGivenName
                          : expected_default_identity_.userEmail;
     base::string16 name16 = SysNSStringToUTF16(name);
     NSString* accessibilityLabel =
@@ -278,7 +278,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninWithAccountConfigureSigninPromoView) {
 // Tests signin promo view and its configurator with an identity
 // without full name.
 TEST_F(SigninPromoViewMediatorTest,
-       SigninWithAccountConfigureSigninPromoViewWithoutFullName) {
+       SigninWithAccountConfigureSigninPromoViewWithoutName) {
   user_full_name_ = nil;
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   TestSigninPromoWithAccount();

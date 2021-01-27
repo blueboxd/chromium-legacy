@@ -24,11 +24,11 @@ using l10n_util::GetNSStringF;
 @interface SigninPromoViewConfigurator ()
 
 // User email used for the secondary button, and also for the primary button if
-// there is no userFullName.
+// there is no userGivenName.
 @property(nonatomic) NSString* userEmail;
 
 // User full name used fro the primary button.
-@property(nonatomic) NSString* userFullName;
+@property(nonatomic) NSString* userGivenName;
 
 // User profile image.
 @property(nonatomic) UIImage* userImage;
@@ -37,22 +37,22 @@ using l10n_util::GetNSStringF;
 @property(nonatomic) BOOL hasCloseButton;
 
 // State of the identity promo view.
-@property(nonatomic, assign) IdentityPromoViewMode identityPromoViewMode;
+@property(nonatomic, assign) SigninPromoViewMode signinPromoViewMode;
 
 @end
 
 @implementation SigninPromoViewConfigurator
 
-- (instancetype)initWithIdentityPromoViewMode:(IdentityPromoViewMode)viewMode
-                                    userEmail:(NSString*)userEmail
-                                 userFullName:(NSString*)userFullName
-                                    userImage:(UIImage*)userImage
-                               hasCloseButton:(BOOL)hasCloseButton {
+- (instancetype)initWithSigninPromoViewMode:(SigninPromoViewMode)viewMode
+                                  userEmail:(NSString*)userEmail
+                              userGivenName:(NSString*)userGivenName
+                                  userImage:(UIImage*)userImage
+                             hasCloseButton:(BOOL)hasCloseButton {
   self = [super init];
   if (self) {
-    DCHECK(userEmail || (!userEmail && !userFullName && !userImage));
-    _identityPromoViewMode = viewMode;
-    _userFullName = [userFullName copy];
+    DCHECK(userEmail || (!userEmail && !userGivenName && !userImage));
+    _signinPromoViewMode = viewMode;
+    _userGivenName = [userGivenName copy];
     _userEmail = [userEmail copy];
     _userImage = [userImage copy];
     _hasCloseButton = hasCloseButton;
@@ -62,13 +62,13 @@ using l10n_util::GetNSStringF;
 
 - (void)configureSigninPromoView:(SigninPromoView*)signinPromoView {
   signinPromoView.closeButton.hidden = !self.hasCloseButton;
-  signinPromoView.mode = self.identityPromoViewMode;
+  signinPromoView.mode = self.signinPromoViewMode;
 
   NSString* name =
-      self.userFullName.length ? self.userFullName : self.userEmail;
+      self.userGivenName.length ? self.userGivenName : self.userEmail;
   base::string16 name16 = SysNSStringToUTF16(name);
-  switch (self.identityPromoViewMode) {
-    case IdentityPromoViewModeNoAccounts: {
+  switch (self.signinPromoViewMode) {
+    case SigninPromoViewModeNoAccounts: {
       NSString* signInString =
           GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
       signinPromoView.accessibilityLabel = signInString;
@@ -76,7 +76,7 @@ using l10n_util::GetNSStringF;
                                      forState:UIControlStateNormal];
       return;
     }
-    case IdentityPromoViewModeSigninWithAccount: {
+    case SigninPromoViewModeSigninWithAccount: {
       [signinPromoView.primaryButton
           setTitle:GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS, name16)
           forState:UIControlStateNormal];
@@ -87,7 +87,7 @@ using l10n_util::GetNSStringF;
           forState:UIControlStateNormal];
       break;
     }
-    case IdentityPromoViewModeSyncWithPrimaryAccount: {
+    case SigninPromoViewModeSyncWithPrimaryAccount: {
       [signinPromoView.primaryButton
           setTitle:GetNSString(IDS_IOS_TAB_SWITCHER_ENABLE_SYNC_BUTTON)
           forState:UIControlStateNormal];
@@ -97,7 +97,7 @@ using l10n_util::GetNSStringF;
     }
   }
 
-  DCHECK_NE(self.identityPromoViewMode, IdentityPromoViewModeNoAccounts);
+  DCHECK_NE(self.signinPromoViewMode, SigninPromoViewModeNoAccounts);
   UIImage* image = self.userImage;
   if (!image) {
     image = ios::GetChromeBrowserProvider()

@@ -776,6 +776,13 @@
       name: "DocumentPolicy",
       status: "stable",
     },
+    // Enables the ability to use Document Policy header to control feature
+    // DocumentDomain.
+    {
+      name: "DocumentPolicyDocumentDomain",
+      status: "experimental",
+      depends_on: ["DocumentPolicy"],
+    },
     {
       name: "DocumentPolicyNegotiation",
       origin_trial_feature_name: "DocumentPolicyNegotiation",
@@ -1028,10 +1035,6 @@
       status: "experimental",
     },
     {
-      name: "ImageOrientation",
-      status: "stable",
-    },
-    {
       name: "ImplicitRootScroller",
       settable_from_internals: true,
       status: {"Android": "stable"},
@@ -1136,7 +1139,8 @@
     },
     {
       name: "LayoutNGTable",
-      depends_on: ["LayoutNG"]
+      depends_on: ["LayoutNG"],
+      status: "test"
     },
     {
       name: "LayoutNGTextControl",

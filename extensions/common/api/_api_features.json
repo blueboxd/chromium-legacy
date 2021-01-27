@@ -160,10 +160,6 @@
     "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },
-  "displaySource": {
-    "dependencies": ["permission:displaySource"],
-    "contexts": ["blessed_extension"]
-  },
   "dns": {
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
@@ -301,10 +297,11 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://extensions/*",
+      "chrome://new-tab-page/*",
       "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://sync-confirmation/*",
-      "chrome://tab-search/*",
+      "chrome://tab-search.top-chrome/*",
       "chrome://tab-strip/*",
       "chrome://welcome/*",
       "chrome://profile-picker/*",

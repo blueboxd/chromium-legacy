@@ -356,6 +356,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Ash.ClipboardHistory.ConsecutivePastes" units="times"
+    expires_after="2021-09-01">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>multipaste@google.com</owner>
+  <summary>
+    The number of consecutive pastes from the clipboard history menu. The count
+    is reset after a copy or a paste that is not through the clipboard history
+    menu (such as pressing ctrl-v accelerator or clicking at a context menu
+    option).
+  </summary>
+</histogram>
+
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatDeleted"
     enum="ClipboardHistoryDisplayFormat" expires_after="2021-09-01">
   <owner>andrewxu@chromium.org</owner>
@@ -517,6 +529,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The reason a ClipboardImageModelRequest is stopped. Logged when a request is
     Stop()-ed.
+  </summary>
+</histogram>
+
+<histogram name="Ash.ClipboardHistory.Operation"
+    enum="ClipboardHistoryOperation" expires_after="2021-09-01">
+  <owner>newcomer@chromium.org</owner>
+  <owner>multipaste@google.com</owner>
+  <summary>
+    Different operations detected by ClipboardHistory. Debounced, so different
+    than Clipboard.Read, Clipboard.Write. Any clipboard copy detected here will
+    result in a new entry in ClipboardHistory. Recorded after a clipboard read
+    or write is debounced in ClipboardHistory.
   </summary>
 </histogram>
 

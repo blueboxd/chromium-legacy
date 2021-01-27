@@ -48,25 +48,6 @@
             ]
         }
     ],
-    "AndroidAppMenuUiRework": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "RegroupBackwardButton",
-                    "params": {
-                        "action_bar": "backward_button"
-                    },
-                    "enable_features": [
-                        "TabbedAppOverflowMenuIcons",
-                        "TabbedAppOverflowMenuRegroup"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidAppMenuUiReworkPhase4And5": [
         {
             "platforms": [
@@ -966,6 +947,27 @@
             ]
         }
     ],
+    "AutofillStrictContextualCardNameConditions": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillStrictContextualCardNameConditions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillUseUniqueRendererIDsOnIOS": [
         {
             "platforms": [
@@ -1617,27 +1619,6 @@
                     },
                     "enable_features": [
                         "CodeCacheDeduplicationStudy"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CompositeCrossOriginIframes": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CompositeCrossOriginIframes"
                     ]
                 }
             ]
@@ -3800,6 +3781,25 @@
             ]
         }
     ],
+    "LimitAImageReaderMaxSizeToOneWithParam": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "LimitAImageReaderMaxSizeToOneBlocklist": "MIBOX, MITV"
+                    },
+                    "enable_features": [
+                        "LimitAImageReaderMaxSizeToOne"
+                    ]
+                }
+            ]
+        }
+    ],
     "LiteVideo": [
         {
             "platforms": [
@@ -3834,6 +3834,22 @@
                     },
                     "enable_features": [
                         "IPH_LiveCaption"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LoginDetection": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LoginDetection"
                     ]
                 }
             ]
@@ -4558,24 +4574,6 @@
             ]
         }
     ],
-    "OmniboxSearchEngineLogoAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "rounded_edges": "true"
-                    },
-                    "enable_features": [
-                        "OmniboxSearchEngineLogo"
-                    ]
-                }
-            ]
-        }
-    ],
     "OmniboxSpareRendererGWS": [
         {
             "platforms": [
@@ -4731,28 +4729,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PageInfoV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PageLoadMetricsTimerDelay": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "10MS",
-                    "params": {
-                        "BufferTimerDelayMillis": "10"
-                    },
-                    "enable_features": [
-                        "PageLoadMetricsTimerDelay"
                     ]
                 }
             ]

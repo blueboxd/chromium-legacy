@@ -31,6 +31,31 @@ class CORE_EXPORT PreloadRequest {
   USING_FAST_MALLOC(PreloadRequest);
 
  public:
+  class CORE_EXPORT ExclusionInfo : public RefCounted<ExclusionInfo> {
+    USING_FAST_MALLOC(ExclusionInfo);
+
+   public:
+    ExclusionInfo(const KURL& document_url,
+                  HashSet<KURL> scopes,
+                  HashSet<KURL> resources);
+    virtual ~ExclusionInfo();
+
+    // Disallow copy and assign.
+    ExclusionInfo(const ExclusionInfo&) = delete;
+    ExclusionInfo& operator=(const ExclusionInfo&) = delete;
+
+    const KURL& document_url() const { return document_url_; }
+    const HashSet<KURL>& scopes() const { return scopes_; }
+    const HashSet<KURL>& resources() const { return resources_; }
+
+    bool ShouldExclude(const KURL& base_url, const String& resource_url) const;
+
+   private:
+    const KURL document_url_;
+    const HashSet<KURL> scopes_;
+    const HashSet<KURL> resources_;
+  };
+
   enum RequestType {
     kRequestTypePreload,
     kRequestTypePreconnect,
@@ -48,6 +73,7 @@ class CORE_EXPORT PreloadRequest {
       const network::mojom::ReferrerPolicy referrer_policy,
       ReferrerSource referrer_source,
       ResourceFetcher::IsImageSet is_image_set,
+      const ExclusionInfo* exclusion_info,
       const FetchParameters::ResourceWidth& resource_width =
           FetchParameters::ResourceWidth(),
       const ClientHintsPreferences& client_hints_preferences =
@@ -108,6 +134,9 @@ class CORE_EXPORT PreloadRequest {
   void SetFromInsertionScanner(const bool from_insertion_scanner) {
     from_insertion_scanner_ = from_insertion_scanner;
   }
+  void SetInBodyStyle(bool is_in_body_style) {
+    is_in_body_style_ = is_in_body_style;
+  }
 
   bool IsImageSetForTestingOnly() const {
     return is_image_set_ == ResourceFetcher::kImageIsImageSet;
@@ -141,7 +170,8 @@ class CORE_EXPORT PreloadRequest {
         referrer_source_(referrer_source),
         from_insertion_scanner_(false),
         is_image_set_(is_image_set),
-        is_lazy_load_image_enabled_(false) {}
+        is_lazy_load_image_enabled_(false),
+        is_in_body_style_(false) {}
 
   KURL CompleteURL(Document*);
 
@@ -165,6 +195,7 @@ class CORE_EXPORT PreloadRequest {
   bool from_insertion_scanner_;
   const ResourceFetcher::IsImageSet is_image_set_;
   bool is_lazy_load_image_enabled_;
+  bool is_in_body_style_;
 };
 
 typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;

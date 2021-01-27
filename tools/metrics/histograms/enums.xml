@@ -4731,6 +4731,8 @@ others/histograms.xml -->
   <int value="0" label="Seen and accepted"/>
   <int value="1" label="Seen and rejected"/>
   <int value="2" label="Already accepted"/>
+  <int value="3" label="Seen and dismissed"/>
+  <int value="4" label="Interrupted by navigation"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptShownToUser">
@@ -11533,6 +11535,11 @@ histogram as enum -->
   <int value="3" label="File"/>
 </enum>
 
+<enum name="ClipboardHistoryOperation">
+  <int value="0" label="Copy"/>
+  <int value="1" label="Paste (from clipboard and clipboard history)"/>
+</enum>
+
 <enum name="ClipboardHistoryPlaceholderStringType">
   <int value="0" label="Bitmap"/>
   <int value="1" label="Html"/>
@@ -18295,6 +18302,8 @@ Called by update_document_policy_enum.py.-->
   <int value="10" label="SyncScript"/>
   <int value="11" label="JSProfiling"/>
   <int value="12" label="SyncXHR"/>
+  <int value="13" label="DocumentDomain"/>
+  <int value="14" label="DocumentDomain"/>
 </enum>
 
 <enum name="DocumentScanSaneBackend">
@@ -24417,7 +24426,7 @@ Called by update_extension_histograms.py.-->
       label="DELETED_EASY_UNLOCK_PRIVATE_ON_CONNECTION_STATUS_CHANGED"/>
   <int value="390" label="DELETED_EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED"/>
   <int value="391" label="DELETED_EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED"/>
-  <int value="392" label="DISPLAY_SOURCE_ON_SINKS_UPDATED"/>
+  <int value="392" label="DELETED_DISPLAY_SOURCE_ON_SINKS_UPDATED"/>
   <int value="393" label="INPUT_IME_ON_COMPOSITION_BOUNDS_CHANGED"/>
   <int value="394" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_ACTIVATION_CHANGED"/>
   <int value="395" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_LIST_CHANGED"/>
@@ -25670,8 +25679,8 @@ Called by update_extension_histograms.py.-->
   <int value="1095" label="SETTINGSPRIVATE_SETDEFAULTZOOMFUNCTION"/>
   <int value="1096" label="BLUETOOTHPRIVATE_CONNECT"/>
   <int value="1097" label="BLUETOOTHPRIVATE_FORGETDEVICE"/>
-  <int value="1098" label="DISPLAYSOURCE_GETAVAILABLESINKS"/>
-  <int value="1099" label="DISPLAYSOURCE_REQUESTAUTHENTICATION"/>
+  <int value="1098" label="DELETED_DISPLAYSOURCE_GETAVAILABLESINKS"/>
+  <int value="1099" label="DELETED_DISPLAYSOURCE_REQUESTAUTHENTICATION"/>
   <int value="1100" label="WEBRTCLOGGINGPRIVATE_STARTAUDIODEBUGRECORDINGS"/>
   <int value="1101" label="WEBRTCLOGGINGPRIVATE_STOPAUDIODEBUGRECORDINGS"/>
   <int value="1102" label="TERMINALPRIVATE_ACKOUTPUT"/>
@@ -26702,7 +26711,7 @@ Called by update_extension_permission.py.-->
   <int value="196" label="kEnterpriseDeviceAttributes"/>
   <int value="197" label="kCertificateProvider"/>
   <int value="198" label="kResourcesPrivate"/>
-  <int value="199" label="kDisplaySource"/>
+  <int value="199" label="kDeleted_DisplaySource"/>
   <int value="200" label="kClipboard"/>
   <int value="201" label="kNetworkingOnc"/>
   <int value="202" label="kVirtualKeyboard"/>
@@ -31102,6 +31111,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3782" label="V8HTMLPopupElement_Show_Method"/>
   <int value="3783" label="V8HTMLPopupElement_Hide_Method"/>
   <int value="3784" label="WindowOpenWithAdditionalBoolParameter"/>
+  <int value="3785" label="RTCPeerConnectionConstructedWithPlanB"/>
+  <int value="3786" label="RTCPeerConnectionConstructedWithUnifiedPlan"/>
+  <int value="3787" label="RTCPeerConnectionUsingComplexPlanB"/>
+  <int value="3788" label="RTCPeerConnectionUsingComplexUnifiedPlan"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31382,7 +31395,7 @@ Called by update_feature_policy_enum.py.-->
 
 <enum name="FeedUserActionType">
   <int value="0" label="Tapped on card"/>
-  <int value="1" label="Shown card"/>
+  <int value="1" label="Shown card (REMOVED, never reported)"/>
   <int value="2" label="Tapped Send Feedback"/>
   <int value="3" label="Tapped Learn More"/>
   <int value="4" label="Tapped Hide Story"/>
@@ -31409,7 +31422,12 @@ Called by update_feature_policy_enum.py.-->
   <int value="20" label="Open Dialog e.g. Report Content Dialog"/>
   <int value="21" label="Close Dialog e.g. Report Content Dialog"/>
   <int value="22" label="Show Snackbar"/>
-  <int value="23" label="Opened native context menu. (iOS Only)"/>
+  <int value="23" label="Opened native back-of-card action sheet. (iOS Only)"/>
+  <int value="24" label="Opened native back-of-card context menu. (iOS Only)"/>
+  <int value="25" label="Closed native back-of-card context menu. (iOS Only)"/>
+  <int value="26" label="Opened native back-of-card pulldown menu. (iOS Only)"/>
+  <int value="27" label="Closed native back-of-card pulldown menu. (iOS Only)"/>
+  <int value="28" label="Tapped manage reactions"/>
 </enum>
 
 <enum name="FeedUserCommandType"/>
@@ -33108,6 +33126,10 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="FramePrioritiesSeen">
+  <obsolete>
+    Obsoleted on 2021-01-22 as corresponding experiment code was removed and the
+    experiment wrapped up.
+  </obsolete>
   <int value="0" label="No frames seen."/>
   <int value="1" label="Low and normal priority frames seen."/>
   <int value="2" label="Only low priority frames seen."/>
@@ -77124,6 +77146,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VideoCaptureEvent">
+  <obsolete>
+    Expired in M82; removed in M90.
+  </obsolete>
   <int value="0" label="Starting video capture"/>
   <int value="1" label="Stopping video capture normally"/>
   <int value="2" label="Stopping video capture due to error"/>
@@ -78424,6 +78449,17 @@ others/histograms.xml -->
   <int value="10" label="Icon download failed"/>
   <int value="11" label="Icon read from disk failed"/>
   <int value="12" label="App ID mismatch"/>
+</enum>
+
+<enum name="WebAppMoverResult">
+  <summary>Result of executing the WebAppMover on Chrome startup.</summary>
+  <int value="0" label="Invalid Finch Configuration"/>
+  <int value="1" label="App-to-install already installed"/>
+  <int value="2" label="Apps-to-uninstall not installed"/>
+  <int value="3" label="App-to-install is not installable"/>
+  <int value="4" label="Failure during uninstall"/>
+  <int value="5" label="Failure during install"/>
+  <int value="6" label="Success"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

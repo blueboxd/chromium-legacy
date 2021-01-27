@@ -609,7 +609,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
+#include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3930,42 +3930,69 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
   }
 }
 
-bool ChromeContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                                  RendererSpawnFlags flags) {
-// Does not work under component build because all the component DLLs would need
-// to be manually added and maintained. Does not work under ASAN build because
-// ASAN has not yet fully initialized its instrumentation by the time the CIG
-// intercepts run.
+// Note: Only use sparingly to add Chrome specific sandbox functionality here.
+// Other code should reside in the content layer. Changes to this function
+// should be reviewed by the security team.
+bool ChromeContentBrowserClient::PreSpawnChild(
+    sandbox::TargetPolicy* policy,
+    sandbox::policy::SandboxType sandbox_type,
+    ChildSpawnFlags flags) {
+  switch (sandbox_type) {
+    case sandbox::policy::SandboxType::kRenderer: {
+      // Does not work under component build because all the component DLLs
+      // would need to be manually added and maintained. Does not work under
+      // ASAN build because ASAN has not yet fully initialized its
+      // instrumentation by the time the CIG intercepts run.
 #if !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
-  if ((flags & RendererSpawnFlags::RENDERER_CODE_INTEGRITY) == 0)
-    return true;
-  if (!base::FeatureList::IsEnabled(kRendererCodeIntegrity))
-    return true;
+      if ((flags & ChildSpawnFlags::RENDERER_CODE_INTEGRITY) == 0)
+        return true;
+      if (!base::FeatureList::IsEnabled(kRendererCodeIntegrity))
+        return true;
 
-  // Only enable signing mitigation if launching from chrome.exe.
-  base::FilePath exe_path;
-  if (!base::PathService::Get(base::FILE_EXE, &exe_path))
-    return true;
-  if (chrome::kBrowserProcessExecutableName != exe_path.BaseName().value())
-    return true;
+      // Only enable signing mitigation if launching from chrome.exe.
+      base::FilePath exe_path;
+      if (!base::PathService::Get(base::FILE_EXE, &exe_path))
+        return true;
+      if (chrome::kBrowserProcessExecutableName != exe_path.BaseName().value())
+        return true;
 
-  sandbox::MitigationFlags mitigations = policy->GetProcessMitigations();
-  mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
-  sandbox::ResultCode result = policy->SetProcessMitigations(mitigations);
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
+      sandbox::MitigationFlags mitigations = policy->GetProcessMitigations();
+      mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
+      sandbox::ResultCode result = policy->SetProcessMitigations(mitigations);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
 
-  // Allow loading Chrome's DLLs.
-  for (const auto* dll : {chrome::kBrowserResourcesDll, chrome::kElfDll}) {
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SIGNED_BINARY,
-                             sandbox::TargetPolicy::SIGNED_ALLOW_LOAD,
-                             GetModulePath(dll).value().c_str());
-    if (result != sandbox::SBOX_ALL_OK)
-      return false;
-  }
+      // Allow loading Chrome's DLLs.
+      for (const auto* dll : {chrome::kBrowserResourcesDll, chrome::kElfDll}) {
+        result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SIGNED_BINARY,
+                                 sandbox::TargetPolicy::SIGNED_ALLOW_LOAD,
+                                 GetModulePath(dll).value().c_str());
+        if (result != sandbox::SBOX_ALL_OK)
+          return false;
+      }
+      return true;
 #endif  // !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
-
-  return true;
+      return true;
+    }
+    case sandbox::policy::SandboxType::kNetwork:
+    case sandbox::policy::SandboxType::kUtility:
+    case sandbox::policy::SandboxType::kGpu:
+    case sandbox::policy::SandboxType::kPpapi:
+    case sandbox::policy::SandboxType::kNoSandbox:
+    case sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges:
+    case sandbox::policy::SandboxType::kXrCompositing:
+    case sandbox::policy::SandboxType::kCdm:
+    case sandbox::policy::SandboxType::kPrintCompositor:
+    case sandbox::policy::SandboxType::kAudio:
+    case sandbox::policy::SandboxType::kSpeechRecognition:
+    case sandbox::policy::SandboxType::kProxyResolver:
+    case sandbox::policy::SandboxType::kPdfConversion:
+    case sandbox::policy::SandboxType::kSharingService:
+    case sandbox::policy::SandboxType::kVideoCapture:
+    case sandbox::policy::SandboxType::kIconReader:
+    case sandbox::policy::SandboxType::kMediaFoundationCdm:
+      return true;
+  }
 }
 
 bool ChromeContentBrowserClient::IsRendererCodeIntegrityEnabled() {
@@ -5025,6 +5052,7 @@ void ChromeContentBrowserClient::CreateWebSocket(
 bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
+    const url::Origin& origin,
     const net::IsolationInfo& isolation_info,
     bool is_service_worker,
     int process_id,
@@ -5036,7 +5064,8 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
   if (isolation_info.frame_origin()->scheme() == extensions::kExtensionScheme) {
     DCHECK_EQ(network::mojom::RestrictedCookieManagerRole::SCRIPT, role);
     extensions::ChromeExtensionCookies::Get(browser_context)
-        ->CreateRestrictedCookieManager(isolation_info, std::move(*receiver));
+        ->CreateRestrictedCookieManager(origin, isolation_info,
+                                        std::move(*receiver));
     return true;
   }
 #endif

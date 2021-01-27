@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -95,21 +94,6 @@ public final class ProfileOAuth2TokenServiceDelegate
                 accountManagerFacade);
     }
 
-    private Account getAccountOrNullFromUsername(String username) {
-        if (username == null) {
-            Log.e(TAG, "Username is null");
-            return null;
-        }
-
-        Account account = AccountUtils.findAccountByName(
-                mAccountManagerFacade.tryGetGoogleAccounts(), username);
-        if (account == null) {
-            Log.e(TAG, "Account not found for provided username.");
-            return null;
-        }
-        return account;
-    }
-
     /**
      * Called by the native method
      * ProfileOAuth2TokenServiceDelegate::GetSystemAccountNames()
@@ -123,8 +107,8 @@ public final class ProfileOAuth2TokenServiceDelegate
     }
 
     /**
-     * Called by native to retrieve OAuth2 tokens.
-     * @param username The native username (email address).
+     * Called by native method AndroidAccessTokenFetcher::Start() to retrieve OAuth2 tokens.
+     * @param accountEmail The account email.
      * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
      * @param nativeCallback The pointer to the native callback that should be run upon
      *         completion.
@@ -132,8 +116,11 @@ public final class ProfileOAuth2TokenServiceDelegate
     @MainThread
     @CalledByNative
     private void getAccessTokenFromNative(
-            String username, String scope, final long nativeCallback) {
-        Account account = getAccountOrNullFromUsername(username);
+            String accountEmail, String scope, final long nativeCallback) {
+        final Account account = accountEmail == null
+                ? null
+                : AccountUtils.findAccountByName(
+                        mAccountManagerFacade.tryGetGoogleAccounts(), accountEmail);
         if (account == null) {
             ThreadUtils.postOnUiThread(() -> {
                 ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(
@@ -166,29 +153,10 @@ public final class ProfileOAuth2TokenServiceDelegate
      */
     @MainThread
     void getAccessToken(Account account, String scope, GetAccessTokenCallback callback) {
-        getAccessTokenWithFacade(mAccountManagerFacade, account, scope, callback);
-    }
-
-    /**
-     * Call this method to retrieve an OAuth2 access token for the given account and scope. Please
-     * note that this method expects a scope with 'oauth2:' prefix.
-     *
-     * @deprecated Use getAccessToken instead. crbug.com/1014098: This method is available as a
-     *         workaround for a callsite where native is not initialized yet.
-     *
-     * @param accountManagerFacade AccountManagerFacade to request the access token from.
-     * @param account the account to get the access token for.
-     * @param scope The scope to get an auth token for (with Android-style 'oauth2:' prefix).
-     * @param callback called on successful and unsuccessful fetching of auth token.
-     */
-    @MainThread
-    @Deprecated
-    static void getAccessTokenWithFacade(AccountManagerFacade accountManagerFacade, Account account,
-            String scope, GetAccessTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<AccessTokenData>() {
             @Override
             public AccessTokenData run() throws AuthException {
-                return accountManagerFacade.getAccessToken(account, scope);
+                return mAccountManagerFacade.getAccessToken(account, scope);
             }
             @Override
             public void onSuccess(AccessTokenData token) {
@@ -227,57 +195,17 @@ public final class ProfileOAuth2TokenServiceDelegate
     }
 
     /**
-     * Invalidates the old token (if non-null/non-empty) and asynchronously generates a new one.
-     *
-     * @deprecated Use invalidateAccessToken and getAccessToken instead. crbug.com/1002894: This
-     *         method is needed by InvalidationClientService which is not necessary anymore.
-     *
-     * @param account the account to get the access token for.
-     * @param oldToken The old token to be invalidated or null.
-     * @param scope The scope to get an auth token for (with Android-style 'oauth2:' prefix).
-     * @param callback called on successful and unsuccessful fetching of auth token.
+     * Called by the native method
+     * ProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable
+     * to check whether the account has an OAuth2 refresh token.
      */
-    @Deprecated
-    static void getNewAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
-            Account account, @Nullable String oldToken, String scope,
-            GetAccessTokenCallback callback) {
-        ConnectionRetry.runAuthTask(new AuthTask<AccessTokenData>() {
-            @Override
-            public AccessTokenData run() throws AuthException {
-                if (!TextUtils.isEmpty(oldToken)) {
-                    accountManagerFacade.invalidateAccessToken(oldToken);
-                }
-                return accountManagerFacade.getAccessToken(account, scope);
-            }
-            @Override
-            public void onSuccess(AccessTokenData token) {
-                callback.onGetTokenSuccess(token);
-            }
-            @Override
-            public void onFailure(boolean isTransientError) {
-                callback.onGetTokenFailure(isTransientError);
-            }
-        });
-    }
-
-    /**
-     * Called by native to check whether the account has an OAuth2 refresh token.
-     */
+    @VisibleForTesting
     @CalledByNative
-    private boolean hasOAuth2RefreshToken(String accountName) {
-        if (!mAccountManagerFacade.isCachePopulated()) {
-            return false;
-        }
-
-        // Temporarily allowing disk read while fixing. TODO: http://crbug.com/618096.
-        // This function is called in RefreshTokenIsAvailable of
-        // ProfileOAuth2TokenServiceDelegate which is expected to be called in the UI thread
-        // synchronously.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return AccountUtils.findAccountByName(
+    boolean hasOAuth2RefreshToken(String accountName) {
+        return mAccountManagerFacade.isCachePopulated()
+                && AccountUtils.findAccountByName(
                            mAccountManagerFacade.tryGetGoogleAccounts(), accountName)
-                    != null;
-        }
+                != null;
     }
 
     /**

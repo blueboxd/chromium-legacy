@@ -9280,7 +9280,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDeviceSetup_NotificationShown"
-    enum="MultiDeviceSetupNotification" expires_after="2021-02-02">
+    enum="MultiDeviceSetupNotification" expires_after="2022-02-02">
   <owner>vecore@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -17619,6 +17619,17 @@ regressions. -->
     tab instead of a standalone window. This follow up migration only runs once
     at startup for all Chrome profiles. If it fails it will retry until
     successful on subsequent start ups, metrics are only recorded on success.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Mover.Result" enum="WebAppMoverResult"
+    expires_after="2021-06-01">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of running the WebAppMover, which runs on Chrome startup.
+    It uninstalls a set of WebApps and then installs a single WebApp as a
+    replacement.
   </summary>
 </histogram>
 

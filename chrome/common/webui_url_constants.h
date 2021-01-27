@@ -142,6 +142,9 @@ extern const char kChromeUIRestartHost[];
 extern const char kChromeUIRestartURL[];
 extern const char kChromeUISafetyPixelbookURL[];
 extern const char kChromeUISafetyPixelSlateURL[];
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+extern const char kChromeUISessionServiceInternalsHost[];
+#endif
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUISignInInternalsHost[];
@@ -181,6 +184,8 @@ extern const char kChromeUIWebFooterExperimentHost[];
 extern const char kChromeUIWebFooterExperimentURL[];
 extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
+extern const char kChromeUIWorkProfileConfirmationHost[];
+extern const char kChromeUIWorkProfileConfirmationURL[];
 
 #if defined(OS_WIN)
 // TODO(crbug.com/1003960): Remove when issue is resolved.

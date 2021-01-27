@@ -2834,10 +2834,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
              starting main thread work."/>
   <suffix name="SendBeginMainFrameToCommit.Composite"
       label="The time portion of SendBeginMainFrameToCommit spent on
-             compositing."/>
+             compositing.">
+    <obsolete>
+      Obsolete as of https://crrev.com/794384 and M86.
+    </obsolete>
+  </suffix>
   <suffix name="SendBeginMainFrameToCommit.CompositeCommit"
       label="The time portion of SendBeginMainFrameToCommit spent on
              composite commit."/>
+  <suffix name="SendBeginMainFrameToCommit.CompositingAssignments"
+      label="The time portion of SendBeginMainFrameToCommit spent on updating
+             compositing assignments."/>
+  <suffix name="SendBeginMainFrameToCommit.CompositingInputs"
+      label="The time portion of SendBeginMainFrameToCommit spent on updating
+             compositing inputs."/>
   <suffix name="SendBeginMainFrameToCommit.HandleInputEvents"
       label="The time portion of SendBeginMainFrameToCommit spent on handling
              imput events."/>
@@ -2850,8 +2860,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="The time portion of SendBeginMainFrameToCommit spent on
              prepaint."/>
   <suffix name="SendBeginMainFrameToCommit.ScrollingCoordinator"
-      label="The time portion of SendBeginMainFrameToCommit spent on
-             scrolling coordinator."/>
+      label="The time portion of SendBeginMainFrameToCommit spent on scrolling
+             coordinator.">
+    <obsolete>
+      Merged into SendBeginMainFrameToCommit.CompositeCommit in
+      https://crrev.com/815947 in M88.
+    </obsolete>
+  </suffix>
   <suffix name="SendBeginMainFrameToCommit.StyleUpdate"
       label="The time portion of SendBeginMainFrameToCommit spent on style
              update."/>
@@ -5999,10 +6014,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
              starting main thread work."/>
   <suffix name="SendBeginMainFrameToCommit.Composite"
       label="The time portion of SendBeginMainFrameToCommit spent on
-             compositing."/>
+             compositing.">
+    <obsolete>
+      Obsolete as of https://crrev.com/794384 and M86.
+    </obsolete>
+  </suffix>
   <suffix name="SendBeginMainFrameToCommit.CompositeCommit"
       label="The time portion of SendBeginMainFrameToCommit spent on
              composite commit."/>
+  <suffix name="SendBeginMainFrameToCommit.CompositingAssignments"
+      label="The time portion of SendBeginMainFrameToCommit spent on updating
+             compositing assignments."/>
+  <suffix name="SendBeginMainFrameToCommit.CompositingInputs"
+      label="The time portion of SendBeginMainFrameToCommit spent on updating
+             compositing inputs."/>
   <suffix name="SendBeginMainFrameToCommit.HandleInputEvents"
       label="The time portion of SendBeginMainFrameToCommit spent on handling
              imput events."/>
@@ -6015,8 +6040,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="The time portion of SendBeginMainFrameToCommit spent on
              prepaint."/>
   <suffix name="SendBeginMainFrameToCommit.ScrollingCoordinator"
-      label="The time portion of SendBeginMainFrameToCommit spent on
-             scrolling coordinator."/>
+      label="The time portion of SendBeginMainFrameToCommit spent on scrolling
+             coordinator.">
+    <obsolete>
+      Merged into SendBeginMainFrameToCommit.CompositeCommit in
+      https://crrev.com/815947 in M88.
+    </obsolete>
+  </suffix>
   <suffix name="SendBeginMainFrameToCommit.StyleUpdate"
       label="The time portion of SendBeginMainFrameToCommit spent on style
              update."/>
@@ -11221,6 +11251,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="shopping_tasks" label="Module ID for Shopping Tasks"/>
   <affected-histogram name="NewTabPage.Modules.Dismissed"/>
   <affected-histogram name="NewTabPage.Modules.Impression"/>
+  <affected-histogram name="NewTabPage.Modules.ImpressionRatio"/>
   <affected-histogram name="NewTabPage.Modules.LoadDuration"/>
   <affected-histogram name="NewTabPage.Modules.Loaded"/>
   <affected-histogram name="NewTabPage.Modules.Restored"/>
@@ -14662,6 +14693,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Malloc.AllocatedObjects"
       label="Only counting objects allocated using the malloc allocator. The
              measurement is only accurate on Linux and MacOS."/>
+  <suffix name="ManualFillingCache"
+      label="Only counting memory used by the password manager fallbacks."/>
   <suffix name="PartitionAlloc"
       label="Only counting memory used by Partition allocator."/>
   <suffix name="PartitionAlloc.AllocatedObjects"

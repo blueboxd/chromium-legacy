@@ -184,7 +184,7 @@ vars = {
   'llvm_force_head_revision': False,
 
   # reclient CIPD package version
-  'reclient_version': 're_client_version:0.17.0.7d283ef',
+  'reclient_version': 're_client_version:0.19.2.319f839',
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3419dda0588db62db0800914054ffff00de87f2f',
+  'skia_revision': 'b64c26d56b1be6547a0297d6a959bc43226baef7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd6d0f46aa6da8d55541ad02aee1099a3a81a59f7',
+  'v8_revision': '24ce78c3728cb2f04c73be497a0ec072521adf79',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -211,15 +211,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '6689a54d8a046063fad176ffc0fcc1c2cfbe02e8',
+  'angle_revision': 'f9afaaeedee68302e9936532de16126313a3bd02',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '99e54b1c5caf06a25f76faa4c20c9ab1b31bdb61',
+  'swiftshader_revision': 'aec0826aba0db51914209ec85a515d3a99311f07',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '82408da2c17d3c58a2de27ac46bb41e89da86991',
+  'pdfium_revision': '49f09328ecbbc2f5509afb366c16c8df47912bfe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -270,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '957dfeae2968ae6cde9d8f44c91ff1a78d903f9f',
+  'catapult_revision': 'f8d79d2265b7a1adbe65bed3150cb668e4cabc75',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -278,7 +278,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'f138902e8f30f60aac9750646412b486566ed707',
+  'devtools_frontend_revision': '1dc9b008fe9a35786502798a5fc3bdbcaf5cfd95',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '73668344d656e4bad2f6a1dd75c85ffae1e56973',
+  'dawn_revision': '2df77f4325841e667e6b9ff9921fd626496a3b64',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '47d67c37230eb0e2182079ab05cf9263a1d003f0',
+  'quiche_revision': 'a8307a8c0175173edf99bb92fd008ed047e2d835',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -357,7 +357,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'be610ba987f5ed8ca3ebbde2d8bff8fad03ba99b',
+  'tint_revision': 'a6b9a8eb2fdc4b0a0fe5d4509b7565b6190ff519',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -368,12 +368,12 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:d62642c920e6a0d1756316d225a90fd6faa9e21e',
+  'gn_version': 'git_revision:55ad154c961d8326315b1c8147f4e504cd95e9e6',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
   # TODO(crbug.com/1166332) rename to clang_format_revision.
-  'clang_fmt_revision':    '23f18eb6f7b4edee5d127ff25effa07e9c53e5a7',
+  'clang_fmt_revision':    '99803d74e35962f63a775f29477882afd4d57d94',
   'libcxx_revision':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
   'libcxxabi_revision':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
   'libunwind_revision':    'd999d54f4bca789543a2eb6c995af2d9b5a1f3ed',
@@ -910,7 +910,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1076f38947e6e13964741cd6547da31a2ccc7a1d',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6d0c0ffef52928a9c35402604505e3a985627857',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1144,7 +1144,7 @@ deps = {
   },
 
   'src/third_party/libjpeg_turbo':
-    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '518d81558c797486e125e37cb529d65b560a6ea0',
+    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'fa0de07678c9828cc57b3eb086c03771912ba527',
 
   'src/third_party/liblouis/src': {
       'url': Var('chromium_git') + '/external/liblouis-github.git' + '@' + '03d7d72d983d47c17f7de95bbeae89fe33e41943',
@@ -1204,7 +1204,7 @@ deps = {
 
   # Graphics buffer allocator for Chrome OS.
   'src/third_party/minigbm/src': {
-      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + 'bc4f023bfcc51cf9dcfcfec5bf4177b2e607dd68',
+      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '150b4968810447d72714a7c88afb97d4e59fe23a',
       'condition': 'checkout_linux',
   },
 
@@ -1275,7 +1275,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1bcc9a4f4481ceb93357731057bf45136dbe6dbe',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '17fea3e29e06aa364b040a696c78251fc44bc2cd',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1501,12 +1501,6 @@ deps = {
       'condition': 'checkout_linux',
   },
 
-  # Wireless Display Software. Used on Chrome OS.
-  'src/third_party/wds/src': {
-      'url': Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'a488b169d724d6b4cfcd7037dbab1f1c2bf04f3b',
-      'condition': 'checkout_linux',
-  },
-
   'src/third_party/webdriver/pylib':
     Var('chromium_git') + '/external/github.com/SeleniumHQ/selenium/py.git' + '@' + 'd0045ec570c1a77612db35d1e92f05e1d27b4d53',
 
@@ -1517,7 +1511,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '66460536ee975a3e98931b7b40a661a63fd9cd57',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'ded6636cf43904448ee926d1f2b4352c8a957ca6',
+    Var('webrtc_git') + '/src.git' + '@' + 'c57089a97a3df454f4356d882cc8df173e8b3ead',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1555,7 +1549,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'T8wzDdpKse34sb84KYsgP5FcmR1QAnFdrtUSkZOBtvcC',
+          'version': '5uRd0nSbglRL_SlkzkofedmMPgK-1F0ICeAPyhneOY4C',
         },
       ],
       'dep_type': 'cipd',
@@ -1575,7 +1569,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'YkIZZLTolR7P8J70QaLh9tuiSkEDPWV3MCs3BRYhX2YC',
+          'version': 'jH1EXicKWfNsK_lsEmfi4_MozROrG68ybn4yGmcDj_oC',
         },
       ],
       'dep_type': 'cipd',
@@ -1589,7 +1583,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b0240d0468f21c7c109646a518e824540a98245d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b807dab706af27f4db76e903f5b3a60a7b1555a2',
     'condition': 'checkout_src_internal',
   },
 
@@ -1597,7 +1591,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'ZzdNx1RhNNM7W1NdBgJ2TuE7u2K6DBW9qC6-RqGDE2QC',
+        'version': 'VVLYM4uR4nGwohdGRQv779zs4jL0VKz1YCTIOe5IUAMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1608,7 +1602,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'h517L-DXIl7OZwzUHnbdTBCyZbPYd1dKIzqumgIpDYMC',
+        'version': 'jge_2d5ALNVUmEFnbn5YlAt84A-kkbAfLsZzeqxZnLoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -2909,6 +2903,17 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  'src/third_party/android_deps/libs/com_google_android_datatransport_transport_api': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_datatransport_transport_api',
+              'version': 'version:2.2.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/android_deps/libs/com_google_android_gms_play_services_auth': {
       'packages': [
           {
@@ -2991,6 +2996,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_clearcut',
               'version': 'version:17.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_gms_play_services_cloud_messaging': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cloud_messaging',
+              'version': 'version:16.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3332,6 +3348,127 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_errorprone_javac_shaded',
               'version': 'version:9-dev-r4023-3-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_annotations': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_annotations',
+              'version': 'version:16.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_common': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_common',
+              'version': 'version:19.5.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_components': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_components',
+              'version': 'version:16.1.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_encoders': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_encoders',
+              'version': 'version:16.1.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_encoders_json': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_encoders_json',
+              'version': 'version:17.1.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_iid': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_iid',
+              'version': 'version:21.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_iid_interop': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_iid_interop',
+              'version': 'version:17.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_installations': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_installations',
+              'version': 'version:16.3.5-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_installations_interop': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_installations_interop',
+              'version': 'version:16.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_measurement_connector': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_measurement_connector',
+              'version': 'version:18.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_firebase_firebase_messaging': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_firebase_firebase_messaging',
+              'version': 'version:21.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',

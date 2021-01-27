@@ -56,7 +56,7 @@ public class OriginVerifierTest {
     private static final String PACKAGE_NAME =
             ContextUtils.getApplicationContext().getPackageName();
 
-    private final OriginVerifier.Factory mFactory = new OriginVerifier.Factory();
+    private final OriginVerifierFactory mFactory = new OriginVerifierFactoryImpl();
 
     private Origin mHttpsOrigin;
     private Origin mHttpOrigin;
@@ -156,9 +156,11 @@ public class OriginVerifierTest {
         Set<String> savedLinks = new HashSet<>();
         savedLinks.add(relationship);
 
-        VerificationResultStore.setRelationships(savedLinks);
+        VerificationResultStore mStore = VerificationResultStore.getInstance();
 
-        Assert.assertTrue(VerificationResultStore.getRelationships().contains(relationship));
+        mStore.setRelationships(savedLinks);
+
+        Assert.assertTrue(mStore.getRelationships().contains(relationship));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearBrowsingData(callbackHelper::notifyCalled,
@@ -166,7 +168,7 @@ public class OriginVerifierTest {
         });
 
         callbackHelper.waitForCallback(0);
-        Assert.assertTrue(VerificationResultStore.getRelationships().isEmpty());
+        Assert.assertTrue(mStore.getRelationships().isEmpty());
     }
 
     @Test

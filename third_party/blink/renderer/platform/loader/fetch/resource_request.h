@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/render_blocking_behavior.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -474,6 +475,10 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   void SetFetchLikeAPI(bool enabled) { is_fetch_like_api_ = enabled; }
 
+  bool IsFavicon() const { return is_favicon_; }
+
+  void SetFavicon(bool enabled) { is_favicon_ = enabled; }
+
   bool PrefetchMaybeForTopLeveNavigation() const {
     return prefetch_maybe_for_top_level_navigation_;
   }
@@ -511,6 +516,13 @@ class PLATFORM_EXPORT ResourceRequestHead {
   void SetWebBundleTokenParams(
       ResourceRequestHead::WebBundleTokenParams params) {
     web_bundle_token_params_ = params;
+  }
+
+  void SetRenderBlockingBehavior(RenderBlockingBehavior behavior) {
+    render_blocking_behavior_ = behavior;
+  }
+  RenderBlockingBehavior GetRenderBlockingBehavior() const {
+    return render_blocking_behavior_;
   }
 
  private:
@@ -596,6 +608,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   bool is_fetch_like_api_ = false;
 
+  bool is_favicon_ = false;
+
   // Currently this is only used when a prefetch request has `as=document`
   // specified. If true, and the request is cross-origin, the browser will cache
   // the request under the cross-origin's partition. Furthermore, its reuse from
@@ -613,6 +627,11 @@ class PLATFORM_EXPORT ResourceRequestHead {
   // WebBundle. The network process uses this token to associate the request to
   // the bundle.
   base::Optional<WebBundleTokenParams> web_bundle_token_params_;
+
+  // Render blocking behavior of the resource. Used in maintaining correct
+  // reporting for redirects.
+  RenderBlockingBehavior render_blocking_behavior_ =
+      RenderBlockingBehavior::kUnset;
 };
 
 class PLATFORM_EXPORT ResourceRequestBody {

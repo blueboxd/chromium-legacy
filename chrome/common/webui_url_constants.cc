@@ -140,6 +140,9 @@ const char kChromeUIRestartHost[] = "restart";
 const char kChromeUIRestartURL[] = "chrome://restart/";
 const char kChromeUISafetyPixelbookURL[] = "https://g.co/Pixelbook/legal";
 const char kChromeUISafetyPixelSlateURL[] = "https://g.co/PixelSlate/legal";
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+const char kChromeUISessionServiceInternalsHost[] = "session-service-internals";
+#endif
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
@@ -183,6 +186,9 @@ const char kChromeUIWebFooterExperimentURL[] =
     "chrome://web-footer-experiment/";
 const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
+const char kChromeUIWorkProfileConfirmationHost[] = "work-profile-confirmation";
+const char kChromeUIWorkProfileConfirmationURL[] =
+    "chrome://work-profile-confirmation/";
 
 #if defined(OS_WIN)
 // TODO(crbug.com/1003960): Remove when issue is resolved.
@@ -203,8 +209,8 @@ const char kChromeUIUntrustedVideoPlayerUrl[] =
 const char kChromeUIWebApksHost[] = "webapks";
 #else
 const char kChromeUINearbyInternalsHost[] = "nearby-internals";
-const char kChromeUIReadLaterHost[] = "read-later";
-const char kChromeUIReadLaterURL[] = "chrome://read-later/";
+const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
+const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -404,8 +410,8 @@ const char kChromeUITabStripURL[] = "chrome://tab-strip";
 #if !defined(OS_ANDROID)
 const char kChromeUICommanderHost[] = "commander";
 const char kChromeUICommanderURL[] = "chrome://commander";
-const char kChromeUITabSearchHost[] = "tab-search";
-const char kChromeUITabSearchURL[] = "chrome://tab-search/";
+const char kChromeUITabSearchHost[] = "tab-search.top-chrome";
+const char kChromeUITabSearchURL[] = "chrome://tab-search.top-chrome/";
 #endif
 
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
@@ -491,6 +497,9 @@ const char* const kChromeHostURLs[] = {
     kChromeUIPredictorsHost,
     kChromeUIPrefsInternalsHost,
     kChromeUIQuotaInternalsHost,
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+    kChromeUISessionServiceInternalsHost,
+#endif
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,
     kChromeUINTPTilesInternalsHost,

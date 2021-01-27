@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/file_system/file_observers.h"
@@ -102,8 +103,9 @@ int SandboxFileStreamWriter::WriteInternal(net::IOBuffer* buf, int buf_len) {
   DCHECK(total_bytes_written_ <= allowed_bytes_to_write_ ||
          allowed_bytes_to_write_ < 0);
   if (total_bytes_written_ >= allowed_bytes_to_write_) {
-    has_pending_operation_ = false;
-    return net::ERR_FILE_NO_SPACE;
+    const int out_of_quota = net::ERR_FILE_NO_SPACE;
+    DidWrite(out_of_quota);
+    return out_of_quota;
   }
 
   if (buf_len > allowed_bytes_to_write_ - total_bytes_written_)
@@ -177,9 +179,10 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
     return;
   }
 
-  DCHECK(quota_manager_proxy->quota_manager());
-  quota_manager_proxy->quota_manager()->GetUsageAndQuota(
-      url_.origin(), FileSystemTypeToQuotaStorageType(url_.type()),
+  DCHECK(quota_manager_proxy);
+  quota_manager_proxy->GetUsageAndQuota(
+      base::SequencedTaskRunnerHandle::Get().get(), url_.origin(),
+      FileSystemTypeToQuotaStorageType(url_.type()),
       base::BindOnce(&SandboxFileStreamWriter::DidGetUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -233,7 +236,8 @@ void SandboxFileStreamWriter::DidWrite(int write_response) {
     }
     if (CancelIfRequested())
       return;
-    std::move(write_callback_).Run(write_response);
+    if (write_callback_)
+      std::move(write_callback_).Run(write_response);
     return;
   }
 

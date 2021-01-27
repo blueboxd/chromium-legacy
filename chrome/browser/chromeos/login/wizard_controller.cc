@@ -30,12 +30,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
@@ -241,15 +241,11 @@ const chromeos::StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
 // The HID detection screen is only allowed for form factors without built-in
 // inputs: Chromebases, Chromebits, and Chromeboxes (crbug.com/965765).
 bool CanShowHIDDetectionScreen() {
-  if (chromeos::StartupUtils::IsHIDDetectionScreenDisabledForTests())
-    return false;
-
   switch (chromeos::GetDeviceType()) {
     case chromeos::DeviceType::kChromebase:
     case chromeos::DeviceType::kChromebit:
     case chromeos::DeviceType::kChromebox:
-      return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableHIDDetectionOnOOBEForTesting);
+      return true;
     default:
       return false;
   }

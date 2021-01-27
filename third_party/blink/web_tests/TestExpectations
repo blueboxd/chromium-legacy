@@ -499,42 +499,15 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/inlines-005.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inlines-006.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-005.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-006.xht [ Failure ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-013.xht [ Failure ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-014.xht [ Failure ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-005.xht [ Failure ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-006.xht [ Failure ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-014.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Failure ]
 
 #### external/wpt/css/css-position
 crbug.com/752022 external/wpt/css/css-position/sticky/position-sticky-offset-overflow.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-tr-top.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-tr-bottom.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-tfoot-bottom.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-table-thead-top.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/sticky/position-sticky-parsing.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-left-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-left.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-top-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tbody-top.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tfoot-left-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tfoot-left.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tfoot-top-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tfoot-top.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-thead-left-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-thead-left.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-thead-top-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-thead-top.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top-absolute-child.html [ Failure ]
-crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.html [ Failure ]
 
 #### external/wpt/css/css-sizing
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
-crbug.com/1164474 external/wpt/css/css-sizing/aspect-ratio/table-element-001.html [ Failure ]
 
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-002.html [ Failure ]
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-003.html [ Failure ]
@@ -634,35 +607,9 @@ crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pass Timeout ]
 
 ### external/wpt/css/css-tables/
-crbug.com/598134 external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Failure ]
-crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-001.html [ Failure ]
-crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-003.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-004.html [ Failure ]
-crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
 crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-row-004.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-001.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-002.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-003.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-004-dynamic.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-005.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-001.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-002.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-003.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-001.html [ Failure ]
-crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html [ Failure ]
-crbug.com/377847 external/wpt/css/css-tables/subpixel-collapsed-borders-003.html [ Failure ]
-crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-height-001.html [ Failure ]
-crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-width-001.html [ Failure ]
-crbug.com/377847 external/wpt/css/css-tables/subpixel-table-cell-width-002.html [ Failure ]
-crbug.com/377847 external/wpt/css/css-tables/subpixel-table-width-001.html [ Failure ]
-crbug.com/764031 external/wpt/css/css-tables/toggle-row-display-property-001.html [ Failure ]
-crbug.com/613753 external/wpt/css/css-tables/border-spacing-included-in-sizes-001.html [ Failure ]
-crbug.com/353580 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children-005.html [ Failure ]
-crbug.com/1108224 external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
-crbug.com/958381 external/wpt/css/css-tables/tentative/position-sticky-container.html [ Failure ]
-crbug.com/958381 external/wpt/css/css-tables/tentative/table-height-redistribution.html [ Failure ]
-crbug.com/958381 external/wpt/css/css-tables/tentative/paint/background-image-column-collapsed.html [ Failure ]
 
 # [css-contain]
 
@@ -747,7 +694,6 @@ crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-
 crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-002.html [ Failure ]
 crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-003.html [ Failure ]
 crbug.com/885175 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
-crbug.com/799016 external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
 
 # [css-ui]
 # Layout team disagrees with the spec for this particular test.
@@ -761,11 +707,6 @@ crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure 
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/1111128 external/wpt/css/css-flexbox/flexbox-min-height-auto-002b.html [ Failure ]
 crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-container-crash.html [ Crash Pass ]
-
-# Fixed in TablesNG.
-crbug.com/958381 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size.html [ Failure ]
-crbug.com/958381 external/wpt/css/css-flexbox/table-as-item-flex-cross-size.html [ Failure ]
-crbug.com/1128262 external/wpt/css/css-flexbox/table-as-item-specified-width.html [ Failure ]
 
 # These require css-align-3 positional keywords that Blink doesn't yet support for flexbox.
 crbug.com/1011718 external/wpt/css/css-flexbox/flexbox-justify-content-horiz-001a.xhtml [ Failure ]
@@ -1164,6 +1105,55 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.h
 ### Textarea NG
 crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
+### TablesNG
+# crbug.com/958381
+# fails because TablesNG does not coalesce columns
+crbug.com/958381 accessibility/table-cells-with-colspan.html [ Failure ]
+crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
+
+# TODO fails because cell size with only input element is 18px, not 15. line-height: 0px fixes it.
+crbug.com/958381 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
+
+# TODO Surprisingly, if table has 2 footers, first footer should be at the bottom of the table
+crbug.com/958381 fast/table/border-collapsing/adjacent-row-groups-multi.html [ Failure ]
+
+# TODO in NG, if section has only empty rows, it is empty. Not so in Legacy. Needs C++ fix.
+crbug.com/958381 accessibility/table-with-hidden-head-section.html [ Failure ]
+
+# Composited background painting leaves gaps.
+crbug.com/958381 fast/table/border-collapsing/composited-cell-collapsed-border.html [ Failure ]
+crbug.com/958381 fast/table/border-collapsing/composited-row-collapsed-border.html [ Failure ]
+crbug.com/958381 paint/invalidation/table/collapsed-border-cell-change-width-composited-cell.html [ Failure ]
+crbug.com/958381 paint/invalidation/table/collapsed-border-cell-change-width-composited-row.html [ Failure ]
+crbug.com/958381 paint/invalidation/table/collapsed-border-cell-change-width-composited-section.html [ Failure ]
+
+# Rowspanned cell overflows TD visible rect.
+crbug.com/958381 external/wpt/css/css-tables/visibility-collapse-rowspan-005.html [ Failure ]
+
+# These tests are messy, not sure what they are testing. Lots of failures in Legacy and NG. Delete?
+crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ Failure ]
+crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows.html [ Failure ]
+crbug.com/958381 fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
+crbug.com/958381 fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
+
+# Unknown cause, but they are virtual
+crbug.com/958381 virtual/layout_ng_block_frag/fragmentation/multi-line-cells-paginated.html [ Failure ]
+crbug.com/958381 virtual/layout_ng_block_frag/fragmentation/single-line-cells-paginated.html [ Failure ]
+
+# Mac failures - antialiasing of ref
+crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-087.xht [ Failure ]
+crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-088.xht [ Failure ]
+crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-089.xht [ Failure ]
+crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-090.xht [ Failure ]
+crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-091.xht [ Failure ]
+crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-092.xht [ Failure ]
+crbug.com/958381 [ Mac ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
+crbug.com/958381 [ Win ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
+crbug.com/958381 [ Mac ] virtual/layout_ng_block_frag/fragmentation/fragmented-table-cell.html [ Failure ]
+crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.html [ Failure ]
+
+# TablesNG ends
+
 # ====== LayoutNG-only failures until here ======
 
 # ====== MathMLCore-only tests from here ======
@@ -1346,9 +1336,6 @@ crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/904592 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 crbug.com/904592 [ Win ] virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Pass ]
 
-crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
-crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
-
 crbug.com/280342 http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
@@ -1474,6 +1461,8 @@ crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
 crbug.com/1002937 external/wpt/editing/run/caret-navigation-around-line-break.html [ Failure ]
 
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
+
+crbug.com/1170052 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Pass Timeout ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
@@ -1650,19 +1639,8 @@ crbug.com/666657 external/wpt/css/css-text/hanging-punctuation/* [ Skip ]
 
 crbug.com/909597 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
 
-crbug.com/664386 external/wpt/css/css-writing-modes/inline-table-alignment-003.xht [ Failure ]
-crbug.com/664386 external/wpt/css/css-writing-modes/inline-table-alignment-005.xht [ Failure ]
-
 crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-001.html [ Failure ]
 crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-002.html [ Failure ]
-
-# Orthogonal table modes will be supported by TablesNG
-crbug.com/1020373 external/wpt/css/css-writing-modes/block-flow-direction-vlr-018.xht [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/block-flow-direction-vrl-017.xht [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/line-box-direction-vlr-016.xht [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/table-cell-001.html [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/table-cell-002.html [ Failure ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
@@ -1725,9 +1703,6 @@ crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
-
-# Renaming front_end/protocol to front_end/protocol_client requires a 3-way change. Temporarliy disable web tests that use |Protocol|
-crbug.com/1047760 http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
 
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
@@ -1882,7 +1857,6 @@ crbug.com/654477 media/controls-focus-ring.html [ Failure ]
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/613659 external/wpt/quirks/percentage-height-calculation.html [ Failure ]
-crbug.com/613661 external/wpt/quirks/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
@@ -1917,7 +1891,6 @@ crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Fail
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-013.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-008.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-020.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-008.xht [ Failure ]
@@ -2415,17 +2388,7 @@ crbug.com/1078474 external/wpt/css/css-pseudo/selection-intercharacter-012.html 
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 ### external/wpt/css/CSS2/tables/
-crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-dynamic-row-002.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-dynamic-rowgroup-002.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/caption-side-applies-to-007.xht [ Failure ]
 crbug.com/958381 external/wpt/css/CSS2/tables/column-visibility-004.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-025.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-026.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-027.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-028.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-029.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-030.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/fixed-table-layout-031.xht [ Failure ]
 crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-079.xht [ Skip ]
 crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-080.xht [ Skip ]
 crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-081.xht [ Skip ]
@@ -2472,11 +2435,6 @@ crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-201.xht [ 
 crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-202.xht [ Skip ]
 crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-203.xht [ Skip ]
 crbug.com/958381 external/wpt/css/CSS2/tables/table-anonymous-objects-204.xht [ Skip ]
-crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bc-colgroup-001.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bc-column-001.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bs-colgroup-001.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bs-column-001.xht [ Failure ]
-crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bs-rowgroup-001.xht [ Failure ]
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/anonymous-table-box-width-001.xht [ Failure ]
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-009.xht [ Failure ]
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-010.xht [ Failure ]
@@ -2554,14 +2512,12 @@ crbug.com/626703 [ Win10 ] external/wpt/css/css-typed-om/stylevalue-subclasses/c
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.small.worker.html [ Timeout ]
 crbug.com/626703 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-3-dynamic-worker.html [ Timeout ]
 crbug.com/626703 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-1-worker.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-1-nothrow-sharedworker.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.NaN.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/element/fill-and-stroke-styles/2d.gradient.interpolate.zerosize.strokeText.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/element/fill-and-stroke-styles/2d.gradient.interpolate.zerosize.strokeText.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-3-dynamic-sharedworker.html [ Timeout ]
 crbug.com/626703 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-2-import-worker.html [ Timeout ]
-crbug.com/626703 [ Win10 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.zero.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.negative.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-2-import-sharedworker.html [ Timeout ]
@@ -2667,7 +2623,6 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-
 crbug.com/626703 [ Mac ] external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Failure ]
-crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/pageshow-event.window.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/frame-src/frame-src-same-document.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
@@ -2679,7 +2634,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-color/t422-rgba-a0.6-a.xht [ Fai
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-basic-0.6-a.xht [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/t425-hsla-basic-a.xht [ Failure ]
 crbug.com/626703 external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
-crbug.com/626703 external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation-1.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation-3.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Failure Timeout ]
@@ -3203,8 +3157,6 @@ crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ 
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
 
 # Synthetic modules report the wrong location in errors
@@ -3586,7 +3538,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/gri
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-5.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-6.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-7.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-place-content-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-alignment-positioned-items-012.html [ Crash Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-alignment-positioned-items-013.html [ Crash Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-alignment-positioned-items-014.html [ Crash Failure ]
@@ -3599,8 +3550,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/gri
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-005.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-alignment-non-static-positioned-items-008.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-alignment-non-static-positioned-items-009.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-alignment-non-static-positioned-items-010.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-alignment-non-static-positioned-items-011.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-alignment-positioned-items-with-margin-border-padding-011.html [ Crash Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-alignment-positioned-items-with-margin-border-padding-012.html [ Crash Failure ]
@@ -3802,7 +3751,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algori
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-automatic-minimum-for-auto-columns-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-container-percentage-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-container-percentage-002.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-content-distribution-must-account-for-track-sizing-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-content-distribution-must-account-for-track-sizing-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-content-distribution-must-account-for-track-sizing-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-content-distribution-must-account-for-track-sizing-004.html [ Failure ]
@@ -4408,9 +4356,6 @@ crbug.com/1022816 external/wpt/resource-timing/crossorigin-sandwich-TAO.sub.html
 # MHT works only when loaded from local FS (file://..).
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 
-# These tests load resources from file:///gen/... .
-crbug.com/919639 [ Fuchsia ] fast/speech/scripted/speechrecognition-re-restart.html [ Failure ]
-
 # These tests timeout when using Scenic ozone platform.
 crbug.com/1067477 [ Fuchsia ] fast/media/matchmedium-query-api.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Skip ]
@@ -4437,7 +4382,7 @@ crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-m
 crbug.com/818076 http/tests/devtools/oopif/oopif-elements-navigate-in.js [ Failure Pass ]
 
 # Sheriff 2018-03-05
-crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
+crbug.com/818650 [ Linux ] wpt_internal/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
 
 # Prefetching Signed Exchange DevTools tests are flaky.
 crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
@@ -4941,38 +4886,6 @@ crbug.com/970285 virtual/forced-high-contrast-colors/external/wpt/forced-colors-
 crbug.com/1090660 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/svg-as-image.html [ Skip ]
 crbug.com/1090660 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/svg-as-image.html [ Pass ]
 
-# virtual/layout_ng_table
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/border-spacing-included-in-sizes-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/min-max-size-table-content-box.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-collapsed-borders-003.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-cell-height-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-cell-width-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-cell-width-002.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/subpixel-table-width-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/toggle-row-display-property-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-002.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-003.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-004-dynamic.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-col-005.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-colspan-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-colspan-002.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-row-004.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-rowcol-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-rowcol-002.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-001.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-003.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children-005.html [ Pass ]
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/tentative/position-sticky-container.html [ Pass ]
-
-crbug.com/1157330 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/computing-row-measure-0.html [ Failure ]
-crbug.com/1157626 virtual/layout_ng_table/external/wpt/css/css-tables/visibility-collapse-rowspan-005.html [ Failure ]
-
-# Works in main table patch, needs percentage sizing fix.
-crbug.com/958381 virtual/layout_ng_table/external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
-
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
 
@@ -5331,10 +5244,10 @@ crbug.com/1059645 external/wpt/pointerevents/pointerevent_coalesced_events_attri
 
 # Failing on Fuchsia due to dependency on FuchsiaMediaResourceProvider, which is not implemented in content_shell.
 crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Skip ]
-crbug.com/1061226 [ Fuchsia ] fast/speech/scripted/speechrecognition-restart-onend.html [ Skip ]
 crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Skip ]
 crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html [ Skip ]
 crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-pannernode-interface/panner-equalpower-stereo.html [ Skip ]
+crbug.com/1061226 [ Fuchsia ] wpt_internal/speech/scripted/speechrecognition-restart-onend.html [ Skip ]
 
 # Sheriff 2020-03-13
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]
@@ -5771,7 +5684,7 @@ crbug.com/1152088 [ Mac10.13 Debug ] fast/dom/cssTarget-crash.html [ Pass Timeou
 # Sheriff 2021-01-22 added Timeout per crbug.com/1046784:
 crbug.com/1149734 http/tests/devtools/sources/source-frame-toolbar-items.js [ Pass Failure Timeout ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-frameworks/frameworks-sourcemap.js [ Pass Failure ]
-crbug.com/1149734 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
+crbug.com/1149734 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure Timeout ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/inline-scope-variables.js [ Pass Failure Timeout ]
 
 #Sheriff 2020-11-24

@@ -117,6 +117,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &feed::kInterestFeedSpinnerAlwaysAnimate,
     &feed::kInterestFeedV1ClicksAndViewsConditionalUpload,
     &feed::kInterestFeedV2,
+    &feed::kInterestFeedV2Hearts,
     &feed::kReportFeedUserActions,
     &feed::kWebFeed,
     &feed::kXsurfaceMetricsReporting,
@@ -128,7 +129,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidLayoutChangeTabReparenting,
     &kAndroidManagedByMenuItem,
     &kAndroidMultipleDisplay,
-    &kAndroidNightModeTabReparenting,
     &kAndroidPartnerCustomizationPhenotype,
     &kAndroidSearchEngineChoiceNotification,
     &kAssistantIntentExperimentId,
@@ -329,9 +329,6 @@ const base::Feature kAndroidManagedByMenuItem{"AndroidManagedByMenuItem",
 
 const base::Feature kAndroidMultipleDisplay{"AndroidMultipleDisplay",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAndroidNightModeTabReparenting{
-    "AndroidNightModeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAllowNewIncognitoTabIntents{
     "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -632,10 +629,10 @@ const base::Feature kTabToGTSAnimation{"TabToGTSAnimation",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabbedAppOverflowMenuIcons{
-    "TabbedAppOverflowMenuIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TabbedAppOverflowMenuIcons", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabbedAppOverflowMenuRegroup{
-    "TabbedAppOverflowMenuRegroup", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TabbedAppOverflowMenuRegroup", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabbedAppOverflowMenuThreeButtonActionbar{
     "TabbedAppOverflowMenuThreeButtonActionbar",

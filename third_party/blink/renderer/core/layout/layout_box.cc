@@ -32,7 +32,6 @@
 
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -7184,17 +7183,6 @@ PaintLayer* LayoutBox::EnclosingFloatPaintingLayer() const {
     curr = curr->Parent();
   }
   return nullptr;
-}
-
-const LayoutBlock& LayoutBox::EnclosingScrollportBox() const {
-  NOT_DESTROYED();
-  const LayoutBlock* ancestor = ContainingBlock();
-  for (; ancestor; ancestor = ancestor->ContainingBlock()) {
-    if (ancestor->IsScrollContainer())
-      return *ancestor;
-  }
-  NOTREACHED();
-  return *ancestor;
 }
 
 LayoutRect LayoutBox::LogicalVisualOverflowRectForPropagation() const {

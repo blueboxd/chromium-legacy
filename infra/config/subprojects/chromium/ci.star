@@ -913,6 +913,14 @@ ci.android_fyi_builder(
     ),
 )
 
+ci.android_fyi_builder(
+    name = "android-weblayer-pie-x86-wpt-fyi-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|weblayer",
+        short_name = "P",
+    ),
+)
+
 ci.android_builder(
     name = "android-pie-x86-rel",
     console_view_entry = consoles.console_view_entry(
@@ -927,7 +935,7 @@ ci.android_fyi_builder(
         category = "tester|weblayer",
         short_name = "10",
     ),
-    triggered_by = ["android-weblayer-x86-fyi-rel"],
+    triggered_by = ["android-weblayer-with-aosp-webview-x86-fyi-rel"],
     notifies = ["weblayer-sheriff"],
 )
 
@@ -937,7 +945,7 @@ ci.android_fyi_builder(
         category = "tester|weblayer",
         short_name = "M",
     ),
-    triggered_by = ["android-weblayer-x86-fyi-rel"],
+    triggered_by = ["android-weblayer-with-aosp-webview-x86-fyi-rel"],
     notifies = ["weblayer-sheriff"],
 )
 
@@ -965,6 +973,14 @@ ci.android_fyi_builder(
     name = "android-weblayer-x86-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "builder|weblayer",
+        short_name = "x86",
+    ),
+)
+
+ci.android_fyi_builder(
+    name = "android-weblayer-with-aosp-webview-x86-fyi-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "builder|weblayer_with_aosp_webview",
         short_name = "x86",
     ),
 )
@@ -1722,6 +1738,7 @@ ci.cipd_builder(
             "tools/android/avd/proto/creation/generic_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_android30.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
         ],

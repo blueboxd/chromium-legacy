@@ -47,7 +47,10 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
@@ -271,6 +274,7 @@ std::unique_ptr<views::View> CreateFeedbackContentView(
 // option to upload all browser-saved credit cards.
 class LocalCardMigrationOfferView : public views::View {
  public:
+  METADATA_HEADER(LocalCardMigrationOfferView);
   LocalCardMigrationOfferView(LocalCardMigrationDialogController* controller,
                               LocalCardMigrationDialogView* dialog_view)
       : controller_(controller) {
@@ -315,14 +319,17 @@ class LocalCardMigrationOfferView : public views::View {
         views::CreateEmptyBorder(kMigrationDialogInsets));
   }
 
-  ~LocalCardMigrationOfferView() override {}
+  LocalCardMigrationOfferView(const LocalCardMigrationOfferView&) = delete;
+  LocalCardMigrationOfferView& operator=(const LocalCardMigrationOfferView&) =
+      delete;
+  ~LocalCardMigrationOfferView() override = default;
 
   const std::vector<std::string> GetSelectedCardGuids() const {
     std::vector<std::string> selected_cards;
     for (views::View* child : card_list_view_->children()) {
-      DCHECK_EQ(MigratableCardView::kViewClassName, child->GetClassName());
+      DCHECK(views::IsViewClass<MigratableCardView>(child));
       auto* card = static_cast<MigratableCardView*>(child);
-      if (card->IsSelected())
+      if (card->GetSelected())
         selected_cards.push_back(card->GetGuid());
     }
     return selected_cards;
@@ -338,9 +345,11 @@ class LocalCardMigrationOfferView : public views::View {
   // The view that contains legal message and handles legal message links
   // clicking.
   LegalMessageView* legal_message_container_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationOfferView);
 };
+
+BEGIN_METADATA(LocalCardMigrationOfferView, views::View)
+ADD_READONLY_PROPERTY_METADATA(std::vector<std::string>, SelectedCardGuids)
+END_METADATA
 
 LocalCardMigrationDialogView::LocalCardMigrationDialogView(
     LocalCardMigrationDialogController* controller,
@@ -414,7 +423,7 @@ void LocalCardMigrationDialogView::OnWindowClosing() {
   }
 }
 
-bool LocalCardMigrationDialogView::ShouldOkButtonBeEnabled() const {
+bool LocalCardMigrationDialogView::GetEnableOkButton() const {
   if (controller_->GetViewState() == LocalCardMigrationDialogState::kOffered) {
     DCHECK(offer_view_) << "This method can't be called before ConstructView";
     return !offer_view_->GetSelectedCardGuids().empty();
@@ -429,7 +438,7 @@ void LocalCardMigrationDialogView::DeleteCard(const std::string& guid) {
 }
 
 void LocalCardMigrationDialogView::OnCardCheckboxToggled() {
-  SetButtonEnabled(ui::DIALOG_BUTTON_OK, ShouldOkButtonBeEnabled());
+  SetButtonEnabled(ui::DIALOG_BUTTON_OK, GetEnableOkButton());
 }
 
 // TODO(crbug.com/913571): Figure out a way to avoid two consecutive layouts.
@@ -476,7 +485,7 @@ void LocalCardMigrationDialogView::ConstructView() {
     offer_view_->SetID(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
     card_list_view_ = offer_view_->card_list_view_;
     AddChildView(offer_view_);
-    SetButtonEnabled(ui::DIALOG_BUTTON_OK, ShouldOkButtonBeEnabled());
+    SetButtonEnabled(ui::DIALOG_BUTTON_OK, GetEnableOkButton());
   } else {
     AddChildView(CreateFeedbackContentView(controller_, this).release());
   }
@@ -511,5 +520,11 @@ LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(
     content::WebContents* web_contents) {
   return new LocalCardMigrationDialogView(controller, web_contents);
 }
+
+BEGIN_METADATA(LocalCardMigrationDialogView, views::BubbleDialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(bool, EnableOkButton)
+ADD_READONLY_PROPERTY_METADATA(base::string16, OkButtonLabel)
+ADD_READONLY_PROPERTY_METADATA(base::string16, CancelButtonLabel)
+END_METADATA
 
 }  // namespace autofill

@@ -23294,6 +23294,7 @@ Called by update_document_policy_enum.py.-->
   <int value="818" label="DeviceAllowMGSToStoreDisplayProperties"/>
   <int value="819" label="SSLErrorOverrideAllowedForUrls"/>
   <int value="820" label="WebXRImmersiveArEnabled"/>
+  <int value="821" label="GaiaOfflineSigninTimeLimitDays"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31116,6 +31117,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3786" label="RTCPeerConnectionConstructedWithUnifiedPlan"/>
   <int value="3787" label="RTCPeerConnectionUsingComplexPlanB"/>
   <int value="3788" label="RTCPeerConnectionUsingComplexUnifiedPlan"/>
+  <int value="3789" label="WindowScreenIsExtended"/>
+  <int value="3790" label="WindowScreenChange"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43155,6 +43158,7 @@ from previous Chrome versions.
   <int value="-1578677451" label="EnableAppGridGhost:disabled"/>
   <int value="-1578503491" label="EnableContinueReading:disabled"/>
   <int value="-1578295753" label="UserMediaScreenCapturing:disabled"/>
+  <int value="-1576408607" label="ChromeTipsInMainMenu:enabled"/>
   <int value="-1575868447" label="RemoveNtpFakebox:enabled"/>
   <int value="-1575772949" label="DesktopPWAsLinkCapturing:disabled"/>
   <int value="-1575554415" label="AndroidPaymentAppsFilter:enabled"/>
@@ -44055,6 +44059,7 @@ from previous Chrome versions.
   <int value="-803233334" label="AutofillRefreshStyleAndroid:disabled"/>
   <int value="-803206774" label="TabbedAppOverflowMenuActionBar:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
+  <int value="-802309777" label="ChromeTipsInMainMenu:disabled"/>
   <int value="-799931058" label="UseMultiloginEndpoint:disabled"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
   <int value="-797520931" label="ExtensionsToolbarMenu:disabled"/>
@@ -51491,6 +51496,12 @@ Called by update_use_counter_css.py.-->
   <int value="12" label="BLE error"/>
   <int value="13" label="Wi-Fi LAN error"/>
   <int value="14" label="Payload unknown"/>
+</enum>
+
+<enum name="NearbyConnectionsUtilityProcessShutdownReason">
+  <int value="0" label="Normal"/>
+  <int value="1" label="Crash"/>
+  <int value="2" label="Mojo pipe disconnection"/>
 </enum>
 
 <enum name="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult">
@@ -65375,6 +65386,31 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="No request with wait"/>
   <int value="5" label="No request with content"/>
   <int value="6" label="No request with timeout"/>
+</enum>
+
+<enum name="RequestDestination">
+  <int value="0" label="EMPTY"/>
+  <int value="1" label="AUDIO"/>
+  <int value="2" label="AUDIO_WORKLET"/>
+  <int value="3" label="DOCUMENT"/>
+  <int value="4" label="EMBED"/>
+  <int value="5" label="FONT"/>
+  <int value="6" label="FRAME"/>
+  <int value="7" label="IFRAME"/>
+  <int value="8" label="IMAGE"/>
+  <int value="9" label="MANIFEST"/>
+  <int value="10" label="OBJECT"/>
+  <int value="11" label="PAINT_WORKLET"/>
+  <int value="12" label="REPORT"/>
+  <int value="13" label="SCRIPT"/>
+  <int value="14" label="SERVICE_WORKER"/>
+  <int value="15" label="SHARED_WORKER"/>
+  <int value="16" label="STYLE"/>
+  <int value="17" label="TRACK"/>
+  <int value="18" label="VIDEO"/>
+  <int value="19" label="WEB_BUNDLE"/>
+  <int value="20" label="WORKER"/>
+  <int value="21" label="XSLT"/>
 </enum>
 
 <enum name="RequestedImageMimeType">

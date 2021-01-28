@@ -1302,6 +1302,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_MANAGED_BY" desc="The text label of the 'Managed by' UI in the app menu, for enterprise users. MANAGER can be a domain or an email address.">
         Managed by <ph name="MANAGER">$1<ex>example.com</ex></ph>
       </message>
+      <message name="IDS_CHROME_TIPS" desc="The text label of the Help menu item which takes the user to the Chrome Tips page.">
+        Tips for Chrome
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In sentence case: The app menu label to import bookmarks and settings.">
           Import bookmarks and settings...
@@ -2773,6 +2776,12 @@ are declared in tools/grit/grit_rule.gni.
               =0 {No third-party cookies}
               =1 {1 third-party cookie is blocked}
               other {# third-party cookies are blocked}}
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE_ALL_BLOCKED" desc="Title of the dialog that allows users to control cookie blocking. Shown when all cookies (as opposed to only third-party ones) are blocked.">
+        {COUNT, plural,
+              =0 {No cookies}
+              =1 {1 cookie is blocked}
+              other {# cookies are blocked}}
       </message>
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE_OFF" desc="Text shown in the dialog that allows users to control cookie blocking. Shown when cookie blocking was disabled for this specific site.">
         Third-party cookies are allowed on this site

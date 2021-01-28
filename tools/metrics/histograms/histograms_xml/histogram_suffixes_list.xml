@@ -6396,6 +6396,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="WebStore" label="Extension from the Chrome Web Store"/>
   <affected-histogram name="Extensions.ForceInstalledFailureReason2"/>
   <affected-histogram name="Extensions.ForceInstalledFailureReason3"/>
+  <affected-histogram name="Extensions.ForceInstalledHttpErrorCode2"/>
+  <affected-histogram
+      name="Extensions.ForceInstalledManifestFetchFailedHttpErrorCode2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionWebUiPageType" separator=".">
@@ -16397,6 +16400,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Startup.TimeSinceLastStartup"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="SB2RequestDestinations" separator=".">
+  <suffix name="Checked"
+      label="Resources that were checked. Logged before the resource starts
+             loading and again for each redirect."/>
+  <suffix name="Skipped"
+      label="Resources that were not checked because they are not active-ish
+             content types. Only used on mobile. Logged before the resource
+             request starts."/>
+  <suffix name="Unsafe"
+      label="Resources that were checked and classified as unsafe. Logged
+             when the URL check is completed."/>
+  <affected-histogram name="SB2.RequestDestination"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="SB2ResourceTypes" separator=".">
   <suffix name="Checked"
       label="Resources that were checked. Logged before the resource starts
@@ -19642,7 +19659,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       Deprecated as of 2020-10-21.
     </obsolete>
   </suffix>
-  <suffix name="Eche" label="Eche"/>
   <suffix name="Help" label="Help"/>
   <suffix name="Media" label="Media"/>
   <suffix name="OSSettings" label="OS Settings"/>

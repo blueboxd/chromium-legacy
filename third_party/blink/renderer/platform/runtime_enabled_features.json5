@@ -116,6 +116,10 @@
       status: "stable",
     },
     {
+      name: "AccessibilityAriaVirtualContent",
+      status: "experimental",
+    },
+    {
       name: "AccessibilityExposeDisplayNone",
       status: "test",
     },
@@ -181,6 +185,10 @@
       name: "AppCache",
       status: "stable",
       origin_trial_feature_name: "AppCache",
+    },
+    {
+      name: "AriaTouchPassthrough",
+      status: "experimental",
     },
     {
       name: "AudioOutputDevices",

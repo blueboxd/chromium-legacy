@@ -340,10 +340,8 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   using self = ServiceWorkerBrowserTest;
 
   ServiceWorkerBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {network::features::kCrossOriginEmbedderPolicy,
-         network::features::kCrossOriginIsolated},
-        {});
+    feature_list_.InitWithFeatures({network::features::kCrossOriginIsolated},
+                                   {});
   }
 
   void SetUpOnMainThread() override {
@@ -2402,6 +2400,10 @@ class CacheStorageControlForBadOrigin
   void GetAllOriginsInfo(
       storage::mojom::CacheStorageControl::GetAllOriginsInfoCallback callback)
       override {
+    NOTREACHED();
+  }
+  void AddObserver(mojo::PendingRemote<storage::mojom::CacheStorageObserver>
+                       observer) override {
     NOTREACHED();
   }
 };

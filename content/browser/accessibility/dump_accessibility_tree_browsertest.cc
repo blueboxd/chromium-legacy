@@ -1312,6 +1312,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaTouchPassthrough) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-touchpassthrough.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DISABLED_AccessibilityAriaTextboxWithSelection) {
   RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-selection.html"));
 }
@@ -2627,6 +2632,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTruncateLabel) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityUl) {
   RunHtmlTest(FILE_PATH_LITERAL("ul.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityUlContenteditable) {
+  RunHtmlTest(FILE_PATH_LITERAL("ul-contenteditable.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

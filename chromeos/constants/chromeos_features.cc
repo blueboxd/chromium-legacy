@@ -277,9 +277,6 @@ const base::Feature kDriveFsBidirectionalNativeMessaging{
 const base::Feature kDriveFsMirroring{"DriveFsMirroring",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the System Web App (SWA) version of Eche.
-const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, emoji suggestion will be shown when user type "space".
 const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -353,7 +350,7 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 // Enables new ZIP archive handling in Files App.
 // https://crbug.com/912236
 const base::Feature kFilesZipMount{"FilesZipMount",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kFilesZipPack{"FilesZipPack",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFilesZipUnpack{"FilesZipUnpack",

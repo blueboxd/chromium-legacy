@@ -1433,6 +1433,12 @@ const char kMobilePwaInstallUseBottomSheetName[] =
 const char kMobilePwaInstallUseBottomSheetDescription[] =
     "Enables use of a rich bottom sheet when offering mobile PWA installation.";
 
+const char kMojoLinuxChannelSharedMemName[] =
+    "Enable Mojo Shared Memory Channel";
+const char kMojoLinuxChannelSharedMemDescription[] =
+    "If enabled Mojo on Linux based platforms can use shared memory as an "
+    "alternate channel for most messages.";
+
 const char kMouseSubframeNoImplicitCaptureName[] =
     "Disable mouse implicit capture for iframe";
 const char kMouseSubframeNoImplicitCaptureDescription[] =
@@ -2468,6 +2474,11 @@ const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =
     "For developers: use the sandbox service for Google Payments API calls.";
+
+const char kWallpaperWebUIName[] = "Enable new wallpaper experience";
+const char kWallpaperWebUIDescription[] =
+    "Enables the wallpaper picker "
+    "in ChromeOS Settings";
 
 const char kWebBluetoothNewPermissionsBackendName[] =
     "Use the new permissions backend for Web Bluetooth";
@@ -4104,12 +4115,6 @@ extern const char kEnhancedClipboardNudgeSessionResetName[] =
 extern const char kEnhancedClipboardNudgeSessionResetDescription[] =
     "When enabled, this will reset the clipboard nudge shown data on every new "
     "user session, allowing the nudge to be shown again.";
-
-const char kEnhancedClipboardSimpleRenderName[] =
-    "Only renders html in the Enhanced Clipboard if there are img or table "
-    "tags";
-const char kEnhancedClipboardSimpleRenderDescription[] =
-    "This will result in less HTML rendering in the Enhanced Clipboard menu.";
 
 const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
 const char kEnableCrOSActionRecorderDescription[] =

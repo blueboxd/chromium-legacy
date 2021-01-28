@@ -48,7 +48,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void Trace(Visitor*) const override;
 
  protected:
-  bool children_dirty_;
 #if DCHECK_IS_ON()
   bool initialized_ = false;
 #endif
@@ -76,7 +75,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsTextControl() const override;
   Element* MenuItemElementForMenu() const;
   Element* MouseButtonListener() const;
-  void SetNode(Node*);
   AXObject* CorrespondingControlAXObjectForLabelElement() const;
   AXObject* CorrespondingLabelAXObject() const;
   HTMLLabelElement* LabelElementContainer() const;
@@ -208,7 +206,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                          bool* clips_children = nullptr) const override;
 
   void AddChildren() override;
-
   bool CanHaveChildren() const override;
   // Set is_from_aria_owns to true if the child is being added because it was
   // pointed to from aria-owns.
@@ -220,10 +217,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Set is_from_aria_owns to true if the child is being insert because it was
   // pointed to from aria-owns.
   void InsertChild(AXObject*, unsigned index, bool is_from_aria_owns = false);
-  void ClearChildren() override;
-  bool NeedsToUpdateChildren() const override { return children_dirty_; }
-  void SetNeedsToUpdateChildren() override { children_dirty_ = true; }
-  void UpdateChildrenIfNecessary() override;
   void SelectedOptions(AXObjectVector&) const override;
 
   // Properties of the object's owning document or page.
@@ -279,9 +272,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
       ax::mojom::blink::Role dom_role) const {
     return dom_role;
   }
-
-  FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, SetNeedsToUpdateChildren);
-  FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, UpdateChildrenIfNecessary);
 
  private:
   bool HasInternalsAttribute(Element&, const QualifiedName&) const;

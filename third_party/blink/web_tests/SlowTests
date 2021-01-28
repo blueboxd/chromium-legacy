@@ -172,14 +172,6 @@ crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ 
 crbug.com/726075 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Slow ]
 crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Slow ]
 
-# IDB Observer tests require multiple browsing contexts/workers interacting with
-# IndexedDB, which can be slow.
-crbug.com/660468 [ Linux ] storage/indexeddb/observer-frame.html [ Slow ]
-crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
-
-# Foreign fetch tests make many requests, and create multiple browsing contexts,
-# which can be very slow.
-
 # Media controls tests have to wait for panel to fade out.
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
 
@@ -216,6 +208,8 @@ crbug.com/853977 [ Linux ] http/tests/fetch/chromium/release-handle-crash.html [
 
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Slow ]
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Slow ]
+
+crbug.com/1047164 [ Mac ] fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Slow ]
 
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
@@ -747,4 +741,3 @@ crbug.com/1145424 [ Linux ] http/tests/devtools/sources/debugger-ui/reveal-execu
 crbug.com/1145424 [ Win ] http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Slow ]
 crbug.com/1145641 external/wpt/requestidlecallback/callback-invoked.html [ Slow ]
 crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Slow ]
-

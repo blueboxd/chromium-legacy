@@ -2900,6 +2900,68 @@ TEST_F(DesksTest, DragAllOverviewWindowsToOtherDesksNotEndClamshellSplitView) {
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
 }
 
+TEST_F(DesksTest, DeskTraversalNonTouchpadMetrics) {
+  NewDesk();
+  NewDesk();
+  NewDesk();
+  ASSERT_EQ(4u, DesksController::Get()->desks().size());
+
+  constexpr char kDeskTraversalsHistogramName[] =
+      "Ash.Desks.NumberOfDeskTraversals";
+
+  base::HistogramTester histogram_tester;
+  auto* controller = DesksController::Get();
+  const auto& desks = controller->desks();
+  ASSERT_EQ(controller->active_desk(), desks[0].get());
+
+  // Move 5 desks. There is nothing recorded at the end since the timer is still
+  // running.
+  ActivateDesk(desks[1].get());
+  ActivateDesk(desks[0].get());
+  ActivateDesk(desks[1].get());
+  ActivateDesk(desks[2].get());
+  ActivateDesk(desks[3].get());
+  histogram_tester.ExpectBucketCount(kDeskTraversalsHistogramName, 5, 0);
+
+  // Simulate advancing the time to end the timer. There should be 5 desks
+  // recorded.
+  controller->FireMetricsTimerForTesting();
+  histogram_tester.ExpectBucketCount(kDeskTraversalsHistogramName, 5, 1);
+}
+
+// Tests that clipping is unchanged when removing a desk in overview. Regression
+// test for https://crbug.com/1166300.
+TEST_F(DesksTest, RemoveDeskPreservesOverviewClipping) {
+  // Three virtual desks.
+  NewDesk();
+  NewDesk();
+
+  auto* controller = DesksController::Get();
+  Desk* desk2 = controller->desks()[1].get();
+  Desk* desk3 = controller->desks()[2].get();
+  ActivateDesk(desk3);
+
+  // Create a window on |desk3| with a header.
+  const int header_height = 32;
+  auto win0 = CreateAppWindow(gfx::Rect(200, 200));
+  win0->SetProperty(aura::client::kTopViewInset, header_height);
+  EXPECT_EQ(desk3->GetDeskContainerForRoot(Shell::GetPrimaryRootWindow()),
+            win0->parent());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->StartOverview());
+
+  const gfx::Rect expected_clip = win0->layer()->GetTargetClipRect();
+
+  // Remove |desk3|. |win0| is now a child of |desk2|.
+  RemoveDesk(desk3);
+  ASSERT_EQ(desk2->GetDeskContainerForRoot(Shell::GetPrimaryRootWindow()),
+            win0->parent());
+
+  // Tests that the clip is the same after the desk removal.
+  EXPECT_EQ(expected_clip, win0->layer()->GetTargetClipRect());
+}
+
 namespace {
 
 constexpr char kUser1Email[] = "user1@desks";
@@ -3784,45 +3846,6 @@ TEST_P(PerDeskShelfTest, RemoveActiveDesk) {
   RemoveDesk(desk_2);
   VerifyViewVisibility(app1, true);
   VerifyViewVisibility(app2, true);
-}
-
-// A test class that uses a mock time task environment.
-class DesksMockTimeTest : public AshTestBase {
- public:
-  DesksMockTimeTest()
-      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  DesksMockTimeTest(const DesksMockTimeTest&) = delete;
-  DesksMockTimeTest& operator=(const DesksMockTimeTest&) = delete;
-  ~DesksMockTimeTest() override = default;
-};
-
-// crbug.com/1163489
-TEST_F(DesksMockTimeTest, DISABLED_DeskTraversalNonTouchpadMetrics) {
-  NewDesk();
-  NewDesk();
-  NewDesk();
-  ASSERT_EQ(4u, DesksController::Get()->desks().size());
-
-  constexpr char kDeskTraversalsHistogramName[] =
-      "Ash.Desks.NumberOfDeskTraversals";
-
-  base::HistogramTester histogram_tester;
-  auto* controller = DesksController::Get();
-  const auto& desks = controller->desks();
-  ASSERT_EQ(controller->active_desk(), desks[0].get());
-
-  // Move 5 desks. There is nothing recorded at the end since the timer is still
-  // running.
-  ActivateDesk(desks[1].get());
-  ActivateDesk(desks[0].get());
-  ActivateDesk(desks[1].get());
-  ActivateDesk(desks[2].get());
-  ActivateDesk(desks[3].get());
-  histogram_tester.ExpectBucketCount(kDeskTraversalsHistogramName, 5, 0);
-
-  // Advance the time to end the timer. There should be 5 desks recorded.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(8));
-  histogram_tester.ExpectBucketCount(kDeskTraversalsHistogramName, 5, 1);
 }
 
 // A test class for testing Bento features.

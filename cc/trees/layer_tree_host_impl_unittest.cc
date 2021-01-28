@@ -29,6 +29,7 @@
 #include "cc/animation/transform_operations.h"
 #include "cc/base/features.h"
 #include "cc/base/histograms.h"
+#include "cc/document_transition/document_transition_request.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
@@ -2681,8 +2682,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
       AnimatedUpdateState(gfx::Point(10, 10), gfx::Vector2dF(0, -10)).get());
   EXPECT_FALSE(GetInputHandler().animating_for_snap_for_testing());
   // Finish the smooth scroll animation for wheel.
+  const int scroll_animation_duration_ms =
+      base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 300
+                                                                       : 150;
   BeginImplFrameAndAnimate(begin_frame_args,
-                           start_time + base::TimeDelta::FromMilliseconds(150));
+                           start_time + base::TimeDelta::FromMilliseconds(
+                                            scroll_animation_duration_ms));
 
   // At the end of the previous scroll animation, a new animation for the
   // snapping should have started.
@@ -14846,7 +14851,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(50, CurrentScrollOffset(scrolling_layer).y());
+  EXPECT_NEAR(
+      (base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 87
+                                                                        : 50),
+      CurrentScrollOffset(scrolling_layer).y(), 1);
   host_impl_->DidFinishImplFrame(begin_frame_args);
 
   // Update target.
@@ -18224,6 +18232,40 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapSibling) {
   // should be discarded outside of the simple frame -> subframe case.
   EXPECT_FALSE(
       GetInputHandler().FindFrameElementIdAtPoint(gfx::PointF(30, 30)));
+}
+
+TEST_F(LayerTreeHostImplTest, DocumentTransitionRequestCausesDamage) {
+  const gfx::Size viewport_size(100, 100);
+  SetupDefaultRootLayer(viewport_size);
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  const gfx::Transform draw_transform;
+  const gfx::Rect draw_viewport(viewport_size);
+  bool resourceless_software_draw = false;
+
+  // Clear any damage.
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,
+                     false);
+  last_on_draw_frame_.reset();
+  did_request_redraw_ = false;
+
+  // Ensure there is no damage.
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,
+                     false);
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_TRUE(last_on_draw_frame_->has_no_damage);
+  last_on_draw_frame_.reset();
+  did_request_redraw_ = false;
+
+  // Adding a transition effect should cause us to redraw.
+  host_impl_->active_tree()->AddDocumentTransitionRequest(
+      DocumentTransitionRequest::CreateStart(base::OnceClosure()));
+
+  // Ensure there is damage and we requested a redraw.
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,
+                     false);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
 }  // namespace cc

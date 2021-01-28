@@ -514,6 +514,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistency)},
+    {"simplify-sign-out-ios", flag_descriptions::kSimplifySignOutIOSName,
+     flag_descriptions::kSimplifySignOutIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(signin::kSimplifySignOutIOS)},
     {"default-browser-setting", flag_descriptions::kDefaultBrowserSettingsName,
      flag_descriptions::kDefaultBrowserSettingsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDefaultBrowserSettings)},
@@ -689,6 +692,19 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       base::SysUTF8ToNSString(policy::key::kSafeBrowsingProtectionLevel) : @2,
 
       base::SysUTF8ToNSString(policy::key::kSearchSuggestEnabled) : @YES,
+    }];
+  }
+
+  // If an incognito mode availability is set, add the policy key to the list of
+  // allowed experimental policies, and set the value.
+  NSString* incognito_policy_key =
+      base::SysUTF8ToNSString(policy::key::kIncognitoModeAvailability);
+  NSInteger incognito_mode_availability =
+      [defaults integerForKey:incognito_policy_key];
+  if (incognito_mode_availability) {
+    [allowed_experimental_policies addObject:incognito_policy_key];
+    [testing_policies addEntriesFromDictionary:@{
+      incognito_policy_key : @(incognito_mode_availability),
     }];
   }
 

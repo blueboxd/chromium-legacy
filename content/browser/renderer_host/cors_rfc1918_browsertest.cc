@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
@@ -27,6 +29,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -170,18 +173,19 @@ class PolicyTestContentBrowserClient : public TestContentBrowserClient {
 
   ~PolicyTestContentBrowserClient() override = default;
 
-  void SetAllowInsecurePrivateNetworkRequests(bool value) {
-    allow_insecure_private_network_requests_ = value;
+  // Adds an origin to the allowlist.
+  void SetAllowInsecurePrivateNetworkRequestsFrom(const url::Origin& origin) {
+    allowlisted_origins_.insert(origin);
   }
 
   bool ShouldAllowInsecurePrivateNetworkRequests(
       content::BrowserContext* browser_context,
-      const GURL& url) override {
-    return allow_insecure_private_network_requests_;
+      const url::Origin& origin) override {
+    return allowlisted_origins_.find(origin) != allowlisted_origins_.end();
   }
 
  private:
-  bool allow_insecure_private_network_requests_ = false;
+  std::set<url::Origin> allowlisted_origins_;
 };
 
 // RAII wrapper for |SetContentBrowserClientForTesting()|.
@@ -228,12 +232,9 @@ class CorsRfc1918BrowserTestBase : public ContentBrowserTest {
 
  protected:
   // Allows subclasses to construct instances with different features enabled.
-  explicit CorsRfc1918BrowserTestBase(const base::Feature* feature) {
-    if (feature) {
-      feature_list_.InitAndEnableFeature(*feature);
-    } else {
-      feature_list_.Init();
-    }
+  explicit CorsRfc1918BrowserTestBase(
+      const std::vector<base::Feature>& enabled_features) {
+    feature_list_.InitWithFeatures(enabled_features, {});
 
     StartServer();
   }
@@ -253,25 +254,36 @@ class CorsRfc1918BrowserTestBase : public ContentBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Test with insecure private network requests blocked.
+// Test with insecure private network requests blocked, excluding navigations.
 class CorsRfc1918BrowserTest : public CorsRfc1918BrowserTestBase {
  public:
   CorsRfc1918BrowserTest()
       : CorsRfc1918BrowserTestBase(
-            &features::kBlockInsecurePrivateNetworkRequests) {}
+            {features::kBlockInsecurePrivateNetworkRequests}) {}
+};
+
+// Test with insecure private network requests blocked, including navigations.
+class CorsRfc1918BrowserTestBlockNavigations
+    : public CorsRfc1918BrowserTestBase {
+ public:
+  CorsRfc1918BrowserTestBlockNavigations()
+      : CorsRfc1918BrowserTestBase({
+            features::kBlockInsecurePrivateNetworkRequests,
+            features::kBlockInsecurePrivateNetworkRequestsForNavigations,
+        }) {}
 };
 
 // Test with insecure private network requests allowed.
 class CorsRfc1918BrowserTestNoBlocking : public CorsRfc1918BrowserTestBase {
  public:
-  CorsRfc1918BrowserTestNoBlocking() : CorsRfc1918BrowserTestBase(nullptr) {}
+  CorsRfc1918BrowserTestNoBlocking() : CorsRfc1918BrowserTestBase({}) {}
 };
 
 // This test verifies that when the right feature is enabled, iframe requests:
 //  - from an insecure page with the "treat-as-public-address" CSP directive
 //  - to a local IP address
 // are blocked.
-IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
+IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTestBlockNavigations,
                        IframeFromInsecureTreatAsPublicToLocalIsBlocked) {
   EXPECT_TRUE(NavigateToURL(
       shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
@@ -302,6 +314,35 @@ IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
   // hand is opaque, which it would not be if the navigation had succeeded.
   EXPECT_EQ(url, child_frame->GetLastCommittedURL());
   EXPECT_TRUE(child_frame->GetLastCommittedOrigin().opaque());
+}
+
+// This test mimics the one above, only it is executed without enabling the
+// BlockInsecurePrivateNetworkRequestsForNavigations feature. It asserts that
+// the navigation is not blocked in this case.
+IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
+                       IframeFromInsecureTreatAsPublicToLocalIsNotBlocked) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
+
+  GURL url = InsecureURL(*embedded_test_server(), "/empty.html");
+
+  TestNavigationManager child_navigation_manager(shell()->web_contents(), url);
+
+  EXPECT_TRUE(ExecJs(root_frame_host(), R"(
+    const iframe = document.createElement("iframe");
+    iframe.src = "/empty.html";
+    document.body.appendChild(iframe);
+  )"));
+
+  child_navigation_manager.WaitForNavigationFinished();
+
+  // Check that the child iframe navigated successfully.
+  EXPECT_TRUE(child_navigation_manager.was_successful());
+
+  ASSERT_EQ(1ul, root_frame_host()->child_count());
+  RenderFrameHostImpl* child_frame =
+      root_frame_host()->child_at(0)->current_frame_host();
+  EXPECT_EQ(url, EvalJs(child_frame, "document.location.href"));
 }
 
 // Similar to IframeFromInsecureTreatAsPublicToLocalIsBlocked, but in
@@ -339,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
 // TODO(https://crbug.com/1129326): Revisit this when main-frame navigations are
 // subject to CORS-RFC1918 checks.
 IN_PROC_BROWSER_TEST_F(
-    CorsRfc1918BrowserTest,
+    CorsRfc1918BrowserTestBlockNavigations,
     FormSubmissionFromInsecurePublictoLocalIsNotBlockedInMainFrame) {
   EXPECT_TRUE(NavigateToURL(
       shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
@@ -368,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(
-    CorsRfc1918BrowserTest,
+    CorsRfc1918BrowserTestBlockNavigations,
     FormSubmissionFromInsecurePublictoLocalIsBlockedInChildFrame) {
   EXPECT_TRUE(NavigateToURL(
       shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
@@ -410,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(
-    CorsRfc1918BrowserTest,
+    CorsRfc1918BrowserTestBlockNavigations,
     FormSubmissionGetFromInsecurePublictoLocalIsBlockedInChildFrame) {
   EXPECT_TRUE(NavigateToURL(
       shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
@@ -2096,15 +2137,16 @@ IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
 IN_PROC_BROWSER_TEST_F(
     CorsRfc1918BrowserTest,
     FromInsecureTreatAsPublicToLocalWithPolicySetToAllowIsNotBlocked) {
+  GURL url = InsecureTreatAsPublicAddressURL(*embedded_test_server());
+
   PolicyTestContentBrowserClient client;
-  client.SetAllowInsecurePrivateNetworkRequests(true);
+  client.SetAllowInsecurePrivateNetworkRequestsFrom(url::Origin::Create(url));
 
   // Register the client before we navigate, so that the navigation commits the
   // correct PrivateNetworkRequestPolicy.
   ContentBrowserClientRegistration registration(&client);
 
-  EXPECT_TRUE(NavigateToURL(
-      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const network::mojom::ClientSecurityStatePtr security_state =
       root_frame_host()->BuildClientSecurityState();
@@ -2116,6 +2158,116 @@ IN_PROC_BROWSER_TEST_F(
   // Check that the page can load a local resource.
   EXPECT_EQ(true,
             EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that child frames with distinct origins from their parent
+// do not inherit their private network request policy, which is based on the
+// origin of the child document instead.
+IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
+                       PrivateNetworkRequestPolicyCalculatedPerOrigin) {
+  GURL url = InsecureTreatAsPublicAddressURL(*embedded_test_server());
+
+  PolicyTestContentBrowserClient client;
+  client.SetAllowInsecurePrivateNetworkRequestsFrom(url::Origin::Create(url));
+
+  // Register the client before we navigate, so that the navigation commits the
+  // correct PrivateNetworkRequestPolicy.
+  ContentBrowserClientRegistration registration(&client);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
+
+  RenderFrameHostImpl* child_frame = AddChildFromURL(
+      root_frame_host(), SecureDefaultURL(*embedded_test_server()));
+
+  network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate);
+}
+
+// This test verifies that the initial empty document, which inherits its origin
+// from the document creator, also inherits its private network request policy.
+IN_PROC_BROWSER_TEST_F(
+    CorsRfc1918BrowserTest,
+    PrivateNetworkRequestPolicyInheritedWithOriginForInitialEmptyDoc) {
+  GURL url = InsecureTreatAsPublicAddressURL(*embedded_test_server());
+
+  PolicyTestContentBrowserClient client;
+  client.SetAllowInsecurePrivateNetworkRequestsFrom(url::Origin::Create(url));
+
+  // Register the client before we navigate, so that the navigation commits the
+  // correct PrivateNetworkRequestPolicy.
+  ContentBrowserClientRegistration registration(&client);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* child_frame = AddChildInitialEmptyDoc(root_frame_host());
+
+  network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kAllow);
+}
+
+// This test verifies that `about:blank` iframes, which inherit their origin
+// from the navigation initiator, also inherit their private network request
+// policy.
+IN_PROC_BROWSER_TEST_F(
+    CorsRfc1918BrowserTest,
+    PrivateNetworkRequestPolicyInheritedWithOriginForAboutBlank) {
+  GURL url = InsecureTreatAsPublicAddressURL(*embedded_test_server());
+
+  PolicyTestContentBrowserClient client;
+  client.SetAllowInsecurePrivateNetworkRequestsFrom(url::Origin::Create(url));
+
+  // Register the client before we navigate, so that the navigation commits the
+  // correct PrivateNetworkRequestPolicy.
+  ContentBrowserClientRegistration registration(&client);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* child_frame = AddChildFromAboutBlank(root_frame_host());
+
+  network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kAllow);
+}
+
+// This test verifies that `data:` iframes, which commit an opaque origin
+// derived from the navigation initiator's origin, do not inherit their private
+// network request policy.
+IN_PROC_BROWSER_TEST_F(
+    CorsRfc1918BrowserTest,
+    PrivateNetworkRequestPolicyNotInheritedWithOriginForDataURL) {
+  GURL url = InsecureTreatAsPublicAddressURL(*embedded_test_server());
+
+  PolicyTestContentBrowserClient client;
+  client.SetAllowInsecurePrivateNetworkRequestsFrom(url::Origin::Create(url));
+
+  // Register the client before we navigate, so that the navigation commits the
+  // correct PrivateNetworkRequestPolicy.
+  ContentBrowserClientRegistration registration(&client);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* child_frame = AddChildFromDataURL(root_frame_host());
+
+  network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate);
 }
 
 // This test verifies that when the right feature is enabled, requests:
@@ -2264,7 +2416,8 @@ IN_PROC_BROWSER_TEST_F(CorsRfc1918BrowserTest,
             client_security_state->cross_origin_embedder_policy.value);
   EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
             client_security_state->ip_address_space);
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::kAllow,
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate,
             client_security_state->private_network_request_policy);
 }
 

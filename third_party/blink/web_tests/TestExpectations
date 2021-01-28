@@ -1114,9 +1114,6 @@ crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
 # TODO fails because cell size with only input element is 18px, not 15. line-height: 0px fixes it.
 crbug.com/958381 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
 
-# TODO Surprisingly, if table has 2 footers, first footer should be at the bottom of the table
-crbug.com/958381 fast/table/border-collapsing/adjacent-row-groups-multi.html [ Failure ]
-
 # TODO in NG, if section has only empty rows, it is empty. Not so in Legacy. Needs C++ fix.
 crbug.com/958381 accessibility/table-with-hidden-head-section.html [ Failure ]
 
@@ -2467,6 +2464,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-2.html [ Failure ]
 crbug.com/1170337 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.small.html [ Pass Timeout ]
@@ -2618,7 +2616,6 @@ crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-co
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?TypingA [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Delete [ Timeout ]
 crbug.com/626703 external/wpt/screen-capture/feature-policy.https.html [ Timeout ]
-crbug.com/626703 external/wpt/infrastructure/testdriver/actions/wheelScroll.html [ Timeout ]
 crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
@@ -3043,26 +3040,11 @@ crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeo
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-range.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-negative-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-attr-mapping.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad-invalid.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-additive.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-negative.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-fallback-invalid.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-prefix.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/dependent-builtin.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-prefix-invalid.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-fallback.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-extends.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/name-case-sensitivity.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-range-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-symbols-invalid.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-symbols.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-extends-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-05.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
@@ -5813,3 +5795,8 @@ crbug.com/1134103 http/tests/devtools/unit/view-location.js [ Skip ]
 
 crbug.com/1170062 [ Linux ] external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm [ Timeout Pass ]
 crbug.com/1170062 [ mac ] external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm [ Timeout Pass ]
+
+# Sheriff 2021-01-27
+crbug.com/1171331 tables/mozilla_expected_failures/bugs/bug89315.html [ Failure Pass ]
+
+crbug.com/1168785 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Timeout ]

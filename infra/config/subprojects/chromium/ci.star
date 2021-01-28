@@ -1697,6 +1697,18 @@ ci.chromiumos_builder(
     tree_closing = False,
 )
 
+# For Chromebox for meetings(CfM)
+ci.chromiumos_builder(
+    name = "linux-cfm-rel",
+    branch_selector = branches.ALL_BRANCHES,
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release",
+        short_name = "cfm",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    main_console_view = "main",
+)
+
 ci.cipd_3pp_builder(
     name = "3pp-linux-amd64-packager",
     os = os.LINUX_DEFAULT,
@@ -3487,6 +3499,7 @@ ci.fyi_coverage_builder(
         short_name = "lnx",
     ),
     use_clang_coverage = True,
+    coverage_test_types = ["overall", "unit"],
     triggered_by = [],
 )
 
@@ -4143,15 +4156,6 @@ ci.gpu_fyi_thin_tester(
     console_view_entry = consoles.console_view_entry(
         category = "Linux|Nvidia",
         short_name = "rel",
-    ),
-    triggered_by = ["GPU FYI Linux Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Linux FYI Release (AMD R7 240)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|AMD",
-        short_name = "240",
     ),
     triggered_by = ["GPU FYI Linux Builder"],
 )

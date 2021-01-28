@@ -334,7 +334,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/apps/guest_view/web_view_browsertest.cc',
   '^chrome/browser/browsing_data/',
   '^chrome/browser/captive_portal/captive_portal_browsertest.cc',
-  '^chrome/browser/chromeos/',
   '^chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.cc', # pylint: disable=line-too-long
   '^chrome/browser/extensions/',
   '^chrome/browser/history/android/android_history_provider_service_unittest.cc', # pylint: disable=line-too-long
@@ -353,7 +352,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/profiling_host/profiling_process_host.cc',
   '^chrome/browser/push_messaging/',
   '^chrome/browser/recovery/recovery_install_global_error.cc',
-  '^chrome/browser/renderer_context_menu/',
   '^chrome/browser/resource_coordinator/',
   '^chrome/browser/resources/chromeos/accessibility/',
   '^chrome/browser/rlz/chrome_rlz_tracker_delegate.cc',
@@ -362,9 +360,7 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/signin/',
   '^chrome/browser/site_isolation/site_per_process_text_input_browsertest.cc',
   '^chrome/browser/sync_file_system/',
-  '^chrome/browser/translate/',
   '^chrome/browser/web_applications/',
-  '^chrome/browser/win/',
   '^components/search_engines/',
   '^extensions/browser/',
   '^extensions/renderer/',

@@ -35,7 +35,7 @@ CartService::CartService(Profile* profile)
           profile_,
           ServiceAccessType::EXPLICIT_ACCESS)) {
   if (history_service_) {
-    history_service_->AddObserver(this);
+    history_service_observation_.Observe(history_service_);
   }
   if (base::GetFieldTrialParamValueByFeature(
           ntp_features::kNtpChromeCartModule,
@@ -52,6 +52,7 @@ CartService::~CartService() = default;
 void CartService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kCartModuleHidden, false);
   registry->RegisterBooleanPref(prefs::kCartModuleRemoved, false);
+  registry->RegisterIntegerPref(prefs::kCartModuleWelcomeSurfaceShownTimes, 0);
 }
 
 void CartService::Hide() {
@@ -133,6 +134,21 @@ void CartService::RestoreRemovedCart(const GURL& cart_url,
                                     std::move(callback)));
 }
 
+void CartService::IncreaseWelcomeSurfaceCounter() {
+  if (!ShouldShowWelcomSurface())
+    return;
+  int times = profile_->GetPrefs()->GetInteger(
+      prefs::kCartModuleWelcomeSurfaceShownTimes);
+  profile_->GetPrefs()->SetInteger(prefs::kCartModuleWelcomeSurfaceShownTimes,
+                                   times + 1);
+}
+
+bool CartService::ShouldShowWelcomSurface() {
+  return profile_->GetPrefs()->GetInteger(
+             prefs::kCartModuleWelcomeSurfaceShownTimes) <
+         kWelcomSurfaceShowLimit;
+}
+
 void CartService::LoadCartsWithFakeData(CartDB::LoadCallback callback) {
   cart_db_->LoadCartsWithPrefix(
       kFakeDataPrefix,
@@ -153,7 +169,7 @@ void CartService::OnOperationFinishedWithCallback(
 
 void CartService::Shutdown() {
   if (history_service_) {
-    history_service_->RemoveObserver(this);
+    history_service_observation_.Reset();
   }
   DeleteCartsWithFakeData();
   // Delete all carts that are removed.

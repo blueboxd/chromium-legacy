@@ -277,6 +277,9 @@ const base::Feature kDriveFsBidirectionalNativeMessaging{
 const base::Feature kDriveFsMirroring{"DriveFsMirroring",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the System Web App (SWA) version of Eche.
+const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, emoji suggestion will be shown when user type "space".
 const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -322,7 +325,7 @@ const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables JS modules for Files app.
 const base::Feature kFilesJsModules{"FilesJsModules",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables JS modules for Audio Player.
 const base::Feature kAudioPlayerJsModules{"AudioPlayerJsModules",
@@ -379,11 +382,6 @@ const base::Feature kClipboardHistory{"ClipboardHistory",
 // each new user session.
 const base::Feature kClipboardHistoryNudgeSessionReset{
     "ClipboardHistoryNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables rendering html in Clipboard History only if an img or table tag is
-// present.
-const base::Feature kClipboardHistorySimpleRender{
-    "ClipboardHistorySimpleRender", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, a blue new nudge will show on the context menu option for
 // clipboard history.
@@ -706,6 +704,10 @@ const base::Feature kVirtualKeyboardBorderedKey{
 const base::Feature kVmCameraMicIndicatorsAndNotifications{
     "VmCameraMicIndicatorsAndNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable new wallpaper experience in WebUI inside system settings.
+const base::Feature kWallpaperWebUI{"WallpaperWebUI",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable syncing of Wi-Fi configurations between
 // ChromeOS and a connected Android phone.
 const base::Feature kWifiSyncAndroid{"WifiSyncAndroid",
@@ -804,17 +806,11 @@ bool IsOobeChromeVoxHintEnabled() {
 }
 
 bool IsClipboardHistoryEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistory) ||
-         base::FeatureList::IsEnabled(kClipboardHistorySimpleRender);
+  return base::FeatureList::IsEnabled(kClipboardHistory);
 }
 
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
-}
-
-bool IsClipboardHistorySimpleRenderEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistory) ||
-         base::FeatureList::IsEnabled(kClipboardHistorySimpleRender);
 }
 
 bool IsClipboardHistoryContextMenuNudgeEnabled() {
@@ -875,6 +871,10 @@ bool IsSplitSettingsSyncEnabled() {
 
 bool IsViewBasedMultiprofileLoginEnabled() {
   return base::FeatureList::IsEnabled(kViewBasedMultiprofileLogin);
+}
+
+bool IsWallpaperWebUIEnabled() {
+  return base::FeatureList::IsEnabled(kWallpaperWebUI);
 }
 
 bool IsWifiSyncAndroidEnabled() {

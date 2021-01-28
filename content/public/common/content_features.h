@@ -28,12 +28,13 @@ CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControl;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
 CONTENT_EXPORT extern const base::Feature kBlockInsecurePrivateNetworkRequests;
+CONTENT_EXPORT extern const base::Feature
+    kBlockInsecurePrivateNetworkRequestsForNavigations;
 CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;
 CONTENT_EXPORT extern const base::Feature
     kBrowserVerifiedUserActivationKeyboard;
 CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivationMouse;
 CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
-CONTENT_EXPORT extern const base::Feature kCacheStorageParallelOps;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature
     kClearCrossBrowsingContextGroupMainFrameName;
@@ -200,6 +201,7 @@ CONTENT_EXPORT extern const base::Feature kWebXrIncubations;
 CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
+CONTENT_EXPORT extern const base::Feature kBindingManagementWaiveCpu;
 CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;

@@ -847,6 +847,9 @@ extern const char kMobileIdentityConsistencyVarDescription[];
 extern const char kMobilePwaInstallUseBottomSheetName[];
 extern const char kMobilePwaInstallUseBottomSheetDescription[];
 
+extern const char kMojoLinuxChannelSharedMemName[];
+extern const char kMojoLinuxChannelSharedMemDescription[];
+
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
@@ -1427,6 +1430,9 @@ extern const char kV8VmFutureDescription[];
 
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
+
+extern const char kWallpaperWebUIName[];
+extern const char kWallpaperWebUIDescription[];
 
 extern const char kWebBluetoothNewPermissionsBackendName[];
 extern const char kWebBluetoothNewPermissionsBackendDescription[];
@@ -2377,9 +2383,6 @@ extern const char kEnhancedClipboardDescription[];
 
 extern const char kEnhancedClipboardNudgeSessionResetName[];
 extern const char kEnhancedClipboardNudgeSessionResetDescription[];
-
-extern const char kEnhancedClipboardSimpleRenderName[];
-extern const char kEnhancedClipboardSimpleRenderDescription[];
 
 extern const char kEnableCrOSActionRecorderName[];
 extern const char kEnableCrOSActionRecorderDescription[];

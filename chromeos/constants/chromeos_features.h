@@ -134,6 +134,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDriveFsBidirectionalNativeMessaging;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDriveFsMirroring;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kEcheSWA;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEmojiSuggestAddition;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -169,8 +170,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kClipboardHistory;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kClipboardHistoryNudgeSessionReset;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kClipboardHistorySimpleRender;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kClipboardHistoryContextMenuNudge;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -319,6 +318,8 @@ extern const base::Feature kVirtualKeyboardBorderedKey;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVmCameraMicIndicatorsAndNotifications;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kWallpaperWebUI;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kWifiSyncAndroid;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeMozcProto;
@@ -355,8 +356,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsClipboardHistoryEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsClipboardHistoryNudgeSessionResetEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-bool IsClipboardHistorySimpleRenderEnabled();
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsClipboardHistoryContextMenuNudgeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsOobeChromeVoxHintEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsOobeScreensPriorityEnabled();
@@ -380,6 +379,7 @@ bool IsQuickAnswersTranslationCloudAPIEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersOnEditableTextEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsSyncEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsViewBasedMultiprofileLoginEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsWallpaperWebUIEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsWifiSyncAndroidEnabled();
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();

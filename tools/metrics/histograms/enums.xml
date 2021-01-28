@@ -26140,6 +26140,7 @@ Called by update_extension_histograms.py.-->
   <int value="1538" label="VIRTUALKEYBOARDPRIVATE_DELETECLIPBOARDITEM"/>
   <int value="1539" label="FILEMANAGERPRIVATE_ISTABLETMODEENABLED"/>
   <int value="1540" label="FILEMANAGERPRIVATE_NOTIFYDRIVEDIALOGRESULT"/>
+  <int value="1541" label="ENTERPRISEREPORTINGPRIVATE_GETCONTEXTINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -43271,6 +43272,7 @@ from previous Chrome versions.
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1480606359" label="AssistantIntentPageUrl:enabled"/>
+  <int value="-1478929417" label="MojoLinuxChannelSharedMem:enabled"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
   <int value="-1478137998" label="lite-video-default-downlink-bandwidth-kbps"/>
   <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
@@ -43499,6 +43501,7 @@ from previous Chrome versions.
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1301804101"
       label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:disabled"/>
+  <int value="-1301167148" label="WebViewZeroCopyVideo:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
@@ -44365,6 +44368,7 @@ from previous Chrome versions.
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-491546546" label="MeteredShowToggle:enabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
+  <int value="-490652941" label="WebViewZeroCopyVideo:enabled"/>
   <int value="-488779992" label="blink-settings"/>
   <int value="-488744544" label="PromoBrowserCommands:disabled"/>
   <int value="-488449930" label="SafetyCheckAndroid:enabled"/>
@@ -45725,6 +45729,7 @@ from previous Chrome versions.
   <int value="792884862" label="EnableSharedImageForWebview:enabled"/>
   <int value="798696013" label="ImeInputLogicMozc:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
+  <int value="802463708" label="WebViewSurfaceControl:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
   <int value="805882800" label="SafetyCheckChromeCleanerChild:disabled"/>
   <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
@@ -45843,6 +45848,7 @@ from previous Chrome versions.
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="928900043" label="OmniboxLooseMaxLimitOnDedicatedRows:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
+  <int value="934139985" label="WallpaperWebUI:enabled"/>
   <int value="934236781" label="OmniboxSuggestionsRecyclerView:enabled"/>
   <int value="934292666" label="DownloadRename:enabled"/>
   <int value="934805020" label="CornerShortcuts:disabled"/>
@@ -45862,6 +45868,7 @@ from previous Chrome versions.
   <int value="944484780" label="EnableEmbeddedAssistantUI:enabled"/>
   <int value="946185008" label="EnableAppDataSearch:disabled"/>
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
+  <int value="948351976" label="WallpaperWebUI:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
@@ -46732,6 +46739,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:disabled"/>
   <int value="1760946944" label="MacViewsAutofillPopup:disabled"/>
   <int value="1762320532" label="AutofillKeyboardAccessory:enabled"/>
+  <int value="1764618580" label="MojoLinuxChannelSharedMem:disabled"/>
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
@@ -47127,6 +47135,7 @@ from previous Chrome versions.
   <int value="2121550859" label="PreferHtmlOverPlugins:enabled"/>
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>
+  <int value="2122863344" label="WebViewSurfaceControl:disabled"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
   <int value="2123183411" label="BlinkHeapIncrementalMarking:enabled"/>
   <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
@@ -62136,6 +62145,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="kDownloadInProgress"/>
   <int value="5" label="kAppControllerMac"/>
   <int value="6" label="kClearingBrowsingData"/>
+  <int value="7" label="kAppWindow"/>
 </enum>
 
 <enum name="ProfileMenuActionableItem">

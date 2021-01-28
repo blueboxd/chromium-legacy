@@ -1014,10 +1014,6 @@
       status: "experimental",
     },
     {
-      name: "IDBObserver",
-      status: "experimental",
-    },
-    {
       name: "IDBPutAll",
       status: "experimental",
     },
@@ -1940,11 +1936,6 @@
     {
       name: "SystemWakeLock",
       status: "experimental",
-    },
-    {
-      name: "TableCellNewPercents",
-      depends_on: ["LayoutNG"],
-      status: "stable",
     },
     {
       // TODO(crbug.com/898942): Remove this in Chrome 95.

@@ -2154,7 +2154,8 @@ void WebContentsImpl::AttachInnerWebContents(
   // the first navigation, but when attaching a new window we don't navigate
   // before attaching. If the browser side is already initialized, the calls
   // below will just early return.
-  inner_render_manager->InitRenderView(inner_render_view_host, nullptr);
+  inner_render_manager->InitRenderView(inner_main_frame->GetSiteInstance(),
+                                       inner_render_view_host, nullptr);
   if (!inner_render_manager->GetRenderWidgetHostView()) {
     inner_web_contents_impl->CreateRenderWidgetHostViewForRenderManager(
         inner_render_view_host);
@@ -2746,7 +2747,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   if (params.desired_renderer_state ==
       CreateParams::kInitializeAndWarmupRendererProcess) {
     if (!GetRenderManager()->current_frame_host()->IsRenderFrameLive()) {
-      GetRenderManager()->InitRenderView(GetRenderViewHost(), nullptr);
+      GetRenderManager()->InitRenderView(site_instance.get(),
+                                         GetRenderViewHost(), nullptr);
     }
   }
 
@@ -3255,7 +3257,8 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   // calls us).
   if (auto* view = GetRenderWidgetHostView()) {
     if (view_is_visible) {
-      view->Show();
+      static_cast<RenderWidgetHostViewBase*>(view)->ShowWithVisibility(
+          new_visibility);
     } else if (new_visibility == Visibility::HIDDEN) {
       view->Hide();
     } else {
@@ -7716,16 +7719,17 @@ void WebContentsImpl::ReattachOuterDelegateIfNeeded() {
 bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     const base::Optional<base::UnguessableToken>& opener_frame_token,
-    int proxy_routing_id) {
+    RenderFrameProxyHost* proxy_host) {
   TRACE_EVENT1("browser,navigation",
                "WebContentsImpl::CreateRenderViewForRenderManager",
                "render_view_host", render_view_host);
-
   auto* rvh_impl = static_cast<RenderViewHostImpl*>(render_view_host);
 
-  if (proxy_routing_id == MSG_ROUTING_NONE)
+  if (!proxy_host)
     CreateRenderWidgetHostViewForRenderManager(render_view_host);
 
+  const auto proxy_routing_id =
+      proxy_host ? proxy_host->GetRoutingID() : MSG_ROUTING_NONE;
   if (!rvh_impl->CreateRenderView(opener_frame_token, proxy_routing_id,
                                   created_with_opener_)) {
     return false;
@@ -7734,17 +7738,12 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   // but only if it's not for the main frame. Main frame renderers should create
   // this state themselves from up-to-date values, so we shouldn't override it
   // with the cached values.
-  if (!render_view_host->GetMainFrame()) {
-    auto* proxy_host =
-        rvh_impl->frame_tree()
-            ->root()
-            ->render_manager()
-            ->GetRenderFrameProxyHost(render_view_host->GetSiteInstance());
+  if (!render_view_host->GetMainFrame() && proxy_host) {
     proxy_host->GetAssociatedRemoteMainFrame()->UpdateTextAutosizerPageInfo(
         text_autosizer_page_info_.Clone());
   }
 
-  if (proxy_routing_id == MSG_ROUTING_NONE)
+  if (!proxy_host)
     ReattachOuterDelegateIfNeeded();
 
   // TODO(https://crbug.com/1170273): Handle multiple controllers (MPArch)

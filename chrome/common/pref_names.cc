@@ -101,12 +101,6 @@ const char kSessionExitedCleanly[] = "profile.exited_cleanly";
 // shutdown. Used to determine the exit type the last time the profile was open.
 const char kSessionExitType[] = "profile.exit_type";
 
-// The last time that the site engagement service recorded an engagement event
-// for this profile for any URL. Recorded only during shutdown. Used to prevent
-// the service from decaying engagement when a user does not use Chrome at all
-// for an extended period of time.
-const char kSiteEngagementLastUpdateTime[] = "profile.last_engagement_time";
-
 // An integer pref. Holds one of several values:
 // 0: unused, previously indicated to open the homepage on startup
 // 1: restore the last session.
@@ -3177,6 +3171,10 @@ const char kSecurityTokenSessionNotificationScheduledDomain[] =
 const char kCartModuleHidden[] = "cart_module_hidden";
 // Boolean pref indicating whether user has removed the cart module on NTP.
 const char kCartModuleRemoved[] = "cart_module_removed";
+// An integer that keeps track of how many times welcome surface has shown in
+// cart module.
+const char kCartModuleWelcomeSurfaceShownTimes[] =
+    "cart_module_welcome_surface_shown_times";
 #endif
 
 #if defined(OS_ANDROID)

@@ -126,7 +126,7 @@ class CONTENT_EXPORT RenderFrameHostManager
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
         const base::Optional<base::UnguessableToken>& opener_frame_token,
-        int proxy_routing_id) = 0;
+        RenderFrameProxyHost* proxy_host) = 0;
     virtual void CreateRenderWidgetHostViewForRenderManager(
         RenderViewHost* render_view_host) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
@@ -502,7 +502,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // null, it creates a RenderFrameProxy in the target renderer process which is
   // used to route IPC messages.  Returns early if the RenderViewHost has
   // already been initialized for another RenderFrameHost.
-  bool InitRenderView(RenderViewHostImpl* render_view_host,
+  bool InitRenderView(SiteInstance* site_instance,
+                      RenderViewHostImpl* render_view_host,
                       RenderFrameProxyHost* proxy);
 
   // Returns the SiteInstance that should be used to host the navigation handled

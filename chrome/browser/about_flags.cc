@@ -157,6 +157,7 @@
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "mojo/core/embedder/features.h"
 #include "net/base/features.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/effective_connection_type.h"
@@ -2460,6 +2461,10 @@ const FeatureEntry::FeatureVariation kPasswordsAccountStorageVariations[] = {
      base::size(kPasswordsAccountStorage_ProfileStore), nullptr},
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr char kWallpaperWebUIInternalName[] = "wallpaper-webui";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3232,6 +3237,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if (defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_ANDROID)) && \
+    !defined(OS_NACL)
+    {"mojo-linux-sharedmem", flag_descriptions::kMojoLinuxChannelSharedMemName,
+     flag_descriptions::kMojoLinuxChannelSharedMemDescription,
+     kOsCrOS | kOsLinux | kOsAndroid,
+     FEATURE_VALUE_TYPE(mojo::core::kMojoLinuxChannelSharedMem)},
+#endif
 #if defined(OS_ANDROID)
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
@@ -6313,10 +6325,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnhancedClipboardNudgeSessionResetDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kClipboardHistoryNudgeSessionReset)},
-    {"enhanced_clipboard_simple_render",
-     flag_descriptions::kEnhancedClipboardSimpleRenderName,
-     flag_descriptions::kEnhancedClipboardSimpleRenderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kClipboardHistorySimpleRender)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -7021,6 +7029,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableOfferNotificationDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOfferNotification)},
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {kWallpaperWebUIInternalName, flag_descriptions::kWallpaperWebUIName,
+     flag_descriptions::kWallpaperWebUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kWallpaperWebUI)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -7087,8 +7101,10 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 
-  // enable-bloom is only available for Unknown/Canary/Dev channels.
-  if (!strcmp("enable-bloom", entry.internal_name) &&
+  // enable-bloom and wallpaper-webui are only available for Unknown/Canary/Dev
+  // channels.
+  if ((!strcmp("enable-bloom", entry.internal_name) ||
+       !strcmp(kWallpaperWebUIInternalName, entry.internal_name)) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {

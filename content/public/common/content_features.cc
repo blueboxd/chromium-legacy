@@ -90,9 +90,20 @@ const base::Feature kBlockCredentialedSubresources{
 // from a less-private network may only target a more-private network if the
 // initiating context is secure.
 //
-// https://wicg.github.io/cors-rfc1918/#integration-fetch
+// See also:
+//  - https://wicg.github.io/cors-rfc1918/#integration-fetch
+//  - kBlockInsecurePrivateNetworkRequestsForNavigations
 const base::Feature kBlockInsecurePrivateNetworkRequests{
     "BlockInsecurePrivateNetworkRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When both kBlockInsecurePrivateNetworkRequestsForNavigations and
+// kBlockInsecurePrivateNetworkRequests are enabled, navigations initiated
+// by documents in a less-private network may only target a more-private network
+// if the initiating context is secure.
+const base::Feature kBlockInsecurePrivateNetworkRequestsForNavigations{
+    "BlockInsecurePrivateNetworkRequestsForNavigations",
+    base::FEATURE_DISABLED_BY_DEFAULT,
+};
 
 // Use ThreadPriority::DISPLAY for browser UI and IO threads.
 #if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
@@ -114,11 +125,6 @@ const base::Feature kBrowserVerifiedUserActivationMouse{
 // Enables code caching for inline scripts.
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables support for parallel cache_storage operations via the
-// "max_shared_ops" fieldtrial parameter.
-const base::Feature kCacheStorageParallelOps{"CacheStorageParallelOps",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -872,6 +878,11 @@ const base::Feature kAndroidAutofillAccessibility{
 const base::Feature kBackgroundMediaRendererHasModerateBinding{
     "BackgroundMediaRendererHasModerateBinding",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, BindingManager will use Context.BIND_NOT_FOREGROUND to avoid
+// affecting cpu scheduling priority.
+const base::Feature kBindingManagementWaiveCpu{
+    "BindingManagementWaiveCpu", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Screen Capture API support for Android
 const base::Feature kUserMediaScreenCapturing{

@@ -70,30 +70,6 @@ constexpr float kAppIconScale = 1.2f;
 // The drag and drop app icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionMs = 200;
 
-// Uses the icon image to calculate the light vibrant color to be used for
-// the notification indicator.
-base::Optional<SkColor> CalculateNotificationColor(gfx::ImageSkia image) {
-  const SkBitmap* source = image.bitmap();
-  if (!source || source->empty() || source->isNull())
-    return base::nullopt;
-
-  std::vector<color_utils::ColorProfile> color_profiles;
-  color_profiles.push_back(color_utils::ColorProfile(
-      color_utils::LumaRange::LIGHT, color_utils::SaturationRange::VIBRANT));
-
-  std::vector<color_utils::Swatch> best_swatches =
-      color_utils::CalculateProminentColorsOfBitmap(
-          *source, color_profiles, nullptr /* bitmap region */,
-          color_utils::ColorSwatchFilter());
-
-  // If the best swatch color is transparent, then
-  // CalculateProminentColorsOfBitmap() failed to find a suitable color.
-  if (best_swatches.empty() || best_swatches[0].color == SK_ColorTRANSPARENT)
-    return base::nullopt;
-
-  return best_swatches[0].color;
-}
-
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
 class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
@@ -206,8 +182,6 @@ class ShelfAppButton::AppNotificationIndicatorView : public views::View {
     indicator_color_ = new_color;
     SchedulePaint();
   }
-
-  SkColor GetColorForTest() { return indicator_color_; }
 
  private:
   SkColor indicator_color_;
@@ -353,7 +327,6 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
       indicator_(new AppStatusIndicatorView()),
       notification_indicator_(nullptr),
       state_(STATE_NORMAL),
-      destroyed_flag_(nullptr),
       is_notification_indicator_enabled_(
           features::IsNotificationIndicatorEnabled()) {
   const gfx::ShadowValue kShadows[] = {
@@ -402,8 +375,6 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
 
 ShelfAppButton::~ShelfAppButton() {
   GetInkDrop()->RemoveObserver(this);
-  if (destroyed_flag_)
-    *destroyed_flag_ = true;
 }
 
 void ShelfAppButton::SetShadowedImage(const gfx::ImageSkia& image) {
@@ -419,13 +390,6 @@ void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
   icon_image_ = image;
-
-  if (is_notification_indicator_enabled_) {
-    base::Optional<SkColor> notification_color =
-        CalculateNotificationColor(icon_image_);
-    notification_indicator_->SetColor(
-        notification_color.value_or(kDefaultIndicatorColor));
-  }
 
   const int icon_size = shelf_view_->GetButtonIconSize() * icon_scale_;
 
@@ -522,8 +486,7 @@ void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
   if (!context_menu_controller())
     return;
 
-  bool destroyed = false;
-  destroyed_flag_ = &destroyed;
+  auto weak_this = weak_factory_.GetWeakPtr();
 
   if (source_type == ui::MenuSourceType::MENU_SOURCE_MOUSE ||
       source_type == ui::MenuSourceType::MENU_SOURCE_KEYBOARD) {
@@ -532,8 +495,8 @@ void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
 
   ShelfButton::ShowContextMenu(p, source_type);
 
-  if (!destroyed) {
-    destroyed_flag_ = nullptr;
+  // This object may have been destroyed by ShowContextMenu.
+  if (weak_this) {
     // The menu will not propagate mouse events while it's shown. To address,
     // the hover state gets cleared once the menu was shown (and this was not
     // destroyed). In case context menu is shown target view does not receive
@@ -1009,8 +972,9 @@ void ShelfAppButton::SetInkDropAnimationStarted(bool started) {
   }
 }
 
-SkColor ShelfAppButton::GetNotificationIndicatorColorForTest() {
-  return notification_indicator_->GetColorForTest();
+void ShelfAppButton::SetNotificationBadgeColor(SkColor color) {
+  if (notification_indicator_)
+    notification_indicator_->SetColor(color);
 }
 
 }  // namespace ash

@@ -976,8 +976,11 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       navigation_rfh->GetSiteInstance()->GetProcessLock();
   if (!process_lock.is_error_page() &&
       request->common_params().url.IsStandard() &&
-      !policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
-                                      request->common_params().url) &&
+      // TODO(https://crbug.com/888079): Replace `common_params().url` with
+      // the origin to commit calculated on the browser side.
+      !policy->CanAccessDataForOrigin(
+          navigation_rfh->GetProcess()->GetID(),
+          url::Origin::Create(request->common_params().url)) &&
       !request->IsForMhtmlSubframe()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
@@ -2535,7 +2538,8 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(
           new_render_frame_host->GetRoutingID());
     }
 
-    if (!InitRenderView(render_view_host, GetRenderFrameProxyHost(instance)))
+    if (!InitRenderView(instance, render_view_host,
+                        GetRenderFrameProxyHost(instance)))
       return nullptr;
 
     // If we are reusing the RenderViewHost and it doesn't already have a
@@ -2613,7 +2617,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
 
   // Make sure that the RenderFrameProxy is present in the renderer.
   if (frame_tree_node_->IsMainFrame() && proxy->GetRenderViewHost()) {
-    InitRenderView(proxy->GetRenderViewHost(), proxy);
+    InitRenderView(instance, proxy->GetRenderViewHost(), proxy);
   } else {
     proxy->InitRenderFrameProxy();
   }
@@ -2647,7 +2651,7 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   if (!proxy)
     return;
 
-  InitRenderView(render_view_host, proxy);
+  InitRenderView(instance, render_view_host, proxy);
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::CreateOuterDelegateProxy(
@@ -2684,6 +2688,7 @@ void RenderFrameHostManager::SetRWHViewForInnerContents(
 }
 
 bool RenderFrameHostManager::InitRenderView(
+    SiteInstance* site_instance,
     RenderViewHostImpl* render_view_host,
     RenderFrameProxyHost* proxy) {
   // Ensure the renderer process is initialized before creating the
@@ -2695,12 +2700,10 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
-  auto opener_frame_token =
-      GetOpenerFrameToken(render_view_host->GetSiteInstance());
+  auto opener_frame_token = GetOpenerFrameToken(site_instance);
 
   bool created = delegate_->CreateRenderViewForRenderManager(
-      render_view_host, opener_frame_token,
-      proxy ? proxy->GetRoutingID() : MSG_ROUTING_NONE);
+      render_view_host, opener_frame_token, proxy);
 
   if (created && proxy) {
     proxy->SetRenderFrameProxyCreated(true);
@@ -2921,7 +2924,8 @@ bool RenderFrameHostManager::ReinitializeMainRenderFrame(
   // Main frames need both the RenderView and RenderFrame reinitialized, so
   // use InitRenderView.
   DCHECK(!GetRenderFrameProxyHost(render_frame_host->GetSiteInstance()));
-  if (!InitRenderView(render_frame_host->render_view_host(), nullptr))
+  if (!InitRenderView(render_frame_host->GetSiteInstance(),
+                      render_frame_host->render_view_host(), nullptr))
     return false;
 
   DCHECK(render_frame_host->IsRenderFrameLive());

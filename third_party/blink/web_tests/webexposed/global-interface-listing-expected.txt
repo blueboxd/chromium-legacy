@@ -3952,7 +3952,6 @@ interface HTMLPopupElement : HTMLElement
     method constructor
     method hide
     method show
-    setter open
 interface HTMLPreElement : HTMLElement
     attribute @@toStringTag
     getter width
@@ -4445,23 +4444,6 @@ interface IDBObjectStore
     method put
     method putAllValues
     setter name
-interface IDBObservation
-    attribute @@toStringTag
-    getter key
-    getter type
-    getter value
-    method constructor
-interface IDBObserver
-    attribute @@toStringTag
-    method constructor
-    method observe
-    method unobserve
-interface IDBObserverChanges
-    attribute @@toStringTag
-    getter database
-    getter records
-    getter transaction
-    method constructor
 interface IDBOpenDBRequest : IDBRequest
     attribute @@toStringTag
     getter onblocked

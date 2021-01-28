@@ -1156,6 +1156,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     }
   }
 
+  if (!base::FeatureList::IsEnabled(
+          features::kBlockInsecurePrivateNetworkRequests)) {
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
+  }
+
   unload_event_monitor_timeout_ =
       std::make_unique<TimeoutMonitor>(base::BindRepeating(
           &RenderFrameHostImpl::OnUnloaded, weak_ptr_factory_.GetWeakPtr()));
@@ -2704,6 +2710,11 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
                     is_off_the_record, updated_source_id);
 }
 
+void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
+  frame_size_ = frame_size;
+  delegate_->FrameSizeChanged(this, frame_size);
+}
+
 void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
@@ -2999,6 +3010,13 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   isolation_info_ = ComputeIsolationInfoInternal(
       new_frame_origin, net::IsolationInfo::RequestType::kOther);
   SetLastCommittedOrigin(new_frame_origin);
+
+  // Apply private network request policy according to our new origin.
+  if (GetContentClient()->browser()->ShouldAllowInsecurePrivateNetworkRequests(
+          GetBrowserContext(), new_frame_origin)) {
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
+  }
 
   // Construct the frame's feature policy only once we know its initial
   // committed origin. It's necessary to wait for the origin because the feature
@@ -4320,11 +4338,6 @@ void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
 
   canonical_encoding_ =
       base::GetCanonicalEncodingNameByAliasName(encoding_name);
-}
-
-void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
-  frame_size_ = frame_size;
-  delegate_->FrameSizeChanged(this, frame_size);
 }
 
 void RenderFrameHostImpl::FullscreenStateChanged(
@@ -6421,9 +6434,11 @@ void RenderFrameHostImpl::CommitNavigation(
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const ProcessLock process_lock = GetSiteInstance()->GetProcessLock();
   if (!process_lock.is_error_page() && common_params->url.IsStandard() &&
-      !policy->CanAccessDataForOrigin(GetProcess()->GetID(),
-                                      common_params->url) &&
-      !is_mhtml_subframe) {
+      !is_mhtml_subframe &&
+      // TODO(https://crbug.com/888079): Replace `common_params().url` with
+      // the origin to commit calculated on the browser side.
+      !policy->CanAccessDataForOrigin(
+          GetProcess()->GetID(), url::Origin::Create(common_params->url))) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),
@@ -9059,10 +9074,11 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   // browser must match with the ones computed from the renderer process.
   // Ultimately, the one from the browser process should supersede the
   // renderer one. The browser will just "push" the correct value.
-  if (navigation_request->state() >=
-      NavigationRequest::NavigationState::WILL_PROCESS_RESPONSE) {
-    DCHECK_EQ(params.sandbox_flags, navigation_request->SandboxFlagsToCommit());
-  }
+  //
+  // This currently doesn't match for about blank in the WPT test:
+  // window-open-blank-from-different-initiator-after-slow.html
+  DCHECK(navigation_request->GetURL().IsAboutBlank() ||
+         params.sandbox_flags == navigation_request->SandboxFlagsToCommit());
 
   // TODO(https://crbug.com/888079): The origin computed from the browser must
   // match the one reported from the renderer process.

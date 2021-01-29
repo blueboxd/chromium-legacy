@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b5dda505cba1aea47b1d2581507078b3bae8b972',
+  'skia_revision': '00f4769e34d8b2ee5a31c607f339eac37a051fd9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -278,7 +278,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a53fe498d6665919fe425c7a9936be462c2c25db',
+  'devtools_frontend_revision': '8c4d6591e05e059903cc45d789db075c6f921b1d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -905,12 +905,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'eb4873381d11280addc4d988514692ddaf4c91ad',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'd9b81c687469075834a0bb7cd67d243ebbd719ae',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '558a30422e536c9592baa9fe6d06105ee59e02ec',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6ff74e1dce4315916851d396e32bc4121e497b0e',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1275,7 +1275,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0f2d499389c5de52c1d42310715bf83835e44c48',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '709de7fdeb9ccf0ae6ca6a76529e777131a20fc4',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1583,7 +1583,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d4f725bc3514591e464ef8580c8cf0b920626cba',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2358e072d21bd7fa3d9f695d30e21b88d52b65d9',
     'condition': 'checkout_src_internal',
   },
 

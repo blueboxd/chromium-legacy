@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/people_section.h"
 
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -38,7 +39,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/google/core/common/google_util.h"
@@ -719,7 +719,7 @@ PeopleSection::PeopleSection(
   // OS and browser settings.
   if (IsAccountManagerAvailable(profile)) {
     // Some Account Manager search tags are added/removed dynamically.
-    AccountManagerFactory* factory =
+    auto* factory =
         g_browser_process->platform_part()->GetAccountManagerFactory();
     account_manager_ = factory->GetAccountManager(profile->GetPath().value());
     DCHECK(account_manager_);

@@ -128,12 +128,12 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/account_manager/account_manager.h"
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -372,12 +372,11 @@ void TestingProfile::Init() {
     base::CreateDirectory(profile_path_);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Initialize |chromeos::AccountManager|.
-  chromeos::AccountManagerFactory* factory =
+  // Initialize |ash::AccountManager|.
+  auto* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
-  chromeos::AccountManager* account_manager =
-      factory->GetAccountManager(profile_path_.value());
-  chromeos::AccountManager::DelayNetworkCallRunner immediate_callback_runner =
+  auto* account_manager = factory->GetAccountManager(profile_path_.value());
+  ash::AccountManager::DelayNetworkCallRunner immediate_callback_runner =
       base::BindRepeating(
           [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
   account_manager->Initialize(profile_path_, GetURLLoaderFactory(),

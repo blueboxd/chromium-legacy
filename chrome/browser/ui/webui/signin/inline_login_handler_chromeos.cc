@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_helper_chromeos.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -42,6 +42,8 @@
 
 namespace chromeos {
 namespace {
+
+using ::ash::AccountManager;
 
 constexpr char kCrosAddAccountFlow[] = "crosAddAccount";
 constexpr char kCrosAddAccountEduFlow[] = "crosAddAccountEdu";
@@ -88,7 +90,7 @@ std::string GetInlineLoginFlowName(Profile* profile, const std::string* email) {
 class ChildSigninHelper : public SigninHelper {
  public:
   ChildSigninHelper(
-      chromeos::AccountManager* account_manager,
+      AccountManager* account_manager,
       const base::RepeatingClosure& close_dialog_closure,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& gaia_id,
@@ -168,7 +170,7 @@ class ChildSigninHelper : public SigninHelper {
 class EduCoexistenceChildSigninHelper : public SigninHelper {
  public:
   EduCoexistenceChildSigninHelper(
-      chromeos::AccountManager* account_manager,
+      AccountManager* account_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& gaia_id,
       const std::string& email,
@@ -320,10 +322,9 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
   // TODO(sinhak): Do not depend on Profile unnecessarily. When multiprofile on
   // Chrome OS is released, get rid of |AccountManagerFactory| and get
   // AccountManager directly from |g_browser_process|.
-  chromeos::AccountManager* account_manager =
-      g_browser_process->platform_part()
-          ->GetAccountManagerFactory()
-          ->GetAccountManager(profile->GetPath().value());
+  auto* account_manager = g_browser_process->platform_part()
+                              ->GetAccountManagerFactory()
+                              ->GetAccountManager(profile->GetPath().value());
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -387,10 +388,9 @@ void InlineLoginHandlerChromeOS::GetAccountsInSession(
     const base::ListValue* args) {
   const std::string& callback_id = args->GetList()[0].GetString();
   const Profile* profile = Profile::FromWebUI(web_ui());
-  chromeos::AccountManager* account_manager =
-      g_browser_process->platform_part()
-          ->GetAccountManagerFactory()
-          ->GetAccountManager(profile->GetPath().value());
+  auto* account_manager = g_browser_process->platform_part()
+                              ->GetAccountManagerFactory()
+                              ->GetAccountManager(profile->GetPath().value());
 
   account_manager->GetAccounts(
       base::BindOnce(&InlineLoginHandlerChromeOS::OnGetAccounts,

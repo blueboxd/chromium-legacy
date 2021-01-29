@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/account_manager/account_manager.h"
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -25,8 +27,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -44,6 +44,8 @@ namespace chromeos {
 
 namespace {
 
+using ::ash::AccountManager;
+
 constexpr base::TimeDelta kGetUserStatusCallsInterval =
     base::TimeDelta::FromHours(1);
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
@@ -52,10 +54,10 @@ constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 // |profile| is a non-owning pointer to |Profile|.
 // |account_id| is the |AccountId| for the Device Account.
 void SetupAccountManager(Profile* profile, const AccountId& account_id) {
-  AccountManagerFactory* factory =
+  auto* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   DCHECK(factory);
-  AccountManager* account_manager =
+  auto* account_manager =
       factory->GetAccountManager(profile->GetPath().value());
   DCHECK(account_manager);
   // |AccountManager::UpsertAccount| is idempotent and safe to call multiple

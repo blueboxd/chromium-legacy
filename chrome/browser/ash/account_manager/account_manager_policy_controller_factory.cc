@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ash/account_manager/account_manager_policy_controller_factory.h"
 
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ash/account_manager/account_manager_policy_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace ash {
@@ -41,9 +41,9 @@ AccountManagerPolicyControllerFactory::
 KeyedService* AccountManagerPolicyControllerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* const profile = Profile::FromBrowserContext(context);
-  chromeos::AccountManagerFactory* factory =
+  auto* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
-  chromeos::AccountManager* account_manager =
+  auto* account_manager =
       factory->GetAccountManager(profile->GetPath().value());
 
   if (!account_manager)

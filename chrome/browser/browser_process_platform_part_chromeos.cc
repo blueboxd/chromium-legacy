@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/singleton.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
@@ -72,8 +72,8 @@ class PrimaryProfileServicesShutdownNotifierFactory
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false),
-      account_manager_factory_(
-          std::make_unique<chromeos::AccountManagerFactory>()) {}
+      account_manager_factory_(std::make_unique<ash::AccountManagerFactory>()) {
+}
 
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -269,7 +269,7 @@ void BrowserProcessPlatformPart::CreateProfileHelper() {
   profile_helper_ = chromeos::ProfileHelper::CreateInstance();
 }
 
-chromeos::AccountManagerFactory*
+ash::AccountManagerFactory*
 BrowserProcessPlatformPart::GetAccountManagerFactory() {
   return account_manager_factory_.get();
 }

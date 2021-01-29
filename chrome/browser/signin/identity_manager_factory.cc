@@ -32,9 +32,9 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #endif
 
 #if defined(OS_WIN)
@@ -116,7 +116,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::AccountManagerFactory* factory =
+  auto* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   DCHECK(factory);
   params.account_manager =

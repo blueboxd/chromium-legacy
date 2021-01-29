@@ -4507,6 +4507,7 @@ static_library("browser") {
     ]
     deps += [
       "//ash",
+      "//ash/components/account_manager",
       "//ash/public/cpp",
       "//ash/public/cpp/external_arc",
       "//chrome/browser/chromeos",
@@ -4524,7 +4525,6 @@ static_library("browser") {
       "//chrome/browser/ui/webui/nearby_share:mojom",
       "//chrome/browser/ui/webui/nearby_share/public/mojom",
       "//chrome/browser/webshare:storage",
-      "//chromeos/components/account_manager",
       "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/components/quick_answers",
       "//chromeos/components/sync_wifi",
@@ -5159,11 +5159,19 @@ static_library("browser") {
     ]
   }
 
-  if (is_win || is_chromeos_ash) {
+  if (is_win || is_chromeos_ash || is_mac) {
     sources += [
       "webshare/share_service_impl.cc",
       "webshare/share_service_impl.h",
     ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "webshare/mac/sharing_service_operation.h",
+      "webshare/mac/sharing_service_operation.mm",
+    ]
+    deps += [ "//chrome/browser/webshare:storage" ]
   }
 
   if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {

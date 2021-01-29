@@ -409,8 +409,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ukm::SourceId GetPageUkmSourceId() override;
   StoragePartition* GetStoragePartition() override;
   BrowserContext* GetBrowserContext() override;
-  void ReportHeavyAdIssue(blink::mojom::HeavyAdResolutionStatus resolution,
-                          blink::mojom::HeavyAdReason reason) override;
   void ReportInspectorIssue(blink::mojom::InspectorIssueInfoPtr info) override;
   void AsValueInto(base::trace_event::TracedValue* traced_value) override;
 
@@ -1502,6 +1500,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::PrerenderProcessor> pending_receiver);
 
   // Prerender2:
+  // Tells PrerenderHostRegistry to cancel the prerendering of the page this
+  // frame is in, which destroys this frame.
+  void CancelPrerendering();
+
+  // Prerender2:
   // Returns true if this frame is for a prerendering page.
   // This should be called after CommitNavigation().
   bool IsPrerendering() const;
@@ -2511,6 +2514,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // renderer. It was created from the |navigation|.
   void DidCommitNewDocument(const mojom::DidCommitProvisionalLoadParams& params,
                             NavigationRequest* navigation);
+
+  // Transfers several document properties stored by |navigation_request| into
+  // |this|. Helper for DidCommitNewDocument.
+  void TakeNewDocumentPropertiesFromNavigation(
+      NavigationRequest* navigation_request);
 
   // Called by the renderer process when it is done processing a same-document
   // commit request.

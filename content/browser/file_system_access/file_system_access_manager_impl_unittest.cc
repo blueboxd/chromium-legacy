@@ -134,7 +134,7 @@ class FileSystemAccessManagerImplTest : public testing::Test {
     // path round trips as an external path, even if the path resolves to a
     // local path.
     storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        kTestMountPoint, storage::kFileSystemTypeNativeLocal,
+        kTestMountPoint, storage::kFileSystemTypeLocal,
         storage::FileSystemMountOption(), dir_.GetPath());
 
     chrome_blob_context_ = base::MakeRefCounted<ChromeBlobStorageContext>();
@@ -737,7 +737,7 @@ TEST_F(FileSystemAccessManagerImplTest, SerializeHandle_Native_SingleFile) {
   const storage::FileSystemURL& url = token->url();
   EXPECT_EQ(kTestOrigin, url.origin());
   EXPECT_EQ(kTestPath, url.path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeLocal, url.type());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(HandleType::kFile, token->type());
   EXPECT_EQ(ask_grant_, token->GetReadGrant());
@@ -773,7 +773,7 @@ TEST_F(FileSystemAccessManagerImplTest,
   const storage::FileSystemURL& url = token->url();
   EXPECT_EQ(kTestOrigin, url.origin());
   EXPECT_EQ(kTestPath, url.path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeLocal, url.type());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(HandleType::kDirectory, token->type());
   EXPECT_EQ(ask_grant_, token->GetReadGrant());
@@ -829,7 +829,7 @@ TEST_F(FileSystemAccessManagerImplTest,
   EXPECT_EQ(kTestOrigin, url.origin());
   EXPECT_EQ(kDirectoryPath.Append(base::FilePath::FromUTF8Unsafe(kTestName)),
             url.path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeLocal, url.type());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(HandleType::kFile, token->type());
   EXPECT_EQ(ask_grant_, token->GetReadGrant());
@@ -884,7 +884,7 @@ TEST_F(FileSystemAccessManagerImplTest,
   const storage::FileSystemURL& url = token->url();
   EXPECT_EQ(kTestOrigin, url.origin());
   EXPECT_EQ(kDirectoryPath.AppendASCII(kTestName), url.path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeLocal, url.type());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(HandleType::kDirectory, token->type());
   EXPECT_EQ(ask_grant_, token->GetReadGrant());
@@ -1123,8 +1123,9 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_OpenFile) {
   EXPECT_CALL(permission_context_, CanObtainReadPermission(kTestOrigin))
       .WillOnce(testing::Return(true));
 
-  EXPECT_CALL(permission_context_,
-              GetCommonDirectoryPath(blink::mojom::CommonDirectory::kDefault))
+  EXPECT_CALL(
+      permission_context_,
+      GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory::kDefault))
       .WillOnce(testing::Return(base::FilePath()));
   EXPECT_CALL(permission_context_, GetLastPickedDirectory(kTestOrigin))
       .WillOnce(testing::Return(PathInfo()));
@@ -1157,7 +1158,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_OpenFile) {
   base::RunLoop loop;
   manager_remote->ChooseEntries(
       blink::mojom::ChooseFileSystemEntryType::kOpenFile, /*accepts=*/{},
-      blink::mojom::CommonDirectory::kDefault, /*include_accepts_all=*/true,
+      blink::mojom::WellKnownDirectory::kDefault, /*include_accepts_all=*/true,
       base::BindLambdaForTesting(
           [&](blink::mojom::FileSystemAccessErrorPtr result,
               std::vector<blink::mojom::FileSystemAccessEntryPtr> entries) {
@@ -1190,8 +1191,9 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_SaveFile) {
   EXPECT_CALL(permission_context_, CanObtainWritePermission(kTestOrigin))
       .WillOnce(testing::Return(true));
 
-  EXPECT_CALL(permission_context_,
-              GetCommonDirectoryPath(blink::mojom::CommonDirectory::kDefault))
+  EXPECT_CALL(
+      permission_context_,
+      GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory::kDefault))
       .WillOnce(testing::Return(base::FilePath()));
   EXPECT_CALL(permission_context_, GetLastPickedDirectory(kTestOrigin))
       .WillOnce(testing::Return(PathInfo()));
@@ -1224,7 +1226,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_SaveFile) {
   base::RunLoop loop;
   manager_remote->ChooseEntries(
       blink::mojom::ChooseFileSystemEntryType::kSaveFile, /*accepts=*/{},
-      blink::mojom::CommonDirectory::kDefault, /*include_accepts_all=*/true,
+      blink::mojom::WellKnownDirectory::kDefault, /*include_accepts_all=*/true,
       base::BindLambdaForTesting(
           [&](blink::mojom::FileSystemAccessErrorPtr result,
               std::vector<blink::mojom::FileSystemAccessEntryPtr> entries) {
@@ -1254,8 +1256,9 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_OpenDirectory) {
   EXPECT_CALL(permission_context_, CanObtainReadPermission(kTestOrigin))
       .WillOnce(testing::Return(true));
 
-  EXPECT_CALL(permission_context_,
-              GetCommonDirectoryPath(blink::mojom::CommonDirectory::kDefault))
+  EXPECT_CALL(
+      permission_context_,
+      GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory::kDefault))
       .WillOnce(testing::Return(base::FilePath()));
   EXPECT_CALL(permission_context_, GetLastPickedDirectory(kTestOrigin))
       .WillOnce(testing::Return(PathInfo()));
@@ -1287,7 +1290,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_OpenDirectory) {
   base::RunLoop loop;
   manager_remote->ChooseEntries(
       blink::mojom::ChooseFileSystemEntryType::kOpenDirectory, {},
-      blink::mojom::CommonDirectory::kDefault, true,
+      blink::mojom::WellKnownDirectory::kDefault, true,
       base::BindLambdaForTesting(
           [&](blink::mojom::FileSystemAccessErrorPtr result,
               std::vector<blink::mojom::FileSystemAccessEntryPtr> entries) {

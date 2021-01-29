@@ -6799,6 +6799,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="238" label="CSDH_BAD_OWNER"/>
   <int value="239" label="SYNC_COMPOSITOR_NO_LOCAL_SURFACE_ID"/>
   <int value="240" label="WCI_INVALID_FULLSCREEN_OPTIONS"/>
+  <int value="241" label="PAYMENTS_WITHOUT_PERMISSION"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -10005,6 +10006,7 @@ histogram as enum -->
   <int value="0" label="User selected an unspecified lab"/>
   <int value="1" label="User selected the Read Later lab"/>
   <int value="2" label="User selected the Tab Search lab"/>
+  <int value="3" label="User selected the Tab Scrolling lab"/>
 </enum>
 
 <enum name="ChromeMLServiceDecisionTreePredictionResult">
@@ -13293,6 +13295,14 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="OK"/>
   <int value="1" label="Internal network error"/>
   <int value="2" label="External non-200 HTTP error"/>
+</enum>
+
+<enum name="ConversionStorageSqlInitStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to open DB in memory"/>
+  <int value="2" label="Failed to open DB file"/>
+  <int value="3" label="Failed to create directory"/>
+  <int value="4" label="Failed to initialize schema"/>
 </enum>
 
 <enum name="CookieCommitProblem">
@@ -30999,8 +31009,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3682" label="UndeferrableThirdPartySubresourceRequestWithCookie"/>
   <int value="3683" label="XRDepthSensing"/>
   <int value="3684" label="XRFrameGetDepthInformation"/>
-  <int value="3685" label="XRDepthInformationGetDepth"/>
-  <int value="3686" label="XRDepthInformationDataAttribute"/>
+  <int value="3685" label="XRCPUDepthInformationGetDepth"/>
+  <int value="3686" label="XRCPUDepthInformationDataAttribute"/>
   <int value="3687" label="InterestCohortAPI_interestCohort_Method"/>
   <int value="3688"
       label="OBSOLETE_AddressSpaceLocalEmbeddedInPrivateSecureContext"/>
@@ -31119,6 +31129,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3788" label="RTCPeerConnectionUsingComplexUnifiedPlan"/>
   <int value="3789" label="WindowScreenIsExtended"/>
   <int value="3790" label="WindowScreenChange"/>
+  <int value="3791" label="XRWebGLDepthInformationTextureAttribute"/>
+  <int value="3792" label="XRWebGLBindingGetDepthInformation"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43276,7 +43288,6 @@ from previous Chrome versions.
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1480606359" label="AssistantIntentPageUrl:enabled"/>
-  <int value="-1478929417" label="MojoLinuxChannelSharedMem:enabled"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
   <int value="-1478137998" label="lite-video-default-downlink-bandwidth-kbps"/>
   <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
@@ -44210,6 +44221,7 @@ from previous Chrome versions.
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
+  <int value="-658319177" label="VaapiAV1Decoder:disabled"/>
   <int value="-657808907" label="CopyLinkToText:disabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
   <int value="-653616608" label="MacSyscallSandbox:disabled"/>
@@ -45323,6 +45335,7 @@ from previous Chrome versions.
   <int value="415395210" label="TrimOnMemoryPressure:enabled"/>
   <int value="416116189" label="DeprecateLowUsageCodecs:enabled"/>
   <int value="416691040" label="SendTabToSelfOmniboxSendingAnimation:disabled"/>
+  <int value="416760194" label="ExoLockNotification:disabled"/>
   <int value="416887895" label="enable-password-change-support"/>
   <int value="417709910"
       label="AutofillSendExperimentIdsInPaymentsRPCs:disabled"/>
@@ -45554,6 +45567,7 @@ from previous Chrome versions.
   <int value="636341169" label="ExploreSites:disabled"/>
   <int value="636413416" label="OmniboxKeywordSearchButton:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
+  <int value="636909796" label="VaapiAV1Decoder:enabled"/>
   <int value="637396292" label="AllBookmarks:enabled"/>
   <int value="637452937" label="ChromeHomeSurvey:enabled"/>
   <int value="638845342"
@@ -46744,7 +46758,6 @@ from previous Chrome versions.
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:disabled"/>
   <int value="1760946944" label="MacViewsAutofillPopup:disabled"/>
   <int value="1762320532" label="AutofillKeyboardAccessory:enabled"/>
-  <int value="1764618580" label="MojoLinuxChannelSharedMem:disabled"/>
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
@@ -46916,6 +46929,7 @@ from previous Chrome versions.
   <int value="1919917329" label="ImplicitRootScroller:disabled"/>
   <int value="1920894670"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:enabled"/>
+  <int value="1921543515" label="ExoLockNotification:enabled"/>
   <int value="1923052799" label="CrostiniUseDlc:disabled"/>
   <int value="1923496816" label="AssistantIntentTranslateInfo:disabled"/>
   <int value="1923780021" label="PrivacyReorderedAndroid:enabled"/>
@@ -54362,6 +54376,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Cold startup"/>
   <int value="1" label="Warm startup"/>
   <int value="2" label="Other, not at startup"/>
+</enum>
+
+<enum name="NtpModules">
+  <summary>
+    Hash values for the IDs of NTP modules. Each of these values is computed by
+    casting the output of base::PersistentHash(module_id) to
+    base::HistogramBase::Sample.
+  </summary>
+  <int value="-1996945391" label="chrome_cart"/>
+  <int value="-1985729288" label="recipe_tasks"/>
+  <int value="-1870686922" label="drive"/>
+  <int value="-1810591528" label="shopping_tasks"/>
+  <int value="-505117227" label="dummy2"/>
+  <int value="301684683" label="kaleidoscope (deprecated)"/>
+  <int value="1976054971" label="dummy"/>
 </enum>
 
 <enum name="NtpMostVisitedScheme">

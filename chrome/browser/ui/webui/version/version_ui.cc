@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version/version_handler.h"
 #include "chrome/browser/ui/webui/version/version_util_win.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/grit/components_resources.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -172,7 +172,8 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
           base::Time::Now()));
   html_source->AddString(version_ui::kCL, version_info::GetLastChange());
   html_source->AddString("build_date", __TIMESTAMP__);
-  html_source->AddString(version_ui::kUserAgent, GetUserAgent());
+  html_source->AddString(version_ui::kUserAgent,
+                         embedder_support::GetUserAgent());
   // Note that the executable path and profile path are retrieved asynchronously
   // and returned in VersionHandler::OnGotFilePaths. The area is initially
   // blank.

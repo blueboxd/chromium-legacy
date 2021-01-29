@@ -1442,12 +1442,6 @@ const char kMobilePwaInstallUseBottomSheetName[] =
 const char kMobilePwaInstallUseBottomSheetDescription[] =
     "Enables use of a rich bottom sheet when offering mobile PWA installation.";
 
-const char kMojoLinuxChannelSharedMemName[] =
-    "Enable Mojo Shared Memory Channel";
-const char kMojoLinuxChannelSharedMemDescription[] =
-    "If enabled Mojo on Linux based platforms can use shared memory as an "
-    "alternate channel for most messages.";
-
 const char kMouseSubframeNoImplicitCaptureName[] =
     "Disable mouse implicit capture for iframe";
 const char kMouseSubframeNoImplicitCaptureDescription[] =
@@ -2073,6 +2067,7 @@ const char kScreenCaptureTestDescription[] =
     "quick settings. Select the capture type and selection default from the "
     "capture mode UI bar. Try out new screen recording functionality.";
 
+const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Scrollable TabStrip";
 const char kScrollableTabStripDescription[] =
     "Allows users to access tabs by scrolling when they no longer fit in the "
@@ -4281,6 +4276,11 @@ const char kExoPointerLockDescription[] =
     "Allow Linux applications to request a pointer lock, i.e. exclusive use of "
     "the mouse pointer.";
 
+const char kExoLockNotificationName[] = "Notification bubble for UI lock";
+const char kExoLockNotificationDescription[] =
+    "Show a notification bubble once an application has switched to "
+    "non-immersive fullscreen mode or obtained pointer lock.";
+
 const char kExperimentalAccessibilityChromeVoxAnnotationsName[] =
     "Enable experimental ChromeVox annotations feature.";
 const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[] =
@@ -4725,6 +4725,10 @@ const char kUnifiedMediaViewName[] = "Unified media view in Files App";
 const char kUnifiedMediaViewDescription[] =
     "Enable unified media view to browse recently-modified media files from"
     " local disk, Google Drive, and Android.";
+
+const char kVaapiAV1DecoderName[] = "VA-API decode acceleration for AV1";
+const char kVaapiAV1DecoderDescription[] =
+    "Enable or disable decode acceleration of AV1 videos using the VA-API.";
 
 const char kVaapiJpegImageDecodeAccelerationName[] =
     "VA-API JPEG decode acceleration for images";

@@ -63,6 +63,11 @@ SodaInstallerImpl::~SodaInstallerImpl() {
   component_updater_observer_.RemoveAll();
 }
 
+base::FilePath SodaInstallerImpl::GetSodaLibPath() const {
+  DLOG(FATAL) << "GetSodaLibPath not supported on this platform";
+  return base::FilePath();
+}
+
 void SodaInstallerImpl::InstallSoda(PrefService* prefs) {
   component_updater::RegisterSodaComponent(
       g_browser_process->component_updater(), prefs,
@@ -92,8 +97,7 @@ void SodaInstallerImpl::InstallLanguage(PrefService* prefs) {
 }
 
 bool SodaInstallerImpl::IsSodaRegistered() {
-  if (!base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption))
-    return true;
+  DCHECK(base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption));
   std::vector<std::string> component_ids =
       g_browser_process->component_updater()->GetComponentIDs();
   const bool has_soda = base::Contains(

@@ -2418,6 +2418,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-vaapi-av1-decode-acceleration",
+    "owners": [ "andrescj", "chromeos-gfx-video@google.com" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
     "expiry_milestone": 90
@@ -2617,6 +2622,11 @@
     "name": "exo-gamepad-vibration",
     "owners": [ "prabirmsp" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "exo-lock-notification",
+    "owners": [ "cpelling@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "exo-ordinal-motion",
@@ -3419,11 +3429,6 @@
     "name": "modern-tab-strip",
     "owners": [ "nazerke", "bling-flags@google.com" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "mojo-linux-sharedmem",
-    "owners": ["bgeffon", "rockot"],
-    "expiry_milestone": 99
   },
   {
     "name": "mouse-subframe-no-implicit-capture",

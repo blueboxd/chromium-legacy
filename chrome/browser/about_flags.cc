@@ -157,7 +157,6 @@
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
 #include "media/webrtc/webrtc_switches.h"
-#include "mojo/core/embedder/features.h"
 #include "net/base/features.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/effective_connection_type.h"
@@ -3237,13 +3236,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if (defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_ANDROID)) && \
-    !defined(OS_NACL)
-    {"mojo-linux-sharedmem", flag_descriptions::kMojoLinuxChannelSharedMemName,
-     flag_descriptions::kMojoLinuxChannelSharedMemDescription,
-     kOsCrOS | kOsLinux | kOsAndroid,
-     FEATURE_VALUE_TYPE(mojo::core::kMojoLinuxChannelSharedMem)},
-#endif
 #if defined(OS_ANDROID)
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
@@ -4463,7 +4455,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewTabstripAnimation)},
 
-    {"scrollable-tabstrip", flag_descriptions::kScrollableTabStripName,
+    {flag_descriptions::kScrollableTabStripFlagId,
+     flag_descriptions::kScrollableTabStripName,
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
 
@@ -6099,6 +6092,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"exo-gamepad-vibration", flag_descriptions::kExoGamepadVibrationName,
      flag_descriptions::kExoGamepadVibrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kGamepadVibration)},
+    {"exo-lock-notification", flag_descriptions::kExoLockNotificationName,
+     flag_descriptions::kExoLockNotificationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kExoLockNotification)},
     {"exo-ordinal-motion", flag_descriptions::kExoOrdinalMotionName,
      flag_descriptions::kExoOrdinalMotionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kExoOrdinalMotion)},
@@ -7039,6 +7035,14 @@ const FeatureEntry kFeatureEntries[] = {
     {kWallpaperWebUIInternalName, flag_descriptions::kWallpaperWebUIName,
      flag_descriptions::kWallpaperWebUIDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kWallpaperWebUI)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // TODO(b/177462291): make flag available on LaCrOS.
+    {"enable-vaapi-av1-decode-acceleration",
+     flag_descriptions::kVaapiAV1DecoderName,
+     flag_descriptions::kVaapiAV1DecoderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kVaapiAV1Decoder)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

@@ -8,12 +8,13 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/impl/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 class MediaStreamComponent;
 class MediaStreamVideoTrackUnderlyingSource;
+class MediaStreamAudioTrackUnderlyingSource;
 class ScriptState;
 class ReadableStream;
 
@@ -44,9 +45,11 @@ class MODULES_EXPORT MediaStreamTrackProcessor : public ScriptWrappable {
 
  private:
   void CreateVideoSourceStream(ScriptState* script_state);
+  void CreateAudioSourceStream(ScriptState* script_state);
 
   Member<MediaStreamComponent> input_track_;
   Member<MediaStreamVideoTrackUnderlyingSource> video_underlying_source_;
+  Member<MediaStreamAudioTrackUnderlyingSource> audio_underlying_source_;
   Member<ReadableStream> source_stream_;
   uint16_t buffer_size_;
 };

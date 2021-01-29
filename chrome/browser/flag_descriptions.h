@@ -853,9 +853,6 @@ extern const char kMobileIdentityConsistencyVarDescription[];
 extern const char kMobilePwaInstallUseBottomSheetName[];
 extern const char kMobilePwaInstallUseBottomSheetDescription[];
 
-extern const char kMojoLinuxChannelSharedMemName[];
-extern const char kMojoLinuxChannelSharedMemDescription[];
-
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
@@ -1207,6 +1204,7 @@ extern const char kSchemefulSameSiteDescription[];
 extern const char kScreenCaptureTestName[];
 extern const char kScreenCaptureTestDescription[];
 
+extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
@@ -2498,6 +2496,9 @@ extern const char kExoOrdinalMotionDescription[];
 extern const char kExoPointerLockName[];
 extern const char kExoPointerLockDescription[];
 
+extern const char kExoLockNotificationName[];
+extern const char kExoLockNotificationDescription[];
+
 extern const char kExperimentalAccessibilityChromeVoxAnnotationsName[];
 extern const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[];
 
@@ -2758,6 +2759,10 @@ extern const char kUnifiedMediaViewDescription[];
 
 extern const char kUseFakeDeviceForMediaStreamName[];
 extern const char kUseFakeDeviceForMediaStreamDescription[];
+
+// TODO(b/177462291): make flag available on LaCrOS.
+extern const char kVaapiAV1DecoderName[];
+extern const char kVaapiAV1DecoderDescription[];
 
 extern const char kVaapiJpegImageDecodeAccelerationName[];
 extern const char kVaapiJpegImageDecodeAccelerationDescription[];

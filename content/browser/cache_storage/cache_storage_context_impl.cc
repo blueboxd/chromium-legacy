@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cache_storage/blob_storage_context_wrapper.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage_manager.h"
@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -53,7 +52,9 @@ CacheStorageContextImpl::~CacheStorageContextImpl() {
 void CacheStorageContextImpl::Init(
     const base::FilePath& user_data_directory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    mojo::PendingRemote<storage::mojom::BlobStorageContext>
+        blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   is_incognito_ = user_data_directory.empty();
@@ -69,18 +70,7 @@ void CacheStorageContextImpl::Init(
       base::BindOnce(
           &CacheStorageContextImpl::CreateCacheStorageManagerOnTaskRunner, this,
           user_data_directory, std::move(cache_task_runner),
-          quota_manager_proxy));
-
-  // If our target sequence is the IO thread, then the manager is guaranteed to
-  // be created before this task fires to create the quota clients.  If we are
-  // running with a different target sequence then the quota client code will
-  // get a cross-sequence wrapper that is guaranteed to initialize its internal
-  // SequenceBound<> object after the real manager is created.
-  GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CacheStorageContextImpl::CreateQuotaClientsOnIOThread,
-                     base::WrapRefCounted(this),
-                     std::move(quota_manager_proxy)));
+          quota_manager_proxy, std::move(blob_storage_context)));
 }
 
 void CacheStorageContextImpl::Shutdown() {
@@ -149,32 +139,6 @@ scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {
   // access.
   return base::MakeRefCounted<CrossSequenceCacheStorageManager>(task_runner_,
                                                                 this);
-}
-
-void CacheStorageContextImpl::SetBlobParametersForCache(
-    ChromeBlobStorageContext* blob_storage_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!blob_storage_context)
-    return;
-
-  // TODO(enne): this remote will need to be sent to the storage service when
-  // cache storage is moved.
-  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
-  auto receiver = remote.InitWithNewPipeAndPassReceiver();
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
-          std::move(remote)));
-
-  // We can only bind a mojo interface for BlobStorageContext on the IO thread.
-  // TODO(enne): clean this up in the future to not require this bounce and
-  // to have this mojo context live on the cache storage sequence.
-  GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CacheStorageContextImpl::BindBlobStorageMojoContextOnIOThread, this,
-          base::RetainedRef(blob_storage_context), std::move(receiver)));
 }
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
@@ -247,13 +211,37 @@ void CacheStorageContextImpl::AddObserver(
 void CacheStorageContextImpl::CreateCacheStorageManagerOnTaskRunner(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    mojo::PendingRemote<storage::mojom::BlobStorageContext>
+        blob_storage_context) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(!cache_manager_);
   cache_manager_ = LegacyCacheStorageManager::Create(
       user_data_directory, std::move(cache_task_runner), task_runner_,
-      quota_manager_proxy);
+      quota_manager_proxy,
+      base::MakeRefCounted<BlobStorageContextWrapper>(
+          std::move(blob_storage_context)));
+
+  mojo::PendingRemote<storage::mojom::QuotaClient> cache_storage_client;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<CacheStorageQuotaClient>(
+          cache_manager_, storage::mojom::CacheStorageOwner::kCacheAPI),
+      cache_storage_client.InitWithNewPipeAndPassReceiver());
+  quota_manager_proxy->RegisterClient(
+      std::move(cache_storage_client),
+      storage::QuotaClientType::kServiceWorkerCache,
+      {blink::mojom::StorageType::kTemporary});
+
+  mojo::PendingRemote<storage::mojom::QuotaClient> background_fetch_client;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<CacheStorageQuotaClient>(
+          cache_manager_, storage::mojom::CacheStorageOwner::kBackgroundFetch),
+      background_fetch_client.InitWithNewPipeAndPassReceiver());
+  quota_manager_proxy->RegisterClient(
+      std::move(background_fetch_client),
+      storage::QuotaClientType::kBackgroundFetch,
+      {blink::mojom::StorageType::kTemporary});
 }
 
 void CacheStorageContextImpl::ShutdownOnTaskRunner() {
@@ -300,55 +288,6 @@ void CacheStorageContextImpl::ShutdownOnTaskRunner() {
   // CacheStorageManager will be destroyed when all the references are
   // destroyed.
   cache_manager_ = nullptr;
-}
-
-void CacheStorageContextImpl::BindBlobStorageMojoContextOnIOThread(
-    ChromeBlobStorageContext* blob_storage_context,
-    mojo::PendingReceiver<storage::mojom::BlobStorageContext> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(blob_storage_context);
-  DCHECK(receiver.is_valid());
-
-  blob_storage_context->BindMojoContext(std::move(receiver));
-}
-
-void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
-    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!cache_manager_)
-    return;
-  cache_manager_->SetBlobParametersForCache(
-      base::MakeRefCounted<BlobStorageContextWrapper>(std::move(remote)));
-}
-
-void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!quota_manager_proxy.get())
-    return;
-  scoped_refptr<CacheStorageManager> manager = CacheManager();
-  if (!manager)
-    return;
-
-  mojo::PendingRemote<storage::mojom::QuotaClient> cache_storage_client;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<CacheStorageQuotaClient>(
-          manager, storage::mojom::CacheStorageOwner::kCacheAPI),
-      cache_storage_client.InitWithNewPipeAndPassReceiver());
-  quota_manager_proxy->RegisterClient(
-      std::move(cache_storage_client),
-      storage::QuotaClientType::kServiceWorkerCache,
-      {blink::mojom::StorageType::kTemporary});
-
-  mojo::PendingRemote<storage::mojom::QuotaClient> background_fetch_client;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<CacheStorageQuotaClient>(
-          manager, storage::mojom::CacheStorageOwner::kBackgroundFetch),
-      background_fetch_client.InitWithNewPipeAndPassReceiver());
-  quota_manager_proxy->RegisterClient(
-      std::move(background_fetch_client),
-      storage::QuotaClientType::kBackgroundFetch,
-      {blink::mojom::StorageType::kTemporary});
 }
 
 }  // namespace content

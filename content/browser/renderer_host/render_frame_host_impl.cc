@@ -5373,8 +5373,7 @@ void RenderFrameHostImpl::CreateNewWindow(
           &no_javascript_access);
 
   // Disallow window creation in prerendered pages.
-  if (base::FeatureList::IsEnabled(blink::features::kPrerender2) &&
-      IsPrerendering()) {
+  if (blink::features::IsPrerender2Enabled() && IsPrerendering()) {
     can_create_window = false;
   }
 
@@ -6423,7 +6422,7 @@ void RenderFrameHostImpl::CommitNavigation(
   DCHECK(!IsRendererDebugURL(common_params->url));
   DCHECK(navigation_request);
 
-  if (base::FeatureList::IsEnabled(blink::features::kPrerender2)) {
+  if (blink::features::IsPrerender2Enabled()) {
     is_prerendering_ = commit_params->is_prerendering;
     // TODO(https://crbug.com/1132752): Set cancellation_closure after replacing
     // is_prerendering with prerender_host_id.
@@ -7929,20 +7928,19 @@ void RenderFrameHostImpl::BindScreenEnumerationReceiver(
 void RenderFrameHostImpl::BindPrerenderProcessor(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::PrerenderProcessor> pending_receiver) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  DCHECK(blink::features::IsPrerender2Enabled());
   DCHECK_EQ(render_frame_host, this);
   prerender_processor_receivers_.Add(
       std::make_unique<PrerenderProcessor>(*this), std::move(pending_receiver));
 }
 
 bool RenderFrameHostImpl::IsPrerendering() const {
-  DCHECK(!is_prerendering_ ||
-         base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  DCHECK(!is_prerendering_ || blink::features::IsPrerender2Enabled());
   return is_prerendering_;
 }
 
 void RenderFrameHostImpl::OnPrerenderedPageActivated() {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  DCHECK(blink::features::IsPrerender2Enabled());
   DCHECK(is_prerendering_);
   is_prerendering_ = false;
   broker_.ReleaseMojoBinderPolicies();
@@ -8505,48 +8503,13 @@ void RenderFrameHostImpl::SetLastCommittedSiteInfo(const GURL& url) {
 }
 
 #if defined(OS_ANDROID)
-
-class RenderFrameHostImpl::JavaInterfaceProvider
-    : public service_manager::mojom::InterfaceProvider {
- public:
-  using BindCallback =
-      base::RepeatingCallback<void(const std::string&,
-                                   mojo::ScopedMessagePipeHandle)>;
-
-  JavaInterfaceProvider(
-      const BindCallback& bind_callback,
-      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
-      : bind_callback_(bind_callback), receiver_(this, std::move(receiver)) {}
-  ~JavaInterfaceProvider() override = default;
-
- private:
-  // service_manager::mojom::InterfaceProvider:
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle handle) override {
-    bind_callback_.Run(interface_name, std::move(handle));
-  }
-
-  const BindCallback bind_callback_;
-  mojo::Receiver<service_manager::mojom::InterfaceProvider> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(JavaInterfaceProvider);
-};
-
 base::android::ScopedJavaLocalRef<jobject>
 RenderFrameHostImpl::GetJavaRenderFrameHost() {
   RenderFrameHostAndroid* render_frame_host_android =
       static_cast<RenderFrameHostAndroid*>(
           GetUserData(kRenderFrameHostAndroidKey));
   if (!render_frame_host_android) {
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider_remote;
-    java_interface_registry_ = std::make_unique<JavaInterfaceProvider>(
-        base::BindRepeating(
-            &RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
-            weak_ptr_factory_.GetWeakPtr()),
-        interface_provider_remote.InitWithNewPipeAndPassReceiver());
-    render_frame_host_android =
-        new RenderFrameHostAndroid(this, std::move(interface_provider_remote));
+    render_frame_host_android = new RenderFrameHostAndroid(this);
     SetUserData(kRenderFrameHostAndroidKey,
                 base::WrapUnique(render_frame_host_android));
   }
@@ -8563,12 +8526,6 @@ service_manager::InterfaceProvider* RenderFrameHostImpl::GetJavaInterfaces() {
     java_interfaces_->Bind(std::move(provider));
   }
   return java_interfaces_.get();
-}
-
-void RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle pipe) {
-  GetRemoteInterfaces()->GetInterfaceByName(interface_name, std::move(pipe));
 }
 #endif
 
@@ -8924,8 +8881,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
     // Handle src-less <iframe> for prerendering.
     // This is a special case that does not go through CommitNavigation path.
-    if (base::FeatureList::IsEnabled(blink::features::kPrerender2) &&
-        is_initial_empty_commit && !is_main_frame()) {
+    if (blink::features::IsPrerender2Enabled() && is_initial_empty_commit &&
+        !is_main_frame()) {
       is_prerendering_ = parent_->IsPrerendering();
       if (is_prerendering_) {
         broker_.ApplyMojoBinderPolicies(

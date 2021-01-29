@@ -108,17 +108,6 @@ class ChromeXrIntegrationClient;
 }
 #endif
 
-// Returns the user agent of Chrome.
-std::string GetUserAgent();
-
-blink::UserAgentMetadata GetUserAgentMetadata();
-
-blink::UserAgentBrandList GenerateBrandVersionList(
-    int seed,
-    base::Optional<std::string> brand,
-    std::string major_version,
-    base::Optional<std::string> maybe_greasey_brand);
-
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   ChromeContentBrowserClient();
@@ -417,7 +406,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool PreSpawnChild(sandbox::TargetPolicy* policy,
                      sandbox::policy::SandboxType sandbox_type,
                      ChildSpawnFlags flags) override;
-  base::string16 GetAppContainerSidForSandboxType(
+  std::wstring GetAppContainerSidForSandboxType(
       sandbox::policy::SandboxType sandbox_type) override;
   bool IsRendererCodeIntegrityEnabled() override;
 #endif

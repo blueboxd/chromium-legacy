@@ -52,6 +52,10 @@
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_APPLE)
+#include "ui/views/accessibility/view_accessibility.h"
+#endif  //  defined(OS_APPLE)
+
 namespace views {
 
 namespace {
@@ -182,6 +186,8 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   switch (type_) {
     case Type::kSubMenu:
     case Type::kActionableSubMenu:
+      // Note: This is neither necessary nor sufficient for macOS. See
+      // CreateSubmenu() for virtual child creation and explanation.
       node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
       break;
     case Type::kCheckbox:
@@ -378,6 +384,18 @@ SubmenuView* MenuItemView::CreateSubmenu() {
   if (!submenu_) {
     submenu_ = new SubmenuView(this);
 
+#if defined(OS_APPLE)
+    // All MenuItemViews of Type kSubMenu have a respective SubmenuView.
+    // However, in the Views hierarchy, this SubmenuView is not a child of the
+    // MenuItemView. This confuses VoiceOver, because it expects the submenu
+    // itself to be a child of the menu item. To allow VoiceOver to recognize
+    // submenu items, we create a virtual child of type Menu.
+    std::unique_ptr<AXVirtualView> virtual_child =
+        std::make_unique<AXVirtualView>();
+    virtual_child->GetCustomData().role = ax::mojom::Role::kMenu;
+    GetViewAccessibility().AddVirtualChildView(std::move(virtual_child));
+#endif  //  defined(OS_APPLE)
+
     // Initialize the submenu indicator icon (arrow).
     submenu_arrow_image_view_ = AddChildView(std::make_unique<ImageView>());
   }
@@ -567,7 +585,7 @@ const MenuItemView* MenuItemView::GetRootMenuItem() const {
 
 base::char16 MenuItemView::GetMnemonic() {
   if (!GetRootMenuItem()->has_mnemonics_ ||
-      !MenuConfig::instance().use_mnemonics) {
+      !MenuConfig::instance().use_mnemonics || !may_have_mnemonics()) {
     return 0;
   }
 
@@ -871,7 +889,7 @@ int MenuItemView::GetDrawStringFlags() {
   else
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
 
-  if (GetRootMenuItem()->has_mnemonics_) {
+  if (GetRootMenuItem()->has_mnemonics_ && may_have_mnemonics()) {
     if (MenuConfig::instance().show_mnemonics ||
         GetRootMenuItem()->show_mnemonics_) {
       flags |= gfx::Canvas::SHOW_PREFIX;

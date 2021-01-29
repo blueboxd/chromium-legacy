@@ -434,7 +434,7 @@ class GpuSandboxedProcessLauncherDelegate
     policy->AddDllToUnload(L"cmsetac.dll");
 
     if (cmd_line_.HasSwitch(switches::kEnableLogging)) {
-      base::string16 log_file_path = logging::GetLogFileFullPath();
+      std::wstring log_file_path = logging::GetLogFileFullPath();
       if (!log_file_path.empty()) {
         sandbox::ResultCode result = policy->AddRule(
             sandbox::TargetPolicy::SUBSYS_FILES,
@@ -481,7 +481,7 @@ class GpuSandboxedProcessLauncherDelegate
     if (UseOpenGLRenderer())
       return true;
 
-    return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
+    return base::win::IsRunningUnderDesktopName(L"winlogon");
   }
 
   bool enable_appcontainer_;
@@ -779,6 +779,7 @@ GpuProcessHost::~GpuProcessHost() {
       message = "The info collection GPU process ";
     }
 
+    bool unexpected_exit = false;
     switch (info.status) {
       case base::TERMINATION_STATUS_NORMAL_TERMINATION:
         // Don't block offscreen contexts (and force page reload for webgl)
@@ -789,6 +790,7 @@ GpuProcessHost::~GpuProcessHost() {
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
         message += base::StringPrintf("exited with code %d.", info.exit_code);
+        unexpected_exit = true;
         break;
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
         UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationOrigin",
@@ -798,6 +800,7 @@ GpuProcessHost::~GpuProcessHost() {
         break;
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
         message += "crashed!";
+        unexpected_exit = true;
         break;
       case base::TERMINATION_STATUS_STILL_RUNNING:
         message += "hasn't exited yet.";
@@ -805,27 +808,37 @@ GpuProcessHost::~GpuProcessHost() {
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
         message += "was killed due to out of memory.";
+        unexpected_exit = true;
         break;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #if defined(OS_ANDROID)
       case base::TERMINATION_STATUS_OOM_PROTECTED:
         message += "was protected from out of memory kill.";
+        unexpected_exit = true;
         break;
 #endif  // OS_ANDROID
       case base::TERMINATION_STATUS_LAUNCH_FAILED:
         message += "failed to start!";
+        unexpected_exit = true;
         break;
       case base::TERMINATION_STATUS_OOM:
         message += "died due to out of memory.";
+        unexpected_exit = true;
         break;
 #if defined(OS_WIN)
       case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
         message += "failed integrity checks.";
+        unexpected_exit = true;
         break;
 #endif
       case base::TERMINATION_STATUS_MAX_ENUM:
         NOTREACHED();
         break;
+    }
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kForceBrowserCrashOnGpuCrash)) {
+      CHECK(!unexpected_exit)
+          << "Force Chrome to crash due to unexpected GPU process crash";
     }
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,

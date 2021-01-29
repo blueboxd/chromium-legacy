@@ -1217,16 +1217,15 @@
             ]
         }
     ],
-    "ButterForPayments": [
+    "ButterForPaymentsStage2": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Butter_IndicationForAllUsers_Stage2",
+                    "name": "Enabled_Butter_IndicationForAllUsers",
                     "enable_features": [
-                        "AutofillEnableAccountWalletStorage",
                         "AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers",
                         "AutofillEnableInfoBarAccountIndicationFooterForSyncUsers",
                         "AutofillEnableSaveCardInfoBarAccountIndicationFooter"
@@ -1937,9 +1936,36 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "PSIThreshold_10_Percent",
+                    "params": {
+                        "CrOSLowMemoryPSIThreshold": "10"
+                    },
+                    "enable_features": [
+                        "CrOSLowMemoryNotificationPSI"
+                    ]
+                },
+                {
+                    "name": "PSIThreshold_20_Percent",
                     "params": {
                         "CrOSLowMemoryPSIThreshold": "20"
+                    },
+                    "enable_features": [
+                        "CrOSLowMemoryNotificationPSI"
+                    ]
+                },
+                {
+                    "name": "PSIThreshold_30_Percent",
+                    "params": {
+                        "CrOSLowMemoryPSIThreshold": "30"
+                    },
+                    "enable_features": [
+                        "CrOSLowMemoryNotificationPSI"
+                    ]
+                },
+                {
+                    "name": "PSIThreshold_40_Percent",
+                    "params": {
+                        "CrOSLowMemoryPSIThreshold": "40"
                     },
                     "enable_features": [
                         "CrOSLowMemoryNotificationPSI"
@@ -2789,6 +2815,21 @@
                     },
                     "enable_features": [
                         "DynamicTcmallocTuning"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EarlyLibraryLoad": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EarlyLibraryLoad"
                     ]
                 }
             ]
@@ -5303,7 +5344,7 @@
                     "name": "Enabled_empty",
                     "params": {
                         "asset-key": "empty",
-                        "max-probability-per-million": "20000",
+                        "max-probability-per-million": "10000",
                         "moratorium-length-millis": "345600000",
                         "ramp-up-length-millis": "1814400000"
                     },
@@ -5925,6 +5966,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafetyCheckIOS"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafetyCheckWeakPasswords": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafetyCheckWeakPasswords"
                     ]
                 }
             ]

@@ -130,7 +130,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
                    tabstrip_minimum_size.height());
 
   // Do not draw caption buttons on fullscreen.
-  if (!frame()->IsFullscreen()) {
+  if (!frame()->IsFullscreen() && (@available(macOS 10.10, *))) {
     const int kCaptionWidth = base::mac::IsAtMostOS10_15() ? 70 : 85;
     if (CaptionButtonsOnLeadingEdge())
       bounds.Inset(gfx::Insets(0, kCaptionWidth, 0, 0));

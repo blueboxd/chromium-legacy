@@ -73,10 +73,6 @@ NSPoint clickedLocation;
 - (BOOL)usesCustomDrawing {
   return NO;
 }
-//
-//- (struct CGRect)titlebarRect {
-//    return NSMakeRect(self.frame.origin.x, self.frame.size.height - 22, self.frame.size.width, 22);
-//}
 // The base implementation just tests [self class] == [NSThemeFrame class].
 - (BOOL)_shouldFlipTrafficLightsForRTL API_AVAILABLE(macos(10.12)) {
   return [[self window] windowTitlebarLayoutDirection] ==

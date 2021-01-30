@@ -17,9 +17,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/net_internals_resources.h"
+#include "chrome/grit/net_internals_resources_map.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,11 +43,14 @@ namespace {
 content::WebUIDataSource* CreateNetInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
-
+  webui::AddResourcePathsBulk(
+      source,
+      base::make_span(kNetInternalsResources, kNetInternalsResourcesSize));
   source->SetDefaultResource(IDR_NET_INTERNALS_INDEX_HTML);
-  source->AddResourcePath("index.js", IDR_NET_INTERNALS_INDEX_JS);
-  source->AddResourcePath("main.css", IDR_NET_INTERNALS_MAIN_CSS);
-  source->UseStringsJs();
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
+      "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
   return source;
 }
 
@@ -54,9 +59,7 @@ void IgnoreBoolCallback(bool result) {}
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
-class NetInternalsMessageHandler
-    : public content::WebUIMessageHandler,
-      public base::SupportsWeakPtr<NetInternalsMessageHandler> {
+class NetInternalsMessageHandler : public content::WebUIMessageHandler {
  public:
   explicit NetInternalsMessageHandler(content::WebUI* web_ui);
   ~NetInternalsMessageHandler() override = default;
@@ -64,6 +67,7 @@ class NetInternalsMessageHandler
  protected:
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   network::mojom::NetworkContext* GetNetworkContext();
@@ -93,6 +97,7 @@ class NetInternalsMessageHandler
   void OnFlushSocketPools(const base::ListValue* list);
 
   content::WebUI* web_ui_;
+  base::WeakPtrFactory<NetInternalsMessageHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetInternalsMessageHandler);
 };
@@ -148,6 +153,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+void NetInternalsMessageHandler::OnJavascriptDisallowed() {
+  weak_factory_.InvalidateWeakPtrs();
+}
+
 void NetInternalsMessageHandler::OnReloadProxySettings(
     const base::ListValue* list) {
   GetNetworkContext()->ForceReloadProxyConfig(base::NullCallback());
@@ -188,7 +197,7 @@ void NetInternalsMessageHandler::OnHSTSQuery(const base::ListValue* list) {
   GetNetworkContext()->GetHSTSState(
       domain,
       base::BindOnce(&NetInternalsMessageHandler::ResolveCallbackWithResult,
-                     base::Unretained(this), callback_id));
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void NetInternalsMessageHandler::ResolveCallbackWithResult(
@@ -232,7 +241,7 @@ void NetInternalsMessageHandler::OnExpectCTQuery(const base::ListValue* list) {
       net::NetworkIsolationKey(origin /* top_frame_site */,
                                origin /* frame_site */),
       base::BindOnce(&NetInternalsMessageHandler::ResolveCallbackWithResult,
-                     base::Unretained(this), callback_id));
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void NetInternalsMessageHandler::OnExpectCTAdd(const base::ListValue* list) {
@@ -280,7 +289,7 @@ void NetInternalsMessageHandler::OnExpectCTTestReport(
   GetNetworkContext()->SetExpectCTTestReport(
       report_uri,
       base::BindOnce(&NetInternalsMessageHandler::OnExpectCTTestReportCallback,
-                     base::Unretained(this), callback_id));
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void NetInternalsMessageHandler::OnExpectCTTestReportCallback(

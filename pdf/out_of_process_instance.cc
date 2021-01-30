@@ -16,7 +16,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/location.h"
@@ -39,11 +38,11 @@
 #include "pdf/document_attachment_info.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
-#include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/graphics.h"
+#include "pdf/ppapi_migration/image.h"
 #include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ppapi_migration/value_conversions.h"
@@ -212,12 +211,6 @@ constexpr char kJSEmailBody[] = "body";
 // Rotation (Page -> Plugin)
 constexpr char kJSRotateClockwiseType[] = "rotateClockwise";
 constexpr char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
-// Toggle two-up view (Page -> Plugin)
-constexpr char kJSSetTwoUpViewType[] = "setTwoUpView";
-constexpr char kJSEnableTwoUpView[] = "enableTwoUpView";
-// Display annotations (Page -> Plugin)
-constexpr char kJSDisplayAnnotationsType[] = "displayAnnotations";
-constexpr char kJSDisplayAnnotations[] = "display";
 // Select all text in the document (Page -> Plugin)
 constexpr char kJSSelectAllType[] = "selectAll";
 // Get the selected text in the document (Page -> Plugin)
@@ -257,10 +250,6 @@ constexpr char kJSGetThumbnailReplyType[] = "getThumbnailReply";
 constexpr char kJSGetThumbnailImageData[] = "imageData";
 constexpr char kJSGetThumbnailWidth[] = "width";
 constexpr char kJSGetThumbnailHeight[] = "height";
-
-// Set read only to disable interaction with content (Page -> Plugin)
-constexpr char kJSSetReadOnlyType[] = "setReadOnly";
-constexpr char kJSEnableReadOnly[] = "enableReadOnly";
 
 constexpr base::TimeDelta kFindResultCooldown =
     base::TimeDelta::FromMilliseconds(100);
@@ -729,12 +718,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
     RotateCounterclockwise();
-  } else if (type == kJSSetReadOnlyType) {
-    HandleSetReadOnlyMessage(dict);
-  } else if (type == kJSSetTwoUpViewType) {
-    HandleSetTwoUpViewMessage(dict);
-  } else if (type == kJSDisplayAnnotationsType) {
-    HandleDisplayAnnotations(dict);
   } else if (type == kJSSelectAllType) {
     engine()->SelectAll();
   } else if (type == kJSBackgroundColorChangedType) {
@@ -752,7 +735,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSGetThumbnailType) {
     HandleGetThumbnailMessage(dict);
   } else {
-    NOTREACHED();
+    PdfViewPluginBase::HandleMessage(ValueFromVar(message));
   }
 }
 
@@ -1185,7 +1168,7 @@ void OutOfProcessInstance::DoPaint(const std::vector<gfx::Rect>& paint_rects,
     mutable_image_data().eraseColor(GetBackgroundColor());
     gfx::Rect rect(gfx::SkISizeToSize(image_data().dimensions()));
     ready->push_back(
-        PaintReadyRect(rect, pepper_image_data_, /*flush_now=*/true));
+        PaintReadyRect(rect, GetPluginImageData(), /*flush_now=*/true));
   }
 
   if (!received_viewport_message() || !needs_reraster())
@@ -1209,7 +1192,7 @@ void OutOfProcessInstance::DoPaint(const std::vector<gfx::Rect>& paint_rects,
       engine()->Paint(pdf_rect, mutable_image_data(), pdf_ready, pdf_pending);
       for (auto& ready_rect : pdf_ready) {
         ready_rect.Offset(available_area().OffsetFromOrigin());
-        ready->push_back(PaintReadyRect(ready_rect, pepper_image_data_));
+        ready->push_back(PaintReadyRect(ready_rect, GetPluginImageData()));
       }
       for (auto& pending_rect : pdf_pending) {
         pending_rect.Offset(available_area().OffsetFromOrigin());
@@ -1224,7 +1207,7 @@ void OutOfProcessInstance::DoPaint(const std::vector<gfx::Rect>& paint_rects,
     if (rect.y() < first_page_ypos) {
       gfx::Rect region = gfx::IntersectRects(
           rect, gfx::Rect(gfx::Size(plugin_size().width(), first_page_ypos)));
-      ready->push_back(PaintReadyRect(region, pepper_image_data_));
+      ready->push_back(PaintReadyRect(region, GetPluginImageData()));
       mutable_image_data().erase(GetBackgroundColor(),
                                  gfx::RectToSkIRect(region));
     }
@@ -1235,7 +1218,7 @@ void OutOfProcessInstance::DoPaint(const std::vector<gfx::Rect>& paint_rects,
       if (!intersection.IsEmpty()) {
         mutable_image_data().erase(background_part.color,
                                    gfx::RectToSkIRect(intersection));
-        ready->push_back(PaintReadyRect(intersection, pepper_image_data_));
+        ready->push_back(PaintReadyRect(intersection, GetPluginImageData()));
       }
     }
   }
@@ -1701,17 +1684,6 @@ void OutOfProcessInstance::HandleBackgroundColorChangedMessage(
   }
 }
 
-void OutOfProcessInstance::HandleDisplayAnnotations(
-    const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSDisplayAnnotations)).is_bool()) {
-    NOTREACHED();
-    return;
-  }
-
-  engine()->DisplayAnnotations(
-      dict.Get(pp::Var(kJSDisplayAnnotations)).AsBool());
-}
-
 void OutOfProcessInstance::HandleGetNamedDestinationMessage(
     const pp::VarDictionary& dict) {
   if (!dict.Get(pp::Var(kJSGetNamedDestination)).is_string() ||
@@ -1914,27 +1886,6 @@ void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {
       SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
       break;
   }
-}
-
-void OutOfProcessInstance::HandleSetReadOnlyMessage(
-    const pp::VarDictionary& dict) {
-  if (!base::FeatureList::IsEnabled(features::kPdfViewerPresentationMode) ||
-      !dict.Get(pp::Var(kJSEnableReadOnly)).is_bool()) {
-    NOTREACHED();
-    return;
-  }
-
-  engine()->SetReadOnly(dict.Get(pp::Var(kJSEnableReadOnly)).AsBool());
-}
-
-void OutOfProcessInstance::HandleSetTwoUpViewMessage(
-    const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSEnableTwoUpView)).is_bool()) {
-    NOTREACHED();
-    return;
-  }
-
-  engine()->SetTwoUpView(dict.Get(pp::Var(kJSEnableTwoUpView)).AsBool());
 }
 
 void OutOfProcessInstance::HandleUpdateScrollMessage(
@@ -2197,6 +2148,10 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
 
   if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
     SendAccessibilityViewportInfo();
+}
+
+Image OutOfProcessInstance::GetPluginImageData() const {
+  return Image(pepper_image_data_);
 }
 
 base::WeakPtr<PdfViewPluginBase> OutOfProcessInstance::GetWeakPtr() {

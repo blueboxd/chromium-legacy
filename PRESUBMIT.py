@@ -332,10 +332,8 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^base/callback.h',  # Intentional.
   '^base/cancelable_callback.h',  # Intentional.
   '^chrome/browser/apps/guest_view/web_view_browsertest.cc',
-  '^chrome/browser/browsing_data/',
   '^chrome/browser/captive_portal/captive_portal_browsertest.cc',
   '^chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.cc', # pylint: disable=line-too-long
-  '^chrome/browser/extensions/',
   '^chrome/browser/history/android/android_history_provider_service_unittest.cc', # pylint: disable=line-too-long
   '^chrome/browser/media_galleries/',
   '^chrome/browser/net/websocket_browsertest.cc',
@@ -343,16 +341,11 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/ntp_tiles/ntp_tiles_browsertest.cc',
   '^chrome/browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer_browsertest.cc', # pylint: disable=line-too-long
   '^chrome/browser/payments/payment_manifest_parser_browsertest.cc',
-  '^chrome/browser/pdf/pdf_extension_test.cc',
   '^chrome/browser/plugins/',
-  '^chrome/browser/policy/',
   '^chrome/browser/portal/portal_browsertest.cc',
-  '^chrome/browser/prefs/profile_pref_store_manager_unittest.cc',
   '^chrome/browser/previews/',
   '^chrome/browser/profiling_host/profiling_process_host.cc',
-  '^chrome/browser/push_messaging/',
   '^chrome/browser/recovery/recovery_install_global_error.cc',
-  '^chrome/browser/resource_coordinator/',
   '^chrome/browser/resources/chromeos/accessibility/',
   '^chrome/browser/rlz/chrome_rlz_tracker_delegate.cc',
   '^chrome/browser/search_engines/',
@@ -360,7 +353,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/site_isolation/site_per_process_text_input_browsertest.cc',
   '^chrome/browser/sync_file_system/',
   '^chrome/browser/web_applications/',
-  '^components/search_engines/',
   '^extensions/browser/',
   '^extensions/renderer/',
   '^media/blink/webmediaplayer_impl.cc',
@@ -368,6 +360,50 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^ppapi/proxy/',
   '^tools/clang/base_bind_rewriters/',  # Intentional.
   '^tools/gdb/gdb_chrome.py',  # Intentional.
+))
+
+# Directories that contain deprecated CallbackList types.
+# Find sub-directories from a given directory by running:
+# for i in `find . -maxdepth 1 -type d|sort`; do
+#   echo "-- $i"
+#   (cd $i; git grep -nP 'base::CallbackList<'|wc -l)
+# done
+#
+# TODO(crbug.com/1113007): Remove (or narrow the scope of) paths from this list
+# when they have been converted to modern callback list types (OnceCallback,
+# RepeatingCallback) in order to enable presubmit checks for them and prevent
+# regressions.
+_NOT_CONVERTED_TO_MODERN_CALLBACK_LIST = '|'.join((
+  r'^chrome/browser/android/oom_intervention/near_oom_monitor\.h',
+  r'^chrome/browser/ash/account_manager/child_account_type_changed_user_data\.h', # pylint: disable=line-too-long
+  r'^chrome/browser/browser_switcher/',
+  r'^chrome/browser/chromeos/',
+  r'^chrome/browser/media/router/providers/cast/',
+  r'^chrome/brwoser/sessions/session_restore\.cc',
+  r'^chrome/browser/supervised_user/',
+  r'^chrome/browser/ui/',
+  r'^chromecast/external_mojo/external_service_support/',
+  r'^components/captive_portal/content/captive_portal_service\.h',
+  r'^components/keyed_service/core/keyed_service_shutdown_notifier\.h',
+  r'^components/media_router/browser/',
+  r'^components/ntp_tils/custom_links_manager_impl\.h',
+  r'^components/password_manager/core/browser/hash_password_manager\.h',
+  r'^components/suggestions/suggestions_service\.h',
+  r'^components/sync_device_info/',
+  r'^components/sync_sessions/session_sync_service_impl\.h',
+  r'^components/zoom/zoom_event_manager\.h',
+  r'^content/browser/host_zoom_map_impl\.h',
+  r'^content/browser/network_service_instance_impl\.h',
+  r'^content/browser/rendeer_host/render_process_host_impl\.cc',
+  r'^extensions/test/extension_test_notification_observer\.h',
+  r'^ios/chrome/browser/tabs/tab_parenting_global_observer\.h',
+  r'^ios/net/cookies/cookie_store_ios\.h',
+  r'^net/cookies/cookie_monster_change_dispatcher\.h',
+  r'^remoting/signaling/messaging_client\.h',
+  r'^services/device/battery/battery_status_service\.h',
+  r'^services/device/geolocation/',
+  r'^weblayer/browser/i18n_util\.cc',
+  r'^weblayer/public/cookie_manager\.h',
 ))
 
 # Format: Sequence of tuples containing:
@@ -821,6 +857,15 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
+    ),
+    (
+      r'/\bbase::CallbackList<',
+      (
+          'Please use base::{Once,Repeating}CallbackList instead',
+          'of base::CallbackList. (crbug.com/1113007)'
+      ),
+      False,
+      (_NOT_CONVERTED_TO_MODERN_CALLBACK_LIST,),
     ),
     (
       r'/\bRunMessageLoop\b',

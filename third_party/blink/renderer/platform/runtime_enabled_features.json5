@@ -488,6 +488,10 @@
       name: "CSSContainerQueries",
     },
     {
+      // Support for contain:inline-size and contain:block-size
+      name: "CSSContainSize1D",
+    },
+    {
       // The main content-visibility feature.
       // https://drafts.csswg.org/css-contain/#content-visibility
       name: "CSSContentVisibility",
@@ -1311,6 +1315,10 @@
       name: "MobileLayoutTheme",
     },
     {
+      name: "ModalCloseWatcher",
+      status: "test",
+    },
+    {
       name: "ModuleServiceWorker",
       status: "test",
     },
@@ -1414,7 +1422,7 @@
     },
     {
       name: "OriginIsolationHeader",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "OriginPolicy",
@@ -1689,10 +1697,6 @@
     {
       // See https://crbug.com/1012063
       name: "RequestVideoFrameCallback",
-      status: "stable",
-    },
-    {
-      name: "ResizeObserverUpdates",
       status: "stable",
     },
     {

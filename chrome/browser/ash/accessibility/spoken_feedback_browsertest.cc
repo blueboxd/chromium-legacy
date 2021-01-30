@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/extension_load_waiter_one_shot.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -153,33 +152,8 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
 
   // Load ChromeVox and block until it's fully loaded.
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
-  base::RunLoop loop;
-  ExtensionLoadWaiterOneShot waiter;
-  waiter.WaitForExtension(extension_misc::kChromeVoxExtensionId,
-                          loop.QuitClosure());
-  loop.Run();
-
-  DisableEarcons();
-
-  // Keyboard mappings are async loaded, so we need to wait until they are fully
-  // fetched to start testing.
-  std::string script =
-      R"JS(
-          function waitForKeyMapLoad() {
-            if (ChromeVoxKbHandler.handlerKeyMap) {
-              window.domAutomationController.send('ok');
-              return;
-            }
-            setTimeout(waitForKeyMapLoad, 0);
-          }
-          waitForKeyMapLoad();
-        )JS";
-
-  std::string result =
-      extensions::browsertest_util::ExecuteScriptInBackgroundPage(
-          browser()->profile(), extension_misc::kChromeVoxExtensionId, script,
-          extensions::browsertest_util::ScriptUserActivation::kDontActivate);
-  ASSERT_EQ(result, "ok");
+  sm_.ExpectSpeechPattern("*");
+  sm_.Call([this]() { DisableEarcons(); });
 }
 
 // Flaky test, crbug.com/1081563
@@ -1142,7 +1116,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, HardwareKeysGetRewritten) {
 }
 
 // Tests basic behavior of the tutorial when signed in.
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, Tutorial) {
+// TODO(akihiroota): fix flakiness: http://crbug.com/1172390
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_Tutorial) {
   EnableChromeVox();
   sm_.Call([this]() {
     ui_test_utils::NavigateToURL(
@@ -1221,7 +1196,9 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackTutorialInOobe) {
+// TODO(akihiroota): fix flakiness: http://crbug.com/1172390
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest,
+                       DISABLED_SpokenFeedbackTutorialInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   AccessibilityManager::Get()->EnableSpokenFeedback(true);

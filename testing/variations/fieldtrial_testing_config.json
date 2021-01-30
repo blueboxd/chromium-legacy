@@ -4817,26 +4817,6 @@
             ]
         }
     ],
-    "OriginIsolationHeader": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OriginIsolationHeader"
-                    ]
-                }
-            ]
-        }
-    ],
     "OutOfBlinkCors": [
         {
             "platforms": [
@@ -5799,6 +5779,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ReportSaveDataSavings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SCTAuditingPhase1": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200129",
+                    "params": {
+                        "sampling_rate": "0.0001"
+                    },
+                    "enable_features": [
+                        "SCTAuditing"
                     ]
                 }
             ]
@@ -7168,21 +7170,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "VerifyHTMLFetchedFromAppCacheBeforeDelay"
-                    ]
-                }
-            ]
-        }
-    ],
-    "VideoToolboxVp9Decoding": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "VideoToolboxVp9Decoding"
                     ]
                 }
             ]

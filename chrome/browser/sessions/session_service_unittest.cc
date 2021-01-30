@@ -565,7 +565,7 @@ TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   EXPECT_EQ(sessions::SessionWindow::TYPE_NORMAL, windows_list[0]->type);
 }
 
-#if defined (OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Makes sure we track apps. Only applicable on chromeos.
 TEST_F(SessionServiceTest, RestoreApp) {
   SessionID window2_id = SessionID::NewUnique();
@@ -1361,4 +1361,35 @@ TEST_F(SessionServiceTest, LogExit) {
   SessionID window2_id = SessionID::NewUnique();
   service()->SetWindowType(window2_id, Browser::TYPE_NORMAL);
   EXPECT_FALSE(FindMostRecentEventOfType(SessionServiceEventLogType::kExit));
+}
+
+TEST_F(SessionServiceTest, OnErrorWritingSessionCommands) {
+  helper_.SaveNow();
+  EXPECT_FALSE(helper_.HasPendingReset());
+  EXPECT_FALSE(helper_.HasPendingSave());
+  EXPECT_FALSE(
+      FindMostRecentEventOfType(SessionServiceEventLogType::kWriteError));
+  service()->OnErrorWritingSessionCommands();
+  EXPECT_TRUE(helper_.HasPendingReset());
+  EXPECT_TRUE(helper_.HasPendingSave());
+  auto write_error_event =
+      FindMostRecentEventOfType(SessionServiceEventLogType::kWriteError);
+  ASSERT_TRUE(write_error_event);
+  EXPECT_EQ(1, write_error_event->data.write_error.error_count);
+  EXPECT_EQ(0, write_error_event->data.write_error.unrecoverable_error_count);
+}
+
+TEST_F(SessionServiceTest, OnErrorWritingSessionCommandsUnrecoverable) {
+  helper_.SaveNow();
+  service()->WindowClosing(window_id);
+  EXPECT_FALSE(
+      FindMostRecentEventOfType(SessionServiceEventLogType::kWriteError));
+  service()->OnErrorWritingSessionCommands();
+  EXPECT_TRUE(helper_.HasPendingReset());
+  EXPECT_TRUE(helper_.HasPendingSave());
+  auto write_error_event =
+      FindMostRecentEventOfType(SessionServiceEventLogType::kWriteError);
+  ASSERT_TRUE(write_error_event);
+  EXPECT_EQ(1, write_error_event->data.write_error.error_count);
+  EXPECT_EQ(0, write_error_event->data.write_error.unrecoverable_error_count);
 }

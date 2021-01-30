@@ -612,7 +612,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.FailureTime"
-    units="ms" expires_after="2021-02-28">
+    units="ms" expires_after="2021-07-28">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -624,7 +624,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.SuccessTime"
-    units="ms" expires_after="2021-02-28">
+    units="ms" expires_after="2021-07-28">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -637,7 +637,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2021-01-31">
+    enum="NetErrorCodes" expires_after="2021-07-31">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -652,7 +652,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureTime" units="ms"
-    expires_after="2021-01-31">
+    expires_after="2021-07-31">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -667,7 +667,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.SuccessTime" units="ms"
-    expires_after="2021-01-31">
+    expires_after="2021-07-31">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -682,7 +682,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2021-02-28">
+    enum="NetErrorCodes" expires_after="2021-07-28">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -698,7 +698,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureTime" units="ms"
-    expires_after="2021-02-28">
+    expires_after="2021-07-28">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -713,7 +713,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.SuccessTime" units="ms"
-    expires_after="2021-02-28">
+    expires_after="2021-07-28">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -741,6 +741,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DNS.DnsTransaction.UDP.IdMismatch"
     enum="DNS.UdpIdMismatchStatus" expires_after="2021-06-06">
+  <obsolete>
+    Removed from code 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -752,6 +755,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DNS.DnsTransaction.UDP.IdMismatch.OldestMatchTime"
     units="ms" expires_after="2021-04-04">
+  <obsolete>
+    Removed from code 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -763,7 +769,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Net.DNS.DnsTransaction.UDP.LowEntropyReason"
-    enum="DNS.UdpLowEntropyReason" expires_after="2021-02-28">
+    enum="DNS.UdpLowEntropyReason" expires_after="never">
+<!-- expires-never: Core network stack health metric -->
+
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -775,6 +783,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DNS.DnsTransaction.UDP.ReusedPort.Count"
     units="num recent uses" expires_after="2021-04-04">
+  <obsolete>
+    Removed from code 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -785,6 +796,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DNS.DnsTransaction.UDP.ReusedPort.MostRecentAge"
     units="ms" expires_after="2021-04-04">
+  <obsolete>
+    Removed from code 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -1237,6 +1251,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DNS.SecureDnsTaskFailure.FallbackDnsTask.Error"
     enum="NetErrorCodes" expires_after="2021-01-31">
+  <obsolete>
+    Removed from code 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1247,6 +1264,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DNS.SecureDnsTaskFailure.FallbackProcTask.Error"
     enum="NetErrorCodes" expires_after="2021-01-31">
+  <obsolete>
+    Removed from code 2021-01.
+  </obsolete>
   <owner>ericorth@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -2622,8 +2642,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
-    The QUIC error code which resulted in the Google QUIC connection being
-    closed by the client.
+    The QUIC error code which resulted in the QUIC connection being closed by
+    the client.
   </summary>
 </histogram>
 
@@ -2632,8 +2652,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
-    The QUIC error code which resulted in the Google QUIC connection being
-    closed by the client to a server ending in .google.com.
+    The QUIC error code which resulted in the QUIC connection being closed by
+    the client to a Google server.
   </summary>
 </histogram>
 
@@ -2642,8 +2662,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
-    The QUIC error code which resulted in the Google QUIC connection being
-    closed by the server.
+    The QUIC error code which resulted in the QUIC connection being closed by
+    the server.
   </summary>
 </histogram>
 
@@ -2652,8 +2672,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
-    The QUIC error code which resulted in the Google QUIC connection being
-    closed by the server with a name ending in .google.com.
+    The QUIC error code which resulted in the QUIC connection being closed by
+    the a Google server.
   </summary>
 </histogram>
 
@@ -2674,7 +2694,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>src/net/quic/OWNERS</owner>
   <summary>
     The QUIC application transport error code in a CONNECTION_CLOSE frame
-    received from the server with a name ending in .google.com.
+    received from a Google server.
   </summary>
 </histogram>
 
@@ -2696,8 +2716,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>src/net/quic/OWNERS</owner>
   <summary>
     The QUIC application transport error code in a CONNECTION_CLOSE frame
-    received from the server with a name ending in .google.com, when the GQUIC
-    error was missing.
+    received from a Google server, when the GQUIC error was missing.
   </summary>
 </histogram>
 
@@ -2718,7 +2737,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>src/net/quic/OWNERS</owner>
   <summary>
     The QUIC application transport error code in a CONNECTION_CLOSE frame
-    received from the server with a name ending in .google.com.
+    received from a Google server.
   </summary>
 </histogram>
 
@@ -2740,8 +2759,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>src/net/quic/OWNERS</owner>
   <summary>
     The QUIC application transport error code in a CONNECTION_CLOSE frame
-    received from the server with a name ending in .google.com, when the GQUIC
-    error was missing.
+    received from a Google server, when the GQUIC error was missing.
   </summary>
 </histogram>
 
@@ -4458,9 +4476,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2021-07-11">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
-  <summary>
-    Net error codes when SpdySession was closed, doesn't inlcuding net::OK.
-  </summary>
+  <summary>Net error codes when SpdySession was closed.</summary>
 </histogram>
 
 <histogram name="Net.SpdySession.CreateStreamWithSocketConnected"

@@ -136,6 +136,16 @@ if (window.testRunner) {
         finish();
     }
 
+    PerfTestRunner.assert_true = function (cond,text) {
+      if (cond)
+        return;
+      PerfTestRunner.logFatalError(text);
+    }
+
+    PerfTestRunner.assert_false = function (cond,text) {
+      PerfTestRunner.assert_true(!cond,text);
+    }
+
     PerfTestRunner.formatException = function (text, exception) {
         return "Got an exception while " + text +
             " with name=" + exception.name +
@@ -377,6 +387,11 @@ if (window.testRunner) {
     PerfTestRunner.measureTime = function (test) {
         PerfTestRunner.unit = "ms";
         PerfTestRunner.bufferedLog = true;
+        start(test, zeroTimeoutScheduler, measureTimeOnce);
+    }
+
+    PerfTestRunner.measureValue = function (test) {
+        PerfTestRunner.unit = test.unit;
         start(test, zeroTimeoutScheduler, measureTimeOnce);
     }
 

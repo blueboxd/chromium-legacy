@@ -531,7 +531,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Creates a tabbed browser and popup and makes sure we restore both.
-// NOTE: If this flakes, please disable and update https://crbug.com/1166756.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
   // Open a popup.
   Browser* popup = CreateBrowserForPopup(browser()->profile());
@@ -1325,6 +1324,25 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoTabsSecondSelected) {
             new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, OnErrorWritingSessionCommands) {
+  ui_test_utils::NavigateToURL(browser(), GetUrl1());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetUrl2(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  auto* session_service =
+      SessionServiceFactory::GetForProfile(browser()->profile());
+  session_service->OnErrorWritingSessionCommands();
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 2);
+  ASSERT_EQ(1u, active_browser_list_->size());
+  ASSERT_EQ(2, new_browser->tab_strip_model()->count());
+  ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
+  ASSERT_EQ(GetUrl2(),
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  ASSERT_EQ(GetUrl1(),
+            new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+}
+
 // Creates two tabs, closes one, quits and makes sure only one tab is restored.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
   ui_test_utils::NavigateToURL(browser(), GetUrl1());
@@ -1377,11 +1395,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, CloseSingleTabRestoresNothing) {
 // Verifies that launching with no previous session to a url which closes itself
 // results in no session being restored on the next launch.
 // Regression test for http://crbug.com/1052096
-// Flaky:
-//  - Bulk-disabled for arm64 bot stabilization: https://crbug.com/1154345
-//  - Disabled for all platforms: https://crbug.com/1158715
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
-                       DISABLED_AutoClosedSingleTabDoesNotGetRestored) {
+                       AutoClosedSingleTabDoesNotGetRestored) {
   Profile* profile = browser()->profile();
   std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
       KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
@@ -1400,16 +1415,22 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Create a new browser by navigating to the test page.
   GURL url = ui_test_utils::GetTestUrl(
-      base::FilePath().AppendASCII("session_restore"),
-      base::FilePath().AppendASCII("close_onload.html"));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html")));
   NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   Navigate(&params);
+
+  restore_observer.Wait();
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
 
   ui_test_utils::BrowserChangeObserver browser_removed_observer(
       params.browser,
       ui_test_utils::BrowserChangeObserver::ChangeType::kRemoved);
 
-  restore_observer.Wait();
+  // Have the page trigger closing the browser.
+  ASSERT_TRUE(
+      content::ExecJs(params.browser->tab_strip_model()->GetActiveWebContents(),
+                      "window.open('', '_self').close()"));
 
   // Wait for the browser to close as a result of the single tab closing
   // itself.

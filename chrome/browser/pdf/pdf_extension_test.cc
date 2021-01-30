@@ -537,7 +537,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // Content-Security-Policy, the embed tag is still sized correctly.
 // Regression test for https://crbug.com/271452.
 // Flaky on win and linux: crbug.com/1150197
-#if defined(OS_WIN) || defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #define MAYBE_CSPDoesNotBlockEmbedStyles DISABLED_CSPDoesNotBlockEmbedStyles
 #else
 #define MAYBE_CSPDoesNotBlockEmbedStyles CSPDoesNotBlockEmbedStyles
@@ -1469,9 +1471,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInIframe) {
   WebContents* guest_contents = nullptr;
   content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
-  guest_manager->ForEachGuest(contents,
-                              base::Bind(&RetrieveGuestContents,
-                                         &guest_contents));
+  guest_manager->ForEachGuest(
+      contents, base::BindRepeating(&RetrieveGuestContents, &guest_contents));
   ASSERT_TRUE(guest_contents);
 
   ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
@@ -1491,9 +1492,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
   WebContents* guest_contents = nullptr;
   content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
-  guest_manager->ForEachGuest(contents,
-                              base::Bind(&RetrieveGuestContents,
-                                         &guest_contents));
+  guest_manager->ForEachGuest(
+      contents, base::BindRepeating(&RetrieveGuestContents, &guest_contents));
   ASSERT_TRUE(guest_contents);
 
   ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
@@ -2475,7 +2475,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   content::BrowserPluginGuestManager* guest_manager =
       embedder_contents->GetBrowserContext()->GetGuestManager();
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
-      embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
+      embedder_contents,
+      base::BindRepeating(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
   content::WaitForHitTestData(guest_contents);
 
@@ -2528,7 +2529,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   content::BrowserPluginGuestManager* guest_manager =
       embedder_contents->GetBrowserContext()->GetGuestManager();
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
-      embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
+      embedder_contents,
+      base::BindRepeating(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
   content::WaitForHitTestData(guest_contents);
 
@@ -3319,6 +3321,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextStyle) {
   RunPDFTest(FILE_PATH_LITERAL("text-style.pdf"));
+}
+
+// TODO(https://crbug.com/1172026)
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, XfaFields) {
+  RunPDFTest(FILE_PATH_LITERAL("xfa_fields.pdf"));
 }
 
 // This test suite validates the navigation done using the accessibility client.

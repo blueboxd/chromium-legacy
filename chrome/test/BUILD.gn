@@ -3539,6 +3539,7 @@ test("unit_tests") {
     "../browser/metrics/chrome_metrics_service_client_unittest.cc",
     "../browser/metrics/chrome_metrics_services_manager_client_unittest.cc",
     "../browser/metrics/oom/out_of_memory_reporter_unittest.cc",
+    "../browser/metrics/power/power_metrics_reporter_unittest.cc",
     "../browser/metrics/process_memory_metrics_emitter_unittest.cc",
     "../browser/metrics/tab_footprint_aggregator_unittest.cc",
     "../browser/metrics/thread_watcher_unittest.cc",
@@ -3638,33 +3639,14 @@ test("unit_tests") {
     "../browser/policy/file_selection_dialogs_policy_handler_unittest.cc",
     "../browser/policy/homepage_location_policy_handler_unittest.cc",
     "../browser/policy/javascript_policy_handler_unittest.cc",
-    "../browser/policy/messaging_layer/encryption/decryption.cc",
-    "../browser/policy/messaging_layer/encryption/decryption.h",
-    "../browser/policy/messaging_layer/encryption/encryption_module_unittest.cc",
-    "../browser/policy/messaging_layer/encryption/encryption_unittest.cc",
-    "../browser/policy/messaging_layer/encryption/test_encryption_module.cc",
-    "../browser/policy/messaging_layer/encryption/test_encryption_module.h",
-    "../browser/policy/messaging_layer/encryption/verification_unittest.cc",
     "../browser/policy/messaging_layer/public/report_client_unittest.cc",
     "../browser/policy/messaging_layer/public/report_queue_configuration_unittest.cc",
     "../browser/policy/messaging_layer/public/report_queue_unittest.cc",
-    "../browser/policy/messaging_layer/storage/resources/resource_interface_unittest.cc",
-    "../browser/policy/messaging_layer/storage/storage_queue_stress_test.cc",
-    "../browser/policy/messaging_layer/storage/storage_queue_unittest.cc",
-    "../browser/policy/messaging_layer/storage/storage_unittest.cc",
-    "../browser/policy/messaging_layer/storage/test_storage_module.cc",
-    "../browser/policy/messaging_layer/storage/test_storage_module.h",
     "../browser/policy/messaging_layer/upload/dm_server_upload_service_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_handler_impl_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_upload_request_builder_unittest.cc",
     "../browser/policy/messaging_layer/upload/upload_client_unittest.cc",
     "../browser/policy/messaging_layer/util/report_queue_manual_test_context_unittest.cc",
-    "../browser/policy/messaging_layer/util/shared_queue_unittest.cc",
-    "../browser/policy/messaging_layer/util/shared_vector_unittest.cc",
-    "../browser/policy/messaging_layer/util/status_macros_unittest.cc",
-    "../browser/policy/messaging_layer/util/status_unittest.cc",
-    "../browser/policy/messaging_layer/util/statusor_unittest.cc",
-    "../browser/policy/messaging_layer/util/task_runner_context_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_table_unittest.cc",
@@ -4206,6 +4188,7 @@ test("unit_tests") {
     "//components/page_load_metrics/browser:test_support",
     "//components/page_load_metrics/common:test_support",
     "//components/query_tiles:unit_tests",
+    "//components/reporting/storage:test_support",
     "//components/resources",
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/content/password_protection:mock_password_protection",
@@ -4778,7 +4761,6 @@ test("unit_tests") {
         "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.cc",
         "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h",
         "../browser/safe_browsing/chrome_cleaner/reporter_runner_win_unittest.cc",
-        "../browser/safe_browsing/chrome_cleaner/srt_delete_extension_win_unittest.cc",
         "../browser/safe_browsing/chrome_cleaner/srt_field_trial_win_unittest.cc",
         "../browser/task_manager/sampling/shared_sampler_win_unittest.cc",
         "../utility/importer/edge_database_reader_unittest_win.cc",
@@ -5516,12 +5498,6 @@ test("unit_tests") {
       ]
     }
 
-    if (is_win) {
-      sources += [
-        "../browser/ui/webui/settings/chrome_cleanup_handler_win_unittest.cc",
-      ]
-    }
-
     if (enable_autofill_assistant_api) {
       sources += [ "../browser/extensions/api/autofill_assistant_private/extension_access_token_fetcher_unittest.cc" ]
     }
@@ -5697,6 +5673,7 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_unittest.cc",
       "../browser/safe_browsing/download_protection/download_protection_service_unittest.cc",
+      "../browser/safe_browsing/download_protection/download_request_maker_unittest.cc",
       "../browser/safe_browsing/download_protection/file_analyzer_unittest.cc",
       "../browser/safe_browsing/download_protection/path_sanitizer_unittest.cc",
       "../browser/safe_browsing/download_protection/two_phase_uploader_unittest.cc",

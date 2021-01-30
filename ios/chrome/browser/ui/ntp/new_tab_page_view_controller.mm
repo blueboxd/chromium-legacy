@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_omnibox_positioning.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -29,12 +31,9 @@ namespace {
 // it look smooth). Otherwise, the omnibox hides beneath the feed before
 // changing ownership.
 const CGFloat kOffsetToPinOmnibox = 100;
-// Offset so the FakeOmnibox owned by this ViewController completely covers the
-// top of the screen.
-const CGFloat kFakeOmniboxTopOffset = 3;
 }
 
-@interface NewTabPageViewController ()
+@interface NewTabPageViewController () <NewTabPageOmniboxPositioning>
 
 // View controller representing the NTP content suggestions. These suggestions
 // include the most visited site tiles, the shortcut tiles, the fake omnibox and
@@ -58,6 +57,20 @@ const CGFloat kFakeOmniboxTopOffset = 3;
 // to be the top of the page. If value is |NAN|, then the offset was calculated
 // from the saved web state instead.
 @property(nonatomic, assign) CGFloat initialContentOffsetFromContentSuggestions;
+
+// Constraint to determine the height of the contained ContentSuggestions view.
+@property(nonatomic, strong)
+    NSLayoutConstraint* contentSuggestionsHeightConstraint;
+
+// Constraint to determine the Y position of the contained ContentSuggestions
+// view.
+@property(nonatomic, strong)
+    NSLayoutConstraint* contentSuggestionsTopConstraint;
+
+// Array of constraints used to pin the fake Omnibox header into the top of the
+// view.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* fakeOmniboxConstraints;
 
 @end
 
@@ -102,16 +115,40 @@ const CGFloat kFakeOmniboxTopOffset = 3;
   discoverFeedView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(discoverFeedView, self.view);
 
+  UIView* containerView =
+      self.discoverFeedWrapperViewController.discoverFeed.view;
+  UIView* contentSuggestionsView = self.contentSuggestionsViewController.view;
+  contentSuggestionsView.translatesAutoresizingMaskIntoConstraints = NO;
+
   [self.contentSuggestionsViewController
       willMoveToParentViewController:self.discoverFeedWrapperViewController
                                          .discoverFeed];
   [self.discoverFeedWrapperViewController.discoverFeed
       addChildViewController:self.contentSuggestionsViewController];
-  [self.discoverFeedWrapperViewController.feedCollectionView
-      addSubview:self.contentSuggestionsViewController.view];
+  // Add contentSuggestionsView to
+  // discoverFeedWrapperViewController.discoverFeed.view so its width is not
+  // restrained by the width of
+  // discoverFeedWrapperViewController.discoverFeed.feedCollectionView.
+  [containerView addSubview:contentSuggestionsView];
   [self.contentSuggestionsViewController
       didMoveToParentViewController:self.discoverFeedWrapperViewController
                                         .discoverFeed];
+
+  self.contentSuggestionsHeightConstraint = [contentSuggestionsView.heightAnchor
+      constraintEqualToConstant:self.contentSuggestionsViewController
+                                    .collectionView.contentSize.height];
+  self.contentSuggestionsTopConstraint =
+      [containerView.safeAreaLayoutGuide.topAnchor
+          constraintEqualToAnchor:contentSuggestionsView.topAnchor];
+
+  [NSLayoutConstraint activateConstraints:@[
+    self.contentSuggestionsTopConstraint,
+    [containerView.safeAreaLayoutGuide.leadingAnchor
+        constraintEqualToAnchor:contentSuggestionsView.leadingAnchor],
+    [containerView.safeAreaLayoutGuide.trailingAnchor
+        constraintEqualToAnchor:contentSuggestionsView.trailingAnchor],
+    self.contentSuggestionsHeightConstraint,
+  ]];
 
   // Ensures that there is never any nested scrolling, since we are nesting the
   // content suggestions collection view in the feed collection view.
@@ -139,6 +176,7 @@ const CGFloat kFakeOmniboxTopOffset = 3;
       self.contentSuggestionsViewController.collectionView
           .collectionViewLayout);
   _contentSuggestionsLayout.isScrolledIntoFeed = self.isScrolledIntoFeed;
+  _contentSuggestionsLayout.omniboxPositioner = self;
 }
 
 - (void)viewDidLayoutSubviews {
@@ -155,6 +193,11 @@ const CGFloat kFakeOmniboxTopOffset = 3;
     [self setContentOffset:-[self adjustedContentSuggestionsHeight]
             fromSavedState:NO];
   }
+
+  [self.headerSynchronizer
+      updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
+  [self.contentSuggestionsViewController.collectionView
+          .collectionViewLayout invalidateLayout];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -238,6 +281,11 @@ const CGFloat kFakeOmniboxTopOffset = 3;
            .height) {
     return;
   }
+
+  // Scroll up the contentSuggestions view along the scrolling of the feed.
+  self.contentSuggestionsTopConstraint.constant =
+      scrollView.contentOffset.y + [self adjustedContentSuggestionsHeight];
+
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
   self.scrolledToTop =
@@ -311,6 +359,20 @@ const CGFloat kFakeOmniboxTopOffset = 3;
   return self.discoverFeedWrapperViewController.feedCollectionView;
 }
 
+#pragma mark - NewTabPageOmniboxPositioning
+
+- (CGFloat)stickyOmniboxHeight {
+  // Takes the height of the entire header and subtracts the margin to stick the
+  // fake omnibox. Adjusts this for the device by further subtracting the
+  // toolbar height and safe area insets.
+  return self.headerController.view.frame.size.height -
+         ntp_header::kFakeOmniboxScrolledToTopMargin -
+         ToolbarExpandedHeight(
+             [UIApplication sharedApplication].preferredContentSizeCategory) -
+         self.discoverFeedWrapperViewController.feedCollectionView
+             .safeAreaInsets.top;
+}
+
 #pragma mark - Private
 
 // Enables or disables overscroll actions.
@@ -337,13 +399,11 @@ const CGFloat kFakeOmniboxTopOffset = 3;
 
   [self.view addSubview:self.headerController.view];
 
-  [NSLayoutConstraint activateConstraints:@[
+  self.fakeOmniboxConstraints = @[
     [self.headerController.view.topAnchor
         constraintEqualToAnchor:self.discoverFeedWrapperViewController.view
                                     .topAnchor
-                       constant:-([self.ntpContentDelegate
-                                        heightAboveFakeOmnibox]) -
-                                kFakeOmniboxTopOffset],
+                       constant:-[self stickyOmniboxHeight]],
     [self.headerController.view.leadingAnchor
         constraintEqualToAnchor:self.discoverFeedWrapperViewController.view
                                     .leadingAnchor],
@@ -352,7 +412,10 @@ const CGFloat kFakeOmniboxTopOffset = 3;
                                     .trailingAnchor],
     [self.headerController.view.heightAnchor
         constraintEqualToConstant:self.headerController.view.frame.size.height],
-  ]];
+  ];
+
+  self.contentSuggestionsHeightConstraint.active = NO;
+  [NSLayoutConstraint activateConstraints:self.fakeOmniboxConstraints];
 }
 
 // Gives content suggestions collection view ownership of the fake omnibox for
@@ -362,6 +425,9 @@ const CGFloat kFakeOmniboxTopOffset = 3;
 
   [self.headerController removeFromParentViewController];
   [self.headerController.view removeFromSuperview];
+
+  self.contentSuggestionsHeightConstraint.active = YES;
+  [NSLayoutConstraint deactivateConstraints:self.fakeOmniboxConstraints];
 
   // Reload the content suggestions so that the fake omnibox goes back where it
   // belongs. This can probably be optimized by just reloading the header, if
@@ -413,6 +479,8 @@ const CGFloat kFakeOmniboxTopOffset = 3;
   self.discoverFeedWrapperViewController.feedCollectionView.contentInset =
       UIEdgeInsetsMake([self adjustedContentSuggestionsHeight], 0, 0, 0);
   self.headerSynchronizer.additionalOffset = contentSuggestionsHeight;
+  self.contentSuggestionsHeightConstraint.constant =
+      self.contentSuggestionsViewController.collectionView.contentSize.height;
 }
 
 // Content suggestions height adjusted with the safe area top insets.

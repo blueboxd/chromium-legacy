@@ -13,13 +13,13 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
-#include "chrome/browser/policy/messaging_layer/util/status_macros.h"
-#include "chrome/browser/policy/messaging_layer/util/statusor.h"
-#include "chrome/browser/policy/messaging_layer/util/task_runner_context.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
-#include "components/policy/proto/record.pb.h"
-#include "components/policy/proto/record_constants.pb.h"
+#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/util/status.h"
+#include "components/reporting/util/status_macros.h"
+#include "components/reporting/util/statusor.h"
+#include "components/reporting/util/task_runner_context.h"
 #include "net/base/backoff_entry.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -40,16 +40,24 @@ namespace reporting {
 class DmServerUploadService {
  public:
   // ReportSuccessfulUploadCallback is used to pass server responses back to
-  // the owner of |this|.
+  // the owner of |this| (the respone consists of sequencing information and
+  // force_confirm flag).
   using ReportSuccessfulUploadCallback =
-      base::RepeatingCallback<void(SequencingInformation)>;
+      base::RepeatingCallback<void(SequencingInformation,
+                                   /*force_confirm*/ bool)>;
 
   // ReceivedEncryptionKeyCallback is called if server attached encryption key
   // to the response.
   using EncryptionKeyAttachedCallback =
       base::RepeatingCallback<void(SignedEncryptionInfo)>;
 
-  using CompletionResponse = StatusOr<SequencingInformation>;
+  // Successful response consists of Sequencing information that may be
+  // accompanied with force_confirm flag.
+  struct SuccessfulUploadResponse {
+    SequencingInformation sequencing_information;
+    bool force_confirm;
+  };
+  using CompletionResponse = StatusOr<SuccessfulUploadResponse>;
 
   using CompletionCallback = base::OnceCallback<void(CompletionResponse)>;
 
@@ -180,7 +188,7 @@ class DmServerUploadService {
       base::OnceCallback<void(StatusOr<std::unique_ptr<DmServerUploadService>>)>
           created_cb);
 
-  void UploadCompletion(StatusOr<SequencingInformation>) const;
+  void UploadCompletion(CompletionResponse upload_result) const;
 
   policy::CloudPolicyClient* GetClient();
 

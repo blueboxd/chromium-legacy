@@ -1109,8 +1109,8 @@
   },
   {
     "name": "edit-passwords-in-settings",
-    "owners": [ "fhorschig", "jdoerrie" ],
-    "expiry_milestone": 89
+    "owners": [ "fhorschig", "ioanap", "jdoerrie" ],
+    "expiry_milestone": 91
   },
   {
     "name": "elastic-overscroll-win",
@@ -2871,7 +2871,7 @@
   {
     "name": "freeze-user-agent",
     "owners": [ "yoavweiss", "aarontag" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 99
   },
   {
     "name": "full-restore",

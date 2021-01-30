@@ -181,8 +181,6 @@ using CSBRR = safe_browsing::ClientSafeBrowsingReportRequest;
 CSBRR::SafeBrowsingUrlApiType GetUrlApiTypeForThreatSource(
     safe_browsing::ThreatSource source) {
   switch (source) {
-    case safe_browsing::ThreatSource::DATA_SAVER:
-      return CSBRR::FLYWHEEL;
     case safe_browsing::ThreatSource::LOCAL_PVER3:
       return CSBRR::PVER3_NATIVE;
     case safe_browsing::ThreatSource::LOCAL_PVER4:
@@ -193,10 +191,8 @@ CSBRR::SafeBrowsingUrlApiType GetUrlApiTypeForThreatSource(
       return CSBRR::REAL_TIME;
     case safe_browsing::ThreatSource::UNKNOWN:
     case safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION:
-    case safe_browsing::ThreatSource::PASSWORD_PROTECTION_SERVICE:
-      break;
+      return CSBRR::SAFE_BROWSING_URL_API_TYPE_UNSPECIFIED;
   }
-  return CSBRR::SAFE_BROWSING_URL_API_TYPE_UNSPECIFIED;
 }
 
 void TrimElements(const std::set<int> target_ids,

@@ -209,9 +209,6 @@
 
 namespace content {
 
-using AccessibilityEventCallback =
-    base::RepeatingCallback<void(const std::string&)>;
-
 namespace {
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
@@ -4007,7 +4004,7 @@ std::string WebContentsImpl::DumpAccessibilityTree(
 
 void WebContentsImpl::RecordAccessibilityEvents(
     bool start_recording,
-    base::Optional<AccessibilityEventCallback> callback) {
+    base::Optional<ui::AXEventCallback> callback) {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::RecordAccessibilityEvents");
   // Only pass a callback to RecordAccessibilityEvents when starting to record.
@@ -4819,7 +4816,8 @@ void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
   OPTIONAL_TRACE_EVENT1("content",
                         "WebContentsImpl::DidChooseColorInColorChooser",
                         "color", color);
-  color_chooser_->DidChooseColorInColorChooser(color);
+  if (color_chooser_)
+    color_chooser_->DidChooseColorInColorChooser(color);
 }
 
 void WebContentsImpl::DidEndColorChooser() {
@@ -5839,13 +5837,14 @@ void WebContentsImpl::OpenColorChooser(
     SkColor color,
     std::vector<blink::mojom::ColorSuggestionPtr> suggestions) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::OpenColorChooser");
+  color_chooser_.reset();
+
   content::ColorChooser* new_color_chooser =
       delegate_ ? delegate_->OpenColorChooser(this, color, suggestions)
                 : nullptr;
   if (!new_color_chooser)
     return;
 
-  color_chooser_.reset();
   color_chooser_ = std::make_unique<ColorChooser>(
       new_color_chooser, std::move(chooser_receiver), std::move(client));
 }
@@ -7756,9 +7755,10 @@ gfx::Size WebContentsImpl::GetSize() {
 #endif  // !defined(OS_MAC)
 
 void WebContentsImpl::UpdateWindowControlsOverlay(
-    const gfx::Rect& bounding_rect) {
+    const gfx::Rect& bounding_rect,
+    const gfx::Insets& insets) {
   GetMainFrame()->GetAssociatedLocalMainFrame()->UpdateWindowControlsOverlay(
-      bounding_rect);
+      bounding_rect, insets);
 }
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {

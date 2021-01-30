@@ -18,8 +18,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace chrome_pdf {
 
+class Image;
 class PDFiumEngine;
 class UrlLoader;
 
@@ -81,6 +86,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                               int32_t result) = 0;
 
+  // Handles `postMessage()` calls from the embedder.
+  void HandleMessage(const base::Value& message);
+
   // Paints the given invalid area of the plugin to the given graphics device.
   // PaintManager::Client::OnPaint() should be its only caller.
   virtual void DoPaint(const std::vector<gfx::Rect>& paint_rects,
@@ -93,6 +101,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Updates the available area and the background parts, notifies the PDF
   // engine, and updates the accessibility information.
   virtual void OnGeometryChanged(double old_zoom, float old_device_scale) = 0;
+
+  // Returns the plugin-specific image data buffer.
+  virtual Image GetPluginImageData() const;
 
   // A helper of OnGeometryChanged() which updates the available area and
   // the background parts, and notifies the PDF engine of geometry changes.
@@ -166,6 +177,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   }
 
  private:
+  // Message handlers.
+  void HandleDisplayAnnotationsMessage(const base::Value& message);
+  void HandleSetReadOnlyMessage(const base::Value& message);
+  void HandleSetTwoUpViewMessage(const base::Value& message);
+
   std::unique_ptr<PDFiumEngine> engine_;
   PaintManager paint_manager_{this};
 

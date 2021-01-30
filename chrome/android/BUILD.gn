@@ -1268,6 +1268,7 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/android_sdk:android_support_chromium_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_sdk:android_test_runner_java",
@@ -2239,6 +2240,7 @@ android_library("base_module_java") {
     "//components/viz/service:service_java",
     "//content/public/android:content_main_dex_java",
     "//media/base/android:media_java",
+    "//services/shape_detection:shape_detection_java",
 
     # Deps for DFMs.
     "//chrome/android/modules/extra_icu/provider:java",

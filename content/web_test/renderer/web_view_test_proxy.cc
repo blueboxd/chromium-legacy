@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -28,63 +27,18 @@ WebViewTestProxy::WebViewTestProxy(AgentSchedulingGroup& agent_scheduling_group,
                                    TestRunner* test_runner)
     : RenderViewImpl(agent_scheduling_group, compositor_deps, params),
       test_runner_(test_runner) {
-  test_runner_->AddRenderView(this);
 }
 
-WebViewTestProxy::~WebViewTestProxy() {
-  test_runner_->RemoveRenderView(this);
-}
-
-blink::WebView* WebViewTestProxy::CreateView(
-    blink::WebLocalFrame* creator,
-    const blink::WebURLRequest& request,
-    const blink::WebWindowFeatures& features,
-    const blink::WebString& frame_name,
-    blink::WebNavigationPolicy policy,
-    network::mojom::WebSandboxFlags sandbox_flags,
-    const blink::SessionStorageNamespaceId& session_storage_namespace_id,
-    bool& consumed_user_gesture,
-    const base::Optional<blink::WebImpression>& impression) {
-  if (test_runner_->ShouldDumpNavigationPolicy()) {
-    test_runner_->PrintMessage(
-        "Default policy for createView for '" +
-        web_test_string_util::URLDescription(request.Url()) + "' is '" +
-        web_test_string_util::WebNavigationPolicyToString(policy) + "'\n");
-  }
-
-  if (test_runner_->ShouldDumpCreateView()) {
-    test_runner_->PrintMessage(
-        std::string("createView(") +
-        web_test_string_util::URLDescription(request.Url()) + ")\n");
-  }
-  return RenderViewImpl::CreateView(
-      creator, request, features, frame_name, policy, sandbox_flags,
-      session_storage_namespace_id, consumed_user_gesture, impression);
-}
-
-void WebViewTestProxy::PrintPage(blink::WebLocalFrame* frame) {
-  // This is using the main frame for the size, but maybe it should be using the
-  // frame's size.
-  blink::WebSize page_size_in_pixels =
-      GetMainRenderFrame()->GetLocalRootWebFrameWidget()->Size();
-  if (page_size_in_pixels.IsEmpty())
-    return;
-  blink::WebPrintParams print_params(page_size_in_pixels);
-  frame->PrintBegin(print_params, blink::WebNode());
-  frame->PrintEnd();
-}
+WebViewTestProxy::~WebViewTestProxy() = default;
 
 void WebViewTestProxy::Reset() {
   accessibility_controller_.Reset();
-  // |text_input_controller_| doesn't have any state to reset.
-
   // Resets things on the WebView that TestRunnerBindings can modify.
   test_runner_->ResetWebView(this);
 }
 
 void WebViewTestProxy::Install(blink::WebLocalFrame* frame) {
   accessibility_controller_.Install(frame);
-  text_input_controller_.Install(frame);
 }
 
 blink::WebString WebViewTestProxy::GetAbsoluteWebStringFromUTF8Path(

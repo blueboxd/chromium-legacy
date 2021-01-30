@@ -23,11 +23,11 @@
 #include "content/web_test/common/web_test.mojom.h"
 #include "content/web_test/common/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/web_test/common/web_test_constants.h"
+#include "content/web_test/common/web_test_runtime_flags.h"
 #include "content/web_test/renderer/fake_screen_orientation_impl.h"
 #include "content/web_test/renderer/gamepad_controller.h"
 #include "content/web_test/renderer/layout_dump.h"
 #include "content/web_test/renderer/web_test_content_settings_client.h"
-#include "content/web_test/renderer/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -113,12 +113,6 @@ class TestRunner {
   void AddMainFrame(WebFrameTestProxy* frame);
   void RemoveMainFrame(WebFrameTestProxy* frame);
 
-  // Track the set of all RenderViews in the process, which includes cross-site
-  // frames/windows accessible from this process but homed in a different
-  // renderer and parts of any windows' frame trees that share the same site.
-  void AddRenderView(WebViewTestProxy* view);
-  void RemoveRenderView(WebViewTestProxy* view);
-
   // Returns a mock WebContentSettings that is used for web tests. An
   // embedder should use this for all WebViews it creates.
   blink::WebContentSettingsClient* GetWebContentSettings();
@@ -187,7 +181,6 @@ class TestRunner {
   bool ShouldDumpUserGestureInFrameLoadCallbacks() const;
   bool ShouldDumpTitleChanges() const;
   bool ShouldDumpIconChanges() const;
-  bool ShouldDumpCreateView() const;
   bool CanOpenWindows() const;
   bool ShouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* HttpHeadersToClear() const;
@@ -442,11 +435,6 @@ class TestRunner {
 
   void DumpTitleChanges();
 
-  // This function sets a flag that tells the test runner to dump all calls to
-  // WebViewClient::createView().
-  // It takes no arguments, and ignores any that may be present.
-  void DumpCreateView();
-
   // This function sets a flag that tells the test runner to dump the MIME type
   // for each resource that was loaded. It takes no arguments, and ignores any
   // that may be present.
@@ -554,10 +542,6 @@ class TestRunner {
   std::vector<uint8_t> audio_data_;
 
   base::flat_set<WebFrameTestProxy*> main_frames_;
-  // The set of all render views in this renderer process. This may include
-  // cross-site windows accessible from this process, or parts of same-site
-  // windows opened from any renderer process.
-  base::flat_set<WebViewTestProxy*> render_views_;
 
   // This is non empty when a load is in progress.
   std::vector<blink::WebFrame*> loading_frames_;

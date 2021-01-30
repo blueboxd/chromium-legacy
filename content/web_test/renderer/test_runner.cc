@@ -23,6 +23,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/web_test/common/web_test_constants.h"
 #include "content/web_test/common/web_test_string_util.h"
@@ -162,6 +163,33 @@ void ConvertAndSet(gin::Arguments* args, blink::WebString* set_param) {
   *set_param = web_test_string_util::V8StringToWebString(
       args->isolate(), result.ToLocalChecked());
 }
+
+class SynchronousResizeModeVisitor : public RenderViewVisitor {
+ public:
+  SynchronousResizeModeVisitor() = default;
+
+  bool Visit(RenderView* render_view) override {
+    render_view->GetWebView()->UseSynchronousResizeModeForTesting(true);
+    return true;
+  }
+};
+
+class SetAcceptLanguagesVisitor : public RenderViewVisitor {
+ public:
+  explicit SetAcceptLanguagesVisitor(const std::string& accept_languages)
+      : accept_languages_(accept_languages) {}
+
+  bool Visit(RenderView* render_view) override {
+    blink::WebView* view = render_view->GetWebView();
+    blink::RendererPreferences prefs = view->GetRendererPreferences();
+    prefs.accept_languages = accept_languages_;
+    view->SetRendererPreferences(prefs);
+    return true;
+  }
+
+ private:
+  const std::string& accept_languages_;
+};
 
 }  // namespace
 
@@ -537,7 +565,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpBackForwardList",
                  &TestRunnerBindings::DumpBackForwardList)
       .SetMethod("dumpChildFrames", &TestRunnerBindings::DumpChildFrames)
-      .SetMethod("dumpCreateView", &TestRunnerBindings::DumpCreateView)
       .SetMethod("dumpDatabaseCallbacks", &TestRunnerBindings::NotImplemented)
       .SetMethod("dumpDragImage", &TestRunnerBindings::DumpDragImage)
       .SetMethod("dumpEditingCallbacks",
@@ -1457,12 +1484,6 @@ void TestRunnerBindings::DumpTitleChanges() {
   if (invalid_)
     return;
   runner_->DumpTitleChanges();
-}
-
-void TestRunnerBindings::DumpCreateView() {
-  if (invalid_)
-    return;
-  runner_->DumpCreateView();
 }
 
 void TestRunnerBindings::SetCanOpenWindows() {
@@ -2481,10 +2502,6 @@ bool TestRunner::ShouldDumpIconChanges() const {
   return web_test_runtime_flags_.dump_icon_changes();
 }
 
-bool TestRunner::ShouldDumpCreateView() const {
-  return web_test_runtime_flags_.dump_create_view();
-}
-
 blink::WebContentSettingsClient* TestRunner::GetWebContentSettings() {
   return &test_content_settings_client_;
 }
@@ -2569,7 +2586,6 @@ void TestRunner::OnFrameDeactivated(WebFrameTestProxy* frame) {
 
   DCHECK(frame->IsMainFrame());
   RemoveMainFrame(frame);
-  RemoveRenderView(frame->GetWebViewTestProxy());
 
   if (frame->GetWebFrame()->IsLoading())
     RemoveLoadingFrame(frame->GetWebFrame());
@@ -2596,7 +2612,6 @@ void TestRunner::OnFrameReactivated(WebFrameTestProxy* frame) {
 
   AddMainFrame(frame);
   WebViewTestProxy* view_proxy = frame->GetWebViewTestProxy();
-  AddRenderView(view_proxy);
   if (view_proxy->is_main_window()) {
     work_queue_.RequestWork();
   }
@@ -2676,14 +2691,6 @@ void TestRunner::AddMainFrame(WebFrameTestProxy* frame) {
 
 void TestRunner::RemoveMainFrame(WebFrameTestProxy* frame) {
   main_frames_.erase(frame);
-}
-
-void TestRunner::AddRenderView(WebViewTestProxy* view) {
-  render_views_.insert(view);
-}
-
-void TestRunner::RemoveRenderView(WebViewTestProxy* view) {
-  render_views_.erase(view);
 }
 
 void TestRunner::PolicyDelegateDone() {
@@ -2849,9 +2856,8 @@ void TestRunner::SetTextSubpixelPositioning(bool value) {
 
 void TestRunner::UseUnfortunateSynchronousResizeMode() {
   // Sets the resize mode on the view of each open window.
-  for (WebViewTestProxy* view : render_views_) {
-    view->GetWebView()->UseSynchronousResizeModeForTesting(true);
-  }
+  SynchronousResizeModeVisitor visitor;
+  RenderView::ForEach(&visitor);
 }
 
 void TestRunner::SetMockScreenOrientation(WebViewTestProxy* view_proxy,
@@ -2890,16 +2896,12 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
   // TODO(danakj): IPC to WebTestControlHost, and have it change the
   // WebContentsImpl::GetMutableRendererPrefs(). Then have the browser sync that
   // to the window's RenderViews, instead of using WebTestRuntimeFlags for this.
-  // Then also get rid of |render_views_|.
   web_test_runtime_flags_.set_accept_languages(accept_languages);
   OnWebTestRuntimeFlagsChanged();
 
-  for (WebViewTestProxy* view : render_views_) {
-    blink::RendererPreferences prefs =
-        view->GetWebView()->GetRendererPreferences();
-    prefs.accept_languages = accept_languages;
-    view->GetWebView()->SetRendererPreferences(prefs);
-  }
+  // Sets the accept language on the view of each open window.
+  SetAcceptLanguagesVisitor visitor(accept_languages);
+  RenderView::ForEach(&visitor);
 }
 
 void TestRunner::DumpEditingCallbacks() {
@@ -2971,11 +2973,6 @@ void TestRunner::DumpUserGestureInFrameLoadCallbacks() {
 
 void TestRunner::DumpTitleChanges() {
   web_test_runtime_flags_.set_dump_title_changes(true);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::DumpCreateView() {
-  web_test_runtime_flags_.set_dump_create_view(true);
   OnWebTestRuntimeFlagsChanged();
 }
 

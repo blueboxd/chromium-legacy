@@ -1811,7 +1811,9 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     cached_live_region_root_ = nullptr;
   } else {
     // Is a live region root if this or an ancestor is a live region.
-    DCHECK(parent_);
+    DCHECK(parent_) << "No parent and not a document, node=" << GetNode();
+    if (!parent_)
+      return;
     cached_live_region_root_ = IsLiveRegionRoot() ? const_cast<AXObject*>(this)
                                                   : parent_->LiveRegionRoot();
   }
@@ -3310,7 +3312,9 @@ int AXObject::ChildCountIncludingIgnored() const {
 
 AXObject* AXObject::ChildAtIncludingIgnored(int index) const {
   DCHECK_GE(index, 0);
-  DCHECK_LT(index, ChildCountIncludingIgnored());
+  DCHECK_LE(index, ChildCountIncludingIgnored());
+  if (index >= ChildCountIncludingIgnored())
+    return nullptr;
   return ChildrenIncludingIgnored()[index];
 }
 

@@ -609,14 +609,9 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return true;
   }
 
-  // Ignore continuations, since those are essentially duplicate copies
-  // of inline nodes with blocks inside.
-  if (layout_object_->IsElementContinuation()) {
-    NOTREACHED() << "DOM tree walking handles all element continuations";
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-    return true;
-  }
+  // Ignore continuations, they're duplicate copies of inline nodes with blocks
+  // inside. AXObjects are no longer created for these.
+  DCHECK(!layout_object_->IsElementContinuation());
 
   // Check first if any of the common reasons cause this element to be ignored.
   AXObjectInclusion default_inclusion = DefaultObjectInclusion(ignored_reasons);
@@ -1119,7 +1114,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
     return nullptr;
   // Returns next object of parent, since next of |ax_object| isn't appeared on
   // line.
-  return ax_object.ParentObject()->NextOnLine();
+  return ax_object.ParentObjectIncludedInTree()->NextOnLine();
 }
 
 AXObject* AXLayoutObject::NextOnLine() const {
@@ -1235,12 +1230,11 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
       return result;
     }
   }
-  if (!ax_object.ParentObject())
+  if (!ax_object.ParentObjectIncludedInTree())
     return nullptr;
   // Returns previous object of parent, since next of |ax_object| isn't appeared
   // on line.
-  AXObject* included_parent = ax_object.ParentObjectIncludedInTree();
-  return included_parent ? included_parent->PreviousOnLine() : nullptr;
+  return ax_object.ParentObjectIncludedInTree()->PreviousOnLine();
 }
 
 AXObject* AXLayoutObject::PreviousOnLine() const {
@@ -1554,10 +1548,6 @@ bool AXLayoutObject::CanHaveChildren() const {
 //
 // DOM and layout tree access.
 //
-
-Node* AXLayoutObject::GetNode() const {
-  return GetLayoutObject() ? GetLayoutObject()->GetNode() : nullptr;
-}
 
 Document* AXLayoutObject::GetDocument() const {
   if (!GetLayoutObject())

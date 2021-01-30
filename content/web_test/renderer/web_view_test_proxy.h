@@ -16,7 +16,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/web_test/common/web_test.mojom.h"
 #include "content/web_test/renderer/accessibility_controller.h"
-#include "content/web_test/renderer/text_input_controller.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -28,14 +27,11 @@
 namespace blink {
 class WebLocalFrame;
 class WebString;
-class WebView;
-struct WebWindowFeatures;
 }  // namespace blink
 
 namespace content {
 class AccessibilityController;
 class TestRunner;
-class TextInputController;
 
 // WebViewTestProxy is used to run web tests. This class is a partial fake
 // implementation of RenderViewImpl that overrides the minimal necessary
@@ -61,20 +57,6 @@ class WebViewTestProxy : public RenderViewImpl {
                             const mojom::CreateViewParams& params,
                             TestRunner* test_runner);
 
-  // WebViewClient implementation.
-  blink::WebView* CreateView(
-      blink::WebLocalFrame* creator,
-      const blink::WebURLRequest& request,
-      const blink::WebWindowFeatures& features,
-      const blink::WebString& frame_name,
-      blink::WebNavigationPolicy policy,
-      network::mojom::WebSandboxFlags sandbox_flags,
-      const blink::SessionStorageNamespaceId& session_storage_namespace_id,
-      bool& consumed_user_gesture,
-      const base::Optional<blink::WebImpression>& impression) override;
-  void PrintPage(blink::WebLocalFrame* frame) override;
-
-  TestRunner* GetTestRunner() { return test_runner_; }
   AccessibilityController* accessibility_controller() {
     return &accessibility_controller_;
   }
@@ -110,7 +92,6 @@ class WebViewTestProxy : public RenderViewImpl {
   mojom::WebTestRunTestConfiguration test_config_;
 
   AccessibilityController accessibility_controller_{this};
-  TextInputController text_input_controller_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxy);
 };

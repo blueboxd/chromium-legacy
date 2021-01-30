@@ -189,11 +189,11 @@ class OutOfProcessInstance : public PdfViewPluginBase,
                std::vector<PaintReadyRect>* ready,
                std::vector<gfx::Rect>* pending) override;
   void OnGeometryChanged(double old_zoom, float old_device_scale) override;
+  Image GetPluginImageData() const override;
 
  private:
   // Message handlers.
   void HandleBackgroundColorChangedMessage(const pp::VarDictionary& dict);
-  void HandleDisplayAnnotations(const pp::VarDictionary& dict);
   void HandleGetNamedDestinationMessage(const pp::VarDictionary& dict);
   void HandleGetPasswordCompleteMessage(const pp::VarDictionary& dict);
   void HandleGetSelectedTextMessage(const pp::VarDictionary& dict);
@@ -202,8 +202,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
   void HandleSaveAttachmentMessage(const pp::VarDictionary& dict);
   void HandleSaveMessage(const pp::VarDictionary& dict);
-  void HandleSetReadOnlyMessage(const pp::VarDictionary& dict);
-  void HandleSetTwoUpViewMessage(const pp::VarDictionary& dict);
   void HandleUpdateScrollMessage(const pp::VarDictionary& dict);
   void HandleViewportMessage(const pp::VarDictionary& dict);
 

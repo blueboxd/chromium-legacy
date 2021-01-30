@@ -2108,6 +2108,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Some other thread"/>
 </enum>
 
+<enum name="AndroidWebViewAndroidProtocolHandlerResources">
+  <int value="0" label="GetIdentifier"/>
+  <int value="1" label="Reflection"/>
+  <int value="2" label="ResourcesNotFound_ID_0"/>
+  <int value="3" label="ClassNotFoundException"/>
+  <int value="4" label="NoSuchFieldException"/>
+  <int value="5" label="IllegalAccessException"/>
+</enum>
+
 <enum name="AndroidWebViewClientSafeBrowsingThreatType">
   <obsolete>
     Removed 04/2020. These metrics are tracked generally for SafeBrowsing, and
@@ -8378,6 +8387,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanMainFrame">
   <int value="0" label="Subframe"/>
   <int value="1" label="Main frame"/>
+</enum>
+
+<enum name="BooleanManagedPref">
+  <int value="0" label="Unmanaged Pref"/>
+  <int value="1" label="Managed Pref"/>
 </enum>
 
 <enum name="BooleanMarkedForReload">
@@ -18326,6 +18340,9 @@ metrics consent we also won't be able to send UMA metrics. -->
 </enum>
 
 <enum name="DNS.UdpIdMismatchStatus">
+  <obsolete>
+    Metrics removed from code 2021-01.
+  </obsolete>
   <int value="0" label="Successfully parsed response with matching ID"/>
   <int value="1"
       label="ID mismatch with the response ID recognized as a
@@ -41543,6 +41560,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Main Chrome Launcher Icon Shortcuts (New Tab shortcuts)"/>
   <int value="8" label="Home screen widget (eg. Search or Bookmarks)"/>
   <int value="9" label="Open In Browser CCT Menu"/>
+  <int value="10"
+      label="External Search Intent (eg. Third Party Voice Search results)"/>
 </enum>
 
 <enum name="LauncherRankingItemType">
@@ -56218,6 +56237,13 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OriginAgentClusterEndResult">
+  <int value="0" label="Not requested and not origin-keyed"/>
+  <int value="1" label="Not requested but origin-keyed"/>
+  <int value="2" label="Requested but not origin-keyed"/>
+  <int value="3" label="Requested and origin-keyed"/>
+</enum>
+
 <enum name="OriginTrialEnableResult">
   <obsolete>
     Obsolete as of M54 and replaced by OriginTrialTokenStatus.
@@ -56558,6 +56584,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="502" label="Ambient Mode Photos (Deprecated)"/>
   <int value="503" label="Ambient Mode Google Photos Album"/>
   <int value="504" label="Ambient Mode Art Gallery Album"/>
+  <int value="505" label="Wallpaper"/>
   <int value="600" label="Assistant"/>
   <int value="700" label="App Management"/>
   <int value="701" label="App Details"/>
@@ -73748,6 +73775,14 @@ would be helpful to identify which type is being sent.
   <int value="2" label="Active"/>
 </enum>
 
+<enum name="SyncUserEventType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="TestEvent"/>
+  <int value="2" label="GaiaPasswordReuseEvent"/>
+  <int value="3" label="GaiaPasswordCapturedEvent"/>
+  <int value="4" label="FlocIdComputedEvent"/>
+</enum>
+
 <enum name="SystemFeature">
   <summary>System Features to be disabled by a policy.</summary>
   <int value="0" label="Unknown"/>
@@ -80747,6 +80782,7 @@ Called by update_scheduler_enums.py.-->
   <int value="2" label="DISABLED_FOR_USER"/>
   <int value="3" label="DISABLED_BY_GROUP_POLICY"/>
   <int value="4" label="DISABLED_BY_MANIFEST"/>
+  <int value="5" label="UNKNOWN"/>
 </enum>
 
 <enum name="WindowsNotificationGetSettingStatus">

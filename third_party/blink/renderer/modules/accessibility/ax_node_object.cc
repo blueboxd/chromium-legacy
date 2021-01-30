@@ -504,22 +504,19 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 
   // If we don't have a node, then ignore the node object.
   // TODO(vmpstr/aleventhal): Investigate how this can happen.
-  if (!GetNode())
+  if (!GetNode()) {
+    NOTREACHED();
     return true;
+  }
 
   // All nodes must have an unignored parent within their tree under
   // the root node of the web area, so force that node to always be unignored.
   if (IsWebArea())
     return false;
 
-  if (GetLayoutObject()) {
-    if (role_ == ax::mojom::blink::Role::kUnknown) {
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-      return true;
-    }
-    return false;
-  }
+  DCHECK_NE(role_, ax::mojom::blink::Role::kUnknown);
+  // Use AXLayoutObject::ComputeAccessibilityIsIgnored().
+  DCHECK(!GetLayoutObject());
 
   if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
     if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
@@ -3171,10 +3168,13 @@ void AXNodeObject::AddInlineTextBoxChildren(bool force) {
 }
 
 void AXNodeObject::AddValidationMessageChild() {
-  if (IsWebArea()) {
-    AddChildAndCheckIncluded(
-        AXObjectCache().ValidationMessageObjectIfInvalid());
-  }
+  DCHECK(IsWebArea()) << "Validation message must be child of root";
+  // First child requirement enables easy checking to see if a children changed
+  // event is needed in AXObjectCacheImpl::ValidationMessageObjectIfInvalid().
+  DCHECK_EQ(children_.size(), 0U)
+      << "Validation message must be the first child";
+  AddChildAndCheckIncluded(AXObjectCache().ValidationMessageObjectIfInvalid(
+      /* suppress children changed, already processing that */ false));
 }
 
 void AXNodeObject::AddImageMapChildren() {
@@ -3280,6 +3280,12 @@ void AXNodeObject::AddChildren() {
     return;
   }
 
+  // If validation message exists, always make it the first child of the root,
+  // to enable easy checking of whether it's a known child of the root.
+  if (IsWebArea())
+    AddValidationMessageChild();
+  CHECK_ATTACHED();
+
   if (IsHtmlTable())
     AddTableChildren();
   else if (ShouldUseLayoutObjectTraversalForChildren())
@@ -3292,9 +3298,6 @@ void AXNodeObject::AddChildren() {
   CHECK_ATTACHED();
 
   AddImageMapChildren();
-  CHECK_ATTACHED();
-
-  AddValidationMessageChild();
   CHECK_ATTACHED();
 
   AddAccessibleNodeChildren();
@@ -3899,7 +3902,7 @@ AXObject* AXNodeObject::ErrorMessage() const {
   if (this != AXObjectCache().FocusedObject())
     return nullptr;
 
-  return AXObjectCache().ValidationMessageObjectIfInvalid();
+  return AXObjectCache().ValidationMessageObjectIfInvalid(true);
 }
 
 // According to the standard, the figcaption should only be the first or

@@ -39,7 +39,7 @@
                                                    &titlebarHeight);
     }
   }
-  if (overrideTitlebarHeight)
+  if (overrideTitlebarHeight && (@available(macOS 10.10, *)))
     return titlebarHeight;
   return [super _titlebarHeight];
 }

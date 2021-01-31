@@ -49,135 +49,6 @@ AXNodePosition::AXPositionInstance AXNodePosition::Clone() const {
   return AXPositionInstance(new AXNodePosition(*this));
 }
 
-void AXNodePosition::AnchorChild(int child_index,
-                                 AXTreeID* tree_id,
-                                 AXNode::AXID* child_id) const {
-  DCHECK(tree_id);
-  DCHECK(child_id);
-
-  if (!GetAnchor() || child_index < 0 || child_index >= AnchorChildCount()) {
-    *tree_id = AXTreeIDUnknown();
-    *child_id = AXNode::kInvalidAXID;
-    return;
-  }
-
-  AXNode* child = nullptr;
-  const AXTreeManager* child_tree_manager =
-      AXTreeManagerMap::GetInstance().GetManagerForChildTree(*GetAnchor());
-  if (child_tree_manager) {
-    // The child node exists in a separate tree from its parent.
-    child = child_tree_manager->GetRootAsAXNode();
-    *tree_id = child_tree_manager->GetTreeID();
-  } else {
-    child = GetAnchor()->children()[size_t{child_index}];
-    *tree_id = this->tree_id();
-  }
-
-  DCHECK(child);
-  *child_id = child->id();
-}
-
-int AXNodePosition::AnchorChildCount() const {
-  if (!GetAnchor())
-    return 0;
-
-  const AXTreeManager* child_tree_manager =
-      AXTreeManagerMap::GetInstance().GetManagerForChildTree(*GetAnchor());
-  if (child_tree_manager)
-    return 1;
-
-  return int{GetAnchor()->children().size()};
-}
-
-int AXNodePosition::AnchorUnignoredChildCount() const {
-  if (!GetAnchor())
-    return 0;
-
-  return static_cast<int>(GetAnchor()->GetUnignoredChildCount());
-}
-
-int AXNodePosition::AnchorIndexInParent() const {
-  return GetAnchor() ? int{GetAnchor()->index_in_parent()} : INVALID_INDEX;
-}
-
-int AXNodePosition::AnchorSiblingCount() const {
-  AXNode* parent = GetAnchor()->GetUnignoredParent();
-  if (parent)
-    return static_cast<int>(parent->GetUnignoredChildCount());
-
-  return 0;
-}
-
-base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
-  base::stack<AXNode*> anchors;
-  AXNode* current_anchor = GetAnchor();
-
-  AXNode::AXID current_anchor_id = GetAnchor()->id();
-  AXTreeID current_tree_id = tree_id();
-
-  AXNode::AXID parent_anchor_id = AXNode::kInvalidAXID;
-  AXTreeID parent_tree_id = AXTreeIDUnknown();
-
-  while (current_anchor) {
-    anchors.push(current_anchor);
-    current_anchor = GetParent(
-        current_anchor /*child*/, current_tree_id /*child_tree_id*/,
-        &parent_tree_id /*parent_tree_id*/, &parent_anchor_id /*parent_id*/);
-
-    current_anchor_id = parent_anchor_id;
-    current_tree_id = parent_tree_id;
-  }
-  return anchors;
-}
-
-AXNode* AXNodePosition::GetLowestUnignoredAncestor() const {
-  if (!GetAnchor())
-    return nullptr;
-
-  return GetAnchor()->GetUnignoredParent();
-}
-
-void AXNodePosition::AnchorParent(AXTreeID* tree_id,
-                                  AXNode::AXID* parent_id) const {
-  DCHECK(tree_id);
-  DCHECK(parent_id);
-
-  *tree_id = AXTreeIDUnknown();
-  *parent_id = AXNode::kInvalidAXID;
-
-  if (!GetAnchor())
-    return;
-
-  AXNode* parent =
-      GetParent(GetAnchor() /*child*/, this->tree_id() /*child_tree_id*/,
-                tree_id /*parent_tree_id*/, parent_id /*parent_id*/);
-
-  if (!parent) {
-    *tree_id = AXTreeIDUnknown();
-    *parent_id = AXNode::kInvalidAXID;
-  }
-}
-
-AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
-                                      AXNode::AXID node_id) const {
-  if (node_id == AXNode::kInvalidAXID)
-    return nullptr;
-
-  AXTreeManager* manager = AXTreeManagerMap::GetInstance().GetManager(tree_id);
-  if (manager)
-    return manager->GetNodeFromTree(tree_id, node_id);
-
-  return nullptr;
-}
-
-AXNode::AXID AXNodePosition::GetAnchorID(AXNode* node) const {
-  return node->id();
-}
-
-AXTreeID AXNodePosition::GetTreeID(AXNode* node) const {
-  return node->tree()->GetAXTreeID();
-}
-
 base::string16 AXNodePosition::GetText() const {
   if (IsNullPosition())
     return base::string16();
@@ -296,6 +167,135 @@ ax::mojom::Role AXNodePosition::GetAnchorRole() const {
   return GetRole(GetAnchor());
 }
 
+void AXNodePosition::AnchorChild(int child_index,
+                                 AXTreeID* tree_id,
+                                 AXNodeID* child_id) const {
+  DCHECK(tree_id);
+  DCHECK(child_id);
+
+  if (!GetAnchor() || child_index < 0 || child_index >= AnchorChildCount()) {
+    *tree_id = AXTreeIDUnknown();
+    *child_id = kInvalidAXNodeID;
+    return;
+  }
+
+  AXNode* child = nullptr;
+  const AXTreeManager* child_tree_manager =
+      AXTreeManagerMap::GetInstance().GetManagerForChildTree(*GetAnchor());
+  if (child_tree_manager) {
+    // The child node exists in a separate tree from its parent.
+    child = child_tree_manager->GetRootAsAXNode();
+    *tree_id = child_tree_manager->GetTreeID();
+  } else {
+    child = GetAnchor()->children()[size_t{child_index}];
+    *tree_id = this->tree_id();
+  }
+
+  DCHECK(child);
+  *child_id = child->id();
+}
+
+int AXNodePosition::AnchorChildCount() const {
+  if (!GetAnchor())
+    return 0;
+
+  const AXTreeManager* child_tree_manager =
+      AXTreeManagerMap::GetInstance().GetManagerForChildTree(*GetAnchor());
+  if (child_tree_manager)
+    return 1;
+
+  return int{GetAnchor()->children().size()};
+}
+
+int AXNodePosition::AnchorUnignoredChildCount() const {
+  if (!GetAnchor())
+    return 0;
+
+  return static_cast<int>(GetAnchor()->GetUnignoredChildCount());
+}
+
+int AXNodePosition::AnchorIndexInParent() const {
+  return GetAnchor() ? int{GetAnchor()->index_in_parent()} : INVALID_INDEX;
+}
+
+int AXNodePosition::AnchorSiblingCount() const {
+  AXNode* parent = GetAnchor()->GetUnignoredParent();
+  if (parent)
+    return static_cast<int>(parent->GetUnignoredChildCount());
+
+  return 0;
+}
+
+base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
+  base::stack<AXNode*> anchors;
+  AXNode* current_anchor = GetAnchor();
+
+  AXNodeID current_anchor_id = GetAnchor()->id();
+  AXTreeID current_tree_id = tree_id();
+
+  AXNodeID parent_anchor_id = kInvalidAXNodeID;
+  AXTreeID parent_tree_id = AXTreeIDUnknown();
+
+  while (current_anchor) {
+    anchors.push(current_anchor);
+    current_anchor = GetParent(
+        current_anchor /*child*/, current_tree_id /*child_tree_id*/,
+        &parent_tree_id /*parent_tree_id*/, &parent_anchor_id /*parent_id*/);
+
+    current_anchor_id = parent_anchor_id;
+    current_tree_id = parent_tree_id;
+  }
+  return anchors;
+}
+
+AXNode* AXNodePosition::GetLowestUnignoredAncestor() const {
+  if (!GetAnchor())
+    return nullptr;
+
+  return GetAnchor()->GetUnignoredParent();
+}
+
+void AXNodePosition::AnchorParent(AXTreeID* tree_id,
+                                  AXNodeID* parent_id) const {
+  DCHECK(tree_id);
+  DCHECK(parent_id);
+
+  *tree_id = AXTreeIDUnknown();
+  *parent_id = kInvalidAXNodeID;
+
+  if (!GetAnchor())
+    return;
+
+  AXNode* parent =
+      GetParent(GetAnchor() /*child*/, this->tree_id() /*child_tree_id*/,
+                tree_id /*parent_tree_id*/, parent_id /*parent_id*/);
+
+  if (!parent) {
+    *tree_id = AXTreeIDUnknown();
+    *parent_id = kInvalidAXNodeID;
+  }
+}
+
+AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
+                                      AXNodeID node_id) const {
+  if (node_id == kInvalidAXNodeID)
+    return nullptr;
+
+  AXTreeManager* manager = AXTreeManagerMap::GetInstance().GetManager(tree_id);
+  if (manager)
+    return manager->GetNodeFromTree(tree_id, node_id);
+
+  return nullptr;
+}
+
+AXNodeID AXNodePosition::GetAnchorID(AXNode* node) const {
+  return node->id();
+}
+
+AXTreeID AXNodePosition::GetTreeID(AXNode* node) const {
+  return node->tree()->GetAXTreeID();
+}
+
 ax::mojom::Role AXNodePosition::GetRole(AXNode* node) const {
   return node->data().role;
 }
@@ -345,40 +345,40 @@ std::vector<int32_t> AXNodePosition::GetWordEndOffsets() const {
       ax::mojom::IntListAttribute::kWordEnds);
 }
 
-AXNode::AXID AXNodePosition::GetNextOnLineID(AXNode::AXID node_id) const {
+AXNodeID AXNodePosition::GetNextOnLineID(AXNodeID node_id) const {
   if (IsNullPosition())
-    return AXNode::kInvalidAXID;
+    return kInvalidAXNodeID;
   AXNode* node = GetNodeInTree(tree_id(), node_id);
   int next_on_line_id;
   if (!node || !node->data().GetIntAttribute(
                    ax::mojom::IntAttribute::kNextOnLineId, &next_on_line_id)) {
-    return AXNode::kInvalidAXID;
+    return kInvalidAXNodeID;
   }
-  return static_cast<AXNode::AXID>(next_on_line_id);
+  return static_cast<AXNodeID>(next_on_line_id);
 }
 
-AXNode::AXID AXNodePosition::GetPreviousOnLineID(AXNode::AXID node_id) const {
+AXNodeID AXNodePosition::GetPreviousOnLineID(AXNodeID node_id) const {
   if (IsNullPosition())
-    return AXNode::kInvalidAXID;
+    return kInvalidAXNodeID;
   AXNode* node = GetNodeInTree(tree_id(), node_id);
   int previous_on_line_id;
   if (!node ||
       !node->data().GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
                                     &previous_on_line_id)) {
-    return AXNode::kInvalidAXID;
+    return kInvalidAXNodeID;
   }
-  return static_cast<AXNode::AXID>(previous_on_line_id);
+  return static_cast<AXNodeID>(previous_on_line_id);
 }
 
 AXNode* AXNodePosition::GetParent(AXNode* child,
                                   AXTreeID child_tree_id,
                                   AXTreeID* parent_tree_id,
-                                  AXNode::AXID* parent_id) {
+                                  AXNodeID* parent_id) {
   DCHECK(parent_tree_id);
   DCHECK(parent_id);
 
   *parent_tree_id = AXTreeIDUnknown();
-  *parent_id = AXNode::kInvalidAXID;
+  *parent_id = kInvalidAXNodeID;
 
   if (!child)
     return nullptr;

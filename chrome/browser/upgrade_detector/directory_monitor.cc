@@ -28,8 +28,6 @@
 
 namespace {
 
-// Temporarily disabled for macOS due to https://crbug.com/1156603.
-#if !defined(OS_MAC)
 base::FilePath GetDefaultMonitorLocation() {
 #if defined(OS_MAC)
   return base::mac::OuterBundlePath();
@@ -37,7 +35,6 @@ base::FilePath GetDefaultMonitorLocation() {
   return base::PathService::CheckedGet(base::DIR_EXE);
 #endif
 }
-#endif  // !defined(OS_MAC)
 
 }  // namespace
 
@@ -58,14 +55,26 @@ void DirectoryMonitor::Start(Callback on_change_callback) {
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()});
   watcher_ = std::make_unique<base::FilePathWatcher>();
 
-  // Start the watcher on a background sequence, reporting all events back to
-  // this sequence. base::Unretained is safe because the watcher instance lives
-  // on the target sequence and will be destroyed there in a subsequent task.
+#if defined(OS_MAC)
+  // The normal Watch risks triggering a macOS Catalina+ consent dialog, so use
+  // a trivial watch here.
+  const base::FilePathWatcher::Type watch_type =
+      base::FilePathWatcher::Type::kTrivial;
+#else
+  const base::FilePathWatcher::Type watch_type =
+      base::FilePathWatcher::Type::kNonRecursive;
+#endif
+
+  // Start the watcher on a background sequence, reporting a failure to start to
+  // |on_change_callback| on the caller's sequence. The watcher is given a
+  // trampoline that will run |on_change_callback| on the caller's sequence.
+  // base::Unretained is safe because the watcher instance lives on the target
+  // sequence and will be destroyed there in a subsequent task.
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &base::FilePathWatcher::Watch, base::Unretained(watcher_.get()),
-          std::move(install_dir_), base::FilePathWatcher::Type::kNonRecursive,
+          std::move(install_dir_), watch_type,
           base::BindRepeating(
               [](scoped_refptr<base::SequencedTaskRunner> main_sequence,
                  const Callback& on_change_callback, const base::FilePath&,
@@ -75,7 +84,7 @@ void DirectoryMonitor::Start(Callback on_change_callback) {
               },
               base::SequencedTaskRunnerHandle::Get(), on_change_callback)),
       base::BindOnce(
-          [](Callback on_change_callback, bool start_result) {
+          [](const Callback& on_change_callback, bool start_result) {
             if (!start_result)
               on_change_callback.Run(/*error=*/true);
           },
@@ -84,10 +93,5 @@ void DirectoryMonitor::Start(Callback on_change_callback) {
 
 // static
 std::unique_ptr<InstalledVersionMonitor> InstalledVersionMonitor::Create() {
-#if defined(OS_MAC)
-  // Temporarily disabled for macOS due to https://crbug.com/1156603.
-  return nullptr;
-#else
   return std::make_unique<DirectoryMonitor>(GetDefaultMonitorLocation());
-#endif
 }

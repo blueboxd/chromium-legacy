@@ -2115,6 +2115,7 @@ interface Element : Node
     getter clientWidth
     getter computedName
     getter computedRole
+    getter editContext
     getter elementTiming
     getter firstElementChild
     getter id
@@ -2246,6 +2247,7 @@ interface Element : Node
     setter ariaValueText
     setter classList
     setter className
+    setter editContext
     setter elementTiming
     setter id
     setter innerHTML
@@ -4320,6 +4322,12 @@ interface HTMLVideoElement : HTMLMediaElement
     setter playsInline
     setter poster
     setter width
+interface HandwritingStroke
+    attribute @@toStringTag
+    method addPoint
+    method clear
+    method constructor
+    method getPoints
 interface HashChangeEvent : Event
     attribute @@toStringTag
     getter newURL
@@ -5533,6 +5541,7 @@ interface Navigator
     method canShare
     method clearAppBadge
     method constructor
+    method createHandwritingRecognizer
     method getBattery
     method getGamepads
     method getInstalledRelatedApps
@@ -5540,6 +5549,7 @@ interface Navigator
     method javaEnabled
     method openTCPSocket
     method openUDPSocket
+    method queryHandwritingRecognizerSupport
     method registerProtocolHandler
     method requestMIDIAccess
     method requestMediaKeySystemAccess

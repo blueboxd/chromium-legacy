@@ -6817,6 +6817,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="239" label="SYNC_COMPOSITOR_NO_LOCAL_SURFACE_ID"/>
   <int value="240" label="WCI_INVALID_FULLSCREEN_OPTIONS"/>
   <int value="241" label="PAYMENTS_WITHOUT_PERMISSION"/>
+  <int value="242" label="WEB_BUNDLE_INVALID_NAVIGATION_URL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -17394,6 +17395,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="41" label="fontEditor"/>
   <int value="42" label="fullAccessibilityTree"/>
   <int value="43" label="ignoreListJSFramesOnTimeline"/>
+  <int value="44" label="contrastIssues"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -31257,6 +31259,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3790" label="WindowScreenChange"/>
   <int value="3791" label="XRWebGLDepthInformationTextureAttribute"/>
   <int value="3792" label="XRWebGLBindingGetDepthInformation"/>
+  <int value="3793" label="SessionStorageFirstUsedBeforeFcp"/>
+  <int value="3794" label="SessionStorageFirstUsedAfterFcp"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

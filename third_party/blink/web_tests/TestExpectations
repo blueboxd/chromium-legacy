@@ -1267,6 +1267,7 @@ crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ 
 
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
+crbug.com/1172333 external/wpt/css/css-pseudo/first-letter-digraph.html [ Failure ]
 
 crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Failure ]
 crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
@@ -1470,6 +1471,7 @@ crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scro
 crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/international/bidi-neutral-directionality-paragraph-start.html [ Skip ]
 crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/international/bidi-LDB-2-formatting-characters.html [ Skip ]
 crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Skip ]
+crbug.com/1156220 [ Fuchsia ] virtual/text-antialias/international/003.html [ Skip ]
 crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/stroking-decorations.html [ Skip ]
 crbug.com/1146486 [ Fuchsia ] virtual/text-antialias/whitespace/whitespace-and-margin-wrap-after-list-marker-crash.html [ Skip ]
@@ -2461,7 +2463,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-pseudo/first-letter-digraph.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-2.html [ Failure ]
@@ -4448,7 +4449,7 @@ crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failu
 crbug.com/908347 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
 
 # Sheriff 2018-11-29
-crbug.com/910139 http/tests/custom-elements/form-submission-file.html [ Crash Pass ]
+crbug.com/910139 custom-elements/form-submission-file.html [ Crash Pass ]
 
 # TODO: re-enable the below flakiness suppression when removing this line
 crbug.com/1131901 transforms/shadows.html [ Pass Failure ]

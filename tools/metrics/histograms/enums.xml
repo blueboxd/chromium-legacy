@@ -23433,6 +23433,7 @@ Called by update_document_policy_enum.py.-->
   <int value="819" label="SSLErrorOverrideAllowedForUrls"/>
   <int value="820" label="WebXRImmersiveArEnabled"/>
   <int value="821" label="GaiaOfflineSigninTimeLimitDays"/>
+  <int value="822" label="FileSystemEnterpriseConnector"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -38676,7 +38677,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="InfoBarIdentifier">
-  <int value="1" label="APP_BANNER_INFOBAR_DELEGATE"/>
+  <int value="1" label="APP_BANNER_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="2" label="APP_BANNER_INFOBAR_DELEGATE_DESKTOP (Obsolete)"/>
   <int value="3"
       label="ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE (Obsolete)"/>
@@ -38747,7 +38748,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="65" label="AUTOFILL_CC_ASSIST_INFOBAR_DELEGATE"/>
   <int value="66" label="ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID"/>
   <int value="67" label="INSTANT_APPS_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="68" label="DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE"/>
+  <int value="68"
+      label="DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="69" label="SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID"/>
   <int value="70" label="GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
   <int value="71" label="OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID"/>
@@ -38761,11 +38763,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="78" label="SURVEY_INFOBAR_ANDROID"/>
   <int value="79" label="NEAR_OOM_INFOBAR_ANDROID"/>
   <int value="80" label="INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE"/>
-  <int value="81" label="PAGE_LOAD_CAPPING_INFOBAR_DELEGATE"/>
+  <int value="81" label="PAGE_LOAD_CAPPING_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="82" label="DOWNLOAD_PROGRESS_INFOBAR_ANDROID"/>
   <int value="83" label="AR_CORE_UPGRADE_ANDROID"/>
   <int value="84" label="BLOATED_RENDERER_INFOBAR_DELEGATE"/>
-  <int value="85" label="SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE"/>
+  <int value="85"
+      label="SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="86" label="NEAR_OOM_REDUCTION_INFOBAR_ANDROID"/>
   <int value="87" label="LITE_PAGE_PREVIEWS_INFOBAR"/>
   <int value="88" label="MODULE_INSTALL_FAILURE_INFOBAR_ANDROID"/>
@@ -38781,9 +38784,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="98" label="MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID"/>
   <int value="99" label="CONDITIONAL_TAB_STRIP_INFOBAR_ANDROID"/>
   <int value="100" label="LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID"/>
-  <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC"/>
+  <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC (Obsolete)"/>
   <int value="102" label="EXPERIMENTAL_INFOBAR_DELEGATE_LACROS"/>
   <int value="103" label="ROSETTA_REQUIRED_INFOBAR_DELEGATE"/>
+  <int value="104" label="WEBID_PERMISSION_INFOBAR_DELEGATE"/>
+  <int value="105" label="AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
@@ -41801,6 +41806,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Error: invalid image uri"/>
   <int value="8" label="Error: early terminated"/>
   <int value="9" label="Disabled"/>
+  <int value="10" label="Error: additional web context malformed (nonfatal)"/>
 </enum>
 
 <enum name="LensSdkError">
@@ -43015,6 +43021,8 @@ from previous Chrome versions.
   <int value="-1863020461" label="PasswordChangeInSettings:enabled"/>
   <int value="-1861814223" label="MidiManagerDynamicInstantiation:enabled"/>
   <int value="-1860481724" label="ChromeHomeExpandButton:enabled"/>
+  <int value="-1859437916"
+      label="enable-experimental-accessibility-dictation-offline"/>
   <int value="-1859421131" label="BackForwardCache:disabled"/>
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1858284725" label="TabGroupsFeedback:enabled"/>
@@ -45215,6 +45223,7 @@ from previous Chrome versions.
   <int value="176773784" label="EnableHardwareMirrorMode:disabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
+  <int value="179871410" label="ui-debug-tools:disabled"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="181150000" label="CrosVmCupsProxy:enabled"/>
   <int value="182788555" label="DecoupleSyncFromAndroidMasterSync:disabled"/>
@@ -46110,6 +46119,8 @@ from previous Chrome versions.
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
   <int value="1036565901" label="AssistPersonalInfo:enabled"/>
+  <int value="1036958177"
+      label="enable-experimental-accessibility-dictation-extension"/>
   <int value="1037961753" label="CCTIncognito:disabled"/>
   <int value="1038264914" label="PerDeskShelf:enabled"/>
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
@@ -47250,6 +47261,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForUpload:enabled"/>
   <int value="2085186092" label="BulkPrinters:disabled"/>
   <int value="2085438501" label="ChromeHome:enabled"/>
+  <int value="2087069781" label="ui-debug-tools:enabled"/>
   <int value="2088446947" label="enable-ephemeral-guest-profiles-on-desktop"/>
   <int value="2089897928" label="enable-audio-focus"/>
   <int value="2091002949" label="RemoveNavigationHistory:disabled"/>
@@ -63370,6 +63382,19 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="189" label="QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT"/>
   <int value="190" label="QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT"/>
   <int value="191" label="QUIC_MAX_AGE_TIMEOUT"/>
+  <int value="192" label="QUIC_INVALID_0RTT_PACKET_NUMBER_OUT_OF_ORDER"/>
+  <int value="193" label="QUIC_INVALID_PRIORITY_UPDATE"/>
+  <int value="194" label="QUIC_PEER_PORT_CHANGE_HANDSHAKE_UNCONFIRMED"/>
+  <int value="195" label="QUIC_TLS_BAD_CERTIFICATE"/>
+  <int value="196" label="QUIC_TLS_UNSUPPORTED_CERTIFICATE"/>
+  <int value="197" label="QUIC_TLS_CERTIFICATE_REVOKED"/>
+  <int value="198" label="QUIC_TLS_CERTIFICATE_EXPIRED"/>
+  <int value="199" label="QUIC_TLS_CERTIFICATE_UNKNOWN"/>
+  <int value="200" label="QUIC_TLS_INTERNAL_ERROR"/>
+  <int value="201" label="QUIC_TLS_UNRECOGNIZED_NAME"/>
+  <int value="202" label="QUIC_TLS_CERTIFICATE_REQUIRED"/>
+  <int value="203" label="QUIC_CONNECTION_ID_LIMIT_ERROR"/>
+  <int value="204" label="QUIC_TOO_MANY_CONNECTION_ID_WAITING_TO_RETIRE"/>
 </enum>
 
 <enum name="QuicFailToSerializePacketLocation">
@@ -78017,6 +78042,14 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Results match"/>
   <int value="2" label="Results changed"/>
   <int value="3" label="HitTestData outdated"/>
+</enum>
+
+<enum name="VkPipelinePopulatedCacheEntryUsage">
+  <int value="0" label="Used"/>
+  <int value="1" label="Overwritten"/>
+  <int value="2" label="Discarded: too large"/>
+  <int value="3" label="Discarded: have newer data"/>
+  <int value="4" label="Evicted"/>
 </enum>
 
 <enum name="VoiceInteractionEventSource">

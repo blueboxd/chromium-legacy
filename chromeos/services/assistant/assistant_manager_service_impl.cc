@@ -36,6 +36,7 @@
 #include "chromeos/services/assistant/assistant_device_settings_delegate.h"
 #include "chromeos/services/assistant/libassistant_service_host_impl.h"
 #include "chromeos/services/assistant/media_host.h"
+#include "chromeos/services/assistant/platform/platform_delegate_impl.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/proxy/conversation_controller_proxy.h"
 #include "chromeos/services/assistant/proxy/service_controller_proxy.h"
@@ -151,6 +152,21 @@ bool ShouldPutLogsInHomeDirectory() {
   return !redirect_logging;
 }
 
+libassistant::mojom::AndroidAppStatus ToMojomEnum(const AppStatus& app_status) {
+  switch (app_status) {
+    case AppStatus::kAvailable:
+      return libassistant::mojom::AndroidAppStatus::kAvailable;
+    case AppStatus::kUnavailable:
+      return libassistant::mojom::AndroidAppStatus::kUnavailable;
+    case AppStatus::kDisabled:
+      return libassistant::mojom::AndroidAppStatus::kDisabled;
+    case AppStatus::kUnknown:
+      return libassistant::mojom::AndroidAppStatus::kUnknown;
+    case AppStatus::kVersionMismatch:
+      return libassistant::mojom::AndroidAppStatus::kVersionMismatch;
+  }
+}
+
 libassistant::mojom::AndroidAppInfoPtr ToAndroidAppInfoPtr(
     const AndroidAppInfo& app_info) {
   auto result = libassistant::mojom::AndroidAppInfo::New();
@@ -158,6 +174,9 @@ libassistant::mojom::AndroidAppInfoPtr ToAndroidAppInfoPtr(
   result->package_name = app_info.package_name;
   result->version = app_info.version;
   result->localized_app_name = app_info.localized_app_name;
+  result->intent = app_info.intent;
+  result->status = ToMojomEnum(app_info.status);
+  result->action = app_info.action;
 
   return result;
 }
@@ -222,6 +241,7 @@ class SpeechRecognitionObserverWrapper
   mojo::Receiver<chromeos::libassistant::mojom::SpeechRecognitionObserver>
       receiver_{this};
 };
+
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     ServiceContext* context,
     std::unique_ptr<AssistantManagerServiceDelegate> delegate,
@@ -237,6 +257,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       assistant_settings_(
           std::make_unique<AssistantSettingsImpl>(context, this)),
       assistant_proxy_(std::make_unique<AssistantProxy>()),
+      platform_delegate_(std::make_unique<PlatformDelegateImpl>()),
       context_(context),
       delegate_(std::move(delegate)),
       media_host_(std::make_unique<MediaHost>(AssistantClient::Get(),
@@ -250,7 +271,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           ShouldPutLogsInHomeDirectory())),
       weak_factory_(this) {
   platform_api_ = delegate_->CreatePlatformApi(
-      &media_host_->media_session(),
+      &media_host_->media_session(), platform_delegate_.get(),
       assistant_proxy_->background_thread().task_runner());
 
   if (libassistant_service_host) {
@@ -270,11 +291,15 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   assistant_proxy_->Initialize(libassistant_service_host_.get(),
                                std::move(pending_url_loader_factory));
 
+  assistant_proxy_->service_controller().AddAndFireStateObserver(
+      state_observer_receiver_.BindNewPipeAndPassRemote());
   assistant_proxy_->AddSpeechRecognitionObserver(
       speech_recognition_observer_->BindNewPipeAndPassRemote());
 
+  platform_delegate_->Bind(assistant_proxy_->ExtractPlatformDelegate());
+
   audio_input_host_ = delegate_->CreateAudioInputHost(
-      assistant_proxy_->ExtractAudioInputBindings());
+      assistant_proxy_->ExtractAudioInputController());
 
   settings_delegate_ =
       std::make_unique<AssistantDeviceSettingsDelegate>(context);
@@ -425,13 +450,13 @@ void AssistantManagerServiceImpl::RemoveCommunicationErrorObserver(
 }
 
 void AssistantManagerServiceImpl::AddAndFireStateObserver(
-    StateObserver* observer) {
+    AssistantManagerService::StateObserver* observer) {
   state_observers_.AddObserver(observer);
   observer->OnStateChanged(GetState());
 }
 
 void AssistantManagerServiceImpl::RemoveStateObserver(
-    const StateObserver* observer) {
+    const AssistantManagerService::StateObserver* observer) {
   state_observers_.RemoveObserver(observer);
 }
 
@@ -884,6 +909,23 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
     observer.OnCommunicationError(type);
 }
 
+void AssistantManagerServiceImpl::OnStateChanged(
+    libassistant::mojom::ServiceState new_state) {
+  using libassistant::mojom::ServiceState;
+
+  DVLOG(1) << "Libassistant service state changed to " << new_state;
+  switch (new_state) {
+    case ServiceState::kStarted:
+      OnServiceStarted();
+      break;
+    case ServiceState::kRunning:
+      OnServiceRunning();
+      break;
+    case ServiceState::kStopped:
+      break;
+  }
+}
+
 void AssistantManagerServiceImpl::InitAssistant(
     const base::Optional<UserInfo>& user,
     const std::string& locale) {
@@ -892,23 +934,17 @@ void AssistantManagerServiceImpl::InitAssistant(
   service_controller().Start(
       action_module_.get(),
       /*assistant_manager_delegate=*/this,
-      /*conversation_state_listener=*/this,
-      /*device_state_listener=*/this, bootup_config_.Clone(), locale,
+      /*conversation_state_listener=*/this, bootup_config_.Clone(), locale,
       GetLocaleOrDefault(assistant_state()->locale().value()),
-      spoken_feedback_enabled_, ToAuthTokensOrEmpty(user),
-      base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
-                     weak_factory_.GetWeakPtr()));
+      spoken_feedback_enabled_, ToAuthTokensOrEmpty(user));
 }
 
 base::Thread& AssistantManagerServiceImpl::GetBackgroundThreadForTesting() {
   return background_thread();
 }
 
-void AssistantManagerServiceImpl::PostInitAssistant() {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+void AssistantManagerServiceImpl::OnServiceStarted() {
   DCHECK_EQ(GetState(), State::STARTING);
-
-  DCHECK(IsServiceStarted());
 
   const base::TimeDelta time_since_started =
       base::TimeTicks::Now() - started_time_;
@@ -923,14 +959,17 @@ void AssistantManagerServiceImpl::PostInitAssistant() {
 }
 
 bool AssistantManagerServiceImpl::IsServiceStarted() const {
-  return service_controller().IsStarted();
+  switch (state_) {
+    case State::STOPPED:
+    case State::STARTING:
+      return false;
+    case State::STARTED:
+    case State::RUNNING:
+      return true;
+  }
 }
 
-// This method runs on the LibAssistant thread.
-// This method is triggered as the callback of libassistant bootup checkin.
-void AssistantManagerServiceImpl::OnStartFinished() {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnStartFinished);
-
+void AssistantManagerServiceImpl::OnServiceRunning() {
   // It is possible the |assistant_manager()| was destructed before the
   // rescheduled main thread task got a chance to run. We check this and also
   // try to avoid double run by checking |GetState()|.

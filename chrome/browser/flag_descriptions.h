@@ -2496,6 +2496,12 @@ extern const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[];
 extern const char kExperimentalAccessibilityChromeVoxTutorialName[];
 extern const char kExperimentalAccessibilityChromeVoxTutorialDescription[];
 
+extern const char kExperimentalAccessibilityDictationExtensionName[];
+extern const char kExperimentalAccessibilityDictationExtensionDescription[];
+
+extern const char kExperimentalAccessibilityDictationOfflineName[];
+extern const char kExperimentalAccessibilityDictationOfflineDescription[];
+
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
@@ -2927,6 +2933,12 @@ extern const char kAutofillCreditCardUploadDescription[];
 #if !defined(OS_WIN) && !defined(OS_FUCHSIA)
 extern const char kSendWebUIJavaScriptErrorReportsName[];
 extern const char kSendWebUIJavaScriptErrorReportsDescription[];
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_MAC)
+extern const char kUIDebugToolsName[];
+extern const char kUIDebugToolsDescription[];
 #endif
 
 #if defined(WEBRTC_USE_PIPEWIRE)

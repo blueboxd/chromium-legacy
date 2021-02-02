@@ -64,6 +64,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/gl/gl_switches.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -142,7 +143,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // isn't much point in having the crash dumps there.
   cl->AppendSwitch(switches::kDisableOoprDebugCrashDump);
 
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
 
@@ -154,6 +154,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // confusing the tap suppression controller. Simply disable it for WebView
     ui::GestureConfiguration::GetInstance()
         ->set_fling_touchscreen_tap_suppression_enabled(false);
+
+    if (AwDrawFnImpl::IsUsingVulkan())
+      cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
 
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
     gin::V8Initializer::V8SnapshotFileType file_type =
@@ -168,11 +171,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(false, file_type));
-
-    if (AwDrawFnImpl::IsUsingVulkan())
-      cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
   }
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
     content::RenderProcessHost::SetMaxRendererProcessCount(1u);
@@ -202,6 +201,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       // When draw functor uses vulkan, assume that it is safe to enable viz
       // which depends on shared images.
       features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
+    } else {
+      // Not use ANGLE's Vulkan backend, if the draw functor is not using
+      // Vulkan.
+      features.DisableIfNotSet(::features::kDefaultANGLEVulkan);
     }
 
     // WebView uses kWebViewVulkan to control vulkan. Pre-emptively disable

@@ -108,12 +108,18 @@
   }
 
   #customizeButtonContainer {
-    align-self: flex-end;
     background-color: var(--ntp-background-override-color);
     border-radius: calc(.5 * var(--cr-button-height));
     bottom: 16px;
-    margin-inline-end: 16px;
     position: fixed;
+  }
+
+  :host-context([dir='ltr']) #customizeButtonContainer {
+    right: 16px;
+  }
+
+  :host-context([dir='rtl']) #customizeButtonContainer {
+    left: 16px;
   }
 
   :host([show-background-image_]) #customizeButtonContainer {
@@ -257,9 +263,9 @@
        be nicer to use a dom-if. However, that breaks
        StartupBrowserCreatorPickerNoParamsTest.ShowPickerWhenAlreadyLaunched on
        the msan builder. See crbug.com/1169070. -->
-  <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
-      single-colored$="[[singleColoredLogo_]]" dark="[[theme_.isDark]]"
-      background-color="[[backgroundColor_]]" hidden$="[[!logoEnabled_]]">
+  <ntp-logo id="logo" single-colored$="[[singleColoredLogo_]]"
+      dark="[[theme_.isDark]]" background-color="[[backgroundColor_]]"
+      hidden$="[[!logoEnabled_]]">
   </ntp-logo>
   <ntp-realbox id="realbox" on-open-voice-search="onOpenVoiceSearch_"
       theme="[[theme_.searchBox]]" shown$="[[realboxShown_]]">

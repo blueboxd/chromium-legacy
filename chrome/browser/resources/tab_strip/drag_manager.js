@@ -286,7 +286,8 @@ class DragSession {
 
   /** @param {!DragEvent} event */
   finish(event) {
-    if (this.isDraggingPlaceholderTab_()) {
+    const wasDraggingPlaceholder = this.isDraggingPlaceholderTab_();
+    if (wasDraggingPlaceholder) {
       const id = Number(event.dataTransfer.getData(getTabIdDataType()));
       this.element_.tab = Object.assign({}, this.element_.tab, {id});
     } else if (this.isDraggingPlaceholderGroup_()) {
@@ -311,7 +312,9 @@ class DragSession {
     this.element_.setDragging(false);
     this.element_.setDraggedOut(false);
 
-    this.maybeShowTabContextMenu_();
+    if (!wasDraggingPlaceholder) {
+      this.maybeShowTabContextMenu_();
+    }
   }
 
   /** @private */
@@ -511,6 +514,9 @@ export class DragManager {
 
     /** @private {!TabsApiProxy} */
     this.tabsProxy_ = TabsApiProxyImpl.getInstance();
+
+    /** @private {!TabStripEmbedderProxy} */
+    this.tabStripEmbedderProxy_ = TabStripEmbedderProxyImpl.getInstance();
   }
 
   /**
@@ -539,16 +545,24 @@ export class DragManager {
 
   /** @param {!DragEvent} event */
   onDragStart_(event) {
-    if (this.delegate_.shouldPreventDrag()) {
-      event.preventDefault();
-      return;
-    }
-
     const draggedItem =
         /** @type {!Array<!Element>} */ (event.composedPath()).find(item => {
           return isTabElement(item) || isTabGroupElement(item);
         });
     if (!draggedItem) {
+      return;
+    }
+
+    if (this.delegate_.shouldPreventDrag()) {
+      event.preventDefault();
+
+      // The gesture to start a drag and to open a context menu are the same
+      // on touch, so fallback to showing the context menu when drag is
+      // prevented.
+      if (isTabElement(draggedItem)) {
+        this.tabStripEmbedderProxy_.showTabContextMenu(
+            draggedItem.tab.id, event.clientX, event.clientY);
+      }
       return;
     }
 

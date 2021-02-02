@@ -2134,6 +2134,11 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return true;
   }
 
+  // Include all pseudo element content. Any anonymous subtree is included
+  // from above, in the condition where there is no node.
+  if (GetNode()->IsPseudoElement())
+    return true;
+
   // Use a flag to control whether or not the <html> element is included
   // in the accessibility tree. Either way it's always marked as "ignored",
   // but eventually we want to always include it in the tree to simplify
@@ -2185,7 +2190,7 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return true;
 
   // Preserve SVG grouping elements.
-  if (GetNode() && IsA<SVGGElement>(GetNode()))
+  if (IsA<SVGGElement>(GetNode()))
     return true;
 
   // Preserve nodes with language attributes.
@@ -2607,7 +2612,11 @@ bool AXObject::ComputeIsHiddenViaStyle() const {
   if (!node)
     return false;
 
-  // Display-locked nodes are always hidden.
+  // Style elements in SVG are not display: none, unlike HTML style elements,
+  // but they are still hidden and thus treated as hidden from style.
+  if (IsA<SVGStyleElement>(node))
+    return true;
+
   if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
     // Ensure contents of head, style and script are never exposed.
     // Note: an AXObject is created for <title> to gather the document's name.
@@ -2616,13 +2625,14 @@ bool AXObject::ComputeIsHiddenViaStyle() const {
         << node;
     DCHECK(!Traversal<HTMLStyleElement>::FirstAncestorOrSelf(*node)) << node;
     DCHECK(!Traversal<HTMLScriptElement>::FirstAncestorOrSelf(*node)) << node;
-    return true;
-  }
 
-  // Style elements in SVG are not display: none, unlike HTML style elements,
-  // but they are still hidden and thus treated as hidden from style.
-  if (IsA<SVGStyleElement>(node))
-    return true;
+    // content-visibility: hidden subtrees are always hidden.
+    if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+            *node, DisplayLockActivationReason::kAccessibility)) {
+      return true;
+    }
+    return false;
+  }
 
   // For elements with layout objects we can get their style directly.
   if (GetLayoutObject())

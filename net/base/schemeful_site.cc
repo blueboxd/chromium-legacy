@@ -5,8 +5,6 @@
 #include "net/base/schemeful_site.h"
 
 #include "base/check.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -39,20 +37,6 @@ SchemefulSite::ObtainASiteResult SchemefulSite::ObtainASite(
   if (IsStandardSchemeWithNetworkHost(origin.scheme())) {
     registerable_domain = GetDomainAndRegistry(
         origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-    // Create a crash dump if the registerable domain is not safe.
-    // TODO(https://crbug.com/1157010): Remove once we have enough information
-    // to verify whether or not this is what's causing issue 1157010.
-    url::CanonHostInfo host_info;
-    if (!registerable_domain.empty() &&
-        registerable_domain !=
-            CanonicalizeHost(registerable_domain, &host_info)) {
-      static base::debug::CrashKeyString* crash_key_string =
-          base::debug::AllocateCrashKeyString(
-              "schemeful_site_bad_origin", base::debug::CrashKeySize::Size256);
-      url::debug::ScopedOriginCrashKey crash_key(crash_key_string, &origin);
-      base::debug::DumpWithoutCrashing();
-    }
   }
 
   // If origin's host's registrable domain is null, then return (origin's
@@ -103,24 +87,8 @@ bool SchemefulSite::FromWire(const url::Origin& site_as_origin,
   // match if used to construct another SchemefulSite. Thus, if there is a
   // mismatch here, we must indicate a failure.
   SchemefulSite candidate(site_as_origin);
-  if (candidate.site_as_origin_ != site_as_origin) {
-    // TODO(crbug.com/1157010): Remove crash keys after deserialization failures
-    // are diagnosed.
-    static base::debug::CrashKeyString* schemeful_site_origin_from_wire =
-        base::debug::AllocateCrashKeyString("schemeful_site_origin_from_wire",
-                                            base::debug::CrashKeySize::Size256);
-    url::debug::ScopedOriginCrashKey origin_from_wire_crash_key(
-        schemeful_site_origin_from_wire, &site_as_origin);
-
-    static base::debug::CrashKeyString* schemeful_site_candidate_origin =
-        base::debug::AllocateCrashKeyString("schemeful_site_candidate_origin",
-                                            base::debug::CrashKeySize::Size256);
-    url::debug::ScopedOriginCrashKey candidate_origin_crash_key(
-        schemeful_site_candidate_origin, &candidate.site_as_origin_);
-
-    base::debug::DumpWithoutCrashing();
+  if (candidate.site_as_origin_ != site_as_origin)
     return false;
-  }
 
   *out = std::move(candidate);
   return true;

@@ -204,18 +204,14 @@ SK_API void SkDebugf_FileLine(const char* file,
 #   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAP_SCALE
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_MATRIX_IMAGEFILTER
+#define SK_SUPPORT_LEGACY_MATRIX_IMAGEFILTER
+#endif
+
 // For now, Chrome should only attempt to reduce opList splitting when recording
 // DDLs
 #ifndef SK_DISABLE_REDUCE_OPLIST_SPLITTING
 #define SK_DISABLE_REDUCE_OPLIST_SPLITTING
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_DRAWBITMAP
-#define SK_SUPPORT_LEGACY_DRAWBITMAP
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_DRAWIMAGE_NOSAMPLING
-#define SK_SUPPORT_LEGACY_DRAWIMAGE_NOSAMPLING
 #endif
 
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
@@ -248,6 +244,10 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #ifndef SK_SUPPORT_LEGACY_CONVEXITY_DIRECTION_CHANGE
 #define SK_SUPPORT_LEGACY_CONVEXITY_DIRECTION_CHANGE
+#endif
+
+#ifndef SK_USE_LEGACY_VK_ALLOCATOR_USAGE_NAMES
+#define SK_USE_LEGACY_VK_ALLOCATOR_USAGE_NAMES
 #endif
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi

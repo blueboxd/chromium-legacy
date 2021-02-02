@@ -160,6 +160,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps(
       web_app::kSettingsAppId, ash::kInternalAppIdSettings};
   // Large enough to see the heading text "Settings" in the top-left.
   infos.at(SystemAppType::SETTINGS).minimum_window_size = {300, 100};
+  infos.at(SystemAppType::SETTINGS).capture_navigations = true;
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     infos.emplace(
@@ -497,8 +498,8 @@ void SystemWebAppManager::Start() {
             policy::policy_prefs::kSystemFeaturesDisableList)) {
       local_state_pref_change_registrar_.Add(
           policy::policy_prefs::kSystemFeaturesDisableList,
-          base::Bind(&SystemWebAppManager::OnAppsPolicyChanged,
-                     base::Unretained(this)));
+          base::BindRepeating(&SystemWebAppManager::OnAppsPolicyChanged,
+                              base::Unretained(this)));
     }
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

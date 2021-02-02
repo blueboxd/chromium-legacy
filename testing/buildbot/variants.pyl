@@ -320,13 +320,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=89',
     ],
-    'identifier': 'Implementation Tests For 89.0.4389.25',
+    'identifier': 'Implementation Library Tests For 89.0.4389.29',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.25',
+          'revision': 'version:89.0.4389.29',
         }
       ],
     },
@@ -344,13 +344,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=88',
     ],
-    'identifier': 'Implementation Library Tests For 88.0.4324.141',
+    'identifier': 'Implementation Library Tests For 88.0.4324.144',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.141',
+          'revision': 'version:88.0.4324.144',
         }
       ],
     },
@@ -392,13 +392,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=89',
     ],
-    'identifier': 'Implementation Tests For 89.0.4389.25',
+    'identifier': 'Implementation Library Tests For 89.0.4389.29',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.25',
+          'revision': 'version:89.0.4389.29',
         }
       ],
     },
@@ -416,13 +416,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=88',
     ],
-    'identifier': 'Implementation Library Tests For 88.0.4324.141',
+    'identifier': 'Implementation Library Tests For 88.0.4324.144',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.141',
+          'revision': 'version:88.0.4324.144',
         }
       ],
     },
@@ -464,13 +464,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=89',
     ],
-    'identifier': 'Client Tests For 89.0.4389.25',
+    'identifier': 'Client Library Tests For 89.0.4389.29',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.25',
+          'revision': 'version:89.0.4389.29',
         }
       ],
     },
@@ -488,13 +488,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=88',
     ],
-    'identifier': 'Client Library Tests For 88.0.4324.141',
+    'identifier': 'Client Library Tests For 88.0.4324.144',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.141',
+          'revision': 'version:88.0.4324.144',
         }
       ],
     },
@@ -526,8 +526,7 @@
   'CROS_OCTOPUS_TOT': {
     'skylab': {
       'cros_board': 'octopus',
-      # Find a released OS version at go/goldeneye.
-      'cros_img': 'octopus-release/R89-13668.0.0',
+      'cros_img': 'octopus-release/R90-13754.0.0',
     },
     'identifier': 'OCTOPUS_TOT',
   },

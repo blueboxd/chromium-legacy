@@ -234,9 +234,10 @@ void OnRGBAReadbackDone(
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
+// Returns whether SkiaOutputDeviceX11 can be instantiated on this platform.
 bool MayFallBackToSkiaOutputDeviceX11() {
-#if defined(USE_OZNE)
-  if (IsUsingOzonePlatform()) {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
     return ui::OzonePlatform::GetInstance()
         ->GetPlatformProperties()
         .skia_can_fall_back_to_x11;
@@ -587,8 +588,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
       paint.setColorFilter(colorFilter);
       // TODO(xing.xu): move below to the thread where skia record happens.
-      scoped_output_device_paint_->GetCanvas()->drawImage(overdraw_image.get(),
-                                                          0, 0, &paint);
+      scoped_output_device_paint_->GetCanvas()->drawImage(
+          overdraw_image.get(), 0, 0, SkSamplingOptions(), &paint);
     }
 
     auto end_paint_semaphores =
@@ -900,13 +901,13 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
                              request->scale_from().y());
     }
 
-    SkPaint paint;
-    paint.setFilterQuality(is_downscale_or_identity_in_both_dimensions
-                               ? kMedium_SkFilterQuality
-                               : kHigh_SkFilterQuality);
     dest_canvas->clipRect(
         SkRect::MakeXYWH(0, 0, src_rect.width(), src_rect.height()));
-    surface->draw(dest_canvas, -src_rect.x(), -src_rect.y(), &paint);
+    auto sampling =
+        is_downscale_or_identity_in_both_dimensions
+            ? SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kLinear)
+            : SkSamplingOptions({1.0f / 3, 1.0f / 3});
+    surface->draw(dest_canvas, -src_rect.x(), -src_rect.y(), sampling, nullptr);
 
     GrFlushInfo flush_info;
     flush_info.fNumSemaphores = end_semaphores.size();
@@ -1343,10 +1344,10 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
     // TODO(sgilhuly): Set up a Vulkan swapchain so that Linux can also use
     // SkiaOutputDeviceDawn.
-    if (!features::IsUsingOzonePlatform()) {
+    if (MayFallBackToSkiaOutputDeviceX11()) {
       output_device_ = SkiaOutputDeviceX11::Create(
           context_state_, dependency_->GetSurfaceHandle(),
           shared_gpu_deps_->memory_tracker(),

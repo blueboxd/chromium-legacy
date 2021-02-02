@@ -676,6 +676,7 @@ try_.chromium_chromiumos_builder(
     name = "lacros-amd64-generic-rel",
     builderless = not settings.is_master,
     main_list_view = "try",
+    tryjob = try_.job(),
 )
 
 try_.chromium_chromiumos_builder(
@@ -1609,6 +1610,7 @@ try_.chromium_win_builder(
 try_.cipd_3pp_builder(
     name = "3pp-linux-amd64-packager",
     os = os.LINUX_DEFAULT,
+    builderless = False,
     properties = {
         "platform": "linux-amd64",
         "package_prefix": "chromium_3pp",

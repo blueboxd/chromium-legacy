@@ -544,6 +544,7 @@ if (is_android) {
       "//chrome/browser/payments:browser_tests",
       "//chrome/browser/privacy_budget:browser_tests",
       "//chrome/browser/profiling_host:profiling_browsertests",
+      "//chrome/browser/webaudio:browser_tests",
       "//components/browser_ui/widget/android:java",
       "//components/crash/android:crashpad_main",
       "//components/externalauth/android:google_delegate_public_impl_java",
@@ -795,6 +796,7 @@ if (!is_android) {
       "//chrome/browser/privacy_budget:browser_tests",
       "//chrome/browser/profiling_host:profiling_browsertests",
       "//chrome/browser/web_applications:browser_tests",
+      "//chrome/browser/webaudio:browser_tests",
       "//chrome/renderer",
       "//chrome/services/machine_learning/public/cpp",
       "//chrome/services/machine_learning/public/cpp:test_support",
@@ -3871,7 +3873,6 @@ test("unit_tests") {
       "../browser/android/history_report/delta_file_backend_leveldb_unittest.cc",
       "../browser/android/history_report/delta_file_commons_unittest.cc",
       "../browser/android/history_report/usage_reports_buffer_backend_unittest.cc",
-      "../browser/android/javascript/web_context_fetcher_util_unittest.cc",
       "../browser/android/locale/locale_template_url_loader_unittest.cc",
       "../browser/android/metrics/background_task_memory_metrics_emitter_unittest.cc",
       "../browser/android/oom_intervention/near_oom_monitor_unittest.cc",
@@ -3952,7 +3953,6 @@ test("unit_tests") {
       "../browser/policy/browser_dm_token_storage_mac_unittest.cc",
       "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm",
       "../browser/service_process/service_process_control_mac_unittest.mm",
-      "../browser/upgrade_detector/directory_monitor_unittest.cc",
       "../common/mac/mock_launchd.h",
       "../common/mac/mock_launchd.mm",
     ]
@@ -5544,10 +5544,6 @@ test("unit_tests") {
         "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
         "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       ]
-    }
-    if (is_mac) {
-      sources +=
-          [ "../browser/ui/startup/mac_system_infobar_delegate_unittest.cc" ]
     }
     if (is_chromeos_ash) {
       sources += [

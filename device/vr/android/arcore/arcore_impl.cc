@@ -807,9 +807,8 @@ void ArCoreImpl::BuildImageDatabase(
                           kOpaque_SkAlphaType),
         SkBitmap::kZeroPixels_AllocFlag);
     SkCanvas gray_canvas(canvas_bitmap);
-    SkPaint paint;
     sk_sp<SkImage> src_image = SkImage::MakeFromBitmap(src_bitmap);
-    gray_canvas.drawImage(src_image, 0, 0, &paint);
+    gray_canvas.drawImage(src_image, 0, 0);
     SkPixmap gray_pixmap;
     if (!gray_canvas.peekPixels(&gray_pixmap)) {
       DLOG(WARNING) << __func__ << ": failed to access grayscale bitmap";
@@ -1383,6 +1382,8 @@ bool ArCoreImpl::NativeOriginExists(
 
       return anchor_manager_->AnchorExists(
           AnchorId(native_origin_information.get_anchor_id()));
+    case mojom::XRNativeOriginInformation::Tag::HAND_JOINT_SPACE_INFO:
+      return false;
   }
 }
 
@@ -1413,6 +1414,8 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
     case mojom::XRNativeOriginInformation::Tag::ANCHOR_ID:
       return anchor_manager_->GetMojoFromAnchor(
           AnchorId(native_origin_information.get_anchor_id()));
+    case mojom::XRNativeOriginInformation::Tag::HAND_JOINT_SPACE_INFO:
+      return base::nullopt;
   }
 }
 

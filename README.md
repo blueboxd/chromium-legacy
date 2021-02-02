@@ -19,8 +19,9 @@ Chromium-legacy is the latest Chromium patched & built for legacy Mac OS X Lion 
 Some features not implemented in 10.7 are disabled (maybe simply commented out), so may not available even on 10.10+. (you'd better use official Chrome builds on 10.10+, of course)
 - UI
     - windows
-        - close/minimize/resize buttons are invisible
-            - but functional when clicking appropriate position
+        - ~~close/minimize/resize buttons are invisible~~
+            - ~~but functional when clicking appropriate position~~
+            - FIXED as classical title bar (thanks to [@Wowfunhappy](https://github.com/Wowfunhappy))
         - ~~can't move by dragging title bar region~~
             - ~~you can move by dragging the edges of the window (when the cursor is resizing arrow: &#x2194;&#x2195;)~~
             - FIXED

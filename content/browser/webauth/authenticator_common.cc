@@ -73,6 +73,10 @@
 #include "device/fido/win/webauthn_api.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "device/fido/cros/authenticator.h"
+#endif
+
 namespace content {
 
 // RequestExtension is a type of extension in a WebAuthn request that might
@@ -721,6 +725,10 @@ void AuthenticatorCommon::StartGetAssertionRequest(
   }
   request_delegate_->ConfigureCable(caller_origin_, cable_pairings,
                                     discovery_factory());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  discovery_factory()->set_get_assertion_request_for_legacy_credential_check(
+      *ctap_get_assertion_request_);
+#endif
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       discovery_factory(),
@@ -798,7 +806,10 @@ void AuthenticatorCommon::MakeCredential(
   blink::mojom::AuthenticatorStatus status =
       security_checker_->ValidateAncestorOrigins(
           caller_origin,
-          WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
+          options->is_payment_credential_creation
+              ? WebAuthRequestSecurityChecker::RequestType::
+                    kMakePaymentCredential
+              : WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
           &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     InvokeCallbackAndCleanup(std::move(callback), status);

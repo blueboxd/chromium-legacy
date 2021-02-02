@@ -16,6 +16,7 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 import {BrowserApi} from './browser_api.js';
 import {FittingType} from './constants.js';
 import {MessageData, PluginController, PrintPreviewParams} from './controller.js';
+import {ViewerErrorScreenElement} from './elements/viewer-error-screen.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
 import {PDFViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, MessageObject, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
@@ -139,8 +140,8 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
   }
 
   /** @private */
-  sendBackgroundColorForPrintPreview_() {
-    this.pluginController_.backgroundColorChanged(
+  setBackgroundColorForPrintPreview_() {
+    this.pluginController_.setBackgroundColor(
         this.dark_ ? PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
                      PRINT_PREVIEW_BACKGROUND_COLOR);
   }
@@ -252,7 +253,7 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
         return true;
       case 'darkModeChanged':
         this.dark_ = /** @type {{darkMode: boolean}} */ (message.data).darkMode;
-        this.sendBackgroundColorForPrintPreview_();
+        this.setBackgroundColorForPrintPreview_();
         return true;
       case 'scrollPosition':
         const position = this.viewport.position;
@@ -345,7 +346,7 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
     if (!strings) {
       return;
     }
-    this.sendBackgroundColorForPrintPreview_();
+    this.setBackgroundColorForPrintPreview_();
   }
 
   /** @override */
@@ -359,15 +360,15 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
 
 /**
  * The background color used for print preview (--google-grey-refresh-300).
- * @type {string}
+ * @type {number}
  */
-const PRINT_PREVIEW_BACKGROUND_COLOR = '0xFFDADCE0';
+const PRINT_PREVIEW_BACKGROUND_COLOR = 0xffdadce0;
 
 /**
  * The background color used for print preview when dark mode is enabled
  * (--google-grey-refresh-700).
- * @type {string}
+ * @type {number}
  */
-const PRINT_PREVIEW_DARK_BACKGROUND_COLOR = '0xFF5F6368';
+const PRINT_PREVIEW_DARK_BACKGROUND_COLOR = 0xff5f6368;
 
 customElements.define(PDFViewerPPElement.is, PDFViewerPPElement);

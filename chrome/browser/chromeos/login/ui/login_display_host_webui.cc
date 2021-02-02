@@ -53,7 +53,6 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -461,6 +460,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 }
 
 LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
+  VLOG(4) << "~LoginDisplayWebUI";
   if (GetOobeUI())
     GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
 
@@ -707,6 +707,7 @@ void LoginDisplayHostWebUI::OnStartAppLaunch() {
 // LoginDisplayHostWebUI, public
 
 void LoginDisplayHostWebUI::OnBrowserCreated() {
+  VLOG(4) << "OnBrowserCreated";
   // Close lock window now so that the launched browser can receive focus.
   ResetLoginWindowAndView();
 }
@@ -941,6 +942,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
 }
 
 void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
+  VLOG(4) << "ResetLoginWindowAndView";
   // Notify any oobe dialog state observers (e.g. login shelf) that the UI is
   // hidden (so they can reset any cached OOBE dialog state.)
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(

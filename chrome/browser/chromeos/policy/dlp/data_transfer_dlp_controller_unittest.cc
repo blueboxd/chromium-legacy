@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -55,7 +54,7 @@ class MockDlpController : public DataTransferDlpController {
   explicit MockDlpController(const DlpRulesManager& dlp_rules_manager)
       : DataTransferDlpController(dlp_rules_manager) {}
 
-  MOCK_METHOD2(DoNotifyBlockedPaste,
+  MOCK_METHOD2(NotifyBlockedPaste,
                void(const ui::DataTransferEndpoint* const data_src,
                     const ui::DataTransferEndpoint* const data_dst));
 };
@@ -91,7 +90,7 @@ TEST_F(DataTransferDlpControllerTest, NullDst) {
   {
     EXPECT_CALL(rules_manager_, IsRestrictedDestination)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false,
               dlp_controller_.IsClipboardReadAllowed(&data_src, nullptr));
   }
@@ -109,7 +108,7 @@ TEST_F(DataTransferDlpControllerTest, DefaultDst) {
   {
     EXPECT_CALL(rules_manager_, IsRestrictedDestination)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false,
               dlp_controller_.IsClipboardReadAllowed(&data_src, &data_dst));
   }
@@ -125,7 +124,7 @@ TEST_F(DataTransferDlpControllerTest, DefaultDst) {
   {
     EXPECT_CALL(rules_manager_, IsRestrictedDestination)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false, dlp_controller_.IsDragDropAllowed(&data_src, &data_dst,
                                                        /*is_drop=*/true));
   }
@@ -143,7 +142,7 @@ TEST_F(DataTransferDlpControllerTest, UrlSrcDst) {
   {
     EXPECT_CALL(rules_manager_, IsRestrictedDestination)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false,
               dlp_controller_.IsClipboardReadAllowed(&data_src, &data_dst));
   }
@@ -170,14 +169,14 @@ TEST_F(DataTransferDlpControllerTest, ArcDst) {
   {
     EXPECT_CALL(rules_manager_, IsRestrictedComponent)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false,
               dlp_controller_.IsClipboardReadAllowed(&data_src, &data_dst));
   }
   {
     EXPECT_CALL(rules_manager_, IsRestrictedComponent)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false, dlp_controller_.IsDragDropAllowed(&data_src, &data_dst,
                                                        /*is_drop=*/true));
   }
@@ -189,14 +188,14 @@ TEST_F(DataTransferDlpControllerTest, CrostiniDst) {
   {
     EXPECT_CALL(rules_manager_, IsRestrictedComponent)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false,
               dlp_controller_.IsClipboardReadAllowed(&data_src, &data_dst));
   }
   {
     EXPECT_CALL(rules_manager_, IsRestrictedComponent)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
-    EXPECT_CALL(dlp_controller_, DoNotifyBlockedPaste);
+    EXPECT_CALL(dlp_controller_, NotifyBlockedPaste);
     EXPECT_EQ(false, dlp_controller_.IsDragDropAllowed(&data_src, &data_dst,
                                                        /*is_drop=*/true));
   }

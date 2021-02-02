@@ -363,6 +363,9 @@
       <message desc="Label for expert mode option: show camera pan/tilt/zoom options." name="IDS_EXPERT_SHOW_PTZ_OPTIONS">
         Show pan tilt zoom options
       </message>
+      <message desc="Label for expert mode option: custom video parameters." name="IDS_EXPERT_CUSTOM_VIDEO_PARAMETERS">
+        Custom video parameters
+      </message>
       <message desc="Error message when the device does not support expert mode but tries to enable it." name="IDS_ERROR_MSG_EXPERT_MODE_NOT_SUPPORTED">
         Expert mode is not supported on this device
       </message>
@@ -372,7 +375,7 @@
       <message desc="Error message shown when failing to take photo." name="IDS_ERROR_MSG_TAKE_PHOTO_FAILED">
         Unable to take photo
       </message>
-      <message desc="Error message shown when failing to take portrait photo." name="IDS_ERROR_MSG_TAKE_PORTRAIT_PHOTO_FAILED">
+      <message desc="Error message shown when failing to take portrait (bokeh effect, background blur) photo." name="IDS_ERROR_MSG_TAKE_PORTRAIT_BOKEH_PHOTO_FAILED">
         Unable to take portrait photo
       </message>
       <message desc="Short description of the Camera App." name="IDS_DESCRIPTION">
@@ -447,10 +450,10 @@
       <message desc="Label for switch to take square photo mode button." name="IDS_LABEL_SWITCH_TAKE_SQUARE_PHOTO_BUTTON">
         Square
       </message>
-      <message desc="Label for spoken feedback to read out switch to take portrait photo mode button." name="IDS_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
+      <message desc="Label for spoken feedback to read out switch to take portrait (bokeh effect, background blur) photo mode button." name="IDS_SWITCH_TAKE_PORTRAIT_BOKEH_PHOTO_BUTTON">
         Switch to take portrait photo
       </message>
-      <message desc="Label for switch to take portrait photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
+      <message desc="Label for switch to take portrait (bokeh effect, background blur) photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_BOKEH_PHOTO_BUTTON">
         Portrait
       </message>
       <message desc="Label for the confirm button to confirm with the reviewed photo or video." name="IDS_CONFIRM_REVIEW_BUTTON">
@@ -479,8 +482,8 @@ If your feedback is about image or video quality, please attach a sample photo o
       <message desc="Label for close introducing new camera App UI banner button." name="IDS_BANNER_CLOSE_BUTTON">
         Close
       </message>
-      <message desc="Error message shown when the camera is being used by some other instance." name="IDS_ERROR_MSG_CAMERA_BEING_USED">
-        Your camera is being used by another app
+      <message desc="Error message shown on camera app window when the app is paused." name="IDS_ERROR_MSG_CAMERA_PAUSED">
+        Paused
       </message>
     </messages>
   </release>

@@ -18,12 +18,14 @@
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/values.h"
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/image.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace chrome_pdf {
@@ -45,7 +47,7 @@ void PdfViewPluginBase::Invalidate(const gfx::Rect& rect) {
   paint_manager_.InvalidateRect(offset_rect);
 }
 
-uint32_t PdfViewPluginBase::GetBackgroundColor() {
+SkColor PdfViewPluginBase::GetBackgroundColor() {
   return background_color_;
 }
 
@@ -55,6 +57,8 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
       base::MakeFixedFlatMap<base::StringPiece, MessageHandler>({
           {"displayAnnotations",
            &PdfViewPluginBase::HandleDisplayAnnotationsMessage},
+          {"setBackgroundColor",
+           &PdfViewPluginBase::HandleSetBackgroundColorMessage},
           {"setReadOnly", &PdfViewPluginBase::HandleSetReadOnlyMessage},
           {"setTwoUpView", &PdfViewPluginBase::HandleSetTwoUpViewMessage},
       });
@@ -193,6 +197,13 @@ void PdfViewPluginBase::SetZoom(double scale) {
 void PdfViewPluginBase::HandleDisplayAnnotationsMessage(
     const base::Value& message) {
   engine()->DisplayAnnotations(message.FindBoolKey("display").value());
+}
+
+void PdfViewPluginBase::HandleSetBackgroundColorMessage(
+    const base::Value& message) {
+  const SkColor background_color =
+      base::checked_cast<SkColor>(message.FindDoubleKey("color").value());
+  SetBackgroundColor(background_color);
 }
 
 void PdfViewPluginBase::HandleSetReadOnlyMessage(const base::Value& message) {

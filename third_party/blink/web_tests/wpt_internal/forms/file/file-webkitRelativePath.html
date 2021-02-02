@@ -3,64 +3,37 @@
 <title>Test webkitRelativePath IDL attribute</title>
 </head>
 <body>
-<script src="/gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="/gen/third_party/blink/public/mojom/choosers/file_chooser.mojom.js"></script>
-<script src="../resources/mock-file-chooser.js"></script>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
 <input type="file" webkitdirectory>
-<script>
+<script type="module">
+import {mockFileChooserFactory} from '../resources/mock-file-chooser.js';
+
 // This is an automated-version of external/wpt/entries-api/file-webkitRelativePath-manual.html
 
-function clickElement(e) {
-  const r = e.getBoundingClientRect();
-  const x = r.left + r.width / 2;
-  const y = r.top + r.height / 2;
-  eventSender.mouseMoveTo(x, y);
-  eventSender.mouseDown();
-  eventSender.mouseUp();
-}
-
-const t = async_test('webkitRelativePath is relative from the parent of the chosen directory');
-t.step(() => {
-  assert_own_property(window, 'eventSender');
-
+promise_test(async () => {
   const file = document.querySelector('input');
-  file.addEventListener('change', t.step_func_done(() => {
-    const files = Array.from(file.files).sort((a, b) => a.name < b.name ? -1 : b.name < a.name ? 1 : 0);
-    assert_equals(files.length, 3);
-    assert_equals(files[0].webkitRelativePath, 'a/b/c/d/1.txt');
-    assert_equals(files[1].webkitRelativePath, 'a/b/c/d/2.txt');
-    assert_equals(files[2].webkitRelativePath, 'a/b/c/3.txt');
-    // mockFileChooserFactory doesn't support concurrent multiple sessions.
-    setTimeout(runTest2Later, 0);
-  }));
+  const simulatedDirectorySelectionChange = new Promise(
+      resolve => file.addEventListener('change', resolve, {once: true}));
 
   const chosenDir = '/tmp/web_tests/external/wpt/entries-api/support/a';
-  mockFileChooserFactory.setPathsToBeChosen([chosenDir + '/b/c/d/1.txt',
-                                             chosenDir + '/b/c/d/2.txt',
-                                             chosenDir + '/b/c/3.txt'], chosenDir)
-  clickElement(file);
-});
+  mockFileChooserFactory.setPathsToBeChosen(
+      [`${chosenDir}/b/c/d/1.txt`, `${chosenDir}/b/c/d/2.txt`,
+       `${chosenDir}/b/c/3.txt`],
+      chosenDir);
 
-const t2 = async_test('webkitRelativePath is relative from the selected root directory');
-function runTest2Later() {
-  t2.step(() => {
-    assert_own_property(window, 'eventSender');
+  test_driver.click(file);
+  await simulatedDirectorySelectionChange;
 
-    const file = document.querySelector('input');
-    file.addEventListener('change', t2.step_func_done(() => {
-      const files = Array.from(file.files).sort((a, b) => a.name < b.name ? -1 : b.name < a.name ? 1 : 0);
-      assert_equals(files.length, 2);
-      assert_equals(files[0].webkitRelativePath, '/Users/tkent/1.txt');
-      assert_equals(files[1].webkitRelativePath, '/Users/tkent/tmp/2.txt');
-    }));
+  const files = Array.from(file.files).sort(
+      (a, b) => a.name < b.name ? -1 : b.name < a.name ? 1 : 0);
+  assert_equals(files.length, 3);
+  assert_equals(files[0].webkitRelativePath, 'a/b/c/d/1.txt');
+  assert_equals(files[1].webkitRelativePath, 'a/b/c/d/2.txt');
+  assert_equals(files[2].webkitRelativePath, 'a/b/c/3.txt');
+}, 'webkitRelativePath is relative from the to the parent of the chosen non-root directory');
 
-    mockFileChooserFactory.setPathsToBeChosen(['/Users/tkent/1.txt',
-                                               '/Users/tkent/tmp/2.txt'], '/')
-    clickElement(file);
-  });
-}
 </script>
 </body>

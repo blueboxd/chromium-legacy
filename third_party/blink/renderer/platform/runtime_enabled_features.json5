@@ -566,10 +566,6 @@
       name: "CSSMarkerNestedPseudoElement",
       status: "experimental",
     },
-    // Enables dependency support for the MatchedPropertiesCache.
-    {
-      name: "CSSMatchedPropertiesCacheDependencies",
-    },
     {
       name: "CSSMathDepth",
       status: "experimental",
@@ -1004,6 +1000,10 @@
         "Android": "experimental",
         "default": "stable",
         },
+    },
+    {
+      name: "GravitySensor",
+      status: "experimental",
     },
     {
       name: "GroupEffect",

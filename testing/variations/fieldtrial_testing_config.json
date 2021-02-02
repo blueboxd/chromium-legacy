@@ -655,7 +655,13 @@
                 {
                     "name": "Enabled_20200925",
                     "enable_features": [
-                        "AssistAutocorrect"
+                        "AssistAutoCorrect"
+                    ]
+                },
+                {
+                    "name": "Enabled_20200201",
+                    "enable_features": [
+                        "AssistAutoCorrect"
                     ]
                 }
             ]
@@ -7150,6 +7156,41 @@
                         "SmallScriptStreaming",
                         "V8OffThreadFinalization"
                     ]
+                }
+            ]
+        }
+    ],
+    "VerifyDidCommitParams": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "base_url": "true",
+                        "gesture": "true",
+                        "http_status_code": "true",
+                        "intended_as_new_entry": "true",
+                        "is_overriding_user_agent": "true",
+                        "method": "true",
+                        "post_id": "true",
+                        "should_update_history": "true",
+                        "url_is_unreachable": "true"
+                    },
+                    "enable_features": [
+                        "VerifyDidCommitParams"
+                    ],
+                    "disable_features": []
                 }
             ]
         }

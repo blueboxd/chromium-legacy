@@ -110,10 +110,6 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [1260],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/cellular_setup/resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
-    "includes": [1360],
-  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/emoji_picker/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [1365],
@@ -393,6 +389,10 @@
   },
   "chromeos/resources/chromeos_resources.grd": {
     "includes": [2660],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/eche_app_ui/chromeos_eche_app_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [2670],
   },
   # END chromeos/ section.
 

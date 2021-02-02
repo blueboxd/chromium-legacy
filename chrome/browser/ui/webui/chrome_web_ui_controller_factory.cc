@@ -176,7 +176,6 @@
 #include "chrome/browser/ui/webui/chromeos/arc_power_control/arc_power_control_ui.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/mobile_setup_ui.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
@@ -207,6 +206,8 @@
 #include "chromeos/components/connectivity_diagnostics/url_constants.h"
 #include "chromeos/components/diagnostics_ui/diagnostics_ui.h"
 #include "chromeos/components/diagnostics_ui/url_constants.h"
+#include "chromeos/components/eche_app_ui/eche_app_ui.h"
+#include "chromeos/components/eche_app_ui/url_constants.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
@@ -686,8 +687,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::AddSupervisionUI>;
   if (url.host_piece() == chrome::kChromeUIBluetoothPairingHost)
     return &NewWebUI<chromeos::BluetoothPairingDialogUI>;
-  if (url.host_piece() == chrome::kChromeUICellularSetupHost)
-    return &NewWebUI<chromeos::cellular_setup::CellularSetupDialogUI>;
 // TODO(crbug.com/1147032): The certificates settings page is temporarily
 // disabled for Lacros-Chrome until a better solution is found.
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -791,6 +790,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIEmojiPickerHost &&
       base::FeatureList::IsEnabled(chromeos::features::kImeSystemEmojiPicker)) {
     return &NewWebUI<chromeos::EmojiPicker>;
+  }
+  if (url.host_piece() == chromeos::kChromeUIEcheAppHost &&
+      base::FeatureList::IsEnabled(chromeos::features::kEcheSWA)) {
+    return &NewWebUI<chromeos::EcheAppUI>;
   }
 
 #if !defined(OFFICIAL_BUILD)

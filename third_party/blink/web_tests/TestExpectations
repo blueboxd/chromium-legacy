@@ -763,9 +763,8 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failur
 
 # [css-counter-styles-3]
 # Need to implement as custom counter styles:
-# 'simp-chinese-informal', 'simp-chinese-formal', 'trad-chinese-informal',
-# 'trad-chinese-formal', 'ethiopic-halehame', 'ethiopic-halehame-ti-er',
-# 'ethiopic-halehame-ti-et', and 'hangul-consonant', 'hangul', 'urdu'
+# 'ethiopic-halehame', 'ethiopic-halehame-ti-er', 'ethiopic-halehame-ti-et',
+# 'hangul-consonant', 'hangul', 'urdu'
 # Implemented as custom counter styles, but not exactly match existing behavior:
 # - Complex CJK styles should fallback to 'cjk-decimal', not 'decimal'
 # - 'armenian', 'upper-armenian', 'hebrew', and CJK styles should support
@@ -775,25 +774,6 @@ crbug.com/687225 fast/css/content-counter-large-negative-cjk.html [ Failure ]
 crbug.com/687225 fast/lists/css3-counter-styles-054.html [ Failure ]
 crbug.com/687225 fast/lists/css3-counter-styles-059.html [ Failure ]
 crbug.com/687225 fast/lists/css3-counter-styles-064.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-071.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-072.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-073.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-074.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-075.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-076.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-077.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-078.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-079.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-080.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-081.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-082.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-083.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-084.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-085.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-086.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-087.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-088.html [ Failure ]
-crbug.com/687225 fast/lists/css3-counter-styles-089.html [ Failure ]
 crbug.com/687225 fast/lists/decimal-leading-zero.html [ Failure ]
 crbug.com/687225 fast/lists/li-values.html [ Failure ]
 crbug.com/687225 fast/lists/w3-css3-list-styles-alphabetic.html [ Failure ]
@@ -2368,6 +2348,10 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 # WebRTC: Perfect Negotiation times out in Plan B. This is expected.
 crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
 
+# WebRTC: there's an open bug with some capture scenarios not working.
+crbug.com/1156408 external/wpt/webrtc/RTCPeerConnection-relay-canvas.https.html [ Pass Failure Timeout ]
+crbug.com/1156408 external/wpt/webrtc/RTCPeerConnection-capture-video.https.html [ Pass Failure Timeout ]
+
 crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 
 crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
@@ -2463,6 +2447,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-scrollbars/transparent-on-root.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-percent-width-cell-001.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-2.html [ Failure ]
@@ -2494,9 +2480,6 @@ crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webmessaging/without-ports/011.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.zero.worker.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-typed-om/stylevalue-subclasses/cssUnparsedValue.html [ Crash ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-typed-om/stylevalue-subclasses/cssUnparsedValue.html [ Crash ]
-crbug.com/626703 [ Win10 ] external/wpt/css/css-typed-om/stylevalue-subclasses/cssUnparsedValue.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Timeout ]
@@ -2976,7 +2959,6 @@ crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Fa
 crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-attr-mapping.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/dependent-builtin.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-05.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
@@ -4449,7 +4431,7 @@ crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failu
 crbug.com/908347 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
 
 # Sheriff 2018-11-29
-crbug.com/910139 custom-elements/form-submission-file.html [ Crash Pass ]
+crbug.com/910139 http/tests/custom-elements/form-submission-file.html [ Crash Pass ]
 
 # TODO: re-enable the below flakiness suppression when removing this line
 crbug.com/1131901 transforms/shadows.html [ Pass Failure ]

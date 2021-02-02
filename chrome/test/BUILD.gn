@@ -1798,6 +1798,7 @@ if (!is_android) {
       if (is_chromeos_ash) {
         deps += [
           "//chrome/browser/resources/gaia_auth_host:browser_tests",
+          "//chromeos/components/eche_app_ui:browser_tests_js",
           "//chromeos/components/help_app_ui:browser_tests_js",
           "//chromeos/components/media_app_ui:browser_tests_js",
           "//chromeos/components/system_apps:browser_tests",
@@ -2741,6 +2742,7 @@ if (!is_android) {
         "../browser/chromeos/system/tray_accessibility_browsertest.cc",
         "../browser/chromeos/web_applications/camera_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/diagnostics_app_integration_browsertest.cc",
+        "../browser/chromeos/web_applications/eche_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/help_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/media_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/print_management_app_integration_browsertest.cc",
@@ -5221,9 +5223,11 @@ test("unit_tests") {
       "../browser/extensions/api/identity/identity_mint_queue_unittest.cc",
       "../browser/extensions/api/identity/identity_token_cache_unittest.cc",
       "../browser/extensions/api/image_writer_private/destroy_partitions_operation_unittest.cc",
+      "../browser/extensions/api/image_writer_private/extractor_unittest.cc",
       "../browser/extensions/api/image_writer_private/image_writer_private_api_unittest.cc",
       "../browser/extensions/api/image_writer_private/operation_manager_unittest.cc",
       "../browser/extensions/api/image_writer_private/operation_unittest.cc",
+      "../browser/extensions/api/image_writer_private/single_file_tar_reader_unittest.cc",
       "../browser/extensions/api/image_writer_private/test_utils.cc",
       "../browser/extensions/api/image_writer_private/test_utils.h",
       "../browser/extensions/api/image_writer_private/write_from_file_operation_unittest.cc",
@@ -5544,6 +5548,10 @@ test("unit_tests") {
         "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
         "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       ]
+    }
+    if (is_mac) {
+      sources +=
+          [ "../browser/ui/startup/mac_system_infobar_delegate_unittest.cc" ]
     }
     if (is_chromeos_ash) {
       sources += [

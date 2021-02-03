@@ -195,7 +195,8 @@ TEST_F(
       mocha.run();
     });
 
-[['AboutPage', 'os_about_page_tests.m.js'],
+[['AccessibilityPage', 'os_a11y_page_tests.m.js'],
+ ['AboutPage', 'os_about_page_tests.m.js'],
  ['AmbientModePage', 'ambient_mode_page_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
@@ -220,6 +221,7 @@ TEST_F(
  ['InternetPage', 'internet_page_tests.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
  ['LocalizedLink', 'localized_link_test.m.js'],
+ ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
  ['MultidevicePage', 'multidevice_page_tests.m.js'],
@@ -258,6 +260,7 @@ TEST_F(
    'SwitchAccessActionAssignmentDialog',
    'switch_access_action_assignment_dialog_test.m.js'
  ],
+ ['SwitchAccessSubpage', 'switch_access_subpage_tests.m.js'],
  ['TetherConnectionDialog', 'tether_connection_dialog_test.m.js'],
  ['TimezoneSelector', 'timezone_selector_test.m.js'],
  ['TimezoneSubpage', 'timezone_subpage_test.m.js'],

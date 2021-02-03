@@ -112,14 +112,10 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
 }
 
 TEST_F(AccessibilityTest, GetAccessibilityImageInfo) {
-  // Clone of pp::PDF::PrivateAccessibilityImageInfo.
-  static const struct {
-    std::string alt_text;
-    uint32_t text_run_index;
-    gfx::RectF bounds;
-  } kExpectedImageInfo[] = {{"Image 1", 0, {380, 78, 67, 68}},
-                            {"Image 2", 0, {380, 385, 27, 28}},
-                            {"Image 3", 0, {380, 678, 1, 1}}};
+  static const AccessibilityImageInfo kExpectedImageInfo[] = {
+      {"Image 1", 0, {380, 78, 67, 68}},
+      {"Image 2", 0, {380, 385, 27, 28}},
+      {"Image 3", 0, {380, 678, 1, 1}}};
 
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -448,16 +444,10 @@ TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
 }
 
 TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
-  // Clone of pp::PDF::PrivateAccessibilityLinkInfo.
-  struct {
-    std::string url;
-    uint32_t index_in_page;
-    uint32_t text_run_index;
-    uint32_t text_run_count;
-    gfx::RectF bounds;
-  } expected_link_info[] = {{"http://yahoo.com", 0, 1, 1, {75, 191, 110, 16}},
-                            {"http://bing.com", 1, 4, 1, {131, 121, 138, 20}},
-                            {"http://google.com", 2, 7, 1, {82, 67, 161, 21}}};
+  AccessibilityLinkInfo expected_link_info[] = {
+      {"http://yahoo.com", 0, {75, 191, 110, 16}, {1, 1}},
+      {"http://bing.com", 1, {131, 121, 138, 20}, {4, 1}},
+      {"http://google.com", 2, {82, 67, 161, 21}, {7, 1}}};
 
   if (UsingTestFonts()) {
     expected_link_info[0].bounds = {75, 192, 110, 15};
@@ -489,8 +479,8 @@ TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
     EXPECT_EQ(link_info.index_in_page, expected_link_info[i].index_in_page);
     EXPECT_EQ(expected_link_info[i].bounds,
               RectFFromPPFloatRect(link_info.bounds));
-    EXPECT_EQ(link_info.text_run_index, expected_link_info[i].text_run_index);
-    EXPECT_EQ(link_info.text_run_count, expected_link_info[i].text_run_count);
+    EXPECT_EQ(link_info.text_run_index, expected_link_info[i].text_range.index);
+    EXPECT_EQ(link_info.text_run_count, expected_link_info[i].text_range.count);
   }
 }
 
@@ -498,18 +488,10 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
   constexpr uint32_t kHighlightDefaultColor = MakeARGB(255, 255, 255, 0);
   constexpr uint32_t kHighlightRedColor = MakeARGB(102, 230, 0, 0);
   constexpr uint32_t kHighlightNoColor = MakeARGB(0, 0, 0, 0);
-  // Clone of pp::PDF::PrivateAccessibilityHighlightInfo.
-  static const struct {
-    std::string note_text;
-    uint32_t index_in_page;
-    uint32_t text_run_index;
-    uint32_t text_run_count;
-    gfx::RectF bounds;
-    uint32_t color;
-  } kExpectedHighlightInfo[] = {
-      {"Text Note", 0, 0, 1, {5, 196, 49, 26}, kHighlightDefaultColor},
-      {"", 1, 2, 1, {110, 196, 77, 26}, kHighlightRedColor},
-      {"", 2, 3, 1, {192, 196, 13, 26}, kHighlightNoColor}};
+  static const AccessibilityHighlightInfo kExpectedHighlightInfo[] = {
+      {"Text Note", 0, kHighlightDefaultColor, {5, 196, 49, 26}, {0, 1}},
+      {"", 1, kHighlightRedColor, {110, 196, 77, 26}, {2, 1}},
+      {"", 2, kHighlightNoColor, {192, 196, 13, 26}, {3, 1}}};
 
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -537,9 +519,9 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
     EXPECT_EQ(kExpectedHighlightInfo[i].bounds,
               RectFFromPPFloatRect(highlight_info.bounds));
     EXPECT_EQ(highlight_info.text_run_index,
-              kExpectedHighlightInfo[i].text_run_index);
+              kExpectedHighlightInfo[i].text_range.index);
     EXPECT_EQ(highlight_info.text_run_count,
-              kExpectedHighlightInfo[i].text_run_count);
+              kExpectedHighlightInfo[i].text_range.count);
     EXPECT_EQ(highlight_info.color, kExpectedHighlightInfo[i].color);
     EXPECT_EQ(highlight_info.note_text, kExpectedHighlightInfo[i].note_text);
   }

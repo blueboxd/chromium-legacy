@@ -2981,7 +2981,16 @@ ci.fyi_builder(
         category = "linux|blink",
         short_name = "VF",
     ),
-    notifies = ["linux-blink-heap-verification"],
+    notifies = ["linux-blink-fyi-bots"],
+)
+
+ci.fyi_builder(
+    name = "linux-blink-v8-oilpan",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux|blink",
+        short_name = "VO",
+    ),
+    notifies = ["linux-blink-fyi-bots"],
 )
 
 ci.fyi_builder(
@@ -3412,6 +3421,19 @@ ci.fyi_builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "re",
+    ),
+    goma_backend = None,
+    reclient_instance = "goma-rbe-chromium",
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "Linux TSan Builder (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "tre",
     ),
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",

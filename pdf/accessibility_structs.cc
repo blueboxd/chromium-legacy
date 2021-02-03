@@ -45,4 +45,52 @@ AccessibilityTextRunInfo::AccessibilityTextRunInfo(
 
 AccessibilityTextRunInfo::~AccessibilityTextRunInfo() = default;
 
+AccessibilityLinkInfo::AccessibilityLinkInfo() = default;
+
+AccessibilityLinkInfo::AccessibilityLinkInfo(
+    const std::string& url,
+    uint32_t index_in_page,
+    const gfx::RectF& bounds,
+    const AccessibilityTextRunRangeInfo& text_range)
+    : url(url),
+      index_in_page(index_in_page),
+      bounds(bounds),
+      text_range(text_range) {}
+
+AccessibilityLinkInfo::AccessibilityLinkInfo(
+    const AccessibilityLinkInfo& other) = default;
+
+AccessibilityLinkInfo::~AccessibilityLinkInfo() = default;
+
+AccessibilityImageInfo::AccessibilityImageInfo() = default;
+
+AccessibilityImageInfo::AccessibilityImageInfo(const std::string& alt_text,
+                                               uint32_t text_run_index,
+                                               const gfx::RectF& bounds)
+    : alt_text(alt_text), text_run_index(text_run_index), bounds(bounds) {}
+
+AccessibilityImageInfo::AccessibilityImageInfo(
+    const AccessibilityImageInfo& other) = default;
+
+AccessibilityImageInfo::~AccessibilityImageInfo() = default;
+
+AccessibilityHighlightInfo::AccessibilityHighlightInfo() = default;
+
+AccessibilityHighlightInfo::AccessibilityHighlightInfo(
+    const std::string& note_text,
+    uint32_t index_in_page,
+    uint32_t color,
+    const gfx::RectF& bounds,
+    const AccessibilityTextRunRangeInfo& text_range)
+    : note_text(note_text),
+      index_in_page(index_in_page),
+      color(color),
+      bounds(bounds),
+      text_range(text_range) {}
+
+AccessibilityHighlightInfo::AccessibilityHighlightInfo(
+    const AccessibilityHighlightInfo& other) = default;
+
+AccessibilityHighlightInfo::~AccessibilityHighlightInfo() = default;
+
 }  // namespace chrome_pdf

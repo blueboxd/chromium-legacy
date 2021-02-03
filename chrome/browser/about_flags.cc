@@ -98,7 +98,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/no_state_prefetch/browser/prerender_field_trial.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_field_trial.h"
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -5480,10 +5480,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-phone-hub", flag_descriptions::kPhoneHubName,
      flag_descriptions::kPhoneHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPhoneHub)},
-
-    {"enable-phone-hub-use-ble", flag_descriptions::kPhoneHubUseBleName,
-     flag_descriptions::kPhoneHubUseBleDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPhoneHubUseBle)},
 
     {"wifi-sync-android", flag_descriptions::kWifiSyncAndroidName,
      flag_descriptions::kWifiSyncAndroidDescription, kOsCrOS,

@@ -34,6 +34,21 @@
             ]
         }
     ],
+    "ActionableContentSettings": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ActionableContentSettings"
+                    ]
+                }
+            ]
+        }
+    ],
     "AmpBackgroundTab": [
         {
             "platforms": [
@@ -7663,7 +7678,8 @@
                 "linux",
                 "ios",
                 "android",
-                "android_weblayer"
+                "android_weblayer",
+                "android_webview"
             ],
             "experiments": [
                 {

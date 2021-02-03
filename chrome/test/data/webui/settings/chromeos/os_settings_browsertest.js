@@ -369,7 +369,8 @@ var OSSettingsAmbientModePhotosPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsAmbientModePhotosPageTest', 'MAYBE_AllJsTests', () => {
+// TODO(https://crbug.com/1173526): Reenable flaky test.
+TEST_F('OSSettingsAmbientModePhotosPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -1298,7 +1299,9 @@ var OSSettingsKerberosPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'kerberos_page_test.js',
+      'test_kerberos_accounts_browser_proxy.js',
     ]);
   }
 };
@@ -1811,6 +1814,7 @@ var OSSettingsPeoplePageKerberosAccountsTest =
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + '../test_util.js',
       'people_page_kerberos_accounts_test.js',
+      'test_kerberos_accounts_browser_proxy.js',
     ]);
   }
 };

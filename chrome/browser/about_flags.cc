@@ -198,7 +198,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
-#include "chrome/browser/continuous_search/features.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/webapps/android/features.h"
@@ -5778,9 +5777,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontAccessAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kFontAccess)},
 
-    {"font-access-chooser", flag_descriptions::kFontAccessChooserAPIName,
-     flag_descriptions::kFontAccessChooserAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kFontAccessChooser)},
+    {"font-access-persistent", flag_descriptions::kFontAccessPersistentName,
+     flag_descriptions::kFontAccessPersistentDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kFontAccessPersistent)},
 
     {"mouse-subframe-no-implicit-capture",
      flag_descriptions::kMouseSubframeNoImplicitCaptureName,
@@ -6933,7 +6932,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"continuous-search", flag_descriptions::kContinuousSearchName,
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(continuous_search::features::kContinuousSearch)},
+     FEATURE_VALUE_TYPE(features::kContinuousSearch)},
 
     {"enable-experimental-accessibility-labels",
      flag_descriptions::kExperimentalAccessibilityLabelsName,

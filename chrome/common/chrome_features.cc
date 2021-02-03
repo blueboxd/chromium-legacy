@@ -136,6 +136,9 @@ const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
+const base::Feature kContinuousSearch{"ContinuousSearch",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Restricts all of Chrome's threads to use only LITTLE cores on big.LITTLE
 // architectures.
 const base::Feature kCpuAffinityRestrictToLittleCores{
@@ -540,12 +543,6 @@ const base::Feature kInSessionPasswordChange{"InSessionPasswordChange",
 // the "Apps & Features" system settings.
 const base::Feature kIncompatibleApplicationsWarning{
     "IncompatibleApplicationsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_ANDROID)
-// Enables or disables the installable ambient badge infobar.
-const base::Feature kInstallableAmbientBadgeInfoBar{
-    "InstallableAmbientBadgeInfoBar", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)

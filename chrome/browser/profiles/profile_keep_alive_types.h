@@ -48,7 +48,23 @@ enum class ProfileKeepAliveOrigin {
   // An app (Chrome app, web app, etc.) has a window open.
   kAppWindow = 7,
 
-  kMaxValue = kAppWindow,
+  // Background sync in progress.
+  kBackgroundSync = 8,
+
+  // A notification is active in the system tray.
+  kNotification = 9,
+
+  // The user just clicked on a notification. This might cause e.g. a new
+  // browser window to open, so wait for the event to finish processing.
+  kPendingNotificationClickEvent = 10,
+
+  // There's a visible Push Notification from a Service Worker.
+  kInFlightPushMessage = 11,
+
+  // Session restore in progress.
+  kSessionRestore = 12,
+
+  kMaxValue = kSessionRestore,
 };
 
 std::ostream& operator<<(std::ostream& out,

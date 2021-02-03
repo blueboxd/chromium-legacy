@@ -430,6 +430,9 @@
 
     'cast_video_specific_chromium_gtests': {
       'cast_accessibility_unittests': {},
+      'cast_display_settings_unittests': {
+        'experiment_percentage': 100,
+      },
       'cast_graphics_unittests': {},
       'exo_unittests': {},
       'views_unittests': {
@@ -841,6 +844,10 @@
       'webapk_client_junit_tests': {},
       'webapk_shell_apk_h2o_junit_tests': {},
       'webapk_shell_apk_junit_tests': {},
+      'weblayer_junit_tests': {
+        # Experimental until we're sure these are stable.
+        'experiment_percentage': 100
+      },
     },
 
     'chromium_linux_scripts': {

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/content/common/ad_evidence.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/content/renderer/web_document_subresource_filter_impl.h"
@@ -52,16 +53,23 @@ void SubresourceFilterAgent::Initialize() {
 
   // We must check for provisional here because in that case 2 RenderFrames will
   // be created for the same FrameTreeNode in the browser. The browser service
-  // only expects us to call SendFrameIsAdSubframe() a single time for a newly
-  // created RenderFrame, so we must choose one. A provisional frame is created
-  // when a navigation is performed cross-site and the navigation is done there
-  // to isolate it from the previous frame tree. We choose to send this message
-  // from the initial (non-provisional) "about:blank" frame that is created
-  // before the navigation to match previous behaviour, and because this frame
-  // will always exist. Whereas the provisional frame would only be created to
-  // perform the navigation conditionally, so we ignore sending the IPC there.
-  if (!IsMainFrame() && IsAdSubframe() && !IsProvisional())
-    SendFrameIsAdSubframe();
+  // only expects us to call SendSubframeWasCreatedByAdScript() and
+  // SendFrameIsAdSubframe() a single time each for a newly created RenderFrame,
+  // so we must choose one. A provisional frame is created when a navigation is
+  // performed cross-site and the navigation is done there to isolate it from
+  // the previous frame tree. We choose to send this message from the initial
+  // (non-provisional) "about:blank" frame that is created before the navigation
+  // to match previous behaviour, and because this frame will always exist.
+  // Whereas the provisional frame would only be created to perform the
+  // navigation conditionally, so we ignore sending the IPC there.
+  if (!IsMainFrame() && !IsProvisional()) {
+    if (IsSubframeCreatedByAdScript())
+      SendSubframeWasCreatedByAdScript();
+
+    // As this is the initial empty document, we won't have received any message
+    // from the browser and so we must calculate the ad status here.
+    SetIsAdSubframeIfNecessary();
+  }
 
   // `render_frame()` can be null in unit tests.
   if (render_frame()) {
@@ -107,8 +115,16 @@ bool SubresourceFilterAgent::IsMainFrame() {
   return render_frame()->IsMainFrame();
 }
 
+bool SubresourceFilterAgent::IsParentAdSubframe() {
+  return render_frame()->GetWebFrame()->Parent()->IsAdSubframe();
+}
+
 bool SubresourceFilterAgent::IsProvisional() {
   return render_frame()->GetWebFrame()->IsProvisional();
+}
+
+bool SubresourceFilterAgent::IsSubframeCreatedByAdScript() {
+  return render_frame()->GetWebFrame()->IsSubframeCreatedByAdScript();
 }
 
 bool SubresourceFilterAgent::HasDocumentLoader() {
@@ -134,6 +150,10 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
 
 void SubresourceFilterAgent::SendFrameIsAdSubframe() {
   GetSubresourceFilterHost()->FrameIsAdSubframe();
+}
+
+void SubresourceFilterAgent::SendSubframeWasCreatedByAdScript() {
+  GetSubresourceFilterHost()->SubframeWasCreatedByAdScript();
 }
 
 bool SubresourceFilterAgent::IsAdSubframe() {
@@ -223,6 +243,27 @@ void SubresourceFilterAgent::ActivateForNextCommittedLoad(
 
 void SubresourceFilterAgent::OnDestruct() {
   delete this;
+}
+
+void SubresourceFilterAgent::SetIsAdSubframeIfNecessary() {
+  DCHECK(!IsAdSubframe());
+
+  // TODO(alexmt): Store FrameAdEvidence on each frame, typically updated by the
+  // browser but also populated here when the browser has not informed the
+  // renderer.
+  FrameAdEvidence ad_evidence(IsParentAdSubframe());
+  ad_evidence.filter_list_result = FilterListEvidence::kNeverChecked;
+  ad_evidence.created_by_ad_script =
+      IsSubframeCreatedByAdScript()
+          ? ScriptHeuristicEvidence::kCreatedByAdScript
+          : ScriptHeuristicEvidence::kNotCreatedByAdScript;
+  if (ad_evidence.IndicatesAdSubframe()) {
+    blink::mojom::AdFrameType ad_frame_type =
+        ad_evidence.parent_is_ad ? blink::mojom::AdFrameType::kChildAd
+                                 : blink::mojom::AdFrameType::kRootAd;
+    SetIsAdSubframe(ad_frame_type);
+    SendFrameIsAdSubframe();
+  }
 }
 
 void SubresourceFilterAgent::DidCreateNewDocument() {

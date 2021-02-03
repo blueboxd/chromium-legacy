@@ -1578,6 +1578,7 @@ try_.chromium_win_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     goma_jobs = goma.jobs.J150,
     os = os.WINDOWS_10,
+    cores = None,
     ssd = True,
     use_clang_coverage = True,
     main_list_view = "try",
@@ -1772,7 +1773,7 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
-    builder = "lacros-chrome",
+    builder = "lacros-amd64-generic-chrome",
 )
 
 chrome_internal_verifier(

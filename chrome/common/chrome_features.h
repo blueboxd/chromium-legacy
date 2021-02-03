@@ -112,6 +112,11 @@ extern const base::Feature kClientStorageAccessContextAuditing;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kContentSettingsRedesign;
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kContinuousSearch;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacySandboxSettings;
 
@@ -350,11 +355,6 @@ extern const base::Feature kInSessionPasswordChange;
 // Only has an effect in branded builds.
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncompatibleApplicationsWarning;
-#endif
-
-#if defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kInstallableAmbientBadgeInfoBar;
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

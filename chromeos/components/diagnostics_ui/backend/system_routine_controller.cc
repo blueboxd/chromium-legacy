@@ -216,6 +216,9 @@ SystemRoutineController::~SystemRoutineController() {
     diagnostics_service_->GetRoutineUpdate(
         inflight_routine_id_, healthd::DiagnosticRoutineCommandEnum::kCancel,
         /*should_include_output=*/false, base::DoNothing());
+    if (IsLoggingEnabled()) {
+      routine_log_ptr_->LogRoutineCancelled();
+    }
   }
 
   // Emit the total number of routines run.
@@ -619,6 +622,7 @@ void SystemRoutineController::OnStandardRoutineResult(
   auto result_info =
       ConstructStandardRoutineResultInfoPtr(routine_type, result);
   SendRoutineResult(std::move(result_info));
+  metrics::EmitRoutineResult(routine_type, result);
   if (IsLoggingEnabled()) {
     routine_log_ptr_->LogRoutineCompleted(routine_type, result);
   }
@@ -633,6 +637,7 @@ void SystemRoutineController::OnPowerRoutineResult(
   auto result_info = ConstructPowerRoutineResultInfoPtr(
       routine_type, result, percent_change, seconds_elapsed);
   SendRoutineResult(std::move(result_info));
+  metrics::EmitRoutineResult(routine_type, result);
   if (IsLoggingEnabled()) {
     routine_log_ptr_->LogRoutineCompleted(routine_type, result);
   }
@@ -675,6 +680,9 @@ void SystemRoutineController::OnInflightRoutineRunnerDisconnected() {
       /*should_include_output=*/false,
       base::BindOnce(&SystemRoutineController::OnRoutineCancelAttempted,
                      base::Unretained(this)));
+  if (IsLoggingEnabled()) {
+    routine_log_ptr_->LogRoutineCancelled();
+  }
 }
 
 void SystemRoutineController::OnRoutineCancelAttempted(

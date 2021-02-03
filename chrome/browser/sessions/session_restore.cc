@@ -33,6 +33,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore_delegate.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -138,8 +140,10 @@ class SessionRestoreImpl : public BrowserListObserver {
 
     active_session_restorers->insert(this);
 
-    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::SESSION_RESTORE,
-                                          KeepAliveRestartOption::DISABLED));
+    keep_alive_ = std::make_unique<ScopedKeepAlive>(
+        KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED);
+    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+        profile, ProfileKeepAliveOrigin::kBrowserWindow);
   }
 
   bool synchronous() const { return synchronous_; }
@@ -180,7 +184,8 @@ class SessionRestoreImpl : public BrowserListObserver {
     for (auto i = begin; i != end; ++i) {
       Browser* browser = CreateRestoredBrowser(
           BrowserTypeForWindowType((*i)->type), (*i)->bounds, (*i)->workspace,
-          (*i)->show_state, (*i)->app_name, (*i)->user_title);
+          (*i)->visible_on_all_workspaces, (*i)->show_state, (*i)->app_name,
+          (*i)->user_title);
       browsers.push_back(browser);
 
       // Restore and show the browser.
@@ -429,7 +434,8 @@ class SessionRestoreImpl : public BrowserListObserver {
         }
         browser = CreateRestoredBrowser(
             BrowserTypeForWindowType((*i)->type), (*i)->bounds, (*i)->workspace,
-            show_state, (*i)->app_name, (*i)->user_title);
+            (*i)->visible_on_all_workspaces, show_state, (*i)->app_name,
+            (*i)->user_title);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
             "SessionRestore-CreateRestoredBrowser-End", false);
@@ -660,6 +666,7 @@ class SessionRestoreImpl : public BrowserListObserver {
   Browser* CreateRestoredBrowser(Browser::Type type,
                                  gfx::Rect bounds,
                                  const std::string& workspace,
+                                 bool visible_on_all_workspaces,
                                  ui::WindowShowState show_state,
                                  const std::string& app_name,
                                  const std::string& user_title) {
@@ -682,6 +689,7 @@ class SessionRestoreImpl : public BrowserListObserver {
 
     params.initial_show_state = show_state;
     params.initial_workspace = workspace;
+    params.initial_visible_on_all_workspaces_state = visible_on_all_workspaces;
     params.is_session_restore = true;
     return Browser::Create(params);
   }
@@ -769,6 +777,10 @@ class SessionRestoreImpl : public BrowserListObserver {
   // Chrome doesn't prematurely exit we register a KeepAlive for the lifetime
   // of this object.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
+
+  // Same as |keep_alive_|, but also prevent |profile_| from getting deleted
+  // (when DestroyProfileOnBrowserClose is enabled).
+  std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
 
   // The time we started the restore.
   base::TimeTicks restore_started_;

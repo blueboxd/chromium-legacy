@@ -28,6 +28,7 @@
 #include "cc/paint/paint_flags.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -437,7 +438,23 @@ CaptureModeSession::CaptureModeSession(CaptureModeController* controller)
       current_root_(GetPreferredRootWindow()),
       magnifier_glass_(kMagnifierParams),
       cursor_setter_(std::make_unique<CursorSetter>()) {
-  Shell::Get()->AddPreTargetHandler(this);
+  // A context menu may have input capture when entering a session. Remove
+  // capture from it, otherwise subsequent mouse events will cause it to close,
+  // and then we won't be able to take a screenshot of the menu. Store it so we
+  // can return capture to it when exiting the session.
+  // Note that some windows gets destroyed when they lose the capture (e.g. a
+  // window created for capturing events while drag-drop in progress), so we
+  // need to account for that.
+  auto* capture_client = aura::client::GetCaptureClient(current_root_);
+  input_capture_window_ = capture_client->GetCaptureWindow();
+  if (input_capture_window_) {
+    aura::WindowTracker tracker({input_capture_window_});
+    capture_client->ReleaseCapture(input_capture_window_);
+    if (tracker.windows().empty())
+      input_capture_window_ = nullptr;
+    else
+      input_capture_window_->AddObserver(this);
+  }
 
   SetLayer(std::make_unique<ui::Layer>(ui::LAYER_TEXTURED));
   layer()->SetFillsBoundsOpaquely(false);
@@ -467,20 +484,12 @@ CaptureModeSession::CaptureModeSession(CaptureModeController* controller)
 
   UpdateRootWindowDimmers();
 
-  // A context menu may have input capture when entering a session. Remove
-  // capture from it, otherwise subsequent mouse events will cause it to close,
-  // and then we won't be able to take a screenshot of the menu. Store it so we
-  // can return capture to it when exiting the session.
-  auto* capture_client = aura::client::GetCaptureClient(current_root_);
-  input_capture_window_ = capture_client->GetCaptureWindow();
-  if (input_capture_window_) {
-    capture_client->ReleaseCapture(input_capture_window_);
-    input_capture_window_->AddObserver(this);
-  }
-
   TabletModeController::Get()->AddObserver(this);
   current_root_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  // Our event handling code assumes the capture bar widget has been initialized
+  // already. So we start handling events after everything has been setup.
+  Shell::Get()->AddPreTargetHandler(this);
 
   capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
       IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN,
@@ -493,15 +502,15 @@ CaptureModeSession::CaptureModeSession(CaptureModeController* controller)
 }
 
 CaptureModeSession::~CaptureModeSession() {
+  Shell::Get()->RemovePreTargetHandler(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
+  current_root_->RemoveObserver(this);
+  TabletModeController::Get()->RemoveObserver(this);
   if (input_capture_window_) {
     input_capture_window_->RemoveObserver(this);
     aura::client::GetCaptureClient(current_root_)
         ->SetCapture(input_capture_window_);
   }
-  display::Screen::GetScreen()->RemoveObserver(this);
-  current_root_->RemoveObserver(this);
-  TabletModeController::Get()->RemoveObserver(this);
-  Shell::Get()->RemovePreTargetHandler(this);
 
   // This may happen if we hit esc while dragging.
   if (old_mouse_warp_status_)
@@ -1454,17 +1463,62 @@ gfx::Rect CaptureModeSession::CalculateCaptureLabelWidgetBounds() {
   CaptureLabelView* label_view =
       static_cast<CaptureLabelView*>(capture_label_widget_->GetContentsView());
 
-  // For fullscreen and window capture mode, the capture label is placed in the
-  // middle of the screen. For region capture mode, if it's in select phase, the
-  // capture label is also placed in the middle of the screen, and if it's in
-  // fine tune phase, the capture label is ideally placed in the middle of the
-  // capture region. If it cannot fit, then it will be placed slightly above or
-  // below the capture region.
+  const gfx::Size preferred_size = label_view->GetPreferredSize();
+
+  // Calculates the bounds for when the capture label is not placed in the
+  // middle of the screen.
+  auto calculate_bounds = [&preferred_size](const gfx::Rect& capture_bounds,
+                                            aura::Window* root) {
+    // The capture_bounds must be at least the size of |preferred_size| plus
+    // some padding for the capture label to be centered inside it.
+    gfx::Rect label_bounds(capture_bounds);
+    gfx::Size capture_bounds_min_size = preferred_size;
+    capture_bounds_min_size.Enlarge(kCaptureRegionMinimumPaddingDp,
+                                    kCaptureRegionMinimumPaddingDp);
+    if (label_bounds.width() > capture_bounds_min_size.width() &&
+        label_bounds.height() > capture_bounds_min_size.height()) {
+      label_bounds.ClampToCenteredSize(preferred_size);
+    } else {
+      // The capture_bounds is too small for the capture label to be inside it.
+      // Align |label_bounds| so that its horizontal centerpoint aligns with the
+      // capture_bounds centerpoint.
+      label_bounds.set_size(preferred_size);
+      label_bounds.set_x(capture_bounds.CenterPoint().x() -
+                         preferred_size.width() / 2);
+
+      // Try to put the capture label slightly below the capture_bounds. If it
+      // does not fully fit in the root window bounds, place the capture label
+      // slightly above.
+      const int under_capture_bounds_label_y =
+          capture_bounds.bottom() + kCaptureButtonDistanceFromRegionDp;
+      if (under_capture_bounds_label_y + preferred_size.height() <
+          root->bounds().bottom()) {
+        label_bounds.set_y(under_capture_bounds_label_y);
+      } else {
+        label_bounds.set_y(capture_bounds.y() -
+                           kCaptureButtonDistanceFromRegionDp -
+                           preferred_size.height());
+      }
+    }
+    return label_bounds;
+  };
+
   gfx::Rect bounds(current_root_->bounds());
   const gfx::Rect capture_region = controller_->user_capture_region();
-  const gfx::Size preferred_size = label_view->GetPreferredSize();
-  if (controller_->source() == CaptureModeSource::kRegion &&
-      !is_selecting_region_ && !capture_region.IsEmpty()) {
+  const gfx::Rect window_bounds = GetSelectedWindowBounds();
+  const CaptureModeSource source = controller_->source();
+
+  // For fullscreen mode, the capture label is placed in the middle of the
+  // screen. For region capture mode, if it's in select phase, the capture label
+  // is also placed in the middle of the screen, and if it's in fine tune phase,
+  // the capture label is ideally placed in the middle of the capture region. If
+  // it cannot fit, then it will be placed slightly above or below the capture
+  // region. For window capture mode, it is the same as the region capture mode
+  // fine tune phase logic, in that it will first try to place the label in the
+  // middle of the selected window bounds, otherwise it will be placed slightly
+  // above or below the selected window.
+  if (source == CaptureModeSource::kRegion && !is_selecting_region_ &&
+      !capture_region.IsEmpty()) {
     if (label_view->IsInCountDownAnimation()) {
       // If countdown starts, calculate the bounds based on the old capture
       // label's position, otherwise, since the countdown label bounds is
@@ -1475,42 +1529,14 @@ gfx::Rect CaptureModeSession::CalculateCaptureLabelWidgetBounds() {
       bounds = capture_label_widget_->GetNativeWindow()->bounds();
       bounds.ClampToCenteredSize(preferred_size);
     } else {
-      bounds = capture_region;
-      // The capture region must be at least the size of |preferred_size| plus
-      // some padding for the capture label to be centered inside it.
-      gfx::Size capture_region_min_size = preferred_size;
-      capture_region_min_size.Enlarge(kCaptureRegionMinimumPaddingDp,
-                                      kCaptureRegionMinimumPaddingDp);
-      if (bounds.width() > capture_region_min_size.width() &&
-          bounds.height() > capture_region_min_size.height()) {
-        bounds.ClampToCenteredSize(preferred_size);
-      } else {
-        // The capture region is too small for the capture label to be inside
-        // it. Align |bounds| so that its horizontal centerpoint aligns with the
-        // capture regions centerpoint.
-        bounds.set_size(preferred_size);
-        bounds.set_x(capture_region.CenterPoint().x() -
-                     preferred_size.width() / 2);
-
-        // Try to put the capture label slightly below the capture region. If it
-        // does not fully fit in the root window bounds, place the capture label
-        // slightly above.
-        const int under_region_label_y =
-            capture_region.bottom() + kCaptureButtonDistanceFromRegionDp;
-        if (under_region_label_y + preferred_size.height() <
-            current_root_->bounds().bottom()) {
-          bounds.set_y(under_region_label_y);
-        } else {
-          bounds.set_y(capture_region.y() - kCaptureButtonDistanceFromRegionDp -
-                       preferred_size.height());
-        }
-      }
+      bounds = calculate_bounds(capture_region, current_root_);
     }
+  } else if (source == CaptureModeSource::kWindow && !window_bounds.IsEmpty()) {
+    bounds = calculate_bounds(window_bounds, current_root_);
   } else {
     bounds.ClampToCenteredSize(preferred_size);
   }
-  // User capture region bounds are in root window coordinates so convert them
-  // here.
+  // User capture bounds are in root window coordinates so convert them here.
   wm::ConvertRectToScreen(current_root_, &bounds);
   return bounds;
 }

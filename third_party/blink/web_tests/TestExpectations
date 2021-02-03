@@ -155,22 +155,14 @@ virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 
 # --- BEGIN OOP-R Canvas tests ---
 crbug.com/1081534 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video-shadow.html [ Pass Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-clearRect-first.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-clearRect-with-clip.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-clip-stack-persistence.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-fill-repaint.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-drawImage-video.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-incremental-repaint.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-path-context-fill.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-state-persistence-no-dirty.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-transform-skewed.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-unbalanced-save.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Pass Failure Timeout ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/color-space/transferFromImageBitmap.html [ Pass Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-Bitmaprenderer-TransferToImageBitmapResetsToBlack.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-text-FontFace.html [ Pass Failure ]
 
@@ -705,7 +697,6 @@ crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Fai
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-001.html [ Failure ]
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
-crbug.com/1111128 external/wpt/css/css-flexbox/flexbox-min-height-auto-002b.html [ Failure ]
 crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-container-crash.html [ Crash Pass ]
 
 # These require css-align-3 positional keywords that Blink doesn't yet support for flexbox.
@@ -762,9 +753,6 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failur
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 
 # [css-counter-styles-3]
-# Need to implement as custom counter styles:
-# 'ethiopic-halehame', 'ethiopic-halehame-ti-er', 'ethiopic-halehame-ti-et',
-# 'hangul-consonant', 'hangul', 'urdu'
 # Implemented as custom counter styles, but not exactly match existing behavior:
 # - Complex CJK styles should fallback to 'cjk-decimal', not 'decimal'
 # - 'armenian', 'upper-armenian', 'hebrew', and CJK styles should support
@@ -774,11 +762,7 @@ crbug.com/687225 fast/css/content-counter-large-negative-cjk.html [ Failure ]
 crbug.com/687225 fast/lists/css3-counter-styles-054.html [ Failure ]
 crbug.com/687225 fast/lists/css3-counter-styles-059.html [ Failure ]
 crbug.com/687225 fast/lists/css3-counter-styles-064.html [ Failure ]
-crbug.com/687225 fast/lists/decimal-leading-zero.html [ Failure ]
-crbug.com/687225 fast/lists/li-values.html [ Failure ]
-crbug.com/687225 fast/lists/w3-css3-list-styles-alphabetic.html [ Failure ]
 crbug.com/687225 fast/lists/w3-css3-list-styles-fallback-style.html [ Failure ]
-crbug.com/687225 fast/lists/w3-css3-list-styles-numeric.html [ Failure ]
 crbug.com/687225 fast/lists/w3-list-styles.html [ Failure ]
 
 # [css-overflow]
@@ -1212,8 +1196,8 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-ma
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access-persistent/external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access-persistent/external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
 
 # ====== Style team owned tests from here ======
 
@@ -1281,6 +1265,10 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 # enabled.
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Failure ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
+
+# CSS Scrollbars
+crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
+crbug.com/891944 external/wpt/css/css-scrollbars/transparent-on-root.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 
@@ -2447,8 +2435,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-scrollbars/transparent-on-root.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-percent-width-cell-001.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
 crbug.com/626703 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-2.html [ Failure ]
@@ -2770,8 +2756,6 @@ crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessib
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-display-none-manual.html [ Skip ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-cyclic-invalid.html [ Pass Failure Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-alphabetic-invalid.html [ Pass Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-011.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-width-height.html [ Crash Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ic-unit-010.html [ Failure ]
@@ -2844,7 +2828,6 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
-crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-mask.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
@@ -2958,7 +2941,6 @@ crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-attr-mapping.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-05.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
@@ -3315,6 +3297,7 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/replaced-alignment-wi
 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/replaced-alignment-with-aspect-ratio-002.tentative.html [ Pass ]
 
 ### Tests failing with LayoutNGGrid enabled:
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/anonymous-grid-items-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/absolute-positioning-definite-sizes-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/absolute-positioning-grid-container-containing-block-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/absolute-positioning-grid-container-parent-001.html [ Failure ]
@@ -3570,15 +3553,14 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definiti
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.tentative.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-rows-fit-content-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/anonymous-grid-item-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/explicitly-sized-grid-item-as-table.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-auto-margin-and-replaced-item-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-automatic-minimum-intrinsic-aspect-ratio-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-dynamic-min-contribution-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-overflow-auto-max-height-percentage.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-script-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-017.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-minimum-width-orthogonal-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-minimum-width-orthogonal-002.html [ Failure ]
@@ -3590,12 +3572,13 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-vertical-rl-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-002.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-006.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-010.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-vertical-lr-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-vertical-lr-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-vertical-rl-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-paddings-vertical-rl-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-relative-offsets-002.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-009.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-011.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-012.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-021.html [ Failure ]
@@ -3604,8 +3587,10 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-024.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-025.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/percentage-size-indefinite-replaced.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/remove-svg-grid-item-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/whitespace-in-grid-item-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-layout-properties.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/column-property-should-not-apply-on-grid-container-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-box-sizing-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-container-ignores-first-letter-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-container-ignores-first-line-001.html [ Failure ]
@@ -3613,7 +3598,12 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-container-scrollbar-vertical-lr-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-container-scrollbar-vertical-rl-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-container-sizing-constraints-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-first-letter-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-first-letter-002.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-first-letter-003.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-first-line-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-first-line-002.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-first-line-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-floats-no-intrude-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-gutters-and-flex-content-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-gutters-and-tracks-001.html [ Failure ]
@@ -3627,6 +3617,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-inline-margins-no-collapse-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-item-accepts-first-letter-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-item-accepts-first-line-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-margins-no-collapse-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-tracks-stretched-with-different-flex-factors-sum.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/implicit-grids/grid-support-grid-auto-columns-rows-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-001.html [ Failure ]
@@ -3644,6 +3635,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algori
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-as-flex-item-should-not-shrink-to-fit-005.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-as-flex-item-should-not-shrink-to-fit-006.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-as-flex-item-should-not-shrink-to-fit-007.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-as-flex-item-should-not-shrink-to-fit-008.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-automatic-minimum-for-auto-columns-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-container-percentage-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-container-percentage-002.html [ Failure ]
@@ -3672,7 +3664,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed-implicit-track.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed-withcontent.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-container-change-named-grid-recompute-child-positions-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-placement-using-named-grid-lines-008.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/auto-content-resolution-columns.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/flex-and-content-sized-resolution-columns.html [ Failure ]
@@ -3695,16 +3686,13 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-addition
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-addition-track-breadth-update.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-grid-container-percentage-rows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-multiple-minmax-content-resolution.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-named-grid-area-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-named-grid-line-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-negative-indexes.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-negative-integer-explicit-grid-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-negative-position-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-overflow.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-positioning-with-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-removal-auto-placement-update.html [ Failure Crash ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-removal-track-breadth-update.html [ Failure Crash ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-scroll-position.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-sizing-with-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-spanning-resolution.html [ Failure ]
@@ -3744,7 +3732,6 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/mozilla/grid-repea
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/named-grid-areas-dynamic-with-media-query.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/named-grid-line-get-set.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/named-grid-lines-computed-style-implicit-tracks.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/named-grid-lines-with-named-grid-areas-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/negative-growth-share-as-infinity-crash.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/non-grid-columns-rows-get-set.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/percent-intrinsic-track-breadth.html [ Failure ]
@@ -4538,13 +4525,6 @@ crbug.com/933880 http/tests/misc/redirect-to-about-blank.html [ Failure Timeout 
 # Sheriff 2019-02-22
 crbug.com/934636 http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
 crbug.com/934818 http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
-
-# Sheriff 2019-02-25
-crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function-invalid.html [ Failure Pass ]
-crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-additive-invalid.html [ Failure Pass ]
-crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-fixed-invalid.html [ Failure Pass ]
-crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric-invalid.html [ Failure Pass ]
-crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-symbolic-invalid.html [ Failure Pass ]
 
 # Sheriff 2019-02-26
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
@@ -5699,4 +5679,8 @@ crbug.com/1171331 [ Mac ] tables/mozilla_expected_failures/bugs/bug89315.html [ 
 crbug.com/1168785 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Timeout ]
 
 # Sheriff 2021-01-29
-crbug.com/1172437 [ Win10 ] svg/hixie/perf/004.xml [ Timeout Pass ]
+crbug.com/1172437 svg/hixie/perf/004.xml [ Timeout Pass ]
+
+crbug.com/1173137 external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Failure ]
+crbug.com/1173137 external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Failure ]
+crbug.com/1173137 external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Failure ]

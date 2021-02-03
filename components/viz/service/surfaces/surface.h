@@ -28,6 +28,7 @@
 #include "components/viz/service/surfaces/pending_copy_output_request.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_dependency_deadline.h"
+#include "components/viz/service/surfaces/surface_saved_frame_storage.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -161,9 +162,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Surface.
   void TakeCopyOutputRequestsFromClient();
 
-  // Returns whether there is a CopyOutputRequest inside the active frame or at
-  // the client level.
-  bool HasCopyOutputRequests();
+  // Returns whether there is a CopyOutputRequest inside the active frame.
+  bool HasCopyOutputRequests() const;
 
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasActiveFrame() returns true before calling this
@@ -247,6 +247,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   void ActivateIfDeadlinePassed();
 
   std::unique_ptr<DelegatedInkMetadata> TakeDelegatedInkMetadata();
+
+  SurfaceSavedFrameStorage* GetSurfaceSavedFrameStorage();
 
   base::WeakPtr<Surface> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
@@ -361,6 +363,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   bool is_latency_info_taken_ = false;
 
   SurfaceAllocationGroup* const allocation_group_;
+
+  SurfaceSavedFrameStorage surface_saved_frame_storage_{this};
 
   base::WeakPtrFactory<Surface> weak_factory_{this};
 

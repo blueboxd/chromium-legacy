@@ -320,13 +320,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=89',
     ],
-    'identifier': 'Implementation Library Tests For 89.0.4389.30',
+    'identifier': 'Implementation Library Tests For 89.0.4389.40',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.30',
+          'revision': 'version:89.0.4389.40',
         }
       ],
     },
@@ -344,13 +344,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=88',
     ],
-    'identifier': 'Implementation Library Tests For 88.0.4324.147',
+    'identifier': 'Implementation Library Tests For 88.0.4324.149',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.147',
+          'revision': 'version:88.0.4324.149',
         }
       ],
     },
@@ -374,7 +374,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M87',
-          'revision': 'version:87.0.4280.152',
+          'revision': 'version:87.0.4280.152-pt2',
         }
       ],
     },
@@ -392,13 +392,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=89',
     ],
-    'identifier': 'Implementation Library Tests For 89.0.4389.30',
+    'identifier': 'Implementation Library Tests For 89.0.4389.40',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.30',
+          'revision': 'version:89.0.4389.40',
         }
       ],
     },
@@ -416,13 +416,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=88',
     ],
-    'identifier': 'Implementation Library Tests For 88.0.4324.147',
+    'identifier': 'Implementation Library Tests For 88.0.4324.149',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.147',
+          'revision': 'version:88.0.4324.149',
         }
       ],
     },
@@ -446,7 +446,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M87',
-          'revision': 'version:87.0.4280.152',
+          'revision': 'version:87.0.4280.152-pt2',
         }
       ],
     },
@@ -464,13 +464,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=89',
     ],
-    'identifier': 'Client Library Tests For 89.0.4389.30',
+    'identifier': 'Client Library Tests For 89.0.4389.40',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.30',
+          'revision': 'version:89.0.4389.40',
         }
       ],
     },
@@ -488,13 +488,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=88',
     ],
-    'identifier': 'Client Library Tests For 88.0.4324.147',
+    'identifier': 'Client Library Tests For 88.0.4324.149',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.147',
+          'revision': 'version:88.0.4324.149',
         }
       ],
     },
@@ -518,7 +518,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M87',
-          'revision': 'version:87.0.4280.152',
+          'revision': 'version:87.0.4280.152-pt2',
         }
       ],
     },

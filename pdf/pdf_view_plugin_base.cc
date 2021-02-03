@@ -57,6 +57,10 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
       base::MakeFixedFlatMap<base::StringPiece, MessageHandler>({
           {"displayAnnotations",
            &PdfViewPluginBase::HandleDisplayAnnotationsMessage},
+          {"rotateClockwise", &PdfViewPluginBase::HandleRotateClockwiseMessage},
+          {"rotateCounterclockwise",
+           &PdfViewPluginBase::HandleRotateCounterclockwiseMessage},
+          {"selectAll", &PdfViewPluginBase::HandleSelectAllMessage},
           {"setBackgroundColor",
            &PdfViewPluginBase::HandleSetBackgroundColorMessage},
           {"setReadOnly", &PdfViewPluginBase::HandleSetReadOnlyMessage},
@@ -109,12 +113,15 @@ void PdfViewPluginBase::LoadUrl(const std::string& url, bool is_print_preview) {
                      GetWeakPtr(), std::move(loader)));
 }
 
-void PdfViewPluginBase::InvalidateAfterPaintDone(
-    int32_t /*unused_but_required*/) {
-  DCHECK(!in_paint_);
-  for (const gfx::Rect& rect : deferred_invalidates_)
-    Invalidate(rect);
-  deferred_invalidates_.clear();
+void PdfViewPluginBase::InvalidateAfterPaintDone() {
+  if (deferred_invalidates_.empty())
+    return;
+
+  ScheduleTaskOnMainThread(
+      base::TimeDelta(),
+      base::BindOnce(&PdfViewPluginBase::ClearDeferredInvalidates,
+                     GetWeakPtr()),
+      0);
 }
 
 Image PdfViewPluginBase::GetPluginImageData() const {
@@ -199,6 +206,20 @@ void PdfViewPluginBase::HandleDisplayAnnotationsMessage(
   engine()->DisplayAnnotations(message.FindBoolKey("display").value());
 }
 
+void PdfViewPluginBase::HandleRotateClockwiseMessage(
+    const base::Value& /*message*/) {
+  engine()->RotateClockwise();
+}
+
+void PdfViewPluginBase::HandleRotateCounterclockwiseMessage(
+    const base::Value& /*message*/) {
+  engine()->RotateCounterclockwise();
+}
+
+void PdfViewPluginBase::HandleSelectAllMessage(const base::Value& /*message*/) {
+  engine()->SelectAll();
+}
+
 void PdfViewPluginBase::HandleSetBackgroundColorMessage(
     const base::Value& message) {
   const SkColor background_color =
@@ -213,6 +234,14 @@ void PdfViewPluginBase::HandleSetReadOnlyMessage(const base::Value& message) {
 
 void PdfViewPluginBase::HandleSetTwoUpViewMessage(const base::Value& message) {
   engine()->SetTwoUpView(message.FindBoolKey("enableTwoUpView").value());
+}
+
+void PdfViewPluginBase::ClearDeferredInvalidates(
+    int32_t /*unused_but_required*/) {
+  DCHECK(!in_paint_);
+  for (const gfx::Rect& rect : deferred_invalidates_)
+    Invalidate(rect);
+  deferred_invalidates_.clear();
 }
 
 }  // namespace chrome_pdf

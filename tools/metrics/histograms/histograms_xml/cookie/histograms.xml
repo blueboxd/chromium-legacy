@@ -23,6 +23,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cookie.AbbreviatedExpirationYear" units="year"
     expires_after="2021-06-30">
+  <obsolete>
+    Removed Jan 2021: no longer needed since crbug.com/907610 is now fixed.
+  </obsolete>
   <owner>chlily@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -115,10 +118,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cookie.Count" units="units" expires_after="2021-07-27">
-  <owner>battre@chromium.org</owner>
+  <obsolete>
+    Removed Feb 2021 in favor of Cookie.Count2, which has a wider range.
+  </obsolete>
+  <owner>chlily@chromium.org</owner>
+  <owner>morlovich@chromium.org</owner>
   <summary>
     Number of cookies in the store (recorded every 10 minutes of active browsing
     time)
+  </summary>
+</histogram>
+
+<histogram name="Cookie.Count2" units="units" expires_after="2021-07-27">
+  <owner>chlily@chromium.org</owner>
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    Number of cookies in the store (recorded every 10 minutes of active browsing
+    time), with a wider range than Cookie.Count.
   </summary>
 </histogram>
 
@@ -215,7 +231,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cookie.NumDomainPurgedKeys" units="keys"
-    expires_after="2021-05-29">
+    expires_after="2021-08-01">
   <owner>chlily@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <summary>
@@ -228,7 +244,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Cookie.NumKeys" units="keys" expires_after="2021-05-29">
+<histogram name="Cookie.NumKeys" units="keys" expires_after="2021-08-01">
   <owner>chlily@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <summary>

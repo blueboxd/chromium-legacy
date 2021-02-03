@@ -136,9 +136,8 @@ std::vector<std::string> GetLogLines(const std::string& log) {
 
 std::vector<std::string> GetLogLineContents(const std::string& log_line) {
   const std::vector<std::string> result = base::SplitString(
-      log_line, " - ", base::WhitespaceHandling::TRIM_WHITESPACE,
+      log_line, "-", base::WhitespaceHandling::TRIM_WHITESPACE,
       base::SplitResult::SPLIT_WANT_NONEMPTY);
-  DCHECK_EQ(3u, result.size());
   return result;
 }
 
@@ -694,6 +693,61 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
   ASSERT_EQ(3u, log_line_contents.size());
   EXPECT_EQ("RoutineType::kCpuStress", log_line_contents[1]);
   EXPECT_EQ("StandardRoutineResult::kTestPassed", log_line_contents[2]);
+
+  // Start another routine and cancel it and verify the cancellation appears in
+  // logs. Use a unique_ptr for the RoutineRunner so we can easily destroy it.
+  auto routine_runner_2 = std::make_unique<FakeRoutineRunner>();
+  system_routine_controller_->RunRoutine(
+      mojom::RoutineType::kCpuPrime,
+      routine_runner_2->receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  SetNonInteractiveRoutineUpdateResponse(
+      /*percent_complete=*/0, healthd::DiagnosticRoutineStatusEnum::kCancelled,
+      mojo::ScopedHandle());
+
+  // Close the routine_runner
+  routine_runner_2.reset();
+  base::RunLoop().RunUntilIdle();
+
+  log_lines = GetLogLines(log.GetContents());
+  EXPECT_EQ(4u, log_lines.size());
+
+  log_line_contents = GetLogLineContents(log_lines[3]);
+  ASSERT_EQ(2u, log_line_contents.size());
+  EXPECT_EQ("Inflight Routine Cancelled", log_line_contents[1]);
+}
+
+TEST_F(SystemRoutineControllerTest, RoutineResultEmitted) {
+  // Run the CpuStress routine.
+  SetRunRoutineResponse(/*id=*/1,
+                        healthd::DiagnosticRoutineStatusEnum::kRunning);
+
+  base::HistogramTester histogram_tester;
+
+  FakeRoutineRunner routine_runner;
+  system_routine_controller_->RunRoutine(
+      mojom::RoutineType::kCpuStress,
+      routine_runner.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  // Assert that the first routine is not complete.
+  EXPECT_TRUE(routine_runner.result.is_null());
+
+  // Update the status on cros_healthd.
+  SetNonInteractiveRoutineUpdateResponse(
+      /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kPassed,
+      mojo::ScopedHandle());
+
+  // After the update interval, the update is fetched and processed.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  EXPECT_FALSE(routine_runner.result.is_null());
+  VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
+                      mojom::StandardRoutineResult::kTestPassed);
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.DiagnosticsUi.CpuStressResult",
+                                      mojom::StandardRoutineResult::kTestPassed,
+                                      /*expected_count=*/1);
 }
 
 }  // namespace diagnostics

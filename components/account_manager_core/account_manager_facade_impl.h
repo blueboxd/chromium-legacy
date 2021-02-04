@@ -16,10 +16,12 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+namespace account_manager {
+
 // ChromeOS-specific implementation of |AccountManagerFacade| that talks to
 // |ash::AccountManager| over Mojo. Used by both Lacros and Ash.
 class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
-    : public account_manager::AccountManagerFacade,
+    : public AccountManagerFacade,
       public crosapi::mojom::AccountManagerObserver {
  public:
   // Constructs `AccountManagerFacadeImpl`.
@@ -40,8 +42,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void GetAccounts(
-      base::OnceCallback<void(const std::vector<account_manager::Account>&)>
-          callback) override;
+      base::OnceCallback<void(const std::vector<Account>&)> callback) override;
   void ShowAddAccountDialog(
       const AccountAdditionSource& source,
       base::OnceCallback<void(const account_manager::AccountAdditionResult&
@@ -57,7 +58,12 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,
                            ShowAddAccountDialogCallsMojo);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,
+                           ShowAddAccountDialogUMA);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,
                            ShowReauthAccountDialogCallsMojo);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,
+                           ShowReauthAccountDialogUMA);
+  static std::string GetAccountAdditionResultStatusHistogramNameForTesting();
 
   void OnReceiverReceived(
       mojo::PendingReceiver<AccountManagerObserver> receiver);
@@ -67,12 +73,15 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
       base::OnceCallback<
           void(const account_manager::AccountAdditionResult& result)> callback,
       crosapi::mojom::AccountAdditionResultPtr mojo_result);
+  void FinishAddAccount(
+      base::OnceCallback<
+          void(const account_manager::AccountAdditionResult& result)> callback,
+      const account_manager::AccountAdditionResult& result);
 
   void FlushMojoForTesting();
 
   void GetAccountsInternal(
-      base::OnceCallback<void(const std::vector<account_manager::Account>&)>
-          callback);
+      base::OnceCallback<void(const std::vector<Account>&)> callback);
 
   // Mojo API version on the remote (Ash) side.
   const uint32_t remote_version_;
@@ -104,5 +113,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
 
   base::WeakPtrFactory<AccountManagerFacadeImpl> weak_factory_{this};
 };
+
+}  // namespace account_manager
 
 #endif  // COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_MANAGER_FACADE_IMPL_H_

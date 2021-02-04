@@ -15,7 +15,13 @@
 #include "components/account_manager_core/account_addition_result.h"
 #include "components/account_manager_core/account_manager_util.h"
 
+namespace account_manager {
+
 namespace {
+
+// UMA histogram name.
+const char kAccountAdditionResultStatus[] =
+    "AccountManager.AccountAdditionResultStatus";
 
 // Interface versions in //chromeos/crosapi/mojom/account_manager.mojom:
 // MinVersion of crosapi::mojom::AccountManager::GetAccounts
@@ -25,13 +31,11 @@ constexpr uint32_t kMinVersionWithGetAccounts = 2;
 constexpr uint32_t kMinVersionWithShowAddAccountDialog = 3;
 
 void UnmarshalAccounts(
-    base::OnceCallback<void(const std::vector<account_manager::Account>&)>
-        callback,
+    base::OnceCallback<void(const std::vector<Account>&)> callback,
     std::vector<crosapi::mojom::AccountPtr> mojo_accounts) {
-  std::vector<account_manager::Account> accounts;
+  std::vector<Account> accounts;
   for (const auto& mojo_account : mojo_accounts) {
-    base::Optional<account_manager::Account> maybe_account =
-        account_manager::FromMojoAccount(mojo_account);
+    base::Optional<Account> maybe_account = FromMojoAccount(mojo_account);
     if (!maybe_account) {
       // Skip accounts we couldn't unmarshal. No logging, as it would produce
       // a lot of noise.
@@ -81,8 +85,7 @@ void AccountManagerFacadeImpl::RemoveObserver(Observer* observer) {
 }
 
 void AccountManagerFacadeImpl::GetAccounts(
-    base::OnceCallback<void(const std::vector<account_manager::Account>&)>
-        callback) {
+    base::OnceCallback<void(const std::vector<Account>&)> callback) {
   if (!account_manager_remote_ ||
       remote_version_ < kMinVersionWithGetAccounts) {
     // Remote side doesn't support GetAccounts, return an empty list.
@@ -102,8 +105,10 @@ void AccountManagerFacadeImpl::ShowAddAccountDialog(
     LOG(WARNING) << "Found remote at: " << remote_version_
                  << ", expected: " << kMinVersionWithShowAddAccountDialog
                  << " for ShowAddAccountDialog.";
-    std::move(callback).Run(account_manager::AccountAdditionResult(
-        account_manager::AccountAdditionResult::Status::kUnexpectedResponse));
+    FinishAddAccount(std::move(callback),
+                     account_manager::AccountAdditionResult(
+                         account_manager::AccountAdditionResult::Status::
+                             kUnexpectedResponse));
     return;
   }
 
@@ -121,11 +126,18 @@ void AccountManagerFacadeImpl::ShowReauthAccountDialog(
     LOG(WARNING) << "Found remote at: " << remote_version_
                  << ", expected: " << kMinVersionWithShowAddAccountDialog
                  << " for ShowReauthAccountDialog.";
+    return;
   }
 
   base::UmaHistogramEnumeration(kAccountAdditionSource, source);
 
   account_manager_remote_->ShowReauthAccountDialog(email, base::DoNothing());
+}
+
+// static
+std::string AccountManagerFacadeImpl::
+    GetAccountAdditionResultStatusHistogramNameForTesting() {
+  return kAccountAdditionResultStatus;
 }
 
 void AccountManagerFacadeImpl::OnReceiverReceived(
@@ -153,11 +165,21 @@ void AccountManagerFacadeImpl::OnShowAddAccountDialogFinished(
   base::Optional<account_manager::AccountAdditionResult> result =
       account_manager::FromMojoAccountAdditionResult(mojo_result);
   if (!result.has_value()) {
-    std::move(callback).Run(account_manager::AccountAdditionResult(
-        account_manager::AccountAdditionResult::Status::kUnexpectedResponse));
+    FinishAddAccount(std::move(callback),
+                     account_manager::AccountAdditionResult(
+                         account_manager::AccountAdditionResult::Status::
+                             kUnexpectedResponse));
     return;
   }
-  std::move(callback).Run(result.value());
+  FinishAddAccount(std::move(callback), result.value());
+}
+
+void AccountManagerFacadeImpl::FinishAddAccount(
+    base::OnceCallback<
+        void(const account_manager::AccountAdditionResult& result)> callback,
+    const account_manager::AccountAdditionResult& result) {
+  base::UmaHistogramEnumeration(kAccountAdditionResultStatus, result.status);
+  std::move(callback).Run(result);
 }
 
 void AccountManagerFacadeImpl::OnTokenUpserted(
@@ -168,8 +190,7 @@ void AccountManagerFacadeImpl::OnTokenUpserted(
   // aren't confused by the call order.
   FinishInitSequenceIfNotAlreadyFinished();
 
-  base::Optional<account_manager::Account> maybe_account =
-      account_manager::FromMojoAccount(account);
+  base::Optional<Account> maybe_account = FromMojoAccount(account);
   if (!maybe_account) {
     LOG(WARNING) << "Can't unmarshal account of type: "
                  << account->key->account_type;
@@ -182,8 +203,7 @@ void AccountManagerFacadeImpl::OnTokenUpserted(
 
 void AccountManagerFacadeImpl::OnAccountRemoved(
     crosapi::mojom::AccountPtr account) {
-  base::Optional<account_manager::Account> maybe_account =
-      account_manager::FromMojoAccount(account);
+  base::Optional<Account> maybe_account = FromMojoAccount(account);
   if (!maybe_account) {
     LOG(WARNING) << "Can't unmarshal account of type: "
                  << account->key->account_type;
@@ -195,8 +215,7 @@ void AccountManagerFacadeImpl::OnAccountRemoved(
 }
 
 void AccountManagerFacadeImpl::GetAccountsInternal(
-    base::OnceCallback<void(const std::vector<account_manager::Account>&)>
-        callback) {
+    base::OnceCallback<void(const std::vector<Account>&)> callback) {
   account_manager_remote_->GetAccounts(
       base::BindOnce(&UnmarshalAccounts, std::move(callback)));
 }
@@ -223,3 +242,5 @@ void AccountManagerFacadeImpl::RunAfterInitializationSequence(
 void AccountManagerFacadeImpl::FlushMojoForTesting() {
   account_manager_remote_.FlushForTesting();
 }
+
+}  // namespace account_manager

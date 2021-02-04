@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
@@ -71,10 +70,6 @@ class ChromeJsErrorReportProcessorTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  // Helper for TEST_F(ChromeJsErrorReportProcessorTest, AllFields) and
-  // TEST_F(ChromeJsErrorReportProcessorTest, WorksWithoutMemfdCreate).
-  void TestAllFields();
-
  protected:
   base::SimpleTestClock test_clock_;
   content::BrowserTaskEnvironment task_environment_;
@@ -127,13 +122,9 @@ TEST_F(ChromeJsErrorReportProcessorTest, Basic) {
   EXPECT_THAT(actual_report->query,
               HasSubstr("full_url=https%3A%2F%2Fwww.chromium.org%2FHome"));
   EXPECT_THAT(actual_report->query, HasSubstr("url=%2FHome"));
-  EXPECT_THAT(actual_report->query, HasSubstr("browser=Chrome"));
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // This is from MockChromeJsErrorReportProcessor::GetOsVersion()
   EXPECT_THAT(actual_report->query, HasSubstr("os_version=7.20.1"));
-#endif
-  EXPECT_THAT(actual_report->query, Not(HasSubstr("source_system=")));
+  EXPECT_THAT(actual_report->query, HasSubstr("browser=Chrome"));
   // These are from MockCrashEndpoint::Client::GetProductNameAndVersion, which
   // is only defined for non-MAC POSIX systems. TODO(https://crbug.com/1121816):
   // Get this info for non-POSIX platforms.
@@ -146,7 +137,7 @@ TEST_F(ChromeJsErrorReportProcessorTest, Basic) {
   EXPECT_EQ(actual_report->content, "");
 }
 
-void ChromeJsErrorReportProcessorTest::TestAllFields() {
+TEST_F(ChromeJsErrorReportProcessorTest, AllFields) {
   auto report = MakeErrorReport("Hello World");
   report.url = "https://www.chromium.org/Home";
   report.product = "Unit test";
@@ -156,7 +147,6 @@ void ChromeJsErrorReportProcessorTest::TestAllFields() {
   report.stack_trace = "bad_func(1, 2)\nonclick()\n";
   report.renderer_process_uptime_ms = 1234;
   report.window_type = WindowType::kSystemWebApp;
-  report.source_system = JavaScriptErrorReport::SourceSystem::kWebUIObserver;
 
   SendErrorReport(std::move(report));
   EXPECT_TRUE(finish_callback_was_called_);
@@ -176,6 +166,8 @@ void ChromeJsErrorReportProcessorTest::TestAllFields() {
   EXPECT_THAT(actual_report->query,
               HasSubstr("full_url=https%3A%2F%2Fwww.chromium.org%2FHome"));
   EXPECT_THAT(actual_report->query, HasSubstr("url=%2FHome"));
+  // This is from MockChromeJsErrorReportProcessor::GetOsVersion()
+  EXPECT_THAT(actual_report->query, HasSubstr("os_version=7.20.1"));
   EXPECT_THAT(actual_report->query, HasSubstr("browser=Chrome"));
   // product is double-escaped. The first time, it transforms to Unit%20test,
   // then the % is turned into %25.
@@ -183,12 +175,6 @@ void ChromeJsErrorReportProcessorTest::TestAllFields() {
   EXPECT_THAT(actual_report->query, HasSubstr("ver=6.2.3.4"));
   EXPECT_THAT(actual_report->query, HasSubstr("line=83"));
   EXPECT_THAT(actual_report->query, HasSubstr("column=14"));
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-  // This is from MockChromeJsErrorReportProcessor::GetOsVersion()
-  EXPECT_THAT(actual_report->query, HasSubstr("os_version=7.20.1"));
-#endif
-  EXPECT_THAT(actual_report->query, HasSubstr("source_system=webui_observer"));
   // These are from MockCrashEndpoint::Client::GetProductNameAndVersion, which
   // is only defined for non-MAC POSIX systems. TODO(https://crbug.com/1121816):
   // Get this info for non-POSIX platforms.
@@ -199,13 +185,6 @@ void ChromeJsErrorReportProcessorTest::TestAllFields() {
   EXPECT_EQ(actual_report->content, "bad_func(1, 2)\nonclick()\n");
 }
 
-TEST_F(ChromeJsErrorReportProcessorTest, AllFields) {
-  TestAllFields();
-}
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-// On Chrome OS, consent checks are handled in the crash_reporter, not in the
-// browser.
 TEST_F(ChromeJsErrorReportProcessorTest, NoConsent) {
   endpoint_->set_consented(false);
   auto report = MakeErrorReport("Hello World");
@@ -216,7 +195,6 @@ TEST_F(ChromeJsErrorReportProcessorTest, NoConsent) {
 
   EXPECT_FALSE(endpoint_->last_report());
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 TEST_F(ChromeJsErrorReportProcessorTest, StackTraceWithErrorMessage) {
   auto report = MakeErrorReport("Hello World");
@@ -530,10 +508,3 @@ TEST_F(ChromeJsErrorReportProcessorTest, UpdatesUploadsLog) {
                      << UploadInfoVectorToString(uploads);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-TEST_F(ChromeJsErrorReportProcessorTest, WorksWithoutMemfdCreate) {
-  processor_->set_force_non_memfd_for_test();
-  TestAllFields();
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

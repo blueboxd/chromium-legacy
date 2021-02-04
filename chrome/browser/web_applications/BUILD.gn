@@ -32,6 +32,8 @@ source_set("web_applications") {
     "pending_app_manager_impl.h",
     "pending_app_registration_task.cc",
     "pending_app_registration_task.h",
+    "policy/web_app_policy_manager.cc",
+    "policy/web_app_policy_manager.h",
     "system_web_app_manager.cc",
     "system_web_app_manager.h",
     "web_app.cc",

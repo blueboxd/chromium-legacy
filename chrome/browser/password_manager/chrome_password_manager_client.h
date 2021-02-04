@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -300,7 +299,6 @@ class ChromePasswordManagerClient
   void OnPaste() override;
 #endif
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
@@ -419,11 +417,6 @@ class ChromePasswordManagerClient
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.
   password_manager::PasswordManagerClientHelper helper_;
-
-  // This is added as a workaround for an issue inside OnPaste(). Please don't
-  // just use the WeakPtrs returned from this factory blindly, but make a
-  // informed decision after carefully considering the involved lifetimes.
-  base::WeakPtrFactory<ChromePasswordManagerClient> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

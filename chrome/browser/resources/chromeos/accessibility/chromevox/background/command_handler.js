@@ -22,8 +22,6 @@ goog.require('ChromeVoxBackground');
 goog.require('ChromeVoxKbHandler');
 goog.require('ChromeVoxPrefs');
 goog.require('CommandStore');
-goog.require('UserAnnotationHandler');
-goog.require('NodeIdentifier');
 
 goog.scope(function() {
 const AutomationEvent = chrome.automation.AutomationEvent;
@@ -244,10 +242,6 @@ CommandHandler.onCommand = function(command) {
       return false;
     case 'help':
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
-      return false;
-    case 'showNextUpdatePage':
-      (new PanelCommand(PanelCommandType.UPDATE_NOTES)).send();
-      localStorage['notifications_update_notification_shown'] = true;
       return false;
     case 'toggleDarkScreen':
       const oldState = sessionStorage.getItem('darkScreen');
@@ -1068,17 +1062,6 @@ CommandHandler.onCommand = function(command) {
                     Msgs.getMsg('no_url_found'))
           .withQueueMode(QueueMode.CATEGORY_FLUSH)
           .go();
-    }
-      return false;
-    case 'toggleAnnotationsWidget': {
-      if (!UserAnnotationHandler.instance.enabled) {
-        return false;
-      }
-      const node = ChromeVoxState.instance.currentRange.start.node;
-      const identifier = NodeIdentifier.constructFromNode(node);
-      (new PanelCommand(
-           PanelCommandType.OPEN_ANNOTATIONS_UI, JSON.stringify(identifier)))
-          .send();
     }
       return false;
     case 'logLanguageInformationForCurrentNode': {

@@ -513,10 +513,6 @@ KeyMap.BINDINGS_ = [
     'sequence': {'cvoxModifier': true, 'keys': {'keyCode': [79, 84]}}
   },
   {
-    'command': 'showNextUpdatePage',
-    'sequence': {'cvoxModifier': true, 'keys': {'keyCode': [79, 78]}}
-  },
-  {
     'command': 'toggleEarcons',
     'sequence': {'cvoxModifier': true, 'keys': {'keyCode': [65, 69]}}
   },
@@ -757,10 +753,6 @@ KeyMap.BINDINGS_ = [
       'cvoxModifier': true,
       'keys': {'keyCode': [220], 'ctrlKey': [true], 'shiftKey': [true]}
     }
-  },
-  {
-    'command': 'toggleAnnotationsWidget',
-    'sequence': {'cvoxModifier': true, 'keys': {'keyCode': [65, 79]}}
   },
   {
     'command': 'logLanguageInformationForCurrentNode',

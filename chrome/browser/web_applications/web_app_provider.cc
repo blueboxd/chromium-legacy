@@ -12,7 +12,6 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
@@ -266,8 +266,11 @@ void WebAppProvider::ConnectSubsystems() {
   external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(
       pending_app_manager_.get(), registrar_.get(), registry_controller_.get(),
-      ui_manager_.get(), os_integration_manager_.get());
-  web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
+      ui_manager_.get(), os_integration_manager_.get(),
+      web_app_policy_manager_.get());
+  web_app_policy_manager_->SetSubsystems(
+      pending_app_manager_.get(), registrar_.get(), registry_controller_.get(),
+      system_web_app_manager_.get());
   ui_manager_->SetSubsystems(registry_controller_.get());
   os_integration_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                          icon_manager_.get());

@@ -86,7 +86,7 @@ def main():
     infile = None
     for arg in gperf_args:
         if os.path.isfile(arg):
-            assert infile is None, 'duplicate inputs? %s, %s' % (infile, arg)
+            #assert infile is None, 'duplicate inputs? %s, %s' % (infile, arg)
             infile = arg
     assert infile is not None, 'no input found'
 

@@ -393,7 +393,7 @@ struct BASE_EXPORT PartitionRoot {
     // the granularity is super page size.
     size_t alignment = PageAllocationGranularity();
 #if defined(PA_HAS_64_BITS_POINTERS)
-    if (UsesGigaCage()) {
+    if (features::IsPartitionAllocGigaCageEnabled()) {
       alignment = kSuperPageSize;
     }
 #endif
@@ -803,7 +803,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
 
     *usable_size = slot_span->GetUsableSize(this);
   }
-
+  PA_DCHECK(slot_span->GetUtilizedSlotSize() <= slot_span->bucket->slot_size);
   return slot_start;
 }
 
@@ -977,7 +977,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeWithThreadCache(
               slot_span->bucket <= &this->sentinel_bucket);
     size_t bucket_index = slot_span->bucket - this->buckets;
     auto* thread_cache = internal::ThreadCache::Get();
-    if (LIKELY(thread_cache &&
+    if (LIKELY(internal::ThreadCache::IsValid(thread_cache) &&
                thread_cache->MaybePutInCache(slot_start, bucket_index))) {
       return;
     }
@@ -1164,8 +1164,9 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
 
   uint16_t bucket_index = SizeToBucketIndex(raw_size);
   size_t usable_size;
-  bool is_already_zeroed;
+  bool is_already_zeroed = false;
   void* slot_start = nullptr;
+  size_t slot_size;
 
   // !thread_safe => !with_thread_cache, but adding the condition allows the
   // compiler to statically remove this branch for the thread-unsafe variant.
@@ -1174,32 +1175,42 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
   // the thread cache.
   if (thread_safe && LIKELY(with_thread_cache)) {
     auto* tcache = internal::ThreadCache::Get();
-    if (UNLIKELY(!tcache)) {
-      // There is no per-thread ThreadCache allocated here yet, and this
-      // partition has a thread cache, allocate a new one.
-      //
-      // The thread cache allocation itself will not reenter here, as it
-      // sidesteps the thread cache by using placement new and
-      // |RawAlloc()|. However, internally to libc, allocations may happen to
-      // create a new TLS variable. This would end up here again, which is not
-      // what we want (and likely is not supported by libc).
-      //
-      // To avoid this sort of reentrancy, temporarily set this partition as not
-      // supporting a thread cache. so that reentering allocations will not end
-      // up allocating a thread cache. This value may be seen by other threads
-      // as well, in which case a few allocations will not use the thread
-      // cache. As it is purely an optimization, this is not a correctness
-      // issue.
-      //
-      // Note that there is no deadlock or data inconsistency concern, since we
-      // do not hold the lock, and has such haven't touched any internal data.
-      with_thread_cache = false;
-      tcache = internal::ThreadCache::Create(this);
-      with_thread_cache = true;
+    if (UNLIKELY(!internal::ThreadCache::IsValid(tcache))) {
+      if (internal::ThreadCache::IsTombstone(tcache)) {
+        // Thread is being terminated, don't try to use the thread cache, and
+        // don't try to resurrect it.
+      } else {
+        // There is no per-thread ThreadCache allocated here yet, and this
+        // partition has a thread cache, allocate a new one.
+        //
+        // The thread cache allocation itself will not reenter here, as it
+        // sidesteps the thread cache by using placement new and
+        // |RawAlloc()|. However, internally to libc, allocations may happen to
+        // create a new TLS variable. This would end up here again, which is not
+        // what we want (and likely is not supported by libc).
+        //
+        // To avoid this sort of reentrancy, temporarily set this partition as
+        // not supporting a thread cache. so that reentering allocations will
+        // not end up allocating a thread cache. This value may be seen by other
+        // threads as well, in which case a few allocations will not use the
+        // thread cache. As it is purely an optimization, this is not a
+        // correctness issue.
+        //
+        // Note that there is no deadlock or data inconsistency concern, since
+        // we do not hold the lock, and has such haven't touched any internal
+        // data.
+        with_thread_cache = false;
+        tcache = internal::ThreadCache::Create(this);
+        with_thread_cache = true;
+
+        // Cache is created empty, but at least this will trigger batch fill,
+        // which may be useful, and we are already in a slow path anyway (first
+        // small allocation of this thread).
+        slot_start = tcache->GetFromCache(bucket_index, &slot_size);
+      }
+    } else {
+      slot_start = tcache->GetFromCache(bucket_index, &slot_size);
     }
-    size_t slot_size;
-    slot_start = tcache->GetFromCache(bucket_index, &slot_size);
-    is_already_zeroed = false;
 
     // LIKELY: median hit rate in the thread cache is 95%, from metrics.
     if (LIKELY(slot_start)) {
@@ -1263,8 +1274,27 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
   //   to save raw_size, i.e. only for large allocations. For small allocations,
   //   we have no other choice than putting the cookie at the very end of the
   //   slot, thus creating the "empty" space.
+  //
+  // If BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION) is true, Layout inside the
+  // slot:
+  //  |[cookie]|...data...|[empty]|[cookie]|[align]|[refcnt]|[unused]|
+  //           <---(a)---->
+  //           <-------(b)-------->
+  //  <--(c)--->                  <---(c)-->   +   <--(c)--->
+  //  <--(d)-------------->   +   <---(d)-->   +   <--(d)--->
+  //  <---------------------(e)----------------------------->
+  //  <-------------------------(f)---------------------------------->
+  //
+  // [refcnt] is put just after the object instead of the end of the slot. This
+  // is important to keep the system pages at the end of the slot empty and thus
+  // decommittable.
+  //
+  // - The size is larger than or equal to utilized_slot_size => the situation
+  // is the same when BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION) is not set.
+  // - refcnt needs to be aligned with alignof(refcnt).
 
-  // The value given to the application is just after the ref-count and cookie.
+  // The value given to the application is just after the ref-count and cookie,
+  // or the cookie (BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION) is true).
   void* ret = AdjustPointerForExtrasAdd(slot_start);
 
 #if DCHECK_IS_ON()

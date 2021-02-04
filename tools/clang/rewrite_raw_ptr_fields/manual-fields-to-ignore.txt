@@ -120,6 +120,10 @@ courgette::LabelManagerTest_SimpleIndexAssigner_Test::TestBody()::TestCase::expe
 courgette::LabelManagerTest_SimpleIndexAssigner_Test::TestBody()::TestCase::expect_backward
 courgette::LabelManagerTest_SimpleIndexAssigner_Test::TestBody()::TestCase::expect_in
 
+# Populated manually - pointer to address in another process could be confused
+# as a pointer to PA memory
+sandbox::TargetProcess::base_address_ # https://crbug.com/1173374
+
 # Populated manually - uninitialized memory reinterpret_cast to CheckedPtr
 # causing AddRef/Deref mismatch.
 sandbox::(anonymous namespace)::_HEAP_32::Heap
@@ -134,9 +138,10 @@ sandbox::SharedMemIPCServer::call_dispatcher_
 cc::PaintOpWriter::memory_ # https://crbug.com/1169579
 
 # Populated manually - pointer to stale non-PA allocation could be confused as a
-# pointer to PA memory when that address space is reused
+# pointer to PA memory when that address space is reused https://crbug.com/1173851
 base::PersistentMemoryAllocator::mem_base_ # https://crbug.com/1169582
 base::SharedMemoryMapping::memory_ # https://crbug.com/1169581
+mojo::core::PlatformSharedMemoryMapping::base_ # https://crbug.com/1173380
 
 # Populated manually - other compile-time reasons
 iovec::iov_base  # requires adding .get() in another repository, used e.g. in

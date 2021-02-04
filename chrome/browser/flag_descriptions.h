@@ -150,9 +150,6 @@ extern const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[];
 extern const char kAutofillEnableOffersInDownstreamName[];
 extern const char kAutofillEnableOffersInDownstreamDescription[];
 
-extern const char kAutofillEnableStickyPaymentsBubbleName[];
-extern const char kAutofillEnableStickyPaymentsBubbleDescription[];
-
 extern const char kAutofillEnableToolbarStatusChipName[];
 extern const char kAutofillEnableToolbarStatusChipDescription[];
 
@@ -850,6 +847,9 @@ extern const char kMobileIdentityConsistencyVarDescription[];
 extern const char kMobilePwaInstallUseBottomSheetName[];
 extern const char kMobilePwaInstallUseBottomSheetDescription[];
 
+extern const char kMojoLinuxChannelSharedMemName[];
+extern const char kMojoLinuxChannelSharedMemDescription[];
+
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
@@ -1347,6 +1347,9 @@ extern const char kTabGroupsCollapseFreezingDescription[];
 
 extern const char kTabGroupsFeedbackName[];
 extern const char kTabGroupsFeedbackDescription[];
+
+extern const char kTabGroupsNewBadgePromoName[];
+extern const char kTabGroupsNewBadgePromoDescription[];
 
 extern const char kTabHoverCardsName[];
 extern const char kTabHoverCardsDescription[];
@@ -1859,6 +1862,9 @@ extern const char kStrictSiteIsolationDescription[];
 
 extern const char kActionableContentSettingsName[];
 extern const char kActionableContentSettingsDescription[];
+
+extern const char kThemeRefactorAndroidName[];
+extern const char kThemeRefactorAndroidDescription[];
 
 extern const char kToolbarIphAndroidName[];
 extern const char kToolbarIphAndroidDescription[];
@@ -2508,6 +2514,9 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 extern const char kSwitchAccessPointScanningName[];
 extern const char kSwitchAccessPointScanningDescription[];
 
+extern const char kExperimentalAccessibilitySwitchAccessSetupGuideName[];
+extern const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[];
+
 extern const char kMagnifierNewFocusFollowingName[];
 extern const char kMagnifierNewFocusFollowingDescription[];
 
@@ -2786,10 +2795,10 @@ extern const char kWifiSyncAndroidDescription[];
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_WIN)
 extern const char kZeroCopyVideoCaptureName[];
 extern const char kZeroCopyVideoCaptureDescription[];
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_WIN)
 
 // All views-based platforms --------------------------------------------------
 

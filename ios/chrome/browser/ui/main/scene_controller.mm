@@ -618,10 +618,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 //   1- New tab / Navigation startup parameters are specified.
 //   2- Load URL User activity is queud.
 //   3- Move tab user activity is queued.
+//   4- Only incognito mode is available.
 // In these cases if a restore prompt was shown, it may be dismissed immediately
 // and the user will not have a chance to restore the session.
 - (BOOL)shouldShowRestorePrompt {
-  BOOL shouldShow = !self.startupParameters;
+  BOOL shouldShow =
+      !self.startupParameters &&
+      !IsIncognitoModeForced(
+          self.mainInterface.browser->GetBrowserState()->GetPrefs());
   if (shouldShow && base::ios::IsSceneStartupSupported()) {
     if (@available(iOS 13, *)) {
       for (NSUserActivity* activity in self.sceneState.connectionOptions
@@ -1100,14 +1104,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)displayTabSwitcherForcingRegularTabs:(BOOL)forcing {
-  if (!IsThumbStripEnabled()) {
-    // When the thumb strip feature is enabled, |self.tabSwitcherIsActive| could
-    // be YES if the tab switcher button is tapped while the thumb strip is
-    // visible, or it could be NO if tapped while thumb strip is hidden.
-    // Otherwise, when the thumb strip feature is disabled,
-    // |self.tabSwitcherIsActive| should always be NO at this point in code.
-    DCHECK(!self.tabSwitcherIsActive);
-  }
+  // When the thumb strip feature is enabled, |self.tabSwitcherIsActive| could
+  // be YES if the tab switcher button is tapped while the thumb strip is
+  // visible, or it could be NO if tapped while thumb strip is hidden.
+  // Otherwise, when the thumb strip feature is disabled,
+  // |self.tabSwitcherIsActive| should always be NO at this point in code.
+  DCHECK(ShowThumbStripInTraitCollection(
+             self.currentInterface.viewController.traitCollection) ||
+         !self.tabSwitcherIsActive);
   if (!self.isProcessingVoiceSearchCommand) {
     [self.currentInterface.bvc userEnteredTabSwitcher];
 
@@ -1200,6 +1204,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   params.from_chrome = command.fromChrome;
   params.user_initiated = command.userInitiated;
   params.should_focus_omnibox = command.shouldFocusOmnibox;
+  params.inherit_opener = !command.inBackground;
   self.sceneURLLoadingService->LoadUrlInNewTab(params);
 }
 
@@ -1612,7 +1617,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     shouldActivateBrowser:(Browser*)browser
            dismissTabGrid:(BOOL)dismissTabGrid
              focusOmnibox:(BOOL)focusOmnibox {
-  DCHECK(dismissTabGrid || IsThumbStripEnabled());
+  DCHECK(dismissTabGrid ||
+         ShowThumbStripInTraitCollection(
+             self.currentInterface.viewController.traitCollection));
   [self beginActivatingBrowser:browser
             dismissTabSwitcher:dismissTabGrid
                   focusOmnibox:focusOmnibox];
@@ -1640,7 +1647,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                   focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(browser == self.mainInterface.browser ||
          browser == self.incognitoInterface.browser);
-  DCHECK(dismissTabSwitcher || IsThumbStripEnabled());
+  DCHECK(dismissTabSwitcher ||
+         ShowThumbStripInTraitCollection(
+             self.currentInterface.viewController.traitCollection));
 
   self.activatingBrowser = YES;
   ApplicationMode mode = (browser == self.mainInterface.browser)
@@ -2188,9 +2197,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
-                     focusOmnibox:(BOOL)focusOmnibox {
+                     focusOmnibox:(BOOL)focusOmnibox
+                    inheritOpener:(BOOL)inheritOpener {
   [self.currentInterface.bvc openNewTabFromOriginPoint:originPoint
-                                          focusOmnibox:focusOmnibox];
+                                          focusOmnibox:focusOmnibox
+                                         inheritOpener:inheritOpener];
 }
 
 - (Browser*)currentBrowserForURLLoading {
@@ -2569,7 +2580,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                   withURLLoadParams:(const UrlLoadParams&)urlLoadParams {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
-      false);
+      /*in_background=*/false, /*inherit_opener=*/false);
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 

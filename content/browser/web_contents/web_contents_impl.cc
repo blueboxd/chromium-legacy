@@ -49,7 +49,6 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
@@ -4017,7 +4016,8 @@ void WebContentsImpl::RecordAccessibilityEvents(
     auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
     DCHECK(ax_mgr);
     base::ProcessId pid = base::Process::Current().Pid();
-    event_recorder_ = content::AccessibilityEventRecorder::Create(ax_mgr, pid);
+    event_recorder_ =
+        content::AXInspectFactory::CreatePlatformRecorder(ax_mgr, pid);
     event_recorder_->ListenToEvents(*callback);
   } else {
     if (event_recorder_) {
@@ -8568,6 +8568,15 @@ void WebContentsImpl::RenderFrameHostStateChanged(
       base::trace_event::TracedValue::Build(
           {{"old", base::trace_event::ValueToString(old_state)},
            {"new", base::trace_event::ValueToString(new_state)}}));
+  const bool was_in_back_forward_cache =
+      old_state == LifecycleState::kInBackForwardCache;
+  const bool is_in_back_forward_cache =
+      new_state == LifecycleState::kInBackForwardCache;
+  if (was_in_back_forward_cache != is_in_back_forward_cache) {
+    observers_.NotifyObservers(
+        &WebContentsObserver::FrameBackForwardCacheStateChanged,
+        render_frame_host);
+  }
   if (render_frame_host->GetParent())
     return;
 

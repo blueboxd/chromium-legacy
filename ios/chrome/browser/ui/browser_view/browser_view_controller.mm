@@ -1060,7 +1060,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
-                     focusOmnibox:(BOOL)focusOmnibox {
+                     focusOmnibox:(BOOL)focusOmnibox
+                    inheritOpener:(BOOL)inheritOpener {
   NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
   BOOL offTheRecord = self.isOffTheRecord;
   ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
@@ -1104,6 +1105,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
   params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   params.in_incognito = self.isOffTheRecord;
+  params.inherit_opener = inheritOpener;
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
@@ -1465,7 +1467,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // When using the thumb strip, the web content needs to be hidden when the
   // thumb strip is opened.
-  if (IsThumbStripEnabled()) {
+  if (ShowThumbStripInTraitCollection(self.traitCollection)) {
     self.browserViewHiderCoordinator = [[BrowserViewHiderCoordinator alloc]
         initWithBaseViewController:self
                            browser:self.browser];
@@ -1705,7 +1707,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         }
       }];
 
-  if (IsThumbStripEnabled()) {
+  if (ShowThumbStripInTraitCollection(self.traitCollection)) {
     CGFloat baseViewHeight = size.height;
     self.thumbStripPanHandler.baseViewHeight = baseViewHeight;
     // On rotation, reposition the BVC container if positioned at the bottom.
@@ -1913,7 +1915,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)installFakeStatusBar {
-  if (IsThumbStripEnabled() &&
+  if (ShowThumbStripInTraitCollection(self.traitCollection) &&
       !fullscreen::features::ShouldUseSmoothScrolling()) {
     // A fake status bar on the browser view is not necessary when the thumb
     // strip feature is enabled because the view behind the browser view already
@@ -3293,7 +3295,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
       return insertionAgent->InsertWebState(
           loadParams, webState, false, TabInsertion::kPositionAutomatically,
-          (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB));
+          (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB),
+          /*inherit_opener=*/false);
     }
     case WindowOpenDisposition::CURRENT_TAB: {
       webState->GetNavigationManager()->LoadURLWithParams(loadParams);
@@ -3302,7 +3305,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     case WindowOpenDisposition::NEW_POPUP: {
       return insertionAgent->InsertWebState(
           loadParams, webState, true, TabInsertion::kPositionAutomatically,
-          false);
+          /*in_background=*/false, /*inherit_opener=*/false);
     }
     default:
       NOTIMPLEMENTED();
@@ -4404,8 +4407,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     loadParams.transition_type = ui::PAGE_TRANSITION_LINK;
     TabInsertionBrowserAgent* insertionAgent =
         TabInsertionBrowserAgent::FromBrowser(self.browser);
-    insertionAgent->InsertWebState(loadParams, webState, true,
-                                   TabInsertion::kPositionAutomatically, false);
+    insertionAgent->InsertWebState(
+        loadParams, webState, true, TabInsertion::kPositionAutomatically,
+        /*in_background=*/false, /*inherit_opener=*/false);
   };
   [self.currentWebState->GetJSInjectionReceiver()
       executeJavaScript:script
@@ -5025,7 +5029,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   insertionAgent->InsertWebState(
       web_navigation_util::CreateWebLoadParams(
           landingURL, ui::PAGE_TRANSITION_TYPED, nullptr),
-      nil, false, self.browser->GetWebStateList()->count(), false);
+      nil, false, self.browser->GetWebStateList()->count(),
+      /*in_background=*/false, /*inherit_opener=*/false);
 }
 
 #pragma mark - PageInfoPresentation

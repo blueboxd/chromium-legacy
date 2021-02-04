@@ -219,12 +219,12 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
 #include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
 #include "chrome/browser/renderer_context_menu/quick_answers_menu_observer.h"
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using base::UserMetricsAction;
@@ -2506,6 +2506,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_EMOJI: {
+      // The emoji dialog is UI that can interfere with the fullscreen bubble,
+      // so drop fullscreen when it is shown. https://crbug.com/1170584
+      // TODO(avi): Do we need to attach the fullscreen block to the emoji
+      // panel?
+      source_web_contents_->ForSecurityDropFullscreen().RunAndReset();
+
       Browser* browser = GetBrowser();
       if (browser) {
         browser->window()->ShowEmojiPanel();

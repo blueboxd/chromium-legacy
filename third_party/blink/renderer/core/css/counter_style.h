@@ -20,10 +20,16 @@ enum class CounterStyleSystem {
   kAlphabetic,
   kNumeric,
   kAdditive,
+  kHebrew,
   kSimpChineseInformal,
   kSimpChineseFormal,
   kTradChineseInformal,
   kTradChineseFormal,
+  kKoreanHangulFormal,
+  kKoreanHanjaInformal,
+  kKoreanHanjaFormal,
+  kLowerArmenian,
+  kUpperArmenian,
   kUnresolvedExtends,
 };
 

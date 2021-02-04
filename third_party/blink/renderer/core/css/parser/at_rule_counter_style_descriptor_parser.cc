@@ -66,10 +66,16 @@ CSSValue* ConsumeCounterStyleSystem(CSSParserTokenRange& range,
   // algorithms. For example, 'simp-chinese-informal'.
   if (context.Mode() == kUASheetMode) {
     if (CSSValue* ident = css_parsing_utils::ConsumeIdent<
+            CSSValueID::kInternalHebrew,
             CSSValueID::kInternalSimpChineseInformal,
             CSSValueID::kInternalSimpChineseFormal,
             CSSValueID::kInternalTradChineseInformal,
-            CSSValueID::kInternalTradChineseFormal>(range))
+            CSSValueID::kInternalTradChineseFormal,
+            CSSValueID::kInternalKoreanHangulFormal,
+            CSSValueID::kInternalKoreanHanjaInformal,
+            CSSValueID::kInternalKoreanHanjaFormal,
+            CSSValueID::kInternalLowerArmenian,
+            CSSValueID::kInternalUpperArmenian>(range))
       return ident;
   }
 

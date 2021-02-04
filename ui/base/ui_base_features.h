@@ -48,8 +48,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCalculateNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kCalculateNativeWinOcclusionCheckVirtualDesktopUsed;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kElasticOverscrollWin;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputPaneOnScreenKeyboard;
@@ -166,11 +164,8 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kFilterNameOneEuro[];
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSwipeToMoveCursor;
 
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC)
 // Enables UI debugging tools such as shortcuts.
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kUIDebugTools;
-#endif
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSwipeToMoveCursorEnabled();
 

@@ -385,6 +385,11 @@
 #include "components/os_crypt/os_crypt.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#include "chrome/browser/web_applications/components/url_handler_prefs.h"
+#endif
+
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(OS_WIN) || defined(OS_MAC) || \
@@ -530,6 +535,10 @@ const char kAssistantQuickAnswersEnabled[] =
 // Deprecated 01/2021
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 
+const char kDataReductionProxyLastConfigRetrievalTime[] =
+    "data_reduction.last_config_retrieval_time";
+const char kDataReductionProxyConfig[] = "data_reduction.config";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -627,6 +636,9 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kAssistantQuickAnswersEnabled, true);
 
   registry->RegisterStringPref(kGoogleServicesHostedDomain, std::string());
+
+  registry->RegisterInt64Pref(kDataReductionProxyLastConfigRetrievalTime, 0L);
+  registry->RegisterStringPref(kDataReductionProxyConfig, std::string());
 }
 
 }  // namespace
@@ -817,6 +829,11 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ThirdPartyConflictsManager::RegisterLocalStatePrefs(registry);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+  web_app::UrlHandlerPrefs::RegisterLocalStatePrefs(registry);
+#endif
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   RegisterDefaultBrowserPromptPrefs(registry);
@@ -1281,6 +1298,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 01/2021
   profile_prefs->ClearPref(kGoogleServicesHostedDomain);
+  profile_prefs->ClearPref(kDataReductionProxyLastConfigRetrievalTime);
+  profile_prefs->ClearPref(kDataReductionProxyConfig);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

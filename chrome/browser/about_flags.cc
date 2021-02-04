@@ -157,6 +157,7 @@
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "mojo/core/embedder/features.h"
 #include "net/base/features.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/effective_connection_type.h"
@@ -210,10 +211,10 @@
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "chrome/browser/chromeos/crosapi/browser_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/arc/arc_features.h"
@@ -727,20 +728,33 @@ const FeatureEntry::Choice kForceTextDirectionChoices[] = {
      switches::kForceDirectionRTL},
 };
 
-const FeatureEntry::Choice kDesktopPWAsAttentionBadgingCrOSChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
-     switches::kDesktopPWAsAttentionBadgingCrOS,
-     switches::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications},
-    {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiOnly,
-     switches::kDesktopPWAsAttentionBadgingCrOS,
-     switches::kDesktopPWAsAttentionBadgingCrOSApiOnly},
-    {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly,
-     switches::kDesktopPWAsAttentionBadgingCrOS,
-     switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly},
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::FeatureParam
+    kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] = {
+        {"badge-source",
+         switches::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications}};
+const FeatureEntry::FeatureParam kDesktopPWAsAttentionBadgingCrOSApiOnly[] = {
+    {"badge-source", switches::kDesktopPWAsAttentionBadgingCrOSApiOnly}};
+const FeatureEntry::FeatureParam
+    kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] = {
+        {"badge-source",
+         switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly}};
+
+const FeatureEntry::FeatureVariation
+    kDesktopPWAsAttentionBadgingCrOSVariations[] = {
+        {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
+         kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
+         base::size(kDesktopPWAsAttentionBadgingCrOSApiAndNotifications),
+         nullptr},
+        {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiOnly,
+         kDesktopPWAsAttentionBadgingCrOSApiOnly,
+         base::size(kDesktopPWAsAttentionBadgingCrOSApiOnly), nullptr},
+        {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly,
+         kDesktopPWAsAttentionBadgingCrOSNotificationsOnly,
+         base::size(kDesktopPWAsAttentionBadgingCrOSNotificationsOnly),
+         nullptr},
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kSchedulerConfigurationConservative,
@@ -3005,6 +3019,15 @@ const FeatureEntry kFeatureEntries[] = {
         FEATURE_VALUE_TYPE(media::kAVFoundationCaptureV2),
     },
 #endif  // defined(OS_MAC)
+#if defined(OS_WIN)
+    {
+        "zero-copy-video-capture",
+        flag_descriptions::kZeroCopyVideoCaptureName,
+        flag_descriptions::kZeroCopyVideoCaptureDescription,
+        kOsWin,
+        FEATURE_VALUE_TYPE(media::kMediaFoundationD3D11VideoCapture),
+    },
+#endif  // defined(OS_WIN)
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
@@ -3235,6 +3258,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if (defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_ANDROID)) && \
+    !defined(OS_NACL)
+    {"mojo-linux-sharedmem", flag_descriptions::kMojoLinuxChannelSharedMemName,
+     flag_descriptions::kMojoLinuxChannelSharedMemDescription,
+     kOsCrOS | kOsLinux | kOsAndroid,
+     FEATURE_VALUE_TYPE(mojo::core::kMojoLinuxChannelSharedMem)},
+#endif
 #if defined(OS_ANDROID)
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
@@ -3337,10 +3367,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenu)},
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-desktop-pwas-attention-badging-cros",
      flag_descriptions::kDesktopPWAsAttentionBadgingCrOSName,
      flag_descriptions::kDesktopPWAsAttentionBadgingCrOSDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kDesktopPWAsAttentionBadgingCrOSChoices)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kDesktopPWAsAttentionBadgingCrOS,
+                                    kDesktopPWAsAttentionBadgingCrOSVariations,
+                                    "DesktopPWAsAttentionBadgingCrOS")},
+#endif
     {"enable-desktop-pwas-remove-status-bar",
      flag_descriptions::kDesktopPWAsRemoveStatusBarName,
      flag_descriptions::kDesktopPWAsRemoveStatusBarDescription, kOsDesktop,
@@ -3565,6 +3599,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"toolbar-iph-android", flag_descriptions::kToolbarIphAndroidName,
      flag_descriptions::kToolbarIphAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kToolbarIphAndroid)},
+    {"theme-refactor-android", flag_descriptions::kThemeRefactorAndroidName,
+     flag_descriptions::kThemeRefactorAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kThemeRefactorAndroid)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -3798,6 +3835,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSwitchAccessPointScanningName,
      flag_descriptions::kSwitchAccessPointScanningDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(::switches::kEnableSwitchAccessPointScanning)},
+    {"enable-experimental-accessibility-switch-access-setup-guide",
+     flag_descriptions::kExperimentalAccessibilitySwitchAccessSetupGuideName,
+     flag_descriptions::
+         kExperimentalAccessibilitySwitchAccessSetupGuideDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilitySwitchAccessSetupGuide)},
     {"enable-experimental-accessibility-chromevox-annotations",
      flag_descriptions::kExperimentalAccessibilityChromeVoxAnnotationsName,
      flag_descriptions::
@@ -4461,6 +4505,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-groups-feedback", flag_descriptions::kTabGroupsFeedbackName,
      flag_descriptions::kTabGroupsFeedbackDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsFeedback)},
+
+    {"tab-groups-new-badge-promo",
+     flag_descriptions::kTabGroupsNewBadgePromoName,
+     flag_descriptions::kTabGroupsNewBadgePromoDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroupsNewBadgePromo)},
 
     {"new-tabstrip-animation", flag_descriptions::kNewTabstripAnimationName,
      flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
@@ -6409,13 +6458,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"app-cache", flag_descriptions::kAppCacheName,
      flag_descriptions::kAppCacheDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAppCache)},
-
-    {"autofill-enable-sticky-payments-bubble",
-     flag_descriptions::kAutofillEnableStickyPaymentsBubbleName,
-     flag_descriptions::kAutofillEnableStickyPaymentsBubbleDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableStickyPaymentsBubble)},
 
     {"align-font-display-auto-lcp",
      flag_descriptions::kAlignFontDisplayAutoTimeoutWithLCPGoalName,

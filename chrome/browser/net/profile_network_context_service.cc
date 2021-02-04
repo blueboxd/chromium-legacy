@@ -23,8 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,6 +60,7 @@
 #include "third_party/blink/public/common/features.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
@@ -70,7 +69,6 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -811,15 +809,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
             ? *g_discard_domain_reliability_uploads_for_testing
             : !g_browser_process->local_state()->GetBoolean(
                   metrics::prefs::kMetricsReportingEnabled);
-  }
-
-  auto* drp_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
-  if (drp_settings) {
-    mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
-    network_context_params->custom_proxy_config_client_receiver =
-        config_client.BindNewPipeAndPassReceiver();
-    drp_settings->AddCustomProxyConfigClient(std::move(config_client));
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -719,6 +719,12 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
+    name = "linux-chromeos-js-code-coverage",
+    use_clang_coverage = True,
+    use_javascript_coverage = True,
+)
+
+try_.chromium_chromiumos_builder(
     name = "linux-lacros-rel",
     builderless = not settings.is_master,
     cores = 16,
@@ -1076,7 +1082,6 @@ try_.chromium_linux_builder(
     name = "linux-rel-rts",
     builderless = False,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 5),
     use_clang_coverage = True,
 )
 
@@ -1447,7 +1452,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
-    xcode = xcode.x12c33,
+    xcode = xcode.x12d4e,
 )
 
 try_.chromium_updater_mac_builder(

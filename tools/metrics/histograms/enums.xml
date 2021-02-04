@@ -10456,8 +10456,8 @@ histogram as enum -->
   <int value="4" label="FitToWidth"/>
   <int value="5" label="FitToPageFirst"/>
   <int value="6" label="FitToPage"/>
-  <int value="7" label="OpenBookmarksPanelFirst"/>
-  <int value="8" label="OpenBookmarksPanel"/>
+  <int value="7" label="OpenBookmarksPanelFirst (deprecated)"/>
+  <int value="8" label="OpenBookmarksPanel (deprecated)"/>
   <int value="9" label="FollowBookmarkFirst"/>
   <int value="10" label="FollowBookmark"/>
   <int value="11" label="PageSelectorNavigateFirst"/>
@@ -31276,6 +31276,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3793" label="SessionStorageFirstUsedBeforeFcp"/>
   <int value="3794" label="SessionStorageFirstUsedAfterFcp"/>
   <int value="3795" label="GravitySensorConstructor"/>
+  <int value="3796" label="ElementInternalsStates"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38691,7 +38692,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="InfoBarIdentifier">
-  <int value="1" label="APP_BANNER_INFOBAR_DELEGATE"/>
+  <int value="1" label="APP_BANNER_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="2" label="APP_BANNER_INFOBAR_DELEGATE_DESKTOP (Obsolete)"/>
   <int value="3"
       label="ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE (Obsolete)"/>
@@ -38762,7 +38763,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="65" label="AUTOFILL_CC_ASSIST_INFOBAR_DELEGATE"/>
   <int value="66" label="ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID"/>
   <int value="67" label="INSTANT_APPS_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="68" label="DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE"/>
+  <int value="68"
+      label="DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="69" label="SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID"/>
   <int value="70" label="GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
   <int value="71" label="OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID"/>
@@ -38776,11 +38778,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="78" label="SURVEY_INFOBAR_ANDROID"/>
   <int value="79" label="NEAR_OOM_INFOBAR_ANDROID"/>
   <int value="80" label="INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE"/>
-  <int value="81" label="PAGE_LOAD_CAPPING_INFOBAR_DELEGATE"/>
+  <int value="81" label="PAGE_LOAD_CAPPING_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="82" label="DOWNLOAD_PROGRESS_INFOBAR_ANDROID"/>
   <int value="83" label="AR_CORE_UPGRADE_ANDROID"/>
   <int value="84" label="BLOATED_RENDERER_INFOBAR_DELEGATE"/>
-  <int value="85" label="SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE"/>
+  <int value="85"
+      label="SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="86" label="NEAR_OOM_REDUCTION_INFOBAR_ANDROID"/>
   <int value="87" label="LITE_PAGE_PREVIEWS_INFOBAR"/>
   <int value="88" label="MODULE_INSTALL_FAILURE_INFOBAR_ANDROID"/>
@@ -38796,9 +38799,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="98" label="MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID"/>
   <int value="99" label="CONDITIONAL_TAB_STRIP_INFOBAR_ANDROID"/>
   <int value="100" label="LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID"/>
-  <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC"/>
+  <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC (Obsolete)"/>
   <int value="102" label="EXPERIMENTAL_INFOBAR_DELEGATE_LACROS"/>
   <int value="103" label="ROSETTA_REQUIRED_INFOBAR_DELEGATE"/>
+  <int value="104" label="WEBID_PERMISSION_INFOBAR_DELEGATE"/>
+  <int value="105" label="AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
@@ -43437,6 +43442,7 @@ from previous Chrome versions.
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1480606359" label="AssistantIntentPageUrl:enabled"/>
+  <int value="-1478929417" label="MojoLinuxChannelSharedMem:enabled"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
   <int value="-1478137998" label="lite-video-default-downlink-bandwidth-kbps"/>
   <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
@@ -43794,6 +43800,7 @@ from previous Chrome versions.
   <int value="-1195034892" label="ContinuousSearch:disabled"/>
   <int value="-1194129602" label="ClientSideDetectionModelOnAndroid:disabled"/>
   <int value="-1192790333" label="ArcUseHighMemoryDalvikProfile:disabled"/>
+  <int value="-1191671217" label="TabGroupsNewBadgePromo:disabled"/>
   <int value="-1191258368" label="PageInfoPerformanceHints:disabled"/>
   <int value="-1190174011" label="enable-hdr"/>
   <int value="-1186760297" label="ForceSpectreVariant2Mitigation:disabled"/>
@@ -43900,6 +43907,7 @@ from previous Chrome versions.
       label="SupervisedUserCommittedInterstitials:enabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
+  <int value="-1093135462" label="DesktopPWAsAttentionBadgingCrOS:disabled"/>
   <int value="-1092211161" label="BluetoothWbsDogfood:disabled"/>
   <int value="-1088804127" label="DuetTabStripIntegrationAndroid:disabled"/>
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
@@ -44278,6 +44286,8 @@ from previous Chrome versions.
   <int value="-747072690" label="NtpRepeatableQueries:disabled"/>
   <int value="-746328467" label="ExpensiveBackgroundTimerThrottling:disabled"/>
   <int value="-745082968" label="SyncDeviceInfoInTransportMode:disabled"/>
+  <int value="-745005043"
+      label="enable-experimental-accessibility-switch-access-setup-guide"/>
   <int value="-744159181" label="disable-spdy-proxy-dev-auth-origin"/>
   <int value="-743590125" label="TabEngagementReportingAndroid:enabled"/>
   <int value="-743103250" label="enable-linkable-ephemeral-apps"/>
@@ -44382,6 +44392,7 @@ from previous Chrome versions.
   <int value="-648925189" label="ExploreSites:enabled"/>
   <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
   <int value="-643217597" label="EduCoexistenceConsentLog:enabled"/>
+  <int value="-642346675" label="DesktopPWAsAttentionBadgingCrOS:enabled"/>
   <int value="-641820371" label="EnableCustomMacPaperSizes:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
   <int value="-640191786" label="DesktopPWAsWithoutExtensions:enabled"/>
@@ -44389,6 +44400,7 @@ from previous Chrome versions.
   <int value="-639026783" label="disable-gpu-appcontainer"/>
   <int value="-638952203" label="RendererSideResourceScheduler:disabled"/>
   <int value="-637215276" label="QuickAnswersOnEditableText:enabled"/>
+  <int value="-634865673" label="ThemeRefactorAndroid:enabled"/>
   <int value="-634122679" label="GoogleBrandedContextMenu:enabled"/>
   <int value="-634116286"
       label="OmniboxUIExperimentUnboldSuggestionText:enabled"/>
@@ -45265,6 +45277,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentBlueSearchLoopAndSearchQuery:enabled"/>
   <int value="209792775" label="TabGroupsAndroid:enabled"/>
   <int value="212489101" label="AutofillAssistantChromeEntry:enabled"/>
+  <int value="212977039" label="MediaFoundationD3D11VideoCapture:disabled"/>
   <int value="215328738" label="ImprovedGeoLanguageData:disabled"/>
   <int value="215528151" label="NearbySharingWebRtc:enabled"/>
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
@@ -45321,6 +45334,7 @@ from previous Chrome versions.
   <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="285387302" label="AvatarToolbarButton:enabled"/>
+  <int value="286001833" label="TabGroupsNewBadgePromo:enabled"/>
   <int value="286717452" label="ContextualSearchDebug:disabled"/>
   <int value="287932297" label="AutofillSettingsCardTypeSplit:enabled"/>
   <int value="288012253" label="CrostiniFiles:enabled"/>
@@ -45737,6 +45751,7 @@ from previous Chrome versions.
   <int value="649111851" label="MidiManagerCros:enabled"/>
   <int value="649508040" label="AutofillEnableCompanyName:enabled"/>
   <int value="651421878" label="VideoRotateToFullscreen:enabled"/>
+  <int value="651471603" label="MediaFoundationD3D11VideoCapture:enabled"/>
   <int value="651562604" label="RawClipboard:enabled"/>
   <int value="651844675" label="EasyUnlockPromotions:enabled"/>
   <int value="652561231" label="CustomContextMenu:enabled"/>
@@ -45987,7 +46002,6 @@ from previous Chrome versions.
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="889837286" label="EnableHostnameSetting:enabled"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
-  <int value="895622710" label="desktop-pwas-attention-badging-cros"/>
   <int value="898311758" label="ReaderMode:disabled"/>
   <int value="900614020" label="ContentSuggestionsShowSummary:disabled"/>
   <int value="902209599" label="ShelfHotseat:enabled"/>
@@ -46798,6 +46812,7 @@ from previous Chrome versions.
   <int value="1638927687" label="AutofillRichMetadataQueries:disabled"/>
   <int value="1639190590" label="UseMessagesGoogleComDomain:enabled"/>
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
+  <int value="1639728471" label="ThemeRefactorAndroid:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1643626730" label="PrinterStatus:disabled"/>
   <int value="1643712769" label="PrintWithReducedRasterization:enabled"/>
@@ -46911,6 +46926,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:disabled"/>
   <int value="1760946944" label="MacViewsAutofillPopup:disabled"/>
   <int value="1762320532" label="AutofillKeyboardAccessory:enabled"/>
+  <int value="1764618580" label="MojoLinuxChannelSharedMem:disabled"/>
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
@@ -67912,6 +67928,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Closed"/>
 </enum>
 
+<enum name="SecurePaymentConfirmationSystemPromptResult">
+  <int value="0" label="Canceled"/>
+  <int value="1" label="Accepted"/>
+</enum>
+
 <enum name="SecurityFilteredTouchResult">
   <int value="0" label="Touch event was handled by security sensitive dialog"/>
   <int value="1"
@@ -75970,6 +75991,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UpdateAppBadgeMacResult">
+  <obsolete>
+    Removed in M88 as it's no longer needed.
+  </obsolete>
   <summary>The result from updating App Badge on macOS.</summary>
   <int value="0" label="success"/>
   <int value="1" label="No app shim manager"/>
@@ -77023,6 +77047,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="ValidateMenuItemSelectorType">
+  <obsolete>
+    Deprecated as of 2021/01.
+  </obsolete>
   <int value="0"
       label="The menu items' associated action is an unknown selector."/>
   <int value="1" label="The menu item's associated action is -newProfile."/>

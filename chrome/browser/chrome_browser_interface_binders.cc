@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -37,7 +38,6 @@
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/contextual_search/buildflags.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
@@ -121,6 +121,8 @@
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
 #include "chrome/browser/ui/webui/media/media_feeds_ui.h"
+#include "chrome/browser/ui/webui/memories/memories.mojom.h"
+#include "chrome/browser/ui/webui/memories/memories_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
@@ -633,6 +635,9 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<memories::mojom::PageHandler,
+                                         MemoriesUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       promo_browser_command::mojom::CommandHandler, NewTabPageUI>(map);

@@ -230,12 +230,6 @@ const char kAutofillEnableOffersInDownstreamDescription[] =
     "When enabled, offer data will be retrieved during downstream and shown in "
     "the dropdown list.";
 
-const char kAutofillEnableStickyPaymentsBubbleName[] =
-    "Enable Autofill payments sticky bubbles";
-const char kAutofillEnableStickyPaymentsBubbleDescription[] =
-    "When enabled, all Autofill payments bubbles will not be dismissed upon "
-    "navigation.";
-
 const char kAutofillEnableToolbarStatusChipName[] =
     "Move Autofill omnibox icons next to the profile avatar icon";
 const char kAutofillEnableToolbarStatusChipDescription[] =
@@ -664,11 +658,11 @@ extern const char kDesktopPWAsAttentionBadgingCrOSName[] =
 extern const char kDesktopPWAsAttentionBadgingCrOSDescription[] =
     "Enable attention badging for PWA icons in the shelf and launcher.";
 extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] =
-    "Enable for Badging API and notifications";
+    "for Badging API and notifications";
 extern const char kDesktopPWAsAttentionBadgingCrOSApiOnly[] =
-    "Enable for Badging API only";
+    "for Badging API only";
 extern const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] =
-    "Enable for notifications only";
+    "for notifications only";
 
 const char kDesktopPWAsRemoveStatusBarName[] = "Desktop PWAs remove status bar";
 const char kDesktopPWAsRemoveStatusBarDescription[] =
@@ -974,7 +968,9 @@ const char kDisablePeripheralDataAccessProtectionName[] =
     "Turn off peripheral data access protection";
 const char kDisablePeripheralDataAccessProtectionDescription[] =
     "Disables data access protection for external PCI devices (including some "
-    "thunderbolt and SD Express devices that use PCI tunneling)";
+    "thunderbolt and SD Express devices that use PCI tunneling). By default "
+    "this feature is disabled, which blocks data access from external PCI "
+    "devices.";
 
 const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
@@ -1436,6 +1432,12 @@ const char kMobilePwaInstallUseBottomSheetName[] =
     "Mobile PWA Installation bottom sheet";
 const char kMobilePwaInstallUseBottomSheetDescription[] =
     "Enables use of a rich bottom sheet when offering mobile PWA installation.";
+
+const char kMojoLinuxChannelSharedMemName[] =
+    "Enable Mojo Shared Memory Channel";
+const char kMojoLinuxChannelSharedMemDescription[] =
+    "If enabled Mojo on Linux based platforms can use shared memory as an "
+    "alternate channel for most messages.";
 
 const char kMouseSubframeNoImplicitCaptureName[] =
     "Disable mouse implicit capture for iframe";
@@ -2063,12 +2065,11 @@ const char kScreenCaptureTestDescription[] =
     "capture mode UI bar. Try out new screen recording functionality.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
-const char kScrollableTabStripName[] = "Scrollable TabStrip";
+const char kScrollableTabStripName[] = "Tab Scrolling";
 const char kScrollableTabStripDescription[] =
-    "Allows users to access tabs by scrolling when they no longer fit in the "
-    "tabstrip.";
+    "Enables tab strip to scroll left and right when full.";
 
-const char kScrollableTabStripButtonsName[] = "Scrollable TabStrip Buttons";
+const char kScrollableTabStripButtonsName[] = "Tab Scrolling Buttons";
 const char kScrollableTabStripButtonsDescription[] =
     "When the scrollable-tabstrip flag is enabled, this enables buttons to "
     "permanently appear on the tabstrip.";
@@ -2316,6 +2317,11 @@ const char kTabGroupsFeedbackName[] = "Tab Groups Feedback";
 const char kTabGroupsFeedbackDescription[] =
     "Enables the feedback app to appear in the tab group editor bubble, if tab "
     "groups are enabled.";
+
+const char kTabGroupsNewBadgePromoName[] = "Tab Groups 'New' Badge Promo";
+const char kTabGroupsNewBadgePromoDescription[] =
+    "Causes a 'New' badge to appear on the entry point for creating a tab "
+    "group in the tab context menu.";
 
 const char kTabHoverCardsName[] = "Tab Hover Cards";
 const char kTabHoverCardsDescription[] =
@@ -3225,6 +3231,10 @@ const char kStrictSiteIsolationDescription[] =
     "platform, enterprise policy, or field trial. See also "
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
+
+extern const char kThemeRefactorAndroidName[] = "Theme refactor on Android";
+extern const char kThemeRefactorAndroidDescription[] =
+    "Enables the theme refactoring on Android.";
 
 const char kToolbarIphAndroidName[] = "Enable Toolbar IPH on Android";
 const char kToolbarIphAndroidDescription[] =
@@ -4296,6 +4306,12 @@ const char kSwitchAccessPointScanningDescription[] =
     "Enable an in-process feature to select points onscreen with Switch "
     "Access.";
 
+const char kExperimentalAccessibilitySwitchAccessSetupGuideName[] =
+    "Enable setup guide for Switch Access.";
+const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[] =
+    "Enable a setup guide to walk through the steps of initially configuring "
+    "Switch Access.";
+
 const char kMagnifierNewFocusFollowingName[] =
     "Enable new focus following in Magnifier";
 const char kMagnifierNewFocusFollowingDescription[] =
@@ -4768,12 +4784,12 @@ const char kWifiSyncAndroidDescription[] =
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_WIN)
 const char kZeroCopyVideoCaptureName[] = "Enable Zero-Copy Video Capture";
 const char kZeroCopyVideoCaptureDescription[] =
     "Camera produces a gpu friendly buffer on capture and, if there is, "
     "hardware accelerated video encoder consumes the buffer";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_WIN)
 
 // All views-based platforms --------------------------------------------------
 

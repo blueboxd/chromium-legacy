@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/media/media_feeds_ui.h"
 #include "chrome/browser/ui/webui/media/media_history_ui.h"
 #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
+#include "chrome/browser/ui/webui/memories/memories_ui.h"
 #include "chrome/browser/ui/webui/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_export_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
@@ -82,6 +83,7 @@
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/memories/common/memories_features.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -151,6 +153,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
@@ -219,7 +222,6 @@
 #include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/components/scanning/scanning_ui.h"
 #include "chromeos/components/scanning/url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -625,6 +627,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NewTabUI>;
   if (url.host_piece() == chrome::kChromeUINewTabPageHost)
     return &NewWebUI<NewTabPageUI>;
+  if (base::FeatureList::IsEnabled(memories::kChromeMemories)) {
+    if (url.host_piece() == chrome::kChromeUIMemoriesHost)
+      return &NewWebUI<MemoriesUI>;
+  }
   if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
     if (url.host_piece() == chrome::kChromeUIReadLaterHost)
       return &NewWebUI<ReadLaterUI>;

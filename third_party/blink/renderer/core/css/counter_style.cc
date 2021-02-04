@@ -54,6 +54,8 @@ CounterStyleSystem ToCounterStyleSystemEnum(const CSSValue* value) {
       return CounterStyleSystem::kNumeric;
     case CSSValueID::kAdditive:
       return CounterStyleSystem::kAdditive;
+    case CSSValueID::kInternalHebrew:
+      return CounterStyleSystem::kHebrew;
     case CSSValueID::kInternalSimpChineseInformal:
       return CounterStyleSystem::kSimpChineseInformal;
     case CSSValueID::kInternalSimpChineseFormal:
@@ -62,6 +64,16 @@ CounterStyleSystem ToCounterStyleSystemEnum(const CSSValue* value) {
       return CounterStyleSystem::kTradChineseInformal;
     case CSSValueID::kInternalTradChineseFormal:
       return CounterStyleSystem::kTradChineseFormal;
+    case CSSValueID::kInternalKoreanHangulFormal:
+      return CounterStyleSystem::kKoreanHangulFormal;
+    case CSSValueID::kInternalKoreanHanjaInformal:
+      return CounterStyleSystem::kKoreanHanjaInformal;
+    case CSSValueID::kInternalKoreanHanjaFormal:
+      return CounterStyleSystem::kKoreanHanjaFormal;
+    case CSSValueID::kInternalLowerArmenian:
+      return CounterStyleSystem::kLowerArmenian;
+    case CSSValueID::kInternalUpperArmenian:
+      return CounterStyleSystem::kUpperArmenian;
     case CSSValueID::kExtends:
       return CounterStyleSystem::kUnresolvedExtends;
     default:
@@ -80,10 +92,16 @@ bool HasSymbols(CounterStyleSystem system) {
     case CounterStyleSystem::kAdditive:
       return true;
     case CounterStyleSystem::kUnresolvedExtends:
+    case CounterStyleSystem::kHebrew:
     case CounterStyleSystem::kSimpChineseInformal:
     case CounterStyleSystem::kSimpChineseFormal:
     case CounterStyleSystem::kTradChineseInformal:
     case CounterStyleSystem::kTradChineseFormal:
+    case CounterStyleSystem::kKoreanHangulFormal:
+    case CounterStyleSystem::kKoreanHanjaInformal:
+    case CounterStyleSystem::kKoreanHanjaFormal:
+    case CounterStyleSystem::kLowerArmenian:
+    case CounterStyleSystem::kUpperArmenian:
       return false;
   }
 }
@@ -105,10 +123,16 @@ bool SymbolsAreValid(const StyleRuleCounterStyle& rule,
       return additive_symbols && additive_symbols->length();
     case CounterStyleSystem::kUnresolvedExtends:
       return !symbols && !additive_symbols;
+    case CounterStyleSystem::kHebrew:
     case CounterStyleSystem::kSimpChineseInformal:
     case CounterStyleSystem::kSimpChineseFormal:
     case CounterStyleSystem::kTradChineseInformal:
     case CounterStyleSystem::kTradChineseFormal:
+    case CounterStyleSystem::kKoreanHangulFormal:
+    case CounterStyleSystem::kKoreanHanjaInformal:
+    case CounterStyleSystem::kKoreanHanjaFormal:
+    case CounterStyleSystem::kLowerArmenian:
+    case CounterStyleSystem::kUpperArmenian:
       return true;
   }
 }
@@ -238,6 +262,12 @@ Vector<wtf_size_t> AdditiveAlgorithm(unsigned value,
 // code paths are removed, remove everything else of list_marker_text and move
 // the implementation of the special algorithms here.
 
+String HebrewAlgorithm(unsigned value) {
+  if (value > 999999)
+    return String();
+  return list_marker_text::GetText(EListStyleType::kHebrew, value);
+}
+
 String SimpChineseInformalAlgorithm(unsigned value) {
   // @counter-style algorithm works on absolute value, but the legacy
   // implementation works on the original value (and handles negative sign on
@@ -272,6 +302,45 @@ String TradChineseFormalAlgorithm(unsigned value) {
   if (value > std::numeric_limits<int>::max())
     return String();
   return list_marker_text::GetText(EListStyleType::kTradChineseFormal, value);
+}
+
+String KoreanHangulFormalAlgorithm(unsigned value) {
+  // @counter-style algorithm works on absolute value, but the legacy
+  // implementation works on the original value (and handles negative sign on
+  // its own). Range check before proceeding.
+  if (value > std::numeric_limits<int>::max())
+    return String();
+  return list_marker_text::GetText(EListStyleType::kKoreanHangulFormal, value);
+}
+
+String KoreanHanjaInformalAlgorithm(unsigned value) {
+  // @counter-style algorithm works on absolute value, but the legacy
+  // implementation works on the original value (and handles negative sign on
+  // its own). Range check before proceeding.
+  if (value > std::numeric_limits<int>::max())
+    return String();
+  return list_marker_text::GetText(EListStyleType::kKoreanHanjaInformal, value);
+}
+
+String KoreanHanjaFormalAlgorithm(unsigned value) {
+  // @counter-style algorithm works on absolute value, but the legacy
+  // implementation works on the original value (and handles negative sign on
+  // its own). Range check before proceeding.
+  if (value > std::numeric_limits<int>::max())
+    return String();
+  return list_marker_text::GetText(EListStyleType::kKoreanHanjaFormal, value);
+}
+
+String LowerArmenianAlgorithm(unsigned value) {
+  if (value > 99999999)
+    return String();
+  return list_marker_text::GetText(EListStyleType::kLowerArmenian, value);
+}
+
+String UpperArmenianAlgorithm(unsigned value) {
+  if (value > 99999999)
+    return String();
+  return list_marker_text::GetText(EListStyleType::kUpperArmenian, value);
 }
 
 }  // namespace
@@ -423,12 +492,20 @@ bool CounterStyle::RangeContains(int value) const {
     case CounterStyleSystem::kSimpChineseFormal:
     case CounterStyleSystem::kTradChineseInformal:
     case CounterStyleSystem::kTradChineseFormal:
+    case CounterStyleSystem::kKoreanHangulFormal:
+    case CounterStyleSystem::kKoreanHanjaInformal:
+    case CounterStyleSystem::kKoreanHanjaFormal:
       return true;
     case CounterStyleSystem::kSymbolic:
     case CounterStyleSystem::kAlphabetic:
       return value >= 1;
     case CounterStyleSystem::kAdditive:
       return value >= 0;
+    case CounterStyleSystem::kHebrew:
+      return value >= 0 && value <= 999999;
+    case CounterStyleSystem::kLowerArmenian:
+    case CounterStyleSystem::kUpperArmenian:
+      return value >= 0 && value <= 99999999;
     case CounterStyleSystem::kUnresolvedExtends:
       NOTREACHED();
       return false;
@@ -443,10 +520,16 @@ bool CounterStyle::NeedsNegativeSign(int value) const {
     case CounterStyleSystem::kAlphabetic:
     case CounterStyleSystem::kNumeric:
     case CounterStyleSystem::kAdditive:
+    case CounterStyleSystem::kHebrew:
     case CounterStyleSystem::kSimpChineseInformal:
     case CounterStyleSystem::kSimpChineseFormal:
     case CounterStyleSystem::kTradChineseInformal:
     case CounterStyleSystem::kTradChineseFormal:
+    case CounterStyleSystem::kKoreanHangulFormal:
+    case CounterStyleSystem::kKoreanHanjaInformal:
+    case CounterStyleSystem::kKoreanHanjaFormal:
+    case CounterStyleSystem::kLowerArmenian:
+    case CounterStyleSystem::kUpperArmenian:
       return true;
     case CounterStyleSystem::kCyclic:
     case CounterStyleSystem::kFixed:
@@ -523,6 +606,8 @@ String CounterStyle::GenerateInitialRepresentation(int value) const {
       return IndexesToString(AlphabeticAlgorithm(abs_value, symbols_.size()));
     case CounterStyleSystem::kAdditive:
       return IndexesToString(AdditiveAlgorithm(abs_value, additive_weights_));
+    case CounterStyleSystem::kHebrew:
+      return HebrewAlgorithm(abs_value);
     case CounterStyleSystem::kSimpChineseInformal:
       return SimpChineseInformalAlgorithm(abs_value);
     case CounterStyleSystem::kSimpChineseFormal:
@@ -531,6 +616,16 @@ String CounterStyle::GenerateInitialRepresentation(int value) const {
       return TradChineseInformalAlgorithm(abs_value);
     case CounterStyleSystem::kTradChineseFormal:
       return TradChineseFormalAlgorithm(abs_value);
+    case CounterStyleSystem::kKoreanHangulFormal:
+      return KoreanHangulFormalAlgorithm(abs_value);
+    case CounterStyleSystem::kKoreanHanjaInformal:
+      return KoreanHanjaInformalAlgorithm(abs_value);
+    case CounterStyleSystem::kKoreanHanjaFormal:
+      return KoreanHanjaFormalAlgorithm(abs_value);
+    case CounterStyleSystem::kLowerArmenian:
+      return LowerArmenianAlgorithm(abs_value);
+    case CounterStyleSystem::kUpperArmenian:
+      return UpperArmenianAlgorithm(abs_value);
     case CounterStyleSystem::kUnresolvedExtends:
       NOTREACHED();
       return String();

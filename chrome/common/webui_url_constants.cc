@@ -111,6 +111,7 @@ const char kChromeUIMediaEngagementHost[] = "media-engagement";
 const char kChromeUIMediaFeedsHost[] = "media-feeds";
 const char kChromeUIMediaHistoryHost[] = "media-history";
 const char kChromeUIMediaRouterInternalsHost[] = "media-router-internals";
+const char kChromeUIMemoriesHost[] = "memories";
 const char kChromeUIMemoryInternalsHost[] = "memory-internals";
 const char kChromeUINTPTilesInternalsHost[] = "ntp-tiles-internals";
 const char kChromeUINaClHost[] = "nacl";
@@ -186,9 +187,6 @@ const char kChromeUIWebFooterExperimentURL[] =
     "chrome://web-footer-experiment/";
 const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
-const char kChromeUIWorkProfileConfirmationHost[] = "work-profile-confirmation";
-const char kChromeUIWorkProfileConfirmationURL[] =
-    "chrome://work-profile-confirmation/";
 
 #if defined(OS_WIN)
 // TODO(crbug.com/1003960): Remove when issue is resolved.
@@ -486,6 +484,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIManagementHost,
 #endif
     kChromeUIMediaEngagementHost,
+    kChromeUIMemoriesHost,
     kChromeUINetExportHost,
     kChromeUINetInternalsHost,
     kChromeUINewTabHost,

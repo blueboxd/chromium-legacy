@@ -2757,8 +2757,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_vulkan_tests",
         "resultdb": {
@@ -2791,8 +2790,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_vulkan_tests",
         "resultdb": {
@@ -2825,8 +2823,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_tests",
         "resultdb": {
@@ -2859,8 +2856,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_tests",
         "resultdb": {
@@ -2893,8 +2889,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles2_vulkan_tests",
         "resultdb": {
@@ -2926,8 +2921,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles31_vulkan_tests",
         "resultdb": {
@@ -2960,8 +2954,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles32_vulkan_tests",
         "resultdb": {
@@ -2993,8 +2986,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles3_vulkan_tests",
         "resultdb": {
@@ -3216,8 +3208,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_vulkan_tests",
         "resultdb": {
@@ -3250,8 +3241,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_vulkan_tests",
         "resultdb": {
@@ -3284,8 +3274,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_tests",
         "resultdb": {
@@ -3318,8 +3307,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_tests",
         "resultdb": {
@@ -3352,8 +3340,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles2_vulkan_tests",
         "resultdb": {
@@ -3385,8 +3372,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles31_vulkan_tests",
         "resultdb": {
@@ -3419,8 +3405,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles32_vulkan_tests",
         "resultdb": {
@@ -3452,8 +3437,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles3_vulkan_tests",
         "resultdb": {
@@ -6733,8 +6717,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_gles_tests",
         "swarming": {
@@ -6763,8 +6746,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gles_tests",
         "swarming": {
@@ -6793,8 +6775,7 @@
           "--shard-timeout=500"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_gles_tests",
         "swarming": {
@@ -7794,6 +7775,76 @@
   "GPU FYI Win x64 DX12 Vulkan Builder": {},
   "GPU FYI Win x64 DX12 Vulkan Builder (dbg)": {},
   "GPU FYI Win x64 dEQP Builder": {},
+  "Lacros FYI x64 Release (AMD)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "noop_sleep_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:7340",
+              "os": "Ubuntu",
+              "pool": "chromium.tests.gpu.experimental"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+      }
+    ]
+  },
+  "Lacros FYI x64 Release (Intel)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "noop_sleep_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+      }
+    ]
+  },
   "Linux FYI Debug (NVIDIA)": {
     "gtest_tests": [
       {
@@ -15373,8 +15424,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gl_tests",
         "swarming": {
@@ -15405,8 +15455,7 @@
           "--max-processes=1"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_gl_tests",
         "swarming": {
@@ -15432,8 +15481,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_vulkan_tests",
         "swarming": {
@@ -15460,8 +15508,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gl_tests",
         "swarming": {
@@ -15487,8 +15534,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -15514,8 +15560,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_rotate180_tests",
         "swarming": {
@@ -15541,8 +15586,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_rotate270_tests",
         "swarming": {
@@ -15568,8 +15612,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_rotate90_tests",
         "swarming": {
@@ -15595,8 +15638,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_gl_tests",
         "swarming": {
@@ -15623,8 +15665,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_tests",
         "swarming": {
@@ -15651,8 +15692,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_rotate180_tests",
         "swarming": {
@@ -15679,8 +15719,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_rotate270_tests",
         "swarming": {
@@ -15707,8 +15746,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_rotate90_tests",
         "swarming": {
@@ -15735,8 +15773,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_gl_tests",
         "swarming": {
@@ -15763,8 +15800,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_tests",
         "swarming": {
@@ -15791,8 +15827,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles2_vulkan_tests",
         "swarming": {
@@ -15818,8 +15853,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles31_vulkan_tests",
         "swarming": {
@@ -15845,8 +15879,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles32_vulkan_tests",
         "swarming": {
@@ -15872,8 +15905,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles3_vulkan_tests",
         "swarming": {
@@ -23550,8 +23582,7 @@
           "--max-processes=1"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_gl_tests",
         "swarming": {
@@ -23578,8 +23609,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_metal_tests",
         "swarming": {
@@ -23606,8 +23636,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gl_tests",
         "swarming": {
@@ -23634,8 +23663,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_metal_tests",
         "swarming": {
@@ -23662,8 +23690,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_gl_tests",
         "swarming": {
@@ -23691,8 +23718,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_metal_tests",
         "swarming": {
@@ -23725,8 +23751,7 @@
           "--max-processes=1"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_gl_tests",
         "swarming": {
@@ -23751,8 +23776,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_metal_tests",
         "swarming": {
@@ -23777,8 +23801,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gl_tests",
         "swarming": {
@@ -23803,8 +23826,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_metal_tests",
         "swarming": {
@@ -23829,8 +23851,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_gl_tests",
         "swarming": {
@@ -23856,8 +23877,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_metal_tests",
         "swarming": {
@@ -34628,8 +34648,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_d3d11_tests",
         "swarming": {
@@ -34659,8 +34678,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_d3d11_tests",
         "swarming": {
@@ -34687,8 +34705,7 @@
           "--max-processes=1"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_gl_tests",
         "swarming": {
@@ -34714,8 +34731,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_vulkan_tests",
         "swarming": {
@@ -34742,8 +34758,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_d3d11_tests",
         "swarming": {
@@ -34769,8 +34784,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gl_tests",
         "swarming": {
@@ -34796,8 +34810,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -34823,8 +34836,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_rotate180_tests",
         "swarming": {
@@ -34850,8 +34862,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_rotate270_tests",
         "swarming": {
@@ -34877,8 +34888,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_rotate90_tests",
         "swarming": {
@@ -34904,8 +34914,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_d3d11_tests",
         "swarming": {
@@ -34932,8 +34941,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_gl_tests",
         "swarming": {
@@ -34960,8 +34968,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_vulkan_tests",
         "swarming": {
@@ -34988,8 +34995,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_rotate180_tests",
         "swarming": {
@@ -35016,8 +35022,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_rotate270_tests",
         "swarming": {
@@ -35044,8 +35049,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_rotate90_tests",
         "swarming": {
@@ -35072,8 +35076,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_d3d11_tests",
         "swarming": {
@@ -35100,8 +35103,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_gl_tests",
         "swarming": {
@@ -35128,8 +35130,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_vulkan_tests",
         "swarming": {
@@ -35156,8 +35157,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles2_vulkan_tests",
         "swarming": {
@@ -35183,8 +35183,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles31_vulkan_tests",
         "swarming": {
@@ -35210,8 +35209,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles32_vulkan_tests",
         "swarming": {
@@ -35237,8 +35235,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_khr_gles3_vulkan_tests",
         "swarming": {
@@ -38765,8 +38762,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_d3d11_tests",
         "swarming": {
@@ -38793,8 +38789,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -39657,8 +39652,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_egl_d3d11_tests",
         "swarming": {
@@ -39685,8 +39679,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_d3d11_tests",
         "swarming": {
@@ -39713,8 +39706,7 @@
           "--bot-mode"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//third_party/angle/scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles3_d3d11_tests",
         "swarming": {

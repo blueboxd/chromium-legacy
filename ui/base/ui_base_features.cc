@@ -24,10 +24,6 @@ namespace features {
 // If enabled, calculate native window occlusion - Windows-only.
 const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kCalculateNativeWinOcclusionCheckVirtualDesktopUsed{
-    "CalculateNativeWinOcclusionCheckVirtualDesktopUsed",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
 // Whether or not to delegate color queries to the color provider.
@@ -308,11 +304,8 @@ const char kPredictionTypeDefaultFramesRatio[] = "0.5";
 const base::Feature kSwipeToMoveCursor{"SwipeToMoveCursor",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC)
 const base::Feature kUIDebugTools{"ui-debug-tools",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 bool IsSwipeToMoveCursorEnabled() {
   static const bool enabled =

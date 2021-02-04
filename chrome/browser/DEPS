@@ -176,6 +176,7 @@ include_rules = [
   "+components/login",
   "+components/media_message_center",
   "+components/media_router/browser",
+  "+components/memories/common",
   "+components/messages/android",
   "+components/metal_util",
   "+components/metrics",
@@ -415,6 +416,7 @@ include_rules = [
   # Code under //ash should be accessed via its public API. See //ash/README.md.
   "-ash",
   "+ash/components",
+  "+ash/constants",
   "+ash/public",
   "+ash/keyboard/ui/grit",
   "+ash/keyboard/ui/resources",
@@ -537,4 +539,7 @@ specific_include_rules = {
   "chrome_content_browser_client\.cc" : [
     "+content/public/browser/tts_controller.h",
   ],
+  "about_flags\.cc" : [
+    "+mojo/core/embedder/features.h",
+  ]
 }

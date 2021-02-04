@@ -1649,6 +1649,15 @@
           'gtest_tests': 'linux_chromeos_gtests',
         },
       },
+      'linux-chromeos-js-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'js_code_coverage_browser_tests'
+        },
+      },
       'linux-chromeos-rel': {
         'mixins': [
           'isolate_profile_data',
@@ -2845,7 +2854,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12c33',
+          'xcode_12d4e',
           'xctest',
         ],
         'test_suites': {
@@ -2863,7 +2872,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12c33',
+          'xcode_12d4e',
           'xctest',
         ],
         'test_suites': {
@@ -3046,9 +3055,6 @@
         'mixins': [
           'linux-xenial',
         ],
-        'test_suites': {
-          'gtest_tests': 'perfetto_gtests',
-        },
       },
       'linux-upload-perfetto': {
         'additional_compile_targets': [ 'trace_processor_shell' ],
@@ -4067,6 +4073,26 @@
       'GPU FYI Win x64 DX12 Vulkan Builder': {},
       'GPU FYI Win x64 DX12 Vulkan Builder (dbg)': {},
       'GPU FYI Win x64 dEQP Builder' : {},
+      'Lacros FYI x64 Release (AMD)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_amd_rx_5500_xt',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
+      'Lacros FYI x64 Release (Intel)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
       'Linux FYI Debug (NVIDIA)': {
         'browser_config': 'debug',
         'os_type': 'linux',

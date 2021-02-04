@@ -171,28 +171,6 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
 }  // namespace
 
-@interface NewTagAttachmentCell : NSTextAttachmentCell
-@end
-
-@implementation NewTagAttachmentCell
-
-- (instancetype)init {
-  if (self = [super init]) {
-    self.image = NewTagImage();
-  }
-  return self;
-}
-
-- (NSPoint)cellBaselineOffset {
-  return NSMakePoint(0, views::NewBadge::kNewBadgeBaselineOffsetMac);
-}
-
-- (NSSize)cellSize {
-  return [self.image size];
-}
-
-@end
-
 // --- Private API begin ---
 
 @interface NSCarbonMenuImpl : NSObject

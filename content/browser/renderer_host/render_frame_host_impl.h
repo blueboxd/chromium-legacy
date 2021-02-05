@@ -42,11 +42,9 @@
 #include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
-#include "content/browser/renderer_host/keep_alive_handle_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/policy_container_host.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
@@ -213,6 +211,7 @@ class CrossOriginEmbedderPolicyReporter;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
+class KeepAliveHandleFactory;
 class MediaInterfaceProxy;
 class NavigationEntryImpl;
 class NavigationRequest;
@@ -227,6 +226,7 @@ class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
+class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class ScreenEnumerationImpl;
@@ -307,7 +307,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
   GlobalFrameRoutingId GetGlobalFrameRoutingId() override;
-  RenderWidgetHostImpl* GetRenderWidgetHost() override;
   RenderWidgetHostView* GetView() override;
   RenderFrameHostImpl* GetParent() override;
   RenderFrameHostImpl* GetMainFrame() override;
@@ -683,6 +682,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // and painting for this frame and its contiguous local subtree in the
   // renderer process.
   bool is_local_root() const { return !!GetLocalRenderWidgetHost(); }
+
+  // Returns the RenderWidgetHostImpl attached to this frame or the nearest
+  // ancestor frame, which could potentially be the root. For most input
+  // and rendering related purposes, GetView() should be preferred and
+  // RenderWidgetHostViewBase methods used. GetRenderWidgetHost() will not
+  // return a nullptr, whereas GetView() potentially will (for instance,
+  // after a renderer crash).
+  //
+  // This method crashes if this RenderFrameHostImpl does not own a
+  // a RenderWidgetHost and nor does any of its ancestors. That would
+  // typically mean that the frame has been detached from the frame tree.
+  virtual RenderWidgetHostImpl* GetRenderWidgetHost();
 
   media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback();
@@ -1498,6 +1509,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Prerender2:
   // Returns true if this frame is for a prerendering page.
+  // This should be called after CommitNavigation().
   bool IsPrerendering() const;
 
   // Prerender2:
@@ -2115,9 +2127,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
       override;
-  void GetKeepAliveHandleFactory(
-      mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver)
-      override;
+  void IssueKeepAliveHandle(
+      mojo::PendingReceiver<blink::mojom::KeepAliveHandle> receiver) override;
   void DidCommitProvisionalLoad(
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
@@ -3167,7 +3178,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       pepper_hung_detectors_;
 #endif
 
-  KeepAliveHandleFactory keep_alive_handle_factory_;
+  std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
+  base::TimeDelta keep_alive_timeout_;
 
   // For observing Network Service connection errors only. Will trigger
   // |OnNetworkServiceConnectionError()| and push updated factories to
@@ -3436,6 +3448,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Note that it is the initiator RenderFrameHost that stores these receivers.
   mojo::UniqueReceiverSet<blink::mojom::PrerenderProcessor>
       prerender_processor_receivers_;
+
+  // Prerender2:
+  // Indicates whether this frame is being prerendered. Updated at commit
+  // navigation time (CommitNavigation()), and when the prerendered page is
+  // activated (OnPrerenderedPageActivated()).
+  // TODO(https://crbug.com/1160611): Update the flag when a prerendering
+  // navigation failed.
+  bool is_prerendering_ = false;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

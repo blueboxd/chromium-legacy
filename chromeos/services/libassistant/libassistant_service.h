@@ -36,7 +36,6 @@ class ConversationController;
 class ConversationStateListenerImpl;
 class DisplayController;
 class FakeAuthProvider;
-class MediaController;
 class PlatformApi;
 class ServiceController;
 
@@ -86,7 +85,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) LibassistantService
   std::unique_ptr<ConversationController> conversation_controller_;
   std::unique_ptr<ConversationStateListenerImpl> conversation_state_listener_;
   std::unique_ptr<DisplayController> display_controller_;
-  std::unique_ptr<MediaController> media_controller_;
 };
 
 }  // namespace libassistant

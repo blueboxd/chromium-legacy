@@ -12,11 +12,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class BreadcrumbManager;
-class BreadcrumbPersistentStorageManager;
-
-namespace breadcrumbs {
 class BreadcrumbManagerObserver;
-}
+class BreadcrumbPersistentStorageManager;
 
 namespace web {
 class BrowserState;
@@ -34,8 +31,8 @@ class BreadcrumbManagerKeyedService : public KeyedService {
   void AddEvent(const std::string& event);
 
   // Adds and removes observers to the underlying |breadcrumb_manager_|.
-  void AddObserver(breadcrumbs::BreadcrumbManagerObserver* observer);
-  void RemoveObserver(breadcrumbs::BreadcrumbManagerObserver* observer);
+  void AddObserver(BreadcrumbManagerObserver* observer);
+  void RemoveObserver(BreadcrumbManagerObserver* observer);
 
   // Returns the number of collected breadcrumb events which are still relevant.
   // See |BreadcrumbManager::GetEventCount| for details.

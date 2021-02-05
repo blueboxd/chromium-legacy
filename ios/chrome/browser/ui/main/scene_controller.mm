@@ -223,7 +223,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
 @property(nonatomic, strong) TabGridCoordinator* mainCoordinator;
-
+// If YES, the tab switcher is currently active.
+@property(nonatomic, assign, getter=isTabSwitcherActive)
+    BOOL tabSwitcherIsActive;
 // YES while activating a new browser (often leading to dismissing the tab
 // switcher.
 @property(nonatomic, assign) BOOL activatingBrowser;
@@ -371,7 +373,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
     [self handleExternalIntents];
 
-    if (!initializingUIInColdStart && self.mainCoordinator.isTabGridActive &&
+    if (!initializingUIInColdStart && self.tabSwitcherIsActive &&
         [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
                                                         .browser]) {
       DCHECK(!self.activatingBrowser);
@@ -773,7 +775,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // Figure out what UI to show initially.
 
-  if (self.mainCoordinator.isTabGridActive) {
+  if (self.tabSwitcherIsActive) {
     DCHECK(!self.activatingBrowser);
     [self beginActivatingBrowser:self.mainInterface.browser
               dismissTabSwitcher:YES
@@ -1102,7 +1104,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)displayTabSwitcherForcingRegularTabs:(BOOL)forcing {
-  DCHECK(!self.mainCoordinator.isTabGridActive);
+  // When the thumb strip feature is enabled, |self.tabSwitcherIsActive| could
+  // be YES if the tab switcher button is tapped while the thumb strip is
+  // visible, or it could be NO if tapped while thumb strip is hidden.
+  // Otherwise, when the thumb strip feature is disabled,
+  // |self.tabSwitcherIsActive| should always be NO at this point in code.
+  DCHECK(ShowThumbStripInTraitCollection(
+             self.currentInterface.viewController.traitCollection) ||
+         !self.tabSwitcherIsActive);
   if (!self.isProcessingVoiceSearchCommand) {
     [self.currentInterface.bvc userEnteredTabSwitcher];
 
@@ -1548,7 +1557,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (NSString*)currentPageDisplayURL {
-  if (self.mainCoordinator.isTabGridActive)
+  if (self.tabSwitcherIsActive)
     return nil;
   web::WebState* webState =
       self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
@@ -1566,7 +1575,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   CGFloat scale = 0.0;
   // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
   // spending too much time since the tab switcher can have lots of subviews.
-  if (self.mainCoordinator.isTabGridActive)
+  if (self.tabSwitcherIsActive)
     scale = 1.0;
   return CaptureView(lastView, scale);
 }
@@ -1676,6 +1685,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       self.currentInterface.browser->GetWebStateList()->count() == 0U) {
     self.activatingBrowser = NO;
     if (dismissingTabSwitcher) {
+      self.tabSwitcherIsActive = NO;
       self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
       self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
       [self showTabSwitcher];
@@ -1707,6 +1717,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     if (action) {
       action();
     }
+
+    self.tabSwitcherIsActive = NO;
   }
 }
 
@@ -1895,7 +1907,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     return NO;
   }
 
-  if (self.mainCoordinator.isTabGridActive) {
+  if (self.tabSwitcherIsActive) {
     Browser* mainBrowser = self.mainInterface.browser;
     Browser* otrBrowser = self.incognitoInterface.browser;
     // Only attempt to dismiss the tab switcher and open a new tab if:
@@ -1976,7 +1988,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // it.
   ProceduralBlock completionWithBVC = ^{
     DCHECK(self.currentInterface.viewController);
-    DCHECK(!self.mainCoordinator.isTabGridActive);
+    DCHECK(!self.tabSwitcherIsActive);
     DCHECK(!self.signinCoordinator);
     // This will dismiss the SSO view controller.
     [self.interfaceProvider.currentInterface
@@ -1986,7 +1998,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   ProceduralBlock completionWithoutBVC = ^{
     // |self.currentInterface.bvc| may exist but tab switcher should be
     // active.
-    DCHECK(self.mainCoordinator.isTabGridActive);
+    DCHECK(self.tabSwitcherIsActive);
     DCHECK(!self.signinCoordinator);
     // History coordinator can be started on top of the tab grid.
     // This is not true of the other tab switchers.
@@ -1995,9 +2007,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   };
 
   // Select a completion based on whether the BVC is shown.
-  ProceduralBlock chosenCompletion = self.mainCoordinator.isTabGridActive
-                                         ? completionWithoutBVC
-                                         : completionWithBVC;
+  ProceduralBlock chosenCompletion =
+      self.tabSwitcherIsActive ? completionWithoutBVC : completionWithBVC;
 
   if (self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
@@ -2124,7 +2135,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     tabOpenedCompletion = completion;
   }
 
-  if (self.mainCoordinator.isTabGridActive) {
+  if (self.tabSwitcherIsActive) {
     // If the tab switcher is already being dismissed, simply add the tab and
     // note that when the tab switcher finishes dismissing, the current BVC
     // should be switched to be the main BVC if necessary.
@@ -2427,11 +2438,17 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Nothing to do here. The next user action (like clicking on an existing
   // regular tab or creating a new incognito tab from the settings menu) will
   // take care of the logic to mode switch.
-  if (self.mainCoordinator.isTabGridActive ||
-      !self.currentInterface.incognito) {
+  if (self.tabSwitcherIsActive || !self.currentInterface.incognito) {
     return;
   }
-  [self showTabSwitcher];
+
+  WebStateList* currentWebStateList =
+      self.currentInterface.browser->GetWebStateList();
+  if (currentWebStateList->empty()) {
+    [self showTabSwitcher];
+  } else {
+    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
+  }
 }
 
 // Called when the last regular tab was closed.
@@ -2442,7 +2459,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // closure of tabs from the main tab model when the main tab model is not
   // current.
   // Nothing to do here.
-  if (self.mainCoordinator.isTabGridActive || self.currentInterface.incognito) {
+  if (self.tabSwitcherIsActive || self.currentInterface.incognito) {
     return;
   }
 
@@ -2484,6 +2501,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (void)showTabSwitcher {
   DCHECK(self.mainCoordinator);
   [self.mainCoordinator setActivePage:self.activePage];
+  self.tabSwitcherIsActive = YES;
+
   [self.mainCoordinator showTabGrid];
 }
 

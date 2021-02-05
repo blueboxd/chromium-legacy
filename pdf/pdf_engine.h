@@ -83,6 +83,16 @@ class PDFEngine {
     PERMISSION_PRINT_HIGH_QUALITY,
   };
 
+  // Values other then |kCount| are persisted to logs as part of metric
+  // collection, so should not be changed.
+  enum class FormType {
+    kNone = 0,
+    kAcroForm = 1,
+    kXFAFull = 2,
+    kXFAForeground = 3,
+    kCount = 4,
+  };
+
   // Maximum number of parameters a nameddest view can contain.
   static constexpr size_t kMaxViewParams = 4;
 
@@ -111,6 +121,19 @@ class PDFEngine {
     // parameter in the viewport should be retained. Note: This string is empty
     // if the view's fit type is not XYZ.
     std::string xyz_params;
+  };
+
+  // Features in a document that are relevant to measure.
+  struct DocumentFeatures {
+    // Number of pages in document.
+    size_t page_count = 0;
+    // Whether any files are attached to document (see "File Attachment
+    // Annotations" on page 637 of PDF Reference 1.7).
+    bool has_attachments = false;
+    // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
+    bool is_tagged = false;
+    // What type of form the document contains.
+    FormType form_type = FormType::kNone;
   };
 
   // The interface that's provided to the rendering engine.
@@ -223,7 +246,8 @@ class PDFEngine {
         bool case_sensitive) = 0;
 
     // Notifies the client that the document has finished loading.
-    virtual void DocumentLoadComplete() {}
+    virtual void DocumentLoadComplete(
+        const DocumentFeatures& document_features) {}
 
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() {}

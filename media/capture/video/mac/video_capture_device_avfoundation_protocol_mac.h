@@ -35,8 +35,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceAVFoundationFrameReceiver {
   // function may be called from any thread, including those controlled by
   // AVFoundation.
   virtual void ReceiveExternalGpuMemoryBufferFrame(
-      CapturedExternalVideoBuffer frame,
-      std::vector<CapturedExternalVideoBuffer> scaled_frames,
+      gfx::GpuMemoryBufferHandle handle,
+      const VideoCaptureFormat& frame_format,
+      const gfx::ColorSpace color_space,
       base::TimeDelta timestamp) = 0;
 
   // Callbacks with the result of a still image capture, or in case of error,

@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/assistant/public/cpp/migration/fake_platform_delegate.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,38 +20,41 @@ namespace {
 const uint64_t kAlarmRelativeTimeMs = 1000;
 const uint64_t kAlarmMaxDelayMs = 0;
 
-class FakePlatformDelegateImpl : public FakePlatformDelegate {
+class ScopedPowerManagerProviderTestClient : public ScopedAssistantClient {
  public:
-  explicit FakePlatformDelegateImpl(
+  explicit ScopedPowerManagerProviderTestClient(
       device::TestWakeLockProvider* wake_lock_provider)
       : wake_lock_provider_(wake_lock_provider) {}
+  ~ScopedPowerManagerProviderTestClient() override = default;
 
-  // FakePlatformDelegate implementation:
-  void BindWakeLockProvider(
-      mojo::PendingReceiver<::device::mojom::WakeLockProvider> receiver)
+ private:
+  // ScopedAssistantClient overrides:
+  void RequestWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver)
       override {
     wake_lock_provider_->BindReceiver(std::move(receiver));
   }
 
- private:
   device::TestWakeLockProvider* const wake_lock_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPowerManagerProviderTestClient);
 };
 
 }  // namespace
 
-class AssistantPowerManagerProviderImplTest : public testing::Test {
+class PowerManagerProviderImplTest : public testing::Test {
  public:
-  AssistantPowerManagerProviderImplTest()
+  PowerManagerProviderImplTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
                           base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~AssistantPowerManagerProviderImplTest() override = default;
+  ~PowerManagerProviderImplTest() override = default;
 
   void SetUp() override {
     chromeos::PowerManagerClient::InitializeFake();
     FakePowerManagerClient::Get()->set_tick_clock(
         task_environment_.GetMockTickClock());
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
-        task_environment_.GetMainThreadTaskRunner(), &platform_delegate_);
+        task_environment_.GetMainThreadTaskRunner());
     power_manager_provider_impl_->set_tick_clock_for_testing(
         task_environment_.GetMockTickClock());
   }
@@ -124,14 +127,14 @@ class AssistantPowerManagerProviderImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   device::TestWakeLockProvider wake_lock_provider_;
-  FakePlatformDelegateImpl platform_delegate_{&wake_lock_provider_};
+  ScopedPowerManagerProviderTestClient test_client_{&wake_lock_provider_};
 
   std::unique_ptr<PowerManagerProviderImpl> power_manager_provider_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantPowerManagerProviderImplTest);
+  DISALLOW_COPY_AND_ASSIGN(PowerManagerProviderImplTest);
 };
 
-TEST_F(AssistantPowerManagerProviderImplTest, CheckAcquireAndReleaseWakeLock) {
+TEST_F(PowerManagerProviderImplTest, CheckAcquireAndReleaseWakeLock) {
   // Acquire wake lock and check wake lock count.
   AcquireWakeLock();
   EXPECT_EQ(1, GetActiveWakeLocks(
@@ -154,7 +157,7 @@ TEST_F(AssistantPowerManagerProviderImplTest, CheckAcquireAndReleaseWakeLock) {
                    device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
-TEST_F(AssistantPowerManagerProviderImplTest, CheckWakeAlarms) {
+TEST_F(PowerManagerProviderImplTest, CheckWakeAlarms) {
   // Check consecutive wake alarms addition and expiration.
   EXPECT_TRUE(
       CheckAddWakeAlarmAndExpiration(kAlarmRelativeTimeMs, kAlarmMaxDelayMs));

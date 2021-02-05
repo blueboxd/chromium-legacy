@@ -57,6 +57,7 @@ class PasswordStoreSigninNotifier;
 class PasswordSyncBridge;
 struct FieldInfo;
 struct InteractionsStats;
+struct CompromisedCredentials;
 
 using PasswordHashDataList = base::Optional<std::vector<PasswordHashData>>;
 
@@ -274,26 +275,28 @@ class PasswordStore : protected PasswordStoreSync,
   // completion. The request will be cancelled if the consumer is destroyed.
   void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
 
-  // Adds information about credentials issue on
-  // |insecure_credential.url| for |insecure_credential.username|. The
-  // first |insecure_credential.create_time| is kept, so if the record for
+  // Adds information about credentials compromised on
+  // |compromised_credentials.url| for |compromised_credentials.username|. The
+  // first |compromised_credentials.create_time| is kept, so if the record for
   // given url and username already exists, the new one will be ignored.
-  void AddInsecureCredential(const InsecureCredential& insecure_credential);
+  void AddCompromisedCredentials(
+      const CompromisedCredentials& compromised_credentials);
 
-  // Removes information about insecure credentials on |signon_realm| for
+  // Removes information about credentials compromised on |signon_realm| for
   // |username|.
-  void RemoveInsecureCredentials(const std::string& signon_realm,
-                                 const base::string16& username,
-                                 RemoveInsecureCredentialsReason reason);
+  void RemoveCompromisedCredentials(const std::string& signon_realm,
+                                    const base::string16& username,
+                                    RemoveInsecureCredentialsReason reason);
 
-  // Retrieves all insecure credentials and notifies |consumer| on
+  // Retrieves all compromised credentials and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
-  void GetAllInsecureCredentials(CompromisedCredentialsConsumer* consumer);
+  void GetAllCompromisedCredentials(CompromisedCredentialsConsumer* consumer);
 
-  // Returns all the insecure credentials for a given site. This list also
+  // Returns all the compromised records for a given site. This list also
   // includes Android affiliated credentials.
-  void GetMatchingInsecureCredentials(const std::string& signon_realm,
-                                      CompromisedCredentialsConsumer* consumer);
+  void GetMatchingCompromisedCredentials(
+      const std::string& signon_realm,
+      CompromisedCredentialsConsumer* consumer);
 
   // Adds information about field. If the record for given form_signature and
   // field_signature already exists, the new one will be ignored.
@@ -542,17 +545,18 @@ class PasswordStore : protected PasswordStoreSync,
       const GURL& origin_domain) = 0;
 
   // Synchronous implementation for manipulating with information about
-  // insecure credentials.
+  // compromised credentials.
   // Returns PasswordStoreChangeList for the updated password forms.
-  virtual PasswordStoreChangeList AddInsecureCredentialImpl(
-      const InsecureCredential& insecure_credential) = 0;
-  virtual PasswordStoreChangeList RemoveInsecureCredentialsImpl(
+  virtual PasswordStoreChangeList AddCompromisedCredentialsImpl(
+      const CompromisedCredentials& compromised_credentials) = 0;
+  virtual PasswordStoreChangeList RemoveCompromisedCredentialsImpl(
       const std::string& signon_realm,
       const base::string16& username,
       RemoveInsecureCredentialsReason reason) = 0;
-  virtual std::vector<InsecureCredential> GetAllInsecureCredentialsImpl() = 0;
-  virtual std::vector<InsecureCredential> GetMatchingInsecureCredentialsImpl(
-      const std::string& signon_realm) = 0;
+  virtual std::vector<CompromisedCredentials>
+  GetAllCompromisedCredentialsImpl() = 0;
+  virtual std::vector<CompromisedCredentials>
+  GetMatchingCompromisedCredentialsImpl(const std::string& signon_realm) = 0;
 
   // Synchronous implementation for manipulating with information about field
   // info.
@@ -568,13 +572,13 @@ class PasswordStore : protected PasswordStoreSync,
   // PasswordStoreSync:
   PasswordStoreChangeList AddLoginSync(const PasswordForm& form,
                                        AddLoginError* error) override;
-  bool AddInsecureCredentialsSync(
-      base::span<const InsecureCredential> credentials) override;
+  bool AddCompromisedCredentialsSync(
+      base::span<const CompromisedCredentials> issues) override;
   PasswordStoreChangeList UpdateLoginSync(const PasswordForm& form,
                                           UpdateLoginError* error) override;
-  bool UpdateInsecureCredentialsSync(
+  bool UpdateCompromisedCredentialsSync(
       const PasswordForm& form,
-      base::span<const InsecureCredential> credentials) override;
+      base::span<const CompromisedCredentials> credentials) override;
 
   PasswordStoreChangeList RemoveLoginSync(const PasswordForm& form) override;
 
@@ -589,9 +593,9 @@ class PasswordStore : protected PasswordStoreSync,
       std::vector<PasswordForm> unsynced_credentials) override;
 
   // Invokes callback and notifies observers if there was a change to the list
-  // of insecure passwords. It also informs Sync about the updated password
-  // forms to sync up the changes about insecure credentials.
-  void InvokeAndNotifyAboutInsecureCredentialsChange(
+  // of compromised passwords. It also informs Sync about the updated password
+  // forms to sync up the changes in the compromised credentials.
+  void InvokeAndNotifyAboutCompromisedPasswordsChange(
       base::OnceCallback<PasswordStoreChangeList()> callback);
 
   // Saves |username| and a hash of |password| for password reuse checking.
@@ -648,8 +652,8 @@ class PasswordStore : protected PasswordStoreSync,
  private:
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest,
                            UpdatePasswordsStoredForAffiliatedWebsites);
-  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, AddInsecureCredentialsSync);
-  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, UpdateInsecureCredentialsSync);
+  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, AddCompromisedCredentialsSync);
+  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, UpdateCompromisedCredentialsSync);
 
   using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
   using LoginsTask = base::OnceCallback<LoginsResult()>;
@@ -660,8 +664,8 @@ class PasswordStore : protected PasswordStoreSync,
   using StatsResult = std::vector<InteractionsStats>;
   using StatsTask = base::OnceCallback<StatsResult()>;
 
-  using InsecureCredentialsTask =
-      base::OnceCallback<std::vector<InsecureCredential>()>;
+  using CompromisedCredentialsTask =
+      base::OnceCallback<std::vector<CompromisedCredentials>()>;
 
   // Called on the main thread after initialization is completed.
   // |success| is true if initialization was successful. Sets the
@@ -695,9 +699,9 @@ class PasswordStore : protected PasswordStoreSync,
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   // Invokes |consumer|->OnGetCompromisedCredentials() on the caller's thread
   // with the result.
-  void PostInsecureCredentialsTaskAndReplyToConsumerWithResult(
+  void PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
       CompromisedCredentialsConsumer* consumer,
-      InsecureCredentialsTask task);
+      CompromisedCredentialsTask task);
 
   // The following methods notify observers that the password store may have
   // been modified via NotifyLoginsChanged(). Note that there is no guarantee
@@ -770,9 +774,9 @@ class PasswordStore : protected PasswordStoreSync,
       const FormDigest& form,
       const std::vector<std::string>& additional_android_realms);
 
-  // Extended version of GetMatchingInsecureCredentialsImpl that also returns
+  // Extended version of GetMatchingCompromisedCredentialsImpl that also returns
   // credentials stored for the specified affiliated Android applications.
-  std::vector<InsecureCredential> GetInsecureCredentialsWithAffiliationsImpl(
+  std::vector<CompromisedCredentials> GetCompromisedWithAffiliationsImpl(
       const std::string& signon_realm,
       const std::vector<std::string>& additional_android_realms);
 
@@ -791,9 +795,9 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time cutoff,
       const std::vector<std::string>& additional_android_realms);
 
-  // Schedules GetInsecureCredentialsWithAffiliationsImpl() to be run on the
-  // background sequence.
-  void ScheduleGetInsecureCredentialsWithAffiliations(
+  // Schedules GetCompromisedWithAffiliationsImpl() to be run on the background
+  // sequence.
+  void ScheduleGetCompromisedWithAffiliations(
       base::WeakPtr<CompromisedCredentialsConsumer> consumer,
       const std::string& signon_realm,
       const std::vector<std::string>& additional_android_realms);

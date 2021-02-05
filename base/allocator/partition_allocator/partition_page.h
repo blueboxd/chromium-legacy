@@ -299,11 +299,11 @@ ALWAYS_INLINE QuarantineBitmap* SuperPageQuarantineBitmaps(
 }
 
 ALWAYS_INLINE char* SuperPagePayloadBegin(char* super_page_base,
-                                          bool with_quarantine) {
+                                          bool with_pcscan) {
   PA_DCHECK(
       !(reinterpret_cast<uintptr_t>(super_page_base) % kSuperPageAlignment));
   return super_page_base + PartitionPageSize() +
-         (with_quarantine ? ReservedQuarantineBitmapsSize() : 0);
+         (with_pcscan ? ReservedQuarantineBitmapsSize() : 0);
 }
 
 ALWAYS_INLINE char* SuperPagePayloadEnd(char* super_page_base) {
@@ -312,11 +312,11 @@ ALWAYS_INLINE char* SuperPagePayloadEnd(char* super_page_base) {
   return super_page_base + kSuperPageSize - PartitionPageSize();
 }
 
-ALWAYS_INLINE bool IsWithinSuperPagePayload(char* ptr, bool with_quarantine) {
+ALWAYS_INLINE bool IsWithinSuperPagePayload(char* ptr, bool with_pcscan) {
   PA_DCHECK(!IsManagedByPartitionAllocDirectMap(ptr));
   char* super_page_base = reinterpret_cast<char*>(
       reinterpret_cast<uintptr_t>(ptr) & kSuperPageBaseMask);
-  char* payload_start = SuperPagePayloadBegin(super_page_base, with_quarantine);
+  char* payload_start = SuperPagePayloadBegin(super_page_base, with_pcscan);
   char* payload_end = SuperPagePayloadEnd(super_page_base);
   return ptr >= payload_start && ptr < payload_end;
 }
@@ -329,7 +329,6 @@ ALWAYS_INLINE bool IsWithinSuperPagePayload(char* ptr, bool with_quarantine) {
 // super page.
 template <bool thread_safe>
 ALWAYS_INLINE char* GetSlotStartInSuperPage(char* maybe_inner_ptr) {
-#if DCHECK_IS_ON()
   PA_DCHECK(!IsManagedByPartitionAllocDirectMap(maybe_inner_ptr));
   char* super_page_ptr = reinterpret_cast<char*>(
       reinterpret_cast<uintptr_t>(maybe_inner_ptr) & kSuperPageBaseMask);
@@ -337,7 +336,6 @@ ALWAYS_INLINE char* GetSlotStartInSuperPage(char* maybe_inner_ptr) {
       PartitionSuperPageToMetadataArea(super_page_ptr));
   PA_DCHECK(
       IsWithinSuperPagePayload(maybe_inner_ptr, extent->root->IsScanEnabled()));
-#endif
   auto* slot_span =
       SlotSpanMetadata<thread_safe>::FromSlotInnerPtr(maybe_inner_ptr);
   // Check if the slot span is actually used and valid.
@@ -595,7 +593,7 @@ ALWAYS_INLINE QuarantineBitmap* QuarantineBitmapFromPointer(
 // of the visited slot spans.
 template <bool thread_safe, typename Callback>
 size_t IterateActiveAndFullSlotSpans(char* super_page_base,
-                                     bool with_quarantine,
+                                     bool with_pcscan,
                                      Callback callback) {
   PA_DCHECK(
       !(reinterpret_cast<uintptr_t>(super_page_base) % kSuperPageAlignment));
@@ -608,7 +606,7 @@ size_t IterateActiveAndFullSlotSpans(char* super_page_base,
 
   using Page = PartitionPage<thread_safe>;
   auto* const first_page = Page::FromSlotStartPtr(
-      SuperPagePayloadBegin(super_page_base, with_quarantine));
+      SuperPagePayloadBegin(super_page_base, with_pcscan));
   // Call FromSlotInnerPtr instead of FromSlotStartPtr, because this slot span
   // doesn't exist, hence its bucket isn't set up to properly assert the slot
   // start.

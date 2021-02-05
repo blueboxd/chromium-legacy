@@ -20,7 +20,6 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/allocator/partition_allocator/pcscan.h"
-#include "base/partition_alloc_buildflags.h"
 
 namespace base {
 
@@ -106,13 +105,9 @@ template PartitionAllocator<internal::NotThreadSafe>::~PartitionAllocator();
 template void PartitionAllocator<internal::NotThreadSafe>::init(
     PartitionOptions);
 
-#if DCHECK_IS_ON() && BUILDFLAG(USE_BACKUP_REF_PTR)
+#if DCHECK_IS_ON()
 void DCheckGetSlotOffsetIsZero(void* ptr) {
-  // Add kPartitionPastAllocationAdjustment, because PartitionAllocGetSlotStart
-  // will subtract it.
-  PA_DCHECK(PartitionAllocGetSlotStart(reinterpret_cast<char*>(ptr) +
-                                       kPartitionPastAllocationAdjustment) ==
-            ptr);
+  PA_DCHECK(PartitionAllocGetSlotOffset(ptr) == 0);
 }
 #endif
 

@@ -162,10 +162,7 @@ class DevToolsIssueStorageWithBackForwardCacheBrowserTest
     std::map<std::string, std::string> params = {
         {"TimeToLiveInBackForwardCacheInSeconds", "3600"}};
     enabled_features.emplace_back(features::kBackForwardCache, params);
-    feature_list_.InitWithFeaturesAndParameters(
-        enabled_features,
-        // Allow BackForwardCache for all devices regardless of their memory.
-        {features::kBackForwardCacheMemoryControl});
+    feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
   }
 
  protected:

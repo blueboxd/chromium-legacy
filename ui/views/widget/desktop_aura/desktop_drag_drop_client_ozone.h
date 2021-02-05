@@ -30,6 +30,7 @@ class DropTargetEvent;
 }
 
 namespace views {
+class DesktopNativeCursorManager;
 class Widget;
 
 class VIEWS_EXPORT DesktopDragDropClientOzone
@@ -39,6 +40,7 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
       public aura::WindowObserver {
  public:
   DesktopDragDropClientOzone(aura::Window* root_window,
+                             views::DesktopNativeCursorManager* cursor_manager,
                              ui::WmDragHandler* drag_handler);
   ~DesktopDragDropClientOzone() override;
 
@@ -123,6 +125,8 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   void ResetDragDropTarget(bool send_exit);
 
   aura::Window* const root_window_;
+
+  DesktopNativeCursorManager* cursor_manager_;
 
   ui::WmDragHandler* const drag_handler_;
 

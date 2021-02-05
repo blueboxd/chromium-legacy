@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -41,8 +42,8 @@
 
 using content::BrowserContext;
 using content::OpenURLParams;
-using content::RenderFrameHost;
 using content::RenderProcessHost;
+using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
 
@@ -56,6 +57,10 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_(extension),
       extension_id_(extension->id()),
       browser_context_(site_instance->GetBrowserContext()),
+      render_view_host_(nullptr),
+      is_render_view_creation_pending_(false),
+      has_loaded_once_(false),
+      document_element_available_(false),
       initial_url_(url),
       extension_host_type_(host_type) {
   DCHECK(host_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
@@ -66,7 +71,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   content::WebContentsObserver::Observe(host_contents_.get());
   host_contents_->SetDelegate(this);
   SetViewType(host_contents_.get(), host_type);
-  main_frame_host_ = host_contents_->GetMainFrame();
+
+  render_view_host_ = host_contents_->GetMainFrame()->GetRenderViewHost();
 
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
@@ -109,38 +115,43 @@ ExtensionHost::~ExtensionHost() {
 }
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
-  return main_frame_host_->GetProcess();
+  return render_view_host()->GetProcess();
 }
 
-bool ExtensionHost::IsRendererLive() const {
-  return main_frame_host_->IsRenderFrameLive();
+RenderViewHost* ExtensionHost::render_view_host() const {
+  // TODO(mpcomplete): This can be null. How do we handle that?
+  return render_view_host_;
 }
 
-void ExtensionHost::CreateRendererSoon() {
+bool ExtensionHost::IsRenderViewLive() const {
+  return render_view_host()->IsRenderViewLive();
+}
+
+void ExtensionHost::CreateRenderViewSoon() {
   if (render_process_host() &&
       render_process_host()->IsInitializedAndNotDead()) {
-    // If the process is already started, go ahead and initialize the renderer
-    // frame synchronously. The process creation is the real meaty part that we
-    // want to defer.
-    CreateRendererNow();
+    // If the process is already started, go ahead and initialize the RenderView
+    // synchronously. The process creation is the real meaty part that we want
+    // to defer.
+    CreateRenderViewNow();
   } else {
     ExtensionHostQueue::GetInstance().Add(this);
   }
 }
 
-void ExtensionHost::CreateRendererNow() {
+void ExtensionHost::CreateRenderViewNow() {
   if (!ExtensionRegistry::Get(browser_context_)
            ->ready_extensions()
            .Contains(extension_->id())) {
-    is_renderer_creation_pending_ = true;
+    is_render_view_creation_pending_ = true;
     return;
   }
-  is_renderer_creation_pending_ = false;
+  is_render_view_creation_pending_ = false;
   LoadInitialURL();
   if (IsBackgroundPage()) {
-    DCHECK(IsRendererLive());
+    DCHECK(IsRenderViewLive());
     // Connect orphaned dev-tools instances.
-    delegate_->OnMainFrameCreatedForBackgroundPage(this);
+    delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
 }
 
@@ -195,8 +206,8 @@ bool ExtensionHost::IsBackgroundPage() const {
 
 void ExtensionHost::OnExtensionReady(content::BrowserContext* browser_context,
                                      const Extension* extension) {
-  if (is_renderer_creation_pending_)
-    CreateRendererNow();
+  if (is_render_view_creation_pending_)
+    CreateRenderViewNow();
 }
 
 void ExtensionHost::OnExtensionUnloaded(
@@ -354,6 +365,18 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
 
 // content::WebContentsObserver
 
+void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
+  render_view_host_ = render_view_host;
+}
+
+void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
+  // If our RenderViewHost is deleted, fall back to the host_contents' current
+  // RVH. There is sometimes a small gap between the pending RVH being deleted
+  // and RenderViewCreated being called, so we update it here.
+  if (render_view_host == render_view_host_)
+    render_view_host_ = host_contents_->GetMainFrame()->GetRenderViewHost();
+}
+
 content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager(
     WebContents* source) {
   return delegate_->GetJavaScriptDialogManager();
@@ -393,40 +416,15 @@ void ExtensionHost::AddNewContents(WebContents* source,
                        initial_rect, user_gesture);
 }
 
-void ExtensionHost::RenderFrameCreated(content::RenderFrameHost* frame_host) {
-  // TODO(crbug.com/1170277 ): This wants to watch just the top-level main frame
-  // once the WebContents could hold multiple frame trees under the upcoming
-  // Multiple-Process Architecture.
-  if (frame_host->GetParent())
+void ExtensionHost::RenderViewReady() {
+  if (has_creation_notification_already_fired_)
     return;
+  has_creation_notification_already_fired_ = true;
 
-  main_frame_host_ = frame_host;
-
-  if (!has_creation_notification_already_fired_) {
-    has_creation_notification_already_fired_ = true;
-
-    // When the first renderer comes alive, we wait for the process to complete
-    // its initialization then notify observers.
-    render_process_host()->PostTaskWhenProcessIsReady(
-        base::BindOnce(&ExtensionHost::NotifyRenderProcessReady,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void ExtensionHost::NotifyRenderProcessReady() {
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
-}
-
-void ExtensionHost::RenderFrameDeleted(content::RenderFrameHost* frame_host) {
-  if (frame_host != main_frame_host_)
-    return;
-
-  // If this was a speculative frame host, we revert back to the current frame
-  // host.
-  main_frame_host_ = host_contents_->GetMainFrame();
 }
 
 void ExtensionHost::RequestMediaAccessPermission(

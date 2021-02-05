@@ -667,7 +667,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
           accessibilityIdentifier:kSettingsGoogleSyncAndServicesCellId];
 }
 
-- (TableViewDetailIconItem*)googleSyncDetailItem {
+- (TableViewItem*)googleSyncDetailItem {
   if (!_googleSyncDetailItem) {
     // TODO(crbug.com/805214): This branded icon image needs to come from
     // BrandedImageProvider.

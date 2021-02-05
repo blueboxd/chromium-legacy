@@ -9,9 +9,6 @@
 
 #include <vector>
 
-#include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/ax_tree_data.h"
-
 namespace ui {
 
 // An AXTreeSource is an abstract interface for a serializable
@@ -22,7 +19,7 @@ namespace ui {
 // as an AXNodeData. This is the primary interface to use when
 // an accessibility tree will be sent over an IPC before being
 // consumed.
-template <typename AXNodeSource>
+template<typename AXNodeSource, typename AXNodeData, typename AXTreeData>
 class AXTreeSource {
  public:
   virtual ~AXTreeSource() {}

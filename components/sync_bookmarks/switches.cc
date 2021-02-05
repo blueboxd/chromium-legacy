@@ -9,6 +9,13 @@ namespace switches {
 const base::Feature kSyncReuploadBookmarkFullTitles{
     "SyncReuploadBookmarkFullTitles", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kSyncDeduplicateAllBookmarksWithSameGUID{
+    "SyncDeduplicateAllBookmarksWithSameGUID",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSyncIgnoreChangesInTouchIcons{
+    "SyncIgnoreChangesInTouchIcons", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kSyncUseClientTagForBookmarkCommits{
     "SyncUseClientTagForBookmarkCommits", base::FEATURE_DISABLED_BY_DEFAULT};
 

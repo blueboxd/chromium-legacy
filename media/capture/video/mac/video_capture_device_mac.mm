@@ -803,19 +803,20 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
 }
 
 void VideoCaptureDeviceMac::ReceiveExternalGpuMemoryBufferFrame(
-    CapturedExternalVideoBuffer frame,
-    std::vector<CapturedExternalVideoBuffer> scaled_frames,
+    gfx::GpuMemoryBufferHandle handle,
+    const VideoCaptureFormat& format,
+    const gfx::ColorSpace color_space,
     base::TimeDelta timestamp) {
-  if (capture_format_.frame_size != frame.format.frame_size) {
+  if (capture_format_.frame_size != format.frame_size) {
     ReceiveError(VideoCaptureError::kMacReceivedFrameWithUnexpectedResolution,
                  FROM_HERE,
-                 "Captured resolution " + frame.format.frame_size.ToString() +
+                 "Captured resolution " + format.frame_size.ToString() +
                      ", and expected " + capture_format_.frame_size.ToString());
     return;
   }
-  client_->OnIncomingCapturedExternalBuffer(std::move(frame),
-                                            std::move(scaled_frames),
-                                            base::TimeTicks::Now(), timestamp);
+  client_->OnIncomingCapturedExternalBuffer(std::move(handle), format,
+                                            color_space, base::TimeTicks::Now(),
+                                            timestamp);
 }
 
 void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,

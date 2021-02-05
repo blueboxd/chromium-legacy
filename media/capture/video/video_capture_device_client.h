@@ -18,7 +18,6 @@
 #include "media/capture/capture_export.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_device.h"
-#include "media/capture/video/video_frame_receiver.h"
 
 namespace media {
 class VideoCaptureBufferPool;
@@ -82,8 +81,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                                    base::TimeDelta timestamp,
                                    int frame_feedback_id = 0) override;
   void OnIncomingCapturedExternalBuffer(
-      CapturedExternalVideoBuffer buffer,
-      std::vector<CapturedExternalVideoBuffer> scaled_buffers,
+      gfx::GpuMemoryBufferHandle handle,
+      const VideoCaptureFormat& format,
+      const gfx::ColorSpace& color_space,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp) override;
   ReserveResult ReserveOutputBuffer(const gfx::Size& dimensions,
@@ -111,11 +111,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   double GetBufferPoolUtilization() const override;
 
  private:
-  ReadyFrameInBuffer CreateReadyFrameFromExternalBuffer(
-      CapturedExternalVideoBuffer buffer,
-      base::TimeTicks reference_time,
-      base::TimeDelta timestamp);
-
   // A branch of OnIncomingCapturedData for Y16 frame_format.pixel_format.
   void OnIncomingCapturedY16Data(const uint8_t* data,
                                  int length,

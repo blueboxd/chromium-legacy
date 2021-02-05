@@ -11,10 +11,9 @@ namespace content {
 
 // The Inner class is SequenceBound<> to the real target CacheStorageCache
 // sequence by the outer CrossSequenceCacheStorageCache.  All CacheStorageCache
-// operations are proxied to the Inner on the correct sequence via the
-// AsyncCall() method.  The outer storage is responsible for wrapping any
-// callbacks in order to post on the outer's original sequence.
-// TODO(dcheng): See if this can use the Then() helper.
+// operations are proxied to the Inner on the correct sequence via the Post()
+// method.  The outer storage is responsible for wrapping any callbacks in
+// order to post on the outer's original sequence.
 class CrossSequenceCacheStorageCache::Inner {
  public:
   void SetHandle(CacheStorageCacheHandle handle) {
@@ -137,9 +136,9 @@ void CrossSequenceCacheStorageCache::SetHandleOnTaskRunner(
     CacheStorageCacheHandle handle) {
   // Called on target sequence.
   DCHECK(handle.value());
-  // Even though we are already on the correct sequence we still have to
-  // AsyncCall() to the inner object.
-  inner_.AsyncCall(&Inner::SetHandle).WithArgs(std::move(handle));
+  // Even though we are already on the correct sequence we still have to Post()
+  // to the inner object.
+  inner_.Post(FROM_HERE, &Inner::SetHandle, std::move(handle));
 }
 
 CacheStorageCacheHandle CrossSequenceCacheStorageCache::CreateHandle() {
@@ -174,9 +173,9 @@ void CrossSequenceCacheStorageCache::Match(
     int64_t trace_id,
     ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::Match)
-      .WithArgs(std::move(request), std::move(match_options), priority,
-                trace_id, WrapCallbackForCurrentSequence(std::move(callback)));
+  inner_.Post(FROM_HERE, &Inner::Match, std::move(request),
+              std::move(match_options), priority, trace_id,
+              WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
 void CrossSequenceCacheStorageCache::MatchAll(
@@ -185,9 +184,9 @@ void CrossSequenceCacheStorageCache::MatchAll(
     int64_t trace_id,
     ResponsesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::MatchAll)
-      .WithArgs(std::move(request), std::move(match_options), trace_id,
-                WrapCallbackForCurrentSequence(std::move(callback)));
+  inner_.Post(FROM_HERE, &Inner::MatchAll, std::move(request),
+              std::move(match_options), trace_id,
+              WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
 void CrossSequenceCacheStorageCache::WriteSideData(
@@ -198,9 +197,9 @@ void CrossSequenceCacheStorageCache::WriteSideData(
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::WriteSideData)
-      .WithArgs(WrapCallbackForCurrentSequence(std::move(callback)), url,
-                expected_response_time, trace_id, std::move(buffer), buf_len);
+  inner_.Post(FROM_HERE, &Inner::WriteSideData,
+              WrapCallbackForCurrentSequence(std::move(callback)), url,
+              expected_response_time, trace_id, std::move(buffer), buf_len);
 }
 
 void CrossSequenceCacheStorageCache::BatchOperation(
@@ -209,11 +208,9 @@ void CrossSequenceCacheStorageCache::BatchOperation(
     VerboseErrorCallback callback,
     BadMessageCallback bad_message_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::BatchOperation)
-      .WithArgs(
-          std::move(operations), trace_id,
-          WrapCallbackForCurrentSequence(std::move(callback)),
-          WrapCallbackForCurrentSequence(std::move(bad_message_callback)));
+  inner_.Post(FROM_HERE, &Inner::BatchOperation, std::move(operations),
+              trace_id, WrapCallbackForCurrentSequence(std::move(callback)),
+              WrapCallbackForCurrentSequence(std::move(bad_message_callback)));
 }
 
 void CrossSequenceCacheStorageCache::Keys(
@@ -222,9 +219,8 @@ void CrossSequenceCacheStorageCache::Keys(
     int64_t trace_id,
     RequestsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::Keys)
-      .WithArgs(std::move(request), std::move(options), trace_id,
-                WrapCallbackForCurrentSequence(std::move(callback)));
+  inner_.Post(FROM_HERE, &Inner::Keys, std::move(request), std::move(options),
+              trace_id, WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
 void CrossSequenceCacheStorageCache::Put(
@@ -233,9 +229,8 @@ void CrossSequenceCacheStorageCache::Put(
     int64_t trace_id,
     ErrorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::Put)
-      .WithArgs(std::move(request), std::move(response), trace_id,
-                WrapCallbackForCurrentSequence(std::move(callback)));
+  inner_.Post(FROM_HERE, &Inner::Put, std::move(request), std::move(response),
+              trace_id, WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
 void CrossSequenceCacheStorageCache::GetAllMatchedEntries(
@@ -244,9 +239,9 @@ void CrossSequenceCacheStorageCache::GetAllMatchedEntries(
     int64_t trace_id,
     CacheEntriesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  inner_.AsyncCall(&Inner::GetAllMatchedEntries)
-      .WithArgs(std::move(request), std::move(match_options), trace_id,
-                WrapCallbackForCurrentSequence(std::move(callback)));
+  inner_.Post(FROM_HERE, &Inner::GetAllMatchedEntries, std::move(request),
+              std::move(match_options), trace_id,
+              WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
 CacheStorageCache::InitState CrossSequenceCacheStorageCache::GetInitState()

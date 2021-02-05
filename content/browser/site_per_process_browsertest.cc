@@ -8451,14 +8451,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   run_loop1.Run();
 
   auto first_popup_global_id = GlobalRoutingID(process1->GetID(), routing_id1);
-  // Add an interceptor for first popup widget so it doesn't get closed
+  // Add an incerceptor for first popup widget so it doesn't get closed
   // immediately while the other one is being opened.
-  EXPECT_TRUE(
-      base::Contains(web_contents()->pending_widgets_, first_popup_global_id));
+  EXPECT_TRUE(base::Contains(web_contents()->pending_widget_views_,
+                             first_popup_global_id));
 
   RequestCloseWidgetInterceptor child1_popup_widget_interceptor(
       static_cast<RenderWidgetHostImpl*>(
-          web_contents()->pending_widgets_[first_popup_global_id]));
+          web_contents()
+              ->pending_widget_views_[first_popup_global_id]
+              ->GetRenderWidgetHost()));
 
   base::RunLoop run_loop2;
   int32_t routing_id2;
@@ -8474,9 +8476,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   run_loop2.Run();
 
   // At this point, we should have two pending widgets.
-  EXPECT_TRUE(
-      base::Contains(web_contents()->pending_widgets_, first_popup_global_id));
-  EXPECT_TRUE(base::Contains(web_contents()->pending_widgets_,
+  EXPECT_TRUE(base::Contains(web_contents()->pending_widget_views_,
+                             first_popup_global_id));
+  EXPECT_TRUE(base::Contains(web_contents()->pending_widget_views_,
                              GlobalRoutingID(process2->GetID(), routing_id2)));
 
   // Both subframes were set up in the same way, so the next routing ID for the
@@ -8487,9 +8489,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Now simulate both widgets being shown.
   interceptor1.ResumeShowPopupWidget();
   interceptor2.ResumeShowPopupWidget();
-  EXPECT_FALSE(base::Contains(web_contents()->pending_widgets_,
+  EXPECT_FALSE(base::Contains(web_contents()->pending_widget_views_,
                               GlobalRoutingID(process1->GetID(), routing_id1)));
-  EXPECT_FALSE(base::Contains(web_contents()->pending_widgets_,
+  EXPECT_FALSE(base::Contains(web_contents()->pending_widget_views_,
                               GlobalRoutingID(process2->GetID(), routing_id2)));
 }
 #endif
@@ -10186,16 +10188,9 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(foo_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
 }
 
-// The test is flaky on lacros, cf https://crbug.com/1170583.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_CrossProcessInertSubframe DISABLED_CrossProcessInertSubframe
-#else
-#define MAYBE_CrossProcessInertSubframe CrossProcessInertSubframe
-#endif
 // Tests that when a frame contains a modal <dialog> element, out-of-process
 // iframe children cannot take focus, because they are inert.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       MAYBE_CrossProcessInertSubframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
   // This uses a(b,b) instead of a(b) to preserve the b.com process even when
   // the first subframe is navigated away from it.
   GURL main_url(embedded_test_server()->GetURL(

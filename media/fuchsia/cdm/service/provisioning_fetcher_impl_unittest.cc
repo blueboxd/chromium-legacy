@@ -112,7 +112,7 @@ TEST_F(ProvisioningFetcherImplTest, NoDefaultProvisioningUrl) {
 
   fetcher.Bind(base::MakeExpectedRunClosure(FROM_HERE));
 
-  fetcher.Fetch(CreateProvisioningRequest({}, kTestRequest),
+  fetcher.Fetch(CreateProvisioningRequest(fit::nullopt, kTestRequest),
                 [](drm::ProvisioningResponse response) { FAIL(); });
 }
 

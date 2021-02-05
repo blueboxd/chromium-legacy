@@ -104,11 +104,7 @@ bool ParseFontRenderHinting(
 }
 
 GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
-#if defined(OS_WIN)
-  GURL url(base::WideToUTF8(arg));
-#else
   GURL url(arg);
-#endif
   if (url.is_valid() && url.has_scheme())
     return url;
 
@@ -141,7 +137,7 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine* command_line) {
   env->GetVar("SSLKEYLOGFILE", &path_str);
 #if defined(OS_WIN)
   // base::Environment returns environment variables in UTF-8 on Windows.
-  return base::FilePath(base::UTF8ToWide(path_str));
+  return base::FilePath(base::UTF8ToUTF16(path_str));
 #else
   return base::FilePath(path_str);
 #endif

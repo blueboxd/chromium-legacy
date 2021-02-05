@@ -16,7 +16,8 @@
 using blink::WebAXContext;
 using blink::WebAXObject;
 using blink::WebDocument;
-using BlinkAXTreeSerializer = ui::AXTreeSerializer<blink::WebAXObject>;
+using BlinkAXTreeSerializer =
+    ui::AXTreeSerializer<blink::WebAXObject, ui::AXNodeData, ui::AXTreeData>;
 
 namespace content {
 

@@ -110,6 +110,20 @@ void BlinkGCPluginConsumer::HandleTranslationUnit(ASTContext& context) {
 
   if (options_.dump_graph) {
     std::error_code err;
+#if !defined(LLVM_FORCE_HEAD_REVISION)
+    // TODO: Make createDefaultOutputFile or a shorter createOutputFile work.
+    json_ = JsonWriter::from(instance_.createOutputFile(
+        "",                                      // OutputPath
+        err,                                     // Errors
+        true,                                    // Binary
+        true,                                    // RemoveFileOnSignal
+        instance_.getFrontendOpts().OutputFile,  // BaseInput
+        "graph.json",                            // Extension
+        false,                                   // UseTemporary
+        false,                                   // CreateMissingDirectories
+        0,                                       // ResultPathName
+        0));                                     // TempPathName
+#else
     SmallString<128> OutputFile(instance_.getFrontendOpts().OutputFile);
     llvm::sys::path::replace_extension(OutputFile, "graph.json");
     json_ = JsonWriter::from(instance_.createOutputFile(
@@ -118,6 +132,7 @@ void BlinkGCPluginConsumer::HandleTranslationUnit(ASTContext& context) {
         true,                                    // RemoveFileOnSignal
         false,                                   // UseTemporary
         false));                                 // CreateMissingDirectories
+#endif
     if (!err && json_) {
       json_->OpenList();
     } else {

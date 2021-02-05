@@ -11,15 +11,16 @@
 
 namespace extensions {
 
-CastExtensionHostDelegate::CastExtensionHostDelegate() = default;
-CastExtensionHostDelegate::~CastExtensionHostDelegate() = default;
+CastExtensionHostDelegate::CastExtensionHostDelegate() {}
+
+CastExtensionHostDelegate::~CastExtensionHostDelegate() {}
 
 void CastExtensionHostDelegate::OnExtensionHostCreated(
     content::WebContents* web_contents) {
   CastExtensionWebContentsObserver::CreateForWebContents(web_contents);
 }
 
-void CastExtensionHostDelegate::OnMainFrameCreatedForBackgroundPage(
+void CastExtensionHostDelegate::OnRenderViewCreatedForBackgroundPage(
     ExtensionHost* host) {}
 
 content::JavaScriptDialogManager*

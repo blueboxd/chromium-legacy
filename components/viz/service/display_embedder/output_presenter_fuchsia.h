@@ -76,13 +76,11 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
   };
 
   struct PendingFrame {
-    explicit PendingFrame(uint32_t ordinal);
+    PendingFrame();
     ~PendingFrame();
 
     PendingFrame(PendingFrame&&);
     PendingFrame& operator=(PendingFrame&&);
-
-    uint32_t ordinal = 0;
 
     uint32_t buffer_collection_id = 0;
     uint32_t image_id = 0;
@@ -99,12 +97,6 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
 
     // Vector of overlays that are associated with this frame.
     std::vector<PendingOverlay> overlays;
-  };
-
-  struct PresentatonState {
-    int presented_frame_ordinal;
-    base::TimeTicks presentation_time;
-    base::TimeDelta interval;
   };
 
   void PresentNextFrame();
@@ -134,16 +126,7 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
 
   base::circular_deque<PendingFrame> pending_frames_;
 
-  // Ordinal that will be assigned to the next frame. Ordinals are used to
-  // calculate frame position relative to the current frame stored in
-  // |presentation_state_|. They will wrap around when reaching 2^32, but the
-  // math used to calculate relative position will still work as expected.
-  uint32_t next_frame_ordinal_ = 0;
-
-  // Presentation information received from ImagePipe after rendering a frame.
-  // Used to calculate target presentation time for the frames presented in the
-  // future.
-  base::Optional<PresentatonState> presentation_state_;
+  bool present_is_pending_ = false;
 };
 
 }  // namespace viz

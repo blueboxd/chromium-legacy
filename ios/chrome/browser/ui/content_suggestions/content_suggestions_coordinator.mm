@@ -341,7 +341,6 @@
   self.ntpMediator = nil;
   [self.contentSuggestionsMediator disconnect];
   self.contentSuggestionsMediator = nil;
-  self.suggestionsViewController = nil;
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
   self.headerController = nil;
@@ -488,7 +487,7 @@
                   action:^{
                     [weakSelf setDiscoverFeedVisible:NO];
                     if (IsRefactoredNTP()) {
-                      [weakSelf.ntpCommandHandler updateDiscoverFeedVisibility];
+                      [weakSelf.ntpCommandHandler setDiscoverFeedVisible:NO];
                     }
                   }
                    style:UIAlertActionStyleDestructive];
@@ -499,7 +498,7 @@
                   action:^{
                     [weakSelf setDiscoverFeedVisible:YES];
                     if (IsRefactoredNTP()) {
-                      [weakSelf.ntpCommandHandler updateDiscoverFeedVisibility];
+                      [weakSelf.ntpCommandHandler setDiscoverFeedVisible:YES];
                     }
                   }
                    style:UIAlertActionStyleDefault];
@@ -704,7 +703,7 @@
 
 // Creates, configures and returns a DiscoverFeed ViewController.
 - (UIViewController*)discoverFeed {
-  if (!IsDiscoverFeedEnabled() || IsRefactoredNTP())
+  if (!IsDiscoverFeedEnabled())
     return nil;
 
   UIViewController* discoverFeed = ios::GetChromeBrowserProvider()

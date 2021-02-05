@@ -202,7 +202,6 @@ void NavigationControllerImpl::Navigate(
     const JavaParamRef<jstring>& url,
     jboolean should_replace_current_entry,
     jboolean disable_intent_processing,
-    jboolean allow_intent_launches_in_background,
     jboolean disable_network_error_auto_reload,
     jboolean enable_auto_play,
     const base::android::JavaParamRef<jobject>& response) {
@@ -220,9 +219,6 @@ void NavigationControllerImpl::Navigate(
 
   if (disable_network_error_auto_reload)
     data->set_disable_network_error_auto_reload(true);
-
-  data->set_allow_intent_launches_in_background(
-      allow_intent_launches_in_background);
 
   if (!response.is_null()) {
     data->SetResponse(
@@ -446,12 +442,12 @@ void NavigationControllerImpl::DidRedirectNavigation(
 
 void NavigationControllerImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-#if defined(OS_ANDROID)
   if (!navigation_handle->IsInMainFrame())
     return;
 
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
+#if defined(OS_ANDROID)
   if (java_controller_) {
     TRACE_EVENT0("weblayer",
                  "Java_NavigationControllerImpl_readyToCommitNavigation");
@@ -459,6 +455,8 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
         AttachCurrentThread(), java_controller_, navigation->java_navigation());
   }
 #endif
+  for (auto& observer : observers_)
+    observer.ReadyToCommitNavigation(navigation);
 }
 
 void NavigationControllerImpl::DidFinishNavigation(

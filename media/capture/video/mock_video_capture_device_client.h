@@ -35,9 +35,10 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                     base::TimeTicks reference_time,
                     base::TimeDelta timestamp,
                     int frame_feedback_id));
-  MOCK_METHOD4(OnIncomingCapturedExternalBuffer,
-               void(CapturedExternalVideoBuffer buffer,
-                    std::vector<CapturedExternalVideoBuffer> scaled_buffers,
+  MOCK_METHOD5(OnIncomingCapturedExternalBuffer,
+               void(gfx::GpuMemoryBufferHandle handle,
+                    const VideoCaptureFormat& format,
+                    const gfx::ColorSpace& color_space,
                     base::TimeTicks reference_time,
                     base::TimeDelta timestamp));
   MOCK_METHOD4(ReserveOutputBuffer,

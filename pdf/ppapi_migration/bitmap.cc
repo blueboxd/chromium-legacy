@@ -12,7 +12,6 @@
 #include "ppapi/cpp/image_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace chrome_pdf {
 
@@ -28,12 +27,6 @@ void ReleaseImageData(void* addr, void* context) {
 }
 
 }  // namespace
-
-SkBitmap CreateN32PremulSkBitmap(const SkISize& size) {
-  SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::MakeN32Premul(size));
-  return bitmap;
-}
 
 SkBitmap SkBitmapFromPPImageData(std::unique_ptr<pp::ImageData> image_data) {
   if (image_data->is_null()) {

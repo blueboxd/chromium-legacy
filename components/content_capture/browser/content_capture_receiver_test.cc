@@ -168,10 +168,8 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
     // TODO (crbug.com/1115234): Remove the param when BFCache same site feature
     // launched.
     if (GetParam()) {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{{features::kBackForwardCache}, {{"enable_same_site", "true"}}}},
-          // Allow BackForwardCache for all devices regardless of their memory.
-          {features::kBackForwardCacheMemoryControl});
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          features::kBackForwardCache, {{"enable_same_site", "true"}});
     }
     content::RenderViewHostTestHarness::SetUp();
     ContentCaptureReceiverManagerHelper::Create(web_contents(),

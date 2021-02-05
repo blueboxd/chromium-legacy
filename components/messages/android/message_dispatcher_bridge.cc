@@ -31,13 +31,8 @@ void MessageDispatcherBridge::DismissMessage(
       message->GetJavaMessageWrapper());
   JNIEnv* env = base::android::AttachCurrentThread();
   message->HandleDismissCallback(env);
-  // DismissMessage can be called in the process of WebContents destruction.
-  // In this case WebContentsAndroid is already torn down. We shouldn't call
-  // GetJavaWebContents() because it recreates WebContentsAndroid.
-  if (!web_contents->IsBeingDestroyed()) {
-    Java_MessageDispatcherBridge_dismissMessage(
-        env, jmessage, web_contents->GetJavaWebContents());
-  }
+  Java_MessageDispatcherBridge_dismissMessage(
+      env, jmessage, web_contents->GetJavaWebContents());
 }
 
 }  // namespace messages

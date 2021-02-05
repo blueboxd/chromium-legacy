@@ -67,20 +67,6 @@ class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
                                    media::VideoFrameFeedback feedback) {}
 };
 
-struct CAPTURE_EXPORT CapturedExternalVideoBuffer {
-  CapturedExternalVideoBuffer(gfx::GpuMemoryBufferHandle handle,
-                              VideoCaptureFormat format,
-                              gfx::ColorSpace color_space);
-  CapturedExternalVideoBuffer(CapturedExternalVideoBuffer&& other);
-  ~CapturedExternalVideoBuffer();
-
-  CapturedExternalVideoBuffer& operator=(CapturedExternalVideoBuffer&& other);
-
-  gfx::GpuMemoryBufferHandle handle;
-  VideoCaptureFormat format;
-  gfx::ColorSpace color_space;
-};
-
 class CAPTURE_EXPORT VideoCaptureDevice
     : public VideoFrameConsumerFeedbackObserver {
  public:
@@ -201,8 +187,9 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // gfx::ScopedInUseIOSurface is used to prevent reuse of buffers until all
     // consumers have consumed them.
     virtual void OnIncomingCapturedExternalBuffer(
-        CapturedExternalVideoBuffer buffer,
-        std::vector<CapturedExternalVideoBuffer> scaled_buffers,
+        gfx::GpuMemoryBufferHandle handle,
+        const VideoCaptureFormat& format,
+        const gfx::ColorSpace& color_space,
         base::TimeTicks reference_time,
         base::TimeDelta timestamp) = 0;
 

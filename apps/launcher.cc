@@ -400,7 +400,7 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
 
 #if defined(OS_WIN)
   base::CommandLine::StringType about_blank_url(
-      base::ASCIIToWide(url::kAboutBlankURL));
+      base::ASCIIToUTF16(url::kAboutBlankURL));
 #else
   base::CommandLine::StringType about_blank_url(url::kAboutBlankURL);
 #endif

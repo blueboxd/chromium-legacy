@@ -32,8 +32,6 @@ const base::Feature kNotifySyncOnLanguageDetermined{
     "NotifySyncOnLanguageDetermined", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kDetailedLanguageSettings{
     "DetailedLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kDesktopRestructuredLanguageSettings{
-    "DesktopRestructuredLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kTranslateAssistContent{"TranslateAssistContent",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kTranslateIntent{"TranslateIntent",

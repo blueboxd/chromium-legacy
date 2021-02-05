@@ -211,7 +211,7 @@ class SafetyCheckMediatorTest : public PlatformTest {
   }
 
   void AddCompromisedCredential() {
-    GetTestStore().AddInsecureCredential(
+    GetTestStore().AddCompromisedCredentials(
         MakeCompromised("http://www.example.com/", "test@egmail.com"));
     RunUntilIdle();
   }

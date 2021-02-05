@@ -20,7 +20,6 @@ namespace content {
 class BrowserContext;
 class RenderFrameHostImpl;
 class WebContents;
-class FrameTree;
 
 // Prerender2:
 // PrerenderHost creates a new WebContents and starts prerendering with that.
@@ -77,9 +76,6 @@ class CONTENT_EXPORT PrerenderHost final : public WebContentsObserver {
 
  private:
   void RecordFinalStatus(FinalStatus status);
-
-  // Returns the frame tree associated with |prerendered_contents_|;
-  FrameTree* GetPrerenderedFrameTree();
 
   const blink::mojom::PrerenderAttributesPtr attributes_;
   const GlobalFrameRoutingId initiator_render_frame_host_id_;

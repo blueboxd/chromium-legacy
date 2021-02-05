@@ -166,9 +166,8 @@ public class NotificationWrapperStandardBuilder implements NotificationWrapperBu
     @Override
     public NotificationWrapperBuilder addAction(
             Notification.Action action, int flags, int actionType) {
-        // TODO(xingliu): Plumb requestCode from action intent.
         action.actionIntent =
-                new PendingIntentProvider(action.actionIntent, flags, 0).getPendingIntent();
+                new PendingIntentProvider(action.actionIntent, flags).getPendingIntent();
         addAction(action);
         return this;
     }

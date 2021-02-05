@@ -22,7 +22,6 @@ SANDBOX_POLICY_EXPORT extern const base::Feature kNetworkServiceSandbox;
 #endif
 
 #if defined(OS_WIN)
-SANDBOX_POLICY_EXPORT extern const base::Feature kWinSboxDisableKtmComponent;
 SANDBOX_POLICY_EXPORT extern const base::Feature kWinSboxDisableExtensionPoints;
 SANDBOX_POLICY_EXPORT extern const base::Feature kGpuAppContainer;
 SANDBOX_POLICY_EXPORT extern const base::Feature kGpuLPAC;

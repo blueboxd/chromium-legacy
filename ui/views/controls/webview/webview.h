@@ -138,10 +138,12 @@ class WEBVIEW_EXPORT WebView : public View,
   void AddedToWidget() override;
 
   // Overridden from content::WebContentsObserver:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewReady() override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
+  void WebContentsDestroyed() override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
   // Workaround for MSVC++ linker bug/feature that requires
@@ -151,6 +153,7 @@ class WEBVIEW_EXPORT WebView : public View,
   void OnBadMessageReceived(const IPC::Message& message) override {}
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
   void AXTreeIDForMainFrameHasChanged() override;
 
   // Override from ui::AXModeObserver
@@ -164,16 +167,10 @@ class WEBVIEW_EXPORT WebView : public View,
   void UpdateCrashedOverlayView();
   void NotifyAccessibilityWebContentsChanged();
 
-  // Called when the main frame in the renderer becomes present.
-  void SetUpNewMainFrame(content::RenderFrameHost* frame_host);
-  // Called when the main frame in the renderer is no longer present.
-  void LostMainFrame();
-
-  // Registers for ResizeDueToAutoResize() notifications from `frame_host`'s
+  // Registers for ResizeDueToAutoResize() notifications from the
   // RenderWidgetHostView whenever it is created or changes, if
-  // EnableSizingFromWebContents() has been called. This should only be called
-  // for main frames; other frames can not have auto resize set.
-  void MaybeEnableAutoResize(content::RenderFrameHost* frame_host);
+  // EnableSizingFromWebContents() has been called.
+  void MaybeEnableAutoResize();
 
   // Create a regular or test web contents (based on whether we're running
   // in a unit test or not).

@@ -133,7 +133,7 @@ enum class VaapiFunctions {
   kVADestroyProtectedSession = 26,
   kVAAttachProtectedSession = 27,
   kVADetachProtectedSession = 28,
-  kVAProtectedSessionHwUpdate_Deprecated = 29,
+  kVAProtectedSessionHwUpdate = 29,
   kVAProtectedSessionExecute = 30,
   // Anything else is captured in this last entry.
   kOtherVAFunction = 31,
@@ -176,7 +176,7 @@ constexpr std::array<const char*,
                            "vaDestroyProtectedSession",
                            "vaAttachProtectedSession",
                            "vaDetachProtectedSession",
-                           "vaProtectedSessionHwUpdate (Deprecated)",
+                           "vaProtectedSessionHwUpdate",
                            "vaProtectedSessionExecute",
                            "Other VA function"};
 
@@ -811,7 +811,7 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (mode == VaapiWrapper::kDecodeProtected && profile != VAProfileProtected) {
     required_attribs->push_back(
-        {VAConfigAttribEncryption, VA_ENCRYPTION_TYPE_SUBSAMPLE_CTR});
+        {VAConfigAttribEncryption, VA_ENCRYPTION_TYPE_CTR_128});
     required_attribs->push_back(
         {VAConfigAttribDecProcessing, VA_DEC_PROCESSING});
   }
@@ -1807,8 +1807,6 @@ bool VaapiWrapper::CreateProtectedSession(
     const std::vector<uint8_t>& hw_config,
     std::vector<uint8_t>* hw_identifier_out) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  DCHECK_EQ(va_protected_config_id_, VA_INVALID_ID);
-  DCHECK_EQ(va_protected_session_id_, VA_INVALID_ID);
   DCHECK(hw_identifier_out);
   if (mode_ != kDecodeProtected) {
     LOG(ERROR) << "Cannot attached protected context if not in protected mode";
@@ -1852,14 +1850,13 @@ bool VaapiWrapper::CreateProtectedSession(
   // We have to hold the VABuffer outside of the lock because its destructor
   // will acquire the lock when it goes out of scope. We also must do this after
   // we create the protected session.
-  VAProtectedSessionExecuteBuffer hw_update_buf;
+  VAProtectedSessionHwUpdateBuffer hw_update_buf;
   std::unique_ptr<ScopedVABuffer> hw_update = CreateVABuffer(
-      VAProtectedSessionExecuteBufferType, sizeof(hw_update_buf));
+      VAProtectedSessionHwUpdateBufferType, sizeof(hw_update_buf));
   {
     base::AutoLock auto_lock(*va_lock_);
     constexpr size_t kHwIdentifierMaxSize = 64;
     memset(&hw_update_buf, 0, sizeof(hw_update_buf));
-    hw_update_buf.function_id = VA_TEE_EXEC_TEE_FUNCID_HW_UPDATE;
     hw_update_buf.input.data_size = hw_config.size();
     hw_update_buf.input.data =
         static_cast<void*>(const_cast<uint8_t*>(hw_config.data()));
@@ -1869,22 +1866,22 @@ bool VaapiWrapper::CreateProtectedSession(
     if (!MapAndCopy_Locked(
             hw_update->id(),
             {hw_update->type(), hw_update->size(), &hw_update_buf})) {
-      LOG(ERROR) << "Failed mapping Execute buf";
+      LOG(ERROR) << "Failed mapping HwUpdate buf";
       return false;
     }
 
-    VAStatus va_res = vaProtectedSessionExecute(
+    VAStatus va_res = vaProtectedSessionHwUpdate(
         va_display_, va_protected_session_id_, hw_update->id());
-    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAProtectedSessionExecute,
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAProtectedSessionHwUpdate,
                          false);
 
     ScopedVABufferMapping mapping(va_lock_, va_display_, hw_update->id());
     if (!mapping.IsValid()) {
-      LOG(ERROR) << "Failed mapping returned Execute buf";
+      LOG(ERROR) << "Failed mapping returned HwUpdate buf";
       return false;
     }
     auto* hw_update_buf_out =
-        reinterpret_cast<VAProtectedSessionExecuteBuffer*>(mapping.data());
+        reinterpret_cast<VAProtectedSessionHwUpdateBuffer*>(mapping.data());
     if (!hw_update_buf_out->output.data_size) {
       LOG(ERROR) << "Received empty HW identifier";
       return false;
@@ -1965,9 +1962,10 @@ bool VaapiWrapper::IsProtectedSessionDead() {
   if (va_protected_session_id_ == VA_INVALID_ID)
     return false;
 
+  constexpr uint32_t kVaTeeExecGpuFuncIdIsSessionAlive = 0x40000103;
   uint8_t alive;
   VAProtectedSessionExecuteBuffer tee_exec_buf = {};
-  tee_exec_buf.function_id = VA_TEE_EXEC_TEE_FUNCID_IS_SESSION_ALIVE;
+  tee_exec_buf.function_id = kVaTeeExecGpuFuncIdIsSessionAlive;
   tee_exec_buf.input.data_size = 0;
   tee_exec_buf.input.data = nullptr;
   tee_exec_buf.output.data_size = sizeof(alive);
@@ -2518,7 +2516,7 @@ std::unique_ptr<ScopedVABuffer> VaapiWrapper::CreateVABuffer(VABufferType type,
   base::AutoLock auto_lock(*va_lock_);
   TRACE_EVENT0("media,gpu", "VaapiWrapper::CreateVABufferLocked");
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  VAContextID context_id = type == VAProtectedSessionExecuteBufferType
+  VAContextID context_id = type == VAProtectedSessionHwUpdateBufferType
                                ? va_protected_session_id_
                                : va_context_id_;
 #else
@@ -2807,8 +2805,8 @@ bool VaapiWrapper::Initialize(CodecMode mode,
     for (auto& attrib : required_attribs) {
       if (attrib.type == VAConfigAttribEncryption) {
         attrib.value = (encryption_scheme == EncryptionScheme::kCbcs)
-                           ? VA_ENCRYPTION_TYPE_SUBSAMPLE_CBC
-                           : VA_ENCRYPTION_TYPE_SUBSAMPLE_CTR;
+                           ? VA_ENCRYPTION_TYPE_CBC
+                           : VA_ENCRYPTION_TYPE_CTR_128;
       }
     }
   }

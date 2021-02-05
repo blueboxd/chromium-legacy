@@ -19,8 +19,6 @@ namespace features {
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAccountManagementFlowsV2;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kAllowRepeatedUpdates;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAllowScrollSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAmbientModeFeature;
@@ -194,8 +192,6 @@ extern const base::Feature kImeOptionsInSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeSystemEmojiPicker;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kImprovedKeyboardShortcuts;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVirtualKeyboardFloatingDefault;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
@@ -346,7 +342,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsHostnameSettingEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaReauthEndpointEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeSandboxEnabled();
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImprovedKeyboardShortcutsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsKerberosSettingsSectionEnabled();

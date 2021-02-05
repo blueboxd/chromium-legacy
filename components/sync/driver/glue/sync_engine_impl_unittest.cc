@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -202,7 +201,7 @@ class SyncEngineImplTest : public testing::Test {
         std::make_unique<NiceMock<MockActiveDevicesProvider>>(),
         std::make_unique<SyncTransportDataPrefs>(&pref_service_),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)),
-        sync_task_runner, sync_transport_data_cleared_cb_.Get());
+        sync_task_runner);
 
     fake_manager_factory_ = std::make_unique<FakeSyncManagerFactory>(
         &fake_manager_, network::TestNetworkConnectionTracker::GetInstance());
@@ -304,8 +303,6 @@ class SyncEngineImplTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple pref_service_;
   TestSyncEngineHost host_;
-  NiceMock<base::MockCallback<base::RepeatingClosure>>
-      sync_transport_data_cleared_cb_;
   std::unique_ptr<SyncEngineImpl> backend_;
   std::unique_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_ = nullptr;
@@ -350,26 +347,10 @@ class SyncEngineImplWithSyncInvalidationsForWalletAndOfferTest
 
 // Test basic initialization with no initial types (first time initialization).
 // Only the nigori should be configured.
-TEST_F(SyncEngineImplTest, InitShutdownWithStopSync) {
+TEST_F(SyncEngineImplTest, InitShutdown) {
   InitializeBackend();
   EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
   EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
-
-  EXPECT_CALL(sync_transport_data_cleared_cb_, Run()).Times(0);
-  backend_->StopSyncingForShutdown();
-  backend_->Shutdown(STOP_SYNC);
-  backend_.reset();
-}
-
-TEST_F(SyncEngineImplTest, InitShutdownWithDisableSync) {
-  InitializeBackend();
-  EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
-  EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
-
-  EXPECT_CALL(sync_transport_data_cleared_cb_, Run());
-  backend_->StopSyncingForShutdown();
-  backend_->Shutdown(DISABLE_SYNC);
-  backend_.reset();
 }
 
 // Test first time sync scenario. All types should be properly configured.
@@ -770,23 +751,6 @@ TEST_F(SyncEngineImplTest,
   EXPECT_TRUE(transport_data_prefs.GetGaiaId().empty());
 }
 
-TEST_F(SyncEngineImplTest, ShouldLoadSyncDataUponInitialization) {
-  const std::string kTestCacheGuid = "test_cache_guid";
-  const std::string kTestBirthday = "test_birthday";
-
-  SyncTransportDataPrefs transport_data_prefs(&pref_service_);
-  transport_data_prefs.SetCacheGuid(kTestCacheGuid);
-  transport_data_prefs.SetBirthday(kTestBirthday);
-  transport_data_prefs.SetGaiaId(kTestGaiaId);
-
-  EXPECT_CALL(sync_transport_data_cleared_cb_, Run()).Times(0);
-  InitializeBackend();
-
-  EXPECT_EQ(kTestGaiaId, transport_data_prefs.GetGaiaId());
-  EXPECT_EQ(kTestCacheGuid, transport_data_prefs.GetCacheGuid());
-  EXPECT_EQ(kTestBirthday, transport_data_prefs.GetBirthday());
-}
-
 // Verifies that local sync transport data is thrown away if there is a mismatch
 // between the account ID cached in SyncPrefs and the actual one.
 TEST_F(SyncEngineImplTest,
@@ -799,7 +763,6 @@ TEST_F(SyncEngineImplTest,
   transport_data_prefs.SetBirthday(kTestBirthday);
   transport_data_prefs.SetGaiaId("corrupt_gaia_id");
 
-  EXPECT_CALL(sync_transport_data_cleared_cb_, Run());
   InitializeBackend();
 
   EXPECT_EQ(kTestGaiaId, transport_data_prefs.GetGaiaId());

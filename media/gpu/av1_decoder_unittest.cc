@@ -682,6 +682,8 @@ TEST_F(AV1DecoderTest, InconsistentReferenceFrameState) {
     // frames are valid.
     const libgav1::DecoderState* decoder_state = GetDecoderState();
     ASSERT_TRUE(decoder_state);
+    EXPECT_EQ(base::STLCount(decoder_state->reference_valid, false),
+              base::checked_cast<long>(decoder_state->reference_valid.size()));
     EXPECT_EQ(base::STLCount(decoder_state->reference_frame, nullptr),
               base::checked_cast<long>(decoder_state->reference_frame.size()));
 
@@ -708,6 +710,8 @@ TEST_F(AV1DecoderTest, InconsistentReferenceFrameState) {
     // reference frames have been updated): libgav1 should have decided that all
     // reference frames are valid.
     ASSERT_TRUE(decoder_state);
+    EXPECT_EQ(base::STLCount(decoder_state->reference_valid, true),
+              base::checked_cast<long>(decoder_state->reference_valid.size()));
     EXPECT_EQ(base::STLCount(decoder_state->reference_frame, nullptr), 0);
 
     // And to be consistent, all the reference frames tracked by the AV1Decoder
@@ -746,6 +750,8 @@ TEST_F(AV1DecoderTest, InconsistentReferenceFrameState) {
   // were valid.
   const libgav1::DecoderState* decoder_state = GetDecoderState();
   ASSERT_TRUE(decoder_state);
+  EXPECT_EQ(base::STLCount(decoder_state->reference_valid, true),
+            base::checked_cast<long>(decoder_state->reference_valid.size()));
   EXPECT_EQ(base::STLCount(decoder_state->reference_frame, nullptr), 0);
 }
 

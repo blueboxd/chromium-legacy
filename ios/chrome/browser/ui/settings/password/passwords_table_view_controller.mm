@@ -1166,7 +1166,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     _exportPasswordsItem.textColor = [UIColor colorNamed:kBlueColor];
     _exportPasswordsItem.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
-    _exportPasswordsItem.textColor = UIColor.cr_secondaryLabelColor;
+    _exportPasswordsItem.textColor = UIColor.cr_labelColor;
     _exportPasswordsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
   [self reconfigureCellsForItems:@[ _exportPasswordsItem ]];
@@ -1399,8 +1399,6 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     case ItemTypeCheckForProblemsButton:
       return self.passwordCheckState != PasswordCheckStateRunning &&
              self.passwordCheckState != PasswordCheckStateDisabled;
-    case ItemTypeExportPasswordsButton:
-      return _exportReady;
   }
   return YES;
 }
@@ -1594,15 +1592,15 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 #pragma mark Helper methods
 
 - (void)presentViewController:(UIViewController*)viewController {
-  if (_preparingPasswordsAlert.beingPresented) {
+  if (self.presentedViewController == _preparingPasswordsAlert &&
+      !_preparingPasswordsAlert.beingDismissed) {
     __weak PasswordsTableViewController* weakSelf = self;
-    [_preparingPasswordsAlert
-        dismissViewControllerAnimated:YES
-                           completion:^{
-                             [weakSelf presentViewController:viewController
-                                                    animated:YES
-                                                  completion:nil];
-                           }];
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                               [weakSelf presentViewController:viewController
+                                                      animated:YES
+                                                    completion:nil];
+                             }];
   } else {
     [self presentViewController:viewController animated:YES completion:nil];
   }

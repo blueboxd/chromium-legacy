@@ -993,7 +993,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       kTabGridDoneButtonIdentifier;
   topToolbar.trailingButton.target = self;
   topToolbar.trailingButton.action = @selector(doneButtonTapped:);
-  [topToolbar setNewTabButtonTarget:self action:@selector(newTabButtonTapped:)];
 
   // Configure and initialize the page control.
   [topToolbar.pageControl addTarget:self
@@ -1108,13 +1107,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)configureNewTabButtonBasedOnContentPermissions {
-  BOOL isRecentTabPage = self.currentPage == TabGridPageRemoteTabs;
-  BOOL allowedByContentAuthentication =
+  BOOL allowNewTab =
       !((self.currentPage == TabGridPageIncognitoTabs) &&
         self.incognitoTabsViewController.contentNeedsAuthentication);
-  BOOL allowNewTab = !isRecentTabPage && allowedByContentAuthentication;
   [self.bottomToolbar setNewTabButtonEnabled:allowNewTab];
-  [self.topToolbar setNewTabButtonEnabled:allowNewTab];
 }
 
 - (void)configureDoneButtonBasedOnPage:(TabGridPage)page {
@@ -1488,7 +1484,40 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     crash_keys::SetRegularTabCount(count);
   } else if (gridViewController == self.incognitoTabsViewController) {
     crash_keys::SetIncognitoTabCount(count);
+
+    // No assumption is made as to the state of the UI. This method can be
+    // called with an incognito view controller and a current page that is not
+    // the incognito tabs.
+    if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
+      // Show the regular tabs to the user if the last incognito tab is closed.
+      self.activePage = TabGridPageRegularTabs;
+      if (self.viewLoaded && self.viewVisible) {
+        // Visibly scroll to the regular tabs panel after a slight delay when
+        // the user is already in the tab switcher.
+        // Per crbug.com/980844, if the user has VoiceOver enabled, don't delay
+        // and just animate immediately; delaying the scrolling will cause
+        // VoiceOver to focus the text on the Incognito page.
+        __weak TabGridViewController* weakSelf = self;
+        auto scrollToRegularTabs = ^{
+          [weakSelf setCurrentPageAndPageControl:TabGridPageRegularTabs
+                                        animated:YES];
+        };
+        if (UIAccessibilityIsVoiceOverRunning()) {
+          scrollToRegularTabs();
+        } else {
+          base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
+              kTabGridScrollAnimationDelayInMilliseconds);
+          base::PostDelayedTask(FROM_HERE, {web::WebThread::UI},
+                                base::BindOnce(scrollToRegularTabs), delay);
+        }
+      } else {
+        // Directly show the regular tab page without animation if
+        // the user was not already in tab switcher.
+        [self setCurrentPageAndPageControl:TabGridPageRegularTabs animated:NO];
+      }
+    }
   }
+
   [self broadcastIncognitoContentVisibility];
 }
 

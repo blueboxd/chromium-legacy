@@ -51,11 +51,6 @@ class SurfaceAnimationManagerTest : public testing::Test {
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
 
-  void TearDown() override {
-    if (storage())
-      storage()->ExpireForTesting();
-  }
-
   base::TimeTicks AdvanceTime(base::TimeDelta delta) {
     current_time_ += delta;
     return current_time_;
@@ -97,15 +92,13 @@ TEST_F(SurfaceAnimationManagerTest, SaveAnimateNeedsBeginFrame) {
   SurfaceAnimationManager manager;
   EXPECT_FALSE(manager.NeedsBeginFrame());
 
+  // TODO(vmpstr): This will likely need to be broken into two steps with an
+  // in-between step to ensure that storage() has a saved frame that is valid.
   manager.ProcessTransitionDirectives(
       current_time(),
-      {CreateSaveDirective(1, base::TimeDelta::FromMilliseconds(100))},
+      {CreateSaveDirective(1, base::TimeDelta::FromMilliseconds(100)),
+       CreateAnimateDirective(2)},
       storage());
-
-  storage()->CompleteForTesting();
-
-  manager.ProcessTransitionDirectives(current_time(),
-                                      {CreateAnimateDirective(2)}, storage());
 
   EXPECT_TRUE(manager.NeedsBeginFrame());
 
@@ -167,8 +160,6 @@ TEST_F(SurfaceAnimationManagerTest, RepeatedSavesAreOk) {
     ++sequence_id;
     AdvanceTime(base::TimeDelta::FromMilliseconds(50));
   }
-
-  storage()->CompleteForTesting();
 
   manager.ProcessTransitionDirectives(
       current_time(), {CreateAnimateDirective(sequence_id)}, storage());

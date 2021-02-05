@@ -16,7 +16,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 namespace {
 
@@ -68,6 +67,7 @@ class TemplateURLFetcher::RequestDelegate {
                   const url::Origin& initiator,
                   network::mojom::URLLoaderFactory* url_loader_factory,
                   int render_frame_id,
+                  int resource_type,
                   int32_t request_id);
 
   // If data contains a valid OSDD, a TemplateURL is created and added to
@@ -105,6 +105,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const url::Origin& initiator,
     network::mojom::URLLoaderFactory* url_loader_factory,
     int render_frame_id,
+    int resource_type,
     int32_t request_id)
     : fetcher_(fetcher),
       keyword_(keyword),
@@ -125,11 +126,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   resource_request->url = osdd_url;
   resource_request->request_initiator = initiator;
   resource_request->render_frame_id = render_frame_id;
-  // TODO(crbug.com/1059639): Remove |resource_type| once the request is handled
-  // with RequestDestination without ResourceType.
-  resource_request->resource_type =
-      /* blink::mojom::ResourceType::kSubResource */ 6;
-  resource_request->destination = network::mojom::RequestDestination::kEmpty;
+  resource_request->resource_type = resource_type;
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
@@ -238,6 +235,7 @@ void TemplateURLFetcher::ScheduleDownload(
     const url::Origin& initiator,
     network::mojom::URLLoaderFactory* url_loader_factory,
     int render_frame_id,
+    int resource_type,
     int32_t request_id) {
   DCHECK(osdd_url.is_valid());
   DCHECK(!keyword.empty());
@@ -263,7 +261,7 @@ void TemplateURLFetcher::ScheduleDownload(
 
   requests_.push_back(std::make_unique<RequestDelegate>(
       this, keyword, osdd_url, favicon_url, initiator, url_loader_factory,
-      render_frame_id, request_id));
+      render_frame_id, resource_type, request_id));
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {

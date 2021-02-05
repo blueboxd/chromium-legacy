@@ -262,14 +262,12 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
       buffer_id,
       media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(std::move(data)));
   receiver_->OnFrameReadyInBuffer(
-      media::ReadyFrameInBuffer(
-          buffer_id, buffer_id,
-          std::make_unique<ScopedFrameDoneHelper>(
-              media::BindToCurrentLoop(base::BindOnce(
-                  &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
-                  weak_factory_.GetWeakPtr(), buffer_id))),
-          std::move(info)),
-      {});
+      buffer_id, buffer_id,
+      std::make_unique<ScopedFrameDoneHelper>(
+          media::BindToCurrentLoop(base::BindOnce(
+              &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
+              weak_factory_.GetWeakPtr(), buffer_id))),
+      std::move(info));
 }
 
 void FrameSinkVideoCaptureDevice::OnStopped() {

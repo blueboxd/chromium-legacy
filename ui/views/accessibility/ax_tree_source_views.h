@@ -29,7 +29,8 @@ class AXAuraObjWrapper;
 // (for example to create the "desktop" node for the extension API call
 // chrome.automation.getDesktop()).
 class VIEWS_EXPORT AXTreeSourceViews
-    : public ui::AXTreeSource<AXAuraObjWrapper*> {
+    : public ui::
+          AXTreeSource<AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData> {
  public:
   AXTreeSourceViews(AXAuraObjWrapper* root,
                     const ui::AXTreeID& tree_id,

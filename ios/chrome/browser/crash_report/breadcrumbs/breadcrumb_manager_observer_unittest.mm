@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breadcrumbs/core/breadcrumb_manager_observer.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -13,8 +13,7 @@
 #endif
 
 namespace {
-class FakeBreadcrumbManagerObserver
-    : public breadcrumbs::BreadcrumbManagerObserver {
+class FakeBreadcrumbManagerObserver : public BreadcrumbManagerObserver {
  public:
   FakeBreadcrumbManagerObserver() {}
   ~FakeBreadcrumbManagerObserver() override = default;
@@ -39,6 +38,7 @@ class FakeBreadcrumbManagerObserver
 
   BreadcrumbManager* old_events_removed_last_received_manager_ = nullptr;
 };
+
 }
 
 class BreadcrumbManagerObserverTest : public PlatformTest {

@@ -11,13 +11,6 @@ FullyInitializedAssistantState::FullyInitializedAssistantState() {
   InitializeAllValues();
 }
 
-void FullyInitializedAssistantState::SetAssistantEnabled(bool enabled) {
-  settings_enabled_ = enabled;
-
-  for (auto& observer : observers_)
-    observer.OnAssistantSettingsEnabled(settings_enabled_.value());
-}
-
 void FullyInitializedAssistantState::InitializeAllValues() {
   settings_enabled_ = true;
   consent_status_ = prefs::ConsentStatus::kActivityControlAccepted;

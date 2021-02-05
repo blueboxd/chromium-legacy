@@ -57,7 +57,7 @@ void LeakDetectionDelegateHelper::OnGetPasswordStoreResults(
         distinct_origins.insert(form->signon_realm);
         PasswordStore& store =
             form->IsUsingAccountStore() ? *account_store_ : *profile_store_;
-        store.AddInsecureCredential(InsecureCredential(
+        store.AddCompromisedCredentials(CompromisedCredentials(
             form->signon_realm, form->username_value, base::Time::Now(),
             InsecureType::kLeaked, IsMuted(false)));
       }

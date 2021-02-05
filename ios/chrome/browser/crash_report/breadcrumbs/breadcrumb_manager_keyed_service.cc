@@ -16,12 +16,12 @@ void BreadcrumbManagerKeyedService::AddEvent(const std::string& event) {
 }
 
 void BreadcrumbManagerKeyedService::AddObserver(
-    breadcrumbs::BreadcrumbManagerObserver* observer) {
+    BreadcrumbManagerObserver* observer) {
   breadcrumb_manager_->AddObserver(observer);
 }
 
 void BreadcrumbManagerKeyedService::RemoveObserver(
-    breadcrumbs::BreadcrumbManagerObserver* observer) {
+    BreadcrumbManagerObserver* observer) {
   breadcrumb_manager_->RemoveObserver(observer);
 }
 

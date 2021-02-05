@@ -34,6 +34,12 @@
 using base::RecordAction;
 using base::UserMetricsAction;
 
+namespace {
+
+const char kManagementPageURL[] = "chrome://management";
+
+}  // namespace
+
 @implementation PopupMenuActionHandler
 
 #pragma mark - PopupMenuTableViewControllerDelegate
@@ -219,7 +225,7 @@ using base::UserMetricsAction;
     case PopupMenuActionEnterpriseInfoMessage:
       [self.dispatcher
           openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:
-                                                 GURL(kChromeUIManagementURL)]];
+                                                 GURL(kManagementPageURL)]];
       break;
     default:
       NOTREACHED() << "Unexpected identifier";

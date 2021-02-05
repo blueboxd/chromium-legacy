@@ -15,6 +15,7 @@
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/metrics_switches.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/ukm/ukm_service.h"
 #include "components/variations/service/variations_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -40,6 +41,15 @@ MetricsServicesManager::CreateEntropyProvider() {
 metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetMetricsServiceClient()->GetMetricsService();
+}
+
+rappor::RapporServiceImpl* MetricsServicesManager::GetRapporServiceImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!rappor_service_) {
+    rappor_service_ = client_->CreateRapporServiceImpl();
+    rappor_service_->Initialize(client_->GetURLLoaderFactory());
+  }
+  return rappor_service_.get();
 }
 
 ukm::UkmService* MetricsServicesManager::GetUkmService() {
@@ -90,8 +100,8 @@ void MetricsServicesManager::UpdatePermissions(bool current_may_record,
     }
   }
 
-  // Stash the current permissions so that we can update the services correctly
-  // when preferences change.
+  // Stash the current permissions so that we can update the RapporServiceImpl
+  // correctly when the Rappor preference changes.
   may_record_ = current_may_record;
   consent_given_ = current_consent_given;
   may_upload_ = current_may_upload;
@@ -105,6 +115,7 @@ void MetricsServicesManager::UpdateRunningServices() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (cmdline->HasSwitch(metrics::switches::kMetricsRecordingOnly)) {
     metrics->StartRecordingForTests();
+    GetRapporServiceImpl()->Update(true, false);
     return;
   }
 
@@ -122,6 +133,8 @@ void MetricsServicesManager::UpdateRunningServices() {
   }
 
   UpdateUkmService();
+
+  GetRapporServiceImpl()->Update(may_record_, may_upload_);
 }
 
 void MetricsServicesManager::UpdateUkmService() {

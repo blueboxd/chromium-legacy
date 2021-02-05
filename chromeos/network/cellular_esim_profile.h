@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "dbus/object_path.h"
 
 namespace chromeos {
 
@@ -42,7 +41,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfile {
       const base::Value& value);
 
   CellularESimProfile(State state,
-                      const dbus::ObjectPath& path,
                       const std::string& eid,
                       const std::string& iccid,
                       const base::string16& name,
@@ -54,7 +52,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfile {
   ~CellularESimProfile();
 
   State state() const { return state_; }
-  const dbus::ObjectPath& path() const { return path_; }
   const std::string& eid() const { return eid_; }
   const std::string& iccid() const { return iccid_; }
   const base::string16& name() const { return name_; }
@@ -69,9 +66,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfile {
 
  private:
   State state_;
-
-  // Dbus path to the Hermes eSIM profile object.
-  dbus::ObjectPath path_;
 
   // EID of the Euicc in which this profile is installed or available for
   // installation.

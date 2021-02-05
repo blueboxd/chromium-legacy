@@ -6,7 +6,7 @@
 
 #include "base/path_service.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/crash_report/crash_helper.h"
+#include "ios/chrome/browser/crash_report/breakpad_helper.h"
 
 void ChromeCrashReporterClient::Create() {
   static base::NoDestructor<ChromeCrashReporterClient> crash_client;
@@ -23,7 +23,7 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
 }
 
 bool ChromeCrashReporterClient::GetCollectStatsConsent() {
-  return crash_helper::UserEnabledUploading();
+  return breakpad_helper::UserEnabledUploading();
 }
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {

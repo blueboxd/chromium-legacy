@@ -7,7 +7,11 @@
 
 namespace ui {
 
-struct AXTreeUpdate;
+struct AXNodeData;
+struct AXTreeData;
+template <typename A, typename B>
+struct AXTreeUpdateBase;
+using AXTreeUpdate = AXTreeUpdateBase<AXNodeData, AXTreeData>;
 
 }  // namespace ui
 

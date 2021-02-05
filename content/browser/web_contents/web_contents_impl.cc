@@ -47,6 +47,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_stats.h"
+#include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/bad_message.h"
@@ -123,7 +124,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
-#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
@@ -602,40 +602,11 @@ void WebContents::SetScreenOrientationDelegate(
   ScreenOrientationProvider::SetDelegate(delegate);
 }
 
-// WebContentsImpl::RenderWidgetHostDestructionObserver -----------------------
+// WebContentsImpl::DestructionObserver ----------------------------------------
 
-class WebContentsImpl::RenderWidgetHostDestructionObserver
-    : public RenderWidgetHostObserver {
+class WebContentsImpl::DestructionObserver : public WebContentsObserver {
  public:
-  RenderWidgetHostDestructionObserver(WebContentsImpl* owner,
-                                      RenderWidgetHost* watched_host)
-      : owner_(owner), watched_host_(watched_host) {
-    watched_host_->AddObserver(this);
-  }
-
-  ~RenderWidgetHostDestructionObserver() override {
-    watched_host_->RemoveObserver(this);
-  }
-
-  // RenderWidgetHostObserver:
-  void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override {
-    owner_->OnRenderWidgetHostDestroyed(widget_host);
-  }
-
- private:
-  WebContentsImpl* owner_;
-  RenderWidgetHost* watched_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostDestructionObserver);
-};
-
-// WebContentsImpl::WebContentsDestructionObserver ----------------------------
-
-class WebContentsImpl::WebContentsDestructionObserver
-    : public WebContentsObserver {
- public:
-  WebContentsDestructionObserver(WebContentsImpl* owner,
-                                 WebContents* watched_contents)
+  DestructionObserver(WebContentsImpl* owner, WebContents* watched_contents)
       : WebContentsObserver(watched_contents), owner_(owner) {}
 
   // WebContentsObserver:
@@ -647,7 +618,7 @@ class WebContentsImpl::WebContentsDestructionObserver
  private:
   WebContentsImpl* owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionObserver);
+  DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 
 // TODO(sreejakshetty): Make |WebContentsImpl::ColorChooser| per-frame instead
@@ -825,7 +796,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       render_view_host_delegate_view_(nullptr),
       created_with_opener_(false),
       node_(this),
-      frame_tree_(browser_context, this, this, this, this, this, this, this),
+      frame_tree_(browser_context, this, this, this, this, this, this),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
@@ -2661,7 +2632,8 @@ void WebContentsImpl::OnCookiesAccessed(RenderFrameHostImpl* rfh,
 
 void WebContentsImpl::Stop() {
   TRACE_EVENT0("content", "WebContentsImpl::Stop");
-  frame_tree_.StopLoading();
+  for (FrameTreeNode* node : frame_tree_.Nodes())
+    node->StopLoading();
   observers_.NotifyObservers(&WebContentsObserver::NavigationStopped);
 }
 
@@ -2693,6 +2665,27 @@ std::unique_ptr<WebContents> WebContentsImpl::Clone() {
   observers_.NotifyObservers(&WebContentsObserver::DidCloneToNewWebContents,
                              this, tc.get());
   return tc;
+}
+
+void WebContentsImpl::Observe(int type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::Observe", "type", type);
+  switch (type) {
+    case NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
+      RenderWidgetHost* host = Source<RenderWidgetHost>(source).ptr();
+      for (auto i = pending_widget_views_.begin();
+           i != pending_widget_views_.end(); ++i) {
+        if (host->GetView() == i->second) {
+          pending_widget_views_.erase(i);
+          break;
+        }
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 WebContents* WebContentsImpl::GetWebContents() {
@@ -2737,6 +2730,10 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   view_->CreateView(params.context);
 
+  registrar_.Add(this,
+                 NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+                 NotificationService::AllBrowserContextsAndSources());
+
   screen_orientation_provider_ =
       std::make_unique<ScreenOrientationProvider>(this);
 
@@ -2772,7 +2769,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::OnWebContentsDestroyed");
 
-  RemoveWebContentsDestructionObserver(web_contents);
+  RemoveDestructionObserver(web_contents);
 
   // Clear a pending contents that has been closed before being shown.
   for (auto iter = pending_contents_.begin(); iter != pending_contents_.end();
@@ -2789,59 +2786,20 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
   NOTREACHED();
 }
 
-void WebContentsImpl::OnRenderWidgetHostDestroyed(
-    RenderWidgetHost* render_widget_host) {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::OnWebContentsDestroyed");
-
-  RemoveRenderWidgetHostDestructionObserver(render_widget_host);
-
-  // Clear a pending widget that has been closed before being shown.
-  size_t num_erased =
-      base::EraseIf(pending_widgets_, [render_widget_host](const auto& pair) {
-        return pair.second == render_widget_host;
-      });
-  DCHECK_EQ(1u, num_erased);
-}
-
-void WebContentsImpl::AddWebContentsDestructionObserver(
-    WebContentsImpl* web_contents) {
+void WebContentsImpl::AddDestructionObserver(WebContentsImpl* web_contents) {
   OPTIONAL_TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("content.verbose"),
-                        "WebContentsImpl::AddWebContentsDestructionObserver");
+                        "WebContentsImpl::AddDestructionObserver");
 
-  if (!base::Contains(web_contents_destruction_observers_, web_contents)) {
-    web_contents_destruction_observers_[web_contents] =
-        std::make_unique<WebContentsDestructionObserver>(this, web_contents);
+  if (!base::Contains(destruction_observers_, web_contents)) {
+    destruction_observers_[web_contents] =
+        std::make_unique<DestructionObserver>(this, web_contents);
   }
 }
 
-void WebContentsImpl::RemoveWebContentsDestructionObserver(
-    WebContentsImpl* web_contents) {
-  OPTIONAL_TRACE_EVENT0(
-      TRACE_DISABLED_BY_DEFAULT("content.verbose"),
-      "WebContentsImpl::RemoveWebContentsDestructionObserver");
-  web_contents_destruction_observers_.erase(web_contents);
-}
-
-void WebContentsImpl::AddRenderWidgetHostDestructionObserver(
-    RenderWidgetHost* render_widget_host) {
-  OPTIONAL_TRACE_EVENT0(
-      TRACE_DISABLED_BY_DEFAULT("content.verbose"),
-      "WebContentsImpl::AddRenderWidgetHostDestructionObserver");
-
-  if (!base::Contains(render_widget_host_destruction_observers_,
-                      render_widget_host)) {
-    render_widget_host_destruction_observers_[render_widget_host] =
-        std::make_unique<RenderWidgetHostDestructionObserver>(
-            this, render_widget_host);
-  }
-}
-
-void WebContentsImpl::RemoveRenderWidgetHostDestructionObserver(
-    RenderWidgetHost* render_widget_host) {
-  OPTIONAL_TRACE_EVENT0(
-      TRACE_DISABLED_BY_DEFAULT("content.verbose"),
-      "WebContentsImpl::RemoveRenderWidgetHostDestructionObserver");
-  render_widget_host_destruction_observers_.erase(render_widget_host);
+void WebContentsImpl::RemoveDestructionObserver(WebContentsImpl* web_contents) {
+  OPTIONAL_TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("content.verbose"),
+                        "WebContentsImpl::RemoveDestructionObserver");
+  destruction_observers_.erase(web_contents);
 }
 
 void WebContentsImpl::AddObserver(WebContentsObserver* observer) {
@@ -3630,7 +3588,7 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
     GlobalRoutingID id(render_process_id, main_frame_routing_id);
     pending_contents_[id] =
         CreatedWindow(std::move(new_contents), params.target_url);
-    AddWebContentsDestructionObserver(new_contents_impl);
+    AddDestructionObserver(new_contents_impl);
   }
 
   if (delegate_) {
@@ -3729,11 +3687,9 @@ RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
   if (!widget_view)
     return nullptr;
   widget_view->SetWidgetType(WidgetType::kPopup);
-
   // Save the created widget associated with the route so we can show it later.
-  pending_widgets_[GlobalRoutingID(process->GetID(), route_id)] = widget_host;
-  AddRenderWidgetHostDestructionObserver(widget_host);
-
+  pending_widget_views_[GlobalRoutingID(process->GetID(), route_id)] =
+      widget_view;
   return widget_host;
 }
 
@@ -3864,7 +3820,7 @@ base::Optional<CreatedWindow> WebContentsImpl::GetCreatedWindow(
   CreatedWindow result = std::move(iter->second);
   WebContentsImpl* new_contents = result.contents.get();
   pending_contents_.erase(key);
-  RemoveWebContentsDestructionObserver(new_contents);
+  RemoveDestructionObserver(new_contents);
 
   // Don't initialize the guest WebContents immediately.
   if (BrowserPluginGuest::IsGuest(new_contents))
@@ -3883,22 +3839,22 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int process_id,
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::GetCreatedWidget",
                         "process_id", process_id, "route_id", route_id);
 
-  auto iter = pending_widgets_.find(GlobalRoutingID(process_id, route_id));
-  if (iter == pending_widgets_.end()) {
+  auto iter = pending_widget_views_.find(GlobalRoutingID(process_id, route_id));
+  if (iter == pending_widget_views_.end()) {
     DCHECK(false);
     return nullptr;
   }
 
-  RenderWidgetHost* widget_host = iter->second;
-  pending_widgets_.erase(GlobalRoutingID(process_id, route_id));
-  RemoveRenderWidgetHostDestructionObserver(widget_host);
+  RenderWidgetHostView* widget_host_view = iter->second;
+  pending_widget_views_.erase(GlobalRoutingID(process_id, route_id));
 
+  RenderWidgetHost* widget_host = widget_host_view->GetRenderWidgetHost();
   if (!widget_host->GetProcess()->IsInitializedAndNotDead()) {
     // The view has gone away or the renderer crashed. Nothing to do.
     return nullptr;
   }
 
-  return widget_host->GetView();
+  return widget_host_view;
 }
 
 void WebContentsImpl::CreateMediaPlayerHostForRenderFrameHost(
@@ -6105,6 +6061,8 @@ void WebContentsImpl::LoadingStateChanged(bool to_different_document,
     upload_position_ = 0;
   }
 
+  GetRenderManager()->SetIsLoading(is_loading);
+
   waiting_for_response_ = is_loading;
   is_load_to_different_document_ = to_different_document;
 
@@ -7043,6 +7001,14 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
     web_contents->GetFrameTree()->RegisterExistingOriginToPreventOptInIsolation(
         origin, navigation_request_to_exclude);
   }
+}
+
+void WebContentsImpl::DidCancelLoading() {
+  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DidCancelLoading");
+  GetController().DiscardNonCommittedEntries();
+
+  // Update the URL display.
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
 }
 
 void WebContentsImpl::DidChangeName(RenderFrameHost* render_frame_host,
@@ -8440,6 +8406,16 @@ void WebContentsImpl::RemoveReceiverSet(const std::string& interface_name) {
   auto it = receiver_sets_.find(interface_name);
   if (it != receiver_sets_.end())
     receiver_sets_.erase(it);
+}
+
+bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
+  OPTIONAL_TRACE_EVENT0("content",
+                        "WebContentsImpl::AddDomainInfoToRapporSample");
+  // Here we associate this metric to the main frame URL regardless of what
+  // caused it.
+  sample->SetStringField("Domain", ::rappor::GetDomainAndRegistrySampleFromGURL(
+                                       GetLastCommittedURL()));
+  return true;
 }
 
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {

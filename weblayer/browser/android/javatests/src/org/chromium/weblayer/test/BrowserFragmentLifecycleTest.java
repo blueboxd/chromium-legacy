@@ -103,7 +103,7 @@ public class BrowserFragmentLifecycleTest {
             NavigationController navigationController = activity.getTab().getNavigationController();
             navigationController.registerNavigationCallback(new NavigationCallback() {
                 @Override
-                public void onNavigationStarted(@NonNull Navigation navigation) {
+                public void onReadyToCommitNavigation(@NonNull Navigation navigation) {
                     destroyFragment(helper);
                 }
             });
@@ -338,7 +338,7 @@ public class BrowserFragmentLifecycleTest {
         }
 
         @Override
-        public void onCreated(Browser browser, InstrumentationActivity activity) {
+        public void onCreated(Browser browser) {
             mBrowsers.add(browser);
             if (!browser.isRestoringPreviousState()) {
                 mCallbackHelper.notifyCalled();

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_KEEP_ALIVE_HANDLE_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
@@ -21,27 +22,24 @@ class RenderProcessHost;
 // handles are invalidated, which will result in render process shutdown.
 class KeepAliveHandleFactory final {
  public:
-  KeepAliveHandleFactory(RenderProcessHost* process_host,
-                         base::TimeDelta timeout);
+  // |process_host->DisableKeepAliveRefCount()| must be false.
+  explicit KeepAliveHandleFactory(RenderProcessHost* process_host);
   ~KeepAliveHandleFactory();
-
-  KeepAliveHandleFactory(const KeepAliveHandleFactory&) = delete;
-  KeepAliveHandleFactory& operator=(const KeepAliveHandleFactory&) = delete;
 
   void Create(mojo::PendingReceiver<blink::mojom::KeepAliveHandle> receiver);
 
   // Sets the timeout after which all created handles will be invalidated.
-  void set_timeout(base::TimeDelta timeout) { timeout_ = timeout; }
-
-  void Bind(
-      mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver);
+  void SetTimeout(base::TimeDelta timeout);
 
  private:
   class KeepAliveHandleImpl;
   class Context;
 
-  scoped_refptr<Context> context_;
+  const int process_id_;
   base::TimeDelta timeout_;
+  base::WeakPtr<Context> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeepAliveHandleFactory);
 };
 
 }  // namespace content

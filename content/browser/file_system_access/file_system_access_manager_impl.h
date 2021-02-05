@@ -105,9 +105,6 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       blink::mojom::ChooseFileSystemEntryType type,
       std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
       blink::mojom::WellKnownDirectory well_known_starting_directory,
-      mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
-          starting_directory_token,
-      const std::string& suggested_name,
       bool include_accepts_all,
       ChooseEntriesCallback callback) override;
   void GetFileHandleFromToken(
@@ -266,20 +263,10 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   friend class FileSystemAccessFileHandleImpl;
 
   ~FileSystemAccessManagerImpl() override;
-  void ResolveDefaultDirectory(
-      const BindingContext& context,
-      blink::mojom::ChooseFileSystemEntryType type,
-      std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-      blink::mojom::WellKnownDirectory well_known_starting_directory,
-      const std::string& suggested_name,
-      bool include_accepts_all,
-      ChooseEntriesCallback callback,
-      FileSystemAccessTransferTokenImpl* resolved_starting_directory_token);
   void SetDefaultPathAndShowPicker(
       const BindingContext& context,
       blink::mojom::ChooseFileSystemEntryType type,
       std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-      const std::string& suggested_name,
       bool include_accepts_all,
       base::FilePath default_directory,
       ChooseEntriesCallback callback,

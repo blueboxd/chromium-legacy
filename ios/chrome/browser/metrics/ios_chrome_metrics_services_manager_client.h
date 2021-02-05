@@ -33,6 +33,7 @@ class IOSChromeMetricsServicesManagerClient
   class IOSChromeEnabledStateProvider;
 
   // metrics_services_manager::MetricsServicesManagerClient:
+  std::unique_ptr<rappor::RapporServiceImpl> CreateRapporServiceImpl() override;
   std::unique_ptr<variations::VariationsService> CreateVariationsService()
       override;
   std::unique_ptr<metrics::MetricsServiceClient> CreateMetricsServiceClient()

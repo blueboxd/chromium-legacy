@@ -153,7 +153,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   void ChangePasswordCheckState(PasswordCheckUIState state) {
     PasswordsTableViewController* passwords_controller =
         static_cast<PasswordsTableViewController*>(controller());
-    NSInteger count = GetTestStore().insecure_credentials().size();
+    NSInteger count = GetTestStore().compromised_credentials().size();
     [passwords_controller setPasswordCheckUIState:state
                         compromisedPasswordsCount:count];
   }
@@ -240,7 +240,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   }
 
   void AddCompromisedCredential1() {
-    GetTestStore().AddInsecureCredential(
+    GetTestStore().AddCompromisedCredentials(
         MakeCompromised("http://www.example.com/", "test@egmail.com"));
     RunUntilIdle();
   }
@@ -420,7 +420,7 @@ TEST_F(PasswordsTableViewControllerTest,
   CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS,
                           GetSectionIndex(SavedPasswords), 0);
 
-  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 
@@ -428,7 +428,7 @@ TEST_F(PasswordsTableViewControllerTest,
   AddBlockedForm1();
   // The export button should still be disabled as exporting blocked forms
   // is not currently supported.
-  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 }
@@ -465,7 +465,7 @@ TEST_F(PasswordsTableViewControllerTest, TestExportButtonDisabledEditMode) {
 
   [passwords_controller setEditing:YES animated:NO];
 
-  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 }

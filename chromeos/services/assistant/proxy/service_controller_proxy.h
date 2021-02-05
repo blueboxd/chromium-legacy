@@ -66,7 +66,6 @@ class ServiceControllerProxy {
       const AuthTokens& auth_tokens);
   // Stop and destroy the |AssistantManager| and all related objects.
   void Stop();
-  void ResetAllDataAndStop();
 
   void UpdateInternalOptions(const std::string& locale,
                              bool spoken_feedback_enabled);

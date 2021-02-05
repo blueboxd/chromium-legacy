@@ -32,9 +32,6 @@ class PlatformDelegateImpl
   void BindAssistantVolumeControl(
       mojo::PendingReceiver<::ash::mojom::AssistantVolumeControl> receiver)
       override;
-  void BindWakeLockProvider(
-      mojo::PendingReceiver<::device::mojom::WakeLockProvider> receiver)
-      override;
 
  private:
   mojo::Receiver<PlatformDelegate> receiver_{this};

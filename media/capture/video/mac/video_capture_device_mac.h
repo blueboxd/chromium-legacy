@@ -81,8 +81,9 @@ class VideoCaptureDeviceMac
                     int aspect_denominator,
                     base::TimeDelta timestamp) override;
   void ReceiveExternalGpuMemoryBufferFrame(
-      CapturedExternalVideoBuffer frame,
-      std::vector<CapturedExternalVideoBuffer> scaled_frames,
+      gfx::GpuMemoryBufferHandle handle,
+      const VideoCaptureFormat& frame_format,
+      const gfx::ColorSpace color_space,
       base::TimeDelta timestamp) override;
   void OnPhotoTaken(const uint8_t* image_data,
                     size_t image_length,

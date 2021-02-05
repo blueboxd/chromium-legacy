@@ -143,10 +143,8 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
             std::move(access_permission)),
         access_permission_proxy.InitWithNewPipeAndPassReceiver());
     video_frame_handler_->OnFrameReadyInBuffer(
-        mojom::ReadyFrameInBuffer::New(buffer_id, 0 /* frame_feedback_id */,
-                                       std::move(access_permission_proxy),
-                                       std::move(frame_info)),
-        {});
+        buffer_id, 0 /* frame_feedback_id */,
+        std::move(access_permission_proxy), std::move(frame_info));
   }
   buffer_pool_->RelinquishProducerReservation(buffer_id);
 }

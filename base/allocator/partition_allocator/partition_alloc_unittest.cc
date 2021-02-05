@@ -27,7 +27,6 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
-#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -190,11 +189,11 @@ class PartitionAllocTest : public testing::Test {
     PartitionAllocGlobalInit(HandleOOM);
     allocator.init({PartitionOptions::Alignment::kRegular,
                     PartitionOptions::ThreadCache::kDisabled,
-                    PartitionOptions::Quarantine::kDisallowed,
+                    PartitionOptions::PCScan::kAlwaysDisabled,
                     PartitionOptions::RefCount::kEnabled});
     aligned_allocator.init({PartitionOptions::Alignment::kAlignedAlloc,
                             PartitionOptions::ThreadCache::kDisabled,
-                            PartitionOptions::Quarantine::kDisallowed,
+                            PartitionOptions::PCScan::kAlwaysDisabled,
                             PartitionOptions::RefCount::kDisabled});
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
   }
@@ -346,8 +345,6 @@ class PartitionAllocTest : public testing::Test {
     EXPECT_TRUE(ClearAddressSpaceLimit());
     LOG(FATAL) << "DoReturnNullTest";
   }
-
-  void RunRefCountReallocSubtest(size_t orig_size, size_t new_size);
 
   base::test::ScopedFeatureList scoped_feature_list;
   PartitionAllocator<base::internal::ThreadSafe> allocator;
@@ -892,14 +889,16 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_LT(requested_size, actual_capacity);
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; ++offset) {
+      EXPECT_EQ(PartitionAllocGetSlotOffset(static_cast<char*>(ptr) + offset),
+                offset + allocator.root()->extras_offset);
       EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
                 slot_start);
     }
   }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif
   allocator.root()->Free(ptr);
 
   // Allocate a size that should be a perfect match for a bucket, because it
@@ -913,14 +912,16 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_EQ(requested_size, actual_capacity);
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; offset += 877) {
+      EXPECT_EQ(PartitionAllocGetSlotOffset(static_cast<char*>(ptr) + offset),
+                offset + allocator.root()->extras_offset);
       EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
                 slot_start);
     }
   }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif
   allocator.root()->Free(ptr);
 
   // Allocate a size that is a system page smaller than a bucket.
@@ -939,14 +940,16 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_EQ(requested_size + SystemPageSize(), actual_capacity);
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; offset += 4999) {
+      EXPECT_EQ(PartitionAllocGetSlotOffset(static_cast<char*>(ptr) + offset),
+                offset + allocator.root()->extras_offset);
       EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
                 slot_start);
     }
   }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif
 
   // Allocate the maximum allowed bucketed size.
   requested_size = kMaxBucketed - kExtraAllocSize;
@@ -958,14 +961,16 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_EQ(requested_size, actual_capacity);
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
     for (size_t offset = 0; offset < requested_size; offset += 4999) {
+      EXPECT_EQ(PartitionAllocGetSlotOffset(static_cast<char*>(ptr) + offset),
+                offset + allocator.root()->extras_offset);
       EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
                 slot_start);
     }
   }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif
 
   // Check that we can write at the end of the reported size too.
   char* char_ptr = reinterpret_cast<char*>(ptr);
@@ -995,8 +1000,8 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   EXPECT_EQ(requested_size, predicted_capacity);
 }
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-TEST_F(PartitionAllocTest, GetSlotStartMultiplePages) {
+#if defined(PA_HAS_64_BITS_POINTERS)
+TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
   if (!features::IsPartitionAllocGigaCageEnabled())
     return;
 
@@ -1018,17 +1023,16 @@ TEST_F(PartitionAllocTest, GetSlotStartMultiplePages) {
   }
   for (size_t i = 0; i < num_slots; ++i) {
     char* ptr = static_cast<char*>(ptrs[i]);
-    EXPECT_EQ(allocator.root()->AllocationCapacityFromPtr(ptr), requested_size);
-    char* slot_start =
-        reinterpret_cast<char*>(ptr) - allocator.root()->extras_offset;
     for (size_t offset = 0; offset < requested_size; offset += 13) {
-      EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
-                slot_start);
+      EXPECT_EQ(allocator.root()->AllocationCapacityFromPtr(ptr),
+                requested_size);
+      EXPECT_EQ(PartitionAllocGetSlotOffset(static_cast<char*>(ptr) + offset),
+                offset + allocator.root()->extras_offset);
     }
     allocator.root()->Free(ptr);
   }
 }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // defined(PA_HAS_64_BITS_POINTERS)
 
 // Test the realloc() contract.
 TEST_F(PartitionAllocTest, Realloc) {
@@ -2699,6 +2703,19 @@ TEST_F(PartitionAllocTest, AlignedAllocations) {
   }
 }
 
+// Test that the optimized `GetSlotOffset` implementation produces valid
+// results.
+TEST_F(PartitionAllocTest, OptimizedGetSlotOffset) {
+  auto* current_bucket = allocator.root()->buckets;
+
+  for (size_t i = 0; i < kNumBuckets; ++i, ++current_bucket) {
+    for (size_t offset = 0; offset <= kMaxBucketed; offset += 4999) {
+      EXPECT_EQ(offset % current_bucket->slot_size,
+                current_bucket->GetSlotOffset(offset));
+    }
+  }
+}
+
 // Test that the optimized `GetSlotNumber` implementation produces valid
 // results.
 TEST_F(PartitionAllocTest, OptimizedGetSlotNumber) {
@@ -2912,57 +2929,6 @@ TEST_F(PartitionAllocTest, RefCountBasic) {
   allocator.root()->Free(ptr3);
 }
 
-void PartitionAllocTest::RunRefCountReallocSubtest(size_t orig_size,
-                                                   size_t new_size) {
-  void* ptr1 = allocator.root()->Alloc(orig_size, type_name);
-  EXPECT_TRUE(ptr1);
-
-  auto* ref_count1 =
-      PartitionRefCountPointer(reinterpret_cast<char*>(ptr1) - kPointerOffset);
-  EXPECT_TRUE(ref_count1->HasOneRef());
-
-  ref_count1->Acquire();
-  EXPECT_FALSE(ref_count1->HasOneRef());
-
-  void* ptr2 = allocator.root()->Realloc(ptr1, new_size, type_name);
-  EXPECT_TRUE(ptr2);
-
-  // Re-query ref-count. It may have moved within the slot, or if Realloc
-  // changed the slot.
-  auto* ref_count2 =
-      PartitionRefCountPointer(reinterpret_cast<char*>(ptr2) - kPointerOffset);
-
-  if (ptr1 == ptr2) {
-    // If the slot didn't change, ref-count may have moved within it, in which
-    // case the old location may have been trashed, but the new one should have
-    // the same value.
-    EXPECT_FALSE(ref_count2->HasOneRef());
-
-    EXPECT_FALSE(ref_count2->Release());
-  } else {
-    // If the allocation was moved to another slot, the old ref-count stayed
-    // and still has a reference. The new ref-count has no references.
-    EXPECT_FALSE(ref_count1->HasOneRef());
-    EXPECT_TRUE(ref_count2->HasOneRef());
-
-    EXPECT_TRUE(ref_count1->Release());
-  }
-
-  allocator.root()->Free(ptr2);
-}
-
-TEST_F(PartitionAllocTest, RefCountRealloc) {
-  size_t alloc_sizes[] = {500, 5000, 50000, 400000};
-
-  for (size_t alloc_size : alloc_sizes) {
-    alloc_size -= kExtraAllocSize;
-    RunRefCountReallocSubtest(alloc_size, alloc_size - 9);
-    RunRefCountReallocSubtest(alloc_size, alloc_size + 9);
-    RunRefCountReallocSubtest(alloc_size, alloc_size * 2);
-    RunRefCountReallocSubtest(alloc_size, alloc_size / 2);
-  }
-}
-
 #endif
 
 TEST_F(PartitionAllocTest, FastPathOrReturnNull) {
@@ -3014,73 +2980,6 @@ TEST_F(PartitionAllocDeathTest, CheckTriggered) {
 
 #endif  // !defined(OFFICIAL_BUILD) && !defined(NDEBUG)
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
-    defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-
-namespace {
-
-class LambdaThreadDelegate : public PlatformThread::Delegate {
- public:
-  explicit LambdaThreadDelegate(RepeatingClosure f) : f_(f) {}
-  void ThreadMain() override { f_.Run(); }
-
- private:
-  RepeatingClosure f_;
-};
-
-NOINLINE void FreeForTest(void* data) {
-  free(data);
-}
-
-}  // namespace
-
-TEST_F(PartitionAllocTest, PreforkHandler) {
-  std::atomic<bool> please_stop;
-  std::atomic<int> started_threads{0};
-
-  // Continuously allocates / frees memory, bypassing the thread cache. This
-  // makes it likely that this thread will own the lock, and that the
-  // EXPECT_EXIT() part will deadlock.
-  constexpr size_t kAllocSize = ThreadCache::kSizeThreshold + 1;
-  LambdaThreadDelegate delegate{BindLambdaForTesting([&]() {
-    started_threads++;
-    while (!please_stop.load(std::memory_order_relaxed)) {
-      void* ptr = malloc(kAllocSize);
-
-      // A simple malloc() / free() pair can be discarded by the compiler (and
-      // is), making the test fail. It is sufficient to make |FreeForTest()| a
-      // NOINLINE function for the call to not be eliminated, but it is
-      // required.
-      FreeForTest(ptr);
-    }
-  })};
-
-  constexpr int kThreads = 4;
-  PlatformThreadHandle thread_handles[kThreads];
-  for (int i = 0; i < kThreads; i++) {
-    PlatformThread::Create(0, &delegate, &thread_handles[i]);
-  }
-  // Make sure all threads are actually already running.
-  while (started_threads != kThreads) {
-  }
-
-  EXPECT_EXIT(
-      {
-        void* ptr = malloc(kAllocSize);
-        FreeForTest(ptr);
-        exit(1);
-      },
-      ::testing::ExitedWithCode(1), "");
-
-  please_stop.store(true);
-  for (int i = 0; i < kThreads; i++) {
-    PlatformThread::Join(thread_handles[i]);
-  }
-}
-
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
-        // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 }  // namespace internal
 }  // namespace base

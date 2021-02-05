@@ -136,7 +136,6 @@ CONTENT_EXPORT extern const base::Feature kRenderDocument;
 CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kSavePageAsWebBundle;
-CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmation;
 CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmationDebug;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;

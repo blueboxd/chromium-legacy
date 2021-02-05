@@ -6,8 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "components/breadcrumbs/core/breadcrumb_manager_observer.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 namespace {
 
@@ -136,12 +136,10 @@ void BreadcrumbManager::DropOldEvents() {
   }
 }
 
-void BreadcrumbManager::AddObserver(
-    breadcrumbs::BreadcrumbManagerObserver* observer) {
+void BreadcrumbManager::AddObserver(BreadcrumbManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void BreadcrumbManager::RemoveObserver(
-    breadcrumbs::BreadcrumbManagerObserver* observer) {
+void BreadcrumbManager::RemoveObserver(BreadcrumbManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }

@@ -24,10 +24,7 @@ typedef base::UnguessableToken VideoCaptureControllerID;
 // video_capture_types.mojom.
 struct ReadyBuffer {
   ReadyBuffer(int buffer_id, media::mojom::VideoFrameInfoPtr frame_info);
-  ReadyBuffer(ReadyBuffer&& other);
   ~ReadyBuffer();
-
-  ReadyBuffer& operator=(ReadyBuffer&& other);
 
   int buffer_id;
   media::mojom::VideoFrameInfoPtr frame_info;

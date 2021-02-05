@@ -163,8 +163,9 @@ class TestVideoCaptureClient : public VideoCaptureDevice::Client {
     NOTREACHED();
   }
   void OnIncomingCapturedExternalBuffer(
-      CapturedExternalVideoBuffer buffer,
-      std::vector<CapturedExternalVideoBuffer> scaled_buffers,
+      gfx::GpuMemoryBufferHandle handle,
+      const VideoCaptureFormat& format,
+      const gfx::ColorSpace& color_space,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp) override {
     NOTREACHED();

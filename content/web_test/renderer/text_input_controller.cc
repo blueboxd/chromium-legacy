@@ -5,7 +5,7 @@
 #include "content/web_test/renderer/text_input_controller.h"
 
 #include "base/macros.h"
-#include "content/web_test/renderer/web_frame_test_proxy.h"
+#include "content/web_test/renderer/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -195,9 +195,8 @@ void TextInputControllerBindings::ForceTextInputStateUpdate() {
 }
 // TextInputController ---------------------------------------------------------
 
-TextInputController::TextInputController(
-    WebFrameTestProxy* web_frame_test_proxy)
-    : web_frame_test_proxy_(web_frame_test_proxy) {}
+TextInputController::TextInputController(WebViewTestProxy* web_view_test_proxy)
+    : web_view_test_proxy_(web_view_test_proxy) {}
 
 TextInputController::~TextInputController() {}
 
@@ -397,13 +396,17 @@ void TextInputController::SetComposition(const std::string& text) {
 }
 
 void TextInputController::ForceTextInputStateUpdate() {
+  // TODO(lukasza): Finish adding OOPIF support to the web tests harness.
+  RenderFrameImpl* main_frame = web_view_test_proxy_->GetMainRenderFrame();
+  CHECK(main_frame) << "WebView does not have a local main frame and"
+                    << " cannot handle input method controller tasks.";
   blink::WebFrameWidget* frame_widget =
-      web_frame_test_proxy_->GetLocalRootWebFrameWidget();
+      main_frame->GetLocalRootWebFrameWidget();
   frame_widget->ShowVirtualKeyboard();
 }
 
 blink::WebView* TextInputController::view() {
-  return web_frame_test_proxy_->GetWebFrame()->View();
+  return web_view_test_proxy_->GetWebView();
 }
 
 blink::WebInputMethodController*

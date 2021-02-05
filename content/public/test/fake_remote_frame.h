@@ -90,9 +90,6 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize() override;
-  void DidUpdateVisualProperties(
-      const cc::RenderFrameMetadata& metadata) override;
-  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

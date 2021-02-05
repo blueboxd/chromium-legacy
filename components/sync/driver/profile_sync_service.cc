@@ -538,8 +538,17 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
     // If the engine hasn't started or is already shut down when a DISABLE_SYNC
     // happens, the Directory needs to be cleaned up here.
     if (reason == ShutdownReason::DISABLE_SYNC) {
-      sync_client_->GetSyncApiComponentFactory()
-          ->ClearAllTransportDataExceptEncryptionBootstrapToken();
+      // Clearing the Directory via DeleteLegacyDirectoryFilesAndNigoriStorage()
+      // means there's IO involved which may we considerable overhead if
+      // triggered consistently upon browser startup (which is the case for
+      // certain codepaths such as the user being signed out). To avoid that,
+      // SyncPrefs is used to determine whether it's worth it.
+      if (!sync_transport_data_prefs_.GetCacheGuid().empty()) {
+        sync_client_->GetSyncApiComponentFactory()
+            ->DeleteLegacyDirectoryFilesAndNigoriStorage();
+      }
+
+      ClearLocalTransportDataAndNotify();
     }
     return;
   }
@@ -587,6 +596,10 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
 
   if (!IsLocalSyncEnabled()) {
     auth_manager_->ConnectionClosed();
+  }
+
+  if (reason == ShutdownReason::DISABLE_SYNC) {
+    ClearLocalTransportDataAndNotify();
   }
 
   NotifyObservers();
@@ -788,6 +801,12 @@ void ProfileSyncService::OnEngineInitialized(
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".
   is_first_time_sync_configure_ = is_first_time_sync_configure;
+
+  if (is_first_time_sync_configure_) {
+    // This can also happen if previous sync transport data was considered
+    // invalid, so notify higher layers just in case to trigger cleanup logic.
+    sync_client_->OnLocalSyncTransportDataCleared();
+  }
 
   UpdateEngineInitUMA(success);
 
@@ -1060,11 +1079,7 @@ bool ProfileSyncService::IsSignedIn() const {
 }
 
 base::Time ProfileSyncService::GetLastSyncedTimeForDebugging() const {
-  if (!engine_ || !engine_->IsInitialized()) {
-    return base::Time();
-  }
-
-  return engine_->GetLastSyncedTimeForDebugging();
+  return sync_transport_data_prefs_.GetLastSyncedTime();
 }
 
 void ProfileSyncService::OnPreferredDataTypesPrefChange() {
@@ -1875,6 +1890,11 @@ void ProfileSyncService::OnRequiredUserActionChanged() {
           user_settings_->IsTrustedVaultKeyRequiredForPreferredDataTypes());
     }
   }
+}
+
+void ProfileSyncService::ClearLocalTransportDataAndNotify() {
+  sync_transport_data_prefs_.ClearAllExceptEncryptionBootstrapToken();
+  sync_client_->OnLocalSyncTransportDataCleared();
 }
 
 }  // namespace syncer

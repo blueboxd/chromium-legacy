@@ -155,9 +155,9 @@ bool InitializePlatform(EGLDisplay display) {
   if (!angle_get_platform(static_cast<EGLDisplayType>(display),
                           g_PlatformMethodNames, g_NumPlatformMethods, nullptr,
                           &platformMethods))
-    return false;
-  platformMethods->currentTime = ANGLEPlatformImpl_currentTime;
+    platformMethods->currentTime = ANGLEPlatformImpl_currentTime;
   platformMethods->addTraceEvent = ANGLEPlatformImpl_addTraceEvent;
+  platformMethods->currentTime = ANGLEPlatformImpl_currentTime;
   platformMethods->getTraceCategoryEnabledFlag =
       ANGLEPlatformImpl_getTraceCategoryEnabledFlag;
   platformMethods->histogramBoolean = ANGLEPlatformImpl_histogramBoolean;

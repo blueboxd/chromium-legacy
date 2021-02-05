@@ -208,10 +208,6 @@ public final class NavigationImpl extends INavigation.Stub {
         mIsUserDecidingIntentLaunch = true;
     }
 
-    public boolean areIntentLaunchesAllowedInBackground() {
-        return NavigationImplJni.get().areIntentLaunchesAllowedInBackground(mNativeNavigationImpl);
-    }
-
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -267,6 +263,5 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isReload(long nativeNavigationImpl);
         boolean isServedFromBackForwardCache(long nativeNavigationImpl);
         boolean disableNetworkErrorAutoReload(long nativeNavigationImpl);
-        boolean areIntentLaunchesAllowedInBackground(long nativeNavigationImpl);
     }
 }

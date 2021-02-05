@@ -64,7 +64,7 @@ bool HeadlessCrashReporterClient::GetCrashDumpLocation(
     return false;
   }
 #if defined(OS_WIN)
-  *crash_dir = crash_directory.AsUTF16Unsafe();
+  *crash_dir = crash_directory.value();
 #else
   *crash_dir = std::move(crash_directory);
 #endif

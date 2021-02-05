@@ -49,12 +49,6 @@ export class Layout {
     this.previewBox_ = dom.get('#preview-box', HTMLDivElement);
 
     /**
-     * @const {!HTMLCanvasElement}
-     * @private
-     */
-    this.faceOverlay_ = dom.get('#preview-face-overlay', HTMLCanvasElement);
-
-    /**
      * @const {!CSSStyleDeclaration}
      * @private
      */
@@ -75,8 +69,6 @@ export class Layout {
   setContentSize_(width, height) {
     this.contentRule_.setProperty('width', `${width}px`);
     this.contentRule_.setProperty('height', `${height}px`);
-    this.faceOverlay_.width = width;
-    this.faceOverlay_.height = height;
   }
 
   /**

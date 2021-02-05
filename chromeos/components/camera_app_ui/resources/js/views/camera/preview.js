@@ -5,7 +5,6 @@
 import * as barcodeChip from '../../barcode_chip.js';
 import {assert, assertInstanceof} from '../../chrome_util.js';
 import * as dom from '../../dom.js';
-import {FaceOverlay} from '../../face.js';
 import {BarcodeScanner} from '../../models/barcode.js';
 import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
 import * as nav from '../../nav.js';
@@ -58,13 +57,6 @@ export class Preview {
      * @private
      */
     this.metadataObserverId_ = null;
-
-    /**
-     * The face overlay for showing faces over preview.
-     * @type {?FaceOverlay}
-     * @private
-     */
-    this.faceOverlay_ = null;
 
     /**
      * Current active stream.
@@ -460,17 +452,6 @@ export class Preview {
       };
     })();
 
-    const deviceOperator = await DeviceOperator.getInstance();
-    if (!deviceOperator) {
-      return;
-    }
-
-    const deviceId = videoTrack.getSettings().deviceId;
-    const activeArraySize = await deviceOperator.getActiveArraySize(deviceId);
-    const sensorOrientation =
-        await deviceOperator.getSensorOrientation(deviceId);
-    this.faceOverlay_ = new FaceOverlay(activeArraySize, sensorOrientation);
-
     const updateFace = (mode, rects) => {
       if (mode ===
           cros.mojom.AndroidStatisticsFaceDetectMode
@@ -482,7 +463,6 @@ export class Preview {
       const numFaces = rects.length / 4;
       const label = numFaces >= 2 ? 'Faces' : 'Face';
       showValue('#preview-num-faces', `${numFaces} ${label}`);
-      this.faceOverlay_.show(rects);
     };
 
     const callback = (metadata) => {
@@ -532,6 +512,12 @@ export class Preview {
       updateFace(faceMode, faceRects);
     };
 
+    const deviceOperator = await DeviceOperator.getInstance();
+    if (!deviceOperator) {
+      return;
+    }
+
+    const deviceId = videoTrack.getSettings().deviceId;
     this.metadataObserverId_ = await deviceOperator.addMetadataObserver(
         deviceId, callback, cros.mojom.StreamType.PREVIEW_OUTPUT);
   }
@@ -559,11 +545,6 @@ export class Preview {
           this.metadataObserverId_}`);
     }
     this.metadataObserverId_ = null;
-
-    if (this.faceOverlay_ !== null) {
-      this.faceOverlay_.clear();
-      this.faceOverlay_ = null;
-    }
   }
 
   /**

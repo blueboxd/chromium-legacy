@@ -30,9 +30,7 @@ class FakeSyncEngine : public SyncEngine,
  public:
   static constexpr char kTestBirthday[] = "1";
 
-  FakeSyncEngine(bool allow_init_completion,
-                 bool is_first_time_sync_configure,
-                 const base::RepeatingClosure& sync_transport_data_cleared_cb);
+  FakeSyncEngine(bool allow_init_completion, bool is_first_time_sync_configure);
   ~FakeSyncEngine() override;
 
   CoreAccountId authenticated_account_id() const {
@@ -57,8 +55,6 @@ class FakeSyncEngine : public SyncEngine,
   std::string GetCacheGuid() const override;
 
   std::string GetBirthday() const override;
-
-  base::Time GetLastSyncedTimeForDebugging() const override;
 
   void StartConfiguration() override;
 
@@ -105,7 +101,6 @@ class FakeSyncEngine : public SyncEngine,
  private:
   const bool allow_init_completion_;
   const bool is_first_time_sync_configure_;
-  const base::RepeatingClosure sync_transport_data_cleared_cb_;
   SyncEngineHost* host_ = nullptr;
   bool initialized_ = false;
   const SyncStatus default_sync_status_;

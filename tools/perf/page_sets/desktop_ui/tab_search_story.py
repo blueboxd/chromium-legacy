@@ -220,8 +220,7 @@ class TabSearchStoryMeasureMemory(TabSearchStory):
         'disabled-by-default-memory-infra')
 
   def GetExtraTracingMetrics(self):
-    return super(TabSearchStoryMeasureMemory,
-                 self).GetExtraTracingMetrics() + ['memoryMetric']
+    return ['memoryMetric']
 
 
 class TabSearchStoryMeasureMemoryBefore(TabSearchStoryMeasureMemory):
@@ -262,9 +261,6 @@ class TabSearchStoryMeasureMemory2TabSearch(TabSearchStoryMeasureMemory):
     tabs = action_runner.tab.browser.tabs
     new_tab = tabs.New()
     new_tab.Navigate(TAB_SEARCH_URL)
-    new_tab.WaitForDocumentReadyStateToBeComplete()
-    new_tab.action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY %
-                                            'used_js_heap_size2')
 
   def InteractWithPage(self, action_runner):
     action_runner.MeasureMemory(deterministic_mode=True)
@@ -275,12 +271,9 @@ class TabSearchStoryMeasureMemory3TabSearch(TabSearchStoryMeasureMemory):
 
   def RunNavigateSteps(self, action_runner):
     tabs = action_runner.tab.browser.tabs
-    for i in range(2):
+    for _ in range(2):
       new_tab = tabs.New()
       new_tab.Navigate(TAB_SEARCH_URL)
-      new_tab.WaitForDocumentReadyStateToBeComplete()
-      new_tab.action_runner.ExecuteJavaScript(
-          MEASURE_JS_MEMORY % ('used_js_heap_size' + str(i + 2)))
 
   def InteractWithPage(self, action_runner):
     action_runner.MeasureMemory(deterministic_mode=True)

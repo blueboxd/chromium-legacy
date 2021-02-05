@@ -96,6 +96,7 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/ipc_utils.h"
+#include "content/browser/renderer_host/keep_alive_handle_factory.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -430,8 +431,6 @@ class BackForwardCacheMessageFilter : public mojo::MessageFilter {
  private:
   // mojo::MessageFilter overrides.
   bool WillDispatch(mojo::Message* message) override {
-    if (!render_frame_host_->render_view_host())
-      return false;
     if (render_frame_host_->render_view_host()
             ->GetPageLifecycleStateManager()
             ->RendererExpectedToSendChannelAssociatedIpcs() ||
@@ -1043,8 +1042,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
               {ServiceWorkerContext::GetCoreThreadId()}))),
       frame_token_(frame_token),
-      keep_alive_handle_factory_(agent_scheduling_group_.GetProcess(),
-                                 base::TimeDelta::FromSeconds(30)),
+      keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(RenderViewHostImpl::kUnloadTimeout),
       media_device_id_salt_base_(
           BrowserContext::CreateRandomMediaDeviceIDSalt()),
@@ -2759,18 +2757,12 @@ void RenderFrameHostImpl::DidNavigate(
   frame_tree_node_->SetCurrentURL(params.url);
   SetLastCommittedOrigin(params.origin);
 
-  // For urn: resources served from WebBundles, use the Bundle's origin.
-  url::Origin origin =
-      (params.url.SchemeIs("urn") &&
-       navigation_request->GetWebBundleURL().is_valid())
-          ? url::Origin::Create(navigation_request->GetWebBundleURL())
-          : GetLastCommittedOrigin();
   // TODO(https://crbug.com/1164508): Remove this check once origin is computed
   // correctly by the browser side.
-  if (!origin.IsSameOriginWith(
+  if (!GetLastCommittedOrigin().IsSameOriginWith(
           GetIsolationInfoForSubresources().frame_origin().value())) {
-    isolation_info_ =
-        ComputeIsolationInfoInternal(origin, isolation_info_.request_type());
+    isolation_info_ = ComputeIsolationInfoInternal(
+        GetLastCommittedOrigin(), isolation_info_.request_type());
   }
 
   // Separately, update the frame's last successful URL except for net error
@@ -3541,7 +3533,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
   // OnDialogClosed, but there may be some cases that Blink returns !proceed
   // without showing the dialog. We also update the address bar here to be safe.
   if (!proceed)
-    frame_tree_->DidCancelLoading();
+    delegate_->DidCancelLoading();
 }
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
@@ -5161,7 +5153,9 @@ void RenderFrameHostImpl::BindDomOperationControllerHostReceiver(
 
 void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
     base::TimeDelta timeout) {
-  keep_alive_handle_factory_.set_timeout(timeout);
+  keep_alive_timeout_ = timeout;
+  if (keep_alive_handle_factory_)
+    keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
 }
 
 void RenderFrameHostImpl::UpdateState(const blink::PageState& state) {
@@ -5598,18 +5592,12 @@ void RenderFrameHostImpl::AdoptPortal(const blink::PortalToken& portal_token,
   }
   DCHECK_EQ(portal->owner_render_frame_host(), this);
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
-
-  // |frame_sink_id| should be set to the associated frame. See
-  // https://crbug.com/966119 for details.
-  viz::FrameSinkId frame_sink_id =
+  std::move(callback).Run(
+      proxy_host->GetRoutingID(),
       static_cast<RenderWidgetHostViewBase*>(proxy_host->frame_tree_node()
                                                  ->render_manager()
                                                  ->GetRenderWidgetHostView())
-          ->GetFrameSinkId();
-  proxy_host->GetAssociatedRemoteFrame()->SetFrameSinkId(frame_sink_id);
-
-  std::move(callback).Run(
-      proxy_host->GetRoutingID(),
+          ->GetFrameSinkId(),
       proxy_host->frame_tree_node()->current_replication_state().Clone(),
       proxy_host->GetFrameToken(), portal->GetDevToolsFrameToken());
 }
@@ -5634,8 +5622,8 @@ void RenderFrameHostImpl::CreateNewPopupWidget(
     create_new_popup_widget_callback_.Run(widget);
 }
 
-void RenderFrameHostImpl::GetKeepAliveHandleFactory(
-    mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver) {
+void RenderFrameHostImpl::IssueKeepAliveHandle(
+    mojo::PendingReceiver<blink::mojom::KeepAliveHandle> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetProcess()->IsKeepAliveRefCountDisabled())
     return;
@@ -5644,7 +5632,12 @@ void RenderFrameHostImpl::GetKeepAliveHandleFactory(
     return;
   }
 
-  keep_alive_handle_factory_.Bind(std::move(receiver));
+  if (!keep_alive_handle_factory_) {
+    keep_alive_handle_factory_ =
+        std::make_unique<KeepAliveHandleFactory>(GetProcess());
+    keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
+  }
+  keep_alive_handle_factory_->Create(std::move(receiver));
 }
 
 // TODO(ahemery): Move checks to mojo bad message reporting.
@@ -6372,7 +6365,8 @@ void RenderFrameHostImpl::CommitNavigation(
   DCHECK(navigation_request);
 
   if (blink::features::IsPrerender2Enabled()) {
-    if (IsPrerendering()) {
+    is_prerendering_ = commit_params->is_prerendering;
+    if (is_prerendering_) {
       broker_.ApplyMojoBinderPolicies(
           MojoBinderPolicyApplier::CreateForPrerendering(
               base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,
@@ -7888,7 +7882,7 @@ void RenderFrameHostImpl::CancelPrerendering() {
   // active during prerendering. It would be an error to call this while not
   // prerendering, as it could mean an interface request is never resolved for
   // an active page.
-  DCHECK(IsPrerendering());
+  DCHECK(is_prerendering_);
   auto* storage_partition_impl =
       static_cast<StoragePartitionImpl*>(GetStoragePartition());
   PrerenderHostRegistry* prerender_host_registry =
@@ -7899,13 +7893,14 @@ void RenderFrameHostImpl::CancelPrerendering() {
 }
 
 bool RenderFrameHostImpl::IsPrerendering() const {
-  return frame_tree()->is_prerendering();
+  DCHECK(!is_prerendering_ || blink::features::IsPrerender2Enabled());
+  return is_prerendering_;
 }
 
 void RenderFrameHostImpl::OnPrerenderedPageActivated() {
-  // TODO(crbug.com/1174506): Temporary until we understand the cause of the
-  // crash. Return to DCHECKs after the bug is fixed.
-  CHECK(blink::features::IsPrerender2Enabled());
+  DCHECK(blink::features::IsPrerender2Enabled());
+  DCHECK(is_prerendering_);
+  is_prerendering_ = false;
   broker_.ReleaseMojoBinderPolicies();
   for (auto& child : children_)
     child->current_frame_host()->OnPrerenderedPageActivated();
@@ -8852,7 +8847,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // This is a special case that does not go through CommitNavigation path.
     if (blink::features::IsPrerender2Enabled() && is_initial_empty_commit &&
         !is_main_frame()) {
-      if (IsPrerendering()) {
+      is_prerendering_ = parent_->IsPrerendering();
+      if (is_prerendering_) {
         broker_.ApplyMojoBinderPolicies(
             MojoBinderPolicyApplier::CreateForPrerendering(
                 base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,

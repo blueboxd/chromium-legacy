@@ -344,14 +344,13 @@ void AssistantManagerServiceImpl::Stop() {
 
   SetStateAndInformObservers(State::STOPPED);
 
+  // When user disables the feature, we also deletes all data.
+  if (!assistant_state()->settings_enabled().value() && assistant_manager())
+    assistant_manager()->ResetAllDataAndShutdown();
+
   media_host_->Stop();
   scoped_app_list_event_subscriber_.Reset();
-
-  // When user disables the feature, we also delete all data.
-  if (!assistant_state()->settings_enabled().value())
-    service_controller().ResetAllDataAndStop();
-  else
-    service_controller().Stop();
+  service_controller().Stop();
 }
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {

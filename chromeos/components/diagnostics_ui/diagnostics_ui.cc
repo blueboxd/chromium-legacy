@@ -127,7 +127,12 @@ DiagnosticsUI::DiagnosticsUI(
     content::WebUI* web_ui,
     const chromeos::diagnostics::SessionLogHandler::SelectFilePolicyCreator&
         select_file_policy_creator)
-    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
+    : ui::MojoWebUIController(web_ui),
+      session_log_handler_(std::make_unique<diagnostics::SessionLogHandler>(
+          select_file_policy_creator)) {
+  diagnostics_manager_ = std::make_unique<diagnostics::DiagnosticsManager>(
+      session_log_handler_.get());
+
   auto html_source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUIDiagnosticsAppHost));
   html_source->OverrideContentSecurityPolicy(
@@ -139,13 +144,6 @@ DiagnosticsUI::DiagnosticsUI(
                                          kChromeosDiagnosticsAppResourcesSize);
   SetUpWebUIDataSource(html_source.get(), resources,
                        IDR_DIAGNOSTICS_APP_INDEX_HTML);
-
-  auto handler = std::make_unique<diagnostics::SessionLogHandler>(
-      select_file_policy_creator);
-  diagnostics_manager_ =
-      std::make_unique<diagnostics::DiagnosticsManager>(handler.get());
-  web_ui->AddMessageHandler(std::move(handler));
-
   AddDiagnosticsStrings(html_source.get());
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());

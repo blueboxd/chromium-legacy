@@ -63,10 +63,6 @@ public class NavigationController {
             if (params != null) {
                 if (params.getShouldReplaceCurrentEntry()) iparams.replaceCurrentEntry();
                 if (params.isIntentProcessingDisabled()) iparams.disableIntentProcessing();
-                if (WebLayer.getSupportedMajorVersionInternal() >= 90
-                        && params.areIntentLaunchesAllowedInBackground()) {
-                    iparams.allowIntentLaunchesInBackground();
-                }
                 if (params.isNetworkErrorAutoReloadDisabled()) {
                     iparams.disableNetworkErrorAutoReload();
                 }
@@ -313,7 +309,9 @@ public class NavigationController {
         @Override
         public void readyToCommitNavigation(IClientNavigation navigation) {
             StrictModeWorkaround.apply();
-            // Functionality removed from NavigationCallback in M90. See crbug.com/1174193
+            for (NavigationCallback callback : mCallbacks) {
+                callback.onReadyToCommitNavigation((Navigation) navigation);
+            }
         }
 
         @Override

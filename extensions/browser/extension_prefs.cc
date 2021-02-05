@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -425,20 +424,17 @@ ExtensionPrefs* ExtensionPrefs::Get(content::BrowserContext* context) {
   return ExtensionPrefsFactory::GetInstance()->GetForBrowserContext(context);
 }
 
-static std::string MakePathRelative(const base::FilePath& parent,
-                                    const base::FilePath& child) {
+static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,
+                                             const base::FilePath& child) {
   if (!parent.IsParent(child))
-    return child.AsUTF8Unsafe();
+    return child.value();
 
   base::FilePath::StringType retval = child.value().substr(
       parent.value().length());
   if (base::FilePath::IsSeparator(retval[0]))
-    retval = retval.substr(1);
-#if defined(OS_WIN)
-  return base::WideToUTF8(retval);
-#else
-  return retval;
-#endif
+    return retval.substr(1);
+  else
+    return retval;
 }
 
 void ExtensionPrefs::MakePathsRelative() {
@@ -460,10 +456,10 @@ void ExtensionPrefs::MakePathsRelative() {
       // Unpacked extensions can have absolute paths.
       continue;
     }
-    std::string path_string;
+    base::FilePath::StringType path_string;
     if (!extension_dict->GetString(kPrefPath, &path_string))
       continue;
-    base::FilePath path = base::FilePath::FromUTF8Unsafe(path_string);
+    base::FilePath path(path_string);
     if (path.IsAbsolute())
       absolute_keys.insert(i.key());
   }
@@ -479,9 +475,9 @@ void ExtensionPrefs::MakePathsRelative() {
       NOTREACHED() << "Control should never reach here for extension " << *i;
       continue;
     }
-    std::string path_string;
+    base::FilePath::StringType path_string;
     extension_dict->GetString(kPrefPath, &path_string);
-    base::FilePath path = base::FilePath::FromUTF8Unsafe(path_string);
+    base::FilePath path(path_string);
     extension_dict->SetString(kPrefPath,
         MakePathRelative(install_directory_, path));
   }
@@ -1555,17 +1551,16 @@ std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
     // Just a warning for now.
   }
 
-  std::string path;
+  base::FilePath::StringType path;
   if (!extension->GetString(kPrefPath, &path))
     return std::unique_ptr<ExtensionInfo>();
-  base::FilePath file_path = base::FilePath::FromUTF8Unsafe(path);
 
   // Make path absolute. Most (but not all) extension types have relative paths.
-  if (!file_path.IsAbsolute())
-    file_path = install_directory_.Append(file_path);
+  if (!base::FilePath(path).IsAbsolute())
+    path = install_directory_.Append(path).value();
 
-  return std::make_unique<ExtensionInfo>(manifest, extension_id, file_path,
-                                         location);
+  return std::unique_ptr<ExtensionInfo>(new ExtensionInfo(
+      manifest, extension_id, base::FilePath(path), location));
 }
 
 std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
@@ -2458,7 +2453,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     }
   }
 
-  std::string path = MakePathRelative(install_directory_, extension->path());
+  base::FilePath::StringType path = MakePathRelative(install_directory_,
+                                                     extension->path());
   extension_dict->SetString(kPrefPath, path);
   if (!install_parameter.empty()) {
     extension_dict->SetString(kPrefInstallParam, install_parameter);

@@ -42,10 +42,7 @@ const base::Feature kAudioServiceLaunchOnStartup{
 // Runs the audio service in a separate process.
 const base::Feature kAudioServiceOutOfProcess {
   "AudioServiceOutOfProcess",
-// TODO(crbug.com/1052397): Remove !IS_CHROMEOS_LACROS once lacros starts being
-// built with OS_CHROMEOS instead of OS_LINUX.
-#if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -68,20 +65,8 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable using the BackForwardCache.
-// BackForwardCache is enabled only on Android for the moment, as some
-// desktop-specific features (including extensions) are not compatible with
-// bfcache yet. Tracking bug for enabling bfcache on desktop:
-// https://crbug.com/1171298.
-// Please note that while enabling BackForwardCache feature for tests, disable
-// BackForwardCacheMemoryControl to allow BackForwardCache for all devices
-// regardless of their memory.
-#if defined(OS_ANDROID)
-const base::Feature kBackForwardCache{"BackForwardCache",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-#else
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // BackForwardCache is disabled on low memory devices. The threshold is defined
 // via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
@@ -90,16 +75,8 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 // "BackForwardCacheMemoryControls" is checked before "BackForwardCache". It
 // means the low memory devices will activate neither the control group nor the
 // experimental group of the BackForwardCache field trial.
-
-// BackForwardCacheMemoryControls is enabled only on Android to disable
-// BackForwardCache for lower memory devices due to memory limiations.
-#if defined(OS_ANDROID)
-const base::Feature kBackForwardCacheMemoryControl{
-    "BackForwardCacheMemoryControls", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
 const base::Feature kBackForwardCacheMemoryControl{
     "BackForwardCacheMemoryControls", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Block subresource requests whose URLs contain embedded credentials (e.g.
 // `https://user:pass@example.com/resource`).
@@ -595,20 +572,6 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 // Enables saving pages as Web Bundle.
 const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Browser-side feature flag for SecurePaymentConfirmation, which can be used to
-// disable the feature. Enabling the browser-side feature by itself does not
-// actually enable the feature by default. The feature is also controlled by the
-// Blink runtime feature "SecurePaymentConfirmation". Both have to be enabled
-// for SecurePaymentConfirmation to be available.
-const base::Feature kSecurePaymentConfirmation {
-  "SecurePaymentConfirmationBrowser",
-#if defined(OS_MAC) || defined(OS_WIN)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must

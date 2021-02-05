@@ -423,7 +423,7 @@ bool ExtensionRegistrar::IsExtensionEnabled(
          !extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 
-void ExtensionRegistrar::DidCreateMainFrameForBackgroundPage(
+void ExtensionRegistrar::DidCreateRenderViewForBackgroundPage(
     ExtensionHost* host) {
   auto iter = orphaned_dev_tools_.find(host->extension_id());
   if (iter == orphaned_dev_tools_.end())
@@ -528,7 +528,7 @@ void ExtensionRegistrar::MaybeSpinUpLazyBackgroundPage(
     return;
 
   // For orphaned devtools, we will reconnect devtools to it later in
-  // DidCreateMainFrameForBackgroundPage().
+  // DidCreateRenderViewForBackgroundPage().
   bool has_orphaned_dev_tools =
       base::Contains(orphaned_dev_tools_, extension->id());
 

@@ -116,7 +116,7 @@ class PasswordIssuesMediatorTest : public BlockCleanupTest {
     form.username_element = base::ASCIIToUTF16("email");
 
     store()->AddLogin(form);
-    store()->AddInsecureCredential(MakeCompromised(website, username));
+    store()->AddCompromisedCredentials(MakeCompromised(website, username));
   }
 
   TestPasswordStore* store() { return store_.get(); }

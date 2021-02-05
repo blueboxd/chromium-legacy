@@ -54,6 +54,7 @@ class OpenXrRenderLoop : public XRCompositorCommon,
   bool StartRuntime() override;
   void StopRuntime() override;
   void OnSessionStart() override;
+  bool PreComposite() override;
   bool HasSessionEnded() override;
   bool SubmitCompositedFrame() override;
   void EnableSupportedFeatures(

@@ -33,8 +33,7 @@ class AccountReconcilorDelegate {
     kRevoke
   };
 
-  AccountReconcilorDelegate();
-  virtual ~AccountReconcilorDelegate();
+  virtual ~AccountReconcilorDelegate() {}
 
   // Returns true if the reconcilor should reconcile the profile. Defaults to
   // false.
@@ -44,6 +43,11 @@ class AccountReconcilorDelegate {
   // cookies.
   // Default implementation returns true.
   virtual bool IsMultiloginEndpointEnabled() const;
+
+  // Returns true if account consistency is enforced (Mirror or Dice).
+  // If this is false, reconcile is done, but its results are discarded and no
+  // changes to the accounts are made. Defaults to false.
+  virtual bool IsAccountConsistencyEnforced() const;
 
   // Returns the value to set in the "source" parameter for Gaia API calls.
   virtual gaia::GaiaSource GetGaiaApiSource() const;

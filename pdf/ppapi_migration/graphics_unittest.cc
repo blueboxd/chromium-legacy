@@ -8,12 +8,10 @@
 
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
-#include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -21,6 +19,12 @@
 
 namespace chrome_pdf {
 namespace {
+
+SkBitmap CreateN32PremulSkBitmap(const SkISize& size) {
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(size));
+  return bitmap;
+}
 
 Image CreateSourceImage(const SkISize& src_size) {
   SkBitmap bitmap = CreateN32PremulSkBitmap(src_size);

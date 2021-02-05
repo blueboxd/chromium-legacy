@@ -22,9 +22,6 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_loader.h"
-#include "ui/base/cursor/mojom/cursor_type.mojom.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_cursor.h"
@@ -108,7 +105,8 @@ class SimpleTestDragDropClient : public aura::client::DragDropClient,
                                  public ui::XDragDropClient::Delegate,
                                  public ui::X11MoveLoopDelegate {
  public:
-  explicit SimpleTestDragDropClient(aura::Window*);
+  SimpleTestDragDropClient(aura::Window*,
+                           DesktopNativeCursorManager* cursor_manager);
   ~SimpleTestDragDropClient() override;
 
   // Sets |window| as the topmost window for all mouse positions.
@@ -174,7 +172,8 @@ class TestDragDropClient : public SimpleTestDragDropClient {
   static constexpr int kMouseMoveX = 100;
   static constexpr int kMouseMoveY = 200;
 
-  explicit TestDragDropClient(aura::Window* window);
+  TestDragDropClient(aura::Window* window,
+                     DesktopNativeCursorManager* cursor_manager);
   ~TestDragDropClient() override;
 
   // Returns the x11::Window of the window which initiated the drag.
@@ -283,7 +282,9 @@ void TestMoveLoop::EndMoveLoop() {
 ///////////////////////////////////////////////////////////////////////////////
 // SimpleTestDragDropClient
 
-SimpleTestDragDropClient::SimpleTestDragDropClient(aura::Window* window)
+SimpleTestDragDropClient::SimpleTestDragDropClient(
+    aura::Window* window,
+    DesktopNativeCursorManager* cursor_manager)
     : ui::XDragDropClient(
           this,
           static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
@@ -319,13 +320,15 @@ int SimpleTestDragDropClient::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  auto cursor_loader = ui::CursorLoader::Create();
-  ui::Cursor grabbing = ui::mojom::CursorType::kGrabbing;
-  cursor_loader->SetPlatformCursor(&grabbing);
+  auto cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
   auto* last_cursor = static_cast<ui::X11Cursor*>(
       source_window->GetHost()->last_cursor().platform());
-  loop_->RunMoveLoop(!source_window->HasCapture(), last_cursor,
-                     static_cast<ui::X11Cursor*>(grabbing.platform()));
+  loop_->RunMoveLoop(
+      !source_window->HasCapture(), last_cursor,
+      static_cast<ui::X11Cursor*>(
+          cursor_manager_
+              ->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
+              .platform()));
 
   auto resulting_operation = negotiated_operation();
   CleanupDrag();
@@ -384,8 +387,10 @@ void SimpleTestDragDropClient::OnMoveLoopEnded() {
 ///////////////////////////////////////////////////////////////////////////////
 // TestDragDropClient
 
-TestDragDropClient::TestDragDropClient(aura::Window* window)
-    : SimpleTestDragDropClient(window),
+TestDragDropClient::TestDragDropClient(
+    aura::Window* window,
+    DesktopNativeCursorManager* cursor_manager)
+    : SimpleTestDragDropClient(window, cursor_manager),
       source_window_(
           static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
 }
@@ -493,12 +498,16 @@ class X11DragDropClientTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    client_ = std::make_unique<TestDragDropClient>(widget_->GetNativeWindow());
+    cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
+
+    client_ = std::make_unique<TestDragDropClient>(widget_->GetNativeWindow(),
+                                                   cursor_manager_.get());
     // client_->Init();
   }
 
   void TearDown() override {
     client_.reset();
+    cursor_manager_.reset();
     widget_.reset();
     ViewsTestBase::TearDown();
   }
@@ -507,6 +516,7 @@ class X11DragDropClientTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<TestDragDropClient> client_;
+  std::unique_ptr<DesktopNativeCursorManager> cursor_manager_;
 
   // The widget used to initiate drags.
   std::unique_ptr<Widget> widget_;

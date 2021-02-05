@@ -27,6 +27,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/web_test/renderer/test_runner.h"
 #include "content/web_test/renderer/web_test_spell_checker.h"
+#include "content/web_test/renderer/web_view_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -87,6 +87,11 @@ const char* const kPointerTypeStringMouse = "mouse";
 const char* const kPointerTypeStringTouch = "touch";
 const char* const kPointerTypeStringPen = "pen";
 const char* const kPointerTypeStringEraser = "eraser";
+
+WebViewTestProxy* GetWebViewTestProxy(blink::WebFrameWidget* widget) {
+  return static_cast<WebViewTestProxy*>(
+      RenderView::FromWebView(widget->LocalRoot()->View()));
+}
 
 // Assigns |pointerType| from the provided |args|. Returns false if there was
 // any error.
@@ -1246,6 +1251,7 @@ EventSender::SavedEvent::SavedEvent()
 EventSender::EventSender(blink::WebFrameWidget* web_frame_widget,
                          content::TestRunner* test_runner)
     : web_frame_widget_(web_frame_widget),
+      web_view_test_proxy_(GetWebViewTestProxy(web_frame_widget)),
       test_runner_(test_runner) {
   Reset();
 }
@@ -1932,7 +1938,7 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
     item.filename_data =
-        test_runner_->GetAbsoluteWebStringFromUTF8Path(file_path);
+        web_view_proxy()->GetAbsoluteWebStringFromUTF8Path(file_path);
     items.emplace_back(item);
   }
 
@@ -2789,6 +2795,10 @@ void EventSender::SendGesturesForMouseWheelEvent(
   HandleInputEventOnViewOrPopup(end_event);
 }
 
+WebViewTestProxy* EventSender::web_view_proxy() {
+  return web_view_test_proxy_;
+}
+
 const blink::WebView* EventSender::view() const {
   return web_frame_widget_->LocalRoot()->View();
 }
@@ -2821,7 +2831,7 @@ void EventSender::UpdateLifecycleToPrePaint() {
 }
 
 float EventSender::DeviceScaleFactorForEvents() {
-  if (!blink::Platform::Current()->IsUseZoomForDSFEnabled())
+  if (!web_view_test_proxy_->compositor_deps()->IsUseZoomForDSFEnabled())
     return 1;
   return web_frame_widget_->GetOriginalScreenInfo().device_scale_factor;
 }

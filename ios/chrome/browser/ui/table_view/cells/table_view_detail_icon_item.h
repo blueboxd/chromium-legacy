@@ -22,9 +22,7 @@
 @property(nonatomic, copy) NSString* detailText;
 
 // The layout constraint axis at which |text| and |detailText| should be
-// aligned. In the case of a vertical layout, the text will adapt its font
-// size to a title/subtitle style.
-// Defaults to UILayoutConstraintAxisHorizontal.
+// aligned. Defaults to UILayoutConstraintAxisHorizontal.
 @property(nonatomic, assign) UILayoutConstraintAxis textLayoutConstraintAxis;
 
 @end

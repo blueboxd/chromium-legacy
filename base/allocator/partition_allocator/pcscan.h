@@ -63,10 +63,7 @@ class BASE_EXPORT PCScan final {
   PCScan& operator=(const PCScan&) = delete;
 
   // Registers a root for scanning.
-  void RegisterScannableRoot(Root* root);
-  // Registers a root that doesn't need to be scanned but still contains
-  // quarantined objects.
-  void RegisterNonScannableRoot(Root* root);
+  void RegisterRoot(Root* root);
 
   ALWAYS_INLINE void MoveToQuarantine(void* ptr, SlotSpan* slot_span);
 
@@ -147,13 +144,9 @@ class BASE_EXPORT PCScan final {
   // Performs scanning unconditionally.
   void PerformScan(InvocationMode invocation_mode);
 
-  // Get size of all committed pages from scannable and nonscannable roots.
-  size_t CalculateTotalHeapSize() const;
-
   static PCScan instance_ PA_CONSTINIT;
 
-  Roots scannable_roots_{};
-  Roots nonscannable_roots_{};
+  Roots roots_{};
   QuarantineData quarantine_data_{};
   std::atomic<bool> in_progress_{false};
 };

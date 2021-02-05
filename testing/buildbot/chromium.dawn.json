@@ -2305,7 +2305,8 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--test-launcher-jobs=1",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2803,7 +2804,8 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--test-launcher-jobs=1",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3303,7 +3305,8 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--test-launcher-jobs=1",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3797,7 +3800,8 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--test-launcher-jobs=1",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"

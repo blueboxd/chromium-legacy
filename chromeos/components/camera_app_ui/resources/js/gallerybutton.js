@@ -14,7 +14,7 @@ import {
 import {ResultSaver} from './models/result_saver.js';
 import {VideoSaver} from './models/video_saver.js';
 import {ChromeHelper} from './mojo/chrome_helper.js';
-import {scaleImage, scaleVideo} from './thumbnailer.js';
+import * as util from './util.js';
 
 /**
  * Width of thumbnail used by cover photo of gallery button.
@@ -65,10 +65,9 @@ class CoverPhoto {
    * @return {!Promise<!CoverPhoto>}
    */
   static async create(file) {
-    const blob = await file.file();
-    const thumbnail = filesystem.hasVideoPrefix(file) ?
-        await scaleVideo(blob, THUMBNAIL_WIDTH) :
-        await scaleImage(blob, THUMBNAIL_WIDTH);
+    const isVideo = filesystem.hasVideoPrefix(file);
+    const thumbnail =
+        await util.scalePicture(await file.file(), isVideo, THUMBNAIL_WIDTH);
     return new CoverPhoto(file, URL.createObjectURL(thumbnail));
   }
 }

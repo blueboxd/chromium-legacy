@@ -179,18 +179,7 @@ void ServiceController::Stop() {
   chromium_api_delegate_ = nullptr;
   device_state_listener_ = nullptr;
 
-  for (auto& observer : assistant_manager_observers_)
-    observer.OnAssistantManagerDestroyed();
-
   DVLOG(1) << "Stopped Libassistant service";
-}
-
-void ServiceController::ResetAllDataAndStop() {
-  if (assistant_manager()) {
-    DVLOG(1) << "Resetting all Libassistant data";
-    assistant_manager()->ResetAllDataAndShutdown();
-  }
-  Stop();
 }
 
 void ServiceController::AddAndFireStateObserver(

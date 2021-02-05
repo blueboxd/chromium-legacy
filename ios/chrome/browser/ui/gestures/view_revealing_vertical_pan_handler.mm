@@ -45,9 +45,10 @@ enum class LayoutTransitionState {
 
 @interface ViewRevealingVerticalPanHandler ()
 
-// Privately redeclare |currentState| as readwrite.
-@property(nonatomic, readwrite, assign) ViewRevealState currentState;
-
+// Represents one of the three possible "states" of view reveal, which are:
+// No view revealed (Hidden), view partially revealed (Peeked), and view
+// completely revealed (Revealed).
+@property(nonatomic, assign) ViewRevealState currentState;
 // The state that the currentState will be set to if the transition animation
 // completes with its REVERSED property set to NO.
 @property(nonatomic, assign) ViewRevealState nextState;

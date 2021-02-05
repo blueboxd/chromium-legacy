@@ -146,11 +146,8 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   {
     base::AutoLock lock(lock_);
     decode_done_closure_ = base::BindOnce(
-        decode_done_cb_,
-        ReadyFrameInBuffer(out_buffer.id, out_buffer.frame_feedback_id,
-                           std::move(out_buffer.access_permission),
-                           std::move(out_frame_info)),
-        std::vector<ReadyFrameInBuffer>());
+        decode_done_cb_, out_buffer.id, out_buffer.frame_feedback_id,
+        std::move(out_buffer.access_permission), std::move(out_frame_info));
   }
 
   // base::Unretained is safe because |decoder_| is deleted on

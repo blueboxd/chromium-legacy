@@ -222,10 +222,8 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
     EXPECT_CALL(*consumer_, OnBufferReadyCall(buffer_context_id))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     frame_receiver_->OnFrameReadyInBuffer(
-        media::ReadyFrameInBuffer(buffer_id, feedback_id,
-                                  std::make_unique<StubReadWritePermission>(),
-                                  GetVideoFrameInfo()),
-        {});
+        buffer_id, feedback_id, std::make_unique<StubReadWritePermission>(),
+        GetVideoFrameInfo());
     run_loop.Run();
   }
 

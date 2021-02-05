@@ -596,11 +596,8 @@ TEST_F(AttestationFlowTest, GetMachineCertificateAlreadyEnrolled) {
                 ->certificate());
 }
 
-// There used to be an incidence that a non-empty username are sent when
-// requesting a device key certificate, and we remove the username in the
-// attestation flow process though it is not considered a valid input.
-// TODO(b/179364923): Develop a better API design along with strict assertion
-// instead of silently removing the username.
+// We have the usecase where the machine key is requested with the user account
+// id.
 TEST_F(AttestationFlowTest, GetMachineCertificateWithUsername) {
   chromeos::AttestationClient::Get()
       ->GetTestInterface()
@@ -919,11 +916,6 @@ TEST_F(AttestationFlowTest, GetCertificate_AlreadyExists) {
   RunUntilIdle();
 }
 
-// There used to be an incidence that a non-empty username are sent when
-// requesting a device key certificate, and we remove the username in the
-// attestation flow process though it is not considered a valid input.
-// TODO(b/179364923): Develop a better API design along with strict assertion
-// instead of silently removing the username.
 TEST_F(AttestationFlowTest, GetCertificate_LookupMachineKeyWithAccountId) {
   chromeos::AttestationClient::Get()
       ->GetTestInterface()

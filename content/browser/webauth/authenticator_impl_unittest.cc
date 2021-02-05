@@ -5291,13 +5291,11 @@ class ResidentKeyTestAuthenticatorRequestDelegate
       std::string expected_accounts,
       std::vector<uint8_t> selected_user_id,
       bool* might_create_resident_credential,
-      base::Optional<InterestingFailureReason>* failure_reason,
-      bool* is_conditional)
+      base::Optional<InterestingFailureReason>* failure_reason)
       : expected_accounts_(expected_accounts),
         selected_user_id_(selected_user_id),
         might_create_resident_credential_(might_create_resident_credential),
-        failure_reason_(failure_reason),
-        is_conditional_(is_conditional) {}
+        failure_reason_(failure_reason) {}
 
   bool SupportsPIN() const override { return true; }
 
@@ -5356,16 +5354,11 @@ class ResidentKeyTestAuthenticatorRequestDelegate
         reason);
   }
 
-  void SetConditionalRequest(bool is_conditional) override {
-    *is_conditional_ = is_conditional;
-  }
-
  private:
   const std::string expected_accounts_;
   const std::vector<uint8_t> selected_user_id_;
   bool* const might_create_resident_credential_;
   base::Optional<InterestingFailureReason>* const failure_reason_;
-  bool* const is_conditional_;
   DISALLOW_COPY_AND_ASSIGN(ResidentKeyTestAuthenticatorRequestDelegate);
 };
 
@@ -5377,13 +5370,12 @@ class ResidentKeyTestAuthenticatorContentBrowserClient
       RenderFrameHost* render_frame_host) override {
     return std::make_unique<ResidentKeyTestAuthenticatorRequestDelegate>(
         expected_accounts, selected_user_id, &might_create_resident_credential,
-        &failure_reason, &is_conditional);
+        &failure_reason);
   }
 
   std::string expected_accounts;
   std::vector<uint8_t> selected_user_id;
   bool might_create_resident_credential = false;
-  bool is_conditional = false;
   base::Optional<AuthenticatorRequestClientDelegate::InterestingFailureReason>
       failure_reason;
 };
@@ -6458,27 +6450,6 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
     ASSERT_EQ(result->first, salt1_eval);
     ASSERT_FALSE(result->second);
   }
-}
-
-TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI) {
-  device::VirtualCtap2Device::Config config;
-  config.resident_key_support = true;
-  config.internal_uv_support = true;
-  virtual_device_factory_->SetCtap2Config(config);
-  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
-
-  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
-      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
-
-  // |SelectAccount| should not be called when there's only a single response
-  // without identifying information.
-  test_client_.expected_accounts = "<invalid>";
-  PublicKeyCredentialRequestOptionsPtr options(get_credential_options());
-  options->is_conditional = true;
-  GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-  EXPECT_TRUE(test_client_.is_conditional);
 }
 
 class InternalAuthenticatorImplTest : public AuthenticatorTestBase {

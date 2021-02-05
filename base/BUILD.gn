@@ -77,10 +77,6 @@ declare_args() {
   use_backup_ref_ptr = false
   enable_runtime_backup_ref_ptr_control = false
   is_ref_count_at_end_of_allocation = false
-
-  # Enable additional safety checks for BackupRefPtr that are too expensive to
-  # have on by default.
-  enable_backup_ref_ptr_slow_checks = false
 }
 
 # Mutex priority inheritance is disabled by default due to security
@@ -95,11 +91,6 @@ assert(!enable_mutex_priority_inheritance || is_chromecast,
 # is true.
 assert(use_backup_ref_ptr || !enable_runtime_backup_ref_ptr_control,
        "Can't control BackupRefPtr at run-time if it isn't enabled at all")
-
-# enable_backup_ref_ptr_slow_checks can only be used if use_backup_ref_ptr
-# is true.
-assert(use_backup_ref_ptr || !enable_backup_ref_ptr_slow_checks,
-       "Can't enable additional BackupRefPtr checks if it isn't enabled at all")
 
 # is_ref_count_at_end_of_allocation can only be used if use_backup_ref_ptr
 # is true.
@@ -2377,8 +2368,6 @@ should_use_backup_ref_ptr =
     use_backup_ref_ptr && use_partition_alloc && !is_nacl
 should_enable_runtime_backup_ref_ptr_control =
     enable_runtime_backup_ref_ptr_control && use_partition_alloc && !is_nacl
-should_enable_backup_ref_ptr_slow_checks =
-    enable_backup_ref_ptr_slow_checks && use_partition_alloc && !is_nacl
 should_place_ref_count_at_end_of_allocation =
     is_ref_count_at_end_of_allocation && use_partition_alloc && !is_nacl
 
@@ -2390,7 +2379,6 @@ buildflag_header("partition_alloc_buildflags") {
     "USE_PARTITION_ALLOC=$use_partition_alloc",
     "USE_BACKUP_REF_PTR=$should_use_backup_ref_ptr",
     "ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL=$should_enable_runtime_backup_ref_ptr_control",
-    "ENABLE_BACKUP_REF_PTR_SLOW_CHECKS=$should_enable_backup_ref_ptr_slow_checks",
     "REF_COUNT_AT_END_OF_ALLOCATION=$should_place_ref_count_at_end_of_allocation",
   ]
 }
@@ -3887,7 +3875,6 @@ if (is_android) {
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
-      "//third_party/mockito:mockito_java",
     ]
     sources = [
       # AssertsTest doesn't really belong in //base but it's preferable to
@@ -3899,7 +3886,6 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/CommandLineInitUtilTest.java",
       "android/javatests/src/org/chromium/base/CommandLineTest.java",
       "android/javatests/src/org/chromium/base/EarlyTraceEventTest.java",
-      "android/javatests/src/org/chromium/base/IntentUtilsTest.java",
       "android/javatests/src/org/chromium/base/UserDataHostTest.java",
 
       # TODO(nona): move to Junit once that is built for Android N.

@@ -16,7 +16,6 @@ const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIIntersitialsURL[] = "chrome://interstitials";
-const char kChromeUIManagementURL[] = "chrome://management";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUINTPTilesInternalsURL[] = "chrome://ntp-tiles-internals/";
 const char kChromeUIOfflineURL[] = "chrome://offline/";

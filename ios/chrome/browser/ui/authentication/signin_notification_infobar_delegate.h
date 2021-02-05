@@ -51,7 +51,6 @@ class SigninNotificationInfoBarDelegate : public ConfirmInfoBarDelegate {
   gfx::Image GetIcon() const override;
   bool UseIconBackgroundTint() const override;
   bool Accept() override;
-  bool ShouldExpire(const NavigationDetails& details) const override;
 
  private:
   gfx::Image icon_;

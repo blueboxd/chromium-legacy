@@ -2128,8 +2128,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   TableViewItem* item =
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
 
-  cell.userInteractionEnabled = (item.type != BookmarkHomeItemTypeMessage);
-
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
@@ -2512,12 +2510,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (URLInfo*)tableView:(UITableView*)tableView
     URLInfoAtIndexPath:(NSIndexPath*)indexPath {
-  if (indexPath.section ==
-      [self.tableViewModel
-          sectionForSectionIdentifier:BookmarkHomeSectionIdentifierMessages]) {
-    return nil;
-  }
-
   const bookmarks::BookmarkNode* node = [self nodeAtIndexPath:indexPath];
   if (!node || node->is_folder()) {
     return nil;

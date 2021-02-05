@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -20,84 +22,98 @@
 
 namespace content {
 
-class KeepAliveHandleFactory::KeepAliveHandleImpl final
-    : public blink::mojom::KeepAliveHandle {
+class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
  public:
-  explicit KeepAliveHandleImpl(int process_id) : process_id_(process_id) {
-    GetContentClient()->browser()->OnKeepaliveRequestStarted();
+  explicit Context(int process_id) : process_id_(process_id) {
     RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
-    if (!process_host || process_host->IsKeepAliveRefCountDisabled()) {
+    receiver_set_.set_disconnect_handler(base::BindRepeating(
+        []() { GetContentClient()->browser()->OnKeepaliveRequestFinished(); }));
+    if (!process_host || process_host->IsKeepAliveRefCountDisabled())
       return;
-    }
     process_host->IncrementKeepAliveRefCount(
         RenderProcessHost::KeepAliveSource::KEEP_ALIVE_HANDLE_FACTORY);
   }
-  ~KeepAliveHandleImpl() override {
-    GetContentClient()->browser()->OnKeepaliveRequestFinished();
-    RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
-    if (!process_host || process_host->IsKeepAliveRefCountDisabled()) {
+
+  void Detach() {
+    if (detached_)
       return;
+    detached_ = true;
+    for (size_t i = 0; i < receiver_set_.size(); ++i) {
+      GetContentClient()->browser()->OnKeepaliveRequestFinished();
     }
+
+    RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
+    if (!process_host || process_host->IsKeepAliveRefCountDisabled())
+      return;
+
     process_host->DecrementKeepAliveRefCount();
   }
 
-  KeepAliveHandleImpl(const KeepAliveHandleImpl&) = delete;
-  KeepAliveHandleImpl& operator=(const KeepAliveHandleImpl&) = delete;
-
- private:
-  const int process_id_;
-};
-
-class KeepAliveHandleFactory::Context final
-    : public base::RefCounted<Context>,
-      public blink::mojom::KeepAliveHandleFactory {
- public:
-  explicit Context(int process_id) : process_id_(process_id) {}
-
-  void Clear() {
-    handle_receivers_.Clear();
-    factory_receivers_.Clear();
-  }
-
-  void IssueKeepAliveHandle(
-      mojo::PendingReceiver<blink::mojom::KeepAliveHandle> receiver) override {
-    handle_receivers_.Add(std::make_unique<KeepAliveHandleImpl>(process_id_),
-                          std::move(receiver));
-  }
-
-  void Bind(
-      mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver) {
-    factory_receivers_.Add(this, std::move(receiver));
-  }
-
-  void ClearLater(base::TimeDelta timeout) {
+  void DetachLater(base::TimeDelta timeout) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     GetUIThreadTaskRunner({})->PostDelayedTask(
-        FROM_HERE, base::BindOnce(&Context::Clear, this), timeout);
+        FROM_HERE, base::BindOnce(&Context::Detach, AsWeakPtr()), timeout);
   }
+
+  void AddReceiver(
+      std::unique_ptr<blink::mojom::KeepAliveHandle> impl,
+      mojo::PendingReceiver<blink::mojom::KeepAliveHandle> receiver) {
+    GetContentClient()->browser()->OnKeepaliveRequestStarted();
+    receiver_set_.Add(std::move(impl), std::move(receiver));
+  }
+
+  base::WeakPtr<Context> AsWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
  private:
   friend class base::RefCounted<Context>;
-  ~Context() override = default;
+  ~Context() { Detach(); }
 
-  mojo::UniqueReceiverSet<blink::mojom::KeepAliveHandle> handle_receivers_;
-  mojo::ReceiverSet<blink::mojom::KeepAliveHandleFactory> factory_receivers_;
+  mojo::UniqueReceiverSet<blink::mojom::KeepAliveHandle> receiver_set_;
   const int process_id_;
+  bool detached_ = false;
+
+  base::WeakPtrFactory<Context> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
-KeepAliveHandleFactory::KeepAliveHandleFactory(RenderProcessHost* process_host,
-                                               base::TimeDelta timeout)
-    : context_(base::MakeRefCounted<Context>(process_host->GetID())),
-      timeout_(timeout) {}
+class KeepAliveHandleFactory::KeepAliveHandleImpl final
+    : public blink::mojom::KeepAliveHandle {
+ public:
+  explicit KeepAliveHandleImpl(scoped_refptr<Context> context)
+      : context_(std::move(context)) {}
+  ~KeepAliveHandleImpl() override {}
+
+ private:
+  scoped_refptr<Context> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeepAliveHandleImpl);
+};
+
+KeepAliveHandleFactory::KeepAliveHandleFactory(RenderProcessHost* process_host)
+    : process_id_(process_host->GetID()) {}
 
 KeepAliveHandleFactory::~KeepAliveHandleFactory() {
-  context_->ClearLater(timeout_);
+  if (context_)
+    context_->DetachLater(timeout_);
 }
 
-void KeepAliveHandleFactory::Bind(
-    mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver) {
-  context_->Bind(std::move(receiver));
+void KeepAliveHandleFactory::Create(
+    mojo::PendingReceiver<blink::mojom::KeepAliveHandle> receiver) {
+  scoped_refptr<Context> context;
+  if (context_) {
+    context = context_.get();
+  } else {
+    context = base::MakeRefCounted<Context>(process_id_);
+    context_ = context->AsWeakPtr();
+  }
+
+  context->AddReceiver(std::make_unique<KeepAliveHandleImpl>(context),
+                       std::move(receiver));
+}
+
+void KeepAliveHandleFactory::SetTimeout(base::TimeDelta timeout) {
+  timeout_ = timeout;
 }
 
 }  // namespace content

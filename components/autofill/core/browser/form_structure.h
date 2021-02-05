@@ -109,6 +109,9 @@ class FormStructure {
   static std::vector<FormDataPredictions> GetFieldTypePredictions(
       const std::vector<FormStructure*>& form_structures);
 
+  // Returns whether sending autofill field metadata to the server is enabled.
+  static bool IsAutofillFieldMetadataEnabled();
+
   // Creates FormStructure that has bare minimum information for uploading
   // votes, namely form and field signatures. Warning: do not use for Autofill
   // code, since it is likely missing some fields.

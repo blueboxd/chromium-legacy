@@ -22,10 +22,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 
-#if BUILDFLAG(USE_OPENGL_APITRACE)
-#include "ui/gl/gl_implementation.h"
-#endif
-
 namespace ui {
 
 namespace {
@@ -137,10 +133,6 @@ void GbmSurfaceless::SwapBuffersAsync(
       requires_gl_flush_on_swap_buffers_) {
     glFlush();
   }
-
-#if BUILDFLAG(USE_OPENGL_APITRACE)
-  gl::TerminateFrame();  // Notify end of frame at buffer swap request.
-#endif
 
   unsubmitted_frames_.back()->Flush();
 

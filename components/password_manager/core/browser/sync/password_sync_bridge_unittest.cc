@@ -350,7 +350,7 @@ class MockPasswordStoreSync : public PasswordStoreSync {
               (const PasswordForm&, AddLoginError*),
               (override));
   MOCK_METHOD(bool,
-              AddInsecureCredentialsSync,
+              AddCompromisedCredentialsSync,
               (base::span<const CompromisedCredentials>),
               (override));
   MOCK_METHOD(PasswordStoreChangeList,
@@ -359,7 +359,7 @@ class MockPasswordStoreSync : public PasswordStoreSync {
               (override));
   MOCK_METHOD(
       bool,
-      UpdateInsecureCredentialsSync,
+      UpdateCompromisedCredentialsSync,
       (const PasswordForm& form,
        base::span<const CompromisedCredentials> comrpomised_credentials),
       (override));
@@ -409,14 +409,13 @@ class PasswordSyncBridgeTest : public testing::Test,
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::ReadSecurityIssues));
     ON_CALL(mock_password_store_sync_, AddLoginSync)
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::AddLogin));
-    ON_CALL(mock_password_store_sync_, AddInsecureCredentialsSync)
+    ON_CALL(mock_password_store_sync_, AddCompromisedCredentialsSync)
         .WillByDefault(
             Invoke(&fake_db_, &FakeDatabase::AddCompromisedCredentials));
     ON_CALL(mock_password_store_sync_, UpdateLoginSync)
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::UpdateLogin));
-    ON_CALL(mock_password_store_sync_, UpdateInsecureCredentialsSync)
-        .WillByDefault(
-            Invoke(&fake_db_, &FakeDatabase::UpdateCompromisedCredentialsSync));
+    ON_CALL(mock_password_store_sync_, UpdateLoginSync)
+        .WillByDefault(Invoke(&fake_db_, &FakeDatabase::UpdateLogin));
     ON_CALL(mock_password_store_sync_, RemoveLoginByPrimaryKeySync)
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::RemoveLogin));
 
@@ -1250,9 +1249,9 @@ TEST_P(PasswordSyncBridgeTest,
   EXPECT_CALL(*mock_password_store_sync(),
               AddLoginSync(FormHasSignonRealm(kSignonRealm1), _));
 
-  EXPECT_CALL(
-      *mock_password_store_sync(),
-      AddInsecureCredentialsSync(UnorderedElementsAreArray(kExpectedIssues)));
+  EXPECT_CALL(*mock_password_store_sync(),
+              AddCompromisedCredentialsSync(
+                  UnorderedElementsAreArray(kExpectedIssues)));
 
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
 
@@ -1286,8 +1285,9 @@ TEST_P(PasswordSyncBridgeTest,
   EXPECT_CALL(*mock_password_store_sync(),
               AddLoginSync(FormHasSignonRealm(kSignonRealm1), _));
 
-  EXPECT_CALL(*mock_password_store_sync(),
-              AddInsecureCredentialsSync(UnorderedElementsAreArray(kIssues)));
+  EXPECT_CALL(
+      *mock_password_store_sync(),
+      AddCompromisedCredentialsSync(UnorderedElementsAreArray(kIssues)));
 
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
 
@@ -1389,8 +1389,8 @@ TEST_P(PasswordSyncBridgeTest,
 
   EXPECT_CALL(
       *mock_password_store_sync(),
-      UpdateInsecureCredentialsSync(FormHasSignonRealm(kSignonRealm1),
-                                    UnorderedElementsAreArray(kIssues)));
+      UpdateCompromisedCredentialsSync(FormHasSignonRealm(kSignonRealm1),
+                                       UnorderedElementsAreArray(kIssues)));
 
   sync_pb::PasswordSpecifics specifics =
       CreateSpecificsWithSignonRealmAndIssues(kSignonRealm1, kIssuesTypes);
@@ -1434,7 +1434,7 @@ TEST_P(PasswordSyncBridgeTest,
   // change in the compromised credentials information.
   EXPECT_CALL(*mock_password_store_sync(),
               UpdateLoginSync(FormHasSignonRealm(kSignonRealm1), _));
-  EXPECT_CALL(*mock_password_store_sync(), UpdateInsecureCredentialsSync)
+  EXPECT_CALL(*mock_password_store_sync(), UpdateCompromisedCredentialsSync)
       .Times(0);
 
   syncer::EntityChangeList entity_change_list;
@@ -1477,10 +1477,10 @@ TEST_P(PasswordSyncBridgeTest,
   // invoked with remote compromised credentials.
   EXPECT_CALL(*mock_password_store_sync(),
               UpdateLoginSync(FormHasSignonRealm(kSignonRealm1), _));
-  EXPECT_CALL(
-      *mock_password_store_sync(),
-      UpdateInsecureCredentialsSync(FormHasSignonRealm(kSignonRealm1),
-                                    UnorderedElementsAreArray(kRemoteIssues)));
+  EXPECT_CALL(*mock_password_store_sync(),
+              UpdateCompromisedCredentialsSync(
+                  FormHasSignonRealm(kSignonRealm1),
+                  UnorderedElementsAreArray(kRemoteIssues)));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -1517,7 +1517,7 @@ TEST_P(PasswordSyncBridgeTest,
 
   // Test that neither password store nor processor is invoked.
   EXPECT_CALL(*mock_password_store_sync(), UpdateLoginSync).Times(0);
-  EXPECT_CALL(*mock_password_store_sync(), UpdateInsecureCredentialsSync)
+  EXPECT_CALL(*mock_password_store_sync(), UpdateCompromisedCredentialsSync)
       .Times(0);
   EXPECT_CALL(mock_processor(), Put).Times(0);
 

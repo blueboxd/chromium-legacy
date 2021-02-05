@@ -25,8 +25,12 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   void OnNewBuffer(int buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
-      media::ReadyFrameInBuffer frame,
-      std::vector<media::ReadyFrameInBuffer> scaled_frames) override;
+      int buffer_id,
+      int frame_feedback_id,
+      std::unique_ptr<
+          media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
+          access_permission,
+      media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
   void OnError(media::VideoCaptureError error) override;
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;

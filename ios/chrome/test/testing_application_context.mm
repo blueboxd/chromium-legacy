@@ -145,6 +145,11 @@ TestingApplicationContext::GetVariationsService() {
   return nullptr;
 }
 
+rappor::RapporServiceImpl* TestingApplicationContext::GetRapporServiceImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
 net::NetLog* TestingApplicationContext::GetNetLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;

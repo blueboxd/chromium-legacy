@@ -24,18 +24,16 @@ mojom::ProfileInstallResult InstallResultFromStatus(
   }
 }
 
-mojom::ProfileState ProfileStateToMojo(CellularESimProfile::State state) {
+mojom::ProfileState ProfileStateToMojo(hermes::profile::State state) {
   switch (state) {
-    case CellularESimProfile::State::kActive:
+    case hermes::profile::State::kActive:
       return mojom::ProfileState::kActive;
-    case CellularESimProfile::State::kInactive:
+    case hermes::profile::State::kInactive:
       return mojom::ProfileState::kInactive;
-    case CellularESimProfile::State::kPending:
+    case hermes::profile::State::kPending:
       return mojom::ProfileState::kPending;
-    case CellularESimProfile::State::kInstalling:
-      return mojom::ProfileState::kInstalling;
   }
-  NOTREACHED() << "Cannot convert invalid profile state "
+  NOTREACHED() << "Cannot convert invalid hermes profile state "
                << static_cast<int>(state);
   return mojom::ProfileState::kPending;
 }

@@ -19,14 +19,14 @@ class WebView;
 
 namespace content {
 
-class WebFrameTestProxy;
+class WebViewTestProxy;
 
 // TextInputController is bound to window.textInputController in Javascript
 // when content_shell is running. Web tests use it to exercise various
 // corners of text input.
 class TextInputController {
  public:
-  explicit TextInputController(WebFrameTestProxy* web_frame_test_proxy);
+  explicit TextInputController(WebViewTestProxy* web_view_test_proxy);
   ~TextInputController();
 
   void Install(blink::WebLocalFrame* frame);
@@ -55,7 +55,7 @@ class TextInputController {
   // accepting IME. Could return nullptr if no such frame exists.
   blink::WebInputMethodController* GetInputMethodController();
 
-  WebFrameTestProxy* const web_frame_test_proxy_;
+  WebViewTestProxy* web_view_test_proxy_;
 
   base::WeakPtrFactory<TextInputController> weak_factory_{this};
 

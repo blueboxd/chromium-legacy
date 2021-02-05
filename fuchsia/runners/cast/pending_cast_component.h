@@ -14,7 +14,9 @@
 #include "fuchsia/runners/cast/cast_component.h"
 
 namespace base {
+namespace fuchsia {
 class StartupContext;
+}
 }  // namespace base
 
 // Manages asynchronous retrieval of parameters required to launch the specified

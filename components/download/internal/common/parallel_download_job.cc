@@ -196,9 +196,6 @@ void ParallelDownloadJob::BuildParallelRequests() {
   if (!received_slices.empty() && received_slices.back().finished)
     slices_to_download.pop_back();
 
-  if (slices_to_download.empty())
-    return;
-
   ForkSubRequests(slices_to_download);
   RecordParallelDownloadRequestCount(
       static_cast<int>(slices_to_download.size()));

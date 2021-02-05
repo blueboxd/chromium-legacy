@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/web_test/renderer/web_view_test_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -23,7 +24,7 @@ FakeScreenOrientationImpl::FakeScreenOrientationImpl() = default;
 FakeScreenOrientationImpl::~FakeScreenOrientationImpl() = default;
 
 void FakeScreenOrientationImpl::ResetData() {
-  web_view_ = nullptr;
+  web_view_test_proxy_ = nullptr;
   current_lock_ = device::mojom::ScreenOrientationLockType::DEFAULT;
   device_orientation_ = blink::mojom::ScreenOrientation::kPortraitPrimary;
   current_orientation_ = blink::mojom::ScreenOrientation::kPortraitPrimary;
@@ -32,9 +33,9 @@ void FakeScreenOrientationImpl::ResetData() {
 }
 
 bool FakeScreenOrientationImpl::UpdateDeviceOrientation(
-    blink::WebView* web_view,
+    WebViewTestProxy* web_view_test_proxy,
     blink::mojom::ScreenOrientation orientation) {
-  web_view_ = web_view;
+  web_view_test_proxy_ = web_view_test_proxy;
 
   if (device_orientation_ == orientation)
     return false;
@@ -49,8 +50,9 @@ bool FakeScreenOrientationImpl::UpdateScreenOrientation(
   if (current_orientation_ == orientation)
     return false;
   current_orientation_ = orientation;
-  if (web_view_) {
-    web_view_->SetScreenOrientationOverrideForTesting(CurrentOrientationType());
+  if (web_view_test_proxy_) {
+    web_view_test_proxy_->GetWebView()->SetScreenOrientationOverrideForTesting(
+        CurrentOrientationType());
     return true;
   }
   return false;
@@ -63,14 +65,16 @@ FakeScreenOrientationImpl::CurrentOrientationType() const {
   return current_orientation_;
 }
 
-void FakeScreenOrientationImpl::SetDisabled(blink::WebView* web_view,
-                                            bool disabled) {
+void FakeScreenOrientationImpl::SetDisabled(
+    WebViewTestProxy* web_view_test_proxy,
+    bool disabled) {
   if (is_disabled_ == disabled)
     return;
   is_disabled_ = disabled;
-  web_view_ = web_view;
-  if (web_view_) {
-    web_view_->SetScreenOrientationOverrideForTesting(CurrentOrientationType());
+  web_view_test_proxy_ = web_view_test_proxy;
+  if (web_view_test_proxy_) {
+    web_view_test_proxy_->GetWebView()->SetScreenOrientationOverrideForTesting(
+        CurrentOrientationType());
   }
 }
 

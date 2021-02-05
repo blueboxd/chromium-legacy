@@ -289,10 +289,4 @@ base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename) {
   return library;
 }
 
-#if BUILDFLAG(USE_OPENGL_APITRACE)
-void TerminateFrame() {
-  GetGLProcAddress("glFrameTerminatorGREMEDY")();
-}
-#endif
-
 }  // namespace gl

@@ -47,7 +47,9 @@ class FlutterSemanticsNode;
 // This class translates accessibility trees found in the gallium accessibility
 // OnAccessibilityEventRequest proto into a tree update Chrome's accessibility
 // API can work with.
-class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
+class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*,
+                                                    ui::AXNodeData,
+                                                    ui::AXTreeData>,
                             public CastWebContents::Observer,
                             public ui::AXActionHandler {
  public:
@@ -120,7 +122,8 @@ class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
     DISALLOW_COPY_AND_ASSIGN(AXTreeWebContentsObserver);
   };
 
-  using AXTreeFlutterSerializer = ui::AXTreeSerializer<FlutterSemanticsNode*>;
+  using AXTreeFlutterSerializer = ui::
+      AXTreeSerializer<FlutterSemanticsNode*, ui::AXNodeData, ui::AXTreeData>;
 
   friend class AXTreeSourceFlutterTest;
 

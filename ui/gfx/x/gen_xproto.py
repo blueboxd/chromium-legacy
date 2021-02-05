@@ -39,6 +39,8 @@ RENAME = {
     'DIRECTFORMAT': 'DirectFormat',
     'DOTCLOCK': 'DotClock',
     'FBCONFIG': 'FbConfig',
+    'FLOAT32': 'float',
+    'FLOAT64': 'double',
     'FONTPROP': 'FontProperty',
     'GC': 'GraphicsContextAttribute',
     'GCONTEXT': 'GraphicsContext',
@@ -267,6 +269,10 @@ class GenXproto(FileWriter):
         return ''
 
     def rename_type(self, t, name):
+        # Work around a bug in xcbgen: ('int') should have been ('int',)
+        if name == 'int':
+            name = ('int', )
+
         name = list(name)
 
         if name[0] == 'xcb':
@@ -415,8 +421,11 @@ class GenXproto(FileWriter):
             self.write('%s value{};' % value_typename)
 
     def declare_simple(self, item, name):
+        # The underlying type of an enum must be integral, so avoid defining
+        # FLOAT32 or FLOAT64.  Usages are renamed to float and double instead.
         renamed = tuple(self.rename_type(item, name))
-        if renamed in self.replace_with_enum:
+        if (name[-1] in ('FLOAT32', 'FLOAT64')
+                or renamed in self.replace_with_enum):
             return
 
         xidunion = self.get_xidunion_element(name)
@@ -1043,6 +1052,35 @@ class GenXproto(FileWriter):
     # all of these events under one structure with an additional opcode field
     # to indicate the type of event.
     def uniquify_events(self):
+        # Manually merge some events in XInput.  These groups of 8 events have
+        # idential structure, and are merged as XIDeviceEvent in Xlib.  To avoid
+        # duplication, and to ease the transition from Xlib to XProto, we merge
+        # the events here too.
+        # TODO(thomasanderson): We should avoid adding workarounds for xcbproto.
+        # Instead, the protocol files should be modified directly.  However,
+        # some of the changes we want to make change the API, so the changes
+        # should be made in a fork in //third_party rather than upstreamed.
+        MERGE = [
+            ([
+                'KeyPress', 'KeyRelease', 'ButtonPress', 'ButtonRelease',
+                'Motion', 'TouchBegin', 'TouchUpdate', 'TouchEnd'
+            ], []),
+            ([
+                'RawKeyPress', 'RawKeyRelease', 'RawButtonPress',
+                'RawButtonRelease', 'RawMotion', 'RawTouchBegin',
+                'RawTouchUpdate', 'RawTouchEnd'
+            ], []),
+        ]
+        for i, (name, t) in enumerate(self.module.all):
+            if t.is_event and name[1] == 'Input':
+                for names, event in MERGE:
+                    if name[-1] in names:
+                        if event:
+                            event[0].opcodes.update(t.opcodes)
+                            self.module.all[i] = name, event[0]
+                        else:
+                            event.append(t)
+
         types = []
         events = set()
         for name, t in self.module.all:
@@ -1077,7 +1115,13 @@ class GenXproto(FileWriter):
 
         self.uniquify_events()
 
-        for name, t in self.module.all:
+        for i, (name, t) in enumerate(self.module.all):
+            # Work around a name conflict: the type ScreenSaver has the same
+            # name as the extension, so rename the type.
+            if name == ('xcb', 'ScreenSaver'):
+                name = ('xcb', 'ScreenSaverMode')
+                t.name = name
+                self.module.all[i] = (name, t)
             self.resolve_type(t, name)
 
         for enum, types in list(self.enum_types.items()):

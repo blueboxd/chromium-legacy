@@ -31,6 +31,7 @@ class MirrorAccountReconcilorDelegate : public AccountReconcilorDelegate,
 
  private:
   // AccountReconcilorDelegate:
+  bool IsAccountConsistencyEnforced() const override;
   gaia::GaiaSource GetGaiaApiSource() const override;
   bool ShouldAbortReconcileIfPrimaryHasError() const override;
   ConsentLevel GetConsentLevelForPrimaryAccount() const override;

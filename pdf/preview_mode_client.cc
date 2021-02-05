@@ -131,7 +131,8 @@ PreviewModeClient::SearchString(const base::char16* string,
   return std::vector<SearchStringResult>();
 }
 
-void PreviewModeClient::DocumentLoadComplete() {
+void PreviewModeClient::DocumentLoadComplete(
+    const PDFEngine::DocumentFeatures& document_features) {
   client_->PreviewDocumentLoadComplete();
 }
 

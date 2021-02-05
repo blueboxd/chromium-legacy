@@ -67,7 +67,8 @@ class PreviewModeClient : public PDFEngine::Client {
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
                                                bool case_sensitive) override;
-  void DocumentLoadComplete() override;
+  void DocumentLoadComplete(
+      const PDFEngine::DocumentFeatures& document_features) override;
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;

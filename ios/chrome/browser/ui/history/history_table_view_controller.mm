@@ -35,8 +35,6 @@
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
@@ -91,7 +89,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 @interface HistoryTableViewController () <HistoryEntriesStatusItemDelegate,
                                           HistoryEntryInserterDelegate,
-                                          TableViewLinkHeaderFooterItemDelegate,
                                           TableViewTextLinkCellDelegate,
                                           TableViewURLDragDataSource,
                                           UISearchControllerDelegate,
@@ -462,14 +459,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
-  DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
-  [self openURLInNewTab:URL];
-}
-
-#pragma mark TableViewLinkHeaderFooterItemDelegate
-
-- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
-  DCHECK(base::FeatureList::IsEnabled(kSettingsRefresh));
   [self openURLInNewTab:URL];
 }
 
@@ -575,11 +564,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   if (section ==
-          [self.tableViewModel
-              sectionForSectionIdentifier:kEntriesStatusSectionIdentifier] &&
-      (!base::FeatureList::IsEnabled(kSettingsRefresh) ||
-       ![self.tableViewModel
-           headerForSectionWithIdentifier:kEntriesStatusSectionIdentifier]))
+      [self.tableViewModel
+          sectionForSectionIdentifier:kEntriesStatusSectionIdentifier])
     return 0;
   return UITableViewAutomaticDimension;
 }
@@ -647,12 +633,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     return nil;
   }
 
-  if (indexPath.section ==
-      [self.tableViewModel
-          sectionForSectionIdentifier:kEntriesStatusSectionIdentifier]) {
-    return nil;
-  }
-
   HistoryEntryItem* entry = base::mac::ObjCCastStrict<HistoryEntryItem>(
       [self.tableViewModel itemAtIndexPath:indexPath]);
   UIView* cell = [self.tableView cellForRowAtIndexPath:indexPath];
@@ -661,24 +641,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 }
 
 #pragma mark - UITableViewDataSource
-
-- (UIView*)tableView:(UITableView*)tableView
-    viewForHeaderInSection:(NSInteger)section {
-  UIView* view = [super tableView:tableView viewForHeaderInSection:section];
-  NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
-  switch (sectionIdentifier) {
-    case kEntriesStatusSectionIdentifier: {
-      // Might be a different type of header.
-      TableViewLinkHeaderFooterView* linkView =
-          base::mac::ObjCCast<TableViewLinkHeaderFooterView>(view);
-      linkView.delegate = self;
-    } break;
-    default:
-      break;
-  }
-  return view;
-}
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -703,7 +665,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
            }];
   }
   if (item.type == ItemTypeEntriesStatusWithLink) {
-    DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
     TableViewTextLinkCell* tableViewTextLinkCell =
         base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
     [tableViewTextLinkCell setDelegate:self];
@@ -866,61 +827,32 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     }
   } else {
     // Since there's a new status message, create the new status item.
-    if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
-      TableViewHeaderFooterItem* item = nil;
-      if (messageWillContainLink) {
-        TableViewLinkHeaderFooterItem* header =
-            [[TableViewLinkHeaderFooterItem alloc]
-                initWithType:ItemTypeEntriesStatusWithLink];
-        header.text = newStatusMessage;
-        header.linkURL = GURL(kHistoryMyActivityURL);
-        item = header;
-      } else {
-        TableViewTextHeaderFooterItem* header =
-            [[TableViewTextHeaderFooterItem alloc]
-                initWithType:ItemTypeEntriesStatus];
-        header.text = newStatusMessage;
-        item = header;
-      }
-      // Change the header then reload the section to have it taken into
-      // account.
-      tableUpdates = ^{
-        NSInteger sectionIndex = [self.tableViewModel
-            sectionForSectionIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableViewModel setHeader:item
-              forSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableView
-              reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-            withRowAnimation:UITableViewRowAnimationAutomatic];
-      };
-    } else {
-      TableViewItem* updatedMessageItem =
-          [self statusItemWithMessage:newStatusMessage
-               messageWillContainLink:messageWillContainLink];
+    TableViewItem* updatedMessageItem =
+        [self statusItemWithMessage:newStatusMessage
+             messageWillContainLink:messageWillContainLink];
 
-      // If there was a previous status item delete it, insert the new status
-      // item and reload. If not simply insert the new status item.
-      tableUpdates = ^{
-        if (previousStatusItem) {
-          [self.tableViewModel
-                     removeItemWithType:previousStatusItem.type
-              fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-          [self.tableViewModel addItem:updatedMessageItem
-               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-          [self.tableView
-              reloadRowsAtIndexPaths:@[ [self.tableViewModel
-                                         indexPathForItem:updatedMessageItem] ]
-                    withRowAnimation:UITableViewRowAnimationAutomatic];
-        } else {
-          [self.tableViewModel addItem:updatedMessageItem
-               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-          [self.tableView
-              insertRowsAtIndexPaths:@[ [self.tableViewModel
-                                         indexPathForItem:updatedMessageItem] ]
-                    withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-      };
-    }
+    // If there was a previous status item delete it, insert the new status item
+    // and reload. If not simply insert the new status item.
+    tableUpdates = ^{
+      if (previousStatusItem) {
+        [self.tableViewModel
+                   removeItemWithType:previousStatusItem.type
+            fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableViewModel addItem:updatedMessageItem
+             toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableView
+            reloadRowsAtIndexPaths:@[ [self.tableViewModel
+                                       indexPathForItem:updatedMessageItem] ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      } else {
+        [self.tableViewModel addItem:updatedMessageItem
+             toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableView
+            insertRowsAtIndexPaths:@[ [self.tableViewModel
+                                       indexPathForItem:updatedMessageItem] ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      }
+    };
   }
 
   // If there's any tableUpdates, run them.

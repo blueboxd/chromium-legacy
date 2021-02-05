@@ -9,7 +9,7 @@
 @protocol NewTabPageCommands
 
 // Called when the Discover Feed changes it visibility.
-- (void)updateDiscoverFeedVisibility;
+- (void)setDiscoverFeedVisible:(BOOL)visible;
 
 // Called when the Discover Feed layout needs updating. e.g. An inner view like
 // ContentSuggestions height might have changed and the Feed needs to update its

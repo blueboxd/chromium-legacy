@@ -32,6 +32,7 @@ include_rules = [
   # tests. To avoid transitively including them to //content/shell through
   # this directory, we avoid including them.
   "-content/web_test/renderer/web_frame_test_proxy.h",
+  "-content/web_test/renderer/web_view_test_proxy.h",
   "-content/web_test/renderer/web_widget_test_proxy.h",
 ]
 
@@ -46,6 +47,7 @@ specific_include_rules = {
   ".*\.cc": [
     "+content/renderer",
     "+content/web_test/renderer/web_frame_test_proxy.h",
+    "+content/web_test/renderer/web_view_test_proxy.h",
     "+content/web_test/renderer/web_widget_test_proxy.h",
   ],
 }

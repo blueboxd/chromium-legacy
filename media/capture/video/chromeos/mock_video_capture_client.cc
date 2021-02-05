@@ -68,8 +68,9 @@ void MockVideoCaptureClient::OnIncomingCapturedGfxBuffer(
 }
 
 void MockVideoCaptureClient::OnIncomingCapturedExternalBuffer(
-    CapturedExternalVideoBuffer buffer,
-    std::vector<CapturedExternalVideoBuffer> scaled_buffers,
+    gfx::GpuMemoryBufferHandle handle,
+    const VideoCaptureFormat& format,
+    const gfx::ColorSpace& color_space,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   if (frame_cb_)

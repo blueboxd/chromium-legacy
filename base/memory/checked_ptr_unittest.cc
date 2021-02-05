@@ -716,6 +716,7 @@ void HandleOOM(size_t unused_size) {
 static constexpr PartitionOptions kOpts = {
     PartitionOptions::Alignment::kRegular,
     PartitionOptions::ThreadCache::kDisabled,
+    PartitionOptions::PCScan::kAlwaysDisabled,
     PartitionOptions::RefCount::kEnabled};
 
 TEST(BackupRefPtrImpl, Basic) {
@@ -816,28 +817,6 @@ TEST(BackupRefPtrImpl, EndPointer) {
     allocator.root()->Free(raw_ptr6);
   }
 }
-
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-TEST(BackupRefPtrImpl, ReinterpretCast) {
-  // This test works only if GigaCage is enabled. Bail out otherwise.
-  if (!features::IsPartitionAllocGigaCageEnabled())
-    return;
-
-  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
-  // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator<ThreadSafe> allocator;
-  allocator.init(kOpts);
-
-  void* raw_ptr = allocator.root()->Alloc(16, "");
-  allocator.root()->Free(raw_ptr);
-
-  CheckedPtr<void>* checked_ptr = reinterpret_cast<CheckedPtr<void>*>(&raw_ptr);
-  // The reference count cookie check should detect that the allocation has
-  // been already freed.
-  EXPECT_DEATH_IF_SUPPORTED(*checked_ptr = nullptr, "");
-}
-#endif
 
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR) &&
         // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

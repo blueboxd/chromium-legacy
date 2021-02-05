@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '82df803412eced8a2ec7e4ddc63570f64b7f35ac',
+  'angle_revision': 'b2de0688d7c95c58b4bf1182f53bf43e42a2d99c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1564,7 +1564,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'JlJ5LLfSRnkBI9WIgbkLC1xkaj8vjPP2YrpHHnI1XZcC',
+          'version': 'hwxykGQN8q1I4nBPA93MSwNqdynaW_gYQ3CJwZJLyngC',
         },
       ],
       'dep_type': 'cipd',
@@ -1597,7 +1597,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'QjISCQuG2mOR3Uo0BtHfe1Iup5ovdL02bWNyo3MfFhwC',
+        'version': 'u47n0szRojuWHpnSat3UIHbScWTrIFp_nuVJSgDZD8cC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -165,6 +165,7 @@
   self.contentSuggestionsCoordinator.panGestureHandler = self.panGestureHandler;
   self.contentSuggestionsCoordinator.ntpMediator = self.ntpMediator;
   self.contentSuggestionsCoordinator.ntpCommandHandler = self;
+  self.contentSuggestionsCoordinator.bubblePresenter = self.bubblePresenter;
 
   [self.contentSuggestionsCoordinator start];
 

@@ -52,6 +52,8 @@ component("network") {
     "cellular_inhibitor.h",
     "cellular_metrics_logger.cc",
     "cellular_metrics_logger.h",
+    "cellular_utils.cc",
+    "cellular_utils.h",
     "certificate_helper.cc",
     "certificate_helper.h",
     "client_cert_resolver.cc",
@@ -186,11 +188,16 @@ component("network") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [ ":network" ]
+  public_deps = [
+    ":network",
+    "//chromeos/dbus/hermes:hermes_fakes",
+    "//dbus",
+  ]
   deps = [
     "//base",
     "//chromeos:test_utils",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/hermes:hermes_clients",
     "//chromeos/services/network_config/public/cpp",
     "//chromeos/services/network_config/public/mojom",
     "//components/sync_preferences:test_support",
@@ -218,6 +225,8 @@ source_set("test_support") {
     "onc/onc_test_utils.h",
     "portal_detector/mock_network_portal_detector.cc",
     "portal_detector/mock_network_portal_detector.h",
+    "test_cellular_esim_profile_handler.cc",
+    "test_cellular_esim_profile_handler.h",
   ]
 }
 

@@ -216,12 +216,10 @@ DesktopWindowTreeHostPlatform::CreateTooltip() {
 }
 
 std::unique_ptr<aura::client::DragDropClient>
-DesktopWindowTreeHostPlatform::CreateDragDropClient(
-    DesktopNativeCursorManager* cursor_manager) {
+DesktopWindowTreeHostPlatform::CreateDragDropClient() {
   ui::WmDragHandler* drag_handler = ui::GetWmDragHandler(*(platform_window()));
   std::unique_ptr<DesktopDragDropClientOzone> drag_drop_client =
-      std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
-                                                   drag_handler);
+      std::make_unique<DesktopDragDropClientOzone>(window(), drag_handler);
   // Set a class property key, which allows |drag_drop_client| to be used for
   // drop action.
   SetWmDropHandler(platform_window(), drag_drop_client.get());
@@ -758,8 +756,11 @@ SkPath DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShapeInPixels() {
   SkPath window_mask;
   // Some frame views define a custom (non-rectanguar) window mask.
   // If so, use it to define the window shape. If not, fall through.
-  GetWidget()->non_client_view()->GetWindowMask(GetBoundsInPixels().size(),
-                                                &window_mask);
+  GetWidget()->non_client_view()->GetWindowMask(
+      GetWindowBoundsInScreen().size(), &window_mask);
+  // Convert SkPath in DIPs to pixels.
+  if (!window_mask.isEmpty())
+    window_mask.transform(SkMatrix(GetRootTransform().matrix()));
   return window_mask;
 }
 

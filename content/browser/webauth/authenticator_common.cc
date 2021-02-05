@@ -806,7 +806,10 @@ void AuthenticatorCommon::MakeCredential(
   blink::mojom::AuthenticatorStatus status =
       security_checker_->ValidateAncestorOrigins(
           caller_origin,
-          WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
+          options->is_payment_credential_creation
+              ? WebAuthRequestSecurityChecker::RequestType::
+                    kMakePaymentCredential
+              : WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
           &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     InvokeCallbackAndCleanup(std::move(callback), status);
@@ -1141,8 +1144,12 @@ void AuthenticatorCommon::GetAssertion(
   }
 
   // Cryptotoken requests should be proxied without UI.
-  if (origin_is_crypto_token_extension || disable_ui_)
+  if (origin_is_crypto_token_extension || disable_ui_) {
+    DCHECK(!options->is_conditional);
     request_delegate_->DisableUI();
+  }
+
+  request_delegate_->SetConditionalRequest(options->is_conditional);
 
   if (options->allow_credentials.empty()) {
     if (!request_delegate_->SupportsResidentKeys()) {

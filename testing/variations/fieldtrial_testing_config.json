@@ -512,6 +512,22 @@
             ]
         }
     ],
+    "AndroidMessagesSavePassword": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidInfrastructure",
+                        "MessagesForAndroidPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidPartnerCustomizationPhenotype": [
         {
             "platforms": [
@@ -827,23 +843,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillAssistantDirectActions"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillAssistantProactiveHelp": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "//1": "This launch is gated external to Chrome.",
-                    "name": "Enabled_20201215",
-                    "enable_features": [
-                        "AutofillAssistantDisableProactiveHelpTiedToMSBB",
-                        "AutofillAssistantProactiveHelp"
                     ]
                 }
             ]
@@ -2614,6 +2613,26 @@
             ]
         }
     ],
+    "DiscardableMemoryExperiments": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "SchedulePeriodicPurge_V2",
+                    "enable_features": [
+                        "SchedulePeriodicPurge"
+                    ]
+                }
+            ]
+        }
+    ],
     "DnsHttpssvc": [
         {
             "platforms": [
@@ -3151,6 +3170,21 @@
             ]
         }
     ],
+    "FeedShare": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210204",
+                    "enable_features": [
+                        "FeedShare"
+                    ]
+                }
+            ]
+        }
+    ],
     "FillingPasswordsFromAnyOrigin": [
         {
             "platforms": [
@@ -3431,6 +3465,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LogBreadcrumbs"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSCrashpad": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "CrashpadIOS"
                     ]
                 }
             ]
@@ -6015,26 +6064,6 @@
             ]
         }
     ],
-    "SchedulePeriodicPurge": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DiscardableMemoryExperiments",
-                    "enable_features": [
-                        "SchedulePeriodicPurge"
-                    ]
-                }
-            ]
-        }
-    ],
     "SchemefulSameSiteAllOS": [
         {
             "platforms": [
@@ -7918,6 +7947,21 @@
                     "name": "Enabled_20201211",
                     "enable_features": [
                         "WheelEventRegions"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WifiSyncAndroid": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WifiSyncAndroid"
                     ]
                 }
             ]

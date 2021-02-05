@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_REF_COUNT_H_
 
 #include <atomic>
+#include <cstdint>
 
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
@@ -48,11 +49,19 @@ class BASE_EXPORT PartitionRefCount {
   // For details, see base::AtomicRefCount, which has the same constraints and
   // characteristics.
   ALWAYS_INLINE void Acquire() {
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    CheckCookie();
+#endif
+
     PA_CHECK(count_.fetch_add(2, std::memory_order_relaxed) > 0);
   }
 
   // Returns true if the allocation should be reclaimed.
   ALWAYS_INLINE bool Release() {
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    CheckCookie();
+#endif
+
     if (count_.fetch_sub(2, std::memory_order_release) == 2) {
       // In most thread-safe reference count implementations, an acquire
       // barrier is required so that all changes made to an object from other
@@ -60,6 +69,10 @@ class BASE_EXPORT PartitionRefCount {
       // finishes before the final `Release` call, so it shouldn't be a problem.
       // However, we will keep it as a precautionary measure.
       std::atomic_thread_fence(std::memory_order_acquire);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+      // The allocation is about to get freed, so clear the cookie.
+      brp_cookie_ = 0;
+#endif
       return true;
     }
 
@@ -69,10 +82,18 @@ class BASE_EXPORT PartitionRefCount {
   // Returns true if the allocation should be reclaimed.
   // This function should be called by the allocator during Free().
   ALWAYS_INLINE bool ReleaseFromAllocator() {
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    CheckCookie();
+#endif
+
     int32_t old_count = count_.fetch_sub(1, std::memory_order_release);
     PA_CHECK(old_count & 1);  // double-free detection
     if (old_count == 1) {
       std::atomic_thread_fence(std::memory_order_acquire);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+      // The allocation is about to get freed, so clear the cookie.
+      brp_cookie_ = 0;
+#endif
       return true;
     }
 
@@ -80,18 +101,49 @@ class BASE_EXPORT PartitionRefCount {
   }
 
   ALWAYS_INLINE bool HasOneRef() {
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    CheckCookie();
+#endif
+
     return count_.load(std::memory_order_acquire) == 1;
   }
 
   ALWAYS_INLINE bool IsAlive() {
-    return count_.load(std::memory_order_relaxed) & 1;
+    bool alive = count_.load(std::memory_order_relaxed) & 1;
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    if (alive)
+      CheckCookie();
+#endif
+    return alive;
   }
 
  private:
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+  // The cookie helps us ensure that:
+  // 1) The reference count pointer calculation is correct.
+  // 2) The returned allocation slot is not freed.
+  ALWAYS_INLINE void CheckCookie() {
+    PA_CHECK(brp_cookie_ == CalculateCookie());
+  }
+
+  ALWAYS_INLINE uint32_t CalculateCookie() {
+    return static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)) ^
+           kCookieSalt;
+  }
+
+  static constexpr uint32_t kCookieSalt = 0xc01dbeef;
+  volatile uint32_t brp_cookie_;
+#endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+
   std::atomic<int32_t> count_{1};
 };
 
-ALWAYS_INLINE PartitionRefCount::PartitionRefCount() = default;
+ALWAYS_INLINE PartitionRefCount::PartitionRefCount()
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    : brp_cookie_(CalculateCookie())
+#endif
+{
+}
 
 #if BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
 
@@ -101,13 +153,8 @@ static_assert(base::kAlignment % alignof(PartitionRefCount) == 0,
 // Allocate extra space for the reference count to satisfy the alignment
 // requirement.
 static constexpr size_t kInSlotRefCountBufferSize = sizeof(PartitionRefCount);
-
-#if DCHECK_IS_ON()
-static constexpr size_t kPartitionRefCountOffset = kCookieSize;
-#else
-static constexpr size_t kPartitionRefCountOffset = 0;
-#endif
 constexpr size_t kPartitionRefCountOffsetAdjustment = 0;
+constexpr size_t kPartitionPastAllocationAdjustment = 0;
 
 BASE_EXPORT PartitionRefCount* PartitionRefCountPointer(void* slot_start);
 
@@ -116,14 +163,12 @@ BASE_EXPORT PartitionRefCount* PartitionRefCountPointer(void* slot_start);
 // Allocate extra space for the reference count to satisfy the alignment
 // requirement.
 static constexpr size_t kInSlotRefCountBufferSize = base::kAlignment;
-
-#if DCHECK_IS_ON()
-static constexpr size_t kPartitionRefCountOffset =
-    kInSlotRefCountBufferSize + kCookieSize;
-#else
-static constexpr size_t kPartitionRefCountOffset = kInSlotRefCountBufferSize;
-#endif
 constexpr size_t kPartitionRefCountOffsetAdjustment = kInSlotRefCountBufferSize;
+
+// This is for adjustment of pointers right past the allocation, which may point
+// to the next slot. First subtract 1 to bring them to the intended slot, and
+// only then we'll be able to find ref-count in that slot.
+constexpr size_t kPartitionPastAllocationAdjustment = 1;
 
 ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
   DCheckGetSlotOffsetIsZero(slot_start);
@@ -138,7 +183,6 @@ static_assert(sizeof(PartitionRefCount) <= kInSlotRefCountBufferSize,
 #else  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
 static constexpr size_t kInSlotRefCountBufferSize = 0;
-static constexpr size_t kPartitionRefCountOffset = 0;
 constexpr size_t kPartitionRefCountOffsetAdjustment = 0;
 
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)

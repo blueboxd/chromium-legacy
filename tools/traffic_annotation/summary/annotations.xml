@@ -43,7 +43,7 @@ Refer to README.md for content description and update process.
  <item id="cast_udp_transport" added_in_milestone="65" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport_impl.cc"/>
  <item id="certificate_verifier_url_loader" added_in_milestone="80" hash_code="80134684" type="0" content_hash_code="92630208" os_list="linux,windows" file_path="services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.cc"/>
  <item id="certificate_verifier_url_request" added_in_milestone="80" hash_code="85988208" type="0" content_hash_code="59262468" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_url_request.cc"/>
- <item id="chrome_HaTS_service" added_in_milestone="83" hash_code="136028241" type="0" content_hash_code="68990360" os_list="linux,windows" file_path="chrome/browser/ui/hats/hats_survey_status_checker.cc"/>
+ <item id="chrome_HaTS_service" added_in_milestone="83" hash_code="136028241" type="0" deprecated="2021-02-03" content_hash_code="68990360" file_path=""/>
  <item id="chrome_apps_socket_api" added_in_milestone="65" hash_code="8591273" type="0" content_hash_code="130709397" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
  <item id="chrome_cleaner" added_in_milestone="63" hash_code="27071967" type="0" content_hash_code="111240292" os_list="windows" file_path="chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc"/>
  <item id="chrome_cleanup_report" added_in_milestone="70" hash_code="71102679" type="0" content_hash_code="130565656" os_list="windows" file_path="chrome/chrome_cleaner/logging/cleaner_logging_service.cc"/>
@@ -269,7 +269,6 @@ Refer to README.md for content description and update process.
  <item id="quic_chromium_incoming_session" added_in_milestone="66" hash_code="87635401" type="0" content_hash_code="78573093" os_list="linux,windows" file_path="net/quic/quic_chromium_client_session.cc"/>
  <item id="quic_chromium_packet_writer" added_in_milestone="66" hash_code="20153177" type="0" content_hash_code="29657765" os_list="linux,windows" file_path="net/quic/quic_chromium_packet_writer.cc"/>
  <item id="ranker_url_fetcher" added_in_milestone="62" hash_code="95682324" type="0" content_hash_code="45958626" os_list="linux,windows" file_path="components/assist_ranker/ranker_url_fetcher.cc"/>
- <item id="rappor_report" added_in_milestone="62" hash_code="44606780" type="0" content_hash_code="111287826" os_list="linux,windows" file_path="components/rappor/log_uploader.cc"/>
  <item id="receive_messages_express" added_in_milestone="85" hash_code="29506140" type="0" deprecated="2020-09-21" content_hash_code="38581365" file_path=""/>
  <item id="refresh_token_annotation_request" added_in_milestone="62" hash_code="7433837" type="1" second_id="29188932" deprecated="2018-01-17" content_hash_code="137103383" file_path=""/>
  <item id="remote_copy_message_handler" added_in_milestone="80" hash_code="80255301" type="0" content_hash_code="117673331" os_list="linux,windows" file_path="chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.cc"/>

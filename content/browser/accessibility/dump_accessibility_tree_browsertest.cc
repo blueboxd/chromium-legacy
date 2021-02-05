@@ -2822,6 +2822,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAllCommitted) {
 // in the past.
 //
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DISABLED_DisplayContentsSelectCrash) {
+  RunRegressionTest(FILE_PATH_LITERAL("display-contents-select-crash.html"));
+}
+
 // Flaky on all platforms. http://crbug.com/1055764
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_XmlInIframeCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("xml-in-iframe-crash.html"));
@@ -2833,6 +2838,26 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ActivedescendantCrash) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, HiddenTable) {
   RunRegressionTest(FILE_PATH_LITERAL("hidden-table.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMap) {
+  RunRegressionTest(FILE_PATH_LITERAL("reused-map.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapMoveImage) {
+  RunRegressionTest(FILE_PATH_LITERAL("reused-map-move-image.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapMoveImageToTop) {
+  RunRegressionTest(FILE_PATH_LITERAL("reused-map-move-image-to-top.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapChangeUsemap) {
+  RunRegressionTest(FILE_PATH_LITERAL("reused-map-change-usemap.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapChangeMapName) {
+  RunRegressionTest(FILE_PATH_LITERAL("reused-map-change-map-name.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

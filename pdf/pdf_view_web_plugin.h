@@ -94,8 +94,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
                                                bool case_sensitive) override;
-  void DocumentLoadComplete(
-      const PDFEngine::DocumentFeatures& document_features) override;
+  void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
@@ -136,6 +135,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                       int32_t result) override;
+  void InitImageData(const gfx::Size& size) override;
   void OnGeometryChanged(double old_zoom, float old_device_scale) override;
 
  private:

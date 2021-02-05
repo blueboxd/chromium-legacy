@@ -24,6 +24,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManagementFlowsV2{
     "AccountManagementFlowsV2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether devices are updated before reboot after the first update.
+const base::Feature kAllowRepeatedUpdates{"AllowRepeatedUpdates",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Shows settings for adjusting scroll acceleration/sensitivity for
 // mouse/touchpad.
 const base::Feature kAllowScrollSettings{"AllowScrollSettings",
@@ -412,6 +416,10 @@ const base::Feature kHelpAppSearchServiceIntegration{
 // Enable or disable IME decoder via Mojo connection on Chrome OS.
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable the new improved keyboard shortcuts.
+const base::Feature kImprovedKeyboardShortcuts{
+    "ImprovedKeyboardShortcuts", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
@@ -809,6 +817,10 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
 
 bool IsClipboardHistoryContextMenuNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryContextMenuNudge);
+}
+
+bool IsImprovedKeyboardShortcutsEnabled() {
+  return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }
 
 bool IsPhoneHubEnabled() {

@@ -54,11 +54,9 @@ class Arguments;
 
 namespace content {
 class RenderFrame;
-class RenderView;
 class SpellCheckClient;
 class TestRunnerBindings;
 class WebFrameTestProxy;
-class WebViewTestProxy;
 struct TestPreferences;
 
 // TestRunner class currently has dual purpose:
@@ -136,10 +134,9 @@ class TestRunner {
   // can be done locally in the renderer via DumpPixelsInRenderer().
   bool CanDumpPixelsFromRenderer() const;
 
-  // Snapshots the content of |render_view| using the mode requested by the
-  // current test and calls |callback| with the result.  Caller needs to ensure
-  // that |render_view| stays alive until |callback| is called.
-  SkBitmap DumpPixelsInRenderer(content::RenderView* render_view);
+  // Snapshots the content of |main_frame| using the mode requested by the
+  // current test.
+  SkBitmap DumpPixelsInRenderer(blink::WebLocalFrame* main_frame);
 
   // Replicates changes to web test runtime flags (i.e. changes that happened in
   // another renderer). See also `OnWebTestRuntimeFlagsChanged()`.
@@ -246,9 +243,24 @@ class TestRunner {
     return effective_connection_type_;
   }
 
+  // Determine the the frame is considered in the main window.
+  bool IsFrameInMainWindow(blink::WebLocalFrame* frame);
+
+  // Set the main window and test configuration.
+  void SetMainWindowAndTestConfiguration(
+      blink::WebLocalFrame* initial_local_root,
+      mojom::WebTestRunTestConfigurationPtr config);
+  const mojom::WebTestRunTestConfiguration& TestConfig() const;
+
+  // Returns an asbsolute file path. This depends on the current test
+  // configuration so it should only be called while a test is running.
+  blink::WebString GetAbsoluteWebStringFromUTF8Path(
+      const std::string& utf8_path);
+
  private:
   friend class TestRunnerBindings;
   friend class WorkQueue;
+  class MainWindowTracker;
 
   // Helper class for managing events queued by methods like QueueLoad or
   // QueueScript.
@@ -365,10 +377,10 @@ class TestRunner {
   void UseUnfortunateSynchronousResizeMode();
 
   // Set the mock orientation on |view| to |orientation|.
-  void SetMockScreenOrientation(WebViewTestProxy* view,
+  void SetMockScreenOrientation(blink::WebView* view,
                                 const std::string& orientation);
   // Disable any mock orientation on |view| that is set.
-  void DisableMockScreenOrientation(WebViewTestProxy* view);
+  void DisableMockScreenOrientation(blink::WebView* view);
 
   // Modify accept_languages in blink::RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);
@@ -478,8 +490,8 @@ class TestRunner {
   // results will be the drag image instead of a snapshot of the page.
   void DumpDragImage();
 
-  // Sets a flag that tells the WebViewTestProxy to dump the default navigation
-  // policy passed to the DecidePolicyForNavigation callback.
+  // Sets a flag that sets a flag to dump the default navigation policy passed
+  // to the DecidePolicyForNavigation callback.
   void DumpNavigationPolicy();
 
   // Controls whether JavaScript dialogs such as alert() are dumped to test
@@ -543,6 +555,9 @@ class TestRunner {
 
   base::flat_set<WebFrameTestProxy*> main_frames_;
 
+  // Keeps track of which WebViews that are main windows.
+  std::vector<std::unique_ptr<MainWindowTracker>> main_windows_;
+
   // This is non empty when a load is in progress.
   std::vector<blink::WebFrame*> loading_frames_;
   // We do not want the test to end until the main frame finishes loading. This
@@ -579,6 +594,8 @@ class TestRunner {
   // and this tracks that the navigation is in progress, and is called to inform
   // the browser that the reset is complete.
   base::OnceClosure waiting_for_reset_navigation_to_about_blank_;
+
+  mojom::WebTestRunTestConfiguration test_config_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_{this};
 

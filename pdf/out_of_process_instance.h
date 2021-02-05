@@ -141,8 +141,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
                                                bool case_sensitive) override;
-  void DocumentLoadComplete(
-      const PDFEngine::DocumentFeatures& document_features) override;
+  void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
@@ -183,6 +182,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                       int32_t result) override;
+  void InitImageData(const gfx::Size& size) override;
   void OnGeometryChanged(double old_zoom, float old_device_scale) override;
   Image GetPluginImageData() const override;
 
@@ -219,6 +219,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   void FormDidOpen(int32_t result);
 
+  void RecordDocumentMetrics();
   void UserMetricsRecordAction(const std::string& action);
 
   // Start loading accessibility information.
@@ -302,11 +303,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // Add a sample to an enumerated histogram and filter out print preview usage.
   template <typename T>
   void HistogramEnumeration(const char* name, T sample);
-
-  // Add a sample to an enumerated legacy histogram and filter out print preview
-  // usage.
-  template <typename T>
-  void HistogramEnumeration(const char* name, T sample, T enum_size);
 
   // Add a sample to a custom counts histogram and filter out print preview
   // usage.

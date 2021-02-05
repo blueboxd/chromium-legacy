@@ -56,6 +56,10 @@ VaapiVideoDecoderDelegate::VaapiVideoDecoderDelegate(
 VaapiVideoDecoderDelegate::~VaapiVideoDecoderDelegate() {
   // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
   // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Also destroy the protected session on destruction of the accelerator
+  // delegate. That way if a new delegate is created, when it tries to create a
+  // new protected session it won't overwrite the existing one.
+  vaapi_wrapper_->DestroyProtectedSession();
 }
 
 void VaapiVideoDecoderDelegate::set_vaapi_wrapper(
@@ -63,6 +67,8 @@ void VaapiVideoDecoderDelegate::set_vaapi_wrapper(
   DETACH_FROM_SEQUENCE(sequence_checker_);
   vaapi_wrapper_ = std::move(vaapi_wrapper);
   protected_session_state_ = ProtectedSessionState::kNotCreated;
+  hw_identifier_.clear();
+  hw_key_data_map_.clear();
 }
 
 void VaapiVideoDecoderDelegate::OnVAContextDestructionSoon() {}
@@ -127,11 +133,13 @@ VaapiVideoDecoderDelegate::SetupDecryptDecode(
   DCHECK_EQ(protected_session_state_, ProtectedSessionState::kCreated);
 
   if (encryption_scheme_ == EncryptionScheme::kCenc) {
-    crypto_params->encryption_type =
-        full_sample ? VA_ENCRYPTION_TYPE_CENC_CTR : VA_ENCRYPTION_TYPE_CTR_128;
+    crypto_params->encryption_type = full_sample
+                                         ? VA_ENCRYPTION_TYPE_FULLSAMPLE_CTR
+                                         : VA_ENCRYPTION_TYPE_SUBSAMPLE_CTR;
   } else {
-    crypto_params->encryption_type =
-        full_sample ? VA_ENCRYPTION_TYPE_CENC_CBC : VA_ENCRYPTION_TYPE_CBC;
+    crypto_params->encryption_type = full_sample
+                                         ? VA_ENCRYPTION_TYPE_FULLSAMPLE_CBC
+                                         : VA_ENCRYPTION_TYPE_SUBSAMPLE_CBC;
   }
 
   // For multi-slice we may already have segment information in here, so
@@ -218,6 +226,7 @@ VaapiVideoDecoderDelegate::SetupDecryptDecode(
   memcpy(crypto_params->wrapped_decrypt_blob,
          hw_key_data_map_[decrypt_config_->key_id()].data(),
          DecryptConfig::kDecryptionKeySize);
+  crypto_params->key_blob_size = DecryptConfig::kDecryptionKeySize;
   crypto_params->segment_info = &segments->front();
 #else  // if BUILDFLAG(IS_CHROMEOS_ASH)
   protected_session_state_ = ProtectedSessionState::kFailed;

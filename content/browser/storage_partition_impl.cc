@@ -1219,7 +1219,8 @@ void StoragePartitionImpl::Initialize(
 
   cache_storage_context_ = base::MakeRefCounted<CacheStorageContextImpl>();
   cache_storage_context_->Init(
-      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
+      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
+      ChromeBlobStorageContext::GetRemoteFor(browser_context_));
   cache_storage_context_->Bind(
       cache_storage_control_.BindNewPipeAndPassReceiver());
 
@@ -1300,6 +1301,7 @@ void StoragePartitionImpl::Initialize(
   cookie_store_context_->Initialize(service_worker_context_, base::DoNothing());
 
   bucket_context_ = base::MakeRefCounted<BucketContext>();
+  bucket_context_->Initialize();
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&

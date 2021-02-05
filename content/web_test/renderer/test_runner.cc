@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -23,8 +24,10 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/web_test/common/web_test_constants.h"
 #include "content/web_test/common/web_test_string_util.h"
 #include "content/web_test/renderer/app_banner_service.h"
@@ -34,19 +37,20 @@
 #include "content/web_test/renderer/spell_check_client.h"
 #include "content/web_test/renderer/test_preferences.h"
 #include "content/web_test/renderer/web_frame_test_proxy.h"
-#include "content/web_test/renderer/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "mojo/public/mojom/base/text_direction.mojom-forward.h"
+#include "net/base/filename_util.h"
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -1279,13 +1283,13 @@ void TestRunnerBindings::SetMockScreenOrientation(
     const std::string& orientation) {
   if (invalid_)
     return;
-  runner_->SetMockScreenOrientation(frame_->GetWebViewTestProxy(), orientation);
+  runner_->SetMockScreenOrientation(GetWebFrame()->View(), orientation);
 }
 
 void TestRunnerBindings::DisableMockScreenOrientation() {
   if (invalid_)
     return;
-  runner_->DisableMockScreenOrientation(frame_->GetWebViewTestProxy());
+  runner_->DisableMockScreenOrientation(GetWebFrame()->View());
 }
 
 void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
@@ -2163,6 +2167,21 @@ void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
 
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}
 
+// This class helps track active main windows and when the RenderView is
+// destroyed it will remove it from TestRunner's list.
+class TestRunner::MainWindowTracker : public RenderViewObserver {
+ public:
+  MainWindowTracker(RenderView* view, TestRunner* test_runner)
+      : RenderViewObserver(view), test_runner_(test_runner) {}
+
+  void OnDestruct() override {
+    EraseIf(test_runner_->main_windows_, base::MatchesUniquePtr(this));
+  }
+
+ private:
+  TestRunner* const test_runner_;
+};
+
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
     : controller_(controller) {}
 
@@ -2278,16 +2297,14 @@ TestRunner::~TestRunner() = default;
 
 void TestRunner::Install(WebFrameTestProxy* frame,
                          SpellCheckClient* spell_check) {
-  bool is_main_test_window = frame->GetWebViewTestProxy()->is_main_window();
+  bool is_main_test_window = IsFrameInMainWindow(frame->GetWebFrame());
   TestRunnerBindings::Install(this, frame, spell_check,
                               IsWebPlatformTestsMode(), is_main_test_window);
   fake_screen_orientation_impl_.OverrideAssociatedInterfaceProviderForFrame(
       frame->GetWebFrame());
   gamepad_controller_.Install(frame);
-  frame->GetWebViewTestProxy()
-      ->GetWebView()
-      ->SetScreenOrientationOverrideForTesting(
-          fake_screen_orientation_impl_.CurrentOrientationType());
+  frame->GetWebFrame()->View()->SetScreenOrientationOverrideForTesting(
+      fake_screen_orientation_impl_.CurrentOrientationType());
 }
 
 void TestRunner::Reset() {
@@ -2424,9 +2441,8 @@ bool TestRunner::CanDumpPixelsFromRenderer() const {
          web_test_runtime_flags_.is_printing();
 }
 
-SkBitmap TestRunner::DumpPixelsInRenderer(content::RenderView* render_view) {
-  auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
-  DCHECK(view_proxy->GetWebView()->MainFrame());
+SkBitmap TestRunner::DumpPixelsInRenderer(blink::WebLocalFrame* main_frame) {
+  DCHECK(!main_frame->Parent());
   DCHECK(CanDumpPixelsFromRenderer());
 
   if (web_test_runtime_flags_.dump_drag_image()) {
@@ -2441,13 +2457,11 @@ SkBitmap TestRunner::DumpPixelsInRenderer(content::RenderView* render_view) {
     return bitmap;
   }
 
-  blink::WebLocalFrame* frame =
-      view_proxy->GetWebView()->MainFrame()->ToWebLocalFrame();
-  blink::WebLocalFrame* target_frame = frame;
+  blink::WebLocalFrame* target_frame = main_frame;
   std::string frame_name = web_test_runtime_flags_.printing_frame();
   if (!frame_name.empty()) {
     blink::WebFrame* frame_to_print =
-        frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
+        main_frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
     if (frame_to_print && frame_to_print->IsWebLocalFrame())
       target_frame = frame_to_print->ToWebLocalFrame();
   }
@@ -2609,8 +2623,7 @@ void TestRunner::OnFrameReactivated(WebFrameTestProxy* frame) {
   frame_will_start_load_ = false;
 
   AddMainFrame(frame);
-  WebViewTestProxy* view_proxy = frame->GetWebViewTestProxy();
-  if (view_proxy->is_main_window()) {
+  if (IsFrameInMainWindow(frame->GetWebFrame())) {
     work_queue_.RequestWork();
   }
 }
@@ -2721,9 +2734,7 @@ bool TestRunner::ShouldDumpNavigationPolicy() const {
 
 WebFrameTestProxy* TestRunner::FindInProcessMainWindowMainFrame() {
   for (WebFrameTestProxy* main_frame : main_frames_) {
-    WebViewTestProxy* view = main_frame->GetWebViewTestProxy();
-    DCHECK_EQ(view->GetMainRenderFrame(), main_frame);
-    if (view->is_main_window())
+    if (IsFrameInMainWindow(main_frame->GetWebFrame()))
       return main_frame;
   }
   return nullptr;
@@ -2786,6 +2797,88 @@ void TestRunner::ReplicateWorkQueueStates(const base::DictionaryValue& values) {
   if (!test_is_running_)
     return;
   work_queue_.ReplicateStates(values);
+}
+
+bool TestRunner::IsFrameInMainWindow(blink::WebLocalFrame* frame) {
+  blink::WebView* view = frame->View();
+  for (auto& window : main_windows_) {
+    if (window->render_view()->GetWebView() == view)
+      return true;
+  }
+  return false;
+}
+
+void TestRunner::SetMainWindowAndTestConfiguration(
+    blink::WebLocalFrame* frame,
+    mojom::WebTestRunTestConfigurationPtr config) {
+  blink::WebView* view = frame->View();
+
+  // Add |view| into the main window collection if it isn't there already.
+  if (!IsFrameInMainWindow(frame)) {
+    main_windows_.push_back(std::make_unique<MainWindowTracker>(
+        RenderView::FromWebView(view), this));
+  }
+  // This may be called for a local root in the same process as another local
+  // root, in which case we just keep the original config, which should match.
+  if (test_is_running_)
+    return;
+
+  test_config_ = std::move(*config);
+  SetTestIsRunning(true);
+
+  std::string spec = GURL(test_config_.test_url).spec();
+  size_t path_start = spec.rfind("web_tests/");
+  if (path_start != std::string::npos)
+    spec = spec.substr(path_start);
+
+  bool is_devtools_test =
+      spec.find("/devtools/") != std::string::npos ||
+      spec.find("/inspector-protocol/") != std::string::npos;
+
+  if (is_devtools_test)
+    SetDumpConsoleMessages(false);
+
+  // In protocol mode (see TestInfo::protocol_mode), we dump layout only when
+  // requested by the test. In non-protocol mode, we dump layout by default
+  // because the layout may be the only interesting thing to the user while
+  // we don't dump non-human-readable binary data. In non-protocol mode, we
+  // still generate pixel results (though don't dump them) to let the renderer
+  // execute the same code regardless of the protocol mode, e.g. for ease of
+  // debugging a web test issue.
+  if (!test_config_.protocol_mode)
+    SetShouldDumpAsLayout(true);
+
+  // For http/tests/loading/, which is served via httpd and becomes /loading/.
+  if (spec.find("/loading/") != std::string::npos)
+    SetShouldDumpFrameLoadCallbacks(true);
+
+  if (spec.find("/external/wpt/") != std::string::npos ||
+      spec.find("/external/csswg-test/") != std::string::npos ||
+      spec.find("://web-platform.test") != std::string::npos ||
+      spec.find("/harness-tests/wpt/") != std::string::npos)
+    SetIsWebPlatformTestsMode();
+
+  view->GetSettings()->SetV8CacheOptions(
+      is_devtools_test ? blink::mojom::V8CacheOptions::kNone
+                       : blink::mojom::V8CacheOptions::kDefault);
+}
+
+blink::WebString TestRunner::GetAbsoluteWebStringFromUTF8Path(
+    const std::string& utf8_path) {
+  DCHECK(test_is_running_);
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(utf8_path);
+  if (!path.IsAbsolute()) {
+    GURL base_url =
+        net::FilePathToFileURL(test_config_.current_working_directory.Append(
+            FILE_PATH_LITERAL("foo")));
+    net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
+  }
+  return blink::FilePathToWebString(path);
+}
+
+const mojom::WebTestRunTestConfiguration& TestRunner::TestConfig() const {
+  DCHECK(test_is_running_);
+  return test_config_;
 }
 
 void TestRunner::OnTestPreferencesChanged(const TestPreferences& test_prefs,
@@ -2858,7 +2951,7 @@ void TestRunner::UseUnfortunateSynchronousResizeMode() {
   RenderView::ForEach(&visitor);
 }
 
-void TestRunner::SetMockScreenOrientation(WebViewTestProxy* view_proxy,
+void TestRunner::SetMockScreenOrientation(blink::WebView* view,
                                           const std::string& orientation_str) {
   blink::mojom::ScreenOrientation orientation;
 
@@ -2873,14 +2966,14 @@ void TestRunner::SetMockScreenOrientation(WebViewTestProxy* view_proxy,
     orientation = blink::mojom::ScreenOrientation::kLandscapeSecondary;
   }
 
-  bool changed = fake_screen_orientation_impl_.UpdateDeviceOrientation(
-      view_proxy, orientation);
+  bool changed =
+      fake_screen_orientation_impl_.UpdateDeviceOrientation(view, orientation);
   if (changed)
     GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
 
-void TestRunner::DisableMockScreenOrientation(WebViewTestProxy* view_proxy) {
-  fake_screen_orientation_impl_.SetDisabled(view_proxy, true);
+void TestRunner::DisableMockScreenOrientation(blink::WebView* view) {
+  fake_screen_orientation_impl_.SetDisabled(view, true);
 }
 
 std::string TestRunner::GetAcceptLanguages() const {
@@ -3126,11 +3219,11 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
     // This path simulates losing focus on the window, without moving it to
     // another window.
     if (widget->HasFocus()) {
-      auto* view_proxy = frame_proxy->GetWebViewTestProxy();
+      auto* web_view = frame_proxy->GetWebFrame()->View();
       // TODO(dtapuska): We should call the exact IPC the browser
       // calls. ie. WebFrameWidgetImpl::SetActive but that isn't
       // exposed outside of blink.
-      view_proxy->GetWebView()->SetIsActive(false);
+      web_view->SetIsActive(false);
       widget->SetFocus(false);
     }
     return;
@@ -3142,11 +3235,11 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
       blink::WebFrameWidget* other_widget =
           other_main_frame->GetLocalRootWebFrameWidget();
       if (other_widget->HasFocus()) {
-        auto* other_view_proxy = other_main_frame->GetWebViewTestProxy();
+        auto* other_web_view = other_main_frame->GetWebFrame()->View();
         // TODO(dtapuska): We should call the exact IPC the browser
         // calls. ie. WebFrameWidgetImpl::SetActive but that isn't
         // exposed outside of blink.
-        other_view_proxy->GetWebView()->SetIsActive(false);
+        other_web_view->SetIsActive(false);
         other_widget->SetFocus(false);
       }
     }
@@ -3215,9 +3308,6 @@ void TestRunner::FinishTest() {
   web_frame->FrameWidget()->UpdateAllLifecyclePhases(
       blink::DocumentUpdateReason::kTest);
 
-  const mojom::WebTestRunTestConfiguration& test_config =
-      main_frame->GetWebViewTestProxy()->test_config();
-
   // Initialize a new dump results object which we will populate in the calls
   // below.
   auto dump_result = mojom::WebTestRendererDumpResult::New();
@@ -3232,7 +3322,7 @@ void TestRunner::FinishTest() {
     TextResultType text_result_type = ShouldGenerateTextResults();
     bool pixel_result = ShouldGeneratePixelResults();
 
-    std::string spec = GURL(test_config.test_url).spec();
+    std::string spec = GURL(test_config_.test_url).spec();
     size_t path_start = spec.rfind("web_tests/");
     if (path_start != std::string::npos)
       spec = spec.substr(path_start);
@@ -3267,8 +3357,7 @@ void TestRunner::FinishTest() {
     if (pixel_result) {
       if (CanDumpPixelsFromRenderer()) {
         TRACE_EVENT0("shell", "TestRunner::CaptureLocalPixelsDump");
-        SkBitmap actual =
-            DumpPixelsInRenderer(main_frame->GetWebViewTestProxy());
+        SkBitmap actual = DumpPixelsInRenderer(web_frame);
         DCHECK_GT(actual.info().width(), 0);
         DCHECK_GT(actual.info().height(), 0);
 
@@ -3276,7 +3365,7 @@ void TestRunner::FinishTest() {
         base::MD5Sum(actual.getPixels(), actual.computeByteSize(), &digest);
         dump_result->actual_pixel_hash = base::MD5DigestToBase16(digest);
 
-        if (dump_result->actual_pixel_hash != test_config.expected_pixel_hash)
+        if (dump_result->actual_pixel_hash != test_config_.expected_pixel_hash)
           dump_result->pixels = std::move(actual);
       } else {
         browser_should_dump_pixels = true;

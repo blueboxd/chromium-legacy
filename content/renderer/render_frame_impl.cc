@@ -3996,14 +3996,12 @@ blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
   base::UnguessableToken devtools_frame_token;
   mojom::FrameReplicationStatePtr replicated_state =
       mojom::FrameReplicationState::New();
-  viz::FrameSinkId frame_sink_id;
-  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id, &frame_sink_id,
+  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id,
                               &replicated_state, &frame_token,
                               &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
       agent_scheduling_group_, this, proxy_routing_id, frame_token,
       devtools_frame_token, portal_element);
-  proxy->FrameSinkIdChanged(frame_sink_id);
   proxy->SetReplicatedState(std::move(replicated_state));
   return proxy->web_frame();
 }
@@ -5374,6 +5372,10 @@ void RenderFrameImpl::BeginNavigation(
   // to |this|.
   CHECK(in_frame_tree_);
 
+  // This might be the first navigation in this RenderFrame.
+  const bool first_navigation_in_frame = !had_started_any_navigation_;
+  had_started_any_navigation_ = true;
+
   // This method is only called for renderer initiated navigations, which
   // may have originated from a link-click, script, drag-n-drop operation, etc.
 
@@ -5533,8 +5535,7 @@ void RenderFrameImpl::BeginNavigation(
     // synchronously.
     bool is_first_real_empty_document_navigation =
         WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
-        !frame_->HasCommittedFirstRealLoad() &&
-        !browser_side_navigation_pending_;
+        !frame_->HasCommittedFirstRealLoad() && first_navigation_in_frame;
 
     if (is_first_real_empty_document_navigation &&
         !is_history_navigation_in_new_child_frame) {

@@ -805,11 +805,7 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
     gfx::Size new_image_data_size =
         PaintManager::GetNewContextSize(old_image_data_size, plugin_size());
     if (new_image_data_size != old_image_data_size) {
-      pepper_image_data_ =
-          pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                        PPSizeFromSize(new_image_data_size), false);
-      mutable_image_data() = SkBitmapFromPPImageData(
-          std::make_unique<pp::ImageData>(pepper_image_data_));
+      InitImageData(new_image_data_size);
       set_first_paint(true);
     }
 
@@ -1126,6 +1122,14 @@ void OutOfProcessInstance::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
   } else {
     NOTREACHED();
   }
+}
+
+void OutOfProcessInstance::InitImageData(const gfx::Size& size) {
+  pepper_image_data_ =
+      pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, PPSizeFromSize(size),
+                    /*init_to_zero=*/false);
+  mutable_image_data() = SkBitmapFromPPImageData(
+      std::make_unique<pp::ImageData>(pepper_image_data_));
 }
 
 pp::VarArray OutOfProcessInstance::GetDocumentAttachments() {
@@ -1480,14 +1484,14 @@ OutOfProcessInstance::SearchString(const base::char16* string,
   return results;
 }
 
-void OutOfProcessInstance::DocumentLoadComplete(
-    const PDFEngine::DocumentFeatures& document_features) {
+void OutOfProcessInstance::DocumentLoadComplete() {
   // Clear focus state for OSK.
   FormTextFieldFocusChange(false);
 
   DCHECK_EQ(LOAD_STATE_LOADING, document_load_state_);
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
+  RecordDocumentMetrics();
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1529,17 +1533,6 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
-                        1000000, 50);
-  HistogramEnumeration("PDF.HasAttachment", document_features.has_attachments
-                                                ? PdfHasAttachment::kYes
-                                                : PdfHasAttachment::kNo);
-  HistogramEnumeration("PDF.IsTagged", document_features.is_tagged
-                                           ? PdfIsTagged::kYes
-                                           : PdfIsTagged::kNo);
-  HistogramEnumeration("PDF.FormType", document_features.form_type,
-                       PDFEngine::FormType::kCount);
-  HistogramEnumeration("PDF.Version", engine()->GetDocumentMetadata().version);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
@@ -2274,6 +2267,20 @@ void OutOfProcessInstance::SendThumbnail(const std::string& message_id,
   PostMessage(reply);
 }
 
+void OutOfProcessInstance::RecordDocumentMetrics() {
+  const DocumentMetadata& document_metadata = engine()->GetDocumentMetadata();
+  HistogramEnumeration("PDF.Version", document_metadata.version);
+  HistogramCustomCounts("PDF.PageCount", document_metadata.page_count, 1,
+                        1000000, 50);
+  HistogramEnumeration("PDF.HasAttachment", document_metadata.has_attachments
+                                                ? PdfHasAttachment::kYes
+                                                : PdfHasAttachment::kNo);
+  HistogramEnumeration("PDF.IsTagged", document_metadata.tagged
+                                           ? PdfIsTagged::kYes
+                                           : PdfIsTagged::kNo);
+  HistogramEnumeration("PDF.FormType", document_metadata.form_type);
+}
+
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
   // TODO(raymes): Move this function to PPB_UMA_Private.
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
@@ -2334,15 +2341,6 @@ void OutOfProcessInstance::HistogramEnumeration(const char* name, T sample) {
   if (IsPrintPreview())
     return;
   base::UmaHistogramEnumeration(name, sample);
-}
-
-template <typename T>
-void OutOfProcessInstance::HistogramEnumeration(const char* name,
-                                                T sample,
-                                                T enum_size) {
-  if (IsPrintPreview())
-    return;
-  base::UmaHistogramEnumeration(name, sample, enum_size);
 }
 
 void OutOfProcessInstance::HistogramCustomCounts(const char* name,

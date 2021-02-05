@@ -2203,7 +2203,6 @@ test("content_unittests") {
     "//components/network_session_configurator/common",
     "//components/offline_pages/buildflags",
     "//components/payments/mojom",
-    "//components/rappor:test_support",
     "//components/services/quarantine/public/mojom",
     "//components/services/storage",
     "//components/services/storage:test_support",
@@ -2493,6 +2492,7 @@ test("content_unittests") {
       "../browser/hid/hid_service_unittest.cc",
       "../browser/webauth/authenticator_impl_unittest.cc",
       "../browser/webauth/authenticator_mojom_traits_unittest.cc",
+      "../browser/webauth/webauth_request_security_checker_unittest.cc",
     ]
     deps += [
       "//components/autofill/content/browser/webauthn",

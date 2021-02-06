@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/accessibility/focus_ring_controller.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -76,8 +77,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
-#include "chromeos/constants/chromeos_constants.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -128,9 +127,6 @@ const char kLoginURL[] = "chrome://oobe/login";
 
 // URL which corresponds to the OOBE WebUI.
 const char kOobeURL[] = "chrome://oobe/oobe";
-
-// URL which corresponds to the user adding WebUI.
-const char kUserAddingURL[] = "chrome://oobe/user-adding";
 
 // URL which corresponds to the app launch splash WebUI.
 const char kAppLaunchSplashURL[] = "chrome://oobe/app-launch-splash";
@@ -534,13 +530,6 @@ void LoginDisplayHostWebUI::OnFinalize() {
       // since sign in screen widget has to stay alive.
       ScheduleFadeOutAnimation(kDefaultFadeTimeMs);
       break;
-    case ANIMATION_ADD_USER:
-      // Defer the deletion of LoginDisplayHost instance until the user adding
-      // animation (which is done by UserSwitchAnimatorChromeOS) is finished.
-      // This is to guarantee OnUserSwitchAnimationFinished() is called before
-      // LoginDisplayHost deletes itself.
-      // See crbug.com/541864.
-      break;
   }
 }
 
@@ -602,48 +591,11 @@ WizardController* LoginDisplayHostWebUI::GetWizardController() {
 }
 
 void LoginDisplayHostWebUI::OnStartUserAdding() {
-  DisableKeyboardOverscroll();
-
-  restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
-  finalize_animation_type_ = ANIMATION_ADD_USER;
-
-  // Observe the user switch animation and defer the deletion of itself only
-  // after the animation is finished.
-  ash::MultiUserWindowManager* window_manager =
-      MultiUserWindowManagerHelper::GetWindowManager();
-  // MultiUserWindowManagerHelper instance might be nullptr in a unit test.
-  if (window_manager)
-    window_manager->AddObserver(this);
-
-  VLOG(1) << "Login WebUI >> user adding";
-  if (!login_window_)
-    LoadURL(GURL(kUserAddingURL));
-  // We should emit this signal only at login screen (after reboot or sign out).
-  login_view_->set_should_emit_login_prompt_visible(false);
-
-  // Lock container can be transparent after lock screen animation.
-  aura::Window* lock_container = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(),
-      ash::kShellWindowId_LockScreenContainersContainer);
-  lock_container->layer()->SetOpacity(1.0);
-
-  CreateExistingUserController();
-
-  SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
-  SetStatusAreaVisible(true);
-  existing_user_controller_->Init(
-      user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
-  CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(login_display_.get());
+  NOTREACHED();
 }
 
 void LoginDisplayHostWebUI::CancelUserAdding() {
-  // ANIMATION_ADD_USER observes UserSwitchAnimatorChromeOS to shutdown the
-  // login display host. However, the animation does not run when user adding is
-  // canceled. Changing to ANIMATION_NONE so that Finalize() shuts down the host
-  // immediately.
-  finalize_animation_type_ = ANIMATION_NONE;
-  Finalize(base::OnceClosure());
+  NOTREACHED();
 }
 
 void LoginDisplayHostWebUI::OnStartSignInScreen() {

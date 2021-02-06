@@ -33,7 +33,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -350,7 +349,13 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
 }
 
 // Tests that "Additional ToS" dialog could be opened and closed.
-IN_PROC_BROWSER_TEST_F(EulaTest, AdditionalToS) {
+// TODO(crbug.com/1175244): Flaky on linux-chromeos-rel.
+#ifdef NDEBUG
+#define MAYBE_AdditionalToS DISABLED_AdditionalToS
+#else
+#define MAYBE_AdditionalToS AdditionalToS
+#endif
+IN_PROC_BROWSER_TEST_F(EulaTest, MAYBE_AdditionalToS) {
   base::HistogramTester histogram_tester;
   ShowEulaScreen();
 

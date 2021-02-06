@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_switches.h"
+#include "ash/constants/devicetype.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -161,9 +163,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/constants/chromeos_constants.h"
-#include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -1021,13 +1020,10 @@ void WizardController::OnOfflineLoginScreenExit(
                OfflineLoginScreen::GetResultString(result));
   switch (result) {
     case OfflineLoginScreen::Result::BACK:
-      if (wizard_context_->is_user_creation_enabled) {
-        AdvanceToScreen(UserCreationView::kScreenId);
-      } else if (wizard_context_->device_has_users) {
-        LoginDisplayHost::default_host()->HideOobeDialog();
-      } else {
-        NOTREACHED();
-      }
+      // Go back to online login, if still no connection it will trigger
+      // ErrorScreen with fix options. If UserCreationScreen isn't available
+      // it will exit with Result::SKIPPED and open GaiaScreen instead.
+      AdvanceToScreen(UserCreationView::kScreenId);
       break;
     case OfflineLoginScreen::Result::RELOAD_ONLINE_LOGIN:
       AdvanceToScreen(GaiaView::kScreenId);

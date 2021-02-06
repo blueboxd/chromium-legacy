@@ -170,6 +170,10 @@ WARN_UNUSED_RESULT bool BeginNavigateToURLFromRenderer(
 // Navigate a frame with ID |iframe_id| to |url|, blocking until the navigation
 // finishes.  Uses a renderer-initiated navigation from script code in the
 // main frame.
+//
+// This method does not trigger a user activation before the navigation.  If
+// necessary, a user activation can be triggered right before calling this
+// method, e.g. by calling |ExecuteScript(frame_tree_node, "")|.
 bool NavigateIframeToURL(WebContents* web_contents,
                          const std::string& iframe_id,
                          const GURL& url);
@@ -1249,19 +1253,13 @@ class WebContentsAddedObserver {
   // created since the constructor
   WebContents* GetWebContents();
 
-  // Will tell whether RenderViewCreated Callback has invoked
-  bool RenderViewCreatedCalled();
-
  private:
-  class RenderViewCreatedObserver;
-
   void WebContentsCreated(WebContents* web_contents);
 
   // Callback to WebContentCreated(). Cached so that we can unregister it.
   base::RepeatingCallback<void(WebContents*)> web_contents_created_callback_;
 
   WebContents* web_contents_;
-  std::unique_ptr<RenderViewCreatedObserver> child_observer_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);

@@ -11,6 +11,7 @@ GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "chrome/common/buildflags.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
+GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
@@ -28,6 +29,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
         'chromeos::features::kEnableHostnameSetting',
         'chromeos::features::kOsSettingsPolymer3',
         'chromeos::features::kUpdatedCellularActivationUi',
+        'features::kCrostini',
       ],
     };
   }
@@ -199,9 +201,24 @@ TEST_F(
 [['AccessibilityPage', 'os_a11y_page_tests.m.js'],
  ['AboutPage', 'os_about_page_tests.m.js'],
  ['AmbientModePage', 'ambient_mode_page_test.m.js'],
+ ['AppManagementPage', 'app_management_page_tests.m.js'],
+ ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
+ ['AppManagementAppItem', 'app_item_test.m.js'],
+ ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
+ ['AppManagementChromeAppDetailView', 'chrome_app_detail_view_test.m.js'],
+ ['AppManagementDomSwitch', 'dom_switch_test.m.js'],
+ ['AppManagementMainView', 'main_view_test.m.js'],
+ ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
+ ['AppManagementPermissionItem', 'permission_item_test.m.js'],
+ ['AppManagementPinToShelfItem', 'pin_to_shelf_item_test.m.js'],
+ ['AppManagementPluginVmDetailView', 'plugin_vm_detail_view_test.m.js'],
+ ['AppManagementToggleRow', 'toggle_row_test.m.js'],
+ ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
+ ['AppManagementManagedApp', 'managed_apps_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.m.js'],
+ ['CrostiniPage', 'crostini_page_test.m.js'],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
  ['CupsPrinterPage', 'cups_printer_page_tests.m.js'],
@@ -220,6 +237,7 @@ TEST_F(
  ['InternetKnownNetworksPage', 'internet_known_networks_page_tests.m.js'],
  ['InternetSubpage', 'internet_subpage_tests.m.js'],
  ['InternetPage', 'internet_page_tests.m.js'],
+ ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
  ['LocalizedLink', 'localized_link_test.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
@@ -251,7 +269,6 @@ TEST_F(
  ['ParentalControlsPage', 'parental_controls_page_test.m.js'],
  ['PeoplePage', 'os_people_page_test.m.js'],
  ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],
- ['PeoplePageKerberosAccounts', 'people_page_kerberos_accounts_test.m.js'],
  ['PersonalizationPage', 'personalization_page_test.m.js'],
  ['PrintingPage', 'os_printing_page_tests.m.js'],
  ['ResetPage', 'os_reset_page_test.m.js'],

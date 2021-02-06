@@ -1,10 +1,12 @@
 include_rules = [
   "+ash/public/mojom",
   "+chromeos/services/assistant/public",
+  "+chromeos/services/network_config/public/mojom",
   "+libassistant",
   "+media/audio",
   "+media/base",
   "+services/audio/public",
+  "+services/device/public/mojom",
   "+services/network/public",
   "+services/network/test",
 ]

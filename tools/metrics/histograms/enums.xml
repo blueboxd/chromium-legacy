@@ -4383,6 +4383,7 @@ others/histograms.xml -->
   <int value="10" label="192 kHz"/>
   <int value="11" label="24 kHz"/>
   <int value="12" label="384 kHz"/>
+  <int value="13" label="768 kHz"/>
 </enum>
 
 <enum name="AudioServiceProcessTerminationStatus">
@@ -8238,6 +8239,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanHTTPVsJS">
   <int value="0" label="JS"/>
   <int value="1" label="HTTP"/>
+</enum>
+
+<enum name="BooleanHung">
+  <int value="0" label="Is not hung"/>
+  <int value="1" label="Is hung"/>
 </enum>
 
 <enum name="BooleanIgnored">
@@ -23457,6 +23463,7 @@ Called by update_document_policy_enum.py.-->
   <int value="820" label="WebXRImmersiveArEnabled"/>
   <int value="821" label="GaiaOfflineSigninTimeLimitDays"/>
   <int value="822" label="FileSystemEnterpriseConnector"/>
+  <int value="823" label="DeviceSystemWideTracingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31289,6 +31296,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3794" label="SessionStorageFirstUsedAfterFcp"/>
   <int value="3795" label="GravitySensorConstructor"/>
   <int value="3796" label="ElementInternalsStates"/>
+  <int value="3797" label="WebPImage"/>
+  <int value="3798" label="AVIFImage"/>
+  <int value="3799" label="SVGTextEdited"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37414,6 +37424,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="kPin"/>
   <int value="4" label="kShowInFolder"/>
   <int value="5" label="kUnpin"/>
+  <int value="6" label="kRemove"/>
 </enum>
 
 <enum name="HoldingSpaceItemType">
@@ -42851,6 +42862,7 @@ from previous Chrome versions.
   <int value="-2021954068" label="TapVisualizerApp:disabled"/>
   <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
+  <int value="-2018579114" label="ImprovedKeyboardShortcuts:enabled"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
   <int value="-2017778637" label="PrintSaveToDrive:disabled"/>
   <int value="-2015293660" label="AccessibilityExposeDisplayNone:disabled"/>
@@ -43728,6 +43740,7 @@ from previous Chrome versions.
   <int value="-1261263046"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:disabled"/>
   <int value="-1259901957" label="VrBrowserKeyboard:disabled"/>
+  <int value="-1259627326" label="AllowRepeatedUpdates:disabled"/>
   <int value="-1258141852" label="ScrollUnification:enabled"/>
   <int value="-1256823053" label="WebRtcHWVP9Encoding:enabled"/>
   <int value="-1256747007"
@@ -44129,6 +44142,7 @@ from previous Chrome versions.
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-905538983" label="SimplifyHttpsIndicator:disabled"/>
   <int value="-902125579" label="ImmersiveUiMode:disabled"/>
+  <int value="-899915066" label="ImprovedKeyboardShortcuts:disabled"/>
   <int value="-899393472" label="enable-new-app-menu-icon"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
   <int value="-899265865" label="DismissNtpPromos:disabled"/>
@@ -44430,6 +44444,7 @@ from previous Chrome versions.
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
+  <int value="-620902693" label="PageInfoHistory:disabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-619740638" label="ListAllDisplayModes:enabled"/>
   <int value="-619665653" label="DisableKeepaliveFetch:disabled"/>
@@ -45163,6 +45178,7 @@ from previous Chrome versions.
   <int value="75207621" label="enable-stylus-virtual-keyboard:enabled"/>
   <int value="75237697" label="ash-enable-new-overview-ui"/>
   <int value="75747474" label="disable-webview-signin-flow"/>
+  <int value="77886794" label="AllowRepeatedUpdates:enabled"/>
   <int value="78998551" label="disable-hosted-app-shim-creation"/>
   <int value="79094339" label="VrLaunchIntents:enabled"/>
   <int value="79503461" label="disable-account-consistency"/>
@@ -45742,6 +45758,7 @@ from previous Chrome versions.
   <int value="634789085" label="LayeredAPI:disabled"/>
   <int value="635076832" label="MarkHttpAs:disabled"/>
   <int value="635533110" label="ReleaseNotes:disabled"/>
+  <int value="635947051" label="DesktopRestructuredLanguageSettings:enabled"/>
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636341169" label="ExploreSites:disabled"/>
   <int value="636413416" label="OmniboxKeywordSearchButton:disabled"/>
@@ -46616,6 +46633,7 @@ from previous Chrome versions.
       label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1446946673" label="DesktopRestructuredLanguageSettings:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
   <int value="1448684258" label="TabHoverCardImages:enabled"/>
   <int value="1449177114"
@@ -47189,6 +47207,7 @@ from previous Chrome versions.
   <int value="1979472169" label="TabGroupsFeedback:disabled"/>
   <int value="1980011075" label="debug-packed-apps"/>
   <int value="1980648371" label="PointerEventV1SpecCapturing:enabled"/>
+  <int value="1985584246" label="PageInfoHistory:enabled"/>
   <int value="1986031201" label="SwipingFromLeftEdgeToGoBack:disabled"/>
   <int value="1988506961" label="EnableManualSaving:enabled"/>
   <int value="1988810119" label="AutofillDropdownLayout:enabled"/>
@@ -62405,6 +62424,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="kInFlightPushMessage"/>
   <int value="12" label="kSessionRestore"/>
   <int value="13" label="kChromeViewsDelegate"/>
+  <int value="14" label="kDevToolsWindow"/>
 </enum>
 
 <enum name="ProfileMenuActionableItem">
@@ -63754,7 +63774,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="CONNECTION_ERROR"/>
   <int value="5" label="PEER_GOING_AWAY"/>
   <int value="6" label="CANCELLED"/>
-  <int value="7" label="RST_FLOW_CONTROL_ACCOUNTING"/>
+  <int value="7" label="RST_ACKNOWLEDGEMENT"/>
   <int value="8" label="REFUSED"/>
   <int value="9" label="INVALID_PROMISE_URL"/>
   <int value="10" label="UNAUTHORIZED_PROMISE_URL"/>
@@ -63763,6 +63783,26 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="13" label="INVALID_PROMISE_METHOD"/>
   <int value="14" label="PUSH_STREAM_TIMED_OUT"/>
   <int value="15" label="HEADERS_TOO_LARGE"/>
+  <int value="16" label="TTL_EXPIRED"/>
+  <int value="17" label="DATA_AFTER_CLOSE_OFFSET"/>
+  <int value="18" label="GENERAL_PROTOCOL_ERROR"/>
+  <int value="19" label="INTERNAL_ERROR"/>
+  <int value="20" label="CREATION_ERROR"/>
+  <int value="21" label="CLOSED_CRITICAL_STREAM"/>
+  <int value="22" label="FRAME_UNEXPECTED"/>
+  <int value="23" label="FRAME_ERROR"/>
+  <int value="24" label="EXCESSIVE_LOAD"/>
+  <int value="25" label="ID_ERROR"/>
+  <int value="26" label="SETTINGS_ERROR"/>
+  <int value="27" label="MISSING_SETTINGS"/>
+  <int value="28" label="REQUEST_REJECTED"/>
+  <int value="29" label="REQUEST_INCOMPLETE"/>
+  <int value="30" label="CONNECT_ERROR"/>
+  <int value="31" label="VERSION_FALLBACK"/>
+  <int value="32" label="DECOMPRESSION_FAILED"/>
+  <int value="33" label="ENCODER_STREAM_ERROR"/>
+  <int value="34" label="DECODER_STREAM_ERROR"/>
+  <int value="35" label="UNKNOWN_APPLICATION_ERROR_CODE"/>
 </enum>
 
 <enum name="QuicServerConfigState">
@@ -64837,6 +64877,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="RelaunchNotificationShowResult">
+  <obsolete>
+    Removed in M90.
+  </obsolete>
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown for unknown reason (deprecated)"/>
   <int value="2"
@@ -72513,11 +72556,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="StructuredMetricsInternalError">
-  <int value="0" label="Missing key"/>
+  <int value="0" label="Missing key (deprecated)"/>
   <int value="1" label="Wrong key length"/>
   <int value="2" label="Missing last rotation"/>
   <int value="3" label="Missing rotation period"/>
   <int value="4" label="Failed uint conversion"/>
+  <int value="5" label="Failed key read error"/>
+  <int value="6" label="Failed key parse error"/>
+  <int value="7" label="Failed key write error"/>
+  <int value="8" label="Failed key serialization"/>
 </enum>
 
 <enum name="StructuredMetricsKeyValidationState">
@@ -76242,6 +76289,7 @@ Full version information for the fingerprint enum values:
   <int value="61" label="kErrorCodeDeviceCorrupted"/>
   <int value="62" label="kErrorCodePackageExcludedFromUpdate"/>
   <int value="63" label="kErrorCodeDownloadCancelledPerPolicy"/>
+  <int value="64" label="kErrorCodeRepeatedFpFromOmahaError"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">
@@ -77030,7 +77078,7 @@ Full version information for the fingerprint enum values:
   <int value="26" label="vaDestroyProtectedSession()"/>
   <int value="27" label="vaAttachProtectedSession()"/>
   <int value="28" label="vaDetachProtectedSession()"/>
-  <int value="29" label="vaProtectedSessionHwUpdate()"/>
+  <int value="29" label="vaProtectedSessionHwUpdate() (deprecated)"/>
   <int value="30" label="kVAProtectedSessionExecute()"/>
   <int value="31" label="Other VA functions"/>
 </enum>
@@ -79838,6 +79886,7 @@ Called by update_scheduler_enums.py.-->
   <int value="8030578" label="/crostini/sharedUsbDevices"/>
   <int value="8530592" label="/syncSetup/advanced"/>
   <int value="16287984" label="/languages/details"/>
+  <int value="53341592" label="/privacySandbox"/>
   <int value="60238454" label="/content/ads"/>
   <int value="104900992" label="/content/insecureContent"/>
   <int value="223791833" label="/help/about"/>
@@ -81665,6 +81714,12 @@ Called by update_scheduler_enums.py.-->
   <int value="1247871240" label="Windows 10 2004 (Build 19041.264)"/>
 </enum>
 
+<enum name="WindowsServiceStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not Found"/>
+  <int value="2" label="Found"/>
+</enum>
+
 <enum name="WindowsToastActivatorCLSIDMismatchReason">
   <obsolete>
     Deprecated 12/2018 as this is no longer needed.
@@ -82437,6 +82492,7 @@ Called by update_scheduler_enums.py.-->
   <int value="50" label="App Info"/>
   <int value="51" label="Uninstall app"/>
   <int value="52" label="Show Kaleidoscope"/>
+  <int value="53" label="Show tips for Chrome"/>
 </enum>
 
 <enum name="XFrameOptions">

@@ -50,7 +50,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
  protected:
 #if DCHECK_IS_ON()
   bool initialized_ = false;
+  mutable bool getting_bounds_ = false;
 #endif
+
   // The accessibility role, not taking ARIA into account.
   ax::mojom::blink::Role native_role_;
 
@@ -84,7 +86,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   void Init(AXObject* parent_if_known) override;
   void Detach() override;
-  bool IsDetached() const override;
   bool IsAXNodeObject() const final;
 
   // Check object role or purpose.
@@ -262,10 +263,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Inline text boxes.
   void LoadInlineTextBoxes() override;
 
-  virtual LayoutBoxModelObject* GetLayoutBoxModelObject() const {
-    return nullptr;
-  }
-
   //
   // Layout object specific methods.
   //
@@ -297,6 +294,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool SelectionShouldFollowFocus() const;
   virtual bool IsTabItemSelected() const;
 
+  void AddChildrenImpl();
   void AddNodeChildren();
   void AddLayoutChildren();
   void AddInlineTextBoxChildren(bool force = false);

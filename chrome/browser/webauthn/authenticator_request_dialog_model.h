@@ -23,6 +23,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/fido_types.h"
 #include "device/fido/pin.h"
 
 namespace device {
@@ -46,6 +47,10 @@ class AuthenticatorRequestDialogModel {
   enum class Step {
     // The UX flow has not started yet, the dialog should still be hidden.
     kNotStarted,
+
+    // A more subtle version of the dialog is being shown as an icon or bubble
+    // on the omnibox, prompting the user to tap their security key.
+    kSubtleUI,
 
     kTransportSelection,
 
@@ -179,7 +184,8 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted.
   void StartFlow(
       TransportAvailabilityInfo transport_availability,
-      base::Optional<device::FidoTransportProtocol> last_used_transport);
+      base::Optional<device::FidoTransportProtocol> last_used_transport,
+      bool is_conditional);
 
   // Restarts the UX flow.
   void StartOver();
@@ -403,12 +409,8 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.responses_;
   }
 
-  bool might_create_resident_credential() const {
-    return might_create_resident_credential_;
-  }
-
-  void set_might_create_resident_credential(bool v) {
-    might_create_resident_credential_ = v;
+  device::ResidentKeyRequirement resident_key_requirement() const {
+    return transport_availability_.resident_key_requirement;
   }
 
   void set_cable_transport_info(
@@ -487,12 +489,6 @@ class AuthenticatorRequestDialogModel {
   base::Optional<int> uv_attempts_;
 
   base::OnceCallback<void(bool)> attestation_callback_;
-
-  // might_create_resident_credential_ records whether activating an
-  // authenticator may cause a resident credential to be created. A resident
-  // credential may be discovered by someone with physical access to the
-  // authenticator and thus has privacy implications.
-  bool might_create_resident_credential_ = false;
 
   base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
       selection_callback_;

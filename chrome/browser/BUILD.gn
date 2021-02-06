@@ -15,11 +15,11 @@ import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
-import("//chrome/services/machine_learning/features.gni")
 import("//components/captive_portal/core/features.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
+import("//components/optimization_guide/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
@@ -48,6 +48,19 @@ if (is_android) {
 
 if (is_win) {
   import("//build/config/win/manifest.gni")
+}
+
+declare_args() {
+  # You can set the variable 'use_official_enterprise_connectors_api_keys' to
+  # true to use the Google-internal file containing official API keys
+  # for enterprise connector partners even in a developer build.  Setting this
+  # variable explicitly to true will cause your build to fail if the
+  # internal file is missing.
+  #
+  # Note that official builds always behave as if the variable
+  # was explicitly set to true, i.e. they always use official keys,
+  # and will fail to build if the internal file is missing.
+  use_official_enterprise_connectors_api_keys = false
 }
 
 additional_modules_list_file =
@@ -471,6 +484,10 @@ static_library("browser") {
     "enterprise/browser_management/browser_management_service.h",
     "enterprise/browser_management/browser_management_status_provider.cc",
     "enterprise/browser_management/browser_management_status_provider.h",
+    "enterprise/connectors/device_trust/device_trust_factory.cc",
+    "enterprise/connectors/device_trust/device_trust_factory.h",
+    "enterprise/connectors/device_trust/device_trust_service.cc",
+    "enterprise/connectors/device_trust/device_trust_service.h",
     "enterprise/util/affiliation.cc",
     "enterprise/util/affiliation.h",
     "enterprise/util/managed_browser_utils.cc",
@@ -1881,13 +1898,22 @@ static_library("browser") {
     "//build/config:precompiled_headers",
   ]
   defines = [ "ZLIB_CONST" ]
+
+  if (is_chrome_branded || use_official_enterprise_connectors_api_keys) {
+    defines += [ "USE_OFFICIAL_ENTERPRISE_CONNECTORS_API_KEYS=1" ]
+  }
+
   libs = []
   ldflags = []
 
   allow_circular_includes_from = [
+    "//chrome/browser/profiling_host",
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/safe_browsing",
+    "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
+    "//chrome/browser/safe_browsing:advanced_protection",
+    "//chrome/browser/safe_browsing:metrics_collector",
   ]
 
   public_deps = [
@@ -1895,10 +1921,10 @@ static_library("browser") {
     "//chrome/common",
     "//chrome/common:buildflags",
     "//chrome/services/file_util/public/mojom",
-    "//chrome/services/machine_learning:machine_learning_tflite_buildflags",
     "//components/account_id",
     "//components/autofill/core/browser",
     "//components/nacl/common:buildflags",
+    "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/page_info",
     "//components/payments/core",
     "//components/payments/core:error_strings",
@@ -1969,6 +1995,8 @@ static_library("browser") {
     "//chrome/browser/resource_coordinator:tab_manager_features",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/safe_browsing:advanced_protection",
+    "//chrome/browser/safe_browsing:metrics_collector",
+    "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
     "//chrome/browser/search/drive:mojo_bindings",
     "//chrome/browser/search/task_module:mojo_bindings",
     "//chrome/browser/sharing:buildflags",
@@ -2037,6 +2065,7 @@ static_library("browser") {
     "//components/contextual_search/core:browser",
     "//components/cookie_config",
     "//components/country_codes",
+    "//components/crash/core/browser",
     "//components/crx_file",
     "//components/data_reduction_proxy/core/browser",
     "//components/data_use_measurement/core:ascriber",
@@ -2146,7 +2175,6 @@ static_library("browser") {
     "//components/proxy_config",
     "//components/query_parser",
     "//components/query_tiles",
-    "//components/rappor",
     "//components/reading_list/core",
     "//components/reading_list/features:flags",
     "//components/renderer_context_menu",
@@ -2376,6 +2404,7 @@ static_library("browser") {
       "apps/digital_goods/util.h",
     ]
     deps += [
+      "//ash/constants",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/nearby_sharing/common",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
@@ -2823,7 +2852,6 @@ static_library("browser") {
       "android/provider/chrome_browser_provider.cc",
       "android/provider/chrome_browser_provider.h",
       "android/provider/run_on_ui_thread_blocking.h",
-      "android/rappor/rappor_service_bridge.cc",
       "android/reading_list/reading_list_bridge.cc",
       "android/reading_list/reading_list_bridge.h",
       "android/reading_list/reading_list_manager_factory.cc",
@@ -3538,8 +3566,6 @@ static_library("browser") {
       "enterprise/connectors/connectors_service.h",
       "enterprise/connectors/enterprise_connectors_policy_handler.cc",
       "enterprise/connectors/enterprise_connectors_policy_handler.h",
-      "enterprise/connectors/file_system/authorization_client_info.cc",
-      "enterprise/connectors/file_system/authorization_client_info.h",
       "enterprise/connectors/file_system/box_access_token_fetcher.cc",
       "enterprise/connectors/file_system/box_access_token_fetcher.h",
       "enterprise/connectors/file_system/box_api_call_endpoints.cc",
@@ -3580,6 +3606,8 @@ static_library("browser") {
       "enterprise/reporting/report_scheduler_desktop.h",
       "enterprise/reporting/reporting_delegate_factory_desktop.cc",
       "enterprise/reporting/reporting_delegate_factory_desktop.h",
+      "enterprise/signals/device_info_fetcher.cc",
+      "enterprise/signals/device_info_fetcher.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
       "feedback/feedback_uploader_chrome.cc",
@@ -3726,6 +3754,8 @@ static_library("browser") {
       "metrics/tab_stats_tracker.cc",
       "metrics/tab_stats_tracker.h",
       "metrics/tab_stats_tracker_delegate.h",
+      "metrics/usage_scenario/tab_usage_scenario_tracker.cc",
+      "metrics/usage_scenario/tab_usage_scenario_tracker.h",
       "notifications/muted_notification_handler.cc",
       "notifications/muted_notification_handler.h",
       "notifications/notification_system_observer.cc",
@@ -4662,6 +4692,8 @@ static_library("browser") {
       "component_updater/sw_reporter_installer_win.h",
       "download/download_status_updater_win.cc",
       "download/trusted_sources_manager_win.cc",
+      "enterprise/signals/device_info_fetcher_win.cc",
+      "enterprise/signals/device_info_fetcher_win.h",
       "first_run/first_run_internal_win.cc",
       "first_run/upgrade_util_win.cc",
       "first_run/upgrade_util_win.h",
@@ -4922,6 +4954,8 @@ static_library("browser") {
       "chrome_browser_main_mac.mm",
       "download/download_status_updater_mac.mm",
       "download/drag_download_item_mac.mm",
+      "enterprise/signals/device_info_fetcher_mac.h",
+      "enterprise/signals/device_info_fetcher_mac.mm",
       "file_select_helper_mac.mm",
       "first_run/first_run_internal_mac.mm",
       "first_run/upgrade_util_mac.cc",
@@ -5030,6 +5064,8 @@ static_library("browser") {
     sources += [
       "chrome_browser_main_linux.cc",
       "chrome_browser_main_linux.h",
+      "enterprise/signals/device_info_fetcher_linux.cc",
+      "enterprise/signals/device_info_fetcher_linux.h",
       "first_run/first_run_internal_linux.cc",
       "memory_details_linux.cc",
       "obsolete_system/obsolete_system_linux.cc",
@@ -5291,8 +5327,6 @@ static_library("browser") {
 
   if (is_win || is_mac || is_linux || is_chromeos) {
     sources += [
-      "crash_upload_list/crash_upload_list_crashpad.cc",
-      "crash_upload_list/crash_upload_list_crashpad.h",
       "media/cast_mirroring_service_host.cc",
       "media/cast_mirroring_service_host.h",
       "media/offscreen_tab.cc",
@@ -5509,10 +5543,13 @@ static_library("browser") {
 
   if (enable_paint_preview) {
     deps += [
-      "paint_preview:services",
+      "//chrome/browser/paint_preview:services",
       "//components/paint_preview/browser",
       "//components/paint_preview/common",
     ]
+
+    allow_circular_includes_from +=
+        [ "//chrome/browser/paint_preview:services" ]
 
     if (is_android) {
       deps += [ "//components/paint_preview/player/android" ]
@@ -6546,13 +6583,6 @@ grit("resources") {
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings_js",
       "//chrome/browser/ui/webui/settings/chromeos:mojom_js",
-    ]
-  }
-
-  if (is_chromeos_ash && optimize_webui) {
-    deps += [
-      "//chrome/browser/resources/chromeos/internet_config_dialog:build",
-      "//chrome/browser/resources/chromeos/internet_detail_dialog:build",
     ]
   }
 

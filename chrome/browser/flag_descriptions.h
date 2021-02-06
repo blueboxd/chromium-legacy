@@ -772,6 +772,9 @@ extern const char kImprovedCookieControlsForThirdPartyCookieBlockingName[];
 extern const char
     kImprovedCookieControlsForThirdPartyCookieBlockingDescription[];
 
+extern const char kImprovedKeyboardShortcutsName[];
+extern const char kImprovedKeyboardShortcutsDescription[];
+
 extern const char kCompositorThreadedScrollbarScrollingName[];
 extern const char kCompositorThreadedScrollbarScrollingDescription[];
 
@@ -1758,6 +1761,9 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kPageInfoDiscoverabilityName[];
 extern const char kPageInfoDiscoverabilityDescription[];
 
+extern const char kPageInfoHistoryName[];
+extern const char kPageInfoHistoryDescription[];
+
 extern const char kPageInfoPerformanceHintsName[];
 extern const char kPageInfoPerformanceHintsDescription[];
 
@@ -2163,6 +2169,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
+
+extern const char kAllowRepeatedUpdatesName[];
+extern const char kAllowRepeatedUpdatesDescription[];
 
 extern const char kAllowScrollSettingsName[];
 extern const char kAllowScrollSettingsDescription[];
@@ -2849,6 +2858,13 @@ extern const char kDirectManipulationStylusDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+
+extern const char kDesktopRestructuredLanguageSettingsName[];
+extern const char kDesktopRestructuredLanguageSettingsDescription[];
+
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)

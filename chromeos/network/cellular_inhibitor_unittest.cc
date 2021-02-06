@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -17,6 +18,7 @@
 #include "chromeos/network/network_device_handler_impl.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -34,50 +36,49 @@ class CellularInhibitorTest : public testing::Test {
  protected:
   CellularInhibitorTest()
       : task_environment_(
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
+        helper_(/*use_default_devices_and_services=*/false) {}
   ~CellularInhibitorTest() override = default;
 
   // testing::Test:
   void SetUp() override {
-    shill_clients::InitializeFakes();
-    fake_device_client_ = ShillDeviceClient::Get();
-    fake_device_client_->GetTestInterface()->ClearDevices();
-
-    network_state_handler_ = NetworkStateHandler::InitializeForTest();
-    network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
-        network_state_handler_.get());
-
-    cellular_inhibitor_ = std::make_unique<CellularInhibitor>();
-    cellular_inhibitor_->Init(network_state_handler_.get(),
-                              network_device_handler_.get());
-  }
-
-  void TearDown() override {
-    cellular_inhibitor_.reset();
-    network_device_handler_.reset();
-    network_state_handler_.reset();
-    shill_clients::Shutdown();
+    helper_.device_test()->ClearDevices();
+    cellular_inhibitor_.Init(helper_.network_state_handler(),
+                             helper_.network_device_handler());
   }
 
   void AddCellularDevice() {
-    ShillDeviceClient::TestInterface* device_test =
-        fake_device_client_->GetTestInterface();
-    device_test->AddDevice(kDefaultCellularDevicePath, shill::kTypeCellular,
-                           "cellular1");
+    helper_.device_test()->AddDevice(kDefaultCellularDevicePath,
+                                     shill::kTypeCellular, "cellular1");
     base::RunLoop().RunUntilIdle();
   }
 
-  bool InhibitCellularScanning() {
-    return SetInhibitProperty(/*new_inhibit_value=*/true);
+  std::unique_ptr<CellularInhibitor::InhibitLock>
+  InhibitCellularScanningSync() {
+    base::RunLoop run_loop;
+
+    std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock;
+    cellular_inhibitor_.InhibitCellularScanning(base::BindLambdaForTesting(
+        [&](std::unique_ptr<CellularInhibitor::InhibitLock> result) {
+          inhibit_lock = std::move(result);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return inhibit_lock;
   }
 
-  bool UninhibitCellularScanning() {
-    return SetInhibitProperty(/*new_inhibit_value=*/false);
+  void InhibitCellularScanning(
+      std::unique_ptr<CellularInhibitor::InhibitLock>& lock) {
+    cellular_inhibitor_.InhibitCellularScanning(base::BindLambdaForTesting(
+        [&](std::unique_ptr<CellularInhibitor::InhibitLock> result) {
+          lock = std::move(result);
+        }));
   }
 
   GetInhibitedPropertyResult GetInhibitedProperty() {
     properties_.reset();
-    network_device_handler_->GetDeviceProperties(
+    helper_.network_device_handler()->GetDeviceProperties(
         kDefaultCellularDevicePath,
         base::BindOnce(&CellularInhibitorTest::GetPropertiesCallback,
                        base::Unretained(this)));
@@ -94,29 +95,6 @@ class CellularInhibitorTest : public testing::Test {
   }
 
  private:
-  bool SetInhibitProperty(bool new_inhibit_value) {
-    base::RunLoop run_loop;
-    on_result_closure_ = run_loop.QuitClosure();
-
-    if (new_inhibit_value) {
-      cellular_inhibitor_->InhibitCellularScanning(
-          base::BindOnce(&CellularInhibitorTest::OnInhibitOrUninhibitResult,
-                         base::Unretained(this)));
-    } else {
-      cellular_inhibitor_->UninhibitCellularScanning(
-          base::BindOnce(&CellularInhibitorTest::OnInhibitOrUninhibitResult,
-                         base::Unretained(this)));
-    }
-    run_loop.Run();
-
-    return success_;
-  }
-
-  void OnInhibitOrUninhibitResult(bool success) {
-    success_ = success;
-    std::move(on_result_closure_).Run();
-  }
-
   void GetPropertiesCallback(const std::string& device_path,
                              base::Optional<base::Value> properties) {
     if (!properties) {
@@ -129,32 +107,52 @@ class CellularInhibitorTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
+  NetworkStateTestHelper helper_;
+  CellularInhibitor cellular_inhibitor_;
 
-  ShillDeviceClient* fake_device_client_ = nullptr;
-  std::unique_ptr<NetworkStateHandler> network_state_handler_;
-  std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
-  std::unique_ptr<CellularInhibitor> cellular_inhibitor_;
-
-  bool success_;
   std::unique_ptr<base::DictionaryValue> properties_;
-  base::OnceClosure on_result_closure_;
 };
 
-TEST_F(CellularInhibitorTest, Success) {
+TEST_F(CellularInhibitorTest, SuccessSingleRequest) {
   AddCellularDevice();
 
-  EXPECT_TRUE(InhibitCellularScanning());
+  std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock =
+      InhibitCellularScanningSync();
+  // Ensure that a valid lock is returned and Inhibit property is set on
+  // Cellular device.
+  EXPECT_TRUE(inhibit_lock);
   EXPECT_EQ(GetInhibitedPropertyResult::kTrue, GetInhibitedProperty());
 
-  // Inhibit while already inhibited should succeed.
-  EXPECT_TRUE(InhibitCellularScanning());
-  EXPECT_EQ(GetInhibitedPropertyResult::kTrue, GetInhibitedProperty());
-
-  EXPECT_TRUE(UninhibitCellularScanning());
+  // Ensure that deleting lock uninhibits the Cellular device.
+  inhibit_lock = nullptr;
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetInhibitedPropertyResult::kFalse, GetInhibitedProperty());
+}
 
-  // Uninhibit while already uninhibited should succeed.
-  EXPECT_TRUE(UninhibitCellularScanning());
+TEST_F(CellularInhibitorTest, SuccessMultipleRequests) {
+  AddCellularDevice();
+
+  // Make two inhibit requests in parallel.
+  std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock;
+  std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock2;
+  InhibitCellularScanning(inhibit_lock);
+  InhibitCellularScanning(inhibit_lock2);
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that the only one inhibit lock has been granted.
+  EXPECT_TRUE(inhibit_lock);
+  EXPECT_FALSE(inhibit_lock2);
+  EXPECT_EQ(GetInhibitedPropertyResult::kTrue, GetInhibitedProperty());
+
+  // Ensure that second lock is granted when first is deleted.
+  inhibit_lock = nullptr;
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(inhibit_lock2);
+  EXPECT_EQ(GetInhibitedPropertyResult::kTrue, GetInhibitedProperty());
+
+  // Ensure that inhibited property is set to false when all locks are deleted.
+  inhibit_lock2 = nullptr;
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetInhibitedPropertyResult::kFalse, GetInhibitedProperty());
 }
 
@@ -162,12 +160,11 @@ TEST_F(CellularInhibitorTest, Failure) {
   // Do not add a Cellular device. This should cause commands below to fail,
   // since the device cannot be inhibited if it does not exist.
 
-  EXPECT_FALSE(InhibitCellularScanning());
+  std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock =
+      InhibitCellularScanningSync();
   EXPECT_EQ(GetInhibitedPropertyResult::kOperationFailed,
             GetInhibitedProperty());
-  EXPECT_FALSE(UninhibitCellularScanning());
-  EXPECT_EQ(GetInhibitedPropertyResult::kOperationFailed,
-            GetInhibitedProperty());
+  EXPECT_FALSE(inhibit_lock);
 }
 
 }  // namespace chromeos

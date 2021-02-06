@@ -36,25 +36,16 @@ namespace blink {
 
 AXMenuListOption::AXMenuListOption(HTMLOptionElement* element,
                                    AXObjectCacheImpl& ax_object_cache)
-    : AXNodeObject(element, ax_object_cache), element_(element) {}
-
-AXMenuListOption::~AXMenuListOption() {
-  DCHECK(!element_);
-}
-
-void AXMenuListOption::Detach() {
-  element_ = nullptr;
-  AXNodeObject::Detach();
-}
+    : AXNodeObject(element, ax_object_cache) {}
 
 LocalFrameView* AXMenuListOption::DocumentFrameView() const {
   if (IsDetached())
     return nullptr;
-  return element_->GetDocument().View();
+  return GetElement()->GetDocument().View();
 }
 
 Element* AXMenuListOption::ActionElement() const {
-  return element_;
+  return GetElement();
 }
 
 AXObject* AXMenuListOption::ComputeParentImpl() const {
@@ -109,24 +100,27 @@ AccessibilitySelectedState AXMenuListOption::IsSelected() const {
   if (!GetNode() || !CanSetSelectedAttribute())
     return kSelectedStateUndefined;
 
-  AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(ParentObject());
-  if (parent && !parent->IsOffScreen()) {
+  AXObject* parent = ParentObject();
+  if (!parent || !parent->IsMenuListPopup())
+    return kSelectedStateUndefined;
+
+  if (!parent->IsOffScreen()) {
     return ((parent->ActiveDescendant() == this) ? kSelectedStateTrue
                                                  : kSelectedStateFalse);
   }
-  return ((element_ && element_->Selected()) ? kSelectedStateTrue
-                                             : kSelectedStateFalse);
+  return To<HTMLOptionElement>(GetNode())->Selected() ? kSelectedStateTrue
+                                                      : kSelectedStateFalse;
 }
 
 bool AXMenuListOption::OnNativeClickAction() {
-  if (!element_)
+  if (!GetNode())
     return false;
 
   if (IsA<AXMenuListPopup>(ParentObject())) {
     // Clicking on an option within a menu list should first select that item
     // (which should include firing `input` and `change` events), then toggle
     // whether the menu list is showing.
-    static_cast<HTMLElement*>(element_)->AccessKeyAction(true);
+    GetElement()->AccessKeyAction(true);
 
     // Calling OnNativeClickAction on the parent select element will toggle
     // it open or closed.
@@ -137,10 +131,10 @@ bool AXMenuListOption::OnNativeClickAction() {
 }
 
 bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
-  if (!element_ || !CanSetSelectedAttribute())
+  if (!GetElement() || !CanSetSelectedAttribute())
     return false;
 
-  element_->SetSelected(b);
+  To<HTMLOptionElement>(GetElement())->SetSelected(b);
   return true;
 }
 
@@ -163,21 +157,31 @@ void AXMenuListOption::GetRelativeBounds(AXObject** out_container,
                                          FloatRect& out_bounds_in_container,
                                          SkMatrix44& out_container_transform,
                                          bool* clips_children) const {
+  DCHECK(!IsDetached());
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
   out_container_transform.setIdentity();
 
-  AXObject* parent = ParentObject();
-  if (!parent)
-    return;
-  DCHECK(IsA<AXMenuListPopup>(parent));
+  // When a <select> is collapsed, the bounds of its options are the same as
+  // that of the containing <select>.
+  // It is not necessary to compute the bounds of options in an expanded select.
+  // On Mac and Android, the menu list is native and already accessible; those
+  // are the platforms where we need AXMenuList so that the options can be part
+  // of the accessibility tree when collapsed, and there's never going to be a
+  // need to expose the bounds of options on those platforms.
+  // On Windows and Linux, AXObjectCacheImpl::UseAXMenuList() will return false,
+  // and therefore this code should not be reached.
 
-  AXObject* grandparent = parent->ParentObject();
-  if (!grandparent)
+  auto* select = To<HTMLOptionElement>(GetNode())->OwnerSelectElement();
+  AXObject* ax_menu_list = AXObjectCache().GetOrCreate(select);
+  if (!ax_menu_list)
     return;
-  DCHECK(grandparent->IsMenuList());
-  grandparent->GetRelativeBounds(out_container, out_bounds_in_container,
-                                 out_container_transform, clips_children);
+  DCHECK(ax_menu_list->IsMenuList());
+  DCHECK(ax_menu_list->GetLayoutObject());
+  if (ax_menu_list->GetLayoutObject()) {
+    ax_menu_list->GetRelativeBounds(out_container, out_bounds_in_container,
+                                    out_container_transform, clips_children);
+  }
 }
 
 String AXMenuListOption::TextAlternative(bool recursive,
@@ -202,7 +206,7 @@ String AXMenuListOption::TextAlternative(bool recursive,
     return text_alternative;
 
   name_from = ax::mojom::NameFrom::kContents;
-  text_alternative = element_->DisplayLabel();
+  text_alternative = To<HTMLOptionElement>(GetNode())->DisplayLabel();
   if (name_sources) {
     name_sources->push_back(NameSource(found_text_alternative));
     name_sources->back().type = name_from;
@@ -221,11 +225,6 @@ HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
     return option->OwnerSelectElement();
 
   return nullptr;
-}
-
-void AXMenuListOption::Trace(Visitor* visitor) const {
-  visitor->Trace(element_);
-  AXNodeObject::Trace(visitor);
 }
 
 }  // namespace blink

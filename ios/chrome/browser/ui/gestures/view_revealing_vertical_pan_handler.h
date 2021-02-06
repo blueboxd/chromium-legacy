@@ -45,20 +45,28 @@
 // to the animatees.
 - (void)addAnimatee:(id<ViewRevealingAnimatee>)animatee;
 
-// Manually sets the state of the pan handler to a specific state, optionally
-// animated.
-- (void)setState:(ViewRevealState)state animated:(BOOL)animated;
+// Requests the pan handler to transition to |state|. Depending on the
+// internals, this may not happen immediately.
+- (void)setNextState:(ViewRevealState)state animated:(BOOL)animated;
 
 // Height of the view that will be revealed after the transition to Peeked
 // state.
 @property(nonatomic, assign, readonly) CGFloat peekedHeight;
+
 // Height of the revealed view after the transition to Revealed state.
 @property(nonatomic, assign, readonly) CGFloat revealedHeight;
+
 // Height of the base view. It changes when the user rotates the screen.
 @property(nonatomic, assign) CGFloat baseViewHeight;
+
 // The provider for the object that switches the layout of the revealed view
 // from horizontal (Peeked state) to full (Revealed state).
 @property(nonatomic, weak) id<LayoutSwitcherProvider> layoutSwitcherProvider;
+
+// Represents one of the three possible "states" of view reveal, which are:
+// No view revealed (Hidden), view partially revealed (Peeked), and view
+// completely revealed (Revealed).
+@property(nonatomic, readonly) ViewRevealState currentState;
 
 @end
 

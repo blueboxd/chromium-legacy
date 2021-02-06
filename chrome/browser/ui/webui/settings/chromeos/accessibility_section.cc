@@ -301,11 +301,11 @@ const std::vector<SearchConcept>& GetA11yLabelsSearchConcepts() {
 const std::vector<SearchConcept>& GetA11yLiveCaptionSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_A11Y_LIVE_CAPTION,
-       mojom::kManageAccessibilitySubpagePath,
+       mojom::kCaptionsSubpagePath,
        mojom::SearchResultIcon::kA11y,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kLiveCaptions}},
+       {.setting = mojom::Setting::kLiveCaption}},
   });
   return *tags;
 }
@@ -322,25 +322,13 @@ GetA11yFullscreenMagnifierFocusFollowingSearchConcepts() {
   });
   return *tags;
 }
-const std::vector<SearchConcept>&
-GetA11yFullscreenMagnifierMouseFollowingModeSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_A11Y_FULLSCREEN_MAGNIFIER_MOUSE_FOLLOWING_MODE,
-       mojom::kManageAccessibilitySubpagePath,
-       mojom::SearchResultIcon::kA11y,
-       mojom::SearchResultDefaultRank::kLow,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kFullscreenMagnifierMouseFollowingMode}},
-  });
-  return *tags;
-}
 
 bool AreExperimentalA11yLabelsAllowed() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityLabels);
 }
 
-bool AreLiveCaptionsAllowed() {
+bool IsLiveCaptionEnabled() {
   return base::FeatureList::IsEnabled(media::kLiveCaption);
 }
 
@@ -351,6 +339,11 @@ bool IsMagnifierPanningImprovementsEnabled() {
 bool IsSwitchAccessTextAllowed() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilitySwitchAccessText);
+}
+
+bool IsSwitchAccessSetupGuideAllowed() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalAccessibilitySwitchAccessSetupGuide);
 }
 
 bool AreTabletNavigationButtonsAllowed() {
@@ -443,8 +436,6 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
       {"chromeVoxOptionsLabel", IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL},
       {"screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL},
-      {"screenMagnifierMouseFollowingModeRadioGroupTitle",
-       IDS_SETTINGS_SCREEN_MANIFIER_MOUSE_FOLLOWING_MODE_RADIO_GROUP_TITLE},
       {"screenMagnifierMouseFollowingModeContinuous",
        IDS_SETTINGS_SCREEN_MANIFIER_MOUSE_FOLLOWING_MODE_CONTINUOUS},
       {"screenMagnifierMouseFollowingModeCentered",
@@ -520,6 +511,8 @@ void AccessibilitySection::AddLoadTimeData(
       {"manageSwitchAccessSettings",
        IDS_SETTINGS_MANAGE_SWITCH_ACCESS_SETTINGS},
       {"switchAssignmentHeading", IDS_SETTINGS_SWITCH_ASSIGNMENT_HEADING},
+      {"switchAccessSetupGuideLabel",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_GUIDE_LABEL},
       {"assignSwitchSubLabel0Switches",
        IDS_SETTINGS_ASSIGN_SWITCH_SUB_LABEL_0_SWITCHES},
       {"assignSwitchSubLabel1Switch",
@@ -571,8 +564,7 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WARN_CANNOT_REMOVE_LAST_SELECT_SWITCH},
       {"switchAndDeviceType", IDS_SETTINGS_SWITCH_AND_DEVICE_TYPE},
       {"noSwitchesAssigned", IDS_SETTINGS_NO_SWITCHES_ASSIGNED},
-      {"switchAccessActionAssignmentDialogExit",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_EXIT},
+      {"switchAccessDialogExit", IDS_SETTINGS_SWITCH_ACCESS_DIALOG_EXIT},
       {"switchAccessAutoScanHeading",
        IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_HEADING},
       {"switchAccessAutoScanLabel", IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_LABEL},
@@ -657,6 +649,9 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccessImprovedTextInput",
       IsSwitchAccessTextAllowed());
+
+  html_source->AddBoolean("showSwitchAccessSetupGuide",
+                          IsSwitchAccessSetupGuideAllowed());
 
   html_source->AddBoolean("showExperimentalA11yLabels",
                           AreExperimentalA11yLabelsAllowed());
@@ -755,7 +750,6 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kTabletNavigationButtons,
       mojom::Setting::kMonoAudio,
       mojom::Setting::kStartupSound,
-      mojom::Setting::kLiveCaptions,
       mojom::Setting::kEnableCursorColor,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kManageAccessibility,
@@ -793,6 +787,11 @@ void AccessibilitySection::RegisterHierarchy(
       IDS_SETTINGS_CAPTIONS, mojom::Subpage::kCaptions,
       mojom::SearchResultIcon::kA11y, mojom::SearchResultDefaultRank::kMedium,
       mojom::kCaptionsSubpagePath);
+  static constexpr mojom::Setting kCaptionsSettings[] = {
+      mojom::Setting::kLiveCaption,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kCaptions, kCaptionsSettings,
+                            generator);
 }
 
 void AccessibilitySection::OnVoicesChanged() {
@@ -852,7 +851,7 @@ void AccessibilitySection::UpdateSearchTags() {
   updater.RemoveSearchTags(GetA11ySwitchAccessOnSearchConcepts());
   updater.RemoveSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
 
-  if (AreLiveCaptionsAllowed()) {
+  if (IsLiveCaptionEnabled()) {
     updater.AddSearchTags(GetA11yLiveCaptionSearchConcepts());
   } else {
     updater.RemoveSearchTags(GetA11yLiveCaptionSearchConcepts());
@@ -863,13 +862,9 @@ void AccessibilitySection::UpdateSearchTags() {
           ash::prefs::kAccessibilityScreenMagnifierEnabled)) {
     updater.AddSearchTags(
         GetA11yFullscreenMagnifierFocusFollowingSearchConcepts());
-    updater.AddSearchTags(
-        GetA11yFullscreenMagnifierMouseFollowingModeSearchConcepts());
   } else {
     updater.RemoveSearchTags(
         GetA11yFullscreenMagnifierFocusFollowingSearchConcepts());
-    updater.RemoveSearchTags(
-        GetA11yFullscreenMagnifierMouseFollowingModeSearchConcepts());
   }
 
   if (!pref_service_->GetBoolean(

@@ -22,7 +22,9 @@ mojom("mojom") {
   deps = [
     "//ash/public/mojom",
     "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/network_config/public/mojom",
     "//services/audio/public/mojom",
+    "//services/device/public/mojom",
     "//services/network/public/mojom",
   ]
 }

@@ -2143,6 +2143,10 @@
       name: "WebAuth",
       status: "stable",
     },
+    // A more subtle UI for WebAuthn that is web exposed. Under development.
+    {
+      name: "WebAuthenticationConditionalUI",
+    },
     {
       name: "WebAuthenticationGetAssertionFeaturePolicy",
       status: "experimental",
@@ -2210,6 +2214,11 @@
     // --enable-experimental-web-platform-features flag.
     {
       name: "WebGPU",
+    },
+    {
+      // Requires both WebGPU and --enable-experimental-web-platform-features
+      name: "WebGPUImportTexture",
+      status: "experimental",
     },
     {
       name: "WebHID",

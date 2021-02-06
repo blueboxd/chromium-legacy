@@ -135,7 +135,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/security_interstitials/content/insecure_form_blocking_page.h"
@@ -346,7 +345,6 @@
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/components/local_search_service/search_metrics_reporter.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_metadata_store.h"
@@ -539,6 +537,11 @@ const char kDataReductionProxyLastConfigRetrievalTime[] =
     "data_reduction.last_config_retrieval_time";
 const char kDataReductionProxyConfig[] = "data_reduction.config";
 
+// Deprecated 2/2021.
+const char kRapporCohortSeed[] = "rappor.cohort_seed";
+const char kRapporLastDailySample[] = "rappor.last_daily_sample";
+const char kRapporSecret[] = "rappor.secret";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -566,6 +569,10 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterListPref(enterprise_connectors::kOnBulkDataEntryPref);
   registry->RegisterListPref(enterprise_connectors::kOnSecurityEventPref);
 #endif  // !defined(OS_ANDROID)
+
+  registry->RegisterIntegerPref(kRapporCohortSeed, -1);
+  registry->RegisterInt64Pref(kRapporLastDailySample, 0);
+  registry->RegisterStringPref(kRapporSecret, std::string());
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -675,7 +682,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ProfileInfoCache::RegisterPrefs(registry);
   ProfileNetworkContextService::RegisterLocalStatePrefs(registry);
   profiles::RegisterPrefs(registry);
-  rappor::RapporServiceImpl::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);
   safe_browsing::RegisterLocalStatePrefs(registry);
   secure_origin_allowlist::RegisterPrefs(registry);
@@ -1194,6 +1200,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(enterprise_connectors::kOnBulkDataEntryPref);
   local_state->ClearPref(enterprise_connectors::kOnSecurityEventPref);
 #endif  // !defined(OS_ANDROID)
+
+  // Added 2/2021.
+  local_state->ClearPref(kRapporCohortSeed);
+  local_state->ClearPref(kRapporLastDailySample);
+  local_state->ClearPref(kRapporSecret);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS

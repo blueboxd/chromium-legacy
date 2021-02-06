@@ -2800,6 +2800,8 @@ ci.fuzz_libfuzzer_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
     ),
+    # crbug.com/1175182: Temporarily increase timeout
+    execution_timeout = 4 * time.hour,
 )
 
 ci.fyi_builder(
@@ -2910,6 +2912,14 @@ ci.fyi_builder(
         short_name = "rel",
     ),
     notifies = ["cr-fuchsia"],
+)
+
+ci.fyi_builder(
+    name = "lacros-amd64-generic-rel-fyi",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "lcr",
+    ),
 )
 
 ci.fyi_builder(
@@ -5763,5 +5773,5 @@ ci.cipd_builder(
     executable = "recipe:chromium_rts/create_model",
     schedule = "0 10 * * *",  # at 2 AM PST, once a day.
     triggered_by = [],
-    execution_timeout = time.hour,
+    execution_timeout = 3 * time.hour,
 )

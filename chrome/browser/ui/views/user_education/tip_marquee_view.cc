@@ -17,7 +17,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
@@ -30,6 +29,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
@@ -164,6 +164,7 @@ constexpr int kTipMarqueeViewOverflowTextWidth = 250;
 
 class TipMarqueeOverflowBubbleView : public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(TipMarqueeOverflowBubbleView);
   TipMarqueeOverflowBubbleView(TipMarqueeView* tip_marquee_view,
                                const base::string16& text)
       : BubbleDialogDelegateView(tip_marquee_view,
@@ -195,6 +196,9 @@ class TipMarqueeOverflowBubbleView : public views::BubbleDialogDelegateView {
   TipMarqueeView* const tip_marquee_view_;
 };
 
+BEGIN_METADATA(TipMarqueeOverflowBubbleView, views::BubbleDialogDelegateView)
+END_METADATA
+
 }  // namespace
 
 constexpr int TipMarqueeView::kTipMarqueeIconSize;
@@ -207,9 +211,6 @@ TipMarqueeView::TipMarqueeView(int text_context, int text_style) {
   tip_text_label_->SetDefaultTextStyle(text_style);
   // TODO(dfried): Figure out how to set elide behavior.
   // tip_text_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
-
-  chrome_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_PRODUCT_LOGO_16);
 
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, kTipMarqueeIconTotalWidth, 0, 0)));
@@ -302,8 +303,10 @@ void TipMarqueeView::Layout() {
 
 void TipMarqueeView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
-  canvas->DrawImageInt(chrome_icon_, 0, 0, kTipMarqueeIconSize,
-                       kTipMarqueeIconSize, 0,
+  gfx::ImageSkia* const icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_PRODUCT_LOGO_16);
+  canvas->DrawImageInt(*icon, 0, 0, kTipMarqueeIconSize, kTipMarqueeIconSize, 0,
                        (height() - kTipMarqueeIconSize) / 2,
                        kTipMarqueeIconSize, kTipMarqueeIconSize, true);
 }

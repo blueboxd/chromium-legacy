@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/ash/login_screen_shown_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -81,8 +80,6 @@ class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
         AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
     test_users_.push_back(
         AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kViewBasedMultiprofileLogin);
   }
   ~LoginUIKeyboardTest() override {}
 
@@ -400,10 +397,8 @@ class LoginUIDevicePolicyUserAdding : public LoginUIKeyboardPolicy {
   LoginUIDevicePolicyUserAdding() {
     // Need at least two to run user adding screen.
     login_manager_.AppendRegularUsers(2);
-    scoped_feature_list_.InitAndEnableFeature(
-      features::kViewBasedMultiprofileLogin);
   }
-  
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 };

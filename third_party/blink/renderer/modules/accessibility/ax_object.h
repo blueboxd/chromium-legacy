@@ -360,7 +360,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // When the corresponding WebCore object that this AXObject
   // wraps is deleted, it must be detached.
   virtual void Detach();
-  virtual bool IsDetached() const;
+  bool IsDetached() const;
 
   // Updates the cached attribute values. This may be recursive, so to prevent
   // deadlocks, functions called here may only search up the tree (ancestors),
@@ -1044,7 +1044,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Sets the parent AXObject directly. If the parent of this object is known,
   // this can be faster than using ComputeParent().
-  void SetParent(AXObject* parent);
+  void SetParent(AXObject* new_parent);
 
   // If parent was not initialized during AddChildren() it can be computed by
   // walking the DOM (or layout for nodeless aka anonymous layout object).
@@ -1285,10 +1285,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
 
   ax::mojom::blink::Role ButtonRoleType() const;
-
-  virtual LayoutObject* LayoutObjectForRelativeBounds() const {
-    return nullptr;
-  }
 
   bool CanSetSelectedAttribute() const;
   const AXObject* InertRoot() const;

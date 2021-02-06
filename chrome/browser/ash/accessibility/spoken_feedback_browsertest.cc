@@ -7,6 +7,7 @@
 #include <queue>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
@@ -28,11 +29,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -43,7 +44,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -770,6 +770,27 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
   sm_.ExpectSpeech("No next heading");
 
   sm_.Call([this]() { SendStickyKeyCommand(); });
+  sm_.ExpectSpeech("Sticky mode disabled");
+
+  sm_.Replay();
+}
+
+// This tests ChromeVox sticky mode using raw key events as opposed to directly
+// sending js commands above. This variant may be subject to flakes as it
+// depends on more of the UI events stack and sticky mode invocation has a
+// timing element to it.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyModeRawKeys) {
+  EnableChromeVox();
+  sm_.Call([this]() {
+    SendKeyPress(ui::VKEY_LWIN);
+    SendKeyPress(ui::VKEY_LWIN);
+  });
+  sm_.ExpectSpeech("Sticky mode enabled");
+
+  sm_.Call([this]() {
+    SendKeyPress(ui::VKEY_LWIN);
+    SendKeyPress(ui::VKEY_LWIN);
+  });
   sm_.ExpectSpeech("Sticky mode disabled");
 
   sm_.Replay();

@@ -561,6 +561,27 @@ TEST_F('OSSettingsAppManagementUninstallButtonTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the app management main view element.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementMainViewTest =
+    class extends OSSettingsAppManagementBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'app_management/main_view.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'app_management/main_view_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAppManagementMainViewTest', 'MAYBE_AllJsTests', () => {
+  mocha.run();
+});
+
 // Text fixture for the app management dom switch element.
 // eslint-disable-next-line no-var
 var OSSettingsAppManagementDomSwitchTest =
@@ -980,8 +1001,13 @@ TEST_F('OSSettingsDevicePageTest', 'MAYBE_DevicePageTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.DevicePage)).run();
 });
 
-// Fails after https://chromium-review.googlesource.com/c/chromium/src/+/2640774
-TEST_F('OSSettingsDevicePageTest', 'DISABLED_DisplayTest', () => {
+// Flaky in debug. https://crbug.com/1003483
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_DisplayTest DISABLED_DisplayTest');
+GEN('#else');
+GEN('#define MAYBE_DisplayTest DisplayTest');
+GEN('#endif');
+TEST_F('OSSettingsDevicePageTest', 'MAYBE_DisplayTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Display)).run();
 });
 
@@ -1434,6 +1460,29 @@ var OSSettingsCellularSetupDialogTest =
 };
 
 TEST_F('OSSettingsCellularSetupDialogTest', 'MAYBE_AllJsTests', () => {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var OSSettingsKerberosAccountsTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/kerberos_page/kerberos_accounts.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'kerberos_accounts_test.js',
+      'test_kerberos_accounts_browser_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsKerberosAccountsTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -1945,30 +1994,6 @@ var OSSettingsPeoplePageChangePictureTest =
 };
 
 TEST_F('OSSettingsPeoplePageChangePictureTest', 'MAYBE_AllJsTests', () => {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var OSSettingsPeoplePageKerberosAccountsTest =
-    class extends OSSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload +
-        'chromeos/os_people_page/kerberos_accounts.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
-      BROWSER_SETTINGS_PATH + '../test_util.js',
-      'people_page_kerberos_accounts_test.js',
-      'test_kerberos_accounts_browser_proxy.js',
-    ]);
-  }
-};
-
-TEST_F('OSSettingsPeoplePageKerberosAccountsTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 

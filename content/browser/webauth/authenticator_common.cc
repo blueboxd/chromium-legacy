@@ -708,10 +708,6 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
       base::BindRepeating(
           &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
           request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */);
-  if (make_credential_options_->resident_key !=
-      device::ResidentKeyRequirement::kDiscouraged) {
-    request_delegate_->SetMightCreateResidentCredential(true);
-  }
   request_->set_observer(request_delegate_.get());
 }
 
@@ -806,7 +802,10 @@ void AuthenticatorCommon::MakeCredential(
   blink::mojom::AuthenticatorStatus status =
       security_checker_->ValidateAncestorOrigins(
           caller_origin,
-          WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
+          options->is_payment_credential_creation
+              ? WebAuthRequestSecurityChecker::RequestType::
+                    kMakePaymentCredential
+              : WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
           &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     InvokeCallbackAndCleanup(std::move(callback), status);
@@ -1141,8 +1140,12 @@ void AuthenticatorCommon::GetAssertion(
   }
 
   // Cryptotoken requests should be proxied without UI.
-  if (origin_is_crypto_token_extension || disable_ui_)
+  if (origin_is_crypto_token_extension || disable_ui_) {
+    DCHECK(!options->is_conditional);
     request_delegate_->DisableUI();
+  }
+
+  request_delegate_->SetConditionalRequest(options->is_conditional);
 
   if (options->allow_credentials.empty()) {
     if (!request_delegate_->SupportsResidentKeys()) {

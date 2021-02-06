@@ -566,14 +566,15 @@ TEST_F(AV1DecoderTest, Reset) {
   constexpr gfx::Size kRenderSize(320, 240);
   constexpr auto kProfile = libgav1::BitstreamProfile::kProfile0;
   constexpr auto kMediaProfile = VideoCodecProfile::AV1PROFILE_PROFILE_MAIN;
+  constexpr uint8_t kBitDepth = 8u;
   const std::string kSimpleStream("bear-av1.webm");
   std::vector<DecodeResult> expected;
   std::vector<DecodeResult> results;
 
   std::vector<scoped_refptr<DecoderBuffer>> buffers = ReadWebm(kSimpleStream);
   ASSERT_FALSE(buffers.empty());
+  expected.push_back(DecodeResult::kConfigChange);
   for (int k = 0; k < 2; k++) {
-    expected.push_back(DecodeResult::kConfigChange);
     for (auto buffer : buffers) {
       ::testing::InSequence sequence;
       auto av1_picture = base::MakeRefCounted<AV1Picture>();
@@ -598,10 +599,16 @@ TEST_F(AV1DecoderTest, Reset) {
       EXPECT_EQ(decoder_->GetProfile(), kMediaProfile);
       EXPECT_EQ(decoder_->GetPicSize(), kFrameSize);
       EXPECT_EQ(decoder_->GetVisibleRect(), gfx::Rect(kRenderSize));
+      EXPECT_EQ(decoder_->GetBitDepth(), kBitDepth);
       testing::Mock::VerifyAndClearExpectations(mock_accelerator_);
     }
 
     Reset();
+    // Ensures Reset() doesn't clear the stored stream states.
+    EXPECT_EQ(decoder_->GetProfile(), kMediaProfile);
+    EXPECT_EQ(decoder_->GetPicSize(), kFrameSize);
+    EXPECT_EQ(decoder_->GetVisibleRect(), gfx::Rect(kRenderSize));
+    EXPECT_EQ(decoder_->GetBitDepth(), kBitDepth);
   }
   EXPECT_EQ(results, expected);
 }
@@ -613,6 +620,7 @@ TEST_F(AV1DecoderTest, ResetAndConfigChange) {
                                         "bear-av1-480x360.webm"};
   constexpr gfx::Size kFrameSizes[] = {{320, 240}, {480, 360}};
   constexpr gfx::Size kRenderSizes[] = {{320, 240}, {480, 360}};
+  constexpr uint8_t kBitDepth = 8u;
   std::vector<DecodeResult> expected;
   std::vector<DecodeResult> results;
 
@@ -645,10 +653,16 @@ TEST_F(AV1DecoderTest, ResetAndConfigChange) {
       EXPECT_EQ(decoder_->GetProfile(), kMediaProfile);
       EXPECT_EQ(decoder_->GetPicSize(), kFrameSizes[i]);
       EXPECT_EQ(decoder_->GetVisibleRect(), gfx::Rect(kRenderSizes[i]));
+      EXPECT_EQ(decoder_->GetBitDepth(), kBitDepth);
       testing::Mock::VerifyAndClearExpectations(mock_accelerator_);
     }
 
     Reset();
+    // Ensures Reset() doesn't clear the stored stream states.
+    EXPECT_EQ(decoder_->GetProfile(), kMediaProfile);
+    EXPECT_EQ(decoder_->GetPicSize(), kFrameSizes[i]);
+    EXPECT_EQ(decoder_->GetVisibleRect(), gfx::Rect(kRenderSizes[i]));
+    EXPECT_EQ(decoder_->GetBitDepth(), kBitDepth);
   }
   EXPECT_EQ(results, expected);
 }
@@ -682,8 +696,6 @@ TEST_F(AV1DecoderTest, InconsistentReferenceFrameState) {
     // frames are valid.
     const libgav1::DecoderState* decoder_state = GetDecoderState();
     ASSERT_TRUE(decoder_state);
-    EXPECT_EQ(base::STLCount(decoder_state->reference_valid, false),
-              base::checked_cast<long>(decoder_state->reference_valid.size()));
     EXPECT_EQ(base::STLCount(decoder_state->reference_frame, nullptr),
               base::checked_cast<long>(decoder_state->reference_frame.size()));
 
@@ -710,8 +722,6 @@ TEST_F(AV1DecoderTest, InconsistentReferenceFrameState) {
     // reference frames have been updated): libgav1 should have decided that all
     // reference frames are valid.
     ASSERT_TRUE(decoder_state);
-    EXPECT_EQ(base::STLCount(decoder_state->reference_valid, true),
-              base::checked_cast<long>(decoder_state->reference_valid.size()));
     EXPECT_EQ(base::STLCount(decoder_state->reference_frame, nullptr), 0);
 
     // And to be consistent, all the reference frames tracked by the AV1Decoder
@@ -750,8 +760,6 @@ TEST_F(AV1DecoderTest, InconsistentReferenceFrameState) {
   // were valid.
   const libgav1::DecoderState* decoder_state = GetDecoderState();
   ASSERT_TRUE(decoder_state);
-  EXPECT_EQ(base::STLCount(decoder_state->reference_valid, true),
-            base::checked_cast<long>(decoder_state->reference_valid.size()));
   EXPECT_EQ(base::STLCount(decoder_state->reference_frame, nullptr), 0);
 }
 

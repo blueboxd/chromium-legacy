@@ -120,13 +120,24 @@ void AuthenticatorRequestDialogModel::HideDialog() {
 
 void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
-    base::Optional<device::FidoTransportProtocol> last_used_transport) {
+    base::Optional<device::FidoTransportProtocol> last_used_transport,
+    bool is_conditional) {
   DCHECK_EQ(current_step(), Step::kNotStarted);
 
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
 
-  StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
+  if (is_conditional) {
+    // If this is a conditional request, keep the UI hidden while dispatching
+    // requests.
+    // TODO(nsatragno): show a subtle bubble indicating the user they can insert
+    // and tap their security key.
+    // TODO(nsatragno): skip to the account selection screen when there are
+    // discoverable platform credentials available.
+    SetCurrentStep(Step::kSubtleUI);
+  } else {
+    StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
+  }
 }
 
 void AuthenticatorRequestDialogModel::StartOver() {
@@ -219,7 +230,8 @@ void AuthenticatorRequestDialogModel::
 void AuthenticatorRequestDialogModel::StartWinNativeApi() {
   DCHECK(transport_availability_.has_win_native_api_authenticator);
 
-  if (might_create_resident_credential_ &&
+  if (resident_key_requirement() !=
+          device::ResidentKeyRequirement::kDiscouraged &&
       !transport_availability_.win_native_ui_shows_resident_credential_notice) {
     SetCurrentStep(Step::kResidentCredentialConfirmation);
   } else {

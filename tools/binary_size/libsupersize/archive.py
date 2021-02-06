@@ -10,6 +10,7 @@ import calendar
 import collections
 import copy
 import datetime
+import functools
 import gzip
 import itertools
 import logging
@@ -61,7 +62,6 @@ _OutputDirectoryContext = collections.namedtuple('_OutputDirectoryContext', [
     'elf_object_paths',  # Only when elf_path is also provided.
     'known_inputs',  # Only when elf_path is also provided.
     'output_directory',
-    'source_mapper',
     'thin_archives',
 ])
 
@@ -284,15 +284,21 @@ def _NormalizeSourcePath(path):
 
 def _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper):
   """Fills in the |source_path| attribute and normalizes |object_path|."""
+  logging.info('Normalizing dex symbol paths')
+  dex_and_other = models.DEX_SECTIONS + (models.SECTION_OTHER, )
+  for symbol in raw_symbols:
+    if symbol.source_path and symbol.section_name in dex_and_other:
+      symbol.generated_source, symbol.source_path = _NormalizeSourcePath(
+          symbol.source_path)
+
   if source_mapper:
     logging.info('Looking up source paths from ninja files')
     for symbol in raw_symbols:
-      object_path = symbol.object_path
       if symbol.IsDex() or symbol.IsOther():
-        if symbol.source_path:
-          symbol.generated_source, symbol.source_path = _NormalizeSourcePath(
-              symbol.source_path)
-      elif object_path:
+        continue
+      # Native symbols and pak symbols use object paths.
+      object_path = symbol.object_path
+      if object_path:
         # We don't have source info for prebuilt .a files.
         if not os.path.isabs(object_path) and not object_path.startswith('..'):
           source_path = source_mapper.FindSourceForPath(object_path)
@@ -820,7 +826,7 @@ def CreateMetadata(args, linker_name, build_config):
   if linker_name:
     update_build_config(models.BUILD_CONFIG_LINKER_NAME, linker_name)
 
-  # Deduce GIT revision.
+  # Deduce GIT revision (cached via @lru_cache).
   git_rev = _DetectGitRevision(args.source_directory)
   if git_rev:
     update_build_config(models.BUILD_CONFIG_GIT_REVISION, git_rev)
@@ -846,8 +852,9 @@ def CreateMetadata(args, linker_name, build_config):
     metadata[models.METADATA_APK_FILENAME] = shorten_path(
         args.minimal_apks_file)
     if args.split_name and args.split_name != 'base':
-      metadata[models.METADATA_APK_SPLIT_NAME] = args.split_name
       metadata[models.METADATA_APK_SIZE] = os.path.getsize(args.apk_file)
+      metadata[models.METADATA_APK_SPLIT_NAME] = args.split_name
+      metadata[models.METADATA_APK_SPLIT_ON_DEMAND] = _IsOnDemand(args.apk_file)
     else:
       sizes_by_module = _CollectModuleSizes(args.minimal_apks_file)
       for name, size in sizes_by_module.items():
@@ -1554,23 +1561,18 @@ def CreateContainerAndSymbols(knobs=None,
 
   outdir_context = None
   source_mapper = None
-  if output_directory:
+  section_ranges = {}
+  raw_symbols = []
+  if opts.analyze_native and output_directory:
     # Start by finding the elf_object_paths, so that nm can run on them while
     # the linker .map is being parsed.
-    logging.info('Parsing ninja files.')
-    source_mapper, ninja_elf_object_paths = (
-        ninja_parser.Parse(output_directory, elf_path))
+    target_elf_path = elf_path
+    if map_path and '__combined.so.map' in map_path:
+      target_elf_path = elf_path.replace('.so', '__combined.so')
+    logging.info('Parsing ninja files, looking for %s.', target_elf_path)
 
-    # If no symbols came from the library, it's because it's a partition
-    # extracted from a combined library. Look there instead.
-    if not ninja_elf_object_paths and elf_path:
-      combined_elf_path = elf_path.replace('.so', '__combined.so')
-      logging.info('Found no objects in %s, trying %s', elf_path,
-                   combined_elf_path)
-      source_mapper, ninja_elf_object_paths = (ninja_parser.Parse(
-          output_directory, combined_elf_path))
-      if ninja_elf_object_paths:
-        assert map_path and '__combined.so.map' in map_path
+    source_mapper, ninja_elf_object_paths = ninja_parser.Parse(
+        output_directory, target_elf_path)
 
     logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
     assert not elf_path or ninja_elf_object_paths, (
@@ -1597,7 +1599,6 @@ def CreateContainerAndSymbols(knobs=None,
         elf_object_paths=elf_object_paths,
         known_inputs=known_inputs,
         output_directory=output_directory,
-        source_mapper=source_mapper,
         thin_archives=thin_archives)
 
   if opts.analyze_native:
@@ -1608,8 +1609,6 @@ def CreateContainerAndSymbols(knobs=None,
         opts.track_string_literals,
         outdir_context=outdir_context,
         linker_name=linker_name)
-  else:
-    section_ranges, raw_symbols, object_paths_by_name = {}, [], None
 
   if apk_elf_result:
     section_ranges, elf_overhead_size = _ParseApkElfSectionRanges(
@@ -1745,6 +1744,7 @@ def CreateSizeInfo(build_config,
   return models.SizeInfo(build_config, container_list, all_raw_symbols)
 
 
+@functools.lru_cache
 def _DetectGitRevision(directory):
   """Runs git rev-parse to get the SHA1 hash of the current revision.
 
@@ -1809,6 +1809,7 @@ def _CountRelocationsFromElf(elf_path, tool_prefix):
   return int(relocations, 16)
 
 
+@functools.lru_cache
 def _ParseGnArgs(args_path):
   """Returns a list of normalized "key=value" strings."""
   args = {}
@@ -2007,8 +2008,12 @@ def ParseSsargs(lines):
   return sub_args_list
 
 
-def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
-                      on_config_error):
+def _DeduceNativeInfo(tentative_output_dir,
+                      apk_path,
+                      elf_path,
+                      map_path,
+                      on_config_error,
+                      allow_missing_linker_map=False):
   apk_so_path = None
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
@@ -2045,6 +2050,12 @@ def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
       map_path += '.gz'
 
   if not os.path.exists(map_path):
+    # Consider a missing linker map fatal only for the base module. For .so
+    # files in feature modules, allow skipping breakdowns.
+    if allow_missing_linker_map:
+      logging.warning('No linker map found for %s. Skipping native breakdown.',
+                      elf_path)
+      return None, None, None
     on_config_error(
         'Could not find .map(.gz)? file. Ensure you have built with '
         'is_official_build=true and generate_linker_map=true, or use '
@@ -2114,9 +2125,14 @@ def _ProcessContainerArgs(top_args, sub_args, container_name, on_config_error):
       sub_args, apk_prefix)
   linker_name = None
   if opts.analyze_native:
+    is_base_module = sub_args.split_name in (None, 'base')
     sub_args.elf_file, sub_args.map_file, apk_so_path = _DeduceNativeInfo(
-        top_args.output_directory, sub_args.apk_file, sub_args.elf_file
-        or sub_args.aux_elf_file, sub_args.map_file, on_config_error)
+        top_args.output_directory,
+        sub_args.apk_file,
+        sub_args.elf_file or sub_args.aux_elf_file,
+        sub_args.map_file,
+        on_config_error,
+        allow_missing_linker_map=not is_base_module)
     if not (sub_args.elf_file or sub_args.map_file or apk_so_path):
       opts.analyze_native = False
   if opts.analyze_native:
@@ -2218,8 +2234,6 @@ def _IterSubArgs(top_args, on_config_error):
         with zip_util.UnzipToTemp(
             sub_args.minimal_apks_file,
             'splits/{}-master.apk'.format(module_name)) as temp:
-          if _IsOnDemand(temp):
-            continue
           module_sub_args = copy.copy(sub_args)
           module_sub_args.apk_file = temp
           module_sub_args.split_name = module_name

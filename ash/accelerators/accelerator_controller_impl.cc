@@ -20,6 +20,7 @@
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/devicetype.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -95,7 +96,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/user_manager/user_type.h"
@@ -565,6 +565,11 @@ void HandleSwitchToNextIme(const ui::Accelerator& accelerator) {
   else
     RecordImeSwitchByAccelerator();
   Shell::Get()->ime_controller()->SwitchToNextIme();
+}
+
+void HandleDiagnostics() {
+  base::RecordAction(UserMetricsAction("Accel_Open_Diagnostics"));
+  NewWindowDelegate::GetInstance()->OpenDiagnostics();
 }
 
 void HandleOpenFeedbackPage() {
@@ -2063,6 +2068,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case NEW_TAB:
     case NEW_WINDOW:
     case OPEN_CROSH:
+    case OPEN_DIAGNOSTICS:
     case OPEN_FEEDBACK_PAGE:
     case OPEN_FILE_MANAGER:
     case OPEN_GET_HELP:
@@ -2283,6 +2289,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case OPEN_CROSH:
       HandleCrosh();
+      break;
+    case OPEN_DIAGNOSTICS:
+      HandleDiagnostics();
       break;
     case OPEN_FEEDBACK_PAGE:
       HandleOpenFeedbackPage();

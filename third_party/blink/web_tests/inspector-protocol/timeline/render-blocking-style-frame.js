@@ -33,7 +33,9 @@
     const data = e['args']['data'];
     const url_list = data['url'].split('/');
     const url = url_list[url_list.length - 1];
-    resources.set(url, data['renderBlocking']);
+    if (url.includes("css")) {
+      resources.set(url, data['renderBlocking']);
+    }
   }
   for (const resource of Array.from(resources.keys()).sort())
     testRunner.log(`${resource}: ${resources.get(resource)}`);

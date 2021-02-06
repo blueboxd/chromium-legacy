@@ -14,9 +14,9 @@
 #include "content/web_test/renderer/spell_check_client.h"
 #include "content/web_test/renderer/test_plugin.h"
 #include "content/web_test/renderer/test_runner.h"
-#include "content/web_test/renderer/web_view_test_proxy.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
+#include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
@@ -232,11 +232,7 @@ class TestRenderFrameObserver : public RenderFrameObserver {
 
 WebFrameTestProxy::WebFrameTestProxy(RenderFrameImpl::CreateParams params,
                                      TestRunner* test_runner)
-    : RenderFrameImpl(std::move(params)),
-      web_view_test_proxy_(static_cast<WebViewTestProxy*>(render_view())),
-      test_runner_(test_runner),
-      text_input_controller_(web_view_test_proxy_),
-      accessibility_controller_(web_view_test_proxy_) {}
+    : RenderFrameImpl(std::move(params)), test_runner_(test_runner) {}
 
 WebFrameTestProxy::~WebFrameTestProxy() {
   if (IsMainFrame())
@@ -473,7 +469,7 @@ void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request,
         ((site_for_cookies.scheme() != url::kHttpScheme &&
           site_for_cookies.scheme() != url::kHttpsScheme) ||
          IsLocalHost(site_for_cookies.registrable_domain())) &&
-        !web_view_test_proxy_->test_config().allow_external_pages) {
+        !test_runner_->TestConfig().allow_external_pages) {
       test_runner()->PrintMessage(
           std::string("Blocked access to external URL ") +
           url.possibly_invalid_spec() + "\n");
@@ -740,10 +736,6 @@ WebFrameTestProxy::GetLocalRootFrameWidgetTestHelper() {
   return GetLocalRootWebFrameWidget()->GetFrameWidgetTestHelperForTesting();
 }
 
-WebViewTestProxy* WebFrameTestProxy::GetWebViewTestProxy() {
-  return web_view_test_proxy_;
-}
-
 void WebFrameTestProxy::SynchronouslyCompositeAfterTest(
     SynchronouslyCompositeAfterTestCallback callback) {
   // When the TestFinished() occurred, if the browser is capturing pixels, it
@@ -762,7 +754,16 @@ void WebFrameTestProxy::DumpFrameLayout(DumpFrameLayoutCallback callback) {
 void WebFrameTestProxy::SetTestConfiguration(
     mojom::WebTestRunTestConfigurationPtr config,
     bool starting_test) {
-  web_view_test_proxy_->SetTestConfiguration(std::move(config), starting_test);
+  blink::WebLocalFrame* frame = GetWebFrame();
+  test_runner_->SetMainWindowAndTestConfiguration(frame, std::move(config));
+  if (starting_test) {
+    // This should only be called on the main frame.
+    DCHECK(!frame->Parent());
+    // If focus was in a child frame, it gets lost when we navigate to the next
+    // test, but we want to start with focus in the main frame for every test.
+    // Focus is controlled by the renderer, so we must do the reset here.
+    frame->View()->SetFocusedFrame(frame);
+  }
 }
 
 void WebFrameTestProxy::BindReceiver(

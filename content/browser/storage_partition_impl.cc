@@ -1219,7 +1219,8 @@ void StoragePartitionImpl::Initialize(
 
   cache_storage_context_ = base::MakeRefCounted<CacheStorageContextImpl>();
   cache_storage_context_->Init(
-      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
+      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
+      ChromeBlobStorageContext::GetRemoteFor(browser_context_));
   cache_storage_context_->Bind(
       cache_storage_control_.BindNewPipeAndPassReceiver());
 
@@ -1300,6 +1301,7 @@ void StoragePartitionImpl::Initialize(
   cookie_store_context_->Initialize(service_worker_context_, base::DoNothing());
 
   bucket_context_ = base::MakeRefCounted<BucketContext>();
+  bucket_context_->Initialize();
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&
@@ -2470,10 +2472,9 @@ void StoragePartitionImpl::InitNetworkContext() {
   devtools_instrumentation::ApplyNetworkContextParamsOverrides(
       browser_context_, context_params.get());
   DCHECK(!context_params->cert_verifier_params)
-      << "|cert_verifier_params| should not be set in the NetworkContextParams,"
-         "as they will be replaced with either the newly configured "
-         "|cert_verifier_creation_params| or with a new pipe to the "
-         "CertVerifierService.";
+      << "|cert_verifier_params| should not be set in the "
+         "NetworkContextParams, as they will be replaced with a new pipe to "
+         "the CertVerifierService.";
 
   context_params->cert_verifier_params =
       GetCertVerifierParams(std::move(cert_verifier_creation_params));

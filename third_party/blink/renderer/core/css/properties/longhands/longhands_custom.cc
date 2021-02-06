@@ -2065,7 +2065,9 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args,
       if ((id != CSSValueID::kNone &&
            (id < CSSValueID::kDisc || id > CSSValueID::kKatakanaIroha)))
         return nullptr;
-      list_style = css_parsing_utils::ConsumeCustomIdent(args, context);
+      list_style = MakeGarbageCollected<CSSCustomIdentValue>(
+          AtomicString(getValueName(id)));
+      args.ConsumeIncludingWhitespace();
     } else {
       // Note: CSS3 spec doesn't allow 'none' but CSS2.1 allows it. We currently
       // allow it for backward compatibility.
@@ -3499,7 +3501,7 @@ const CSSValue* GridTemplateColumns::ParseSingleValue(
 
 bool GridTemplateColumns::IsLayoutDependent(const ComputedStyle* style,
                                             LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsLayoutGrid();
+  return layout_object && layout_object->IsLayoutGridIncludingNG();
 }
 
 const CSSValue* GridTemplateColumns::CSSValueFromComputedStyleInternal(
@@ -3520,7 +3522,7 @@ const CSSValue* GridTemplateRows::ParseSingleValue(
 
 bool GridTemplateRows::IsLayoutDependent(const ComputedStyle* style,
                                          LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsLayoutGrid();
+  return layout_object && layout_object->IsLayoutGridIncludingNG();
 }
 
 const CSSValue* GridTemplateRows::CSSValueFromComputedStyleInternal(

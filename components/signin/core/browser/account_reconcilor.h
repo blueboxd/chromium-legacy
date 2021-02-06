@@ -126,6 +126,12 @@ class AccountReconcilor : public KeyedService,
   // Returns true if reconcilor is blocked.
   bool IsReconcileBlocked() const;
 
+ protected:
+  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error);
+  void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
+  void OnLogOutFromCookieCompleted(const GoogleServiceAuthError& error);
+
  private:
   friend class AccountReconcilorTest;
   friend class DiceBrowserTest;
@@ -252,7 +258,7 @@ class AccountReconcilor : public KeyedService,
                        const std::vector<CoreAccountId>& chrome_accounts,
                        std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
-  void CalculateIfReconcileIsDone();
+  void CalculateIfMergeSessionReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
 
   // Returns the list of valid accounts from the TokenService.
@@ -284,11 +290,7 @@ class AccountReconcilor : public KeyedService,
       const CoreAccountId& primary_account,
       const std::vector<CoreAccountId>& chrome_accounts,
       std::vector<gaia::ListedAccount>&& gaia_accounts);
-
-  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
-                                     const GoogleServiceAuthError& error);
-  void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
-  void OnLogOutFromCookieCompleted(const GoogleServiceAuthError& error);
+  void CalculateIfMultiloginReconcileIsDone();
 
   // Lock related methods.
   void IncrementLockCount();

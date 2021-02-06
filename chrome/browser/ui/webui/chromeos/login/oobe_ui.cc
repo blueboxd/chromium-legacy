@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/bind.h"
@@ -87,7 +88,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
@@ -104,7 +104,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -127,11 +126,9 @@ namespace chromeos {
 
 namespace {
 
-const char* kKnownDisplayTypes[] = {OobeUI::kAppLaunchSplashDisplay,
-                                    OobeUI::kGaiaSigninDisplay,
-                                    OobeUI::kLoginDisplay,
-                                    OobeUI::kOobeDisplay,
-                                    OobeUI::kUserAddingDisplay};
+const char* kKnownDisplayTypes[] = {
+    OobeUI::kAppLaunchSplashDisplay, OobeUI::kGaiaSigninDisplay,
+    OobeUI::kLoginDisplay, OobeUI::kOobeDisplay};
 
 // Sorted
 constexpr char kArcAssistantLogoPath[] = "assistant_logo.png";
@@ -421,7 +418,6 @@ const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
 const char OobeUI::kLockDisplay[] = "lock";
 const char OobeUI::kLoginDisplay[] = "login";
 const char OobeUI::kOobeDisplay[] = "oobe";
-const char OobeUI::kUserAddingDisplay[] = "user-adding";
 
 void OobeUI::ConfigureOobeDisplay() {
   network_state_informer_ = new NetworkStateInformer();
@@ -497,9 +493,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(
       std::make_unique<AppDownloadingScreenHandler>(js_calls_container_.get()));
-
-  AddScreenHandler(
-      std::make_unique<UserBoardScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(
       std::make_unique<DemoSetupScreenHandler>(js_calls_container_.get()));

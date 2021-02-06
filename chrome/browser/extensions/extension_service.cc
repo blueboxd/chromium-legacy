@@ -114,8 +114,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_context.h"
 #endif
@@ -824,10 +824,8 @@ bool ExtensionService::UninstallExtension(
   if (!external_uninstall &&
       (!by_policy->UserMayModifySettings(extension.get(), error) ||
        by_policy->MustRemainInstalled(extension.get(), error))) {
-    content::NotificationService::current()->Notify(
-        NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-        content::Source<Profile>(profile_),
-        content::Details<const Extension>(extension.get()));
+    ExtensionRegistry::Get(profile_)->TriggerOnUninstallationDenied(
+        extension.get());
     return false;
   }
 
@@ -1951,9 +1949,9 @@ bool ExtensionService::OnExternalExtensionFileFound(
   return true;
 }
 
-void ExtensionService::DidCreateRenderViewForBackgroundPage(
+void ExtensionService::DidCreateMainFrameForBackgroundPage(
     ExtensionHost* host) {
-  extension_registrar_.DidCreateRenderViewForBackgroundPage(host);
+  extension_registrar_.DidCreateMainFrameForBackgroundPage(host);
 }
 
 void ExtensionService::Observe(int type,

@@ -50,6 +50,7 @@
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #include "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
@@ -2465,7 +2466,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           viewController;
       [_ntpCoordinatorsForWebStates[webState]
           constrainDiscoverHeaderMenuButtonNamedGuide];
-      [self.bubblePresenter presentDiscoverFeedHeaderTipBubble];
     } else {
       self.browserContainerViewController.contentView =
           [self viewForWebState:webState];
@@ -3455,9 +3455,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           };
         }
 
-        [_contextMenuCoordinator addItemWithTitle:title
-                                           action:action
-                                            style:UIAlertActionStyleDefault];
+        [_contextMenuCoordinator
+            addItemWithTitle:title
+                      action:action
+                       style:UIAlertActionStyleDefault
+                     enabled:!IsIncognitoModeDisabled(
+                                 self.browser->GetBrowserState()->GetPrefs())];
       }
     }
     if (link.SchemeIsHTTPOrHTTPS()) {
@@ -5185,11 +5188,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                 forWebState:(web::WebState*)webState {
   if (NTPHelper->IsActive()) {
     DCHECK(!_ntpCoordinatorsForWebStates[webState]);
+    // TODO(crbug.com/1173610): Have BrowserCoordinator manage the NTP.
     NewTabPageCoordinator* newTabPageCoordinator =
         [[NewTabPageCoordinator alloc] initWithBrowser:self.browser];
     newTabPageCoordinator.panGestureHandler = self.thumbStripPanHandler;
     newTabPageCoordinator.toolbarDelegate = self.toolbarInterface;
     newTabPageCoordinator.webState = webState;
+    newTabPageCoordinator.bubblePresenter = self.bubblePresenter;
     _ntpCoordinatorsForWebStates[webState] = newTabPageCoordinator;
   } else {
     NewTabPageCoordinator* newTabPageCoordinator =

@@ -4,10 +4,10 @@
 
 source_set("crash_report") {
   sources = [
-    "breakpad_helper.h",
-    "breakpad_helper.mm",
     "chrome_crash_reporter_client.cc",
     "chrome_crash_reporter_client.h",
+    "crash_helper.h",
+    "crash_helper.mm",
     "crash_keys_helper.h",
     "crash_keys_helper.mm",
     "crash_loop_detection_util.h",
@@ -35,6 +35,7 @@ source_set("crash_report") {
     "//build:branding_buildflags",
     "//components/breadcrumbs/core",
     "//components/crash/core/app",
+    "//components/crash/core/browser",
     "//components/crash/core/common",
     "//components/previous_session_info",
     "//components/upload_list",
@@ -43,6 +44,7 @@ source_set("crash_report") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/crash_report/breadcrumbs",
     "//ios/chrome/browser/crash_report/breadcrumbs:feature_flags",
+    "//ios/chrome/common",
     "//ios/web",
     "//third_party/breakpad:client",
   ]
@@ -91,7 +93,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "breakpad_helper_unittest.mm",
+    "crash_helper_unittest.mm",
     "crash_loop_detection_util_unittest.mm",
     "crash_reporter_breadcrumb_observer_unittest.mm",
     "crash_reporter_url_observer_unittest.mm",

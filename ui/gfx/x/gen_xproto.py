@@ -13,7 +13,6 @@ from __future__ import print_function
 
 import argparse
 import collections
-import functools
 import itertools
 import os
 import re
@@ -39,8 +38,6 @@ RENAME = {
     'DIRECTFORMAT': 'DirectFormat',
     'DOTCLOCK': 'DotClock',
     'FBCONFIG': 'FbConfig',
-    'FLOAT32': 'float',
-    'FLOAT64': 'double',
     'FONTPROP': 'FontProperty',
     'GC': 'GraphicsContextAttribute',
     'GCONTEXT': 'GraphicsContext',
@@ -85,6 +82,15 @@ WRITE_SPECIAL = set([
     ('xcb', 'Button'),
     ('xcb', 'PropertyNotify'),
 ])
+
+FILE_HEADER = \
+'''// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file was automatically generated with:
+// %s
+''' % ' \\\n//    '.join(sys.argv)
 
 
 def adjust_type_name(name):
@@ -203,6 +209,10 @@ class FileWriter:
         indent = self.indent if line and not line.startswith('#') else 0
         print(('  ' * indent) + line, file=self.file)
 
+    def write_header(self):
+        for header_line in FILE_HEADER.split('\n'):
+            self.write(header_line)
+
 
 class GenXproto(FileWriter):
     def __init__(self, proto, proto_dir, gen_dir, xcbgen, all_types):
@@ -269,10 +279,6 @@ class GenXproto(FileWriter):
         return ''
 
     def rename_type(self, t, name):
-        # Work around a bug in xcbgen: ('int') should have been ('int',)
-        if name == 'int':
-            name = ('int', )
-
         name = list(name)
 
         if name[0] == 'xcb':
@@ -421,11 +427,8 @@ class GenXproto(FileWriter):
             self.write('%s value{};' % value_typename)
 
     def declare_simple(self, item, name):
-        # The underlying type of an enum must be integral, so avoid defining
-        # FLOAT32 or FLOAT64.  Usages are renamed to float and double instead.
         renamed = tuple(self.rename_type(item, name))
-        if (name[-1] in ('FLOAT32', 'FLOAT64')
-                or renamed in self.replace_with_enum):
+        if renamed in self.replace_with_enum:
             return
 
         xidunion = self.get_xidunion_element(name)
@@ -1052,35 +1055,6 @@ class GenXproto(FileWriter):
     # all of these events under one structure with an additional opcode field
     # to indicate the type of event.
     def uniquify_events(self):
-        # Manually merge some events in XInput.  These groups of 8 events have
-        # idential structure, and are merged as XIDeviceEvent in Xlib.  To avoid
-        # duplication, and to ease the transition from Xlib to XProto, we merge
-        # the events here too.
-        # TODO(thomasanderson): We should avoid adding workarounds for xcbproto.
-        # Instead, the protocol files should be modified directly.  However,
-        # some of the changes we want to make change the API, so the changes
-        # should be made in a fork in //third_party rather than upstreamed.
-        MERGE = [
-            ([
-                'KeyPress', 'KeyRelease', 'ButtonPress', 'ButtonRelease',
-                'Motion', 'TouchBegin', 'TouchUpdate', 'TouchEnd'
-            ], []),
-            ([
-                'RawKeyPress', 'RawKeyRelease', 'RawButtonPress',
-                'RawButtonRelease', 'RawMotion', 'RawTouchBegin',
-                'RawTouchUpdate', 'RawTouchEnd'
-            ], []),
-        ]
-        for i, (name, t) in enumerate(self.module.all):
-            if t.is_event and name[1] == 'Input':
-                for names, event in MERGE:
-                    if name[-1] in names:
-                        if event:
-                            event[0].opcodes.update(t.opcodes)
-                            self.module.all[i] = name, event[0]
-                        else:
-                            event.append(t)
-
         types = []
         events = set()
         for name, t in self.module.all:
@@ -1115,13 +1089,7 @@ class GenXproto(FileWriter):
 
         self.uniquify_events()
 
-        for i, (name, t) in enumerate(self.module.all):
-            # Work around a name conflict: the type ScreenSaver has the same
-            # name as the extension, so rename the type.
-            if name == ('xcb', 'ScreenSaver'):
-                name = ('xcb', 'ScreenSaverMode')
-                t.name = name
-                self.module.all[i] = (name, t)
+        for name, t in self.module.all:
             self.resolve_type(t, name)
 
         for enum, types in list(self.enum_types.items()):
@@ -1170,16 +1138,14 @@ class GenXproto(FileWriter):
                 return 4
             return 3
 
-        def cmp(type1, type2):
-            return type_order_priority(type1) - type_order_priority(type2)
-
         # sort() is guaranteed to be stable.
-        self.module.all.sort(key=functools.cmp_to_key(cmp))
+        self.module.all.sort(key=type_order_priority)
 
     def gen_header(self):
         self.file = self.header_file
-        include_guard = self.header_file.name.replace('/', '_').replace(
-            '.', '_').upper() + '_'
+        self.write_header()
+        include_guard = 'UI_GFX_X_GENERATED_PROTOS_%s_' % (
+            self.header_file.name.split('/')[-1].upper().replace('.', '_'))
         self.write('#ifndef ' + include_guard)
         self.write('#define ' + include_guard)
         self.write()
@@ -1277,6 +1243,7 @@ class GenXproto(FileWriter):
 
     def gen_source(self):
         self.file = self.source_file
+        self.write_header()
         self.write('#include "%s.h"' % self.module.namespace.header)
         self.write()
         self.write('#include <xcb/xcb.h>')
@@ -1324,8 +1291,9 @@ class GenExtensionManager(FileWriter):
     def gen_header(self):
         self.file = open(os.path.join(self.gen_dir, 'extension_manager.h'),
                          'w')
-        self.write('#ifndef UI_GFX_X_EXTENSION_MANAGER_H_')
-        self.write('#define UI_GFX_X_EXTENSION_MANAGER_H_')
+        self.write_header()
+        self.write('#ifndef UI_GFX_X_GENERATED_PROTOS_EXTENSION_MANAGER_H_')
+        self.write('#define UI_GFX_X_GENERATED_PROTOS_EXTENSION_MANAGER_H_')
         self.write()
         self.write('#include <memory>')
         self.write()
@@ -1359,11 +1327,12 @@ class GenExtensionManager(FileWriter):
         self.write()
         self.write('}  // namespace x11')
         self.write()
-        self.write('#endif  // UI_GFX_X_EXTENSION_MANAGER_H_')
+        self.write('#endif  // UI_GFX_X_GENERATED_PROTOS_EXTENSION_MANAGER_H_')
 
     def gen_source(self):
         self.file = open(os.path.join(self.gen_dir, 'extension_manager.cc'),
                          'w')
+        self.write_header()
         self.write('#include "ui/gfx/x/extension_manager.h"')
         self.write()
         self.write('#include "ui/gfx/x/connection.h"')
@@ -1464,6 +1433,7 @@ class GenReadEvent(FileWriter):
 
     def gen_source(self):
         self.file = open(os.path.join(self.gen_dir, 'read_event.cc'), 'w')
+        self.write_header()
         self.write('#include "ui/gfx/x/event.h"')
         self.write()
         self.write('#include <xcb/xcb.h>')
@@ -1548,6 +1518,7 @@ class GenReadError(FileWriter):
 
     def gen_source(self):
         self.file = open(os.path.join(self.gen_dir, 'read_error.cc'), 'w')
+        self.write_header()
         self.write('#include "ui/gfx/x/connection.h"')
         self.write('#include "ui/gfx/x/error.h"')
         self.write('#include "ui/gfx/x/xproto_internal.h"')

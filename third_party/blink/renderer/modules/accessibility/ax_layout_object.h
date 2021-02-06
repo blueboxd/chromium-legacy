@@ -65,18 +65,11 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
  protected:
   LayoutObject* layout_object_;
 
-  LayoutBoxModelObject* GetLayoutBoxModelObject() const override;
-
-  LayoutObject* LayoutObjectForRelativeBounds() const override {
-    return layout_object_;
-  }
-
   //
   // Overridden from AXObject.
   //
 
   void Detach() override;
-  bool IsDetached() const override;
   bool IsAXLayoutObject() const final;
 
   // Check object role or purpose.

@@ -323,16 +323,6 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId, String dependencyExtension) {
-        if (dependencyExtension == "aar" && isPlayServicesTarget(dependencyId)) {
-            if (Pattern.matches(".*cast_framework.*", dependencyId)) {
-                sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
-                sb.append('  # Can only safely remove them when R8 will strip the path that accesses them.\n')
-                sb.append('  strip_resources = !is_java_debug\n')
-            } else {
-                sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
-                sb.append('  strip_drawables = true\n')
-            }
-        }
         if (dependencyId.startsWith('org_robolectric')) {
             // Skip platform checks since it depends on
             // accessibility_test_framework_java which requires_android.
@@ -512,6 +502,9 @@ class BuildConfigGenerator extends DefaultTask {
                 // Replace broad library -keep rules with a more limited set in
                 // chrome/android/java/proguard.flags instead.
                 sb.append('  ignore_proguard_configs = true\n')
+                break
+            case 'com_google_android_gms_play_services_base':
+                sb.append('  bytecode_rewriter_target = "//build/android/bytecode:fragment_activity_replacer"\n')
                 break
             case 'com_google_android_gms_play_services_basement':
                 sb.append('  # https://crbug.com/989505\n')

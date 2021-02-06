@@ -85,6 +85,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "allow-repeated-updates",
+    "owners": [ "vyshu", "chromeos-core-services@google.com" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "allow-scroll-settings",
     "owners": [ "khorimoto", "zentaro" ],
     "expiry_milestone": 88
@@ -858,6 +863,11 @@
     "name": "desktop-in-product-help-snooze",
     "owners": [ "collinbaker", "kerenzhu", "chrome-desktop-ui@google.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "desktop-restructured-language-settings",
+    "owners": [ "joshsantana", "chrome-langauge@google.com"],
+    "expiry_milestone": 93
   },
   {
     "name": "desktop-version-default",
@@ -3037,6 +3047,12 @@
     "expiry_milestone": 88
   },
   {
+    "name": "improved-keyboard-shortcuts",
+    "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
+                "cros-peripherals@google.com"],
+    "expiry_milestone": 94
+  },
+  {
     "name": "impulse-scroll-animations",
     "owners": [ "arakeri@microsoft.com", "gerchiko@microsoft.com" ],
     "expiry_milestone": 100
@@ -3137,6 +3153,11 @@
     // Breadcrumbs is not a launching feature, but rather a tool used on
     // pre-stable channels for diagnosing crashes.
     "expiry_milestone": -1
+  },
+  {
+    "name": "ios-crashpad",
+    "owners": [ "justincohen", "bling-flags@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "ios-lookalike-url-navigation-suggestions-ui",
@@ -3889,6 +3910,11 @@
   {
     "name": "page-info-discoverability",
     "owners": [ "eokoyomon", "dullweber" ],
+    "expiry_milestone": 93
+  },
+  {
+    "name": "page-info-history",
+    "owners": [ "oroshiba", "dullweber" ],
     "expiry_milestone": 93
   },
   {

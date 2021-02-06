@@ -2611,6 +2611,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       // tree.
       if (PaintLayer* layer = EnclosingLayer())
         layer->DirtyVisibleContentStatus();
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+        cache->ChildrenChanged(this);
     }
 
     if (IsFloating() &&
@@ -4309,7 +4311,7 @@ void LayoutObject::SetNeedsBoundariesUpdate() {
     // The boundaries affect mask clip.
     if (StyleRef().SvgStyle().HasMasker())
       SetNeedsPaintPropertyUpdate();
-    if (StyleRef().ClipPath())
+    if (StyleRef().HasClipPath())
       InvalidateClipPathCache();
   }
   if (LayoutObject* layout_object = Parent())

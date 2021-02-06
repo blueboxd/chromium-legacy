@@ -154,6 +154,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
@@ -222,7 +223,6 @@
 #include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/components/scanning/scanning_ui.h"
 #include "chromeos/components/scanning/url_constants.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
@@ -804,9 +804,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       base::FeatureList::IsEnabled(chromeos::features::kImeSystemEmojiPicker)) {
     return &NewWebUI<chromeos::EmojiPicker>;
   }
-  if (url.host_piece() == chromeos::kChromeUIEcheAppHost &&
+  if (url.host_piece() == chromeos::eche_app::kChromeUIEcheAppHost &&
       base::FeatureList::IsEnabled(chromeos::features::kEcheSWA)) {
-    return &NewWebUI<chromeos::EcheAppUI>;
+    return &NewWebUI<chromeos::eche_app::EcheAppUI>;
   }
 
 #if !defined(OFFICIAL_BUILD)

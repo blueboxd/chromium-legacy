@@ -44,6 +44,7 @@
 #include "base/allocator/partition_allocator/partition_lock.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
+#include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/allocator/partition_allocator/pcscan.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
@@ -94,7 +95,7 @@ enum PartitionPurgeFlags {
 
 // Options struct used to configure PartitionRoot and PartitionAllocator.
 struct PartitionOptions {
-  enum class Alignment {
+  enum class Alignment : uint8_t {
     // By default all allocations will be aligned to `base::kAlignment`,
     // likely to be 8B or 16B depending on platforms and toolchains.
     kRegular,
@@ -108,41 +109,34 @@ struct PartitionOptions {
     kAlignedAlloc,
   };
 
-  enum class ThreadCache {
+  enum class ThreadCache : uint8_t {
     kDisabled,
     kEnabled,
   };
 
-  enum class PCScan {
-    // Should be used for value partitions, i.e. partitions that are known to
-    // not have pointers. No metadata (quarantine bitmaps) is allocated for such
-    // partitions.
-    kAlwaysDisabled,
-    // PCScan is disabled by default, but can be enabled by calling
-    // PartitionRoot::EnablePCScan().
-    kDisabledByDefault,
-    // PCScan is always enabled.
-    kForcedEnabledForTesting,
-  };
-
-  enum class RefCount {
+  enum class RefCount : uint8_t {
     kDisabled,
     kEnabled,
+  };
+
+  enum class Quarantine : uint8_t {
+    kDisallowed,
+    kAllowed,
   };
 
   // Constructor to suppress aggregate initialization.
   constexpr PartitionOptions(Alignment alignment,
                              ThreadCache thread_cache,
-                             PCScan pcscan,
+                             Quarantine quarantine,
                              RefCount ref_count)
       : alignment(alignment),
         thread_cache(thread_cache),
-        pcscan(pcscan),
+        quarantine(quarantine),
         ref_count(ref_count) {}
 
   Alignment alignment;
   ThreadCache thread_cache;
-  PCScan pcscan;
+  Quarantine quarantine;
   RefCount ref_count;
 };
 
@@ -158,11 +152,18 @@ struct BASE_EXPORT PartitionRoot {
   using ScopedGuard = internal::ScopedGuard<thread_safe>;
   using PCScan = internal::PCScan<thread_safe>;
 
-  enum class PCScanMode : uint8_t {
-    kNonScannable,
+  // Defines whether objects should be quarantined for this root.
+  enum class QuarantineMode : uint8_t {
+    kAlwaysDisabled,
+    kDisabledByDefault,
+    kEnabled,
+  } quarantine_mode = QuarantineMode::kAlwaysDisabled;
+
+  // Defines whether the root should be scanned.
+  enum class ScanMode : uint8_t {
     kDisabled,
     kEnabled,
-  } pcscan_mode = PCScanMode::kNonScannable;
+  } scan_mode = ScanMode::kDisabled;
 
   // Flags accessed on fast paths.
   //
@@ -339,23 +340,18 @@ struct BASE_EXPORT PartitionRoot {
         ;
   }
 
-  ALWAYS_INLINE bool IsScannable() const {
-    return pcscan_mode != PCScanMode::kNonScannable;
+  ALWAYS_INLINE bool IsQuarantineAllowed() const {
+    return quarantine_mode != QuarantineMode::kAlwaysDisabled;
+  }
+
+  ALWAYS_INLINE bool IsQuarantineEnabled() const {
+    return quarantine_mode == QuarantineMode::kEnabled;
   }
 
   ALWAYS_INLINE bool IsScanEnabled() const {
-    return pcscan_mode == PCScanMode::kEnabled;
-  }
-
-  // Enables PCScan for this root.
-  void EnablePCScan() {
-    PA_CHECK(thread_safe);
-    ScopedGuard guard{lock_};
-    PA_CHECK(IsScannable());
-    if (IsScanEnabled())
-      return;
-    PCScan::Instance().RegisterRoot(this);
-    pcscan_mode = PCScanMode::kEnabled;
+    // Enabled scan implies enabled quarantine.
+    PA_DCHECK(scan_mode != ScanMode::kEnabled || IsQuarantineEnabled());
+    return scan_mode == ScanMode::kEnabled;
   }
 
   static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
@@ -650,60 +646,35 @@ PartitionAllocGetSlotSpanForSizeQuery(void* ptr) {
   return slot_span;
 }
 
-// Gets the offset from the beginning of the allocated slot.
-//
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
-//
-// This function is not a template, and can be used on either variant
-// (thread-safe or not) of the allocator. This relies on the two PartitionRoot<>
-// having the same layout, which is enforced by static_assert().
-ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
-  internal::DCheckIfManagedByPartitionAllocNormalBuckets(ptr);
-  auto* slot_span =
-      internal::PartitionAllocGetSlotSpanForSizeQuery<internal::ThreadSafe>(
-          ptr);
-  auto* root = PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span);
-  // The only allocations that don't use ref-count are allocated outside of
-  // GigaCage, hence we'd never get here in the `allow_ref_count = false` case.
-  PA_DCHECK(root->allow_ref_count);
-
-  // Get the offset from the beginning of the slot span.
-  uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
-  uintptr_t slot_span_start = reinterpret_cast<uintptr_t>(
-      internal::SlotSpanMetadata<internal::ThreadSafe>::ToSlotSpanStartPtr(
-          slot_span));
-  size_t offset_in_slot_span = ptr_addr - slot_span_start;
-
-  return slot_span->bucket->GetSlotOffset(offset_in_slot_span);
-}
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
 
 // Gets the pointer to the beginning of the allocated slot.
 //
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+// This isn't a general pupose function, it is used specifically for obtaining
+// BackupRefPtr's ref-count. The caller is responsible for ensuring that the
+// ref-count is in place for this allocation.
 //
 // This function is not a template, and can be used on either variant
 // (thread-safe or not) of the allocator. This relies on the two PartitionRoot<>
 // having the same layout, which is enforced by static_assert().
 ALWAYS_INLINE void* PartitionAllocGetSlotStart(void* ptr) {
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
   // Adjust to support pointers right past the end of an allocation, which in
   // some cases appear to point outside the designated allocation slot.
-  // There is no risk of going too far i.e. confusing |ptr -
-  // kPartitionRefCountOffset| with the previous allocation because |ptr|, which
-  // is a pointer within the user-accessible area, is at least
-  // |kPartitionRefCountOffset| bytes away from the beginning of its slot.
-  ptr = reinterpret_cast<char*>(ptr) - kPartitionRefCountOffset;
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+  //
+  // If ref-count is present before the allocation, then adjusting a valid
+  // pointer down will not cause us to go down to the previous slot. If
+  // ref-count is present after the allocation, then adjust no adjustment is
+  // needed (and likely wouldn't be correct as there is a risk of going down to
+  // the previous slot). Either way, kPartitionPastAllocationAdjustment takes
+  // care of that detail.
+  ptr = reinterpret_cast<char*>(ptr) - kPartitionPastAllocationAdjustment;
 
   internal::DCheckIfManagedByPartitionAllocNormalBuckets(ptr);
   auto* slot_span =
       internal::PartitionAllocGetSlotSpanForSizeQuery<internal::ThreadSafe>(
           ptr);
   auto* root = PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span);
-  // The only allocations that don't use ref-count are allocated outside of
-  // GigaCage, hence we'd never get here in the `allow_ref_count = false` case.
+  // Double check that ref-count is indeed present.
   PA_DCHECK(root->allow_ref_count);
 
   // Get the offset from the beginning of the slot span.
@@ -719,7 +690,6 @@ ALWAYS_INLINE void* PartitionAllocGetSlotStart(void* ptr) {
       bucket->slot_size * bucket->GetSlotNumber(offset_in_slot_span));
 }
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
 // TODO(glazunov): Simplify the function once the non-thread-safe PartitionRoot
 // is no longer used.
 ALWAYS_INLINE void PartitionAllocFreeForRefCounting(void* slot_start) {
@@ -856,7 +826,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* ptr) {
 
   // TODO(bikineev): Change the first condition to LIKELY once PCScan is enabled
   // by default.
-  if (UNLIKELY(root->IsScanEnabled()) &&
+  if (UNLIKELY(root->IsQuarantineEnabled()) &&
       LIKELY(!slot_span->bucket->is_direct_mapped())) {
     PCScan::Instance().MoveToQuarantine(ptr, slot_span);
     return;

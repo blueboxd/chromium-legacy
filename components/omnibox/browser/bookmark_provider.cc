@@ -31,6 +31,54 @@ using bookmarks::BookmarkNode;
 using bookmarks::TitledUrlMatch;
 using TitledUrlMatches = std::vector<TitledUrlMatch>;
 
+namespace {
+
+// for_each helper functor that calculates a match factor for each query term
+// when calculating the final score.
+//
+// Calculate a 'factor' from 0 to the bookmark's title length for a match
+// based on 1) how many characters match and 2) where the match is positioned.
+class ScoringFunctor {
+ public:
+  // |title_length| is the length of the bookmark title against which this
+  // match will be scored.
+  explicit ScoringFunctor(size_t title_length)
+      : title_length_(static_cast<double>(title_length)),
+        scoring_factor_(0.0) {}
+
+  void operator()(const query_parser::Snippet::MatchPosition& match) {
+    double term_length = static_cast<double>(match.second - match.first);
+    scoring_factor_ +=
+        term_length * (title_length_ - match.first) / title_length_;
+  }
+
+  double ScoringFactor() { return scoring_factor_; }
+
+ private:
+  double title_length_;
+  double scoring_factor_;
+};
+
+query_parser::MatchingAlgorithm GetMatchingAlgorithm(AutocompleteInput input) {
+  // If both short bookmark features are disabled, use default matching; i.e.
+  //   don't allow short input words to prefix match.
+  // If |IsShortBookmarkSuggestionsEnabled()| is enabled, allow short input
+  //   words to prefix match.
+  // If |IsShortBookmarkSuggestionsByTotalInputLengthEnabled()| is enabled,
+  //   allow short input words to prefix match only if the total input length is
+  //   longer than |ShortBookmarkSuggestionsByTotalInputLengthThreshold()|.
+  return OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() ||
+                 (OmniboxFieldTrial::
+                      IsShortBookmarkSuggestionsByTotalInputLengthEnabled() &&
+                  input.text().length() >=
+                      OmniboxFieldTrial::
+                          ShortBookmarkSuggestionsByTotalInputLengthThreshold())
+             ? query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH
+             : query_parser::MatchingAlgorithm::DEFAULT;
+}
+
+}  // namespace
+
 // BookmarkProvider ------------------------------------------------------------
 
 BookmarkProvider::BookmarkProvider(AutocompleteProviderClient* client)
@@ -69,7 +117,8 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   //  - Terms must be at least three characters in length in order to perform
   //    partial word matches. Any term of lesser length will only be used as an
   //    exact match. 'def' will match against 'define' but 'de' will not match.
-  //    (Unless IsShortBookmarkSuggestionsEnabled is true.)
+  //    (Unless either |IsShortBookmarkSuggestionsEnabled()| or
+  //    |IsShortBookmarkSuggestionsByTotalInputLengthEnabled()| is true.)
   //  - A search containing multiple terms will return results with those words
   //    occurring in any order.
   //  - Terms enclosed in quotes comprises a phrase that must match exactly.
@@ -80,10 +129,7 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   // complete details of how searches are performed against the user's
   // bookmarks.
   std::vector<TitledUrlMatch> matches = bookmark_model_->GetBookmarksMatching(
-      input.text(), kMaxBookmarkMatches,
-      OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled()
-          ? query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH
-          : query_parser::MatchingAlgorithm::DEFAULT,
+      input.text(), kMaxBookmarkMatches, GetMatchingAlgorithm(input),
       base::FeatureList::IsEnabled(omnibox::kBookmarkPaths));
   if (matches.empty())
     return;  // There were no matches.
@@ -111,37 +157,6 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
                     matches_.end(), AutocompleteMatch::MoreRelevant);
   matches_.resize(num_matches);
 }
-
-namespace {
-
-// for_each helper functor that calculates a match factor for each query term
-// when calculating the final score.
-//
-// Calculate a 'factor' from 0 to the bookmark's title length for a match
-// based on 1) how many characters match and 2) where the match is positioned.
-class ScoringFunctor {
- public:
-  // |title_length| is the length of the bookmark title against which this
-  // match will be scored.
-  explicit ScoringFunctor(size_t title_length)
-      : title_length_(static_cast<double>(title_length)),
-        scoring_factor_(0.0) {
-  }
-
-  void operator()(const query_parser::Snippet::MatchPosition& match) {
-    double term_length = static_cast<double>(match.second - match.first);
-    scoring_factor_ += term_length *
-        (title_length_ - match.first) / title_length_;
-  }
-
-  double ScoringFactor() { return scoring_factor_; }
-
- private:
-  double title_length_;
-  double scoring_factor_;
-};
-
-}  // namespace
 
 int BookmarkProvider::CalculateBookmarkMatchRelevance(
     const TitledUrlMatch& bookmark_match) const {

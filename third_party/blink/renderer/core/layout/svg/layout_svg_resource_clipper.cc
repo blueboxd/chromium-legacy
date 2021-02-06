@@ -45,7 +45,7 @@ enum class ClipStrategy { kNone, kMask, kPath };
 ClipStrategy ModifyStrategyForClipPath(const ComputedStyle& style,
                                        ClipStrategy strategy) {
   // If the shape in the clip-path gets clipped too then fallback to masking.
-  if (strategy != ClipStrategy::kPath || !style.ClipPath())
+  if (strategy != ClipStrategy::kPath || !style.HasClipPath())
     return strategy;
   return ClipStrategy::kMask;
 }
@@ -132,7 +132,7 @@ base::Optional<Path> LayoutSVGResourceClipper::AsPath() {
   clip_content_path_validity_ = kClipContentPathInvalid;
   // If the current clip-path gets clipped itself, we have to fallback to
   // masking.
-  if (StyleRef().ClipPath())
+  if (StyleRef().HasClipPath())
     return base::nullopt;
 
   unsigned op_count = 0;
@@ -279,8 +279,7 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
   return CalculateClipTransform(reference_box).MapRect(local_clip_bounds_);
 }
 
-bool LayoutSVGResourceClipper::FindCycleFromSelf(
-    SVGResourcesCycleSolver& solver) const {
+bool LayoutSVGResourceClipper::FindCycleFromSelf() const {
   NOT_DESTROYED();
   // Check nested clip-path.
   if (auto* reference_clip =
@@ -288,11 +287,11 @@ bool LayoutSVGResourceClipper::FindCycleFromSelf(
     // The resource can be null if the reference is external but external
     // references are not allowed.
     if (SVGResource* resource = reference_clip->Resource()) {
-      if (resource->FindCycle(*SVGResources::GetClient(*this), solver))
+      if (resource->FindCycle(*SVGResources::GetClient(*this)))
         return true;
     }
   }
-  return LayoutSVGResourceContainer::FindCycleFromSelf(solver);
+  return LayoutSVGResourceContainer::FindCycleFromSelf();
 }
 
 void LayoutSVGResourceClipper::StyleDidChange(StyleDifference diff,

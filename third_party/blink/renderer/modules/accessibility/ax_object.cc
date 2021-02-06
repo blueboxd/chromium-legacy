@@ -643,7 +643,7 @@ void AXObject::Init(AXObject* parent_if_known) {
   // Note: in order to avoid reentrancy, the role computation cannot use the
   // ParentObject(), although it can use the DOM parent.
   role_ = DetermineAccessibilityRole();
-  DCHECK(role_ != ax::mojom::blink::Role::kUnknown)
+  DCHECK(role_ != ax::mojom::blink::Role::kUnknown || IsVirtualObject())
       << "Illegal Role::kUnknown for " << GetNode() << " " << GetLayoutObject();
 
   // Determine the parent as soon as possible.
@@ -661,6 +661,7 @@ void AXObject::Init(AXObject* parent_if_known) {
 
 void AXObject::Detach() {
 #if DCHECK_IS_ON()
+  DCHECK(!IsDetached());
   DCHECK(!is_adding_children_) << ToString(true, true);
   DCHECK(ax_object_cache_);
   DCHECK(!ax_object_cache_->IsFrozen())
@@ -681,11 +682,27 @@ bool AXObject::IsDetached() const {
   return !ax_object_cache_;
 }
 
-void AXObject::SetParent(AXObject* parent) {
-  DCHECK(parent || IsA<Document>(GetNode()))
+void AXObject::SetParent(AXObject* new_parent) {
+  DCHECK(new_parent || IsA<Document>(GetNode()))
       << "Parent cannot be null, except at the root, was null at " << GetNode()
       << " " << GetLayoutObject();
-  parent_ = parent;
+
+#if DCHECK_IS_ON()
+  // Check to ensure that if the parent is changing from a previous parent,
+  // that |this| is not still a child of that one.
+  // This is similar to the IsParentUnignoredOf() check in
+  // BlinkAXTreeSource, but closer to where the problem would occur.
+  if (parent_ && new_parent != parent_ && !parent_->NeedsToUpdateChildren() &&
+      !parent_->IsDetached()) {
+    for (const auto& child : parent_->ChildrenIncludingIgnored()) {
+      DCHECK(child != this) << "Previous parent still has |this| child:\n"
+                            << ToString(true, true) << " should be a child of "
+                            << new_parent->ToString(true, true) << " not of "
+                            << parent_->ToString(true, true);
+    }
+  }
+#endif
+  parent_ = new_parent;
 }
 
 // In many cases, ComputeParent() is not called, because the parent adding
@@ -720,6 +737,13 @@ AXObject* AXObject::ComputeParentImpl() const {
   if (IsA<Document>(current_node)) {
     LocalFrame* frame = GetLayoutObject()->GetFrame();
     return AXObjectCache().GetOrCreate(frame->PagePopupOwner());
+  }
+
+  if (IsVirtualObject()) {
+    NOTREACHED()
+        << "A virtual object must have a parent, and cannot exist without one. "
+           "The parent is set when the object is constructed.";
+    return nullptr;
   }
 
   // If no node, or a pseudo element, use the layout parent.
@@ -3349,7 +3373,8 @@ const AXObject::AXObjectVector AXObject::UnignoredChildren() {
 
   if (!AccessibilityIsIncludedInTree()) {
     NOTREACHED() << "We don't support finding the unignored children of "
-                    "objects excluded from the accessibility tree.";
+                    "objects excluded from the accessibility tree: "
+                 << ToString(true, true);
     return {};
   }
 
@@ -3660,6 +3685,9 @@ AXObject* AXObject::ParentObject() const {
   // a <select size="1"> changes to <select size="2">, where the
   // Role::kMenuListPopup is detached.
   if (!parent_) {
+    DCHECK(!IsVirtualObject())
+        << "A virtual object must have a parent, and cannot exist without one. "
+           "The parent is set when the object is constructed.";
     parent_ = ComputeParent();
     DCHECK(parent_ || IsA<Document>(GetNode()))
         << "The following node should have a parent: " << GetNode();
@@ -4221,7 +4249,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
     }
   }
 
-  LayoutObject* layout_object = LayoutObjectForRelativeBounds();
+  LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
     return;
 

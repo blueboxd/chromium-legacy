@@ -901,6 +901,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Open_Diagnostics">
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    Records how often diagnostics is launched from accelerator.
+  </description>
+</action>
+
 <action name="Accel_Open_Feedback_Page">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -21240,6 +21247,19 @@ should be able to be added at any place in this file.
   <owner>msramek@chromium.org</owner>
   <description>
     User enables the privacy sandbox APIs in the privacy sandbox page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Block3PCookies">
+  <owner>rainhard@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User changes cookie setting and moves from a state where 3P cookies are
+    enabled, to one where 3P cookies are disabled. Only recorded if the privacy
+    sandox feature is enabled, and the privacy sandbox API preference is
+    enabled. A toast linking the provacy sandbox page is shown immediately
+    following this action.
   </description>
 </action>
 

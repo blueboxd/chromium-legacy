@@ -228,6 +228,8 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHandle);
 };
 
+constexpr base::TimeDelta EmbeddedWorkerInstance::kThrottledStopWorkerThreshold;
+
 // Info that is recorded as UMA on OnStarted().
 struct EmbeddedWorkerInstance::StartInfo {
   StartInfo(bool is_installed,
@@ -473,6 +475,8 @@ void EmbeddedWorkerInstance::Start(
 }
 
 void EmbeddedWorkerInstance::Stop() {
+  TRACE_EVENT1("ServiceWorker", "EmbeddedWorkerInstance::Stop", "script_url",
+               owner_version_->script_url().spec());
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
          status_ == EmbeddedWorkerStatus::RUNNING)
       << static_cast<int>(status_);
@@ -491,7 +495,7 @@ void EmbeddedWorkerInstance::Stop() {
     return;
   }
 
-  client_->StopWorker();
+  ThrottledStopWorker();
   status_ = EmbeddedWorkerStatus::STOPPING;
   for (auto& observer : listener_list_)
     observer.OnStopping();
@@ -607,8 +611,11 @@ void EmbeddedWorkerInstance::RequestTermination(
     std::move(callback).Run(true /* will_be_terminated */);
     return;
   }
+  const bool will_be_terminated = owner_version_->OnRequestTermination();
+  TRACE_EVENT1("ServiceWorker", "EmbeddedWorkerInstance::RequestTermination",
+               "will_be_terminated", will_be_terminated);
 
-  std::move(callback).Run(owner_version_->OnRequestTermination());
+  std::move(callback).Run(will_be_terminated);
 }
 
 void EmbeddedWorkerInstance::CountFeature(blink::mojom::WebFeature feature) {
@@ -1132,6 +1139,36 @@ void EmbeddedWorkerInstance::BindCacheStorageInternal() {
                        std::move(coep_reporter_remote), std::move(receiver)));
   }
   pending_cache_storage_receivers_.clear();
+}
+
+void EmbeddedWorkerInstance::ThrottledStopWorker() {
+  static_assert(
+      kThrottledStopWorkerThreshold < ServiceWorkerVersion::kStopWorkerTimeout,
+      "StopWorker throttle threshold should be less than expected "
+      "stop timeout.");
+
+  base::TimeDelta elapsed = base::Time::Now() - last_stop_time_;
+  bool needs_delay = elapsed < kThrottledStopWorkerThreshold;
+
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ThrottledStopWorker.NeedsDelay",
+                        needs_delay);
+
+  if (!needs_delay) {
+    StopWorkerInternal();
+    return;
+  }
+
+  if (stop_timer_.IsRunning())
+    return;
+
+  stop_timer_.Start(FROM_HERE, (kThrottledStopWorkerThreshold - elapsed),
+                    base::BindOnce(&EmbeddedWorkerInstance::StopWorkerInternal,
+                                   base::Unretained(this)));
+}
+
+void EmbeddedWorkerInstance::StopWorkerInternal() {
+  last_stop_time_ = base::Time::Now();
+  client_->StopWorker();
 }
 
 }  // namespace content

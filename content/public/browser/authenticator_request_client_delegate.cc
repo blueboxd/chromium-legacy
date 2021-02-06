@@ -62,9 +62,6 @@ bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {
   return false;
 }
 
-void AuthenticatorRequestClientDelegate::SetMightCreateResidentCredential(
-    bool v) {}
-
 void AuthenticatorRequestClientDelegate::ConfigureCable(
     const url::Origin& origin,
     base::span<const device::CableDiscoveryData> pairings_from_extension,
@@ -110,6 +107,9 @@ void AuthenticatorRequestClientDelegate::DisableUI() {}
 bool AuthenticatorRequestClientDelegate::IsWebAuthnUIEnabled() {
   return false;
 }
+
+void AuthenticatorRequestClientDelegate::SetConditionalRequest(
+    bool is_conditional) {}
 
 void AuthenticatorRequestClientDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {}

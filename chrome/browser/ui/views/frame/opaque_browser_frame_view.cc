@@ -308,8 +308,7 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
   if (IsFrameCondensed())
     return;
 
-  views::GetDefaultWindowMask(
-      size, frame()->GetCompositor()->device_scale_factor(), window_mask);
+  views::GetDefaultWindowMask(size, window_mask);
 }
 
 void OpaqueBrowserFrameView::ResetWindowControls() {
@@ -536,7 +535,7 @@ views::Button* OpaqueBrowserFrameView::CreateFrameCaptionButton(
     const gfx::VectorIcon& icon_image) {
   views::FrameCaptionButton* button = new views::FrameCaptionButton(
       views::Button::PressedCallback(), icon_type, ht_component);
-  button->SetImage(button->icon(), views::FrameCaptionButton::ANIMATE_NO,
+  button->SetImage(button->GetIcon(), views::FrameCaptionButton::ANIMATE_NO,
                    icon_image);
   return button;
 }

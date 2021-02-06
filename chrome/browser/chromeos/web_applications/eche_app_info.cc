@@ -11,21 +11,20 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chromeos/components/eche_app_ui/url_constants.h"
-#include "chromeos/grit/chromeos_eche_app_resources.h"
+#include "chromeos/grit/chromeos_eche_bundle_resources.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForEcheApp() {
   std::unique_ptr<WebApplicationInfo> info =
       std::make_unique<WebApplicationInfo>();
-  info->start_url = GURL(chromeos::kChromeUIEcheAppURL);
-  info->scope = GURL(chromeos::kChromeUIEcheAppURL);
+  info->start_url = GURL(chromeos::eche_app::kChromeUIEcheAppURL);
+  info->scope = GURL(chromeos::eche_app::kChromeUIEcheAppURL);
   // |title| should come from a resource string, but this is the Eche app, and
   // doesn't have one.
   info->title = base::UTF8ToUTF16("Eche App");
   web_app::CreateIconInfoForSystemWebApp(
       info->start_url,
-      {{"eche_icon_256.png", 256, IDR_CHROMEOS_ECHE_APP_ECHE_ICON_256_PNG}},
-      *info);
+      {{"app_icon_256.png", 256, IDR_CHROMEOS_ECHE_APP_ICON_256_PNG}}, *info);
   info->theme_color = 0xFF4285F4;
   info->background_color = 0xFFFFFFFF;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;

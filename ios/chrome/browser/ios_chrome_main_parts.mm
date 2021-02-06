@@ -19,6 +19,7 @@
 #include "base/time/default_tick_clock.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/crash/core/common/reporter_running_ios.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/heap_profiling/in_process/heap_profiler_controller.h"
 #include "components/language/core/browser/language_usage_metrics.h"
@@ -31,7 +32,6 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
@@ -44,9 +44,11 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/flags/about_flags.h"
 #include "ios/chrome/browser/install_time_util.h"
+#include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
@@ -187,6 +189,10 @@ void IOSChromeMainParts::PreCreateThreads() {
   // initialization is handled in PreMainMessageLoopRun since it posts tasks.
   SetupFieldTrials();
 
+  // Sync the crashpad field tral state to NSUserDefaults.  Called immediately
+  // after setting up field trials.
+  crash_helper::SyncCrashpadEnabledOnNextRun();
+
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Do not install allocator shim on iOS 13.4 due to high crash volume on this
   // particular version of OS. TODO(crbug.com/1108219): Remove this workaround
@@ -248,6 +254,13 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
 
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
+
+  // Because the crashpad flag takes 2 restarts to take effect, register a
+  // synthetic field try when crashpad is actually running.  Called immediately
+  // after starting metrics recording.
+  IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "CrashpadIOS",
+      crash_reporter::IsCrashpadRunning() ? "Enabled" : "Disabled");
 
 #if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be

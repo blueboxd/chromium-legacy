@@ -436,7 +436,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         getStatusBarColorController(), ScreenOrientationProvider.getInstance(),
                         this::getNotificationManagerProxy, getTabContentManagerSupplier(),
                         this::getActivityTabStartupMetricsTracker,
-                        /* CompositorViewHolder.Initializer */ this)
+                        /* CompositorViewHolder.Initializer */ this,
+                        /* ChromeActivityNativeDelegate */ this, getModalDialogManagerSupplier(),
+                        getBrowserControlsManager())
                 : overridenCommonsFactory.create(this, mRootUiCoordinator::getBottomSheetController,
                         mTabModelSelectorSupplier, getBrowserControlsManager(),
                         getBrowserControlsManager(), getBrowserControlsManager(),
@@ -447,7 +449,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         getStatusBarColorController(), ScreenOrientationProvider.getInstance(),
                         this::getNotificationManagerProxy, getTabContentManagerSupplier(),
                         this::getActivityTabStartupMetricsTracker,
-                        /* CompositorViewHolder.Initializer */ this);
+                        /* CompositorViewHolder.Initializer */ this,
+                        /* ChromeActivityNativeDelegate */ this, getModalDialogManagerSupplier(),
+                        getBrowserControlsManager());
 
         return createComponent(commonsModule);
     }
@@ -2084,7 +2088,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
             }
             RecordUserAction.record("MobileMenuHistory");
-            HistoryManagerUtils.showHistoryManager(this, currentTab);
+            HistoryManagerUtils.showHistoryManager(
+                    this, currentTab, getTabModelSelector().isIncognitoSelected());
             return true;
         }
 

@@ -24,6 +24,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManagementFlowsV2{
     "AccountManagementFlowsV2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether devices are updated before reboot after the first update.
+const base::Feature kAllowRepeatedUpdates{"AllowRepeatedUpdates",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Shows settings for adjusting scroll acceleration/sensitivity for
 // mouse/touchpad.
 const base::Feature kAllowScrollSettings{"AllowScrollSettings",
@@ -413,13 +417,13 @@ const base::Feature kHelpAppSearchServiceIntegration{
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable the new improved keyboard shortcuts.
+const base::Feature kImprovedKeyboardShortcuts{
+    "ImprovedKeyboardShortcuts", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables view-based version of multiprofile login, as opposed to Web UI one.
-const base::Feature kViewBasedMultiprofileLogin{
-    "ViewBasedMultiprofileLogin", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable using the floating virtual keyboard as the default option
 // on Chrome OS.
@@ -754,6 +758,10 @@ bool IsDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kDiagnosticsApp);
 }
 
+bool IsEcheSWAEnabled() {
+  return base::FeatureList::IsEnabled(kEcheSWA);
+}
+
 bool IsPeripheralDataAccessProtectionEnabled() {
   return !base::FeatureList::IsEnabled(kDisablePeripheralDataAccessProtection);
 }
@@ -811,6 +819,10 @@ bool IsClipboardHistoryContextMenuNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryContextMenuNudge);
 }
 
+bool IsImprovedKeyboardShortcutsEnabled() {
+  return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
+}
+
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
 }
@@ -857,10 +869,6 @@ bool IsQuickAnswersOnEditableTextEnabled() {
 
 bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
-}
-
-bool IsViewBasedMultiprofileLoginEnabled() {
-  return base::FeatureList::IsEnabled(kViewBasedMultiprofileLogin);
 }
 
 bool IsWallpaperWebUIEnabled() {

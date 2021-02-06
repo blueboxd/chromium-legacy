@@ -324,8 +324,6 @@ static_library("ui") {
     ]
   }
 
-  # TODO(crbug/925153): Remove this circular dependency.
-  allow_circular_includes_from = [ "//chrome/browser/safe_browsing" ]
   defines = []
   libs = []
 
@@ -340,8 +338,8 @@ static_library("ui") {
   # have the same dependencies. Once browser_ui is untangled from
   # browser, then we can clean up these dependencies.
   public_deps = [
-    "//chrome/services/machine_learning:machine_learning_tflite_buildflags",
     "//components/dom_distiller/core",
+    "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/safe_browsing:buildflags",
     "//components/sync",
     "//components/sync_user_events",
@@ -482,7 +480,6 @@ static_library("ui") {
     "//components/previews/core",
     "//components/proxy_config",
     "//components/query_parser",
-    "//components/rappor",
     "//components/reading_list/core",
     "//components/reading_list/features:flags",
     "//components/renderer_context_menu",
@@ -598,8 +595,13 @@ static_library("ui") {
     "//ui/webui/resources/cr_components/customize_themes:mojom",
     "//v8:v8_version",
   ]
-  allow_circular_includes_from +=
-      [ "//chrome/browser/ui/webui/bluetooth_internals" ]
+
+  # TODO(crbug/925153): Remove this circular dependency.
+  allow_circular_includes_from = [
+    "//chrome/browser/safe_browsing",
+    "//chrome/browser/ui/webui/bluetooth_internals",
+    "//chrome/browser/profiling_host",
+  ]
 
   if (is_win || is_mac || is_linux || is_chromeos) {
     deps += [ "//chrome/browser/ui/webui/discards:mojo_bindings" ]
@@ -927,8 +929,6 @@ static_library("ui") {
       "chrome_web_modal_dialog_manager_delegate.h",
       "collected_cookies_infobar_delegate.cc",
       "collected_cookies_infobar_delegate.h",
-      "commander/apps_command_source.cc",
-      "commander/apps_command_source.h",
       "commander/bookmark_command_source.cc",
       "commander/bookmark_command_source.h",
       "commander/command_source.cc",
@@ -941,8 +941,8 @@ static_library("ui") {
       "commander/commander_frontend.h",
       "commander/commander_view_model.cc",
       "commander/commander_view_model.h",
-      "commander/fuzzy_finder.cc",
-      "commander/fuzzy_finder.h",
+      "commander/open_url_command_source.cc",
+      "commander/open_url_command_source.h",
       "commander/simple_command_source.cc",
       "commander/simple_command_source.h",
       "confirm_bubble_model.cc",
@@ -1031,8 +1031,6 @@ static_library("ui") {
       "hats/hats_service.h",
       "hats/hats_service_factory.cc",
       "hats/hats_service_factory.h",
-      "hats/hats_survey_status_checker.cc",
-      "hats/hats_survey_status_checker.h",
       "hid/hid_chooser.cc",
       "hid/hid_chooser.h",
       "hid/hid_chooser_controller.cc",
@@ -1334,6 +1332,8 @@ static_library("ui") {
       "webui/bookmarks/bookmarks_message_handler.h",
       "webui/bookmarks/bookmarks_ui.cc",
       "webui/bookmarks/bookmarks_ui.h",
+      "webui/chrome_content_browser_client_webui_part.cc",
+      "webui/chrome_content_browser_client_webui_part.h",
       "webui/chrome_web_contents_handler.cc",
       "webui/chrome_web_contents_handler.h",
       "webui/commander/commander_handler.cc",
@@ -1558,6 +1558,7 @@ static_library("ui") {
       "//chrome/browser/search/task_module:mojo_bindings",
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/color:mixers",
+      "//chrome/browser/ui/commander:fuzzy_finder",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/internals/web_app:mojo_bindings",
       "//chrome/browser/web_applications/components",
@@ -1808,6 +1809,8 @@ static_library("ui") {
       "app_list/search/omnibox_result.h",
       "app_list/search/os_settings_provider.cc",
       "app_list/search/os_settings_provider.h",
+      "app_list/search/score_normalizer/balanced_reservoir.cc",
+      "app_list/search/score_normalizer/balanced_reservoir.h",
       "app_list/search/score_normalizer/score_normalizer.cc",
       "app_list/search/score_normalizer/score_normalizer.h",
       "app_list/search/search_controller.cc",
@@ -2383,8 +2386,6 @@ static_library("ui") {
       "webui/chromeos/login/update_required_screen_handler.h",
       "webui/chromeos/login/update_screen_handler.cc",
       "webui/chromeos/login/update_screen_handler.h",
-      "webui/chromeos/login/user_board_screen_handler.cc",
-      "webui/chromeos/login/user_board_screen_handler.h",
       "webui/chromeos/login/user_creation_screen_handler.cc",
       "webui/chromeos/login/user_creation_screen_handler.h",
       "webui/chromeos/login/welcome_screen_handler.cc",
@@ -2617,6 +2618,7 @@ static_library("ui") {
       "//ash/assistant/model",
       "//ash/assistant/util",
       "//ash/components/account_manager",
+      "//ash/constants",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
       "//ash/public/cpp/app_list/vector_icons",
@@ -2638,6 +2640,8 @@ static_library("ui") {
       "//chrome/browser/nearby_sharing/logging:util",
       "//chrome/browser/nearby_sharing/proto",
       "//chrome/browser/resources:bluetooth_pairing_dialog_resources",
+      "//chrome/browser/resources:internet_config_dialog_resources",
+      "//chrome/browser/resources:internet_detail_dialog_resources",
       "//chrome/browser/ui/app_list/search/cros_action_history:cros_action_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_event_logger_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
@@ -2681,7 +2685,6 @@ static_library("ui") {
       "//chromeos/components/string_matching",
       "//chromeos/components/tether",
       "//chromeos/components/web_applications",
-      "//chromeos/constants",
       "//chromeos/crosapi/cpp",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
@@ -2739,6 +2742,7 @@ static_library("ui") {
       "//components/session_manager/core",
       "//components/user_manager",
       "//extensions/browser/api/messaging",
+      "//extensions/browser/api/virtual_keyboard_private",
       "//extensions/browser/api/vpn_provider",
       "//google_apis/drive",
       "//media/capture:capture_lib",
@@ -2848,12 +2852,8 @@ static_library("ui") {
       "views/close_bubble_on_tab_activation_helper.h",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
-      "views/hats/hats_bubble_view.cc",
-      "views/hats/hats_bubble_view.h",
       "views/hats/hats_next_web_dialog.cc",
       "views/hats/hats_next_web_dialog.h",
-      "views/hats/hats_web_dialog.cc",
-      "views/hats/hats_web_dialog.h",
       "views/profiles/incognito_menu_view.cc",
       "views/profiles/incognito_menu_view.h",
       "views/profiles/profile_menu_view.cc",
@@ -4694,8 +4694,6 @@ static_library("ui") {
       "views/frame/webui_tab_strip_field_trial.h",
       "views/toolbar/webui_tab_counter_button.cc",
       "views/toolbar/webui_tab_counter_button.h",
-      "webui/tab_strip/chrome_content_browser_client_tab_strip_part.cc",
-      "webui/tab_strip/chrome_content_browser_client_tab_strip_part.h",
       "webui/tab_strip/tab_before_unload_tracker.cc",
       "webui/tab_strip/tab_before_unload_tracker.h",
       "webui/tab_strip/tab_strip_ui.cc",

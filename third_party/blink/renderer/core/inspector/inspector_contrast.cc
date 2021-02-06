@@ -125,6 +125,9 @@ InspectorContrast::InspectorContrast(Document* document) {
 }
 
 void InspectorContrast::CollectNodesAndBuildRTreeIfNeeded() {
+  TRACE_EVENT0("devtools.contrast",
+               "InspectorContrast::CollectNodesAndBuildRTreeIfNeeded");
+
   if (rtree_built_)
     return;
 
@@ -158,6 +161,8 @@ void InspectorContrast::CollectNodesAndBuildRTreeIfNeeded() {
 
 std::vector<ContrastInfo> InspectorContrast::GetElementsWithContrastIssues(
     size_t max_elements = 0) {
+  TRACE_EVENT0("devtools.contrast",
+               "InspectorContrast::GetElementsWithContrastIssues");
   CollectNodesAndBuildRTreeIfNeeded();
   std::vector<ContrastInfo> result;
   for (Node* node : elements_) {
@@ -190,6 +195,8 @@ static bool IsLargeFont(const TextInfo& text_info) {
 }
 
 ContrastInfo InspectorContrast::GetContrast(Element* top_element) {
+  TRACE_EVENT0("devtools.contrast", "InspectorContrast::GetContrast");
+
   ContrastInfo result;
   const LayoutObject* layout_object = top_element->GetLayoutObject();
   const CSSValue* text_color_value = ComputedStyleUtils::ComputedPropertyValue(
@@ -203,7 +210,10 @@ ContrastInfo InspectorContrast::GetContrast(Element* top_element) {
 
   float text_opacity = 1.0f;
   Vector<Color> bgcolors = GetBackgroundColors(top_element, &text_opacity);
-  if (bgcolors.IsEmpty())
+  // TODO(crbug/1174511): Compute contrast only if the element has a single
+  // color background to be consistent with the current UI. In the future, we
+  // should return a range of contrast values.
+  if (bgcolors.size() != 1)
     return result;
 
   Color text_color =

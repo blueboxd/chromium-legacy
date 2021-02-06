@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -15,12 +16,11 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/file_chip_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
 
 using file_manager::file_tasks::FileTasksObserver;
@@ -85,7 +85,7 @@ ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
 
   if (base::FeatureList::IsEnabled(
           app_list_features::kEnableLauncherSearchNormalization)) {
-    normalizer_.emplace("zero_state_file_provider", profile);
+    normalizer_.emplace("zero_state_file_provider", profile, 25);
   }
 }
 
@@ -128,7 +128,7 @@ void ZeroStateFileProvider::SetSearchResults(
   }
 
   if (normalizer_.has_value()) {
-    normalizer_->Record(new_results);
+    normalizer_->RecordResults(new_results);
     normalizer_->NormalizeResults(&new_results);
   }
 

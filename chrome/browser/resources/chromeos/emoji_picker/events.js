@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Codepoints} from './types.js';
+
 /**
  * @typedef {!CustomEvent<{group: string}>}
  */
@@ -15,6 +17,13 @@ export const GROUP_BUTTON_EVENT = 'group-button';
 export let EmojiButtonEvent;
 
 export const EMOJI_BUTTON_EVENT = 'emoji-button';
+
+/**
+ * @typedef {!CustomEvent}
+ */
+export let ShowVariantsEvent;
+
+export const SHOW_VARIANTS_EVENT = 'emoji-variants-event';
 
 /**
  * @typedef {!CustomEvent}

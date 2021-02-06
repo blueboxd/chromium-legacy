@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/input_messages.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
@@ -97,13 +98,15 @@ FrameTree::NodeRange::NodeRange(FrameTreeNode* root,
 
 FrameTree::FrameTree(
     BrowserContext* browser_context,
+    Delegate* delegate,
     NavigationControllerDelegate* navigation_controller_delegate,
     NavigatorDelegate* navigator_delegate,
     RenderFrameHostDelegate* render_frame_delegate,
     RenderViewHostDelegate* render_view_delegate,
     RenderWidgetHostDelegate* render_widget_delegate,
     RenderFrameHostManager::Delegate* manager_delegate)
-    : render_frame_delegate_(render_frame_delegate),
+    : delegate_(delegate),
+      render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),
@@ -407,11 +410,6 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   root()->current_frame_host()->GetOutermostMainFrame()->UpdateAXTreeData();
 }
 
-void FrameTree::SetFrameRemoveListener(
-    base::RepeatingCallback<void(RenderFrameHost*)> on_frame_removed) {
-  on_frame_removed_ = std::move(on_frame_removed);
-}
-
 scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
     SiteInstance* site_instance,
     int32_t main_frame_routing_id,
@@ -459,25 +457,6 @@ void FrameTree::FrameUnloading(FrameTreeNode* frame) {
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {
   if (frame->frame_tree_node_id() == focused_frame_tree_node_id_)
     focused_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
-
-  // No notification for the root frame.
-  if (!frame->parent()) {
-    CHECK_EQ(frame, root_);
-    return;
-  }
-
-  // Notify observers of the frame removal.
-  if (!on_frame_removed_.is_null())
-    on_frame_removed_.Run(frame->current_frame_host());
-}
-
-void FrameTree::UpdateLoadProgress(double progress) {
-  if (progress <= load_progress_)
-    return;
-  load_progress_ = progress;
-
-  // Notify the WebContents.
-  root_->navigator().GetDelegate()->DidChangeLoadProgress();
 }
 
 void FrameTree::ResetLoadProgress() {
@@ -578,6 +557,62 @@ void FrameTree::DidAccessInitialMainDocument() {
   OPTIONAL_TRACE_EVENT0("content", "FrameTree::DidAccessInitialDocument");
   has_accessed_initial_main_document_ = true;
   controller().DidAccessInitialMainDocument();
+}
+
+void FrameTree::set_is_prerendering(bool is_prerendering) {
+  DCHECK(!is_prerendering_ || blink::features::IsPrerender2Enabled());
+  is_prerendering_ = is_prerendering;
+}
+
+void FrameTree::DidStartLoadingNode(FrameTreeNode& node,
+                                    bool to_different_document,
+                                    bool was_previously_loading) {
+  // Any main frame load to a new document should reset the load progress since
+  // it will replace the current page and any frames. The WebContents will
+  // be notified when DidChangeLoadProgress is called.
+  if (to_different_document && node.IsMainFrame())
+    ResetLoadProgress();
+
+  if (was_previously_loading)
+    return;
+
+  root()->render_manager()->SetIsLoading(IsLoading());
+  delegate_->DidStartLoading(&node, to_different_document);
+}
+
+void FrameTree::DidStopLoadingNode(FrameTreeNode& node) {
+  if (IsLoading())
+    return;
+
+  root()->render_manager()->SetIsLoading(false);
+  delegate_->DidStopLoading();
+}
+
+void FrameTree::DidChangeLoadProgressForNode(FrameTreeNode& node,
+                                             double load_progress) {
+  if (!node.IsMainFrame())
+    return;
+  if (load_progress <= load_progress_)
+    return;
+  load_progress_ = load_progress;
+
+  // Notify the WebContents.
+  delegate_->DidChangeLoadProgress();
+}
+
+void FrameTree::DidCancelLoading() {
+  OPTIONAL_TRACE_EVENT0("content", "FrameTree::DidCancelLoading");
+  navigator_.controller().DiscardNonCommittedEntries();
+  // TODO(https://crbug.com/1170277): This should not be needed as we already
+  // send a notification in
+  // NavigationControllerImpl::DiscardNonCommittedEntries().
+  navigator_.controller().delegate()->NotifyNavigationStateChanged(
+      INVALIDATE_TYPE_URL);
+}
+
+void FrameTree::StopLoading() {
+  for (FrameTreeNode* node : Nodes())
+    node->StopLoading();
 }
 
 }  // namespace content

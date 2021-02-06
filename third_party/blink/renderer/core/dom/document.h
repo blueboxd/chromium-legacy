@@ -122,7 +122,6 @@ class DocumentInit;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentNameCollection;
-class DocumentOutliveTimeReporter;
 class DocumentParser;
 class DocumentResourceCoordinator;
 class DocumentState;
@@ -578,8 +577,20 @@ class CORE_EXPORT Document : public ContainerNode,
       bool ignore_adjacent_style = false) const;
 
   // Update ComputedStyles and attach LayoutObjects if necessary, but don't
-  // lay out.
+  // lay out. This recursively invokes itself for all ancestor LocalFrames,
+  // because style in an ancestor frame can affect style in a child frame.
+  // This method is appropriate for cases where we need to ensure that the
+  // style for a single Document is up-to-date.
   void UpdateStyleAndLayoutTree();
+
+  // Same as UpdateStyleAndLayoutTree, but does not recursively update style in
+  // ancestor frames. This method is intended to be used in cases where we can
+  // guarantee that ancestor frames already have clean style (e.g., from
+  // LocalFrameView::UpdateLifecyclePhases, which is a top-down iteration over
+  // the entire LocalFrame tree; or from Document::UpdateStyleAndLayout, which
+  // does its own ancestor tree walk).
+  void UpdateStyleAndLayoutTreeForThisDocument();
+
   void UpdateStyleAndLayoutTreeForNode(const Node*);
   void UpdateStyleAndLayoutTreeForSubtree(const Node*);
 
@@ -1488,8 +1499,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
 
-  void RecordUkmOutliveTimeAfterShutdown(int outlive_time_count);
-
   bool CurrentFrameHadRAF() const;
   bool NextFrameHasPendingRAF() const;
 
@@ -2090,13 +2099,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<NetworkStateObserver> network_state_observer_;
 
-  std::unique_ptr<DocumentOutliveTimeReporter> document_outlive_time_reporter_;
-
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to record UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
   const int64_t ukm_source_id_;
-  bool needs_to_record_ukm_outlive_time_;
 
   // Tracks and reports metrics of attempted font match attempts (both
   // successful and not successful) by the page.

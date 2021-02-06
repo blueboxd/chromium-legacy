@@ -495,6 +495,8 @@ void BaseRenderingContext2D::setFilter(
 }
 
 void BaseRenderingContext2D::scale(double sx, double sy) {
+  // TODO(crbug.com/1140535): Investigate the performance impact of simply
+  // calling the 3d version of this function
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -515,6 +517,33 @@ void BaseRenderingContext2D::scale(double sx, double sy) {
 
   c->scale(fsx, fsy);
   path_.Transform(AffineTransform().ScaleNonUniform(1.0 / fsx, 1.0 / fsy));
+}
+
+void BaseRenderingContext2D::scale(double sx, double sy, double sz) {
+  cc::PaintCanvas* c = GetOrCreatePaintCanvas();
+  if (!c)
+    return;
+
+  if (!std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(sz))
+    return;
+
+  TransformationMatrix new_transform = GetState().GetTransform();
+  float fsx = clampTo<float>(sx);
+  float fsy = clampTo<float>(sy);
+  float fsz = clampTo<float>(sz);
+  new_transform.Scale3d(fsx, fsy, fsz);
+  if (GetState().GetTransform() == new_transform)
+    return;
+
+  ModifiableState().SetTransform(new_transform);
+  if (!GetState().IsTransformInvertible())
+    return;
+
+  // SkCanvas has no 3d scale method for now
+  TransformationMatrix scale_matrix =
+      TransformationMatrix().Scale3d(fsx, fsy, fsz);
+  c->concat(TransformationMatrix::ToSkM44(scale_matrix));
+  path_.Transform(scale_matrix);
 }
 
 void BaseRenderingContext2D::rotate(double angle_in_radians) {
@@ -565,7 +594,7 @@ void BaseRenderingContext2D::translate(double tx, double ty) {
   path_.Transform(AffineTransform().Translate(-ftx, -fty));
 }
 
-void BaseRenderingContext2D::translate3d(double tx, double ty, double tz) {
+void BaseRenderingContext2D::translate(double tx, double ty, double tz) {
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -1833,7 +1862,6 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   // Deferred offscreen canvases might have recorded commands, make sure
   // that those get drawn here
   FinalizeFrame();
-  scoped_refptr<StaticBitmapImage> snapshot = GetImage();
 
   // TODO(crbug.com/1101055): Remove the check for NewCanvas2DAPI flag once
   // released.
@@ -1850,6 +1878,8 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
                                     GPUFallbackToCPUScenario::kGetImageData);
     }
   }
+
+  scoped_refptr<StaticBitmapImage> snapshot = GetImage();
 
   // Compute the ImageData's SkImageInfo;
   SkImageInfo image_info;

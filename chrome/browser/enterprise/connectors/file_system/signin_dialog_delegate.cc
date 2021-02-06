@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "chrome/browser/enterprise/connectors/file_system/authorization_client_info.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_access_token_fetcher.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,6 +23,7 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "url/gurl.h"
 
 namespace {
@@ -50,8 +50,14 @@ namespace enterprise_connectors {
 
 FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
     content::BrowserContext* browser_context,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const std::vector<std::string>& scopes,
     AuthorizationCompletedCallback callback)
-    : web_view_(std::make_unique<views::WebView>(browser_context)),
+    : client_id_(client_id),
+      client_secret_(client_secret),
+      scopes_(scopes),
+      web_view_(std::make_unique<views::WebView>(browser_context)),
       callback_(std::move(callback)) {
   SetHasWindowSizeControls(true);
   SetTitle(IDS_PROFILES_GAIA_SIGNIN_TITLE);
@@ -72,7 +78,7 @@ FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
   // TODO(https://crbug.com/1160015): pass in URL as arg and get from service
   // provider config.
   std::string url(kFileSystemBoxEndpointOAuth2Authorization);
-  url.append(kFileSystemClientId);
+  url.append(client_id_);
   url.append("&response_type=code");
   web_view_->LoadInitialURL(GURL(url));
 }
@@ -82,12 +88,15 @@ FileSystemSigninDialogDelegate::~FileSystemSigninDialogDelegate() = default;
 // static
 void FileSystemSigninDialogDelegate::ShowDialog(
     content::WebContents* web_contents,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const std::vector<std::string>& scopes,
     AuthorizationCompletedCallback callback) {
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   gfx::NativeView parent = web_contents->GetNativeView();
 
-  FileSystemSigninDialogDelegate* delegate =
-      new FileSystemSigninDialogDelegate(browser_context, std::move(callback));
+  FileSystemSigninDialogDelegate* delegate = new FileSystemSigninDialogDelegate(
+      browser_context, client_id, client_secret, scopes, std::move(callback));
   // Object will be deleted internally by widget via DeleteDelegate().
   // TODO(https://crbug.com/1160012): use std::unique_ptr instead?
 
@@ -166,8 +175,7 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
   // No refresh_token, so need to get both tokens with authorization code.
   token_fetcher_ = std::make_unique<BoxAccessTokenFetcher>(
       url_loader, std::string(), auth_code, std::move(callback));
-  token_fetcher_->Start(kFileSystemClientId, kFileSystemClientSecret,
-                        std::vector<std::string>());  // No scope needed.
+  token_fetcher_->Start(client_id_, client_secret_, scopes_);
 }
 
 void FileSystemSigninDialogDelegate::OnGotOAuthTokens(
@@ -182,5 +190,9 @@ void FileSystemSigninDialogDelegate::OnGotOAuthTokens(
   GetWidget()->Close();
 }
 
+BEGIN_METADATA(FileSystemSigninDialogDelegate, views::DialogDelegateView)
+END_METADATA
+
 // TODO(https://crbug.com/1159185): add browser_tests for this delegate.
+
 }  // namespace enterprise_connectors

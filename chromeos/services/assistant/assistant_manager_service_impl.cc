@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
@@ -31,7 +32,6 @@
 #include "base/unguessable_token.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_device_settings_delegate.h"
 #include "chromeos/services/assistant/libassistant_service_host_impl.h"
@@ -301,6 +301,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   audio_input_host_ = delegate_->CreateAudioInputHost(
       assistant_proxy_->ExtractAudioInputController());
 
+  media_host_->Initialize(&assistant_proxy_->media_controller(),
+                          assistant_proxy_->ExtractMediaDelegate());
+
   settings_delegate_ =
       std::make_unique<AssistantDeviceSettingsDelegate>(context);
 }
@@ -344,13 +347,14 @@ void AssistantManagerServiceImpl::Stop() {
 
   SetStateAndInformObservers(State::STOPPED);
 
-  // When user disables the feature, we also deletes all data.
-  if (!assistant_state()->settings_enabled().value() && assistant_manager())
-    assistant_manager()->ResetAllDataAndShutdown();
-
   media_host_->Stop();
   scoped_app_list_event_subscriber_.Reset();
-  service_controller().Stop();
+
+  // When user disables the feature, we also delete all data.
+  if (!assistant_state()->settings_enabled().value())
+    service_controller().ResetAllDataAndStop();
+  else
+    service_controller().Stop();
 }
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
@@ -373,7 +377,7 @@ void AssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {
 }
 
 void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
-  if (!assistant_manager_internal())
+  if (!IsServiceStarted())
     return;
 
   auto* alarm_timer_manager =
@@ -993,8 +997,6 @@ void AssistantManagerServiceImpl::OnServiceRunning() {
 
   SetAssistantContextEnabled(assistant_state()->IsScreenContextAllowed());
 
-  media_host_->Start(assistant_manager_internal());
-
   RegisterAlarmsTimersListener();
 
   if (assistant_state()->arc_play_store_enabled().has_value())
@@ -1021,7 +1023,7 @@ void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
   // |assistant_manager_internal()| may not exist if we are receiving this event
   // as part of a shutdown sequence. When this occurs, we notify our alarm/timer
   // controller to clear its cache to remain in sync with LibAssistant.
-  if (!assistant_manager_internal()) {
+  if (!IsServiceStarted()) {
     assistant_alarm_timer_controller()->OnTimerStateChanged({});
     return;
   }
@@ -1094,7 +1096,7 @@ void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {
 
 void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
                                                  base::TimeDelta duration) {
-  if (!assistant_manager_internal())
+  if (!IsServiceStarted())
     return;
 
   assistant_manager_internal()->GetAlarmTimerManager()->AddTimeToTimer(

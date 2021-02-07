@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9c00b794a7bf8e1ab12710e81c90b23d8902efcf',
+  'skia_revision': '827f8c0103192b07d1a5dce7cbfaa88c09adf572',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '0bb520adffe41d0f2007c4fe7fdf5754d2939a1d',
+  'angle_revision': 'd820ec7b3e5f9412d1ceb55d31b3f7dc09e3d16d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1270,7 +1270,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7adcd12ec2b1ec5d9e1471c9e3bb2f00c3c6b18f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '904fc9ac708b2502dc28be925d0e296c867244ee',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1578,7 +1578,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@950be71e0f551aec51c5b9c06cc966d861abe7d0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8c4058089d72c472245249c0e342d8aeb2cac517',
     'condition': 'checkout_src_internal',
   },
 
@@ -1597,7 +1597,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'u47n0szRojuWHpnSat3UIHbScWTrIFp_nuVJSgDZD8cC',
+        'version': 'yu0IVd2sRY5r8gY9izmNP94zi0Nx1HwoABypou1Zl44C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

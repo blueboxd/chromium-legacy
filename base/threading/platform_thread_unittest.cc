@@ -25,7 +25,6 @@
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
-#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #endif
 
@@ -469,16 +468,9 @@ class RealtimeTestThread : public FunctionTestThread {
           (static_cast<double>(tb_info.denom) / tb_info.numer));
 
       EXPECT_EQ(time_constraints.period, abs_realtime_period);
-      EXPECT_EQ(
-          time_constraints.computation,
-          static_cast<uint32_t>(abs_realtime_period *
-                                kOptimizedRealtimeThreadingMacBusy.Get()));
-      EXPECT_EQ(
-          time_constraints.constraint,
-          static_cast<uint32_t>(abs_realtime_period *
-                                kOptimizedRealtimeThreadingMacBusyLimit.Get()));
-      EXPECT_EQ(time_constraints.preemptible,
-                kOptimizedRealtimeThreadingMacPreemptible.Get());
+      EXPECT_EQ(time_constraints.computation, abs_realtime_period / 2);
+      EXPECT_EQ(time_constraints.constraint, abs_realtime_period);
+      EXPECT_TRUE(time_constraints.preemptible);
     } else {
       // Old-style empirical values.
       const double kTimeQuantum = 2.9;
@@ -502,9 +494,7 @@ class RealtimeTestThread : public FunctionTestThread {
   const TimeDelta realtime_period_;
 };
 
-class RealtimePlatformThreadTest
-    : public testing::TestWithParam<
-          std::tuple<bool, FieldTrialParams, TimeDelta>> {
+class RealtimePlatformThreadTest : public testing::TestWithParam<TimeDelta> {
  protected:
   void VerifyRealtimeConfig(TimeDelta period) {
     RealtimeTestThread thread(period);
@@ -522,44 +512,29 @@ class RealtimePlatformThreadTest
   }
 };
 
-TEST_P(RealtimePlatformThreadTest, RealtimeAudioConfigMac) {
+TEST_P(RealtimePlatformThreadTest, RealtimeAudioConfigMacFeatureOn) {
   test::ScopedFeatureList feature_list;
-  if (std::get<0>(GetParam())) {
-    feature_list.InitAndEnableFeatureWithParameters(
-        kOptimizedRealtimeThreadingMac, std::get<1>(GetParam()));
-  } else {
-    feature_list.InitAndDisableFeature(kOptimizedRealtimeThreadingMac);
-  }
-
+  feature_list.InitAndEnableFeature(kOptimizedRealtimeThreadingMac);
   PlatformThread::InitializeOptimizedRealtimeThreadingFeature();
-  VerifyRealtimeConfig(std::get<2>(GetParam()));
+  VerifyRealtimeConfig(GetParam());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    RealtimePlatformThreadTest,
-    RealtimePlatformThreadTest,
-    testing::Combine(
-        testing::Bool(),
-        testing::Values(
-            FieldTrialParams{
-                {kOptimizedRealtimeThreadingMacPreemptible.name, "true"}},
-            FieldTrialParams{
-                {kOptimizedRealtimeThreadingMacPreemptible.name, "false"}},
-            FieldTrialParams{
-                {kOptimizedRealtimeThreadingMacBusy.name, "0.5"},
-                {kOptimizedRealtimeThreadingMacBusyLimit.name, "0.75"}},
-            FieldTrialParams{
-                {kOptimizedRealtimeThreadingMacBusy.name, "0.7"},
-                {kOptimizedRealtimeThreadingMacBusyLimit.name, "0.7"}},
-            FieldTrialParams{
-                {kOptimizedRealtimeThreadingMacBusy.name, "1.0"},
-                {kOptimizedRealtimeThreadingMacBusyLimit.name, "1.0"}}),
-        testing::Values(TimeDelta(),
-                        TimeDelta::FromSeconds(256.0 / 48000),
-                        TimeDelta::FromMilliseconds(5),
-                        TimeDelta::FromMilliseconds(10),
-                        TimeDelta::FromSeconds(1024.0 / 44100),
-                        TimeDelta::FromSeconds(1024.0 / 16000))));
+TEST_P(RealtimePlatformThreadTest, RealtimeAudioConfigMacFeatureOff) {
+  test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kOptimizedRealtimeThreadingMac);
+  PlatformThread::InitializeOptimizedRealtimeThreadingFeature();
+  VerifyRealtimeConfig(GetParam());
+}
+
+INSTANTIATE_TEST_SUITE_P(RealtimePlatformThreadTest,
+                         RealtimePlatformThreadTest,
+                         testing::Values(TimeDelta(),
+                                         TimeDelta::FromSeconds(256.0 / 48000),
+                                         TimeDelta::FromMilliseconds(5),
+                                         TimeDelta::FromMilliseconds(10),
+                                         TimeDelta::FromSeconds(1024.0 / 44100),
+                                         TimeDelta::FromSeconds(1024.0 /
+                                                                16000)));
 
 }  // namespace
 

@@ -94,7 +94,6 @@ no_check_targets = [
   "//extensions/browser/api/file_system:*",  # 1 error
   "//extensions/browser/api/hid:*",  # 12 errors
   "//extensions/browser/api/idle:*",  # 4 errors
-  "//extensions/browser/api/power:*",  # 3 errors
   "//extensions/browser/api/system_cpu:*",  # 1 error
   "//extensions/browser/api/system_display:*",  # 3 errors
   "//extensions/browser/api/system_info:*",  # 8 errors
@@ -118,9 +117,6 @@ no_check_targets = [
   "//ppapi/shared_impl:*",  # 3 errors
   "//ppapi/thunk:*",  # 1071 errors
   "//ppapi:*",  # 3 errors
-  "//remoting/base/grpc_support:*",  # 14 errors
-  "//remoting/base/grpc_test_support:*",  # 1 error
-  "//remoting/base:*",  # 6 errors
   "//remoting/client/display:*",  # 55 errors
   "//remoting/client/jni:*",  # 8 errors
   "//remoting/codec:*",  # 32 errors
@@ -133,6 +129,7 @@ no_check_targets = [
   "//remoting/host/native_messaging:*",  # 3 errors
   "//remoting/host/security_key:*",  # 68 errors
   "//remoting/host/setup:*",  # 9 errors
+  "//remoting/host/win:*",  # 43 errors
   "//remoting/host:*",  # 164 errors
   "//remoting/ios/app/settings:*",  # 6 errors
   "//remoting/ios/app:*",  # 9 errors

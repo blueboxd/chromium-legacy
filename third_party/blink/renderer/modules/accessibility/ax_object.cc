@@ -2638,14 +2638,10 @@ bool AXObject::ComputeIsHiddenViaStyle() const {
   if (!node)
     return false;
 
-  // Style elements in SVG are not display: none, unlike HTML style elements,
-  // but they are still hidden and thus treated as hidden from style.
-  if (IsA<SVGStyleElement>(node))
-    return true;
-
   if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
     // Ensure contents of head, style and script are never exposed.
     // Note: an AXObject is created for <title> to gather the document's name.
+    DCHECK(!Traversal<SVGStyleElement>::FirstAncestorOrSelf(*node)) << node;
     DCHECK(!Traversal<HTMLHeadElement>::FirstAncestorOrSelf(*node) ||
            IsA<HTMLTitleElement>(node))
         << node;
@@ -2653,11 +2649,8 @@ bool AXObject::ComputeIsHiddenViaStyle() const {
     DCHECK(!Traversal<HTMLScriptElement>::FirstAncestorOrSelf(*node)) << node;
 
     // content-visibility: hidden subtrees are always hidden.
-    if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-            *node, DisplayLockActivationReason::kAccessibility)) {
-      return true;
-    }
-    return false;
+    return DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+        *node, DisplayLockActivationReason::kAccessibility);
   }
 
   // For elements with layout objects we can get their style directly.
@@ -3708,7 +3701,7 @@ AXObject* AXObject::ParentObjectUnignored() const {
 AXObject* AXObject::ParentObjectIncludedInTree() const {
   AXObject* parent;
   for (parent = ParentObject();
-       parent && !parent->AccessibilityIsIncludedInTree();
+       parent && !parent->LastKnownIsIncludedInTreeValue();
        parent = parent->ParentObject()) {
   }
 
@@ -3751,7 +3744,7 @@ bool AXObject::ShouldUseLayoutObjectTraversalForChildren() const {
 
 void AXObject::UpdateChildrenIfNecessary() {
 #if DCHECK_IS_ON()
-  DCHECK(GetDocument());
+  DCHECK(GetDocument()) << ToString(true, true);
   DCHECK(GetDocument()->IsActive());
   DCHECK(!GetDocument()->IsDetached());
   DCHECK(GetDocument()->GetPage());
@@ -3867,14 +3860,6 @@ Element* AXObject::GetElement() const {
   return DynamicTo<Element>(GetNode());
 }
 
-Document* AXObject::GetDocument() const {
-  LocalFrameView* frame_view = DocumentFrameView();
-  if (!frame_view)
-    return nullptr;
-
-  return frame_view->GetFrame().GetDocument();
-}
-
 AXObject* AXObject::RootScroller() const {
   Node* global_root_scroller = GetDocument()
                                    ->GetPage()
@@ -3891,14 +3876,9 @@ AXObject* AXObject::RootScroller() const {
 }
 
 LocalFrameView* AXObject::DocumentFrameView() const {
-  const AXObject* object = this;
-  while (object && !object->IsAXLayoutObject())
-    object = object->ParentObject();
-
-  if (!object)
-    return nullptr;
-
-  return object->DocumentFrameView();
+  if (Document* document = GetDocument())
+    return document->View();
+  return nullptr;
 }
 
 AtomicString AXObject::Language() const {

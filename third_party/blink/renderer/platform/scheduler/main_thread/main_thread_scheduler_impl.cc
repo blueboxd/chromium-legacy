@@ -25,6 +25,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "components/power_scheduler/power_mode.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
+#include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
@@ -493,7 +496,10 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       compositor_priority(TaskQueue::QueuePriority::kNormalPriority,
                           "Scheduler.CompositorPriority",
                           &main_thread_scheduler_impl->tracing_controller_,
-                          TaskQueue::PriorityToString) {}
+                          TaskQueue::PriorityToString),
+      audible_power_mode_voter(
+          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
+              "PowerModeVoter.Audible")) {}
 
 MainThreadSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -604,6 +610,9 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
       }
     }
   }
+
+  mbi_override_task_runner_handle =
+      base::FeatureList::IsEnabled(kMbiOverrideTaskRunnerHandle);
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
@@ -1120,6 +1129,10 @@ void MainThreadSchedulerImpl::OnAudioStateChanged() {
     return;
 
   main_thread_only().is_audio_playing = is_audio_playing;
+
+  main_thread_only().audible_power_mode_voter->VoteFor(
+      is_audio_playing ? power_scheduler::PowerMode::kAudible
+                       : power_scheduler::PowerMode::kIdle);
 }
 
 std::unique_ptr<ThreadScheduler::RendererPauseHandle>
@@ -2487,7 +2500,7 @@ void MainThreadSchedulerImpl::BeginAgentGroupSchedulerScope(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), trace_event_scope_name,
       trace_event_scope_id, "agent_group_scheduler",
-      next_agent_group_scheduler);
+      static_cast<void*>(next_agent_group_scheduler));
 
   WebAgentGroupScheduler* previous_agent_group_scheduler =
       current_agent_group_scheduler_;
@@ -2497,7 +2510,7 @@ void MainThreadSchedulerImpl::BeginAgentGroupSchedulerScope(
       base::ThreadTaskRunnerHandle::Get();
   std::unique_ptr<base::ThreadTaskRunnerHandleOverride>
       thread_task_runner_handle_override;
-  if (base::FeatureList::IsEnabled(kMbiOverrideTaskRunnerHandle) &&
+  if (scheduling_settings().mbi_override_task_runner_handle &&
       next_task_runner != previous_task_runner) {
     // per-thread and per-AgentSchedulingGroup task runner allows nested
     // runloop. |MainThreadSchedulerImpl| guarantees that
@@ -2525,7 +2538,7 @@ void MainThreadSchedulerImpl::EndAgentGroupSchedulerScope() {
   AgentGroupSchedulerScope& agent_group_scheduler_scope =
       main_thread_only().agent_group_scheduler_scope_stack.back();
 
-  if (base::FeatureList::IsEnabled(kMbiOverrideTaskRunnerHandle)) {
+  if (scheduling_settings().mbi_override_task_runner_handle) {
     DCHECK_EQ(base::ThreadTaskRunnerHandle::Get(),
               agent_group_scheduler_scope.current_task_runner);
     DCHECK_EQ(base::SequencedTaskRunnerHandle::Get(),
@@ -2544,7 +2557,8 @@ void MainThreadSchedulerImpl::EndAgentGroupSchedulerScope() {
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
       agent_group_scheduler_scope.trace_event_scope_name,
       agent_group_scheduler_scope.trace_event_scope_id, "agent_group_scheduler",
-      agent_group_scheduler_scope.current_agent_group_scheduler);
+      static_cast<void*>(
+          agent_group_scheduler_scope.current_agent_group_scheduler));
 
   main_thread_only().agent_group_scheduler_scope_stack.pop_back();
 }
@@ -2617,6 +2631,11 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
     SetOnIPCTaskPostedWhileInBackForwardCacheIfNeeded();
   }
 
+  if (main_thread_only().is_audio_playing && page_scheduler->IsAudioPlaying()) {
+    // This page may have been the only one playing audio.
+    OnAudioStateChanged();
+  }
+
   base::AutoLock lock(any_thread_lock_);
   any_thread().waiting_for_any_main_frame_contentful_paint =
       IsAnyMainFrameWaitingForFirstContentfulPaint();
@@ -2661,8 +2680,10 @@ void MainThreadSchedulerImpl::OnTaskStarted(
     MainThreadTaskQueue* queue,
     const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
-  BeginAgentGroupSchedulerScope(queue ? queue->GetAgentGroupScheduler()
-                                      : nullptr);
+  if (scheduling_settings().mbi_override_task_runner_handle) {
+    BeginAgentGroupSchedulerScope(queue ? queue->GetAgentGroupScheduler()
+                                        : nullptr);
+  }
 
   main_thread_only().running_queues.push(queue);
   if (main_thread_only().nested_runloop)
@@ -2700,7 +2721,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   main_thread_only().running_queues.pop();
 
   // The overriding TaskRunnerHandle scope ends here.
-  EndAgentGroupSchedulerScope();
+  if (scheduling_settings().mbi_override_task_runner_handle)
+    EndAgentGroupSchedulerScope();
 
   if (main_thread_only().nested_runloop)
     return;

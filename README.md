@@ -16,7 +16,7 @@ Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 - media playing
     - but due to no GPU assist, high CPU usage
 - WebAuthn/FIDO2
-    - you need some patches to use USB keys on 10.7.
+    - you need some KEXT patches to use USB keys on 10.7.
 
 ## limitation / glitches
 - UI

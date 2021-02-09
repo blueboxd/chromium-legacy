@@ -1514,6 +1514,12 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="onLowMemory()"/>
 </enum>
 
+<enum name="Android.ThemeColor">
+  <int value="0" label="No color set"/>
+  <int value="1" label="Color set and applied"/>
+  <int value="2" label="Color set but not applied"/>
+</enum>
+
 <enum name="AndroidActivityId">
   <int value="1" label="Unknown"/>
   <int value="2" label="Main"/>
@@ -23464,6 +23470,7 @@ Called by update_document_policy_enum.py.-->
   <int value="821" label="GaiaOfflineSigninTimeLimitDays"/>
   <int value="822" label="FileSystemEnterpriseConnector"/>
   <int value="823" label="DeviceSystemWideTracingEnabled"/>
+  <int value="824" label="WebAppSettings"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31300,6 +31307,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3798" label="AVIFImage"/>
   <int value="3799" label="SVGTextEdited"/>
   <int value="3800" label="V8WasmExceptionHandling"/>
+  <int value="3801" label="WasmModuleSharing"/>
+  <int value="3802" label="CrossOriginWasmModuleSharing"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40062,6 +40071,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Search Image"/>
 </enum>
 
+<enum name="IOSSessionMigration">
+  <int value="0" label="No Migration"/>
+  <int value="1" label="Migration Failed"/>
+  <int value="2" label="No Session To Migrate"/>
+  <int value="3" label="Migrated Pre-MW to Multi Scenes"/>
+  <int value="4" label="Migrated Pre-MW to Single Scene"/>
+  <int value="5" label="Migrated Single Scene to Multi Scenes"/>
+  <int value="6" label="Migrated Multi Scenes to Single Scene"/>
+</enum>
+
 <enum name="IOSShareAction">
   <int value="0" label="Unknown"/>
   <int value="1" label="Cancel"/>
@@ -43720,6 +43739,7 @@ from previous Chrome versions.
   <int value="-1282992935"
       label="AutofillLocalCardMigrationShowFeedback:disabled"/>
   <int value="-1281465357" label="MacV2GPUSandbox:disabled"/>
+  <int value="-1280673966" label="PluginVmFullscreen:disabled"/>
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1276579737" label="PictureInPictureAPI:disabled"/>
@@ -44643,6 +44663,7 @@ from previous Chrome versions.
   <int value="-427163069" label="isolation-by-default"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
+  <int value="-424584720" label="ClipboardFilenames:enabled"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
   <int value="-419733676" label="IsolatePrerendersMustProbeOrigin:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
@@ -46463,6 +46484,7 @@ from previous Chrome versions.
   <int value="1285169797" label="ClipboardHistoryNudgeSessionReset:disabled"/>
   <int value="1285905715" label="WebXRHitTest:enabled"/>
   <int value="1287625114" label="EnableIncognitoShortcutOnDesktop:disabled"/>
+  <int value="1288612648" label="PluginVmFullscreen:enabled"/>
   <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
   <int value="1289495171" label="AssistantBetterOnboarding:disabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
@@ -47370,6 +47392,7 @@ from previous Chrome versions.
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2132595171" label="OmniboxSearchEngineLogo:enabled"/>
   <int value="2133594095" label="CryptAuthV2DeviceActivityStatus:disabled"/>
+  <int value="2133647636" label="ClipboardFilenames:disabled"/>
   <int value="2134480727" label="MediaSessionAccelerators:disabled"/>
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>
   <int value="2137113620"
@@ -51155,6 +51178,8 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="New user, potential host exists"/>
   <int value="1" label="Existing user, host switched"/>
   <int value="2" label="Existing user, new Chromebook added"/>
+  <int value="3" label="Unknown (error case)"/>
+  <int value="4" label="Wi-Fi Sync Announcement"/>
 </enum>
 
 <enum name="MultiDeviceSetupOOBEUserChoice">
@@ -75651,6 +75676,29 @@ Full version information for the fingerprint enum values:
   <int value="9" label="Close UI by lost focus"/>
 </enum>
 
+<enum name="TranslationStatus">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Succeeded, from manual translation"/>
+  <int value="2" label="Succeeded, automatic translation by user preference"/>
+  <int value="3" label="Succeeded, automatic translation by link"/>
+  <int value="4" label="Reverted by user, manual translation"/>
+  <int value="5" label="Reverted by user, automatic translation"/>
+  <int value="6" label="New translation requested by user"/>
+  <int value="7" label="Abandoned"/>
+  <int value="8" label="Failed with no error, manual translation"/>
+  <int value="9" label="Failed with no error, automatic translation"/>
+  <int value="10" label="Failed with an error, manual translation"/>
+  <int value="11" label="Failed with an error, automatic translation"/>
+</enum>
+
+<enum name="TranslationType">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Manual translation, first translation of page load"/>
+  <int value="2" label="Manual translation, after page was already translated"/>
+  <int value="3" label="Automatic translation by user preference"/>
+  <int value="4" label="Automatic translation by link"/>
+</enum>
+
 <enum name="TrendingTileEvent">
   <int value="0" label="Tile was shown"/>
   <int value="1" label="Tile was removed"/>
@@ -76785,6 +76833,42 @@ Full version information for the fingerprint enum values:
       label="There is more than one profile in the user data directory of the
              browser"/>
   <int value="5" label="There is no sync service available"/>
+</enum>
+
+<enum name="UserDeviceMatrix">
+<!--
+    These are computed values. The lower 16-bits are from
+    UserTypeByDeviceTypeMetricsProvider::UserSegment (http://shortn/_uK3ZM4pC0a)
+    and the upper 16-bits are from policy::MarketSegment
+    (http://shortn/_3iFWcdjy0P). This list of possible user / device combos
+    should be updated if either of those enums changes.
+
+    Please note that the values listed below are the only values that should be
+    sent.
+  -->
+
+  <int value="0" label="Unmanaged user on unmanaged device"/>
+  <int value="1" label="K12 user on unmanaged device"/>
+  <int value="2" label="University user on unmanaged device"/>
+  <int value="3" label="Nonprofit user on unmanaged device"/>
+  <int value="4" label="Enterprise user on unmanaged device"/>
+<!--
+    There is no value for Managed Guest Session on Unmanaged device because that
+    combination cannot occur.
+  -->
+
+  <int value="65536" label="Unmanaged user on education device"/>
+  <int value="65537" label="K12 user on education device"/>
+  <int value="65538" label="University user on education device"/>
+  <int value="65539" label="Nonprofit user on education device"/>
+  <int value="65540" label="Enterprise user on education device"/>
+  <int value="131071" label="Managed guest session on an education device"/>
+  <int value="131072" label="Unmanaged user on enterprise device"/>
+  <int value="131073" label="K12 user on enterprise device"/>
+  <int value="131074" label="University user on enterprise device"/>
+  <int value="131075" label="Nonprofit user on enterprise device"/>
+  <int value="131076" label="Enterprise user on enterprise device"/>
+  <int value="196607" label="Managed guest session on an enterprise device"/>
 </enum>
 
 <enum name="UserGestureRequirement">

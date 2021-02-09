@@ -1121,6 +1121,8 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
 void UserSessionManager::PreStartSession() {
   // Switch log file as soon as possible.
   logging::RedirectChromeLogging(*base::CommandLine::ForCurrentProcess());
+
+  UserSessionInitializer::Get()->PreStartSession();
 }
 
 void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
@@ -2196,7 +2198,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   if (should_launch_browser_) {
     if (IsFullRestoreEnabled(profile)) {
       full_restore::FullRestoreService::GetForProfile(profile)
-          ->LauncherBrowserWhenReady();
+          ->LaunchBrowserWhenReady();
     } else {
       MaybeLaunchSettings(profile);
     }

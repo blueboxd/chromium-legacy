@@ -23,23 +23,22 @@ struct Serializer<StringDataView, MaybeConstUserType> {
   using Traits = StringTraits<UserType>;
 
   static void Serialize(MaybeConstUserType& input,
-                        Buffer* buffer,
                         String_Data::BufferWriter* writer,
-                        SerializationContext* context) {
+                        Message* message) {
     if (CallIsNullIfExists<Traits>(input))
       return;
 
     auto r = Traits::GetUTF8(input);
-    writer->Allocate(r.size(), buffer);
+    writer->Allocate(r.size(), message->payload_buffer());
     memcpy((*writer)->storage(), r.data(), r.size());
   }
 
   static bool Deserialize(String_Data* input,
                           UserType* output,
-                          SerializationContext* context) {
+                          Message* message) {
     if (!input)
       return CallSetToNullIfExists<Traits>(output);
-    return Traits::Read(StringDataView(input, context), output);
+    return Traits::Read(StringDataView(input, message), output);
   }
 };
 

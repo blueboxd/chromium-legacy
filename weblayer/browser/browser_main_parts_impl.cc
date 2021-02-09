@@ -33,8 +33,8 @@
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
+#include "weblayer/browser/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
 #include "weblayer/browser/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "weblayer/browser/no_state_prefetch/prerender_link_manager_factory.h"
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/subresource_filter_profile_context_factory.h"
@@ -62,6 +62,7 @@
 #include "weblayer/browser/java/jni/MojoInterfaceRegistrar_jni.h"
 #include "weblayer/browser/media/local_presentation_manager_factory.h"
 #include "weblayer/browser/media/media_router_factory.h"
+#include "weblayer/browser/webapps/weblayer_webapps_client.h"
 #include "weblayer/browser/weblayer_factory_impl_android.h"
 #include "weblayer/common/features.h"
 #endif
@@ -117,7 +118,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CookieSettingsFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
   TranslateRankerFactory::GetInstance();
-  PrerenderLinkManagerFactory::GetInstance();
+  NoStatePrefetchLinkManagerFactory::GetInstance();
   NoStatePrefetchManagerFactory::GetInstance();
   SubresourceFilterProfileContextFactory::GetInstance();
 #if defined(OS_ANDROID)
@@ -195,6 +196,8 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
+
+  WebLayerWebappsClient::Create();
 #endif
 
   translate::TranslateDownloadManager* download_manager =

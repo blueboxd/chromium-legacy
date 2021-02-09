@@ -84,6 +84,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
+#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -595,8 +596,11 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
     pref.type = SessionStartupPref::LAST;
   }
 
+  bool is_guest =
+      profile->IsGuestSession() || profile->IsEphemeralGuestProfile();
+
   // A browser starting for a profile being unlocked should always restore.
-  if (!profile->IsGuestSession() && !profile->IsEphemeralGuestProfile()) {
+  if (!is_guest) {
     ProfileAttributesEntry* entry =
         g_browser_process->profile_manager()
             ->GetProfileAttributesStorage()
@@ -606,7 +610,8 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
       pref.type = SessionStartupPref::LAST;
   }
 
-  if (pref.type == SessionStartupPref::LAST && profile->IsOffTheRecord()) {
+  if (pref.type == SessionStartupPref::LAST &&
+      (is_guest || profile->IsOffTheRecord())) {
     // We don't store session information when incognito. If the user has
     // chosen to restore last session and launched incognito, fallback to
     // default launch behavior.
@@ -971,6 +976,20 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
       Profile* profile_to_open = last_used_profile->IsGuestSession()
                                      ? last_used_profile->GetPrimaryOTRProfile()
                                      : last_used_profile;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      if (process_startup) {
+        // If FullRestoreService is available for the profile (i.e. the full
+        // restore feature is enabled and the profile is a regular user
+        // profile), defer the browser launching to FullRestoreService code.
+        auto* full_restore_service =
+            chromeos::full_restore::FullRestoreService::GetForProfile(
+                profile_to_open);
+        if (full_restore_service) {
+          full_restore_service->LaunchBrowserWhenReady();
+          return true;
+        }
+      }
+#endif
       return LaunchBrowser(command_line, profile_to_open, cur_dir,
                            is_process_startup, is_first_run,
                            std::make_unique<LaunchModeRecorder>());

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -36,7 +37,6 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/model/mock_model_type_change_processor.h"
 #include "components/sync/test/model/model_type_store_test_util.h"
-#include "components/sync/test/test_matchers.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,6 +222,25 @@ class WifiConfigurationBridgeTest : public testing::Test {
         }));
     loop.Run();
     return data;
+  }
+
+  // This can only be called before InitializeSyncStore().
+  void PresaveSyncedNetwork(const WifiConfigurationSpecifics& proto) {
+    std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
+        store_->CreateWriteBatch();
+    std::string storage_key =
+        NetworkIdentifier::FromProto(proto).SerializeToString();
+    batch->WriteData(storage_key, proto.SerializeAsString());
+
+    base::RunLoop run_loop;
+    store_->CommitWriteBatch(
+        std::move(batch),
+        base::BindLambdaForTesting(
+            [&](const base::Optional<syncer::ModelError>& error) {
+              EXPECT_FALSE(error);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
   }
 
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
@@ -634,6 +653,26 @@ TEST_F(WifiConfigurationBridgeTest, LocalRemove) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(storage_key, meow_network_id().SerializeToString());
   histogram_tester.ExpectTotalCount(kTotalCountHistogram, 1);
+}
+
+TEST_F(WifiConfigurationBridgeTest, LocalRemoved_BeforeInit) {
+  WifiConfigurationSpecifics meow_local =
+      GenerateTestWifiSpecifics(meow_network_id(), kSyncPsk, /*timestamp=*/100);
+  std::string guid = meow_network_id().SerializeToString();
+  local_network_collector()->AddNetwork(meow_local);
+  PresaveSyncedNetwork(meow_local);
+  bridge()->OnBeforeConfigurationRemoved("service_path", guid);
+
+  EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
+  bridge()->OnConfigurationRemoved("service_path", guid);
+  base::RunLoop().RunUntilIdle();
+
+  timer_factory()->FireAll();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*processor(), Delete(_, _)).Times(1);
+  InitializeSyncStore();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace

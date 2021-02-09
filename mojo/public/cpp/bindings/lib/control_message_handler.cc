@@ -101,7 +101,7 @@ bool ControlMessageHandler::Run(
           message->mutable_payload());
   interface_control::RunMessageParamsPtr params_ptr;
   Deserialize<interface_control::RunMessageParamsDataView>(params, &params_ptr,
-                                                           &context_);
+                                                           message);
   auto& input = *params_ptr->input;
   interface_control::RunOutputPtr output = interface_control::RunOutput::New();
   if (input.is_query_version()) {
@@ -122,8 +122,7 @@ bool ControlMessageHandler::Run(
   interface_control::internal::RunResponseMessageParams_Data::BufferWriter
       response_writer;
   Serialize<interface_control::RunResponseMessageParamsDataView>(
-      response_params_ptr, response_message.payload_buffer(), &response_writer,
-      &context_);
+      response_params_ptr, &response_writer, &response_message);
   ignore_result(responder->Accept(&response_message));
   return true;
 }
@@ -135,7 +134,7 @@ bool ControlMessageHandler::RunOrClosePipe(Message* message) {
           message->mutable_payload());
   interface_control::RunOrClosePipeMessageParamsPtr params_ptr;
   Deserialize<interface_control::RunOrClosePipeMessageParamsDataView>(
-      params, &params_ptr, &context_);
+      params, &params_ptr, message);
   auto& input = *params_ptr->input;
   if (input.is_require_version())
     return interface_version_ >= input.get_require_version()->version;

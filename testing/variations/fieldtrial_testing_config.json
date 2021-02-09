@@ -861,9 +861,27 @@
             ],
             "experiments": [
                 {
-                    "name": "AllEnabledFeatures",
+                    "name": "AutofillFixFillableFieldTypes",
                     "enable_features": [
                         "AutofillFixFillableFieldTypes"
+                    ]
+                },
+                {
+                    "name": "EnableAutofillSectionUponRedundantNameInfo",
+                    "enable_features": [
+                        "AutofillSectionUponRedundantNameInfo"
+                    ]
+                },
+                {
+                    "name": "AutofillEnableLabelPrecedenceForTurkishAddresses",
+                    "enable_features": [
+                        "AutofillEnableLabelPrecedenceForTurkishAddresses"
+                    ]
+                },
+                {
+                    "name": "AutofillEnableDependentLocalityParsing",
+                    "enable_features": [
+                        "AutofillEnableDependentLocalityParsing"
                     ]
                 }
             ]
@@ -2316,6 +2334,27 @@
             ]
         }
     ],
+    "DeprecateFtp": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "WithoutFtpSupport",
+                    "disable_features": [
+                        "FtpProtocol"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopHats": [
         {
             "platforms": [
@@ -2557,21 +2596,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DirectCompositionSoftwareOverlays"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DisableForceDeferInChildFrames": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DisableForceDeferInChildFrames"
                     ]
                 }
             ]
@@ -4440,6 +4464,21 @@
             ]
         }
     ],
+    "NetworkServiceSandbox": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NetworkServiceSandbox"
+                    ]
+                }
+            ]
+        }
+    ],
     "NewUsbBackend": [
         {
             "platforms": [
@@ -4709,25 +4748,6 @@
                     "disable_features": [
                         "OmniboxLocalZeroSuggestForAuthenticatedUsers",
                         "OmniboxZeroSuggestCaching"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxButtonRowPedalsDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "ButtonRowWithPedalsAndKeywordButton",
-                    "enable_features": [
-                        "OmniboxKeywordSearchButton"
                     ]
                 }
             ]
@@ -6973,6 +6993,7 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "PlatformProvidedTrustTokenIssuance": "true",
                         "TrustTokenOperationsRequiringOriginTrial": "all-operations-require-origin-trial"
                     },
                     "enable_features": [

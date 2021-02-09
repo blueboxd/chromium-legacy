@@ -189,7 +189,7 @@
     Connect to your phone
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chrome OS device; includes details on specific features that can be used and a link to an information page">
-    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> and Android phone work better together. Connect them so you can text from your computer, share your internet connection, and unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone.<ph name="FOOTNOTE_POINTER">$2<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$3<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> and Android phone work better together. Connect them so you can text from your computer, share your internet connection, and unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone.<ph name="FOOTNOTE_POINTER">$2<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$3<ex>https://support.google.com/chromebook/?p=multidevice</ex>" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE" desc="Footnote for multi-device feature setup page, which indicates that the exact set of features available to users differs according to the device model used.">
     <ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph>Features vary by device
@@ -1136,9 +1136,12 @@
     All set!
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE" desc="The sub-title of the dialog that allows user to opt-in into several Google marketing options.">
-    Get <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> tips, offers, and updates, and share feedback. Unsubscribe anytime.
+    Get <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> tips, offers, and updates, and share feedback.
   </message>
-  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_FOOTER_NOTICE" desc="A notice to the user shown in the footer of the marketing opt-in screen.">
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_UNSUBSCRIBE_SHORT" desc="Disclaimer about being able to unsubscribe">
+    Unsubscribe anytime.
+  </message>
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_UNSUBSCRIBE_LONG" desc="Longer disclaimer explaining how to unsubscribe">
     Unsubscribe anytime by clicking the link in the emails you receive.
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE_WITH_DEVICE_NAME" desc="The sub-title of the marketing opt in screen which will also include the name of the user's device.">

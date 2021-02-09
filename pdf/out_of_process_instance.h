@@ -182,15 +182,14 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                       int32_t result) override;
+  void SendMessage(base::Value message) override;
   void InitImageData(const gfx::Size& size) override;
   void OnGeometryChanged(double old_zoom, float old_device_scale) override;
   Image GetPluginImageData() const override;
 
  private:
   // Message handlers.
-  void HandleGetNamedDestinationMessage(const pp::VarDictionary& dict);
   void HandleGetPasswordCompleteMessage(const pp::VarDictionary& dict);
-  void HandleGetSelectedTextMessage(const pp::VarDictionary& dict);
   void HandleGetThumbnailMessage(const pp::VarDictionary& dict);
   void HandleLoadPreviewPageMessage(const pp::VarDictionary& dict);
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);

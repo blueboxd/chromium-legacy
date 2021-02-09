@@ -219,6 +219,9 @@ extern const char kClickToOpenPDFDescription[];
 extern const char kClientStorageAccessContextAuditingName[];
 extern const char kClientStorageAccessContextAuditingDescription[];
 
+extern const char kClipboardFilenamesName[];
+extern const char kClipboardFilenamesDescription[];
+
 extern const char kConditionalTabStripAndroidName[];
 extern const char kConditionalTabStripAndroidDescription[];
 
@@ -2459,6 +2462,9 @@ extern const char kEnableQuickAnswersTranslationDescription[];
 
 extern const char kEnableQuickAnswersTranslationCloudAPIName[];
 extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];
+
+extern const char kPluginVmFullscreenName[];
+extern const char kPluginVmFullscreenDescription[];
 
 extern const char kPluginVmShowCameraPermissionsName[];
 extern const char kPluginVmShowCameraPermissionsDescription[];

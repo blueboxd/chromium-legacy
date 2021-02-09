@@ -50,12 +50,10 @@ class SerializationWarningTest : public testing::Test {
 
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::SerializationContext context;
     mojo::Message message(0, 0, 0, 0, nullptr);
     typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
         writer;
-    mojo::internal::Serialize<MojomType>(obj, message.payload_buffer(), &writer,
-                                         &context);
+    mojo::internal::Serialize<MojomType>(obj, &writer, &message);
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
 
@@ -65,12 +63,11 @@ class SerializationWarningTest : public testing::Test {
                         const ContainerValidateParams* validate_params) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::SerializationContext context;
     mojo::Message message(0, 0, 0, 0, nullptr);
     typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
         writer;
-    mojo::internal::Serialize<MojomType>(obj, message.payload_buffer(), &writer,
-                                         validate_params, &context);
+    mojo::internal::Serialize<MojomType>(obj, &writer, validate_params,
+                                         &message);
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
 
@@ -81,12 +78,10 @@ class SerializationWarningTest : public testing::Test {
 
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::SerializationContext context;
     mojo::Message message(0, 0, 0, 0, nullptr);
     typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
         writer;
-    mojo::internal::Serialize<MojomType>(obj, message.payload_buffer(), &writer,
-                                         false, &context);
+    mojo::internal::Serialize<MojomType>(obj, &writer, false, &message);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }

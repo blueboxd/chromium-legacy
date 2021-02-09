@@ -194,7 +194,8 @@ NetworkConnectionHandlerImpl::~NetworkConnectionHandlerImpl() {
 void NetworkConnectionHandlerImpl::Init(
     NetworkStateHandler* network_state_handler,
     NetworkConfigurationHandler* network_configuration_handler,
-    ManagedNetworkConfigurationHandler* managed_network_configuration_handler) {
+    ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
+    CellularESimConnectionHandler* cellular_esim_connection_handler) {
   if (NetworkCertLoader::IsInitialized()) {
     network_cert_loader_ = NetworkCertLoader::Get();
     network_cert_loader_->AddObserver(this);
@@ -214,6 +215,7 @@ void NetworkConnectionHandlerImpl::Init(
   }
   configuration_handler_ = network_configuration_handler;
   managed_configuration_handler_ = managed_network_configuration_handler;
+  cellular_esim_connection_handler_ = cellular_esim_connection_handler;
 
   // After this point, the NetworkConnectionHandlerImpl is fully initialized
   // (all handler references set, observers registered, ...).
@@ -555,6 +557,13 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     // to connect.
     NET_LOG(DEBUG) << "Client cert type for: " << NetworkPathId(service_path)
                    << ": " << client_cert_type;
+
+    if (!network_cert_loader_ ||
+        !network_cert_loader_->can_have_client_certificates()) {
+      // There can be no certificates in this device state.
+      ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
+      return;
+    }
 
     // If certificates have not been loaded yet, queue the connect request.
     if (!certificates_loaded_) {

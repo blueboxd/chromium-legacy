@@ -96,38 +96,35 @@ struct Serializer<MapDataView<Key, Value>, MaybeConstUserType> {
                       MapValueReader<MaybeConstUserType>>;
 
   static void Serialize(MaybeConstUserType& input,
-                        Buffer* buf,
                         typename Data::BufferWriter* writer,
                         const ContainerValidateParams* validate_params,
-                        SerializationContext* context) {
+                        Message* message) {
     DCHECK(validate_params->key_validate_params);
     DCHECK(validate_params->element_validate_params);
     if (CallIsNullIfExists<Traits>(input))
       return;
 
-    writer->Allocate(buf);
+    writer->Allocate(message->payload_buffer());
     typename MojomTypeTraits<ArrayDataView<Key>>::Data::BufferWriter
         keys_writer;
-    keys_writer.Allocate(Traits::GetSize(input), buf);
+    keys_writer.Allocate(Traits::GetSize(input), message->payload_buffer());
     MapKeyReader<MaybeConstUserType> key_reader(input);
-    KeyArraySerializer::SerializeElements(&key_reader, buf, &keys_writer,
+    KeyArraySerializer::SerializeElements(&key_reader, &keys_writer,
                                           validate_params->key_validate_params,
-                                          context);
+                                          message);
     (*writer)->keys.Set(keys_writer.data());
 
     typename MojomTypeTraits<ArrayDataView<Value>>::Data::BufferWriter
         values_writer;
-    values_writer.Allocate(Traits::GetSize(input), buf);
+    values_writer.Allocate(Traits::GetSize(input), message->payload_buffer());
     MapValueReader<MaybeConstUserType> value_reader(input);
     ValueArraySerializer::SerializeElements(
-        &value_reader, buf, &values_writer,
-        validate_params->element_validate_params, context);
+        &value_reader, &values_writer, validate_params->element_validate_params,
+        message);
     (*writer)->values.Set(values_writer.data());
   }
 
-  static bool Deserialize(Data* input,
-                          UserType* output,
-                          SerializationContext* context) {
+  static bool Deserialize(Data* input, UserType* output, Message* message) {
     if (!input)
       return CallSetToNullIfExists<Traits>(output);
 
@@ -135,9 +132,9 @@ struct Serializer<MapDataView<Key, Value>, MaybeConstUserType> {
     std::vector<UserValue> values;
 
     if (!KeyArraySerializer::DeserializeElements(input->keys.Get(), &keys,
-                                                 context) ||
+                                                 message) ||
         !ValueArraySerializer::DeserializeElements(input->values.Get(), &values,
-                                                   context)) {
+                                                   message)) {
       return false;
     }
 

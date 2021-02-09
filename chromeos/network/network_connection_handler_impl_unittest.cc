@@ -18,6 +18,7 @@
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -164,9 +165,10 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         nullptr /* prohibited_tecnologies_handler */);
 
     network_connection_handler_.reset(new NetworkConnectionHandlerImpl());
-    network_connection_handler_->Init(helper_.network_state_handler(),
-                                      network_config_handler_.get(),
-                                      managed_config_handler_.get());
+    network_connection_handler_->Init(
+        helper_.network_state_handler(), network_config_handler_.get(),
+        managed_config_handler_.get(),
+        /*cellular_esim_connection_handler=*/nullptr);
     network_connection_observer_.reset(new TestNetworkConnectionObserver);
     network_connection_handler_->AddObserver(
         network_connection_observer_.get());
@@ -533,6 +535,25 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectWithCertificateSuccess) {
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
+       ConnectWithCertificateRequestedWhenCertsCanNotBeAvailable) {
+  scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
+  ASSERT_TRUE(cert.get());
+
+  SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
+                                 cert->subject().common_name.c_str()),
+              base::DictionaryValue(),  // no global config
+              true);                    // load as user policy
+
+  Connect(ServicePathFromGuid("wifi4"));
+
+  // Connect request came when no client certificates can exist because
+  // NetworkCertLoader doesn't have a NSSCertDatabase configured and also has
+  // not notified that a NSSCertDatabase is being initialized.
+  EXPECT_EQ(NetworkConnectionHandler::kErrorCertificateRequired,
+            GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerImplTest,
        ConnectWithCertificateRequestedBeforeCertsAreLoaded) {
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
   ASSERT_TRUE(cert.get());
@@ -541,6 +562,10 @@ TEST_F(NetworkConnectionHandlerImplTest,
                                  cert->subject().common_name.c_str()),
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
+
+  // Mark that a user slot NSSCertDatabase is being initialized so that
+  // NetworkConnectionHandler attempts to wait for certificates to be loaded.
+  NetworkCertLoader::Get()->MarkUserNSSDBWillBeInitialized();
 
   Connect(ServicePathFromGuid("wifi4"));
 
@@ -569,6 +594,10 @@ TEST_F(NetworkConnectionHandlerImplTest,
                                  cert->subject().common_name.c_str()),
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
+
+  // Mark that a user slot NSSCertDatabase is being initialized so that
+  // NetworkConnectionHandler attempts to wait for certificates to be loaded.
+  NetworkCertLoader::Get()->MarkUserNSSDBWillBeInitialized();
 
   Connect(ServicePathFromGuid("wifi4"));
 

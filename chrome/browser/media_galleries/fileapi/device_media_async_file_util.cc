@@ -222,9 +222,9 @@ void OnSnapshotFileCreatedRunTask(
   delegate->CreateSnapshotFile(
       url.path(),  // device file path
       snapshot_file_path,
-      base::BindRepeating(&OnDidCreateSnapshotFile, copyable_callback,
-                          base::RetainedRef(context->task_runner()),
-                          validate_media_files),
+      base::Bind(&OnDidCreateSnapshotFile, copyable_callback,
+                 base::RetainedRef(context->task_runner()),
+                 validate_media_files),
       base::BindRepeating(&OnCreateSnapshotFileError, copyable_callback));
 }
 
@@ -375,10 +375,10 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   delegate->GetFileInfo(
       url.path(),
-      base::BindOnce(&DeviceMediaAsyncFileUtil::OnDidGetFileInfo,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::RetainedRef(context->task_runner()), url.path(),
-                     copyable_callback),
+      base::Bind(&DeviceMediaAsyncFileUtil::OnDidGetFileInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::RetainedRef(context->task_runner()), url.path(),
+                 copyable_callback),
       base::BindRepeating(&OnGetFileInfoError, copyable_callback));
 }
 

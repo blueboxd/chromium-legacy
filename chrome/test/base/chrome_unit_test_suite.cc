@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/path_service.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -45,6 +46,8 @@
 
 namespace {
 
+constexpr char kDefaultLocale[] = "en-US";
+
 class ChromeContentBrowserClientWithoutNetworkServiceInitialization
     : public ChromeContentBrowserClient {
  public:
@@ -75,6 +78,12 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content::SetUtilityClientForTesting(utility_content_client_.get());
 
     TestingBrowserProcess::CreateInstance();
+    // Make sure the loaded locale is "en-US".
+    if (ui::ResourceBundle::GetSharedInstance().GetLoadedLocaleForTesting() !=
+        kDefaultLocale) {
+      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
+          kDefaultLocale);
+    }
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
@@ -88,6 +97,8 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content::SetContentClient(nullptr);
 
     TestingBrowserProcess::DeleteInstance();
+    // Some tests cause ChildThreadImpl to initialize a PowerMonitor.
+    base::PowerMonitor::ShutdownForTesting();
   }
 
  private:
@@ -174,7 +185,7 @@ void ChromeUnitTestSuite::InitializeResourceBundle() {
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+      kDefaultLocale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   base::FilePath resources_pack_path;
   base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(

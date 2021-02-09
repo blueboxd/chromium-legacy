@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/post_message_receiver.h"
+#include "pdf/post_message_sender.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
@@ -135,6 +136,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                       int32_t result) override;
+  void SendMessage(base::Value message) override;
   void InitImageData(const gfx::Size& size) override;
   void OnGeometryChanged(double old_zoom, float old_device_scale) override;
 
@@ -146,6 +148,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   blink::WebPluginContainer* container_ = nullptr;
 
   v8::Persistent<v8::Object> scriptable_receiver_;
+  PostMessageSender post_message_sender_;
 
   base::WeakPtrFactory<PdfViewWebPlugin> weak_factory_{this};
 };

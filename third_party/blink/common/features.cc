@@ -72,7 +72,7 @@ const base::Feature kFrequencyCappingForLargeStickyAdDetection{
 // Enables support for FTP URLs. When disabled FTP URLs will behave the same as
 // any other URL scheme that's unknown to the UA. See https://crbug.com/333943
 const base::Feature kFtpProtocol{"FtpProtocol",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
@@ -464,12 +464,6 @@ const base::Feature kBlinkCompositorUseDisplayThreadPriority {
 // https://crbug.com/538562
 const base::Feature kIgnoreCrossOriginWindowWhenNamedAccessOnWindow{
     "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, loading priority of JavaScript requests is lowered when they
-// are force deferred by the intervention.
-const base::Feature kLowerJavaScriptPriorityWhenForceDeferred{
-    "LowerJavaScriptPriorityWhenForceDeferred",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, scripts in iframes are not force deferred by the DeferAllScript

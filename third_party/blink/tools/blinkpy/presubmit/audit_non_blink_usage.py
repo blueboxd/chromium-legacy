@@ -82,6 +82,7 @@ _CONFIG = [
             'base::make_optional',
             'base::make_span',
             'base::nullopt',
+            'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::size',
             'base::span',
@@ -486,6 +487,7 @@ _CONFIG = [
 
             # Accessibility base types and the non-Blink enums they
             # depend on.
+            'ui::AXActionData',
             'ui::AXEvent',
             'ui::AXEventIntent',
             'ui::AXMode',

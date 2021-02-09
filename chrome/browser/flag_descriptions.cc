@@ -362,6 +362,10 @@ const char kClientStorageAccessContextAuditingName[] =
 const char kClientStorageAccessContextAuditingDescription[] =
     "Record the first-party contexts in which client-side storage was accessed";
 
+const char kClipboardFilenamesName[] = "Clipboard filenames";
+const char kClipboardFilenamesDescription[] =
+    "Support reading files in clipboard DataTransfer";
+
 const char kClearCrossBrowsingContextGroupMainFrameNameName[] =
     "Clear window name in top-level cross-browsing-context-group navigation";
 const char kClearCrossBrowsingContextGroupMainFrameNameDescription[] =
@@ -4698,6 +4702,10 @@ const char kSystemLatinPhysicalTypingName[] =
 const char kSystemLatinPhysicalTypingDescription[] =
     "Use the system input engine instead of the Chrome extension for physical "
     "typing in languages based on latin script.";
+
+const char kPluginVmFullscreenName[] = "Plugin VM Fullscreen";
+const char kPluginVmFullscreenDescription[] =
+    "Hides shelf in immersive mode and allows esc hold to exit.";
 
 const char kPluginVmShowCameraPermissionsName[] =
     "Show Plugin VM camera permissions";

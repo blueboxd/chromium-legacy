@@ -4,8 +4,6 @@
 
 #include "ui/views/debug/debugger_utils.h"
 
-#include <sstream>
-
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -39,16 +37,25 @@ template <typename T>
 void AddAttributeString(AttributeStrings& attributes,
                         const std::string& name,
                         const T& value) {
-  attributes.push_back(name + "\"=" + ToString(value) + "\"");
+  attributes.push_back(name + "=\"" + ToString(value) + "\"");
 }
 
-AttributeStrings GetAttributeStrings(ViewDebugWrapper* view) {
+AttributeStrings GetAttributeStrings(ViewDebugWrapper* view, bool verbose) {
   AttributeStrings attributes;
-  AddAttributeString(attributes, "bounds", view->GetBounds());
-  AddAttributeString(attributes, "enabled", view->GetNeedsLayout());
-  AddAttributeString(attributes, "id", view->GetID());
-  AddAttributeString(attributes, "needs-layout", view->GetNeedsLayout());
-  AddAttributeString(attributes, "visible", view->GetVisible());
+  if (verbose) {
+    view->ForAllProperties(base::BindRepeating(
+        [](AttributeStrings* attributes, const std::string& name,
+           const std::string& val) {
+          attributes->push_back(name + "=\"" + val + "\"");
+        },
+        base::Unretained(&attributes)));
+  } else {
+    AddAttributeString(attributes, "bounds", view->GetBounds());
+    AddAttributeString(attributes, "enabled", view->GetNeedsLayout());
+    AddAttributeString(attributes, "id", view->GetID());
+    AddAttributeString(attributes, "needs-layout", view->GetNeedsLayout());
+    AddAttributeString(attributes, "visible", view->GetVisible());
+  }
   return attributes;
 }
 
@@ -59,16 +66,18 @@ std::string GetPaddedLine(int current_depth, bool attribute_line = false) {
   return std::string(padding, ' ');
 }
 
-void PrintViewHierarchyImpl(std::ostringstream* out,
+void PrintViewHierarchyImpl(std::ostream* out,
                             ViewDebugWrapper* view,
                             int current_depth,
+                            bool verbose,
                             int target_depth,
                             size_t column_limit) {
   std::string line = GetPaddedLine(current_depth);
 
   line += "<" + view->GetViewClassName();
 
-  for (const std::string& attribute_string : GetAttributeStrings(view)) {
+  for (const std::string& attribute_string :
+       GetAttributeStrings(view, verbose)) {
     if (line.size() + attribute_string.size() + 1 > column_limit) {
       // If adding the attribute string would cause the line to exceed the
       // column limit, send the line to `out` and start a new line. The new line
@@ -90,8 +99,8 @@ void PrintViewHierarchyImpl(std::ostringstream* out,
     *out << line << ">\n";
 
     for (ViewDebugWrapper* child : view->GetChildren()) {
-      PrintViewHierarchyImpl(out, child, current_depth + 1, target_depth,
-                             column_limit);
+      PrintViewHierarchyImpl(out, child, current_depth + 1, verbose,
+                             target_depth, column_limit);
     }
 
     line = GetPaddedLine(current_depth);
@@ -105,11 +114,12 @@ void PrintViewHierarchyImpl(std::ostringstream* out,
 
 }  // namespace
 
-void PrintViewHierarchy(std::ostringstream* out,
+void PrintViewHierarchy(std::ostream* out,
                         ViewDebugWrapper* view,
+                        bool verbose,
                         int depth,
                         size_t column_limit) {
-  PrintViewHierarchyImpl(out, view, 0, depth, column_limit);
+  PrintViewHierarchyImpl(out, view, 0, verbose, depth, column_limit);
 }
 
 }  // namespace debug

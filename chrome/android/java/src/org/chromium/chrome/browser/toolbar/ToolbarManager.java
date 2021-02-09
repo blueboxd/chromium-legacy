@@ -151,6 +151,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.util.TokenHolder;
+import org.chromium.url.GURL;
 
 import java.util.List;
 
@@ -533,6 +534,23 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
                 refreshSelectedTab(tab);
                 onTabOrModelChanged();
+                maybeTriggerCacheRefreshForZeroSuggest(tab.getUrl());
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab, GURL url) {
+                maybeTriggerCacheRefreshForZeroSuggest(url);
+            }
+
+            /**
+             * Trigger ZeroSuggest cache refresh in case user is accessing a new tab page.
+             * Avoid issuing multiple concurrent server requests for the same event to
+             * reduce server pressure.
+             */
+            private void maybeTriggerCacheRefreshForZeroSuggest(GURL url) {
+                if (url != null && UrlUtilities.isNTPUrl(url)) {
+                    mLocationBarModel.notifyZeroSuggestRefresh();
+                }
             }
 
             @Override
@@ -870,7 +888,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 buttonDataProviders, mLayoutStateProviderSupplier, browsingModeThemeColorProvider,
                 mAppThemeColorProvider, mMenuButtonCoordinator, startSurfaceMenuButtonCoordinator,
                 mMenuButtonCoordinator.getMenuButtonHelperSupplier(), mTabModelSelectorSupplier,
-                mHomeButtonVisibilitySupplier, mIdentityDiscStateSupplier, (client) -> {
+                mHomeButtonVisibilitySupplier, mHomepageManagedByPolicySupplier,
+                mIdentityDiscStateSupplier, (client) -> {
                     if (invalidator != null) {
                         invalidator.invalidate(client);
                     } else {

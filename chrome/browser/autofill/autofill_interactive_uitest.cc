@@ -1148,9 +1148,7 @@ class AutofillCompanyInteractiveTest
   AutofillCompanyInteractiveTest() = default;
   ~AutofillCompanyInteractiveTest() override = default;
 
-  void SetUp() override {
-    AutofillInteractiveTestBase::SetUp();
-  }
+  void SetUp() override { AutofillInteractiveTestBase::SetUp(); }
 };
 
 // Makes sure that the first click does or does not activate the autofill popup
@@ -2720,7 +2718,14 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
+// Flaky on ChromeOS http://crbug.com/1175735
+#if defined(OS_CHROMEOS)
+#define MAYBE_SimpleCrossSiteFill DISABLED_SimpleCrossSiteFill
+#else
+#define MAYBE_SimpleCrossSiteFill SimpleCrossSiteFill
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
+                       MAYBE_SimpleCrossSiteFill) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
@@ -2762,13 +2767,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
 
 // This test verifies that credit card (payment card list) popup works when the
 // form is inside an OOPIF.
+// TODO(crbug.com/1176012): This now flakes on MacOS AND Linux, so it is
+// disabled until fixed.
+// Previous flakes:
 // Flaky on Windows http://crbug.com/728488
-#if defined(OS_WIN)
-#define MAYBE_CrossSitePaymentForms DISABLED_CrossSitePaymentForms
-#else
-#define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
+// Flaky on ChromeOS http://crbug.com/1175735
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_CrossSitePaymentForms) {
   CreateTestCreditCart();
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
@@ -2801,8 +2806,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
                        {ObservedUiEvents::kSuggestionShown});
 }
 
+// Flaky on ChromeOS http://crbug.com/1175735
+#if defined(OS_CHROMEOS)
+#define MAYBE_DeletingFrameUnderSuggestion DISABLED_DeletingFrameUnderSuggestion
+#else
+#define MAYBE_DeletingFrameUnderSuggestion DeletingFrameUnderSuggestion
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
-                       DeletingFrameUnderSuggestion) {
+                       MAYBE_DeletingFrameUnderSuggestion) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.

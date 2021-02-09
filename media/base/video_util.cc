@@ -493,8 +493,6 @@ scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
       frame, PIXEL_FORMAT_I420, frame->visible_rect(), frame->natural_size());
-  if (!wrapped_frame)
-    return nullptr;
   return wrapped_frame;
 }
 
@@ -868,7 +866,6 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
 }
 
 scoped_refptr<VideoFrame> CreateFromSkImage(sk_sp<SkImage> sk_image,
-                                            const gfx::Size& coded_size,
                                             const gfx::Rect& visible_rect,
                                             const gfx::Size& natural_size,
                                             base::TimeDelta timestamp) {
@@ -892,8 +889,14 @@ scoped_refptr<VideoFrame> CreateFromSkImage(sk_sp<SkImage> sk_image,
           : (sk_color_type == kRGBA_8888_SkColorType ? PIXEL_FORMAT_ABGR
                                                      : PIXEL_FORMAT_ARGB);
 
-  auto frame = VideoFrame::WrapExternalData(
-      format, coded_size, visible_rect, natural_size,
+  auto coded_size = gfx::Size(sk_image->width(), sk_image->height());
+  auto layout = VideoFrameLayout::CreateWithStrides(
+      format, coded_size, std::vector<int32_t>(1, pm.rowBytes()));
+  if (!layout)
+    return nullptr;
+
+  auto frame = VideoFrame::WrapExternalDataWithLayout(
+      *layout, visible_rect, natural_size,
       // TODO(crbug.com/1161304): We should be able to wrap readonly memory in
       // a VideoFrame instead of using writable_addr() here.
       reinterpret_cast<uint8_t*>(pm.writable_addr()), pm.computeByteSize(),

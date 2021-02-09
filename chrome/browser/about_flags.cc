@@ -3227,6 +3227,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-enable-dlc", flag_descriptions::kCrostiniEnableDlcName,
      flag_descriptions::kCrostiniEnableDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniEnableDlc)},
+    {"pluginvm-fullscreen", flag_descriptions::kPluginVmFullscreenName,
+     flag_descriptions::kPluginVmFullscreenDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPluginVmFullscreen)},
     {"pluginvm-show-camera-permissions",
      flag_descriptions::kPluginVmShowCameraPermissionsName,
      flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
@@ -6542,6 +6545,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClientStorageAccessContextAuditingDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kClientStorageAccessContextAuditing)},
+
+    {"clipboard-filenames", flag_descriptions::kClipboardFilenamesName,
+     flag_descriptions::kClipboardFilenamesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kClipboardFilenames)},
 
 #if defined(OS_WIN)
     {"safety-check-chrome-cleaner-child",

@@ -21,6 +21,7 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
+#include "components/webapps/renderer/web_page_metadata_agent.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -134,6 +135,9 @@ void ContentRendererClientImpl::RenderFrameCreated(
 #endif
   new js_injection::JsCommunication(render_frame);
 
+  if (render_frame->IsMainFrame())
+    new webapps::WebPageMetadataAgent(render_frame);
+
   if (!render_frame->IsMainFrame()) {
     auto* main_frame_no_state_prefetch_helper =
         prerender::NoStatePrefetchHelper::Get(
@@ -150,7 +154,7 @@ void ContentRendererClientImpl::RenderFrameCreated(
 
 void ContentRendererClientImpl::RenderViewCreated(
     content::RenderView* render_view) {
-  new prerender::NoStatePrefetchClient(render_view);
+  new prerender::NoStatePrefetchClient(render_view->GetWebView());
 }
 
 SkBitmap* ContentRendererClientImpl::GetSadPluginBitmap() {

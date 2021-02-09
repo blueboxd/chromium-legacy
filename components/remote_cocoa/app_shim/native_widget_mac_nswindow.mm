@@ -54,8 +54,8 @@ NSPoint clickedLocation;
 }
 
 - (void)cr_mouseDraggedOnFrameView:(NSEvent*)event {
-	static bool isAtMostMavericks = !(@available(macOS 10.10, *));
-	if(isAtMostMavericks && !([self.window styleMask]&NSFullScreenWindowMask)) {
+  static bool isAtMostMavericks = !(@available(macOS 10.10, *));
+  if(isAtMostMavericks && !([self.window styleMask]&NSFullScreenWindowMask)) {
     NSPoint mouseLocation = [NSEvent mouseLocation];
     [self.window setFrame:NSMakeRect(mouseLocation.x - clickedLocation.x, mouseLocation.y - clickedLocation.y, self.frame.size.width, self.frame.size.height) display:YES animate:NO];
   }

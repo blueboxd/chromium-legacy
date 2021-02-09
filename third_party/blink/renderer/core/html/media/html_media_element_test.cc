@@ -145,12 +145,17 @@ class MockMediaPlayerObserverReceiverForTesting
   void OnMediaPositionStateChanged(
       ::media_session::mojom::blink::MediaPositionPtr) override {}
 
+  void OnMediaEffectivelyFullscreenChanged(
+      blink::WebFullscreenVideoStatus status) override {}
+
   void OnMediaSizeChanged(const gfx::Size& size) override {
     received_media_size_ = size;
     run_loop_->Quit();
   }
 
   void OnPictureInPictureAvailabilityChanged(bool available) override {}
+
+  void OnAudioOutputSinkChanged(const WTF::String& hashed_device_id) override {}
 
   void OnAudioOutputSinkChangingDisabled() override {}
 

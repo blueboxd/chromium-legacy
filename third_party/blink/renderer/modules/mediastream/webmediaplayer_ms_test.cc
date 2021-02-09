@@ -144,23 +144,12 @@ class FakeWebMediaPlayerDelegate
     return false;
   }
 
-  void SetIsEffectivelyFullscreen(
-      int delegate_id,
-      WebFullscreenVideoStatus fullscreen_video_status) override {
-    EXPECT_EQ(delegate_id_, delegate_id);
-  }
-
   bool IsFrameHidden() override { return is_hidden_; }
   bool IsFrameClosed() override { return false; }
 
   void set_hidden(bool is_hidden) { is_hidden_ = is_hidden; }
 
   int delegate_id() { return delegate_id_; }
-
-  void DidAudioOutputSinkChange(int delegate_id,
-                                const std::string& hashed_device_id) override {
-    EXPECT_EQ(delegate_id_, delegate_id);
-  }
 
  private:
   int delegate_id_ = 1234;

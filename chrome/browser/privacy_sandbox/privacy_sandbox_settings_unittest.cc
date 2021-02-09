@@ -5,6 +5,7 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -25,8 +26,10 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -121,10 +124,14 @@ class PrivacySandboxSettingsTest : public testing::Test {
 
     // Setup privacy sandbox feature & preference.
     feature_list()->Reset();
-    if (privacy_sandbox_available)
-      feature_list()->InitAndEnableFeature(features::kPrivacySandboxSettings);
-    else
+    if (privacy_sandbox_available) {
+      feature_list()->InitWithFeatures(
+          {features::kPrivacySandboxSettings, features::kConversionMeasurement,
+           blink::features::kInterestCohortAPIOriginTrial},
+          {});
+    } else {
       feature_list()->InitAndDisableFeature(features::kPrivacySandboxSettings);
+    }
 
     profile()->GetTestingPrefService()->SetUserPref(
         prefs::kPrivacySandboxApisEnabled,
@@ -153,6 +160,34 @@ class PrivacySandboxSettingsTest : public testing::Test {
 
   std::unique_ptr<PrivacySandboxSettings> privacy_sandbox_settings_;
 };
+
+TEST_F(PrivacySandboxSettingsTest, PrivacySandboxSettingsFunctional) {
+  // Check that the settings are only reported as functional when at least one
+  // privacy sandbox API is enabled.
+  feature_list()->InitWithFeatures(
+      {features::kPrivacySandboxSettings, features::kConversionMeasurement},
+      {});
+  EXPECT_TRUE(privacy_sandbox_settings()->PrivacySandboxSettingsFunctional());
+  feature_list()->Reset();
+
+  feature_list()->InitWithFeatures(
+      {features::kPrivacySandboxSettings,
+       blink::features::kInterestCohortAPIOriginTrial},
+      {});
+  EXPECT_TRUE(privacy_sandbox_settings()->PrivacySandboxSettingsFunctional());
+  feature_list()->Reset();
+
+  feature_list()->InitWithFeatures(
+      {features::kConversionMeasurement,
+       blink::features::kInterestCohortAPIOriginTrial},
+      {});
+  EXPECT_FALSE(privacy_sandbox_settings()->PrivacySandboxSettingsFunctional());
+  feature_list()->Reset();
+
+  feature_list()->InitWithFeatures({features::kPrivacySandboxSettings}, {});
+  EXPECT_FALSE(privacy_sandbox_settings()->PrivacySandboxSettingsFunctional());
+  feature_list()->Reset();
+}
 
 TEST_F(PrivacySandboxSettingsTest, CookieSettingAppliesWhenUiDisabled) {
   // When the Privacy Sandbox UI is unavailable, the cookie setting should
@@ -959,6 +994,189 @@ TEST_F(PrivacySandboxSettingsTest, NoReconciliationSandboxSettingsDisabled) {
 
   EXPECT_FALSE(profile()->GetTestingPrefService()->GetBoolean(
       prefs::kPrivacySandboxPreferencesReconciled));
+}
+
+TEST_F(PrivacySandboxSettingsTest, MetricsLoggingOccursCorrectly) {
+  base::HistogramTester histograms;
+  const std::string histogram_name = "Settings.PrivacySandbox.Enabled";
+
+  // The histogram should start off empty.
+  histograms.ExpectTotalCount(histogram_name, 0);
+
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 1);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSEnabledAllowAll),
+      1);
+
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 2);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSEnabledBlock3P),
+      1);
+
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 3);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSEnabledBlockAll),
+      1);
+
+  profile()->GetTestingPrefService()->SetUserPref(
+      prefs::kPrivacySandboxPreferencesReconciled,
+      std::make_unique<base::Value>(false));
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 4);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSDisabledAllowAll),
+      1);
+
+  profile()->GetTestingPrefService()->SetUserPref(
+      prefs::kPrivacySandboxPreferencesReconciled,
+      std::make_unique<base::Value>(false));
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 5);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSDisabledBlock3P),
+      1);
+
+  profile()->GetTestingPrefService()->SetUserPref(
+      prefs::kPrivacySandboxPreferencesReconciled,
+      std::make_unique<base::Value>(false));
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 6);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::PrivacySandboxSettings::
+                           SettingsPrivacySandboxEnabled::kPSDisabledBlockAll),
+      1);
+
+  // Verify that delayed reconciliation still logs properly.
+  profile()->GetTestingPrefService()->SetUserPref(
+      prefs::kPrivacySandboxPreferencesReconciled,
+      std::make_unique<base::Value>(false));
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  sync_service()->SetEmptyLastCycleSnapshot();
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  EXPECT_FALSE(profile()->GetTestingPrefService()->GetBoolean(
+      prefs::kPrivacySandboxPreferencesReconciled));
+
+  histograms.ExpectTotalCount(histogram_name, 6);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSDisabledBlockAll),
+      1);
+
+  sync_service()->SetNonEmptyLastCycleSnapshot();
+  sync_service()->FireSyncCycleCompleted();
+
+  histograms.ExpectTotalCount(histogram_name, 7);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSDisabledBlockAll),
+      2);
+
+  profile()->GetTestingPrefService()->SetUserPref(
+      prefs::kPrivacySandboxPreferencesReconciled,
+      std::make_unique<base::Value>(false));
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 8);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSDisabledPolicyBlockAll),
+      1);
 }
 
 class PrivacySandboxSettingsTestCookiesClearOnExitTurnedOff

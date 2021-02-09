@@ -11,8 +11,6 @@
 #include "base/numerics/safe_math.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/pdf_engine.h"
-#include "pdf/ppapi_migration/geometry_conversions.h"
-#include "ppapi/cpp/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace chrome_pdf {
@@ -162,79 +160,24 @@ std::vector<AccessibilityTextFieldInfo> GetAccessibilityTextFieldInfo(
   return text_field_infos;
 }
 
-std::vector<pp::PDF::PrivateAccessibilityTextFieldInfo>
-ToPrivateAccessibilityTextFieldInfo(
-    const std::vector<AccessibilityTextFieldInfo>& text_field_infos) {
-  std::vector<pp::PDF::PrivateAccessibilityTextFieldInfo> pp_text_field_infos;
-  pp_text_field_infos.reserve(text_field_infos.size());
-  for (const auto& text_field_info : text_field_infos) {
-    pp_text_field_infos.push_back(
-        {text_field_info.name, text_field_info.value,
-         text_field_info.is_read_only, text_field_info.is_required,
-         text_field_info.is_password, text_field_info.index_in_page,
-         text_field_info.text_run_index,
-         PPFloatRectFromRectF(text_field_info.bounds)});
-  }
-  return pp_text_field_infos;
-}
-
-void GetAccessibilityFormFieldInfo(
+AccessibilityFormFieldInfo GetAccessibilityFormFieldInfo(
     PDFEngine* engine,
     int32_t page_index,
-    uint32_t text_run_count,
-    pp::PDF::PrivateAccessibilityFormFieldInfo* form_fields) {
-  form_fields->text_fields = ToPrivateAccessibilityTextFieldInfo(
-      GetAccessibilityTextFieldInfo(engine, page_index, text_run_count));
-}
-
-std::vector<pp::PDF::PrivateAccessibilityLinkInfo>
-ToPrivateAccessibilityLinkInfo(
-    const std::vector<AccessibilityLinkInfo>& link_infos) {
-  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> pp_link_infos;
-  pp_link_infos.reserve(link_infos.size());
-  for (const auto& link_info : link_infos) {
-    pp_link_infos.push_back(
-        {link_info.url, link_info.index_in_page, link_info.text_range.index,
-         link_info.text_range.count, PPFloatRectFromRectF(link_info.bounds)});
-  }
-  return pp_link_infos;
-}
-
-std::vector<pp::PDF::PrivateAccessibilityImageInfo>
-ToPrivateAccessibilityImageInfo(
-    const std::vector<AccessibilityImageInfo>& image_infos) {
-  std::vector<pp::PDF::PrivateAccessibilityImageInfo> pp_image_infos;
-  pp_image_infos.reserve(image_infos.size());
-  for (const auto& image_info : image_infos) {
-    pp_image_infos.push_back({image_info.alt_text, image_info.text_run_index,
-                              PPFloatRectFromRectF(image_info.bounds)});
-  }
-  return pp_image_infos;
-}
-
-std::vector<pp::PDF::PrivateAccessibilityHighlightInfo>
-ToPrivateAccessibilityHighlightInfo(
-    const std::vector<AccessibilityHighlightInfo>& highlight_infos) {
-  std::vector<pp::PDF::PrivateAccessibilityHighlightInfo> pp_highlight_infos;
-  pp_highlight_infos.reserve(highlight_infos.size());
-  for (const auto& highlight_info : highlight_infos) {
-    pp_highlight_infos.push_back(
-        {highlight_info.note_text, highlight_info.index_in_page,
-         highlight_info.text_range.index, highlight_info.text_range.count,
-         PPFloatRectFromRectF(highlight_info.bounds), highlight_info.color});
-  }
-  return pp_highlight_infos;
+    uint32_t text_run_count) {
+  AccessibilityFormFieldInfo form_field_info;
+  form_field_info.text_fields =
+      GetAccessibilityTextFieldInfo(engine, page_index, text_run_count);
+  return form_field_info;
 }
 
 }  // namespace
 
-bool GetAccessibilityInfo(
-    PDFEngine* engine,
-    int32_t page_index,
-    AccessibilityPageInfo& page_info,
-    std::vector<AccessibilityTextRunInfo>& text_runs,
-    std::vector<AccessibilityCharInfo>& chars,
-    pp::PDF::PrivateAccessibilityPageObjects* page_objects) {
+bool GetAccessibilityInfo(PDFEngine* engine,
+                          int32_t page_index,
+                          AccessibilityPageInfo& page_info,
+                          std::vector<AccessibilityTextRunInfo>& text_runs,
+                          std::vector<AccessibilityCharInfo>& chars,
+                          AccessibilityPageObjects& page_objects) {
   int page_count = engine->GetNumberOfPages();
   if (page_index < 0 || page_index >= page_count)
     return false;
@@ -308,14 +251,13 @@ bool GetAccessibilityInfo(
   }
 
   page_info.text_run_count = text_runs.size();
-  page_objects->links = ToPrivateAccessibilityLinkInfo(
-      GetAccessibilityLinkInfo(engine, page_index, text_runs));
-  page_objects->images = ToPrivateAccessibilityImageInfo(
-      GetAccessibilityImageInfo(engine, page_index, page_info.text_run_count));
-  page_objects->highlights = ToPrivateAccessibilityHighlightInfo(
-      GetAccessibilityHighlightInfo(engine, page_index, text_runs));
-  GetAccessibilityFormFieldInfo(engine, page_index, page_info.text_run_count,
-                                &page_objects->form_fields);
+  page_objects.links = GetAccessibilityLinkInfo(engine, page_index, text_runs);
+  page_objects.images =
+      GetAccessibilityImageInfo(engine, page_index, page_info.text_run_count);
+  page_objects.highlights =
+      GetAccessibilityHighlightInfo(engine, page_index, text_runs);
+  page_objects.form_fields = GetAccessibilityFormFieldInfo(
+      engine, page_index, page_info.text_run_count);
   return true;
 }
 

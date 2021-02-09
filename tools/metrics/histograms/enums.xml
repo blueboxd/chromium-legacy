@@ -8322,6 +8322,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Is malware"/>
 </enum>
 
+<enum name="BooleanIsMimeTypeApk">
+  <int value="0" label="Not apk"/>
+  <int value="1" label="Apk"/>
+</enum>
+
 <enum name="BooleanIsMobileOptimized">
   <int value="0" label="Not mobile optimized web page"/>
   <int value="1" label="Mobile optimized web page"/>
@@ -35650,16 +35655,16 @@ Called by update_feature_policy_enum.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="kInvalidClientId"/>
   <int value="2" label="kEmptyScopes"/>
-  <int value="3" label="kOAuth2InvalidScopes"/>
-  <int value="4" label="kGaiaFlowAuthFailure"/>
+  <int value="3" label="kOAuth2InvalidScopes (deprecated 02/2021)"/>
+  <int value="4" label="kGaiaFlowAuthFailure (deprecated 02/2021)"/>
   <int value="5" label="kMintTokenAuthFailure"/>
   <int value="6" label="kGetAccessTokenAuthFailure"/>
-  <int value="7" label="kOAuth2Failure"/>
+  <int value="7" label="kOAuth2Failure (deprecated 02/2021)"/>
   <int value="8" label="kNoGrant"/>
   <int value="9" label="kInteractionRequired"/>
   <int value="10" label="kInteractionAlreadyRunning"/>
-  <int value="11" label="kOAuth2AccessDenied"/>
-  <int value="12" label="kGaiaFlowRejected"/>
+  <int value="11" label="kOAuth2AccessDenied (deprecated 02/2021)"/>
+  <int value="12" label="kGaiaFlowRejected (deprecated 02/2021)"/>
   <int value="13" label="kRemoteConsentFlowRejected"/>
   <int value="14" label="kUserNotSignedIn"/>
   <int value="15" label="kNotAllowlistedInPublicSession"/>
@@ -35668,9 +35673,9 @@ Called by update_feature_policy_enum.py.-->
   <int value="18" label="kUserNonPrimary"/>
   <int value="19" label="kRemoteConsentUserNonPrimary"/>
   <int value="20" label="kBrowserSigninNotAllowed"/>
-  <int value="21" label="kInvalidRedirect"/>
+  <int value="21" label="kInvalidRedirect (deprecated 02/2021)"/>
   <int value="22" label="kOffTheRecord"/>
-  <int value="23" label="kPageLoadFailure"/>
+  <int value="23" label="kPageLoadFailure (deprecated 02/2021)"/>
   <int value="24" label="kRemoteConsentPageLoadFailure"/>
   <int value="25" label="kSetAccountsInCookieFailure"/>
   <int value="26" label="kInvalidConsentResult"/>
@@ -40071,16 +40076,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Search Image"/>
 </enum>
 
-<enum name="IOSSessionMigration">
-  <int value="0" label="No Migration"/>
-  <int value="1" label="Migration Failed"/>
-  <int value="2" label="No Session To Migrate"/>
-  <int value="3" label="Migrated Pre-MW to Multi Scenes"/>
-  <int value="4" label="Migrated Pre-MW to Single Scene"/>
-  <int value="5" label="Migrated Single Scene to Multi Scenes"/>
-  <int value="6" label="Migrated Multi Scenes to Single Scene"/>
-</enum>
-
 <enum name="IOSShareAction">
   <int value="0" label="Unknown"/>
   <int value="1" label="Cancel"/>
@@ -44133,6 +44128,7 @@ from previous Chrome versions.
   <int value="-939676447" label="CrostiniResetLxdDb:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
   <int value="-937430451" label="IntensiveWakeUpThrottling:disabled"/>
+  <int value="-934163513" label="EcheSWA:enabled"/>
   <int value="-933377608"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
@@ -47390,6 +47386,7 @@ from previous Chrome versions.
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
   <int value="2129524809" label="PasswordCheck:disabled"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
+  <int value="2132335798" label="EcheSWA:disabled"/>
   <int value="2132595171" label="OmniboxSearchEngineLogo:enabled"/>
   <int value="2133594095" label="CryptAuthV2DeviceActivityStatus:disabled"/>
   <int value="2133647636" label="ClipboardFilenames:disabled"/>
@@ -54963,13 +54960,13 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="OAuth2MintTokenApiCallResult">
   <int value="0" label="Mint token success"/>
-  <int value="1" label="Issue advice success"/>
+  <int value="1" label="Issue advice success (deprecated 02/2021)"/>
   <int value="2" label="Remote consent success"/>
   <int value="3" label="Api call failure"/>
   <int value="4" label="Parse JSON failure"/>
   <int value="5" label="&quot;issueAdvice&quot; key not found"/>
   <int value="6" label="Parse mint token failure"/>
-  <int value="7" label="Parse issue advice failure"/>
+  <int value="7" label="Parse issue advice failure (deprecated 02/2021)"/>
   <int value="8" label="Remote consent fallback (deprecated 06/2020)"/>
   <int value="9" label="Parse remote consent failure"/>
   <int value="10" label="Mint token success with fallback scopes"/>
@@ -68803,6 +68800,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="19" label="Clear data on site details page"/>
 </enum>
 
+<enum name="SettingsPrivacySandboxEnabled">
+  <int value="0" label="PS enabled, allow all cookies"/>
+  <int value="1" label="PS enabled, block 3P cookies"/>
+  <int value="2" label="PS enabled, block all cookies"/>
+  <int value="3" label="PS disabled, allow all cookies"/>
+  <int value="4" label="PS disabled, block 3P cookies"/>
+  <int value="5" label="PS disabled, block all cookies"/>
+  <int value="6" label="PS disabled, policy block 3P cookies"/>
+  <int value="7" label="PS disabled, policy block all cookies"/>
+</enum>
+
 <enum name="SettingsResetPromptConfigError">
   <int value="1" label="Config Ok"/>
   <int value="2" label="Missing domain_hashes param"/>
@@ -72582,11 +72590,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="StructuredMetricsInternalError">
-  <int value="0" label="Missing key"/>
+  <int value="0" label="Missing key (deprecated)"/>
   <int value="1" label="Wrong key length"/>
   <int value="2" label="Missing last rotation"/>
   <int value="3" label="Missing rotation period"/>
   <int value="4" label="Failed uint conversion"/>
+  <int value="5" label="Failed key read error"/>
+  <int value="6" label="Failed key parse error"/>
+  <int value="7" label="Failed key write error"/>
+  <int value="8" label="Failed key serialization"/>
 </enum>
 
 <enum name="StructuredMetricsKeyValidationState">

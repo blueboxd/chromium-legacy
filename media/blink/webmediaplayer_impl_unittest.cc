@@ -240,12 +240,6 @@ class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
     return is_stale_;
   }
 
-  void SetIsEffectivelyFullscreen(
-      int player_id,
-      blink::WebFullscreenVideoStatus fullscreen_video_status) override {
-    DCHECK_EQ(player_id_, player_id);
-  }
-
   bool IsFrameHidden() override { return is_hidden_; }
 
   bool IsFrameClosed() override { return is_closed_; }
@@ -272,8 +266,6 @@ class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
   void SetFrameClosedForTesting(bool is_closed) { is_closed_ = is_closed; }
 
   int player_id() { return player_id_; }
-
-  MOCK_METHOD2(DidAudioOutputSinkChange, void(int, const std::string&));
 
  private:
   Observer* observer_ = nullptr;

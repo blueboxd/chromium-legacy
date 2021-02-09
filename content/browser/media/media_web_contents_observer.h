@@ -85,8 +85,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
   void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
   void DidUpdateAudioMutingState(bool muted) override;
 
@@ -107,8 +105,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     audible_metrics_ = audible_metrics;
   }
 
-  void OnReceivedTranslatedDeviceId(RenderFrameHost* render_frame_host,
-                                    int delegate_id,
+  void OnReceivedTranslatedDeviceId(const MediaPlayerId& player_id,
                                     const std::string& raw_device_id);
 
   // Return an already bound mojo Remote for the MediaPlayer mojo interface.
@@ -199,8 +196,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
         media::MediaContentType media_content_type) override;
     void OnMediaPositionStateChanged(
         const media_session::MediaPosition& media_position) override;
+    void OnMediaEffectivelyFullscreenChanged(
+        blink::WebFullscreenVideoStatus status) override;
     void OnMediaSizeChanged(const ::gfx::Size& size) override;
     void OnPictureInPictureAvailabilityChanged(bool available) override;
+    void OnAudioOutputSinkChanged(const std::string& hashed_device_id) override;
     void OnAudioOutputSinkChangingDisabled() override;
     void OnBufferUnderflow() override;
     void OnSeek() override;
@@ -230,11 +230,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                               media::MediaContentType media_content_type);
 
   void OnMediaEffectivelyFullscreenChanged(
-      RenderFrameHost* render_frame_host,
-      int delegate_id,
+      const MediaPlayerId& player_id,
       blink::WebFullscreenVideoStatus fullscreen_status);
-  void OnAudioOutputSinkChanged(RenderFrameHost* render_frame_host,
-                                int delegate_id,
+  void OnAudioOutputSinkChanged(const MediaPlayerId& player_id,
                                 std::string hashed_device_id);
 
   // Used to notify when the renderer -> browser mojo connection via the

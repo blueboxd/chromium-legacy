@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -192,6 +193,148 @@ struct AccessibilityTextFieldInfo {
   uint32_t text_run_index = 0;
   // Bounding box of the text field.
   gfx::RectF bounds;
+};
+
+struct AccessibilityChoiceFieldOptionInfo {
+  // Represents the name property of choice field option.
+  std::string name;
+  // Represents if a choice field option is selected or not.
+  bool is_selected = false;
+  // Bounding box of the choice field option.
+  gfx::RectF bounds;
+};
+
+// TODO(crbug.com/702993): Remove next line comment after PDF migrates away
+// from Pepper.
+// Explicitly set all enum values to match enum values in
+// PP_PrivateChoiceFieldType.
+enum class ChoiceFieldType {
+  kListBox = 0,
+  kComboBox = 1,
+  kMaxValue = kComboBox,
+};
+
+struct AccessibilityChoiceFieldInfo {
+  AccessibilityChoiceFieldInfo();
+  AccessibilityChoiceFieldInfo(
+      const std::string& name,
+      const std::vector<AccessibilityChoiceFieldOptionInfo>& options,
+      ChoiceFieldType type,
+      bool is_read_only,
+      bool is_multi_select,
+      bool has_editable_text_box,
+      uint32_t index_in_page,
+      uint32_t text_run_index,
+      const gfx::RectF& bounds);
+  AccessibilityChoiceFieldInfo(const AccessibilityChoiceFieldInfo& other);
+  ~AccessibilityChoiceFieldInfo();
+
+  // Represents the name property of choice field, if present.
+  std::string name;
+  // Represents list of options in choice field, if present.
+  std::vector<AccessibilityChoiceFieldOptionInfo> options;
+  // Represents type of choice field.
+  ChoiceFieldType type;
+  // Represents if the choice field is non-editable.
+  bool is_read_only = false;
+  // Represents if the choice field is multi-selectable.
+  bool is_multi_select = false;
+  // Represents if the choice field includes an editable text box.
+  bool has_editable_text_box = false;
+  // Index of this choice field in the collection of choice fields in the
+  // page.
+  uint32_t index_in_page = 0;
+  // We anchor the choice field to a text run index, this denotes the text run
+  // before which the choice field should be inserted in the accessibility
+  // tree.
+  uint32_t text_run_index = 0;
+  // Bounding box of the choice field.
+  gfx::RectF bounds;
+};
+
+// TODO(crbug.com/702993): Remove next line comment after PDF migrates away
+// from Pepper.
+// Explicitly set all enum values to match enum values in PP_PrivateButtonType.
+enum class ButtonType {
+  kPushButton = 1,
+  kCheckBox = 2,
+  kRadioButton = 3,
+  kMaxValue = kRadioButton,
+};
+
+struct AccessibilityButtonInfo {
+  AccessibilityButtonInfo();
+  AccessibilityButtonInfo(const std::string& name,
+                          const std::string& value,
+                          ButtonType type,
+                          bool is_read_only,
+                          bool is_checked,
+                          uint32_t control_count,
+                          uint32_t control_index,
+                          uint32_t index_in_page,
+                          uint32_t text_run_index,
+                          const gfx::RectF& bounds);
+  AccessibilityButtonInfo(const AccessibilityButtonInfo& other);
+  ~AccessibilityButtonInfo();
+
+  // Represents the name property of button, if present.
+  std::string name;
+  // Represents the value property of button, if present.
+  std::string value;
+  // Represents the button type.
+  ButtonType type;
+  // Represents if the button is non-editable.
+  bool is_read_only = false;
+  // Represents if the radio button or check box is checked or not.
+  bool is_checked = false;
+  // Represents count of controls in the control group. A group of interactive
+  // form annotations is collectively called a form control group. Here, an
+  // interactive form annotation, should be either a radio button or a
+  // checkbox. Value of |control_count| is >= 1.
+  uint32_t control_count = 0;
+  // Represents index of the control in the control group. A group of
+  // interactive form annotations is collectively called a form control group.
+  // Here, an interactive form annotation, should be either a radio button or
+  // a checkbox. Value of |control_index| should always be less than
+  // |control_count|.
+  uint32_t control_index = 0;
+  // Index of this button in the collection of buttons in the page.
+  uint32_t index_in_page = 0;
+  // We anchor the button to a text run index, this denotes the text run
+  // before which the button should be inserted in the accessibility tree.
+  uint32_t text_run_index = 0;
+  // Bounding box of the button.
+  gfx::RectF bounds;
+};
+
+struct AccessibilityFormFieldInfo {
+  AccessibilityFormFieldInfo();
+  AccessibilityFormFieldInfo(
+      const std::vector<AccessibilityTextFieldInfo>& text_fields,
+      const std::vector<AccessibilityChoiceFieldInfo>& choice_fields,
+      const std::vector<AccessibilityButtonInfo>& buttons);
+  AccessibilityFormFieldInfo(const AccessibilityFormFieldInfo& other);
+  ~AccessibilityFormFieldInfo();
+
+  std::vector<AccessibilityTextFieldInfo> text_fields;
+  std::vector<AccessibilityChoiceFieldInfo> choice_fields;
+  std::vector<AccessibilityButtonInfo> buttons;
+};
+
+struct AccessibilityPageObjects {
+  AccessibilityPageObjects();
+  AccessibilityPageObjects(
+      const std::vector<AccessibilityLinkInfo>& links,
+      const std::vector<AccessibilityImageInfo>& images,
+      const std::vector<AccessibilityHighlightInfo>& highlights,
+      const AccessibilityFormFieldInfo& form_fields);
+  AccessibilityPageObjects(const AccessibilityPageObjects& other);
+  ~AccessibilityPageObjects();
+
+  std::vector<AccessibilityLinkInfo> links;
+  std::vector<AccessibilityImageInfo> images;
+  std::vector<AccessibilityHighlightInfo> highlights;
+  AccessibilityFormFieldInfo form_fields;
 };
 
 }  // namespace chrome_pdf

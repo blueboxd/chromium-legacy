@@ -15,15 +15,11 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerDelegateMsgStart
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFullscreenVideoStatus,
-                          blink::WebFullscreenVideoStatus::kMaxValue)
 
 // ----------------------------------------------------------------------------
 // Messages from the browser to the renderer requesting playback state changes.
@@ -42,18 +38,5 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
                     int /* delegate_id, distinguishes instances */,
                     bool /* is experiment starting (true) or stopping? */)
-
-// ----------------------------------------------------------------------------
-// Messages from the renderer notifying the browser of playback state changes.
-// ----------------------------------------------------------------------------
-
-IPC_MESSAGE_ROUTED2(
-    MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChanged,
-    int /* delegate_id, distinguishes instances */,
-    blink::WebFullscreenVideoStatus /* fullscreen_video_status */)
-
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged,
-                    int /* delegate_id, distinguishes instances */,
-                    std::string /* hashed_device_id */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

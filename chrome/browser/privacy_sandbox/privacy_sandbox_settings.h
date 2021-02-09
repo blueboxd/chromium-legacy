@@ -52,6 +52,13 @@ class PrivacySandboxSettings : public KeyedService,
                          signin::IdentityManager* identity_manager);
   ~PrivacySandboxSettings() override;
 
+  // Returns true when the privacy sandbox settings feature is enabled, and at
+  // least one of the privacy sandbox APIs is also enabled. This function,
+  // rather than direct inspection of the feature itself, should be used to
+  // determine if the privacy sandbox is available to users.
+  // TODO(crbug.com/1174572) Remove this when one API is fully launched.
+  bool PrivacySandboxSettingsFunctional();
+
   // Determines whether FLoC is allowable in a particular context.
   // |top_frame_origin| is used to check for content settings which could both
   // affect 1P and 3P contexts.
@@ -147,6 +154,31 @@ class PrivacySandboxSettings : public KeyedService,
                            NoReconciliationAlreadyRun);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxSettingsTest,
                            NoReconciliationSandboxSettingsDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxSettingsTest,
+                           MetricsLoggingOccursCorrectly);
+
+  /**
+   * Contains all possible privacy sandbox states, recorded on startup.
+   *
+   * These values are persisted to logs. Entries should not be renumbered and
+   * numeric values should never be reused.
+   *
+   * Must be kept in sync with the SettingsPrivacySandboxEnabled enum in
+   * histograms/enums.xml and privacy_sandbox_settings_unittest.cc.
+   */
+  enum class SettingsPrivacySandboxEnabled {
+    kPSEnabledAllowAll = 0,
+    kPSEnabledBlock3P = 1,
+    kPSEnabledBlockAll = 2,
+    kPSDisabledAllowAll = 3,
+    kPSDisabledBlock3P = 4,
+    kPSDisabledBlockAll = 5,
+    kPSDisabledPolicyBlock3P = 6,
+    kPSDisabledPolicyBlockAll = 7,
+    // Add values above this line with a corresponding label in
+    // tools/metrics/histograms/enums.xml
+    kMaxValue = kPSDisabledPolicyBlockAll,
+  };
 
   // Determines based on the current features, preferences and provided
   // |cookie_settings| whether Privacy Sandbox APIs are generally allowable for
@@ -172,6 +204,14 @@ class PrivacySandboxSettings : public KeyedService,
 
   // Stops any observation of services being performed by this class.
   void StopObserving();
+
+  // Helper function to actually make the metrics call for
+  // LogPrivacySandboxState.
+  void RecordPrivacySandboxHistogram(SettingsPrivacySandboxEnabled state);
+
+  // Logs the state of the privacy sandbox and cookie settings. Called once per
+  // profile startup.
+  void LogPrivacySandboxState();
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

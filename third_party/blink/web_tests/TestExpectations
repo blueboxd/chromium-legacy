@@ -764,8 +764,6 @@ crbug.com/687225 fast/css/content-counter-large-negative-cjk.html [ Failure ]
 # Image symbols are not implemented yet
 crbug.com/687225 external/wpt/css/css-counter-styles/counter-style-prefix-suffix-syntax.html [ Failure ]
 crbug.com/687225 external/wpt/css/css-counter-styles/counter-style-symbols-syntax.html [ Failure ]
-# Missing ref files for these tests
-crbug.com/687225 external/wpt/css/css-counter-styles/ethiopic-numeric/* [ Skip ]
 
 # [css-overflow]
 # Incorrect WPT tests.
@@ -1413,8 +1411,6 @@ crbug.com/692560 external/wpt/html/semantics/document-metadata/styling/LinkStyle
 crbug.com/1143074 [ Mac ] external/wpt/html/semantics/forms/the-input-element/selection-pointer.html [ Failure Timeout ]
 
 crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
-
-crbug.com/1002937 external/wpt/editing/run/caret-navigation-around-line-break.html [ Failure ]
 
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
 
@@ -4702,10 +4698,6 @@ crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-mark
 crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass Failure ]
 crbug.com/979336 [ Mac ] fast/dynamic/anonymous-block-orphaned-lines.html [ Pass Failure ]
 
-# Sheriff 2019-06-28
-crbug.com/979593 [ Linux ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
-crbug.com/979593 [ Win ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
-
 # Sheriff 2019-07-04
 crbug.com/981267 http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
@@ -5695,13 +5687,12 @@ crbug.com/1168785 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/aut
 # Sheriff 2021-01-29
 crbug.com/1172437 svg/hixie/perf/004.xml [ Timeout Pass ]
 
-crbug.com/1173137 external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Failure ]
-crbug.com/1173137 external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Failure ]
-crbug.com/1173137 external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Failure ]
-
 # COEP reporting for PlzDedicatedWorker
 crbug.com/1060837 external/wpt/html/cross-origin-embedder-policy/reporting-to-owner.https.html [ Timeout ]
 crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-to-owner.https.html [ Pass ]
+
+# flaky test
+crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ Failure Pass ]
 
 # Failing on Webkit Linux Leak
 crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]

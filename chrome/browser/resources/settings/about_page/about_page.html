@@ -126,6 +126,8 @@
 </if>
       <cr-link-row class="hr" id="help" on-click="onHelpTap_"
           label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
+      <cr-link-row class="hr" id="help" on-click="onProjectTap_"
+          label="GitHub project page" external></cr-link-row>
 <if expr="_google_chrome">
       <cr-link-row class="hr" id="reportIssue" on-click="onReportIssueTap_"
           hidden="[[!prefs.feedback_allowed.value]]"

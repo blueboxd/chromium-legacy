@@ -352,6 +352,11 @@ Polymer({
     window.location.href = 'chrome://management';
   },
 
+/** @private */
+  onProjectTap_() {
+    window.location.href = 'https://github.com/blueboxd/chromium-legacy/';
+  },
+
   // <if expr="chromeos">
   /**
    * @return {string}

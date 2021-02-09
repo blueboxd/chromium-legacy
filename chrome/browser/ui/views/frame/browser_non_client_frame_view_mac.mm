@@ -143,6 +143,8 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   if (web_app_frame_toolbar()) {
+  	if(!(@available(macOS 10.10, *)))
+   		return 0; 
     DCHECK(browser_view()->GetIsWebAppType());
     if (ShouldHideTopUIForFullscreen())
       return 0;

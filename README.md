@@ -1,22 +1,24 @@
 # Chromium-legacy
 
-Chromium-legacy is the latest Chromium patched & built for legacy Mac OS X Lion series (10.7/10.8).
-**Not working on 10.9 for now.**
+Chromium-legacy is the latest Chromium patched & built for legacy Mac OS X (10.7+).
+~~Not working on 10.9 for now.~~
+Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 
 **NB: Not for natively supported environments (10.10+).**
 
 ## working properly
-- networking
-    - modern HTTP protocols (http2/quic)
-    - modern TLS
+- modern HTTP protocols (http2/http3/quic)
+- modern TLS
 - rendering
     - [Skia is also patched](../../../skia) for proper font rendering
 - JavaScript
+    - latest V8 engine
 - media playing
     - but due to no GPU assist, high CPU usage
+- WebAuthn/FIDO2
+    - you need some patches to use USB keys on 10.7.
 
 ## limitation / glitches
-Some features not implemented in 10.7 are disabled (maybe simply commented out), so may not available even on 10.10+. (you'd better use official Chrome builds on 10.10+, of course)
 - UI
     - windows
         - ~~close/minimize/resize buttons are invisible~~
@@ -31,10 +33,11 @@ Some features not implemented in 10.7 are disabled (maybe simply commented out),
           - reverted due to improper rendering of combo box
     - scrollbars
         - won't disappear despite "Show scrollbars when scrolling" option is enabled
-- GPU assists (rendering / encoding / decoding)
-    - due to old OpenGL version, disabled by Chromium itself
+- GPU assists
+    - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
+    - on 10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
 - Sandboxing
-    - sandboxing is disabled with hardcoded *--no-sandbox* option because Seatbelt is too old to load latest policies
+    - sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies
 
 ---
 

@@ -54,7 +54,8 @@ NSPoint clickedLocation;
 }
 
 - (void)cr_mouseDraggedOnFrameView:(NSEvent*)event {
-	if(!(@available(macOS 10.10, *)) && !([self.window styleMask]&NSFullScreenWindowMask)) {
+	static bool isAtMostMavericks = !(@available(macOS 10.10, *));
+	if(isAtMostMavericks && !([self.window styleMask]&NSFullScreenWindowMask)) {
     NSPoint mouseLocation = [NSEvent mouseLocation];
     [self.window setFrame:NSMakeRect(mouseLocation.x - clickedLocation.x, mouseLocation.y - clickedLocation.y, self.frame.size.width, self.frame.size.height) display:YES animate:NO];
   }
@@ -89,6 +90,16 @@ NSPoint clickedLocation;
 }
 - (BOOL)usesCustomDrawing {
   return NO;
+}
+
+- viewWillStartLiveResize {
+    [super setWantsLayer:YES];
+    [super viewWillStartLiveResize];
+}
+
+- viewDidEndLiveResize {
+    [super setWantsLayer:NO];
+    [super viewDidEndLiveResize];
 }
 @end
 

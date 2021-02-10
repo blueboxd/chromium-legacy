@@ -110,6 +110,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Returns the plugin-specific image data buffer.
   virtual Image GetPluginImageData() const;
 
+  // Updates the geometry of the plugin and its image data if the view's
+  // size or scale has changed.
+  void UpdateGeometryOnViewChanged(const gfx::Rect& new_view_rect,
+                                   float new_device_scale);
+
   // A helper of OnGeometryChanged() which updates the available area and
   // the background parts, and notifies the PDF engine of geometry changes.
   void RecalculateAreas(double old_zoom, float old_device_scale);
@@ -132,13 +137,10 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void set_document_size(const gfx::Size& size) { document_size_ = size; }
 
   const gfx::Size& plugin_size() const { return plugin_size_; }
-  void set_plugin_size(const gfx::Size& size) { plugin_size_ = size; }
 
   const gfx::Size& plugin_dip_size() const { return plugin_dip_size_; }
-  void set_plugin_dip_size(const gfx::Size& size) { plugin_dip_size_ = size; }
 
   const gfx::Point& plugin_offset() const { return plugin_offset_; }
-  void set_plugin_offset(const gfx::Point& offset) { plugin_offset_ = offset; }
 
   void SetBackgroundColor(SkColor background_color) {
     background_color_ = background_color;
@@ -150,12 +152,26 @@ class PdfViewPluginBase : public PDFEngine::Client,
   double zoom() const { return zoom_; }
 
   float device_scale() const { return device_scale_; }
-  void set_device_scale(float device_scale) { device_scale_ = device_scale; }
 
-  void set_first_paint(bool first_paint) { first_paint_ = first_paint; }
+  bool last_bitmap_smaller() const { return last_bitmap_smaller_; }
+  void set_last_bitmap_smaller(bool last_bitmap_smaller) {
+    last_bitmap_smaller_ = last_bitmap_smaller;
+  }
 
   void set_needs_reraster(bool needs_reraster) {
     needs_reraster_ = needs_reraster;
+  }
+
+  const gfx::PointF& scroll_position_at_last_raster() const {
+    return scroll_position_at_last_raster_;
+  }
+  void set_scroll_position_at_last_raster(const gfx::PointF& scroll_position) {
+    scroll_position_at_last_raster_ = scroll_position;
+  }
+
+  bool stop_scrolling() const { return stop_scrolling_; }
+  void set_stop_scrolling(bool stop_scrolling) {
+    stop_scrolling_ = stop_scrolling;
   }
 
   void set_received_viewport_message(bool received) {
@@ -232,8 +248,21 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Whether OnPaint() is in progress or not.
   bool in_paint_ = false;
 
+  // True if last bitmap was smaller than the screen.
+  bool last_bitmap_smaller_ = false;
+
   // True if we request a new bitmap rendering.
   bool needs_reraster_ = true;
+
+  // The scroll position for the last raster, before any transformations are
+  // applied.
+  gfx::PointF scroll_position_at_last_raster_;
+
+  // If this is true, then don't scroll the plugin in response to the messages
+  // from DidChangeView() or HandleUpdateScrollMessage(). This will be true when
+  // the extension page is in the process of zooming the plugin so that
+  // flickering doesn't occur while zooming.
+  bool stop_scrolling_ = false;
 
   // Whether the plugin has received a viewport changed message. Nothing should
   // be painted until this is received.

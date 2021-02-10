@@ -72,6 +72,7 @@
 <translation id="1430915738399379752">Yazdır</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşılamıyor</translation>
 <translation id="1477626028522505441">Sunucu sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
+<translation id="1497470209855416291">Deneme sürümü devre dışı bırakıldı</translation>
 <translation id="1506061864768559482">Arama motoru</translation>
 <translation id="1513352483775369820">Yer işaretleri ve web geçmişi</translation>
 <translation id="1513858653616922153">Şifreyi sil</translation>
@@ -152,6 +153,7 @@
 <translation id="2068748236079642969">Sonraki videoyu izle</translation>
 <translation id="2074143993849053708">Asistan sesli arama izni kullanıcı arayüzü kapalı</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
+<translation id="2083113399121613785">Deneme sürümü etkinleştirildi</translation>
 <translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="2100314319871056947">Metni daha küçük parçalar halinde paylaşmayı deneyin</translation>
@@ -964,7 +966,6 @@ Gizli oturumunuzdaki veriler yalnızca <ph name="BEGIN_BOLD2" />tüm Gizli sekme
 <translation id="7704317875155739195">Aramaları ve URL'leri otomatik tamamla</translation>
 <translation id="7707922173985738739">Mobil veri kullanın</translation>
 <translation id="7725024127233776428">Yer işareti koyduğunuz sayfalar burada görünür</translation>
-<translation id="7735637452482172701">Kilidi, Ekran Kilidi ile aç</translation>
 <translation id="7746457520633464754">Chrome, tehlikeli uygulamaları ve siteleri algılamak için Google'a ziyaret ettiğiniz bazı sitelerin URL'lerini, sınırlı sistem bilgisini ve bazı sayfa içeriklerini gönderir.</translation>
 <translation id="7757787379047923882">Metin, <ph name="DEVICE_NAME" /> cihazından paylaşıldı</translation>
 <translation id="7761849928583394409">Tarih ve saat seçin</translation>

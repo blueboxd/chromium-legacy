@@ -72,6 +72,7 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1477626028522505441">서버 문제로 인해 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
+<translation id="1497470209855416291">시험판 사용 중지됨</translation>
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="1513352483775369820">북마크 및 방문 기록</translation>
 <translation id="1513858653616922153">비밀번호 삭제</translation>
@@ -152,6 +153,7 @@
 <translation id="2068748236079642969">다음 동영상 보기</translation>
 <translation id="2074143993849053708">어시스턴트 음성 검색 동의 UI 닫힘</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
+<translation id="2083113399121613785">시험판 사용 설정됨</translation>
 <translation id="2096012225669085171">모든 기기 동기화 및 맞춤설정</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2100314319871056947">좀 더 짧은 길이로 텍스트를 줄인 다음 공유해 보세요.</translation>
@@ -964,7 +966,6 @@
 <translation id="7704317875155739195">검색어 및 URL 자동 완성</translation>
 <translation id="7707922173985738739">모바일 데이터 사용</translation>
 <translation id="7725024127233776428">북마크한 페이지가 여기에 표시됩니다.</translation>
-<translation id="7735637452482172701">화면 잠금 해제</translation>
 <translation id="7746457520633464754">Chrome은 위험한 앱 및 사이트를 감지하기 위해 일부 방문 페이지의 URL, 제한적인 시스템 정보, 페이지 콘텐츠 일부를 Google로 전송합니다.</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" />에서 공유된 텍스트</translation>
 <translation id="7761849928583394409">날짜 및 시간 선택</translation>

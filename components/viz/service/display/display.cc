@@ -545,8 +545,8 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   // Outputting a partial list of quads might not work in cases where contents
   // outside the damage rect might be needed by the renderer.
   bool output_partial_list =
-      output_surface_->capabilities().only_invalidates_damage_rect &&
       renderer_->use_partial_swap() &&
+      output_surface_->capabilities().only_invalidates_damage_rect &&
       !overlay_processor_->IsOverlaySupported();
 
   aggregator_ = std::make_unique<SurfaceAggregator>(
@@ -630,10 +630,14 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   {
     FrameRateDecider::ScopedAggregate scoped_aggregate(
         frame_rate_decider_.get());
+    gfx::Rect target_damage_bounding_rect;
+    if (output_surface_->capabilities().supports_target_damage)
+      target_damage_bounding_rect = renderer_->GetTargetDamageBoundingRect();
+
     // Ensure that the surfaces that were damaged by any delegated ink trail are
     // aggregated again so that the trail exists for a single frame.
-    gfx::Rect target_damage_bounding_rect =
-        renderer_->GetDelegatedInkTrailDamageRect();
+    target_damage_bounding_rect.Union(
+        renderer_->GetDelegatedInkTrailDamageRect());
 
     frame = aggregator_->Aggregate(
         current_surface_id_, expected_display_time, current_display_transform,

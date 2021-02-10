@@ -72,6 +72,7 @@
 <translation id="1430915738399379752">Печат</translation>
 <translation id="1450753235335490080">Споделянето на <ph name="CONTENT_TYPE" /> не е възможно</translation>
 <translation id="1477626028522505441">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради проблеми в сървъра.</translation>
+<translation id="1497470209855416291">Пробният период е деактивиран</translation>
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="1513352483775369820">Отметки и посетени сайтове</translation>
 <translation id="1513858653616922153">Изтриване на паролата</translation>
@@ -152,6 +153,7 @@
 <translation id="2068748236079642969">Гледане на следващия видеоклип</translation>
 <translation id="2074143993849053708">Потребителският интерфейс за даване на съгласие за ползване на Асистент при гласови търсения е затворен</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2083113399121613785">Пробният период е активиран</translation>
 <translation id="2096012225669085171">Синхронизиране и персонализиране на всички устройства</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2100314319871056947">Опитайте да споделите текста на по-малки части</translation>
@@ -964,7 +966,6 @@
 <translation id="7704317875155739195">Автоматично довършване на заявки за търсене и URL адреси</translation>
 <translation id="7707922173985738739">Използване на мобилни данни</translation>
 <translation id="7725024127233776428">Запазените от вас отметки към страници се показват тук</translation>
-<translation id="7735637452482172701">Отключване със Screen Lock</translation>
 <translation id="7746457520633464754">За да открива опасни приложения и сайтове, Chrome изпраща до Google URL адресите на някои от страниците, които посещавате, ограничена системна информация и част от съдържанието на страниците</translation>
 <translation id="7757787379047923882">Текст, споделен от <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Избиране на дата и час</translation>

@@ -38,6 +38,8 @@ constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
     {"OncWiFi-SignalStrength", IDS_ONC_WIFI_SIGNAL_STRENGTH},
     {"OncMacAddress", IDS_ONC_MAC_ADDRESS},
+    {"OncIpv4Address", IDS_ONC_IPV4_ADDRESS},
+    {"OncIpv6Address", IDS_ONC_IPV6_ADDRESS},
 
 };
 
@@ -56,8 +58,7 @@ constexpr WebUiResource kResources[] = {
 }  // namespace
 
 void AddResources(content::WebUIDataSource* html_source) {
-  for (const auto& str : kLocalizedStrings)
-    html_source->AddLocalizedString(str.name, str.id);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   for (const auto& resource : kResources)
     html_source->AddResourcePath(resource.name, resource.id);

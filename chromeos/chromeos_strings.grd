@@ -476,15 +476,6 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_SCANNER_DROPDOWN_LABEL" desc="The label for the dropdown that displays connected scanners.">
         Scanner
       </message>
-      <message name="IDS_SCANNING_APP_NO_SCANNERS_HELP_LINK_LABEL" desc="The help label link displayed below the scanner dropdown when no scanners are available.">
-        Learn more
-      </message>
-      <message name="IDS_SCANNING_APP_NO_SCANNERS_HELP_TEXT" desc="The help text displayed below the scanner dropdown when no scanners are available.">
-        Can't connect to scanners?
-      </message>
-      <message name="IDS_SCANNING_APP_NO_SCANNERS_TEXT" desc="The text displayed in the scanner dropdown when no scanners are available.">
-        No available scanners
-      </message>
       <message name="IDS_SCANNING_APP_SOURCE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available scan sources (e.g. flatbed, document feeder, etc.).">
         Source
       </message>
@@ -618,6 +609,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_SCANNERS_LOADING_TEXT" desc="The text displayed while the app is searching for available scanners">
         Looking for scanners
       </message>
+      <message name="IDS_SCANNING_APP_NO_SCANNERS_TEXT" desc="The text displayed when there are no available scanners found for scanning">
+        No scanner available
+      </message>
+      <message name="IDS_SCANNING_APP_NO_SCANNERS_SUBTEXT" desc="The subtext displayed when there are no available scanners found for scanning">
+        Make sure the scanner is turned on and connected
+      </message>
 
       <!-- Diagnostics App -->
       <message name="IDS_DIAGNOSTICS_TITLE" desc="The title of the diagnostics app.">
@@ -675,7 +672,7 @@ Try tapping the mic to ask me anything.
         Remaining charge
       </message>
       <message name="IDS_DIAGNOSTICS_SESSION_LOG_LABEL" desc="The label for the button that opens the session log for the diagnostics app.">
-        Save Session log
+        Save session log
       </message>
       <message name="IDS_DIAGNOSTICS_BATTERY_CHIP_TEXT" desc="The text for a battery's full charge capacity represented in milliamp hours.">
         <ph name="CHARGE_VALUE">$1<ex>6000</ex></ph>mAh Battery

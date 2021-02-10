@@ -445,6 +445,9 @@ BUILDERS = {
     'linux-builder-perf': {
         'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
     },
+    'linux-builder-perf-rel': {
+        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
+    },
     'mac-builder-perf': {
         'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
     },
@@ -661,8 +664,8 @@ BUILDERS = {
             # that we can be informed if this
             # version ever changes or becomes inconsistent. It is important
             # that bots are homogeneous. See crbug.com/988045 for history.
-            'os': 'Windows-10-16299.309',
-            'gpu': '8086:5912-23.20.16.4877',
+            'os': 'Windows-10-18363.476',
+            'gpu': '8086:5912-27.20.100.8681',
             'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
         },
     },
@@ -760,6 +763,24 @@ BUILDERS = {
         },
     },
     'linux-perf': {
+        'tests': [
+            {
+                'isolate': 'performance_test_suite',
+                'extra_args': [
+                    '--assert-gpu-compositing',
+                ],
+            },
+        ],
+        'platform':
+        'linux',
+        'dimension': {
+            'gpu': '10de:1cb3-440.100',
+            'os': 'Ubuntu-18.04',
+            'pool': 'chrome.tests.perf',
+            'synthetic_product_name': 'PowerEdge R230 (Dell Inc.)'
+        },
+    },
+    'linux-perf-rel': {
         'tests': [
             {
                 'isolate': 'performance_test_suite',

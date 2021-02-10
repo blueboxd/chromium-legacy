@@ -340,8 +340,6 @@ static_library("browser") {
     "component_updater/sth_set_component_remover.h",
     "component_updater/subresource_filter_component_installer.cc",
     "component_updater/subresource_filter_component_installer.h",
-    "component_updater/tls_deprecation_config_component_installer.cc",
-    "component_updater/tls_deprecation_config_component_installer.h",
     "component_updater/trust_token_key_commitments_component_installer.cc",
     "component_updater/trust_token_key_commitments_component_installer.h",
     "component_updater/zxcvbn_data_component_installer.cc",
@@ -1753,8 +1751,6 @@ static_library("browser") {
     "ssl/ssl_error_controller_client.h",
     "ssl/stateful_ssl_host_state_delegate_factory.cc",
     "ssl/stateful_ssl_host_state_delegate_factory.h",
-    "ssl/tls_deprecation_config.cc",
-    "ssl/tls_deprecation_config.h",
     "ssl/typed_navigation_upgrade_throttle.cc",
     "ssl/typed_navigation_upgrade_throttle.h",
     "startup_data.cc",
@@ -2093,7 +2089,6 @@ static_library("browser") {
     "//components/feature_engagement",
     "//components/federated_learning",
     "//components/feed:buildflags",
-    "//components/feed/content:feed_content",
     "//components/feed/core/common:feed_core_common",
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/feed/core/v2:feed_core_v2",
@@ -5001,8 +4996,12 @@ static_library("browser") {
       "metrics/power/power_metrics_provider_mac.h",
       "metrics/power/power_metrics_provider_mac.mm",
       "notifications/alert_dispatcher_mac.h",
+      "notifications/alert_dispatcher_mojo.h",
+      "notifications/alert_dispatcher_mojo.mm",
       "notifications/alert_dispatcher_xpc.h",
       "notifications/alert_dispatcher_xpc.mm",
+      "notifications/notification_alert_service_bridge.h",
+      "notifications/notification_alert_service_bridge.mm",
       "notifications/notification_platform_bridge_mac.h",
       "notifications/notification_platform_bridge_mac.mm",
       "notifications/notification_platform_bridge_mac_unnotification.h",
@@ -5031,6 +5030,7 @@ static_library("browser") {
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
       "//chrome/browser/ui/cocoa/notifications:common",
+      "//chrome/services/mac_notifications/public/mojom",
       "//components/crash/core/app",
       "//components/metal_util",
       "//sandbox/mac:seatbelt",
@@ -5829,32 +5829,6 @@ static_library("browser") {
       ]
       deps += [ "//chromeos/services/tts/public/mojom" ]
     }
-  }
-
-  if (enable_feed_v1) {
-    sources += [
-      "android/feed/feed_content_bridge.cc",
-      "android/feed/feed_content_bridge.h",
-      "android/feed/feed_debugging_bridge.cc",
-      "android/feed/feed_debugging_bridge.h",
-      "android/feed/feed_host_service_factory.cc",
-      "android/feed/feed_host_service_factory.h",
-      "android/feed/feed_journal_bridge.cc",
-      "android/feed/feed_journal_bridge.h",
-      "android/feed/feed_lifecycle_bridge.cc",
-      "android/feed/feed_lifecycle_bridge.h",
-      "android/feed/feed_logging_bridge.cc",
-      "android/feed/feed_logging_bridge.h",
-      "android/feed/feed_network_bridge.cc",
-      "android/feed/feed_network_bridge.h",
-      "android/feed/feed_offline_bridge.cc",
-      "android/feed/feed_offline_bridge.h",
-      "android/feed/feed_scheduler_bridge.cc",
-      "android/feed/feed_scheduler_bridge.h",
-      "android/feed/history/feed_history_helper.cc",
-      "android/feed/history/feed_history_helper.h",
-    ]
-    deps += [ "//components/feed/content:feed_content" ]
   }
 
   if (enable_library_cdms) {
@@ -6778,7 +6752,6 @@ static_library("test_support") {
     "//google_apis:test_support",
     "//net:test_support",
     "//services/data_decoder/public/cpp:test_support",
-    "//services/network/public/proto:tls_deprecation_config_proto",
     "//services/preferences/public/cpp/tracked:test_support",
     "//skia",
     "//testing/gmock",

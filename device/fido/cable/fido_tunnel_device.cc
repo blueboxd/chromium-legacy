@@ -103,12 +103,13 @@ FidoTunnelDevice::FidoTunnelDevice(
   network_context->CreateWebSocket(
       url, {kCableWebSocketProtocol}, net::SiteForCookies(),
       net::IsolationInfo(), /*additional_headers=*/{},
-      network::mojom::kBrowserProcessId,
-      /*render_frame_id=*/0, url::Origin::Create(url),
+      network::mojom::kBrowserProcessId, url::Origin::Create(url),
       network::mojom::kWebSocketOptionBlockAllCookies,
       net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
-      websocket_client_->BindNewHandshakeClientPipe(), mojo::NullRemote(),
-      mojo::NullRemote());
+      websocket_client_->BindNewHandshakeClientPipe(),
+      /*auth_cert_observer=*/mojo::NullRemote(),
+      /*auth_handler=*/mojo::NullRemote(),
+      /*header_client=*/mojo::NullRemote());
 }
 
 FidoTunnelDevice::FidoTunnelDevice(
@@ -148,12 +149,13 @@ FidoTunnelDevice::FidoTunnelDevice(
   network_context->CreateWebSocket(
       url, {kCableWebSocketProtocol}, net::SiteForCookies(),
       net::IsolationInfo(), std::move(headers),
-      network::mojom::kBrowserProcessId,
-      /*render_frame_id=*/0, url::Origin::Create(url),
+      network::mojom::kBrowserProcessId, url::Origin::Create(url),
       network::mojom::kWebSocketOptionBlockAllCookies,
       net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
-      websocket_client_->BindNewHandshakeClientPipe(), mojo::NullRemote(),
-      mojo::NullRemote());
+      websocket_client_->BindNewHandshakeClientPipe(),
+      /*auth_cert_observer=*/mojo::NullRemote(),
+      /*auth_handler=*/mojo::NullRemote(),
+      /*header_client=*/mojo::NullRemote());
 }
 
 FidoTunnelDevice::~FidoTunnelDevice() {
@@ -167,13 +169,6 @@ bool FidoTunnelDevice::MatchAdvert(
   base::Optional<CableEidArray> plaintext =
       eid::Decrypt(advert, info.eid_encryption_key);
   if (!plaintext) {
-    return false;
-  }
-
-  const eid::Components components = eid::ToComponents(*plaintext);
-  static_assert(EXTENT(components.routing_id) == 3, "");
-  if (components.routing_id[0] || components.routing_id[1] ||
-      components.routing_id[2]) {
     return false;
   }
 

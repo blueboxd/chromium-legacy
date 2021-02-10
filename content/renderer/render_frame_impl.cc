@@ -2217,6 +2217,7 @@ void RenderFrameImpl::SetUpSharedMemoryForSmoothness(
 void RenderFrameImpl::BindAutoplayConfiguration(
     mojo::PendingAssociatedReceiver<blink::mojom::AutoplayConfigurationClient>
         receiver) {
+  autoplay_configuration_receiver_.reset();
   autoplay_configuration_receiver_.Bind(
       std::move(receiver),
       GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
@@ -3161,6 +3162,7 @@ void RenderFrameImpl::CommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
+    blink::mojom::PolicyContainerPtr policy_container,
     mojom::NavigationClient::CommitFailedNavigationCallback callback) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
@@ -3314,6 +3316,9 @@ void RenderFrameImpl::CommitFailedNavigation(
   } else {
     navigation_params->pre_redirect_url_for_failed_navigations = error.url();
   }
+
+  navigation_params->policy_container =
+      ToWebPolicyContainer(std::move(policy_container));
 
   // The error page load (not to confuse with a failed load of original page)
   // was not initiated through BeginNavigation, therefore
@@ -5940,6 +5945,7 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 }
 
 void RenderFrameImpl::RegisterMojoInterfaces() {
+  // TODO(dcheng): Fold this interface into mojom::Frame.
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindAutoplayConfiguration, weak_factory_.GetWeakPtr()));
 
@@ -5949,6 +5955,7 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindNavigationClient, weak_factory_.GetWeakPtr()));
 
+  // TODO(dcheng): Fold this interface into mojom::Frame.
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
 
@@ -5959,6 +5966,7 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 
 void RenderFrameImpl::BindMhtmlFileWriter(
     mojo::PendingAssociatedReceiver<mojom::MhtmlFileWriter> receiver) {
+  mhtml_file_writer_receiver_.reset();
   mhtml_file_writer_receiver_.Bind(
       std::move(receiver), GetTaskRunner(blink::TaskType::kInternalDefault));
 }

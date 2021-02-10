@@ -72,19 +72,24 @@ void TabSearchPageHandler::CloseTab(int32_t tab_id) {
   if (!optional_details)
     return;
 
-  const TabDetails& details = optional_details.value();
-  bool tab_closed = details.tab_strip_model->CloseWebContentsAt(
-      details.index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
-
   ++num_tabs_closed_;
 
-  if (tab_closed)
-    NotifyTabsChanged();
+  // CloseTab() can target the WebContents hosting Tab Search if the Tab Search
+  // WebUI is open in a chrome browser tab rather than its bubble. In this case
+  // CloseWebContentsAt() closes the WebContents hosting this
+  // TabSearchPageHandler object, causing it to be immediately destroyed. Ensure
+  // that no further actions are performed following the call to
+  // CloseWebContentsAt(). See (https://crbug.com/1175507).
+  auto* tab_strip_model = optional_details->tab_strip_model;
+  const int tab_index = optional_details->index;
+  tab_strip_model->CloseWebContentsAt(
+      tab_index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+  // Do not add code past this point.
 }
 
-void TabSearchPageHandler::GetProfileTabs(GetProfileTabsCallback callback) {
+void TabSearchPageHandler::GetProfileData(GetProfileDataCallback callback) {
   TRACE_EVENT0("browser", "custom_metric:TabSearchPageHandler:GetProfileTabs");
-  auto profile_tabs = CreateProfileTabs();
+  auto profile_tabs = CreateProfileData();
   // On first run record the number of windows and tabs open for the given
   // profile.
   if (!sent_initial_payload_) {
@@ -154,21 +159,22 @@ void TabSearchPageHandler::ShowUI() {
     embedder->ShowUI();
 }
 
-tab_search::mojom::ProfileTabsPtr TabSearchPageHandler::CreateProfileTabs() {
-  auto profile_tabs = tab_search::mojom::ProfileTabs::New();
+tab_search::mojom::ProfileDataPtr TabSearchPageHandler::CreateProfileData() {
+  auto profile_data = tab_search::mojom::ProfileData::New();
   for (auto* browser : *BrowserList::GetInstance()) {
     if (!ShouldTrackBrowser(browser))
       continue;
     TabStripModel* tab_strip_model = browser->tab_strip_model();
-    auto window_tabs = tab_search::mojom::WindowTabs::New();
-    window_tabs->active = (browser == browser_);
+    auto window = tab_search::mojom::Window::New();
+    window->active = (browser == browser_);
+    window->height = browser->window()->GetContentsSize().height();
     for (int i = 0; i < tab_strip_model->count(); ++i) {
-      window_tabs->tabs.push_back(
+      window->tabs.push_back(
           GetTabData(tab_strip_model, tab_strip_model->GetWebContentsAt(i), i));
     }
-    profile_tabs->windows.push_back(std::move(window_tabs));
+    profile_data->windows.push_back(std::move(window));
   }
-  return profile_tabs;
+  return profile_data;
 }
 
 tab_search::mojom::TabPtr TabSearchPageHandler::GetTabData(
@@ -245,7 +251,7 @@ void TabSearchPageHandler::ScheduleDebounce() {
 }
 
 void TabSearchPageHandler::NotifyTabsChanged() {
-  page_->TabsChanged(CreateProfileTabs());
+  page_->TabsChanged(CreateProfileData());
   debounce_timer_->Stop();
 }
 

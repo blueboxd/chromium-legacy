@@ -27004,14 +27004,20 @@ Called by update_extension_permission.py.-->
   <int value="25" label="INVALID_PATH_FOR_BITMAP_IMAGE"/>
   <int value="26" label="ERROR_RE_ENCODING_THEME_IMAGE"/>
   <int value="27" label="ERROR_SAVING_THEME_IMAGE"/>
-  <int value="28" label="COULD_NOT_READ_CATALOG_DATA_FROM_DISK"/>
-  <int value="29" label="INVALID_CATALOG_DATA"/>
-  <int value="30" label="INVALID_PATH_FOR_CATALOG"/>
-  <int value="31" label="ERROR_SERIALIZING_CATALOG"/>
-  <int value="32" label="ERROR_SAVING_CATALOG"/>
-  <int value="33" label="CRX_HASH_VERIFICATION_FAILED"/>
-  <int value="34" label="CRX_FILE_IS_DELTA_UPDATE"/>
-  <int value="35" label="CRX_EXPECTED_HASH_INVALID"/>
+  <int value="28" label="DEPRECATED_ABORTED_DUE_TO_SHUTDOWN"/>
+  <int value="29" label="COULD_NOT_READ_CATALOG_DATA_FROM_DISK"/>
+  <int value="30" label="INVALID_CATALOG_DATA"/>
+  <int value="31" label="INVALID_PATH_FOR_CATALOG"/>
+  <int value="32" label="ERROR_SERIALIZING_CATALOG"/>
+  <int value="33" label="ERROR_SAVING_CATALOG"/>
+  <int value="34" label="CRX_HASH_VERIFICATION_FAILED"/>
+  <int value="35" label="UNZIP_FAILED"/>
+  <int value="36" label="DIRECTORY_MOVE_FAILED"/>
+  <int value="37" label="CRX_FILE_IS_DELTA_UPDATE"/>
+  <int value="38" label="CRX_EXPECTED_HASH_INVALID"/>
+  <int value="39" label="DEPRECATED_ERROR_PARSING_DNR_RULESET"/>
+  <int value="40" label="ERROR_INDEXING_DNR_RULESET"/>
+  <int value="41" label="CRX_REQUIRED_PROOF_MISSING"/>
 </enum>
 
 <enum name="ExtensionUpdateCheckDataKey">
@@ -41575,6 +41581,28 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Target Language"/>
 </enum>
 
+<enum name="LanguageUsage.UI.Android.Availability">
+  <int value="0" label="Top Available">Top Android language is available.</int>
+  <int value="1" label="Only Default Available">
+    Top Android language is not available but another one is.
+  </int>
+  <int value="2" label="None Available"/>
+  <int value="3" label="Overridden">
+    Overridden languages must be avaliable.
+  </int>
+</enum>
+
+<enum name="LanguageUsage.UI.Android.Correctness">
+  <int value="0" label="Correct"/>
+  <int value="1" label="Incorrect"/>
+  <int value="2" label="Not Available">
+    Languages that are not available cannot be correct.
+  </int>
+  <int value="3" label="Only Java Correct">
+    The Java UI language is correct but native UI language not.
+  </int>
+</enum>
+
 <enum name="LargestContentfulPaint.TerminationState">
   <summary>
     The state of the largest contentful paint algorithm at the time of
@@ -44890,6 +44918,7 @@ from previous Chrome versions.
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
   <int value="-201633741" label="DisplayAlignAssist:enabled"/>
   <int value="-200805659" label="ContextualSuggestionsButton:enabled"/>
+  <int value="-200160012" label="RelatedSearchesUi:disabled"/>
   <int value="-199690952" label="PageInfoV2:enabled"/>
   <int value="-198002129" label="MetricsSettingsAndroid:disabled"/>
   <int value="-196110497" label="force-text-direction"/>
@@ -44983,6 +45012,7 @@ from previous Chrome versions.
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
   <int value="-114807608" label="TerminalSystemApp:disabled"/>
   <int value="-114768488" label="ImmersiveFullscreen:enabled"/>
+  <int value="-113855291" label="RelatedSearchesUi:enabled"/>
   <int value="-112459802" label="WebXrRenderPath:enabled"/>
   <int value="-112335255" label="FormControlsRefresh:enabled"/>
   <int value="-111160804" label="ChromeShareLongScreenshot:disabled"/>
@@ -59203,6 +59233,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="SetLocalAnswerResolved"/>
 </enum>
 
+<enum name="PeerConnectionBundlePolicy">
+  <int value="0" label="balanced"/>
+  <int value="1" label="max-bundle"/>
+  <int value="2" label="max-compat"/>
+</enum>
+
 <enum name="PeerConnectionBundleUsage">
   <int value="0" label="There are no m-lines"/>
   <int value="1" label="No BUNDLE, datachannel-only"/>
@@ -67432,6 +67468,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="SKIPPED_VERSION_CHECK_EQUAL"/>
 </enum>
 
+<enum name="SBMetricsCollectorEventType">
+  <int value="0" label="USER_STATE_DISABLED"/>
+  <int value="1" label="USER_STATE_ENABLED"/>
+  <int value="2" label="DATABASE_INTERSTITIAL_BYPASS"/>
+  <int value="3" label="CSD_INTERSITITAL_BYPASS"/>
+  <int value="4" label="REAL_TIME_INTERSTITIAL_BYPASS"/>
+</enum>
+
 <enum name="SBPhishingClassifierEvent">
   <int value="0" label="Phishing detection was requested to start"/>
   <int value="1" label="Page text was captured"/>
@@ -72599,6 +72643,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Failed key parse error"/>
   <int value="7" label="Failed key write error"/>
   <int value="8" label="Failed key serialization"/>
+  <int value="9" label="Failed event read error"/>
+  <int value="10" label="Failed event parse error"/>
+  <int value="11" label="Failed event write error"/>
+  <int value="12" label="Failed event serialization"/>
 </enum>
 
 <enum name="StructuredMetricsKeyValidationState">

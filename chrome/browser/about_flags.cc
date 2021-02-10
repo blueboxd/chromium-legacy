@@ -2654,6 +2654,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"related-searches", flag_descriptions::kRelatedSearchesName,
      flag_descriptions::kRelatedSearchesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kRelatedSearches)},
+    {"related-searches-ui", flag_descriptions::kRelatedSearchesUiName,
+     flag_descriptions::kRelatedSearchesUiDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kRelatedSearchesUi)},
     {"bento-offline", flag_descriptions::kBentoOfflineName,
      flag_descriptions::kBentoOfflineDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kBentoOffline)},
@@ -6457,10 +6460,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidManagedByMenuItemName,
      flag_descriptions::kAndroidManagedByMenuItemDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidManagedByMenuItem)},
-
-    {"android-multiple-display", flag_descriptions::kAndroidMultipleDisplayName,
-     flag_descriptions::kAndroidMultipleDisplayDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidMultipleDisplay)},
 #endif  // defined(OS_ANDROID)
 
     {"app-cache", flag_descriptions::kAppCacheName,

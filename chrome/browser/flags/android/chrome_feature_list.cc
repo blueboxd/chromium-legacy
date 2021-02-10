@@ -127,7 +127,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidDefaultBrowserPromo,
     &kAndroidLayoutChangeTabReparenting,
     &kAndroidManagedByMenuItem,
-    &kAndroidMultipleDisplay,
     &kAndroidPartnerCustomizationPhenotype,
     &kAndroidSearchEngineChoiceNotification,
     &kAssistantIntentExperimentId,
@@ -202,6 +201,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kReaderModeInCCT,
     &kReengagementNotification,
     &kRelatedSearches,
+    &kRelatedSearchesUi,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
     &kServiceManagerForBackgroundPrefetch,
@@ -327,9 +327,6 @@ const base::Feature kAndroidLayoutChangeTabReparenting{
 
 const base::Feature kAndroidManagedByMenuItem{"AndroidManagedByMenuItem",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAndroidMultipleDisplay{"AndroidMultipleDisplay",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAllowNewIncognitoTabIntents{
     "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -576,6 +573,9 @@ const base::Feature kReengagementNotification{
 
 const base::Feature kRelatedSearches{"RelatedSearches",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRelatedSearchesUi{"RelatedSearchesUi",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kServiceManagerForBackgroundPrefetch{
     "ServiceManagerForBackgroundPrefetch", base::FEATURE_ENABLED_BY_DEFAULT};

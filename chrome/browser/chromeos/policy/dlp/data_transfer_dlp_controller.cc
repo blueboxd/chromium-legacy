@@ -133,10 +133,19 @@ bool DataTransferDlpController::IsClipboardReadAllowed(
       break;
 
     case DlpRulesManager::Level::kWarn:
-      if (notify_on_paste && !ShouldProceedOnWarn(data_dst)) {
-        SYSLOG(INFO) << "DLP warned on paste from clipboard";
-        WarnOnPaste(data_src, data_dst);
-        is_read_allowed = false;
+      if (notify_on_paste) {
+        // In case the clipboard data is in warning mode, it will be allowed to
+        // be shared with Arc, Crostini, and Plugin VM without waiting for the
+        // user decision.
+        if (data_dst && (data_dst->type() == ui::EndpointType::kArc ||
+                         data_dst->type() == ui::EndpointType::kPluginVm ||
+                         data_dst->type() == ui::EndpointType::kCrostini)) {
+          WarnOnPaste(data_src, data_dst);
+        } else if (!ShouldProceedOnWarn(data_dst)) {
+          SYSLOG(INFO) << "DLP warned on paste from clipboard";
+          WarnOnPaste(data_src, data_dst);
+          is_read_allowed = false;
+        }
       }
       break;
 
@@ -170,18 +179,24 @@ DataTransferDlpController::~DataTransferDlpController() = default;
 void DataTransferDlpController::NotifyBlockedPaste(
     const ui::DataTransferEndpoint* const data_src,
     const ui::DataTransferEndpoint* const data_dst) {
-  helper_.NotifyBlockedPaste(data_src, data_dst);
+  clipboard_notifier_.NotifyBlockedAction(data_src, data_dst);
 }
 
 void DataTransferDlpController::WarnOnPaste(
     const ui::DataTransferEndpoint* const data_src,
     const ui::DataTransferEndpoint* const data_dst) {
-  helper_.WarnOnPaste(data_src, data_dst);
+  clipboard_notifier_.WarnOnAction(data_src, data_dst);
 }
 
 bool DataTransferDlpController::ShouldProceedOnWarn(
     const ui::DataTransferEndpoint* const data_dst) {
-  return helper_.DidUserProceedOnWarn(data_dst);
+  return clipboard_notifier_.DidUserProceedOnWarn(data_dst);
+}
+
+void DataTransferDlpController::NotifyBlockedDrop(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst) {
+  drag_drop_notifier_.NotifyBlockedAction(data_src, data_dst);
 }
 
 }  // namespace policy

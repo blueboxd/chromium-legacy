@@ -23,9 +23,7 @@
 
 namespace webui {
 
-namespace {
-
-void SetupPolymer3Defaults(content::WebUIDataSource* source) {
+void SetJSModuleDefaults(content::WebUIDataSource* source) {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
@@ -34,25 +32,19 @@ void SetupPolymer3Defaults(content::WebUIDataSource* source) {
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader_util.js",
+                          IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
 }
-
-}  // namespace
 
 void SetupWebUIDataSource(content::WebUIDataSource* source,
                           base::span<const GritResourceMap> resources,
                           int default_resource) {
-  SetupPolymer3Defaults(source);
+  SetJSModuleDefaults(source);
   for (const GritResourceMap& resource : resources) {
     source->AddResourcePath(resource.name, resource.value);
   }
   source->AddResourcePath("", default_resource);
-}
-
-void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
-                             base::span<const LocalizedString> strings) {
-  for (const auto& str : strings)
-    html_source->AddLocalizedString(str.name, str.id);
 }
 
 void AddResourcePathsBulk(content::WebUIDataSource* source,

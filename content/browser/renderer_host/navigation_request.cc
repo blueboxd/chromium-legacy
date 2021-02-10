@@ -3047,7 +3047,11 @@ void NavigationRequest::OnStartChecksComplete(
           std::move(cors_exempt_headers), std::move(client_security_state)),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
-      this, loader_type, CreateCookieAccessObserver(), std::move(interceptor));
+      this, loader_type, CreateCookieAccessObserver(),
+      static_cast<StoragePartitionImpl*>(partition)
+          ->CreateAuthAndCertObserverForNavigationRequest(
+              frame_tree_node_->frame_tree_node_id()),
+      std::move(interceptor));
 
   DCHECK(!render_frame_host_);
 }
@@ -3297,6 +3301,13 @@ void NavigationRequest::CommitErrorPage(
   // define our own flags, preferably the strictest ones instead.
   ComputeSandboxFlagsToCommit(/*response_head=*/nullptr,
                               /*required_csp=*/nullptr);
+
+  // Error pages should not inherit any policies. Initialize a new, default
+  // PolicyContainerHost.
+  //
+  // TODO(https://crbug.com/1175787): We should enforce strict policies on error
+  // pages.
+  policy_container_host_ = base::MakeRefCounted<PolicyContainerHost>();
 
   ReadyToCommitNavigation(true);
   // Use a separate cache shard, and no cookies, for error pages.

@@ -187,7 +187,7 @@ const base::Feature kChildSpecificSignin{"ChildSpecificSignin",
 
 // Enables or disables using the new Connectivity Diagnostics WebUI app.
 const base::Feature kConnectivityDiagnosticsWebUi{
-    "ConnectivityDiagnosticsWebUi", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ConnectivityDiagnosticsWebUi", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, options page for each input method will be opened in ChromeOS
 // settings. Otherwise it will be opened in a new web page in Chrome browser.
@@ -470,7 +470,7 @@ const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
 
 // Controls whether new OOBE layout is shown or not.
 const base::Feature kNewOobeLayout{"NewOobeLayout",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};

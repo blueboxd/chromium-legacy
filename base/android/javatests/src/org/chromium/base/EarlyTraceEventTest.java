@@ -18,6 +18,7 @@ import org.chromium.base.EarlyTraceEvent.AsyncEvent;
 import org.chromium.base.EarlyTraceEvent.Event;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.util.ArrayList;
@@ -26,14 +27,13 @@ import java.util.List;
 /**
  * Tests for {@link EarlyTraceEvent}.
  *
- * TODO(lizeb): Move to roboelectric tests.
+ * TODO(lizeb): Move to robolectric tests.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class EarlyTraceEventTest {
     private static final String EVENT_NAME = "MyEvent";
     private static final String EVENT_NAME2 = "MyOtherEvent";
     private static final long EVENT_ID = 1;
-    private static final long EVENT_ID2 = 2;
 
     List<Event> getMatchingCompletedEvents(String eventName) {
         List<Event> matchingEvents = new ArrayList<Event>();
@@ -48,12 +48,13 @@ public class EarlyTraceEventTest {
     @Before
     public void setUp() {
         LibraryLoader.getInstance().ensureInitialized();
-        EarlyTraceEvent.resetForTesting();
+        EarlyTraceEvent.reset();
     }
 
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
+    @DisabledTest(message = "https://crbug.com/1173968")
     public void testCanRecordEvent() {
         EarlyTraceEvent.enable();
         long myThreadId = Process.myTid();
@@ -77,7 +78,7 @@ public class EarlyTraceEventTest {
         Assert.assertTrue(beforeNanos <= beginEvent.mTimeNanos);
         Assert.assertTrue(endEvent.mTimeNanos <= afterNanos);
         Assert.assertTrue(beforeThreadMillis <= beginEvent.mThreadTimeMillis);
-        Assert.assertTrue(endEvent.mThreadTimeMillis <= beforeThreadMillis);
+        Assert.assertTrue(endEvent.mThreadTimeMillis <= afterThreadMillis);
     }
 
     @Test
@@ -212,13 +213,13 @@ public class EarlyTraceEventTest {
     @Feature({"Android-AppBase"})
     public void testEnableAtStartup() {
         ThreadUtils.setThreadAssertsDisabledForTesting(true);
-        EarlyTraceEvent.maybeEnable();
+        EarlyTraceEvent.maybeEnableInBrowserProcess();
         Assert.assertFalse(EarlyTraceEvent.enabled());
         EarlyTraceEvent.setBackgroundStartupTracingFlag(false);
         Assert.assertFalse(EarlyTraceEvent.enabled());
 
         EarlyTraceEvent.setBackgroundStartupTracingFlag(true);
-        EarlyTraceEvent.maybeEnable();
+        EarlyTraceEvent.maybeEnableInBrowserProcess();
         Assert.assertTrue(EarlyTraceEvent.getBackgroundStartupTracingFlag());
         Assert.assertTrue(EarlyTraceEvent.enabled());
         EarlyTraceEvent.disable();
@@ -233,10 +234,35 @@ public class EarlyTraceEventTest {
         // Setting command line should disable the background tracing flag.
         CommandLine.getInstance().appendSwitch("trace-startup");
         EarlyTraceEvent.setBackgroundStartupTracingFlag(true);
-        EarlyTraceEvent.maybeEnable();
+        EarlyTraceEvent.maybeEnableInBrowserProcess();
         Assert.assertFalse(EarlyTraceEvent.getBackgroundStartupTracingFlag());
         Assert.assertTrue(EarlyTraceEvent.enabled());
         EarlyTraceEvent.disable();
         EarlyTraceEvent.setBackgroundStartupTracingFlag(false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testEnableInChildProcess() {
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
+        EarlyTraceEvent.earlyEnableInChildWithoutCommandLine();
+        Assert.assertTrue(EarlyTraceEvent.enabled());
+        CommandLine.getInstance().appendSwitch("trace-early-java-in-child");
+        EarlyTraceEvent.onCommandLineAvailableInChildProcess();
+        Assert.assertTrue(EarlyTraceEvent.enabled());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testEnableInChildProcessCommandLineLaterOverrides() {
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
+        EarlyTraceEvent.earlyEnableInChildWithoutCommandLine();
+        Assert.assertTrue(EarlyTraceEvent.enabled());
+        CommandLine.getInstance().removeSwitch("trace-early-java-in-child");
+        EarlyTraceEvent.onCommandLineAvailableInChildProcess();
+        Assert.assertFalse(EarlyTraceEvent.enabled());
+        Assert.assertNull(EarlyTraceEvent.sEvents);
     }
 }

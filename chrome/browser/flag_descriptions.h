@@ -1541,9 +1541,6 @@ extern const char kAndroidLayoutChangeTabReparentingDescription[];
 extern const char kAndroidManagedByMenuItemName[];
 extern const char kAndroidManagedByMenuItemDescription[];
 
-extern const char kAndroidMultipleDisplayName[];
-extern const char kAndroidMultipleDisplayDescription[];
-
 extern const char kAndroidPartnerCustomizationPhenotypeName[];
 extern const char kAndroidPartnerCustomizationPhenotypeDescription[];
 
@@ -1832,6 +1829,9 @@ extern const char kReengagementNotificationDescription[];
 
 extern const char kRelatedSearchesName[];
 extern const char kRelatedSearchesDescription[];
+
+extern const char kRelatedSearchesUiName[];
+extern const char kRelatedSearchesUiDescription[];
 
 extern const char kReportFeedUserActionsName[];
 extern const char kReportFeedUserActionsDescription[];

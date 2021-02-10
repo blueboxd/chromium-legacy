@@ -380,6 +380,8 @@ crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientatio
 
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-png.html [ Failure ]
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-svg.html [ Failure ]
+crbug.com/935057 external/wpt/css/css-backgrounds/background-size-043.html [ Failure ]
+crbug.com/935057 external/wpt/css/css-backgrounds/background-size-044.html [ Failure ]
 
 # Fails, at a minimum, due to lack of support for CSS mask property in html elements
 crbug.com/432153 external/wpt/svg/painting/reftests/display-none-mask.html [ Skip ]
@@ -760,10 +762,10 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failur
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 
 # [css-counter-styles-3]
-crbug.com/687225 fast/css/content-counter-large-negative-cjk.html [ Failure ]
-# Image symbols are not implemented yet
-crbug.com/687225 external/wpt/css/css-counter-styles/counter-style-prefix-suffix-syntax.html [ Failure ]
-crbug.com/687225 external/wpt/css/css-counter-styles/counter-style-symbols-syntax.html [ Failure ]
+crbug.com/1176323 external/wpt/css/css-counter-styles/counter-style-prefix-suffix-syntax.html [ Failure ]
+crbug.com/1176323 external/wpt/css/css-counter-styles/counter-style-symbols-syntax.html [ Failure ]
+crbug.com/1168277 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
+crbug.com/1176315 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure ]
 
 # [css-overflow]
 # Incorrect WPT tests.
@@ -1220,6 +1222,12 @@ crbug.com/995106 external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
 crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]
 
+# css-pseudo
+crbug.com/1163437 external/wpt/css/css-pseudo/grammar-spelling-errors-001.html [ Failure ]
+crbug.com/1163437 external/wpt/css/css-pseudo/grammar-spelling-errors-002.html [ Failure ]
+crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-001.html [ Failure ]
+crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-002.html [ Failure ]
+crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-003.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 crbug.com/1172333 external/wpt/css/css-pseudo/first-letter-digraph.html [ Failure ]
@@ -1242,6 +1250,22 @@ crbug.com/1068610 external/wpt/css/css-color/predefined-016.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/predefined-006.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/predefined-009.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/predefined-010.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/a98rgb-001.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/a98rgb-002.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/a98rgb-003.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/a98rgb-004.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lab-008.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-008.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-001.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-002.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-003.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-004.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-005.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/rec2020-001.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/rec2020-002.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/rec2020-003.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/rec2020-004.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/rec2020-005.html [ Failure ]
 
 # @supports
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-040.xht [ Failure ]
@@ -2536,45 +2560,7 @@ crbug.com/626703 external/wpt/css/css-images/object-fit-cover-svg-003o.html [ Fa
 crbug.com/626703 external/wpt/css/css-images/object-fit-none-svg-001e.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-images/object-fit-none-svg-003i.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-images/object-fit-fill-svg-002e.html [ Failure ]
-crbug.com/626703 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/background-size-043.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-pseudo/grammar-spelling-errors-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-backgrounds/background-size-043.html [ Failure ]
-crbug.com/626703 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/background-size-044.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-backgrounds/background-size-044.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-pseudo/grammar-spelling-errors-002.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/rec2020-004.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/a98rgb-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/a98rgb-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/prophoto-rgb-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/rec2020-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/prophoto-rgb-001.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/lch-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/rec2020-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/prophoto-rgb-002.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/lab-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/a98rgb-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/prophoto-rgb-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/rec2020-001.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/rec2020-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/a98rgb-003.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/a98rgb-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/lab-008.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/rec2020-005.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/prophoto-rgb-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/rec2020-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/prophoto-rgb-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/lch-008.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/prophoto-rgb-004.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/a98rgb-001.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/rec2020-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/a98rgb-002.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/prophoto-rgb-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/rec2020-004.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/rec2020-002.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/prophoto-rgb-005.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/prophoto-rgb-001.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/a98rgb-002.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
 crbug.com/1014091 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
@@ -3079,8 +3065,6 @@ crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeo
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-attr-mapping.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-05.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
@@ -4555,7 +4539,6 @@ crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.
 crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure Timeout ]
 crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure Timeout ]
-crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
 
 # Sheriff 2019-03-05
 crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout Pass ]
@@ -4697,6 +4680,10 @@ crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-mark
 # Sheriff 2019-06-27
 crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass Failure ]
 crbug.com/979336 [ Mac ] fast/dynamic/anonymous-block-orphaned-lines.html [ Pass Failure ]
+
+# Sheriff 2019-06-28
+crbug.com/979593 [ Linux ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
+crbug.com/979593 [ Win ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
 crbug.com/981267 http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure Timeout ]
@@ -5643,11 +5630,6 @@ crbug.com/1163793 http/tests/inspector-protocol/page/page-events-associated.js [
 # Sheriff 2021-01-13
 crbug.com/1164459 [ Mac10.15 ] external/wpt/preload/download-resources.html [ Pass Failure ]
 
-# CSS spelling and grammar features (issue 1163437)
-crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-001.html [ Failure ]
-crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-002.html [ Failure ]
-crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-003.html [ Failure ]
-
 # Sheriff 2021-01-15
 crbug.com/1167222 http/tests/websocket/multiple-connections-throttled.html [ Pass Failure ]
 crbug.com/1167309 fast/canvas/canvas-createImageBitmap-drawImage.html [ Pass Failure ]
@@ -5696,3 +5678,6 @@ crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ 
 
 # Failing on Webkit Linux Leak
 crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]
+
+# Timing out on Fuchsia
+crbug.com/1171283 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Pass Timeout ]

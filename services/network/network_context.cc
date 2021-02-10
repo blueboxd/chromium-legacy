@@ -1309,29 +1309,26 @@ void NetworkContext::CreateWebSocket(
     const net::IsolationInfo& isolation_info,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
-    int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-    mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
+    mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
+        auth_cert_observer,
+    mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
 
   DCHECK_GE(process_id, 0);
-  if (process_id == mojom::kBrowserProcessId) {
-    DCHECK_EQ(render_frame_id, 0);
-  }
 
   websocket_factory_->CreateWebSocket(
       url, requested_protocols, site_for_cookies, isolation_info,
-      std::move(additional_headers), process_id, render_frame_id, origin,
-      options,
+      std::move(additional_headers), process_id, origin, options,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(handshake_client), std::move(auth_handler),
-      std::move(header_client));
+      std::move(handshake_client), std::move(auth_cert_observer),
+      std::move(auth_handler), std::move(header_client));
 #endif  // !defined(OS_IOS)
 }
 
@@ -2065,8 +2062,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       std::make_unique<SSLConfigServiceMojo>(
           std::move(params_->initial_ssl_config),
           std::move(params_->ssl_config_client_receiver),
-          network_service_->crl_set_distributor(),
-          network_service_->legacy_tls_config_distributor());
+          network_service_->crl_set_distributor());
   SSLConfigServiceMojo* ssl_config_service_raw = ssl_config_service.get();
   builder.set_ssl_config_service(std::move(ssl_config_service));
 

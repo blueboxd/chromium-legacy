@@ -2140,7 +2140,7 @@ ci.clang_builder(
     cores = None,
     os = os.MAC_10_15,
     ssd = True,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 ci.clang_builder(
@@ -2153,7 +2153,7 @@ ci.clang_builder(
     cores = None,
     os = os.MAC_10_15,
     ssd = True,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 ci.clang_mac_builder(
@@ -3163,15 +3163,6 @@ ci.updater_builder(
 )
 
 ci.updater_builder(
-    name = "mac10.13-updater-tester-dbg",
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|mac",
-        short_name = "10.13",
-    ),
-    triggered_by = ["mac-updater-builder-dbg"],
-)
-
-ci.updater_builder(
     name = "mac10.13-updater-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
@@ -3187,6 +3178,15 @@ ci.updater_builder(
         short_name = "10.14",
     ),
     triggered_by = ["mac-updater-builder-rel"],
+)
+
+ci.updater_builder(
+    name = "mac10.15-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "10.15",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
 )
 
 ci.updater_builder(
@@ -3521,7 +3521,7 @@ ci.fyi_coverage_builder(
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 ci.fyi_coverage_builder(

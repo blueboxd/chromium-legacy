@@ -155,6 +155,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "arc-enable-usap",
+    "owners": [ "camurcu" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "arc-file-picker-experiment",
     "owners": [ "niwa" ],
     "expiry_milestone": 95
@@ -868,6 +873,11 @@
     "name": "deprecate-low-usage-codecs",
     "owners": [ "dalecurtis", "sweyn" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "desktop-detailed-language-settings",
+    "owners": [ "joshsantana", "chrome-langauge@google.com" ],
+    "expiry_milestone": 93
   },
   {
     "name": "desktop-in-product-help-snooze",
@@ -1602,11 +1612,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "enable-experimental-accessibility-cursor-colors",
-    "owners": [ "katie" ],
-    "expiry_milestone": 87
-  },
-  {
     "name": "enable-experimental-accessibility-dictation-extension",
     "owners": [ "akihiroota" ],
     "expiry_milestone": 92
@@ -2050,11 +2055,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-on-device-assistant",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "enable-oop-print-drivers",
     "owners": [ "awscreen", "thestig" ],
     "expiry_milestone": 92
@@ -2095,6 +2095,11 @@
     // This flag is used by dev teams on Android to disable this feature, since
     // it can badly break pages under test.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-pci-guard-ui",
+    "owners": [ "jimmyxgong", "cros-peripherals@google.com" ],
+    "expiry_milestone": 94
   },
   { "name": "enable-phone-hub",
     "owners": [ "better-together-dev@google.com", "tjohnsonkanu", "khorimoto" ],
@@ -2792,7 +2797,7 @@
   },
   {
     "name": "focus-mode",
-    "owners": [ "dfried", "pbos", "yiningwang@google.com" ],
+    "owners": [ "dfried", "pbos" ],
     "expiry_milestone": 82
   },
   {
@@ -3237,11 +3242,6 @@
     "name": "launcher-search-normalization",
     "owners": ["adafang", "wrong", "tby"],
     "expiry_milestone": 92
-  },
-  {
-    "name": "launcher-settings-search",
-    "owners": [ "jiameng", "tby" ],
-    "expiry_milestone": 88
   },
   {
     "name": "legacy-tls-enforced",
@@ -4069,6 +4069,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "preemtive-link-to-text-generation",
+    "owners": [ "cheickcisse@google.com" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "prefer-constant-frame-rate",
     "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 96
@@ -4357,7 +4362,7 @@
       "bdea",
       "chrome-safebrowsing-core@google.com"
     ],
-    "expiry_milestone": 88
+    "expiry_milestone": 91
   },
   {
     "name": "safe-browsing-enhanced-protection-android",
@@ -4512,7 +4517,7 @@
   },
   {
     "name": "select-to-speak-navigation-control",
-    "owners": [ "joelriley" ],
+    "owners": [ "joelriley@google.com" ],
     "expiry_milestone": 89
   },
   {
@@ -4781,11 +4786,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "system-tray-mic-gain",
-    "owners": [ "amehfooz", "tengs" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "tab-groups",
     "owners": [ "chrome-desktop-ui-sea@google.com", "connily" ],
     "expiry_milestone": 88
@@ -4933,13 +4933,13 @@
   },
   {
     "name": "turn-off-streaming-media-caching-always",
-    "owners": [ "shawnpi@microsoft.com", "cassew@google.com" ],
-    "expiry_milestone": 89
+    "owners": [ "wicarr@microsoft.com", "cassew@google.com" ],
+    "expiry_milestone": 91
   },
   {
     "name": "turn-off-streaming-media-caching-on-battery",
-    "owners": [ "shawnpi@microsoft.com", "cassew@google.com" ],
-    "expiry_milestone": 89
+    "owners": [ "wicarr@microsoft.com", "cassew@google.com" ],
+    "expiry_milestone": 91
   },
   {
     "name": "ui-debug-tools",

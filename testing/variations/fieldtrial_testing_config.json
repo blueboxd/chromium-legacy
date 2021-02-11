@@ -3264,6 +3264,22 @@
             ]
         }
     ],
+    "FormControlsRefreshAndroid": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FormControlsRefresh"
+                    ]
+                }
+            ]
+        }
+    ],
     "FreezeBackgroundTabOnNetworkIdle": [
         {
             "platforms": [
@@ -5751,28 +5767,6 @@
             ]
         }
     ],
-    "ReparseServerPredictionsFollowingFormChange": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ReparseServerPredictionsFollowingFormChange"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
@@ -5932,7 +5926,7 @@
             ]
         }
     ],
-    "SafeBrowsingEnhancedProtectionAndroid": [
+    "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid": [
         {
             "platforms": [
                 "android"
@@ -5941,29 +5935,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "PrivacyReorderedAndroid",
-                        "SafeBrowsingEnhancedProtection",
-                        "SafeBrowsingSecuritySectionUIAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingEnhancedProtectionMessageInInterstitials": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingEnhancedProtectionMessageInInterstitials"
+                        "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid"
                     ]
                 }
             ]
@@ -5995,21 +5967,6 @@
                 "linux",
                 "mac",
                 "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingRealTimeUrlLookupEnabledWithToken"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingRealTimeUrlLookupEnabledWithTokenAndroid": [
-        {
-            "platforms": [
-                "android"
             ],
             "experiments": [
                 {
@@ -6137,28 +6094,6 @@
                     },
                     "enable_features": [
                         "EnableQueryBasedMixedTypesRanker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SecondaryServerFieldPredictions": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SecondaryServerFieldPredictions"
                     ]
                 }
             ]

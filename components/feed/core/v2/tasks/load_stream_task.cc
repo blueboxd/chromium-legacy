@@ -131,6 +131,7 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
       std::make_unique<UploadActionsTask::Result>(std::move(result));
   latencies_->StepComplete(LoadLatencyTimes::kUploadActions);
   stream_->GetNetwork()->SendQueryRequest(
+      NetworkRequestType::kFeedQuery,
       CreateFeedQueryRefreshRequest(
           GetRequestReason(load_type_),
           stream_->GetRequestMetadata(/*is_for_next_page=*/false),
@@ -143,7 +144,7 @@ void LoadStreamTask::QueryRequestComplete(
     FeedNetwork::QueryRequestResult result) {
   latencies_->StepComplete(LoadLatencyTimes::kQueryRequest);
 
-  DCHECK(!stream_->GetModel());
+  DCHECK(!stream_->GetModel(kInterestStream));
 
   network_response_info_ = result.response_info;
 

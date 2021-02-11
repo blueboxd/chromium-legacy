@@ -189,6 +189,19 @@ window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestion;
 window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestionWithHash;
 
 /**
+ * @param {number} task_version
+ * @param {number} task_id
+ */
+window.chrome.embeddedSearch.newTabPage.blocklistSearchSuggestion;
+
+/**
+ * @param {number} task_version
+ * @param {number} task_id
+ * @param {string} hash
+ */
+window.chrome.embeddedSearch.newTabPage.blocklistSearchSuggestionWithHash;
+
+/**
  * No params.
  */
 window.chrome.embeddedSearch.newTabPage.confirmThemeChanges;
@@ -250,6 +263,13 @@ window.chrome.embeddedSearch.newTabPage.logMostVisitedImpression;
  * @param {number} data_generation_time
  */
 window.chrome.embeddedSearch.newTabPage.logMostVisitedNavigation;
+
+
+/**
+ * @param {number} event_type
+ * @param {number} data
+ */
+window.chrome.embeddedSearch.newTabPage.logSuggestionEventWithValue;
 
 /**
  * No params.
@@ -359,6 +379,9 @@ let NtpTheme;
 
 /** @type {?NtpTheme} */
 window.chrome.embeddedSearch.newTabPage.ntpTheme;
+
+/** @type {?NtpTheme} */
+window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
 
 /**
  * No params.

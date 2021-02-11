@@ -296,6 +296,10 @@ const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
 const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables toggling Pciguard settings through Settings UI.
+const base::Feature kEnablePciguardUi{"EnablePciguardUi",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -547,6 +551,10 @@ const base::Feature kPrintServerScaling{"PrintServerScaling",
 
 // Controls whether to enable projector.
 const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable projector in status tray.
+const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable quick answers.
 const base::Feature kQuickAnswers{"QuickAnswers",
@@ -831,6 +839,10 @@ bool IsImprovedKeyboardShortcutsEnabled() {
   return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }
 
+bool IsPciguardUiEnabled() {
+  return base::FeatureList::IsEnabled(kEnablePciguardUi);
+}
+
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
 }
@@ -849,6 +861,11 @@ bool IsPinAutosubmitBackfillFeatureEnabled() {
 
 bool IsProjectorEnabled() {
   return base::FeatureList::IsEnabled(kProjector);
+}
+
+bool IsProjectorFeaturePodEnabled() {
+  return IsProjectorEnabled() &&
+         base::FeatureList::IsEnabled(kProjectorFeaturePod);
 }
 
 bool IsQuickAnswersDogfood() {

@@ -14,10 +14,6 @@
   # this dict to look up which config to use for a given bot.
   'builder_groups': {
     'chrome': {
-      'chromeos-arm-generic-beta': 'official_chromeos_arm-generic',
-      'chromeos-arm-generic-ltc': 'official_chromeos_arm-generic',
-      'chromeos-arm-generic-lts': 'official_chromeos_arm-generic',
-      'chromeos-arm-generic-stable': 'official_chromeos_arm-generic',
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
@@ -1976,27 +1972,27 @@
     ],
 
     'gpu_fyi_tests_debug_trybot': [
-      'gpu_fyi_tests', 'debug_bot',
+      'gpu_fyi_tests', 'debug_bot', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_debug_trybot_x86': [
-      'gpu_fyi_tests', 'debug_bot', 'x86',
+      'gpu_fyi_tests', 'debug_bot', 'x86', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_dx12vk_debug_trybot': [
-      'gpu_fyi_tests', 'dx12vk', 'debug_bot',
+      'gpu_fyi_tests', 'dx12vk', 'debug_bot', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_dx12vk_release_trybot': [
-      'gpu_fyi_tests', 'dx12vk', 'release_trybot',
+      'gpu_fyi_tests', 'dx12vk', 'release_trybot', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot',
+      'gpu_fyi_tests', 'release_trybot', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot_arm64': [
-      'gpu_fyi_tests', 'release_trybot', 'arm64',
+      'gpu_fyi_tests', 'release_trybot', 'arm64', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot_asan': [
@@ -2004,7 +2000,7 @@
     ],
 
     'gpu_fyi_tests_release_trybot_fuchsia': [
-      'gpu_fyi_tests', 'release_trybot', 'fuchsia',
+      'gpu_fyi_tests', 'release_trybot', 'fuchsia', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot_tsan': [
@@ -2012,7 +2008,7 @@
     ],
 
     'gpu_fyi_tests_release_trybot_x86': [
-      'gpu_fyi_tests', 'release_trybot', 'x86',
+      'gpu_fyi_tests', 'release_trybot', 'x86', 'disable_nacl',
     ],
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
@@ -2335,10 +2331,6 @@
 
     'msan_release_bot_blink': [
       'msan', 'release_bot_blink',
-    ],
-
-    'official_chromeos_arm-generic': [
-      'chromeos_device', 'arm-generic', 'goma', 'official_optimize',
     ],
 
     'official_celab_release_bot': [
@@ -2738,7 +2730,7 @@
 
     'angle_specific_tests': {
       'mixins': ['angle_gles1_conform_tests', 'angle_deqp_tests',
-                 'angle_trace_perf_tests'],
+                 'angle_trace_perf_tests', 'disable_nacl'],
     },
 
     'angle_trace_perf_tests': {

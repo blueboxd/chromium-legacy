@@ -1439,6 +1439,10 @@
     "label": "//chrome/test:performance_test_suite",
     "type": "generated_script",
   },
+  "performance_test_suite_eve": {
+    "label": "//chrome/test:performance_test_suite_eve",
+    "type": "generated_script",
+  },
   "performance_webview_test_suite": {
     "args": [
       "remove",
@@ -1930,9 +1934,6 @@
   },
   "webview_cts_tests": {
     "args": [
-      "--logdog-bin-cmd",
-      "../../bin/logdog_butler",
-      "../../android_webview/tools/run_cts.py",
       "--skip-expected-failures",
       "--use-webview-provider",
       "apks/SystemWebView.apk",
@@ -1942,7 +1943,7 @@
       "-v",
     ],
     "label": "//android_webview/test:webview_cts_tests",
-    "script": "//build/android/test_wrapper/logdog_wrapper.py",
+    "script": "//android_webview/tools/run_cts.py",
     "type": "script",
   },
   "webview_instrumentation_test_apk": {

@@ -110,11 +110,11 @@ const base::Feature kRecoverFromNeverSaveAndroid = {
 // dynamic form change.
 const base::Feature kReparseServerPredictionsFollowingFormChange = {
     "ReparseServerPredictionsFollowingFormChange",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables considering secondary server field predictions during form parsing.
 const base::Feature kSecondaryServerFieldPredictions = {
-    "SecondaryServerFieldPredictions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SecondaryServerFieldPredictions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables syncing of compromised credentials.
 const base::Feature kSyncingCompromisedCredentials = {

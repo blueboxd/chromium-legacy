@@ -564,6 +564,9 @@ extern const char kEnableLoginDetectionDescription[];
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 
+extern const char kEnablePciguardUiName[];
+extern const char kEnablePciguardUiDescription[];
+
 extern const char kEnablePortalsName[];
 extern const char kEnablePortalsDescription[];
 
@@ -1324,9 +1327,6 @@ extern const char kSyncAutofillWalletOfferDataDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-extern const char kSystemTrayMicGainName[];
-extern const char kSystemTrayMicGainDescription[];
-
 extern const char kTabEngagementReportingName[];
 extern const char kTabEngagementReportingDescription[];
 
@@ -1521,6 +1521,9 @@ extern const char kEnableVulkanDescription[];
 
 extern const char kSharedHighlightingUseBlocklistName[];
 extern const char kSharedHighlightingUseBlocklistDescription[];
+
+extern const char kPreemtiveLinkToTextGenerationName[];
+extern const char kPreemtiveLinkToTextGenerationDescription[];
 
 // Android --------------------------------------------------------------------
 
@@ -2206,6 +2209,9 @@ extern const char kArcNativeBridge64BitSupportExperimentDescription[];
 extern const char kArcUseHighMemoryDalvikProfileName[];
 extern const char kArcUseHighMemoryDalvikProfileDesc[];
 
+extern const char kArcEnableUsapName[];
+extern const char kArcEnableUsapDesc[];
+
 extern const char kArcUsbHostName[];
 extern const char kArcUsbHostDescription[];
 
@@ -2875,6 +2881,9 @@ extern const char kDirectManipulationStylusDescription[];
 
 extern const char kDesktopRestructuredLanguageSettingsName[];
 extern const char kDesktopRestructuredLanguageSettingsDescription[];
+
+extern const char kDesktopDetailedLanguageSettingsName[];
+extern const char kDesktopDetailedLanguageSettingsDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 

@@ -984,6 +984,12 @@ const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
     "Allow user sign-in to be detected based on heuristics.";
 
+const char kEnablePciguardUiName[] =
+    "Enable Pciguard (Thunderbolt + USB4 tunneling) UI for settings";
+const char kEnablePciguardUiDescription[] =
+    "Enable toggling Pciguard settings through the Settings App. By default, "
+    "this flag is disabled.";
+
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =
     "Pixel canvas recording allows the compositor to raster contents aligned "
@@ -2283,11 +2289,6 @@ const char kStylusBatteryStatusDescription[] =
     "Enables viewing the current stylus battery level in the stylus tools "
     "menu.";
 
-const char kSystemTrayMicGainName[] = "Modify mic gain in the system tray";
-const char kSystemTrayMicGainDescription[] =
-    "Enables mic gain settings in the system tray audio "
-    "settings.";
-
 const char kTabEngagementReportingName[] = "Tab Engagement Metrics";
 const char kTabEngagementReportingDescription[] =
     "Tracks tab engagement and lifetime metrics.";
@@ -2619,6 +2620,11 @@ const char kSharedHighlightingUseBlocklistDescription[] =
     "certain sites where personalized or dynamic content or other technical "
     "restrictions make it unlikely that a URL can be generated and actually "
     "work when shared.";
+
+const char kPreemtiveLinkToTextGenerationName[] =
+    "Preemptive generation of link to text";
+const char kPreemtiveLinkToTextGenerationDescription[] =
+    "Enables link to text to be generated in advance.";
 
 // Android ---------------------------------------------------------------------
 
@@ -3818,6 +3824,12 @@ const char kArcUseHighMemoryDalvikProfileDesc[] =
     "Allow Android to use high-memory dalvik profile when applicable for "
     "high-memory devices.";
 
+const char kArcEnableUsapName[] =
+    "Enable ARC Unspecialized Application Processes";
+const char kArcEnableUsapDesc[] =
+    "Enable ARC Unspecialized Application Processes when applicable for "
+    "high-memory devices.";
+
 const char kArcUsbHostName[] = "Enable ARC USB host integration";
 const char kArcUsbHostDescription[] =
     "Allow Android apps to use USB host feature on ChromeOS devices.";
@@ -4918,6 +4930,11 @@ const char kDesktopRestructuredLanguageSettingsName[] =
     "Restructured Language Settings (Desktop)";
 const char kDesktopRestructuredLanguageSettingsDescription[] =
     "Enable the new restructured language settings page";
+
+const char kDesktopDetailedLanguageSettingsName[] =
+    "Detailed Language Settings (Desktop)";
+const char kDesktopDetailedLanguageSettingsDescription[] =
+    "Enable the new detailed language settings page";
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 

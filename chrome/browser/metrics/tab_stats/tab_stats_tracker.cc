@@ -285,6 +285,12 @@ class TabStatsTracker::WebContentsUsageObserver
     navigation_time_ = navigation_handle->NavigationStart();
     ukm_source_id_ = ukm::ConvertToSourceId(
         navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+
+    // Update observers.
+    for (TabStatsObserver& tab_stats_observer :
+         tab_stats_tracker_->tab_stats_observers_) {
+      tab_stats_observer.OnMainFrameNavigationCommitted(web_contents());
+    }
   }
 
   void DidGetUserInteraction(const blink::WebInputEvent& event) override {
@@ -312,6 +318,14 @@ class TabStatsTracker::WebContentsUsageObserver
     tab_stats_tracker_->OnWebContentsDestroyed(web_contents());
     // The call above will free |this| and so nothing should be done on this
     // object starting from here.
+  }
+
+  void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override {
+    for (TabStatsObserver& tab_stats_observer :
+         tab_stats_tracker_->tab_stats_observers_) {
+      tab_stats_observer.OnMediaEffectivelyFullscreenChanged(web_contents(),
+                                                             is_fullscreen);
+    }
   }
 
  private:

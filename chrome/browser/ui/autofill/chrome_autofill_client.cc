@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
-#include "chrome/browser/ui/autofill/save_address_profile_bubble_controller.h"
+#include "chrome/browser/ui/autofill/save_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -524,9 +524,9 @@ void ChromeAutofillClient::ConfirmSaveAddressProfile(
 #if defined(OS_ANDROID)
   // TODO(crbug.com/1167061): Implement.
 #else
-  SaveAddressProfileBubbleController::CreateForWebContents(web_contents());
-  SaveAddressProfileBubbleController* controller =
-      SaveAddressProfileBubbleController::FromWebContents(web_contents());
+  SaveAddressProfileBubbleControllerImpl::CreateForWebContents(web_contents());
+  SaveAddressProfileBubbleControllerImpl* controller =
+      SaveAddressProfileBubbleControllerImpl::FromWebContents(web_contents());
   controller->OfferSave(profile, std::move(callback));
 #endif
 }
@@ -635,6 +635,11 @@ void ChromeAutofillClient::UpdatePopup(
 void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
   if (popup_controller_.get())
     popup_controller_->Hide(reason);
+}
+
+void ChromeAutofillClient::ShowOfferNotificationIfApplicable(
+    const std::vector<GURL>& domains_to_display_bubble) {
+  // TODO(crbug.com/1093057): Finish bubble controller/view and wire it up.
 }
 
 bool ChromeAutofillClient::IsAutocompleteEnabled() {

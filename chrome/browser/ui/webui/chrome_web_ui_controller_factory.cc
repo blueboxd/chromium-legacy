@@ -297,7 +297,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
+#include "chrome/browser/ui/webui/supervised_user_internals/supervised_user_internals_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -405,9 +405,9 @@ WebUIController* NewWebUI<chromeos::ScanningUI>(WebUI* web_ui,
 }
 
 template <>
-WebUIController* NewWebUI<chromeos::DiagnosticsUI>(WebUI* web_ui,
-                                                   const GURL& url) {
-  return new chromeos::DiagnosticsUI(
+WebUIController* NewWebUI<chromeos::DiagnosticsDialogUI>(WebUI* web_ui,
+                                                         const GURL& url) {
+  return new chromeos::DiagnosticsDialogUI(
       web_ui, base::BindRepeating(&CreateChromeSelectFilePolicy));
 }
 
@@ -740,7 +740,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::PowerUI>;
   if (base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp) &&
       url.host_piece() == chromeos::kChromeUIDiagnosticsAppHost) {
-    return &NewWebUI<chromeos::DiagnosticsUI>;
+    return &NewWebUI<chromeos::DiagnosticsDialogUI>;
   }
   if (url.host_piece() == chromeos::kChromeUIPrintManagementHost)
     return &NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>;

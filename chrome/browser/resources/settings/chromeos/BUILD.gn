@@ -505,12 +505,16 @@ preprocess_if_expr("preprocess_gen_v3") {
     "chromeos/os_settings_icons_css.m.js",
     "chromeos/os_settings_page/main_page_behavior.m.js",
     "chromeos/os_settings_routes.m.js",
+    "chromeos/os_settings_search_box/os_search_result_row.m.js",
+    "chromeos/os_settings_search_box/os_settings_search_box.m.js",
+    "chromeos/os_toolbar/os_toolbar.m.js",
     "chromeos/parental_controls_page/parental_controls_browser_proxy.m.js",
     "chromeos/parental_controls_page/parental_controls_page.m.js",
     "chromeos/personalization_page/change_picture.m.js",
     "chromeos/personalization_page/change_picture_browser_proxy.m.js",
     "chromeos/personalization_page/personalization_page.m.js",
     "chromeos/personalization_page/wallpaper_browser_proxy.m.js",
+    "chromeos/personalization_page/wallpaper_constants.m.js",
     "chromeos/personalization_page/wallpaper_subpage.m.js",
     "chromeos/pref_to_setting_metric_converter.m.js",
     "chromeos/route_origin_behavior.m.js",
@@ -1008,6 +1012,8 @@ preprocess_if_expr("preprocess_v2") {
     "chromeos/personalization_page/personalization_page.js",
     "chromeos/personalization_page/wallpaper_browser_proxy.html",
     "chromeos/personalization_page/wallpaper_browser_proxy.js",
+    "chromeos/personalization_page/wallpaper_constants.html",
+    "chromeos/personalization_page/wallpaper_constants.js",
     "chromeos/personalization_page/wallpaper_subpage.js",
     "chromeos/personalization_page/wallpaper_subpage.html",
     "chromeos/pref_to_setting_metric_converter.html",
@@ -1240,10 +1246,10 @@ group("closure_compile_module") {
     #"os_settings_main:closure_compile_module",
     #"os_settings_menu:closure_compile_module",
     "os_settings_page:closure_compile_module",
+    "os_settings_search_box:closure_compile_module",
 
-    #"os_settings_search_box:closure_compile_module",
     #"os_settings_ui:closure_compile_module",
-    #"os_toolbar:closure_compile_module",
+    "os_toolbar:closure_compile_module",
     "parental_controls_page:closure_compile_module",
     "personalization_page:closure_compile_module",
   ]
@@ -1342,6 +1348,10 @@ js_library("route_origin_behavior.m") {
 
 js_library("search_handler.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/search_handler.m.js" ]
+  deps = [
+    "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:cr.m",
+  ]
   extra_deps = [ ":modulize" ]
 }
 

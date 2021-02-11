@@ -4,8 +4,11 @@
 
 #include "components/autofill/core/browser/autofill_handler.h"
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
@@ -15,6 +18,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
+#include "components/translate/core/common/language_detection_details.h"
 #include "google_apis/google_api_keys.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -111,22 +115,73 @@ bool AutofillHandler::IsRawMetadataUploadingEnabled(
 
 AutofillHandler::AutofillHandler(
     AutofillDriver* driver,
-    LogManager* log_manager,
+    AutofillClient* client,
+    AutofillDownloadManagerState enable_download_manager)
+    : AutofillHandler(driver,
+                      client,
+                      enable_download_manager,
+                      client->GetChannel()) {
+  DCHECK(driver);
+  DCHECK(client);
+}
+
+AutofillHandler::AutofillHandler(
+    AutofillDriver* driver,
+    AutofillClient* client,
     AutofillDownloadManagerState enable_download_manager,
     version_info::Channel channel)
     : driver_(driver),
-      log_manager_(log_manager),
+      client_(client),
+      log_manager_(client ? client->GetLogManager() : nullptr),
       is_rich_query_enabled_(IsRichQueryEnabled(channel)) {
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_ = std::make_unique<AutofillDownloadManager>(
         driver, this, GetAPIKeyForUrl(channel),
         AutofillDownloadManager::IsRawMetadataUploadingEnabled(
             IsRawMetadataUploadingEnabled(channel)),
-        log_manager);
+        log_manager_);
+  }
+  if (client) {
+    translate::TranslateDriver* translate_driver = client->GetTranslateDriver();
+    if (translate_driver) {
+      translate_observation_.Observe(translate_driver);
+    }
   }
 }
 
-AutofillHandler::~AutofillHandler() = default;
+AutofillHandler::~AutofillHandler() {
+  translate_observation_.Reset();
+  if (!query_result_delay_task_.IsCancelled())
+    query_result_delay_task_.Cancel();
+}
+
+void AutofillHandler::OnLanguageDetermined(
+    const translate::LanguageDetectionDetails& details) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillParsingPatternsLanguageDetection)) {
+    return;
+  }
+  for (auto& p : form_structures_) {
+    std::unique_ptr<FormStructure>& form_structure = p.second;
+    form_structure->set_current_page_language(
+        LanguageCode(details.adopted_language));
+    form_structure->DetermineHeuristicTypes(form_interactions_ukm_logger(),
+                                            log_manager_);
+  }
+}
+
+void AutofillHandler::OnTranslateDriverDestroyed(
+    translate::TranslateDriver* translate_driver) {
+  translate_observation_.Reset();
+}
+
+LanguageCode AutofillHandler::GetCurrentPageLanguage() const {
+  DCHECK(client_);
+  const translate::LanguageState* language_state = client_->GetLanguageState();
+  if (!language_state)
+    return LanguageCode();
+  return LanguageCode(language_state->current_language());
+}
 
 void AutofillHandler::OnFormSubmitted(const FormData& form,
                                       bool known_success,
@@ -417,10 +472,6 @@ FormStructure* AutofillHandler::ParseForm(const FormData& form,
   return parsed_form_structure;
 }
 
-LanguageCode AutofillHandler::GetCurrentPageLanguage() const {
-  return LanguageCode();
-}
-
 void AutofillHandler::Reset() {
   form_structures_.clear();
   if (form_interactions_ukm_logger_factory_callback_) {
@@ -474,6 +525,32 @@ void AutofillHandler::OnLoadedServerPredictions(
 
   LogAutofillTypePredictionsAvailable(log_manager_, queried_forms);
 
+  // TODO(crbug.com/1176816): Remove the test code after initial integration.
+  int delay = 0;
+  if (auto* cmd = base::CommandLine::ForCurrentProcess()) {
+    // This command line helps to simulate query result arriving after autofill
+    // is triggered and shall be used for manual test only.
+    std::string value = cmd->GetSwitchValueASCII(
+        "autofill-server-query-result-delay-in-seconds");
+    if (!base::StringToInt(value, &delay))
+      delay = 0;
+  }
+
+  if (delay > 0) {
+    query_result_delay_task_.Reset(
+        base::BindOnce(&AutofillHandler::PropagateAutofillPredictionsToDriver,
+                       base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(query_result_delay_task_.callback(), queried_forms),
+        base::TimeDelta::FromSeconds(delay));
+  } else {
+    PropagateAutofillPredictionsToDriver(queried_forms);
+  }
+}
+
+void AutofillHandler::PropagateAutofillPredictionsToDriver(
+    const std::vector<FormStructure*>& queried_forms) {
   // Forward form structures to the password generation manager to detect
   // account creation forms.
   driver()->PropagateAutofillPredictions(queried_forms);

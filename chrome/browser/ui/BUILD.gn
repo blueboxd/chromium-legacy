@@ -1638,10 +1638,10 @@ static_library("ui") {
 
   if (enable_supervised_users) {
     sources += [
-      "webui/supervised_user_internals_message_handler.cc",
-      "webui/supervised_user_internals_message_handler.h",
-      "webui/supervised_user_internals_ui.cc",
-      "webui/supervised_user_internals_ui.h",
+      "webui/supervised_user_internals/supervised_user_internals_message_handler.cc",
+      "webui/supervised_user_internals/supervised_user_internals_message_handler.h",
+      "webui/supervised_user_internals/supervised_user_internals_ui.cc",
+      "webui/supervised_user_internals/supervised_user_internals_ui.h",
     ]
     deps += [ "//chrome/browser/supervised_user/supervised_user_error_page" ]
   }
@@ -2228,6 +2228,8 @@ static_library("ui") {
       "webui/chromeos/cryptohome_ui.h",
       "webui/chromeos/cryptohome_web_ui_handler.cc",
       "webui/chromeos/cryptohome_web_ui_handler.h",
+      "webui/chromeos/diagnostics_dialog.cc",
+      "webui/chromeos/diagnostics_dialog.h",
       "webui/chromeos/drive_internals_ui.cc",
       "webui/chromeos/drive_internals_ui.h",
       "webui/chromeos/edu_account_login_handler_chromeos.cc",
@@ -3431,8 +3433,9 @@ static_library("ui") {
       "autofill/payments/save_upi_bubble_controller.h",
       "autofill/payments/save_upi_bubble_controller_impl.cc",
       "autofill/payments/save_upi_bubble_controller_impl.h",
-      "autofill/save_address_profile_bubble_controller.cc",
       "autofill/save_address_profile_bubble_controller.h",
+      "autofill/save_address_profile_bubble_controller_impl.cc",
+      "autofill/save_address_profile_bubble_controller_impl.h",
       "bubble_anchor_util.h",
       "manifest_web_app_browser_controller.cc",
       "manifest_web_app_browser_controller.h",

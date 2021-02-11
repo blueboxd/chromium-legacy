@@ -433,9 +433,6 @@ This file contains the strings for ash.
          =1 {1 notification}
          other {# notifications}}
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_HIDDEN_NOTIFICATION_COUNT_LABEL" desc="The label for the number of hidden notifications.">
-        +<ph name="COUNT">$1<ex>2</ex></ph>
-      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup. [CHAR_LIMIT=14]">
         Bluetooth
@@ -1068,7 +1065,7 @@ This file contains the strings for ash.
         No mobile network
       </message>
       <message name="IDS_ASH_PHONE_HUB_MOBILE_STATUS_NETWORK_NAME_AND_STRENGTH" desc="The tooltip text indicating the name and strength of the phone's mobile network.">
-        <ph name="WIRELESS_PROVIDER">$1<ex>Google Fi</ex></ph>, Signal strength <ph name="SIGNAL_STRENGTH">$2<ex>1</ex></ph> percent.
+        <ph name="WIRELESS_PROVIDER">$1<ex>Google Fi</ex></ph>, signal strength <ph name="SIGNAL_STRENGTH">$2<ex>1</ex></ph> percent
       </message>
       <message name="IDS_ASH_PHONE_HUB_BATTERY_STATUS_NOT_CHARGING" desc="The tooltip text indicating the phone is currently not charging">
         Not charging
@@ -1231,6 +1228,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_PHONE_HUB_ENABLE_HOTSPOT_NO_RECEPTION_STATE_TOOLTIP" desc="Tooltip message that indicates to the user that the Enable Hotspot feature is disabled because their phone does not have mobile data.">
         Your phone must have mobile data to provide a hotspot
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PROJECTOR_BUTTON_LABEL" desc="The label text for the button in the status tray to Projector.">
+        Presentation tools
       </message>
       <message name="IDS_ASH_PROJECTOR_KEY_IDEA_MARKED" desc="Message content on the toast that appears when a key idea is marked">
         Marked as a key idea
@@ -3254,7 +3254,7 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_EDIT" desc="The edit button label for the screen capture notification.">
         Edit
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE" desc="The delete button label for the screen capture notificaiton.">
+      <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE" desc="The delete button label for the screen capture notification.">
         Delete
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_FULLSCREEN_IMAGE_CAPTURE_CLAMSHELL" desc="The capture label message which shows in the middle of the screen when in fullscreen image capture mode in clamshell mode.">

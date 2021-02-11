@@ -80,14 +80,14 @@
     ],
     'identifier': 'iPad Air 2 13.6'
   },
-  'SIM_IPAD_AIR_2_14_0': {
+  'SIM_IPAD_AIR_2_14_4': {
     'args': [
       '--platform',
       'iPad Air 2',
       '--version',
-      '14.0'
+      '14.4'
     ],
-    'identifier': 'iPad Air 2 14.0'
+    'identifier': 'iPad Air 2 14.4'
   },
   'SIM_IPAD_AIR_2_14_4': {
     'args': [
@@ -145,14 +145,14 @@
     ],
     'identifier': 'iPhone 6s 13.6'
   },
-  'SIM_IPHONE_6S_14_0': {
+  'SIM_IPHONE_6S_14_4': {
     'args': [
       '--platform',
       'iPhone 6s',
       '--version',
-      '14.0',
+      '14.4',
     ],
-    'identifier': 'iPhone 6s 14.0'
+    'identifier': 'iPhone 6s 14.4'
   },
   'SIM_IPHONE_6S_14_4': {
     'args': [
@@ -181,14 +181,14 @@
     ],
     'identifier': 'iPhone 6s Plus 13.6'
   },
-  'SIM_IPHONE_6S_PLUS_14_0': {
+  'SIM_IPHONE_6S_PLUS_14_4': {
     'args': [
       '--platform',
       'iPhone 6s Plus',
       '--version',
-      '14.0',
+      '14.4',
     ],
-    'identifier': 'iPhone 6s Plus 14.0'
+    'identifier': 'iPhone 6s Plus 14.4'
   },
   'SIM_IPHONE_6S_PLUS_14_4': {
     'args': [
@@ -217,14 +217,14 @@
     ],
     'identifier': 'iPhone 7 13.6'
   },
-  'SIM_IPHONE_7_14_0': {
+  'SIM_IPHONE_7_14_4': {
     'args': [
       '--platform',
       'iPhone 7',
       '--version',
-      '14.0',
+      '14.4',
     ],
-    'identifier': 'iPhone 7 14.0'
+    'identifier': 'iPhone 7 14.4'
   },
   'SIM_IPHONE_7_14_4': {
     'args': [
@@ -244,14 +244,14 @@
     ],
     'identifier': 'iPhone SE (1st generation) 13.6'
   },
-  'SIM_IPHONE_SE_1ST_GEN_14_0': {
+  'SIM_IPHONE_SE_1ST_GEN_14_4': {
     'args': [
       '--platform',
       'iPhone SE (1st generation)',
       '--version',
-      '14.0',
+      '14.4',
     ],
-    'identifier': 'iPhone SE (1st generation) 14.0'
+    'identifier': 'iPhone SE (1st generation) 14.4'
   },
   'SIM_IPHONE_X_12_4': {
     'args': [
@@ -320,13 +320,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=89',
     ],
-    'identifier': 'Implementation Library Skew Tests For 89.0.4389.46',
+    'identifier': 'Implementation Library Skew Tests For 89.0.4389.48',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.46',
+          'revision': 'version:89.0.4389.48',
         }
       ],
     },
@@ -344,13 +344,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=88',
     ],
-    'identifier': 'Implementation Library Skew Tests For 88.0.4324.175',
+    'identifier': 'Implementation Library Skew Tests For 88.0.4324.176',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.175',
+          'revision': 'version:88.0.4324.176',
         }
       ],
     },
@@ -392,13 +392,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=89',
     ],
-    'identifier': 'Implementation Library Skew Tests For 89.0.4389.46',
+    'identifier': 'Implementation Library Skew Tests For 89.0.4389.48',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.46',
+          'revision': 'version:89.0.4389.48',
         }
       ],
     },
@@ -416,13 +416,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=88',
     ],
-    'identifier': 'Implementation Library Skew Tests For 88.0.4324.175',
+    'identifier': 'Implementation Library Skew Tests For 88.0.4324.176',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.175',
+          'revision': 'version:88.0.4324.176',
         }
       ],
     },
@@ -464,13 +464,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=89',
     ],
-    'identifier': 'Client Library Skew Tests For 89.0.4389.46',
+    'identifier': 'Client Library Skew Tests For 89.0.4389.48',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.46',
+          'revision': 'version:89.0.4389.48',
         }
       ],
     },
@@ -488,13 +488,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=88',
     ],
-    'identifier': 'Client Library Skew Tests For 88.0.4324.175',
+    'identifier': 'Client Library Skew Tests For 88.0.4324.176',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.175',
+          'revision': 'version:88.0.4324.176',
         }
       ],
     },

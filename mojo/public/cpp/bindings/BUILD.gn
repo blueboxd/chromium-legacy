@@ -57,8 +57,6 @@ component("bindings_base") {
     "lib/bindings_internal.h",
     "lib/buffer.cc",
     "lib/buffer.h",
-    "lib/fixed_buffer.cc",
-    "lib/fixed_buffer.h",
     "lib/handle_serialization.cc",
     "lib/handle_serialization.h",
     "lib/hash_util.h",
@@ -128,7 +126,6 @@ component("bindings_base") {
 
 component("bindings") {
   sources = [
-    "associated_interface_ptr.h",
     "associated_interface_ptr_info.h",
     "associated_interface_request.h",
     "associated_receiver.h",
@@ -147,7 +144,6 @@ component("bindings") {
     "interface_ptr.h",
     "interface_ptr_info.h",
     "interface_request.h",
-    "lib/associated_interface_ptr.cc",
     "lib/associated_interface_ptr_state.cc",
     "lib/associated_interface_ptr_state.h",
     "lib/associated_receiver.cc",

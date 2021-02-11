@@ -4,10 +4,8 @@
 
 #include "base/allocator/partition_allocator/partition_root.h"
 
-#include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
-#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
@@ -73,7 +71,8 @@ void AfterForkInChild() {
   // If we don't reclaim this memory, it is lost forever. Note that this is only
   // really an issue if we fork() a multi-threaded process without calling
   // exec() right away, which is discouraged.
-  internal::ThreadCacheRegistry::Instance().ForcePurgeAllThreadUnsafe();
+  internal::ThreadCacheRegistry::Instance()
+      .ForcePurgeAllThreadAfterForkUnsafe();
 }
 #endif  // defined(OS_LINUX)
 
@@ -388,8 +387,10 @@ static void PartitionDumpBucketStats(
 }
 
 #if DCHECK_IS_ON()
-void DCheckIfManagedByPartitionAllocBRPPool(const void* ptr) {
-  PA_DCHECK(IsManagedByPartitionAllocBRPPool(ptr));
+void DCheckIfManagedByPartitionAllocNormalBuckets(const void* ptr) {
+  if (features::IsPartitionAllocGigaCageEnabled()) {
+    PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
+  }
 }
 #endif
 

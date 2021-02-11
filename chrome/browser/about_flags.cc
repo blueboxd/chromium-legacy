@@ -1459,6 +1459,25 @@ const FeatureEntry::FeatureVariation kTabHoverCardsFeatureVariations[] = {
     {"B", kTabHoverCardsSettingB, base::size(kTabHoverCardsSettingB), nullptr},
     {"C", kTabHoverCardsSettingC, base::size(kTabHoverCardsSettingC), nullptr}};
 
+const FeatureEntry::FeatureParam kMinimumTabWidthSettingPinned[] = {
+    {features::kMinimumTabWidthFeatureParameterName, "54"}};
+const FeatureEntry::FeatureParam kMinimumTabWidthSettingMedium[] = {
+    {features::kMinimumTabWidthFeatureParameterName, "72"}};
+const FeatureEntry::FeatureParam kMinimumTabWidthSettingLarge[] = {
+    {features::kMinimumTabWidthFeatureParameterName, "140"}};
+const FeatureEntry::FeatureParam kMinimumTabWidthSettingFull[] = {
+    {features::kMinimumTabWidthFeatureParameterName, "256"}};
+
+const FeatureEntry::FeatureVariation kTabScrollingVariations[] = {
+    {" - tabs shrink to pinned tab width", kMinimumTabWidthSettingPinned,
+     base::size(kMinimumTabWidthSettingPinned), nullptr},
+    {" - tabs shrink to a medium width", kMinimumTabWidthSettingMedium,
+     base::size(kMinimumTabWidthSettingMedium), nullptr},
+    {" - tabs shrink to a large width", kMinimumTabWidthSettingLarge,
+     base::size(kMinimumTabWidthSettingLarge), nullptr},
+    {" - tabs do not shrink", kMinimumTabWidthSettingFull,
+     base::size(kMinimumTabWidthSettingFull), nullptr}};
+
 const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
     {features::kPromoBrowserCommandIdParam, "0"}};
 const FeatureEntry::FeatureParam
@@ -2941,9 +2960,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"stylus-battery-status", flag_descriptions::kStylusBatteryStatusName,
      flag_descriptions::kStylusBatteryStatusDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kStylusBatteryStatus)},
-    {"system-tray-mic-gain", flag_descriptions::kSystemTrayMicGainName,
-     flag_descriptions::kSystemTrayMicGainDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kSystemTrayMicGainSetting)},
     {"deprecate-low-usage-codecs",
      flag_descriptions::kDeprecateLowUsageCodecsName,
      flag_descriptions::kDeprecateLowUsageCodecsDescription, kOsCrOS,
@@ -3214,6 +3230,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
+    {"preemtive-link-to-text-generation",
+     flag_descriptions::kPreemtiveLinkToTextGenerationName,
+     flag_descriptions::kPreemtiveLinkToTextGenerationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPreemtiveLinkToTextGeneration)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"keyboard-based-display-arrangement-in-settings",
      flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
@@ -3909,6 +3929,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-documents-provider", flag_descriptions::kArcDocumentsProviderName,
      flag_descriptions::kArcDocumentsProviderDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableDocumentsProviderInFilesAppFeature)},
+    {"arc-enable-usap", flag_descriptions::kArcEnableUsapName,
+     flag_descriptions::kArcEnableUsapDesc, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableUsap)},
     {"arc-file-picker-experiment",
      flag_descriptions::kArcFilePickerExperimentName,
      flag_descriptions::kArcFilePickerExperimentDescription, kOsCrOS,
@@ -4520,7 +4543,9 @@ const FeatureEntry kFeatureEntries[] = {
     {flag_descriptions::kScrollableTabStripFlagId,
      flag_descriptions::kScrollableTabStripName,
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollableTabStrip,
+                                    kTabScrollingVariations,
+                                    "TabScrolling")},
 
     {"scrollable-tabstrip-buttons",
      flag_descriptions::kScrollableTabStripButtonsName,
@@ -5494,6 +5519,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePalmOnToolTypePalmName,
      flag_descriptions::kEnablePalmOnToolTypePalmName, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnablePalmOnToolTypePalm)},
+
+    {"enable-pci-guard-ui", flag_descriptions::kEnablePciguardUiName,
+     flag_descriptions::kEnablePciguardUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnablePciguardUi)},
 
     {"enable-heuristic-stylus-palm-rejection",
      flag_descriptions::kEnableHeuristicStylusPalmRejectionName,
@@ -6745,6 +6774,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopRestructuredLanguageSettingsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(language::kDesktopRestructuredLanguageSettings)},
+
+    {"desktop-detailed-language-settings",
+     flag_descriptions::kDesktopDetailedLanguageSettingsName,
+     flag_descriptions::kDesktopDetailedLanguageSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(language::kDesktopDetailedLanguageSettings)},
 #endif
 
     {"sync-autofill-wallet-offer-data",

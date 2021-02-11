@@ -12784,6 +12784,7 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="CONTEXT_LOST_SET_DRAW_RECTANGLE_FAILED"/>
   <int value="15" label="CONTEXT_LOST_DIRECT_COMPOSITION_OVERLAY_FAILED"/>
   <int value="16" label="CONTEXT_LOST_SWAP_FAILED"/>
+  <int value="17" label="CONTEXT_LOST_BEGIN_PAINT_FAILED"/>
 </enum>
 
 <enum name="ContextMenuDelayedElementDetails">
@@ -26331,6 +26332,7 @@ Called by update_extension_histograms.py.-->
   <int value="1539" label="FILEMANAGERPRIVATE_ISTABLETMODEENABLED"/>
   <int value="1540" label="FILEMANAGERPRIVATE_NOTIFYDRIVEDIALOGRESULT"/>
   <int value="1541" label="ENTERPRISEREPORTINGPRIVATE_GETCONTEXTINFO"/>
+  <int value="1542" label="SCRIPTING_REMOVECSS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35697,9 +35699,10 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="GetChangePasswordUrlMetric">
-  <int value="0" label="Gstatic file was not fetched yet"/>
+  <int value="0" label="Url override was not fetched yet"/>
   <int value="1" label="Url override was available and used"/>
   <int value="2" label="No url override was available"/>
+  <int value="3" label="Url override was available in the FacetGroup and used"/>
 </enum>
 
 <enum name="GetEncryptionKeyAction">
@@ -42824,6 +42827,7 @@ from previous Chrome versions.
   <int value="-2104654357" label="GamesHub:enabled"/>
   <int value="-2102286055" label="WebViewVulkanIntermediateBuffer:disabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
+  <int value="-2101338272" label="EnablePciguardUi:disabled"/>
   <int value="-2101337189" label="AutofillOffNoServerData:disabled"/>
   <int value="-2099486626" label="DownloadLater:enabled"/>
   <int value="-2099457894" label="Mash:enabled"/>
@@ -43089,6 +43093,7 @@ from previous Chrome versions.
   <int value="-1880355454" label="disable-topchrome-md"/>
   <int value="-1879877238" label="disable-cancel-all-touches"/>
   <int value="-1878958319" label="ScrollableTabStripButtons:disabled"/>
+  <int value="-1876955850" label="EnablePciguardUi:enabled"/>
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>
   <int value="-1875383510" label="UseGoogleLocalNtp:disabled"/>
@@ -43220,6 +43225,7 @@ from previous Chrome versions.
   <int value="-1753458842" label="OfflinePagesLivePageSharing:disabled"/>
   <int value="-1752853388"
       label="OmniboxUIExperimentElideToRegistrableDomain:enabled"/>
+  <int value="-1752118355" label="DesktopDetailedLanguageSettings:enabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
   <int value="-1750008152" label="UsernameFirstFlow:enabled"/>
   <int value="-1749689559" label="SelectToSpeakNavigationControl:disabled"/>
@@ -44556,6 +44562,7 @@ from previous Chrome versions.
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
+  <int value="-558488712" label="PreemtiveLinkToTextGeneration:disabled"/>
   <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
@@ -46691,6 +46698,7 @@ from previous Chrome versions.
       label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1446349255" label="ArcEnableUsap:disabled"/>
   <int value="1446946673" label="DesktopRestructuredLanguageSettings:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
   <int value="1448684258" label="TabHoverCardImages:enabled"/>
@@ -46713,6 +46721,7 @@ from previous Chrome versions.
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
   <int value="1461581256" label="MovablePartialScreenshot:enabled"/>
+  <int value="1463230871" label="ArcEnableUsap:enabled"/>
   <int value="1464028544" label="WinUseHybridSpellChecker:disabled"/>
   <int value="1464610065" label="TabbedAppOverflowMenuRegroup:disabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
@@ -46838,6 +46847,7 @@ from previous Chrome versions.
       label="AutofillSendExperimentIdsInPaymentsRPCs:enabled"/>
   <int value="1590300329" label="CCTModulePostMessage:enabled"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
+  <int value="1592391721" label="DesktopDetailedLanguageSettings:disabled"/>
   <int value="1593720927" label="GamepadVibration:disabled"/>
   <int value="1593883073" label="OfflineIndicatorV2:disabled"/>
   <int value="1593917165" label="SimplifiedNTP:disabled"/>
@@ -46850,6 +46860,7 @@ from previous Chrome versions.
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
   <int value="1601582484" label="enable-crash-reporter-for-testing"/>
   <int value="1602627012" label="OverrideSitePrefsForHrefTranslate:enabled"/>
+  <int value="1602791752" label="PreemtiveLinkToTextGeneration:enabled"/>
   <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
   <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1604893983" label="VizForWebView:disabled"/>
@@ -55009,7 +55020,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Parse issue advice failure (deprecated 02/2021)"/>
   <int value="8" label="Remote consent fallback (deprecated 06/2020)"/>
   <int value="9" label="Parse remote consent failure"/>
-  <int value="10" label="Mint token success with fallback scopes"/>
+  <int value="10"
+      label="Mint token success with fallback scopes (deprecated 02/2021)"/>
 </enum>
 
 <enum name="OAuthMultiloginResponseStatus">
@@ -72839,6 +72851,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Success"/>
   <int value="1" label="Timeout"/>
   <int value="2" label="Parse error"/>
+</enum>
+
+<enum name="SubresourceWebBundleLoadResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Metadata parse error"/>
+  <int value="2" label="Memory quota exceeded"/>
 </enum>
 
 <enum name="SuccessTimeoutStarted">

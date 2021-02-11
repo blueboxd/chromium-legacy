@@ -45,6 +45,10 @@ import("//ui/views/features.gni")
 import("//ui/webui/webui_features.gni")
 import("//v8/gni/v8.gni")
 
+if (is_chromeos) {
+  import("//build/config/chromeos/rules.gni")
+}
+
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (is_android) {
@@ -1179,7 +1183,7 @@ if (!is_android) {
       "../browser/net/network_quality_tracker_browsertest.cc",
       "../browser/net/network_request_metrics_browsertest.cc",
       "../browser/net/nss_context_chromeos_browsertest.cc",
-      "../browser/net/private_network_request_browsertest.cc",
+      "../browser/net/private_network_access_browsertest.cc",
       "../browser/net/profile_network_context_service_browsertest.cc",
       "../browser/net/profile_network_context_service_test_utils.cc",
       "../browser/net/profile_network_context_service_test_utils.h",
@@ -1411,7 +1415,7 @@ if (!is_android) {
       "../browser/ui/autofill/payments/card_unmask_prompt_view_tester.h",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_browsertest.cc",
       "../browser/ui/autofill/payments/save_upi_bubble_controller_impl_browsertest.cc",
-      "../browser/ui/autofill/save_address_profile_bubble_controller_browsertest.cc",
+      "../browser/ui/autofill/save_address_profile_bubble_controller_impl_browsertest.cc",
       "../browser/ui/blocked_content/popup_opener_tab_helper_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
@@ -2189,6 +2193,8 @@ if (!is_android) {
         ]
 
         deps += [ "//chrome/browser/error_reporting:test_support" ]
+      } else {
+        sources += [ "../browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_browsertest.cc" ]
       }
 
       deps += [
@@ -2432,6 +2438,8 @@ if (!is_android) {
         "../browser/ash/app_mode/kiosk_crash_restore_browsertest.cc",
         "../browser/ash/app_mode/web_app/web_kiosk_app_data_browsertest.cc",
         "../browser/ash/profiles/profile_helper_browsertest.cc",
+        "../browser/ash/system/device_disabling_browsertest.cc",
+        "../browser/ash/system/tray_accessibility_browsertest.cc",
         "../browser/chrome_main_browsertest.cc",
         "../browser/chromeos/apps/apk_web_app_installer_browsertest.cc",
         "../browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge_browsertest.cc",
@@ -2741,8 +2749,6 @@ if (!is_android) {
         "../browser/chromeos/scoped_test_system_nss_key_slot_mixin.h",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
-        "../browser/chromeos/system/device_disabling_browsertest.cc",
-        "../browser/chromeos/system/tray_accessibility_browsertest.cc",
         "../browser/chromeos/web_applications/camera_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/diagnostics_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/eche_app_integration_browsertest.cc",
@@ -3336,42 +3342,70 @@ group("ct_telemetry_perf_tests_without_chrome") {
 
 # New target that will replace telemetry_perf_tests when testing
 # is done.
-script_test("performance_test_suite") {
-  script = "//testing/scripts/run_performance_tests.py"
-  args = [ "../../tools/perf/run_benchmark" ]
+template("performance_test_suite_template") {
+  forward_variables_from(invoker, [ "override_board" ])
+  script_test(target_name) {
+    script = "//testing/scripts/run_performance_tests.py"
+    if (is_chromeos_device) {
+      if (defined(override_board)) {
+        args = [ "bin/cros_update_wrapper_${override_board} -- ../../tools/perf/run_benchmark" ]
+      } else {
+        args = [ "bin/cros_update_wrapper -- ../../tools/perf/run_benchmark" ]
+      }
+    } else {
+      args = [ "../../tools/perf/run_benchmark" ]
+    }
 
-  data_deps = [
-    "//base:base_perftests",
-    "//chrome/test:telemetry_perf_tests",
-    "//components:components_perftests",
-    "//components/tracing:tracing_perftests",
-    "//gpu:command_buffer_perftests",
-    "//gpu:gpu_perftests",
-    "//media:media_perftests",
-    "//testing:run_perf_test",
-  ]
-
-  if (build_dawn_tests && !is_chromeos_lacros) {
-    data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests" ]
-  }
-
-  if (!is_chromeos_lacros) {
-    data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
-  }
-
-  if (!is_android && !is_fuchsia) {
-    data_deps += [
-      "//chrome/test:load_library_perf_tests",
-      "//ui/views:views_perftests",
+    data_deps = [
+      "//base:base_perftests",
+      "//chrome/test:telemetry_perf_tests",
+      "//components:components_perftests",
+      "//components/tracing:tracing_perftests",
+      "//gpu:command_buffer_perftests",
+      "//gpu:gpu_perftests",
+      "//media:media_perftests",
+      "//testing:run_perf_test",
     ]
-  }
 
-  if (!is_android) {
-    data_deps += [ "//chrome/test:performance_browser_tests" ]
-  }
+    if (build_dawn_tests && !is_chromeos_lacros) {
+      data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests" ]
+    }
 
-  if (!is_ios && !is_fuchsia && !is_android) {
-    data_deps += [ "//net:net_perftests" ]
+    if (!is_chromeos_lacros) {
+      data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
+    }
+
+    if (!is_android && !is_fuchsia) {
+      data_deps += [
+        "//chrome/test:load_library_perf_tests",
+        "//ui/views:views_perftests",
+      ]
+    }
+
+    if (!is_android) {
+      data_deps += [ "//chrome/test:performance_browser_tests" ]
+    }
+
+    if (!is_ios && !is_fuchsia && !is_android) {
+      data_deps += [ "//net:net_perftests" ]
+    }
+  }
+}
+
+performance_test_suite_template("performance_test_suite") {
+}
+
+# Generate performance_test_suite_${board} targets.
+# These set --board to ${board} instead of deriving it from the target.
+# This is useful for Lacros, where the generic build is deployed to
+# many different targets.
+if (is_chromeos_device && cros_boards != "") {
+  foreach(_board, string_split(cros_boards, ":")) {
+    _board_underscore = string_replace(_board, "-", "_")
+    performance_test_suite_template(
+        "performance_test_suite_${_board_underscore}") {
+      override_board = _board
+    }
   }
 }
 
@@ -4067,6 +4101,13 @@ test("unit_tests") {
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
     ]
   }
+
+  if (is_chromeos_ash) {
+    sources += [
+      "../browser/speech/cros_speech_recognition_service_factory_unittest.cc",
+    ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "../../chromeos/memory/userspace_swap/userspace_swap.cc",
@@ -4869,7 +4910,7 @@ test("unit_tests") {
       "../browser/sharing/sms/sms_remote_fetcher_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
-      "../browser/ui/autofill/save_address_profile_bubble_controller_unittest.cc",
+      "../browser/ui/autofill/save_address_profile_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_scanning_prompt_controller_unittest.cc",
       "../browser/ui/media_router/cast_modes_with_media_sources_unittest.cc",

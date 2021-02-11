@@ -153,7 +153,8 @@ class ContentAutofillDriver : public AutofillDriver,
       const content::RenderWidgetHost::KeyPressEventCallback& handler);
   void RemoveKeyPressHandler();
 
-  void SetAutofillProviderForTesting(AutofillProvider* provider);
+  void SetAutofillProviderForTesting(AutofillProvider* provider,
+                                     AutofillClient* client);
 
   // Sets the manager to |manager|. Takes ownership of |manager|.
   void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
@@ -181,11 +182,17 @@ class ContentAutofillDriver : public AutofillDriver,
 
   void SetAutofillProvider(
       AutofillProvider* provider,
+      AutofillClient* client,
       AutofillHandler::AutofillDownloadManagerState enable_download_manager);
 
   // Returns whether navigator.credentials.get({otp: {transport:"sms"}}) has
   // been used.
   bool DocumentUsedWebOTP() const;
+
+  // Show a bubble or infobar indicating that the current page has an eligible
+  // offer or reward, if the bubble/infobar is not currently being visible.
+  void ShowOfferNotificationIfApplicable(
+      content::NavigationHandle* navigation_handle);
 
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.

@@ -69,7 +69,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -525,7 +524,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
 
 // Tests that extensions can't use platform-app-only APIs.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PlatformAppsOnly) {
-  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("platform_apps/apps_only"))
+  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/apps_only"},
+                               {.ignore_manifest_warnings = true}))
       << message_;
 }
 
@@ -1294,8 +1294,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
                    apps::mojom::LaunchContainer::kLaunchContainerWindow,
                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
                    true /* prefer_container */),
-               apps::mojom::LaunchSource::kFromTest,
-               display::kInvalidDisplayId);
+               apps::mojom::LaunchSource::kFromTest);
 
   while (!base::Contains(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();

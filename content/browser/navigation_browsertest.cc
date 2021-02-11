@@ -22,6 +22,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
@@ -42,6 +43,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -61,6 +63,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "content/test/task_runner_deferring_throttle.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "ipc/ipc_security_test_util.h"
@@ -4150,6 +4153,109 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromCspSandboxResponse) {
       current_frame_host()->GetLastCommittedOrigin().CanBeDerivedFrom(url));
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       ProcessShutdownDuringDeferredNavigationThrottle) {
+  GURL url = embedded_test_server()->GetURL("a.com", "/empty.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  class ShutdownThrottle : public TaskRunnerDeferringThrottle,
+                           WebContentsObserver {
+   public:
+    explicit ShutdownThrottle(WebContents* web_contents,
+                              NavigationHandle* handle)
+        : TaskRunnerDeferringThrottle(base::ThreadTaskRunnerHandle::Get(),
+                                      /*defer_start=*/false,
+                                      /*defer_redirect=*/false,
+                                      /*defer_response=*/true,
+                                      handle),
+          web_contents_(web_contents) {
+      WebContentsObserver::Observe(web_contents_);
+    }
+
+    void AsyncResume() override {
+      // Shutdown the renderer and delay Resume() until then.
+      web_contents_->GetMainFrame()->GetProcess()->Shutdown(1);
+    }
+
+    void RenderFrameDeleted(RenderFrameHost* frame_host) override {
+      TaskRunnerDeferringThrottle::AsyncResume();
+    }
+
+   private:
+    WebContents* web_contents_;
+  };
+
+  auto inserter = std::make_unique<TestNavigationThrottleInserter>(
+      shell()->web_contents(),
+      base::BindLambdaForTesting(
+          [&](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
+            return std::make_unique<ShutdownThrottle>(shell()->web_contents(),
+                                                      handle);
+          }));
+
+  class DoesNotReadyToCommitObserver : public WebContentsObserver {
+   public:
+    explicit DoesNotReadyToCommitObserver(WebContents* contents)
+        : WebContentsObserver(contents) {}
+
+    // WebContentsObserver overrides.
+    void ReadyToCommitNavigation(NavigationHandle* handle) override {
+      // This method should not happen. Since the process is destroyed before
+      // we become ready to commit, we can not ever reach
+      // ReadyToCommitNavigation. Doing so would fail because the renderer is
+      // gone.
+      ADD_FAILURE() << "ReadyToCommitNavigation but renderer has crashed. "
+                       "IsRenderFrameLive: "
+                    << handle->GetRenderFrameHost()->IsRenderFrameLive();
+      navigation_was_ready_to_commit_ = true;
+    }
+
+    void DidFinishNavigation(NavigationHandle* handle) override {
+      navigation_finished_ = true;
+      navigation_committed_ = handle->HasCommitted();
+    }
+
+    bool navigation_was_ready_to_commit() {
+      return navigation_was_ready_to_commit_;
+    }
+    bool navigation_finished() { return navigation_finished_; }
+    bool navigation_committed() { return navigation_committed_; }
+
+   private:
+    bool navigation_was_ready_to_commit_ = false;
+    bool navigation_finished_ = false;
+    bool navigation_committed_ = false;
+  };
+
+  // Watch that ReadyToCommitNavigation() will not happen when the renderer is
+  // gone.
+  DoesNotReadyToCommitObserver no_commit_obs(shell()->web_contents());
+
+  // We will shutdown the renderer during this navigation.
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
+  // Important: This is a browser-initiated navigation, so the NavigationRequest
+  // does not have an open connection (NavigationClient) to the renderer that it
+  // is listening to for termination while running NavigationThrottles.
+  //
+  // Expect this navigation to be aborted, so we stop waiting after the
+  // uncommitted navigation is done.
+  GURL url2 = embedded_test_server()->GetURL("a.com", "/title1.html");
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), url2, /*number_of_navigations=*/1,
+      /*ignore_uncommitted_navigations=*/false);
+
+  // The renderer was shutdown mid-navigation.
+  EXPECT_FALSE(shell()->web_contents()->GetMainFrame()->IsRenderFrameLive());
+
+  // The navigation was aborted, which means it finished but did not commit, and
+  // _importantly_ it never reported "ReadyToCommitNavigation" without a live
+  // renderer.
+  EXPECT_TRUE(no_commit_obs.navigation_finished());
+  EXPECT_FALSE(no_commit_obs.navigation_was_ready_to_commit());
+  EXPECT_FALSE(no_commit_obs.navigation_committed());
+}
+
 // Do sandbox flags apply to error page in sandboxed iframes?
 // Apparently yes.
 // TODO(https://crbug.com/1158370): Reconsider this.
@@ -4326,6 +4432,47 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   console_observer.Wait();
 }
 
+namespace {
+
+void VerifyResultsOfAboutBlankNavigation(RenderFrameHostImpl* target_frame,
+                                         RenderFrameHostImpl* initiator_frame) {
+  // Verify that `target_frame` has been navigated to "about:blank".
+  EXPECT_EQ(GURL(url::kAboutBlankURL), target_frame->GetLastCommittedURL());
+
+  // Verify that "about:blank" committed with the expected origin, and in the
+  // expected SiteInstance.
+  EXPECT_EQ(target_frame->GetLastCommittedOrigin(),
+            initiator_frame->GetLastCommittedOrigin());
+  EXPECT_EQ(target_frame->GetSiteInstance(),
+            initiator_frame->GetSiteInstance());
+
+  // Start monitoring NetworkService for crashes.
+  //
+  // TODO(https://crbug.com/1169431): This should be part of BrowserTestBase.
+  // (with optional opt-out for things like NetworkServiceRestartBrowserTest).
+  bool did_network_service_crash = false;
+  base::CallbackListSubscription crash_monitoring_subscription =
+      RegisterNetworkServiceCrashHandler(base::BindLambdaForTesting(
+          [&]() { did_network_service_crash = true; }));
+  // Ask for cookies in the `target_frame`.  One implicit verification here
+  // is whether this step will hit any `cookie_url`-related NOTREACHED or DwoC
+  // in RestrictedCookieManager::ValidateAccessToCookiesAt.  This verification
+  // is non-racey, because `document.cookie` must have heard back from the
+  // RestrictedCookieManager before returning the value of cookies (this ignores
+  // possible Blink-side caching, but this is the first time the renderer needs
+  // the cookies and so this is okay for this test).
+  EXPECT_EQ("", EvalJs(target_frame, "document.cookie"));
+  // |network_context| might receive an error notification, but it's not
+  // guaranteed to have arrived at this point. Flush the remote to make sure
+  // the notification has been received.
+  // TODO(https://crbug.com/1169431): This should be part of BrowserTestBase.
+  if (!IsInProcessNetworkService())
+    target_frame->FlushNetworkAndNavigationInterfacesForTesting();
+  EXPECT_FALSE(did_network_service_crash);
+}
+
+}  // namespace
+
 // The test below verifies that an "about:blank" navigation commits with the
 // right origin, even when the initiator of the navigation is not the parent or
 // opener of the frame targeted by the navigation.  In the
@@ -4372,10 +4519,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame = main_frame->child_at(0)->current_frame_host();
   grandchild_frame = child_frame->child_at(0)->current_frame_host();
-  EXPECT_EQ(main_frame->GetLastCommittedOrigin(),
-            grandchild_frame->GetLastCommittedOrigin());
-  EXPECT_EQ(GURL(url::kAboutBlankURL), grandchild_frame->GetLastCommittedURL());
-  EXPECT_EQ(main_frame->GetSiteInstance(), grandchild_frame->GetSiteInstance());
+  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame);
 }
 
 // The test below verifies that an "about:blank" navigation commits with the
@@ -4425,10 +4569,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame = main_frame->child_at(0)->current_frame_host();
   grandchild_frame = child_frame->child_at(0)->current_frame_host();
-  EXPECT_EQ(main_frame->GetLastCommittedOrigin(),
-            grandchild_frame->GetLastCommittedOrigin());
-  EXPECT_EQ(GURL(url::kAboutBlankURL), grandchild_frame->GetLastCommittedURL());
-  EXPECT_EQ(main_frame->GetSiteInstance(), grandchild_frame->GetSiteInstance());
+  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame);
 }
 
 // The test below verifies that an "about:blank" navigation commits with the
@@ -4479,10 +4620,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame = main_frame->child_at(0)->current_frame_host();
   grandchild_frame = child_frame->child_at(0)->current_frame_host();
-  EXPECT_EQ(main_frame->GetLastCommittedOrigin(),
-            grandchild_frame->GetLastCommittedOrigin());
-  EXPECT_EQ(GURL(url::kAboutBlankURL), grandchild_frame->GetLastCommittedURL());
-  EXPECT_EQ(main_frame->GetSiteInstance(), grandchild_frame->GetSiteInstance());
+  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame);
 }
 
 // The test below verifies that an "about:blank" navigation commits with the
@@ -4570,10 +4708,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame1 = main_frame->child_at(0)->current_frame_host();
   child_frame2 = main_frame->child_at(1)->current_frame_host();
-  EXPECT_EQ(GURL(url::kAboutBlankURL), child_frame2->GetLastCommittedURL());
-  EXPECT_EQ(child_frame1->GetLastCommittedOrigin(),
-            child_frame2->GetLastCommittedOrigin());
-  EXPECT_EQ(child_frame1->GetSiteInstance(), child_frame2->GetSiteInstance());
+  VerifyResultsOfAboutBlankNavigation(child_frame2, child_frame1);
 }
 
 }  // namespace content

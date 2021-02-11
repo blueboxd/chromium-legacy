@@ -552,10 +552,10 @@ void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
       ContentLayerType::kIconColorPrimary);
   if (is_quiet_mode) {
     quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterDoNotDisturbOnIcon, kMenuIconSize, icon_color));
+        kSystemTrayDoNotDisturbIcon, kMenuIconSize, icon_color));
   } else {
     quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterDoNotDisturbOffIcon, kMenuIconSize, icon_color));
+        kDoNotDisturbDisabledIcon, kMenuIconSize, icon_color));
   }
 }
 

@@ -292,7 +292,7 @@ void GPUQueue::WriteTextureImpl(
     GPUTextureDataLayout* data_layout,
     UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& write_size,
     ExceptionState& exception_state) {
-  WGPUExtent3D dawn_write_size = AsDawnType(&write_size);
+  WGPUExtent3D dawn_write_size = AsDawnType(&write_size, device_);
   WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
 
   WGPUTextureDataLayout dawn_data_layout = {};
@@ -335,7 +335,7 @@ void GPUQueue::copyImageBitmapToTexture(
   // appropriate format. Now only support texture format exactly the same. The
   // compatible formats need to be defined in WebGPU spec.
 
-  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size, device_);
 
   // Extract imageBitmap attributes
   WGPUOrigin3D origin_in_image_bitmap =
@@ -471,9 +471,10 @@ bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
                                   const WGPUOrigin3D& origin,
                                   const WGPUExtent3D& copy_size,
                                   const WGPUTextureCopyView& destination) {
-  scoped_refptr<WebGPUMailboxTexture> mailbox_texture = base::AdoptRef(
-      new WebGPUMailboxTexture(GetDawnControlClient(), device_->GetHandle(),
-                               image, WGPUTextureUsage_CopySrc));
+  scoped_refptr<WebGPUMailboxTexture> mailbox_texture =
+      WebGPUMailboxTexture::FromStaticBitmapImage(
+          GetDawnControlClient(), device_->GetHandle(),
+          WGPUTextureUsage_CopySrc, image);
 
   WGPUTexture src_texture = mailbox_texture->GetTexture();
   DCHECK(src_texture != nullptr);

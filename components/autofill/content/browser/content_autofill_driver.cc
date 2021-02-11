@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
@@ -69,7 +70,7 @@ ContentAutofillDriver::ContentAutofillDriver(
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
-    SetAutofillProvider(provider, enable_download_manager);
+    SetAutofillProvider(provider, client, enable_download_manager);
   } else {
     SetAutofillManager(std::make_unique<AutofillManager>(
         this, client, app_locale, enable_download_manager));
@@ -348,6 +349,8 @@ void ContentAutofillDriver::DidNavigateFrame(
     return;
   }
 
+  ShowOfferNotificationIfApplicable(navigation_handle);
+
   submitted_forms_.clear();
   autofill_handler_->Reset();
 }
@@ -402,9 +405,10 @@ void ContentAutofillDriver::RemoveHandler(
 
 void ContentAutofillDriver::SetAutofillProvider(
     AutofillProvider* provider,
+    AutofillClient* client,
     AutofillHandler::AutofillDownloadManagerState enable_download_manager) {
   autofill_handler_ = std::make_unique<AutofillHandlerProxy>(
-      this, log_manager_, provider, enable_download_manager);
+      this, client, provider, enable_download_manager);
   GetAutofillAgent()->SetUserGestureRequired(false);
   GetAutofillAgent()->SetSecureContextRequired(true);
   GetAutofillAgent()->SetFocusRequiresScroll(false);
@@ -449,11 +453,37 @@ void ContentAutofillDriver::ReportAutofillWebOTPMetrics(
 }
 
 void ContentAutofillDriver::SetAutofillProviderForTesting(
-    AutofillProvider* provider) {
-  SetAutofillProvider(provider, AutofillHandler::AutofillDownloadManagerState::
-                                    DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+    AutofillProvider* provider,
+    AutofillClient* client) {
+  SetAutofillProvider(provider, client,
+                      AutofillHandler::AutofillDownloadManagerState::
+                          DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   // AutofillManager isn't used if provider is valid.
   autofill_manager_ = nullptr;
+}
+
+void ContentAutofillDriver::ShowOfferNotificationIfApplicable(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  // TODO(crbug.com/1093057): Android webview does not have |autofill_manager_|,
+  // so flow is not enabled in Android Webview.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableOfferNotification) ||
+      !autofill_manager_) {
+    return;
+  }
+
+  AutofillOfferManager* offer_manager = autofill_manager_->offer_manager();
+  // Try to show offer notification when the last committed URL has the domain
+  // that an offer is applicable for.
+  GURL url = autofill_manager_->client()->GetLastCommittedURL();
+  if (offer_manager->IsUrlEligible(url)) {
+    std::vector<GURL> domains =
+        offer_manager->GetEligibleDomainsForOfferForUrl(url);
+    autofill_manager_->client()->ShowOfferNotificationIfApplicable(domains);
+  }
 }
 
 }  // namespace autofill

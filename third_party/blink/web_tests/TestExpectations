@@ -160,7 +160,6 @@ crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-partial-inval
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-path-context-fill.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-state-persistence-no-dirty.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-transform-skewed.html [ Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-Bitmaprenderer-TransferToImageBitmapResetsToBlack.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-text-FontFace.html [ Pass Failure ]
 
 # Flakey tests
@@ -1064,9 +1063,6 @@ crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
 ### TablesNG
 # crbug.com/958381
-# fails because TablesNG does not coalesce columns
-crbug.com/958381 accessibility/table-cells-with-colspan.html [ Failure ]
-crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
 
 # TODO fails because cell size with only input element is 18px, not 15. line-height: 0px fixes it.
 crbug.com/1171616 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
@@ -1102,9 +1098,6 @@ crbug.com/958381 [ Mac ] virtual/text-antialias/hyphen-min-preferred-width.html 
 crbug.com/958381 [ Win ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
 crbug.com/958381 [ Mac ] virtual/layout_ng_block_frag/fragmentation/fragmented-table-cell.html [ Failure ]
 crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.html [ Failure ]
-
-# Asan underinvalidation failure. Skip while investigating
-crbug.com/958381 paint/tables/huge-table-composited-scroll-collapsed-borders.html [ Skip ]
 
 # TablesNG ends
 
@@ -2006,8 +1999,8 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F
 crbug.com/1015331 external/wpt/css/css-text/white-space/eol-spaces-bidi-001.html [ Failure ]
 
 # needs implementation of test_driver_internal.action_sequence
-crbug.com/893480 external/wpt/editing/run/caretnavigation.html [ Timeout ]
-crbug.com/893480 external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/893480 external/wpt/editing/run/caretnavigation.html [ Failure Timeout ]
+crbug.com/893480 external/wpt/input-events/input-events-typing.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
@@ -2019,7 +2012,7 @@ crbug.com/893480 external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/textEditCommands.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/input-events/input-events-get-target-ranges.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/input-events/input-events-cut-paste.html [ Failure Timeout ]
-crbug.com/893480 external/wpt/html/semantics/forms/the-input-element/checkable-active-onblur.html [ Timeout ]
+crbug.com/893480 external/wpt/html/semantics/forms/the-input-element/checkable-active-onblur.html [ Failure Timeout ]
 
 # isInputPending requires threaded compositing and layerized iframes
 crbug.com/910421 external/wpt/is-input-pending/* [ Skip ]
@@ -2440,6 +2433,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/uievents/keyboard/modifier-keys-combinations.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-flexbox/percentage-descendant-of-anonymous-flex-item.html [ Failure ]
 crbug.com/626703 external/wpt/uievents/keyboard/modifier-keys.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-backgrounds/background-repeat-space-1b.html [ Failure ]
@@ -2597,16 +2591,16 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/webmessaging/without-ports/011.html [
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.zero.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Failure Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable [ Failure Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Failure Timeout ]
 crbug.com/626703 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Failure Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Failure Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Failure Timeout ]
 crbug.com/626703 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Failure ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable [ Failure Timeout ]
+crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-initial-layout-000.html [ Failure ]
 crbug.com/626703 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-initial-layout-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/x-frame-options/multiple.html [ Timeout ]
@@ -2621,14 +2615,14 @@ crbug.com/626703 external/wpt/websockets/cookies/005.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection-no-sink.https.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-element-and-another-list.tentative.html?Backspace [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Backspace,ul [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-elements.tentative.html?Backspace [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Delete,ul [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-elements.tentative.html?Delete [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-element-and-another-list.tentative.html?Delete [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Backspace,ol [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Delete,ol [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-element-and-another-list.tentative.html?Backspace [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Backspace,ul [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-elements.tentative.html?Backspace [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Delete,ul [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-elements.tentative.html?Delete [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-joining-dl-element-and-another-list.tentative.html?Delete [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Backspace,ol [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-deleting-in-list-items.tentative.html?Delete,ol [ Failure Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-stop.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/response/response-clone.any.sharedworker.html [ Failure Timeout ]
@@ -2638,7 +2632,7 @@ crbug.com/626703 [ Mac11.0 ] virtual/plz-dedicated-worker/external/wpt/fetch/api
 crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/api/response/response-clone.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/response/response-clone.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webxr/xr_viewport_scale.https.html [ Timeout ]
-crbug.com/626703 external/wpt/editing/other/select-all-and-delete-in-html-element-having-contenteditable.html [ Timeout ]
+crbug.com/626703 external/wpt/editing/other/select-all-and-delete-in-html-element-having-contenteditable.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/paint-timing/with-first-paint/first-contentful-image.html [ Timeout ]
 crbug.com/626703 external/wpt/paint-timing/with-first-paint/mask-image.html [ Timeout ]
 crbug.com/626703 external/wpt/paint-timing/with-first-paint/first-contentful-paint.html [ Timeout ]
@@ -2646,14 +2640,14 @@ crbug.com/626703 external/wpt/paint-timing/with-first-paint/child-painting-first
 crbug.com/626703 external/wpt/paint-timing/with-first-paint/sibling-painting-first-image.html [ Timeout ]
 crbug.com/626703 external/wpt/paint-timing/with-first-paint/border-image.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-2.https.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/testdriver/actions/iframe.html [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/testdriver/actions/iframe.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/actions/crossOrigin.sub.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/html/semantics/embedded-content/media-elements/preserves-pitch.html [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-during-and-after-dispatch.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-during-and-after-dispatch.tentative.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/scroll-to-text-fragment/redirects.html [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Backspace [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?TypingA [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Delete [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Backspace [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?TypingA [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Delete [ Failure Timeout ]
 crbug.com/626703 external/wpt/screen-capture/feature-policy.https.html [ Timeout ]
 crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
@@ -2665,8 +2659,8 @@ crbug.com/626703 [ Mac ] external/wpt/pointerevents/compat/pointerevent_mouse-po
 crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
-crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/transform-streams/patched-global.any.serviceworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/transform-streams/patched-global.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/transform-streams/patched-global.any.sharedworker.html [ Timeout ]
@@ -2981,10 +2975,8 @@ crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-17.xml [ Skip 
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-65.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-18b.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-159.xml [ Skip ]
-crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/reload.window.html [ Timeout ]
 crbug.com/626703 external/wpt/quirks/text-decoration-doesnt-propagate-into-tables/quirks.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
-crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-complex-002.svg [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-shape-inside-001.svg [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-complex-001.svg [ Failure ]
@@ -3581,6 +3573,8 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definiti
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.tentative.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-template-rows-fit-content-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-containing-block-003.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-containing-block-004.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-dynamic-min-contribution-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-002.html [ Failure ]
@@ -3679,7 +3673,6 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-spanning
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-spanning-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-unknown-named-grid-line-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-with-border-in-fr.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-with-border-in-intrinsic.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-with-percent-height-in-auto-height-grid-resolution.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-only-abspos-item-computed-style-crash.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-self-baseline-two-dimensional.html [ Failure ]
@@ -5652,6 +5645,12 @@ crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-em
 
 # flaky test
 crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ Failure Pass ]
+
+# Temporarily disabled to enable frontend change (https://crrev.com/c/2687495) to go through
+crbug.com/1176691 http/tests/devtools/security/interstitial-sidebar.js [ Failure Pass ]
+crbug.com/1176691 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
+
+
 
 # Failing on Webkit Linux Leak
 crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]

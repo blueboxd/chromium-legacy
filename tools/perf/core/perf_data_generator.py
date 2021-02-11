@@ -205,7 +205,9 @@ FYI_BUILDERS = {
             'extra_args': [
                 'hardware_accelerated_feature', '--show-stdout',
                 '--browser=web-engine-shell', '--passthrough', '-v',
-                '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc'
+                '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc',
+                '--device=custom',
+                '--custom-device-target=internal.astro_target'
             ],
             'type':
             TEST_TYPES.GENERIC,
@@ -213,6 +215,7 @@ FYI_BUILDERS = {
         'platform':
         'fuchsia',
         'dimension': {
+            'cpu': None,
             'device_type': 'Astro',
             'os': 'Fuchsia',
             'pool': 'chrome.tests',
@@ -279,7 +282,7 @@ FYI_BUILDERS = {
         'tests': [
             {
                 'isolate':
-                'performance_test_suite',
+                'performance_test_suite_eve',
                 'extra_args': [
                     # The magic hostname that resolves to a CrOS device in the test lab
                     '--remote=variable_chromeos_device_hostname',
@@ -446,7 +449,7 @@ BUILDERS = {
         'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
     },
     'linux-builder-perf-rel': {
-        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
+        'additional_compile_targets': ['chromium_builder_perf'],
     },
     'mac-builder-perf': {
         'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],

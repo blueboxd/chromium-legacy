@@ -2677,18 +2677,18 @@ const CSSValue* Fill::ParseSingleValue(CSSParserTokenRange& range,
 
 const CSSValue* Fill::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForSVGPaint(svg_style.FillPaint(), style);
+  return ComputedStyleUtils::ValueForSVGPaint(style.FillPaint(), style);
 }
 
 const blink::Color Fill::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(!visited_link);
-  DCHECK(style.SvgStyle().FillPaint().HasColor());
-  StyleColor fill_color = style.SvgStyle().FillPaint().GetColor();
+  DCHECK(style.FillPaint().HasColor());
+  const StyleColor& fill_color = style.FillPaint().GetColor();
   if (style.ShouldForceColor(fill_color))
     return style.GetInternalForcedCurrentColor();
   return fill_color.Resolve(style.GetCurrentColor(), style.UsedColorScheme());
@@ -2702,11 +2702,11 @@ const CSSValue* FillOpacity::ParseSingleValue(
 }
 
 const CSSValue* FillOpacity::CSSValueFromComputedStyleInternal(
-    const ComputedStyle&,
-    const SVGComputedStyle& svg_style,
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSNumericLiteralValue::Create(svg_style.FillOpacity(),
+  return CSSNumericLiteralValue::Create(style.FillOpacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
 }
 
@@ -3825,7 +3825,7 @@ const blink::Color InternalVisitedFill::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
-  const SVGPaint& paint = style.SvgStyle().InternalVisitedFillPaint();
+  const SVGPaint& paint = style.InternalVisitedFillPaint();
 
   // FIXME: This code doesn't support the uri component of the visited link
   // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
@@ -3833,7 +3833,7 @@ const blink::Color InternalVisitedFill::ColorIncludingFallback(
     return To<Longhand>(GetCSSPropertyFill())
         .ColorIncludingFallback(false, style);
   }
-  StyleColor visited_fill_color = paint.GetColor();
+  const StyleColor& visited_fill_color = paint.GetColor();
   if (style.ShouldForceColor(visited_fill_color))
     return style.GetInternalForcedVisitedCurrentColor();
   return visited_fill_color.Resolve(style.GetInternalVisitedCurrentColor(),
@@ -3890,7 +3890,7 @@ const blink::Color InternalVisitedStroke::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
-  const SVGPaint& paint = style.SvgStyle().InternalVisitedStrokePaint();
+  const SVGPaint& paint = style.InternalVisitedStrokePaint();
 
   // FIXME: This code doesn't support the uri component of the visited link
   // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
@@ -3898,7 +3898,7 @@ const blink::Color InternalVisitedStroke::ColorIncludingFallback(
     return To<Longhand>(GetCSSPropertyStroke())
         .ColorIncludingFallback(false, style);
   }
-  StyleColor visited_stroke_color = paint.GetColor();
+  const StyleColor& visited_stroke_color = paint.GetColor();
   if (style.ShouldForceColor(visited_stroke_color))
     return style.GetInternalForcedVisitedCurrentColor();
   return visited_stroke_color.Resolve(style.GetInternalVisitedCurrentColor(),
@@ -4664,10 +4664,10 @@ const CSSValue* MarkerEnd::ParseSingleValue(
 
 const CSSValue* MarkerEnd::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForSVGResource(svg_style.MarkerEndResource());
+  return ComputedStyleUtils::ValueForSVGResource(style.MarkerEndResource());
 }
 
 const CSSValue* MarkerMid::ParseSingleValue(
@@ -4681,10 +4681,10 @@ const CSSValue* MarkerMid::ParseSingleValue(
 
 const CSSValue* MarkerMid::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForSVGResource(svg_style.MarkerMidResource());
+  return ComputedStyleUtils::ValueForSVGResource(style.MarkerMidResource());
 }
 
 const CSSValue* MarkerStart::ParseSingleValue(
@@ -4698,11 +4698,10 @@ const CSSValue* MarkerStart::ParseSingleValue(
 
 const CSSValue* MarkerStart::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForSVGResource(
-      svg_style.MarkerStartResource());
+  return ComputedStyleUtils::ValueForSVGResource(style.MarkerStartResource());
 }
 
 const CSSValue* Mask::ParseSingleValue(CSSParserTokenRange& range,
@@ -6552,18 +6551,18 @@ const CSSValue* Stroke::ParseSingleValue(CSSParserTokenRange& range,
 
 const CSSValue* Stroke::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForSVGPaint(svg_style.StrokePaint(), style);
+  return ComputedStyleUtils::ValueForSVGPaint(style.StrokePaint(), style);
 }
 
 const blink::Color Stroke::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(!visited_link);
-  DCHECK(style.SvgStyle().StrokePaint().HasColor());
-  StyleColor stroke_color = style.SvgStyle().StrokePaint().GetColor();
+  DCHECK(style.StrokePaint().HasColor());
+  const StyleColor& stroke_color = style.StrokePaint().GetColor();
   if (style.ShouldForceColor(stroke_color))
     return style.GetInternalForcedCurrentColor();
   return stroke_color.Resolve(style.GetCurrentColor(), style.UsedColorScheme());
@@ -6592,11 +6591,11 @@ const CSSValue* StrokeDasharray::ParseSingleValue(
 
 const CSSValue* StrokeDasharray::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::StrokeDashArrayToCSSValueList(
-      *svg_style.StrokeDashArray(), style);
+      *style.StrokeDashArray(), style);
 }
 
 const CSSValue* StrokeDashoffset::ParseSingleValue(
@@ -6620,18 +6619,18 @@ const CSSValue* StrokeDashoffset::CSSValueFromComputedStyleInternal(
 
 const CSSValue* StrokeLinecap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(svg_style.CapStyle());
+  return CSSIdentifierValue::Create(style.CapStyle());
 }
 
 const CSSValue* StrokeLinejoin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(svg_style.JoinStyle());
+  return CSSIdentifierValue::Create(style.JoinStyle());
 }
 
 const CSSValue* StrokeMiterlimit::ParseSingleValue(
@@ -6643,11 +6642,11 @@ const CSSValue* StrokeMiterlimit::ParseSingleValue(
 }
 
 const CSSValue* StrokeMiterlimit::CSSValueFromComputedStyleInternal(
-    const ComputedStyle&,
-    const SVGComputedStyle& svg_style,
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSNumericLiteralValue::Create(svg_style.StrokeMiterLimit(),
+  return CSSNumericLiteralValue::Create(style.StrokeMiterLimit(),
                                         CSSPrimitiveValue::UnitType::kNumber);
 }
 
@@ -6659,11 +6658,11 @@ const CSSValue* StrokeOpacity::ParseSingleValue(
 }
 
 const CSSValue* StrokeOpacity::CSSValueFromComputedStyleInternal(
-    const ComputedStyle&,
-    const SVGComputedStyle& svg_style,
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSNumericLiteralValue::Create(svg_style.StrokeOpacity(),
+  return CSSNumericLiteralValue::Create(style.StrokeOpacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
 }
 
@@ -6679,12 +6678,12 @@ const CSSValue* StrokeWidth::ParseSingleValue(
 
 const CSSValue* StrokeWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle& svg_style,
+    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
   // We store the unzoomed stroke-width value using ConvertUnzoomedLength().
   // Don't apply zoom here either.
-  return CSSValue::Create(svg_style.StrokeWidth().length(), 1);
+  return CSSValue::Create(style.StrokeWidth().length(), 1);
 }
 
 const CSSValue* ContentVisibility::CSSValueFromComputedStyleInternal(

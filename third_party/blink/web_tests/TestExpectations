@@ -1063,6 +1063,9 @@ crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
 ### TablesNG
 # crbug.com/958381
+# fails because TablesNG does not coalesce columns
+crbug.com/958381 accessibility/table-cells-with-colspan.html [ Failure ]
+crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
 
 # TODO fails because cell size with only input element is 18px, not 15. line-height: 0px fixes it.
 crbug.com/1171616 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
@@ -1098,6 +1101,9 @@ crbug.com/958381 [ Mac ] virtual/text-antialias/hyphen-min-preferred-width.html 
 crbug.com/958381 [ Win ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
 crbug.com/958381 [ Mac ] virtual/layout_ng_block_frag/fragmentation/fragmented-table-cell.html [ Failure ]
 crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.html [ Failure ]
+
+# Asan underinvalidation failure. Skip while investigating
+crbug.com/958381 paint/tables/huge-table-composited-scroll-collapsed-borders.html [ Skip ]
 
 # TablesNG ends
 
@@ -1266,10 +1272,20 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-041.xht [ Failur
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failure ]
 
 # @container
-# These tests are only valid when the runtime flag CSSContainerQueries is
-# enabled.
-crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Failure ]
+# The container-queries/ tests are only valid when the runtime flag
+# CSSContainerQueries is enabled.
+#
+# The css-contain/ tests are only valid when the runtime flag CSSContainSize1D
+# is enabled.
+#
+# Both these flags are enabled in virtual/container-queries/
+crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
+crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
+crbug.com/1045599 virtual/container-queries/wpt_internal/css/css-contain/grid-block-size.html [ Failure ]
+crbug.com/1045599 virtual/container-queries/wpt_internal/css/css-contain/grid-inline-size.html [ Failure ]
+crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
+crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
 
 # CSS Scrollbars
 crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
@@ -1390,7 +1406,7 @@ crbug.com/889952 fast/selectors/selection-window-inactive.html [ Pass Failure ]
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
 
 # Script let/const redeclaration errors
-crbug.com/1042162 inspector-protocol/console/console-let-const-with-api.js [ Pass Failure ]
+crbug.com/1042162 http/tests/inspector-protocol/console/console-let-const-with-api.js [ Pass Failure ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
@@ -4821,7 +4837,7 @@ crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
 # Sheriff 2019-11-26
-crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
+crbug.com/1028684 http/tests/inspector-protocol/animation/animation-release.js [ Pass Failure ]
 
 # Sheriff 2019-11-29
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]

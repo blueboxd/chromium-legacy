@@ -110,10 +110,9 @@ void SVGResources::UpdatePaints(SVGElement& element,
                                 const ComputedStyle* old_style,
                                 const ComputedStyle& style) {
   const bool had_client = element.GetSVGResourceClient();
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-  if (StyleSVGResource* paint_resource = svg_style.FillPaint().Resource())
+  if (StyleSVGResource* paint_resource = style.FillPaint().Resource())
     paint_resource->AddClient(element.EnsureSVGResourceClient());
-  if (StyleSVGResource* paint_resource = svg_style.StrokePaint().Resource())
+  if (StyleSVGResource* paint_resource = style.StrokePaint().Resource())
     paint_resource->AddClient(element.EnsureSVGResourceClient());
   if (had_client)
     ClearPaints(element, old_style);
@@ -126,10 +125,9 @@ void SVGResources::ClearPaints(SVGElement& element,
   SVGResourceClient* client = element.GetSVGResourceClient();
   if (!client)
     return;
-  const SVGComputedStyle& old_svg_style = style->SvgStyle();
-  if (StyleSVGResource* paint_resource = old_svg_style.FillPaint().Resource())
+  if (StyleSVGResource* paint_resource = style->FillPaint().Resource())
     paint_resource->RemoveClient(*client);
-  if (StyleSVGResource* paint_resource = old_svg_style.StrokePaint().Resource())
+  if (StyleSVGResource* paint_resource = style->StrokePaint().Resource())
     paint_resource->RemoveClient(*client);
 }
 
@@ -137,12 +135,11 @@ void SVGResources::UpdateMarkers(SVGElement& element,
                                  const ComputedStyle* old_style,
                                  const ComputedStyle& style) {
   const bool had_client = element.GetSVGResourceClient();
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-  if (StyleSVGResource* marker_resource = svg_style.MarkerStartResource())
+  if (StyleSVGResource* marker_resource = style.MarkerStartResource())
     marker_resource->AddClient(element.EnsureSVGResourceClient());
-  if (StyleSVGResource* marker_resource = svg_style.MarkerMidResource())
+  if (StyleSVGResource* marker_resource = style.MarkerMidResource())
     marker_resource->AddClient(element.EnsureSVGResourceClient());
-  if (StyleSVGResource* marker_resource = svg_style.MarkerEndResource())
+  if (StyleSVGResource* marker_resource = style.MarkerEndResource())
     marker_resource->AddClient(element.EnsureSVGResourceClient());
   if (had_client)
     ClearMarkers(element, old_style);
@@ -155,12 +152,11 @@ void SVGResources::ClearMarkers(SVGElement& element,
   SVGResourceClient* client = element.GetSVGResourceClient();
   if (!client)
     return;
-  const SVGComputedStyle& old_svg_style = style->SvgStyle();
-  if (StyleSVGResource* marker_resource = old_svg_style.MarkerStartResource())
+  if (StyleSVGResource* marker_resource = style->MarkerStartResource())
     marker_resource->RemoveClient(*client);
-  if (StyleSVGResource* marker_resource = old_svg_style.MarkerMidResource())
+  if (StyleSVGResource* marker_resource = style->MarkerMidResource())
     marker_resource->RemoveClient(*client);
-  if (StyleSVGResource* marker_resource = old_svg_style.MarkerEndResource())
+  if (StyleSVGResource* marker_resource = style->MarkerEndResource())
     marker_resource->RemoveClient(*client);
 }
 
@@ -241,9 +237,8 @@ void SVGElementResourceClient::ResourceContentChanged(SVGResource* resource) {
     return;
   }
 
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-  if (ContainsResource(svg_style.FillPaint().Resource(), resource) ||
-      ContainsResource(svg_style.StrokePaint().Resource(), resource)) {
+  if (ContainsResource(style.FillPaint().Resource(), resource) ||
+      ContainsResource(style.StrokePaint().Resource(), resource)) {
     // Since LayoutSVGInlineTexts don't have SVGResources (they use their
     // parent's), they will not be notified of changes to paint servers. So
     // if the client is one that could have a LayoutSVGInlineText use a
@@ -254,9 +249,9 @@ void SVGElementResourceClient::ResourceContentChanged(SVGResource* resource) {
   }
 
   bool needs_layout = false;
-  if (ContainsResource(svg_style.MarkerStartResource(), resource) ||
-      ContainsResource(svg_style.MarkerMidResource(), resource) ||
-      ContainsResource(svg_style.MarkerEndResource(), resource)) {
+  if (ContainsResource(style.MarkerStartResource(), resource) ||
+      ContainsResource(style.MarkerMidResource(), resource) ||
+      ContainsResource(style.MarkerEndResource(), resource)) {
     needs_layout = true;
     layout_object->SetNeedsBoundariesUpdate();
   }
@@ -396,14 +391,14 @@ void SVGResourceInvalidator::InvalidatePaints() {
   if (!client)
     return;
   bool needs_invalidation = false;
-  const SVGComputedStyle& svg_style = object_.StyleRef().SvgStyle();
+  const ComputedStyle& style = object_.StyleRef();
   if (auto* fill = GetSVGResourceAsType<LayoutSVGResourcePaintServer>(
-          *client, svg_style.FillPaint().Resource())) {
+          *client, style.FillPaint().Resource())) {
     fill->RemoveClientFromCache(*client);
     needs_invalidation = true;
   }
   if (auto* stroke = GetSVGResourceAsType<LayoutSVGResourcePaintServer>(
-          *client, svg_style.StrokePaint().Resource())) {
+          *client, style.StrokePaint().Resource())) {
     stroke->RemoveClientFromCache(*client);
     needs_invalidation = true;
   }

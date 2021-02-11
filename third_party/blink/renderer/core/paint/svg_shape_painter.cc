@@ -64,7 +64,6 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
       SVGDrawingRecorder recorder(paint_info.context, layout_svg_shape_,
                                   paint_info.phase);
       const ComputedStyle& style = layout_svg_shape_.StyleRef();
-      const SVGComputedStyle& svg_style = style.SvgStyle();
 
       bool should_anti_alias = style.ShapeRendering() != SR_CRISPEDGES &&
                                style.ShapeRendering() != SR_OPTIMIZESPEED;
@@ -83,7 +82,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
             break;
           }
           case PT_STROKE:
-            if (svg_style.HasVisibleStroke()) {
+            if (style.HasVisibleStroke()) {
               GraphicsContextStateSaver state_saver(paint_info.context, false);
               base::Optional<AffineTransform> non_scaling_transform;
 
@@ -169,7 +168,7 @@ void SVGShapePainter::FillShape(GraphicsContext& context,
 
 void SVGShapePainter::StrokeShape(GraphicsContext& context,
                                   const PaintFlags& flags) {
-  DCHECK(layout_svg_shape_.StyleRef().SvgStyle().HasVisibleStroke());
+  DCHECK(layout_svg_shape_.StyleRef().HasVisibleStroke());
 
   switch (layout_svg_shape_.GeometryCodePath()) {
     case kRectGeometryFastPath:
@@ -199,13 +198,13 @@ void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info) {
   if (!marker_positions || marker_positions->IsEmpty())
     return;
   SVGResourceClient* client = SVGResources::GetClient(layout_svg_shape_);
-  const SVGComputedStyle& svg_style = layout_svg_shape_.StyleRef().SvgStyle();
+  const ComputedStyle& style = layout_svg_shape_.StyleRef();
   auto* marker_start = GetSVGResourceAsType<LayoutSVGResourceMarker>(
-      *client, svg_style.MarkerStartResource());
+      *client, style.MarkerStartResource());
   auto* marker_mid = GetSVGResourceAsType<LayoutSVGResourceMarker>(
-      *client, svg_style.MarkerMidResource());
+      *client, style.MarkerMidResource());
   auto* marker_end = GetSVGResourceAsType<LayoutSVGResourceMarker>(
-      *client, svg_style.MarkerEndResource());
+      *client, style.MarkerEndResource());
   if (!marker_start && !marker_mid && !marker_end)
     return;
 

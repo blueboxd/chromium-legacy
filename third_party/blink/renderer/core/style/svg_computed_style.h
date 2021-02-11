@@ -355,26 +355,6 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
     return stroke->visited_link_paint;
   }
 
-  bool IsFillColorCurrentColor() const {
-    return FillPaint().HasCurrentColor() ||
-           InternalVisitedFillPaint().HasCurrentColor();
-  }
-
-  bool IsStrokeColorCurrentColor() const {
-    return StrokePaint().HasCurrentColor() ||
-           InternalVisitedStrokePaint().HasCurrentColor();
-  }
-
-  // convenience
-  bool HasMarkers() const {
-    return MarkerStartResource() || MarkerMidResource() || MarkerEndResource();
-  }
-  bool HasStroke() const { return !StrokePaint().IsNone(); }
-  bool HasVisibleStroke() const {
-    return HasStroke() && !StrokeWidth().IsZero();
-  }
-  bool HasFill() const { return !FillPaint().IsNone(); }
-
  protected:
   // inherit
   struct InheritedFlags {

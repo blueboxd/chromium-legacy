@@ -1164,6 +1164,18 @@ class ComputedStyle : public ComputedStyleBase,
   }
   WindRule FillRule() const { return SvgStyle().FillRule(); }
 
+  const SVGPaint& FillPaint() const { return SvgStyle().FillPaint(); }
+  const SVGPaint& InternalVisitedFillPaint() const {
+    return SvgStyle().InternalVisitedFillPaint();
+  }
+
+  // fill helpers
+  bool HasFill() const { return !FillPaint().IsNone(); }
+  bool IsFillColorCurrentColor() const {
+    return FillPaint().HasCurrentColor() ||
+           InternalVisitedFillPaint().HasCurrentColor();
+  }
+
   // fill-opacity
   float FillOpacity() const { return SvgStyle().FillOpacity(); }
   void SetFillOpacity(float f) { AccessSVGStyle().SetFillOpacity(f); }
@@ -1194,14 +1206,43 @@ class ComputedStyle : public ComputedStyleBase,
   float StopOpacity() const { return SvgStyle().StopOpacity(); }
   void SetStopOpacity(float f) { AccessSVGStyle().SetStopOpacity(f); }
 
+  // marker-* helpers
+  StyleSVGResource* MarkerStartResource() const {
+    return SvgStyle().MarkerStartResource();
+  }
+  StyleSVGResource* MarkerMidResource() const {
+    return SvgStyle().MarkerMidResource();
+  }
+  StyleSVGResource* MarkerEndResource() const {
+    return SvgStyle().MarkerEndResource();
+  }
+  bool HasMarkers() const {
+    return MarkerStartResource() || MarkerMidResource() || MarkerEndResource();
+  }
+
   // paint-order helper
   EPaintOrder PaintOrder() const { return SvgStyle().PaintOrder(); }
   EPaintOrderType PaintOrderType(unsigned index) const;
 
   EShapeRendering ShapeRendering() const { return SvgStyle().ShapeRendering(); }
 
+  // stroke helpers
+  bool HasStroke() const { return !StrokePaint().IsNone(); }
+  bool HasVisibleStroke() const {
+    return HasStroke() && !StrokeWidth().IsZero();
+  }
+  bool IsStrokeColorCurrentColor() const {
+    return StrokePaint().HasCurrentColor() ||
+           InternalVisitedStrokePaint().HasCurrentColor();
+  }
+  const SVGPaint& StrokePaint() const { return SvgStyle().StrokePaint(); }
+  const SVGPaint& InternalVisitedStrokePaint() const {
+    return SvgStyle().InternalVisitedStrokePaint();
+  }
+
   // stroke-dasharray
   SVGDashArray* StrokeDashArray() const { return SvgStyle().StrokeDashArray(); }
+  bool HasDashArray() const { return !StrokeDashArray()->data.IsEmpty(); }
   void SetStrokeDashArray(scoped_refptr<SVGDashArray> array) {
     AccessSVGStyle().SetStrokeDashArray(std::move(array));
   }
@@ -1213,6 +1254,9 @@ class ComputedStyle : public ComputedStyleBase,
   void SetStrokeDashOffset(const Length& d) {
     AccessSVGStyle().SetStrokeDashOffset(d);
   }
+
+  LineCap CapStyle() const { return SvgStyle().CapStyle(); }
+  LineJoin JoinStyle() const { return SvgStyle().JoinStyle(); }
 
   // stroke-miterlimit
   float StrokeMiterLimit() const { return SvgStyle().StrokeMiterLimit(); }

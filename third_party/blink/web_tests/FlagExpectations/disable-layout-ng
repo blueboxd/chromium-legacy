@@ -393,6 +393,11 @@ crbug.com/591099 external/wpt/css/css-content/quotes-033.html [ Failure ]
 ### external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/
 crbug.com/886592 external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-margin-002.html [ Failure ]
 
+### external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/
+crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-range.html [ Failure ]
+crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-extends.html [ Failure ]
+
 ### external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ib-split/
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ib-split/emptyspan-1.html [ Failure ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ib-split/emptyspan-4.html [ Failure ]
@@ -491,6 +496,9 @@ crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-v
 ### http/tests/csslayout/
 crbug.com/591099 http/tests/csslayout/* [ Skip ]
 
+### virtual/container-queries/
+virtual/container-queries/* [ Skip ]
+
 ### virtual/controls-refresh-hc/
 virtual/controls-refresh-hc/* [ Skip ]
 
@@ -525,6 +533,28 @@ virtual/layout_ng_printing/* [ Skip ]
 
 ### virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/
 crbug.com/591099 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure ]
+
+crbug.com/591099 external/wpt/css/css-counter-styles/cjk-decimal/css3-counter-styles-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/cjk-decimal/css3-counter-styles-004.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/hebrew/css3-counter-styles-016.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/hiragana/css3-counter-styles-030.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/hiragana/css3-counter-styles-031.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/hiragana-iroha/css3-counter-styles-033.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/hiragana-iroha/css3-counter-styles-034.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/japanese-formal/css3-counter-styles-049.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/japanese-informal/css3-counter-styles-044.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/katakana/css3-counter-styles-036.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/katakana/css3-counter-styles-037.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/katakana/css3-counter-styles-038.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/katakana-iroha/css3-counter-styles-039.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/katakana-iroha/css3-counter-styles-040.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/lower-roman/css3-counter-styles-019.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/lower-roman/css3-counter-styles-020.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/lower-roman/css3-counter-styles-020a.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/lower-roman/css3-counter-styles-020b.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/upper-roman/css3-counter-styles-023.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/upper-roman/css3-counter-styles-024.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-counter-styles/upper-roman/css3-counter-styles-024a.html [ Failure ]
 
 crbug.com/591099 external/wpt/css/css-tables/absolute-tables-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-tables/absolute-tables-007.html [ Failure ]
@@ -583,6 +613,7 @@ crbug.com/987000 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-010.html
 crbug.com/987000 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-012.html [ Failure ]
 crbug.com/987000 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-015.html [ Failure ]
 crbug.com/987000 external/wpt/css/css-flexbox/svg-root-as-flex-item-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/table-as-item-percent-width-cell-001.html [ Failure ]
 
 # These would need a rebaseline back from LayoutNGBlockFlow to LayoutBlockFlow
 crbug.com/864567 paint/float/float-under-inline-self-painting-change.html [ Failure ]
@@ -760,6 +791,7 @@ crbug.com/958381 virtual/text-antialias/international/bidi-layout-across-linebre
 
 ### Pass in Legacy, fail in NG
 crbug.com/958381 external/wpt/css/css-tables/visibility-collapse-rowspan-005.html [ Pass ]
+crbug.com/958381 fast/table/large-col-span-crash.html [ Pass ]
 crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ Pass ]
 crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows.html [ Pass ]
 crbug.com/958381 fast/table/table-rowspan-height-distribution-in-rows-1.html [ Pass ]
@@ -887,13 +919,6 @@ crbug.com/958381 fast/css/vertical-align-baseline-rowspan-008.htm [ Failure ]
 crbug.com/958381 fast/css/empty-cell-baseline.html [ Failure ]
 crbug.com/958381 fast/css/inline-table-first-row-empty-cell-non-auto.html [ Failure ]
 
-# New failures after TablesNG landed, most likely rebaselined tests
-crbug.com/958381 accessibility/table-column-track-merging.html [ Failure ]
-crbug.com/958381 fast/table/colspanMinWidth.html [ Failure ]
-crbug.com/958381 fast/table/colspanMinWidth-vertical.html [ Failure ]
-crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
-crbug.com/958381 external/wpt/css/css-tables/column-track-merging.html [ Failure ]
-
 # TablesNG end
 
 ### compositing/filters/
@@ -932,6 +957,8 @@ crbug.com/591099 external/wpt/html/links/manifest/wrong-mime-type-text-plain-man
 crbug.com/591099 virtual/stable/compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]
 
 ### webcodecs/
+crbug.com/591099 wpt_internal/webcodecs/annexb_decoding.any.html [ Failure ]
+crbug.com/591099 wpt_internal/webcodecs/annexb_decoding.any.worker.html [ Failure ]
 crbug.com/591099 wpt_internal/webcodecs/basic_video_encoding.any.html [ Failure ]
 crbug.com/591099 wpt_internal/webcodecs/basic_video_encoding.any.worker.html [ Failure ]
 crbug.com/591099 wpt_internal/webcodecs/reconfiguring_encoder.any.html [ Failure ]

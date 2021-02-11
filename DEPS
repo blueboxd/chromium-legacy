@@ -184,7 +184,7 @@ vars = {
   'llvm_force_head_revision': False,
 
   # reclient CIPD package version
-  'reclient_version': 're_client_version:0.19.3.3b3042c',
+  'reclient_version': 're_client_version:0.20.1.c4bbd2f',
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b849f7a791451bfaf7d8b9412ad241296101ceb8',
+  'skia_revision': '9d171b630287cf97ec9a6014073875301fcf0508',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '50e0c3a02268852f4c0d73e3b3a24d2f52a7f419',
+  'v8_revision': 'ef6896f42d709cf53b8b4fe49cef4dedb2c81e32',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '4de55da44c4b511989359381e8b7a88a01fe0634',
+  'nacl_revision': '82ac8c0a6f0d3ffc843c693dd5149a356b866ae5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -278,7 +278,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'fcfa1e2cc0237111eaaae616a696767e71164090',
+  'devtools_frontend_revision': 'eb2959747e55568068fe4a143ba254475cb8403b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -911,7 +911,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'fa32fc9cc931647af5942529b586dcb7e3bec6f1',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6551036772d64afb7a15e844273683123c9d501a',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1485,7 +1485,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a6647318b57c0a05d590c8c21fc22aba87f08749',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@4ee2104e26ffe3402587f4013eaf5019e56a47c2',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@c409714366e947b35e402ee943887b700fd60714',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'b1d65a2b3373fe12c622eaab65e5cf21b906d178',
@@ -1550,7 +1550,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'WdexZjGxoLpK-HlIPR8kNGF7Wh1VPdS59dbI5AgEmJEC',
+          'version': 'FnrTtCqUzIkttLMcUafQ-E14XeYY8Yg79UKi-yF4k-gC',
         },
       ],
       'dep_type': 'cipd',
@@ -1570,7 +1570,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'l8fyBvaMd0WlHgO2vdLkKnIgP93n8clqWMMYoHQWbfQC',
+          'version': '33D5pMUWm9PcQ9nzgMNc-cv9Y67SNea1XX9S3h0q0zoC',
         },
       ],
       'dep_type': 'cipd',
@@ -1584,7 +1584,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@35f7c5f1cc0d0e3af064e520793179e35687438d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6c6568a74165399dcaccd3fe8affbc7156deb62f',
     'condition': 'checkout_src_internal',
   },
 

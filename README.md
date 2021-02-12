@@ -43,7 +43,48 @@ Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 
 ## building
 
-Build steps are almost same as original Chromium's one.
+Build steps are almost same as [original Chromium's one](https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md).
+
+### prerequisites
+
+- macOS 11.0 SDK
+- Xcode 12.2+
+- powerful CPUs
+  - about 40mins to full build with `Xeon E5-2690 v4` & 2 x `Ryzen 9 3950X`
+  - about 3hrs+ to full build with `i9-9980HK`
+
+### TL;DR
+
+(lacks 10.7/10.8 support)
+
+first setup & build:
+```bash
+mkdir chromium-project && cd chromium-project
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+export PATH=`pwd`/depot_tools:"$PATH"
+mkdir chromium-legacy && cd chromium-legacy
+curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/bc158ab43c8766611b9d67b17d460f36f033bc9c/.gclient && gclient sync -D
+mkdir -p out/release && cd out/release
+curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/bc158ab43c8766611b9d67b17d460f36f033bc9c/args.gn
+cd ../../src 
+gn gen ../out/release
+ninja -C ../out/release chrome
+```
+
+to update src:
+```bash
+cd chromium-project/chromium-legacy/src
+git pull
+gclient sync -D
+```
+
+to build:
+```bash
+cd chromium-project/chromium-legacy/src
+ninja -C ../out/release chrome
+```
+
+### step-by-step
 
 (TBW)
 

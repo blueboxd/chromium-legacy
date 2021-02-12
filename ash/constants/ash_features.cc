@@ -421,10 +421,6 @@ const base::Feature kHelpAppSearchServiceIntegration{
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable the new improved keyboard shortcuts.
-const base::Feature kImprovedKeyboardShortcuts{
-    "ImprovedKeyboardShortcuts", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -474,7 +470,7 @@ const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
 
 // Controls whether new OOBE layout is shown or not.
 const base::Feature kNewOobeLayout{"NewOobeLayout",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -833,10 +829,6 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
 
 bool IsClipboardHistoryContextMenuNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryContextMenuNudge);
-}
-
-bool IsImprovedKeyboardShortcutsEnabled() {
-  return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }
 
 bool IsPciguardUiEnabled() {

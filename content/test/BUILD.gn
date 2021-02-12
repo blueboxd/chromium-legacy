@@ -56,6 +56,8 @@ static_library("test_support") {
     "../browser/browsing_data/browsing_data_test_utils.h",
     "../browser/conversions/conversion_test_utils.cc",
     "../browser/conversions/conversion_test_utils.h",
+    "../browser/file_system_access/fake_file_system_access_permission_context.cc",
+    "../browser/file_system_access/fake_file_system_access_permission_context.h",
     "../browser/file_system_access/file_system_chooser_test_helpers.cc",
     "../browser/file_system_access/file_system_chooser_test_helpers.h",
     "../browser/file_system_access/mock_file_system_access_permission_context.cc",
@@ -827,7 +829,6 @@ js_library("web_ui_mojo_test_js") {
 # NOTE: Building this target serves as a compile test for type-checking of
 # WebUI JS that consumes generated Mojom JS bindings.
 js_type_check("web_ui_mojo_test_js_type_check") {
-  uses_js_modules = true
   deps = [ ":web_ui_mojo_test_js" ]
   closure_flags = default_closure_args + mojom_js_args
 }
@@ -2407,7 +2408,6 @@ test("content_unittests") {
       "//third_party/blink/public/common",
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
-      "//ui/base/cursor",
     ]
     libs = [
       "dwrite.lib",

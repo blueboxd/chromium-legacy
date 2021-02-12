@@ -555,9 +555,6 @@ extern const char kDownloadLaterDescription[];
 extern const char kDownloadLaterDebugOnWifiName[];
 extern const char kDownloadLaterDebugOnWifiNameDescription[];
 
-extern const char kDuetTabStripIntegrationAndroidName[];
-extern const char kDuetTabStripIntegrationAndroidDescription[];
-
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
 
@@ -2519,9 +2516,6 @@ extern const char kExoPointerLockDescription[];
 
 extern const char kExoLockNotificationName[];
 extern const char kExoLockNotificationDescription[];
-
-extern const char kExperimentalAccessibilityChromeVoxAnnotationsName[];
-extern const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[];
 
 extern const char kExperimentalAccessibilityChromeVoxTutorialName[];
 extern const char kExperimentalAccessibilityChromeVoxTutorialDescription[];

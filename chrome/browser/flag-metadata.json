@@ -862,7 +862,7 @@
   {
     "name": "default-browser-setting",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 92
   },
   {
     "name": "delay-competing-low-priority-requests",
@@ -1582,11 +1582,6 @@
     "expiry_milestone": 94
   },
   {
-    "name": "enable-duet-tabstrip-integration",
-    "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "enable-encryption-migration",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
@@ -1605,11 +1600,6 @@
     "name": "enable-ephemeral-tab-bottom-sheet",
     "owners": [ "donnd", "jinsukkim" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "enable-experimental-accessibility-chromevox-annotations",
-    "owners": [ "akihiroota" ],
-    "expiry_milestone": 89
   },
   {
     "name": "enable-experimental-accessibility-dictation-extension",
@@ -1810,11 +1800,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-horizontal-tab-switcher",
-    "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "enable-hosted-app-quit-notification",
     "owners": [ "ccameron" ],
     "expiry_milestone": 77
@@ -1924,12 +1909,12 @@
   {
     "name": "enable-magnifier-new-focus-following",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "enable-magnifier-panning-improvements",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 92
   },
   {
     "name": "enable-mark-http-as",
@@ -2671,7 +2656,7 @@
   {
     "name": "expanded-tab-strip",
     "owners": [ "mouraroberto@google.com", "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "expensive-background-timer-throttling",
@@ -3449,7 +3434,7 @@
   {
     "name": "mobile-google-srp",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 92
   },
   {
     "name": "mobile-identity-consistency",
@@ -4550,7 +4535,7 @@
   {
     "name": "settings-refresh",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 92
   },
   {
     "name": "share-button-in-top-toolbar",
@@ -4786,19 +4771,9 @@
     "expiry_milestone": 95
   },
   {
-    "name": "tab-groups",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "connily" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "tab-groups-auto-create",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 89
-  },
-  {
-    "name": "tab-groups-collapse",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 92
   },
   {
     "name": "tab-groups-collapse-freezing",
@@ -4808,7 +4783,7 @@
   {
     "name": "tab-groups-feedback",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 92
   },
   {
     "name": "tab-groups-new-badge-promo",
@@ -5040,7 +5015,7 @@
   {
     "name": "use-js-error-page",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 92
   },
   {
     "name": "use-lookalikes-for-navigation-suggestions",
@@ -5181,7 +5156,7 @@
   {
     "name": "web-view-native-context-menu",
     "owners": ["gambard","bling-flags@google.com"],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "webpage-alternative-text-zoom",

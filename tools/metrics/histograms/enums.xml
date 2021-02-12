@@ -12743,7 +12743,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Cookies setting"/>
   <int value="1" label="Images setting"/>
   <int value="2" label="JavaScript setting"/>
-  <int value="3" label="Plugins setting"/>
+  <int value="3" label="Plugins setting [removed in M90]"/>
   <int value="4" label="Popups setting"/>
   <int value="5" label="Location setting"/>
   <int value="6" label="Notifications setting"/>
@@ -31390,6 +31390,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3800" label="V8WasmExceptionHandling"/>
   <int value="3801" label="WasmModuleSharing"/>
   <int value="3802" label="CrossOriginWasmModuleSharing"/>
+  <int value="3803" label="OverflowClipAlongEitherAxis"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40153,6 +40154,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Search Image"/>
 </enum>
 
+<enum name="IOSSessionMigration">
+  <int value="0" label="No Migration"/>
+  <int value="1" label="Migration Failed"/>
+  <int value="2" label="No Session To Migrate"/>
+  <int value="3" label="Migrated Pre-MW to Multi Scenes"/>
+  <int value="4" label="Migrated Pre-MW to Single Scene"/>
+  <int value="5" label="Migrated Single Scene to Multi Scenes"/>
+  <int value="6" label="Migrated Multi Scenes to Single Scene"/>
+</enum>
+
 <enum name="IOSShareAction">
   <int value="0" label="Unknown"/>
   <int value="1" label="Cancel"/>
@@ -41726,6 +41737,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Open In Browser CCT Menu"/>
   <int value="10"
       label="External Search Intent (eg. Third Party Voice Search results)"/>
+  <int value="11"
+      label="Notification (eg. SW Notification, Media Controls, etc.)"/>
 </enum>
 
 <enum name="LauncherRankingItemType">
@@ -43680,8 +43693,6 @@ from previous Chrome versions.
   <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
   <int value="-1412230070" label="query-tiles-instant-background-task"/>
   <int value="-1411733990" label="OmniboxDedupeGoogleDriveURLs:disabled"/>
-  <int value="-1411219910"
-      label="enable-experimental-accessibility-chromevox-annotations"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1410394131" label="EvDetailsInPageInfo:enabled"/>
   <int value="-1410001116"
@@ -59906,7 +59917,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PhoneHubUserAction">
-  <int value="0" label="UI opened"/>
+  <int value="0" label="UI opened while connected"/>
   <int value="1" label="Tether connection attempted"/>
   <int value="2" label="Do Not Disturb toggled"/>
   <int value="3" label="Find My Device toggled"/>
@@ -72526,8 +72537,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </summary>
   <int value="2" label="Pageload count"/>
   <int value="3" label="Renderer crash count"/>
-  <int value="5" label="Extensions renderer count"/>
+  <int value="4" label="Renderer hang count"/>
+  <int value="5" label="Extension renderer crash count"/>
+  <int value="6" label="Child process crash count"/>
+  <int value="15" label="Browser launch count"/>
   <int value="16" label="Browser crash count"/>
+  <int value="17" label="Incomplete shutdown count"/>
+  <int value="24" label="Renderer failed launch count"/>
+  <int value="25" label="Extension renderer failed launch count"/>
+  <int value="26" label="Renderer launch count"/>
+  <int value="27" label="Extension renderer launch count"/>
+  <int value="31" label="GPU process crash count"/>
 </enum>
 
 <enum name="StabilityPageLoadType">

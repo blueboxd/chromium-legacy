@@ -176,6 +176,12 @@ crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/* [ Skip ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/* [ Skip ]
 # --- END OOP-R Canvas Tests
 
+# --- CanvasFormattedText tests ---
+# Fails on linux-rel even though actual and expected appear the same.
+crbug.com/1176933 [ Linux ] virtual/gpu/fast/canvas/canvas-formattedtext-2.html [ Skip ]
+
+# --- END CanvasFormattedText tests
+
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
 crbug.com/1124352 media/picture-in-picture/controls/picture-in-picture-button.html [ Crash Pass ]
@@ -1063,9 +1069,6 @@ crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 
 ### TablesNG
 # crbug.com/958381
-# fails because TablesNG does not coalesce columns
-crbug.com/958381 accessibility/table-cells-with-colspan.html [ Failure ]
-crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
 
 # TODO fails because cell size with only input element is 18px, not 15. line-height: 0px fixes it.
 crbug.com/1171616 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
@@ -1086,10 +1089,6 @@ crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows.html 
 crbug.com/958381 fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
 crbug.com/958381 fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 
-# Unknown cause, but they are virtual
-crbug.com/958381 virtual/layout_ng_block_frag/fragmentation/multi-line-cells-paginated.html [ Failure ]
-crbug.com/958381 virtual/layout_ng_block_frag/fragmentation/single-line-cells-paginated.html [ Failure ]
-
 # Mac failures - antialiasing of ref
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-087.xht [ Failure ]
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-088.xht [ Failure ]
@@ -1101,9 +1100,6 @@ crbug.com/958381 [ Mac ] virtual/text-antialias/hyphen-min-preferred-width.html 
 crbug.com/958381 [ Win ] virtual/text-antialias/hyphen-min-preferred-width.html [ Failure ]
 crbug.com/958381 [ Mac ] virtual/layout_ng_block_frag/fragmentation/fragmented-table-cell.html [ Failure ]
 crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.html [ Failure ]
-
-# Asan underinvalidation failure. Skip while investigating
-crbug.com/958381 paint/tables/huge-table-composited-scroll-collapsed-borders.html [ Skip ]
 
 # TablesNG ends
 
@@ -4880,6 +4876,11 @@ crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar
 crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Pass Timeout Failure ]
 crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Pass Timeout Failure ]
 
+crbug.com/1038354 [ Win ] fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Pass Timeout Failure ]
+crbug.com/1038354 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Pass Timeout Failure ]
+crbug.com/1038354 [ Win ] fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Pass Timeout Failure ]
+crbug.com/1038354 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Pass Timeout Failure ]
+
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
 crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure Pass ]
 
@@ -5686,3 +5687,7 @@ crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/jso
 crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/json-module/non-object.tentative.any.sharedworker.html [ Pass Timeout ]
 crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/json-module/utf8.tentative.html [ Pass Timeout ]
 crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/json-module/valid-content-type.tentative.html [ Pass Timeout ]
+
+# Sheriff 2021-02-11
+crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause.js [ Failure Pass ]
+crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause-infinite.js [ Failure Pass ]

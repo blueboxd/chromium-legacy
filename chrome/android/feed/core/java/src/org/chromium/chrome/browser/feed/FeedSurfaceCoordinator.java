@@ -37,13 +37,15 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
+import org.chromium.chrome.browser.ntp.ScrollListener;
+import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.promo.enhanced_protection.EnhancedProtectionPromoController;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ui.PersonalizedSigninPromoView;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
@@ -54,6 +56,7 @@ import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +84,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
                 SnackbarManager snackbarManager,
                 NativePageNavigationDelegate pageNavigationDelegate, UiConfig uiConfig,
                 boolean placeholderShown, BottomSheetController bottomSheetController,
-                Supplier<Tab> tabSupplier, FeedV1ActionOptions v1ActionOptions,
+                WindowAndroid windowAndroid, FeedV1ActionOptions v1ActionOptions,
                 Supplier<ShareDelegate> shareDelegateSupplier);
 
         /**
@@ -106,7 +109,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final FeedSurfaceMediator mMediator;
     private final BottomSheetController mBottomSheetController;
     private final FeedV1ActionOptions mV1ActionOptions;
-    private final Supplier<Tab> mTabSupplier;
+    private final WindowAndroid mWindowAndroid;
     private final Supplier<ShareDelegate> mShareSupplier;
 
     private UiConfig mUiConfig;
@@ -135,6 +138,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
     // Used for the feed header menu.
     private UserEducationHelper mUserEducationHelper;
+
+    // Used to handle things related to the main scrollable container of NTP surface.
+    private @Nullable ScrollableContainerDelegate mScrollableContainerDelegate;
+
+    private @Nullable HeaderIphScrollListener mHeaderIphScrollListener;
 
     private final Handler mHandler = new Handler();
 
@@ -212,12 +220,41 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         }
     }
 
+    private class ScrollableContainerDelegateImpl implements ScrollableContainerDelegate {
+        @Override
+        public void addScrollListener(ScrollListener listener) {
+            mStream.addScrollListener(listener);
+        }
+
+        @Override
+        public void removeScrollListener(ScrollListener listener) {
+            mStream.removeScrollListener(listener);
+        }
+
+        @Override
+        public int getVerticalScrollOffset() {
+            return mMediator.getVerticalScrollOffset();
+        }
+
+        @Override
+        public int getRootViewHeight() {
+            return mRootView.getHeight();
+        }
+
+        @Override
+        public int getTopPositionRelativeToContainerView(View childView) {
+            int[] pos = new int[2];
+            ViewUtils.getRelativeLayoutPosition(mRootView, childView, pos);
+            return pos[1];
+        }
+    }
+
     /**
      * Constructs a new FeedSurfaceCoordinator.
-     *  @param activity The containing {@link ChromeActivity}.
+     * @param activity The containing {@link ChromeActivity}.
      * @param snackbarManager The {@link SnackbarManager} displaying Snackbar UI.
      * @param tabModelSelector {@link TabModelSelector} object.
-     * @param tabProvider Provides the current active tab.
+     * @param windowAndroid The window of the page.
      * @param snapScrollHelper The {@link SnapScrollHelper} for the New Tab Page.
      * @param ntpHeader The extra header on top of the feeds for the New Tab Page.
      * @param sectionHeaderView The {@link SectionHeaderView} for the feed.
@@ -229,16 +266,17 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
      * @param profile The current user profile.
      * @param isPlaceholderShownInitially Whether the placeholder is shown initially.
      * @param bottomSheetController The bottom sheet controller, used in v2.
-     * @param shareDelegateSupplier
+     * @param shareDelegateSupplier The supplier for the share delegate used to share articles.
      */
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
-            TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
+            TabModelSelector tabModelSelector, WindowAndroid windowAndroid,
             @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
             @Nullable SectionHeaderView sectionHeaderView, FeedV1ActionOptions actionOptions,
             boolean showDarkBackground, FeedSurfaceDelegate delegate,
             @Nullable NativePageNavigationDelegate pageNavigationDelegate, Profile profile,
             boolean isPlaceholderShownInitially, BottomSheetController bottomSheetController,
-            Supplier<ShareDelegate> shareDelegateSupplier) {
+            Supplier<ShareDelegate> shareDelegateSupplier,
+            @Nullable ScrollableContainerDelegate externalScrollableContainerDelegate) {
         mStreamWrapper = FeedV2.createStreamWrapper();
 
         mActivity = activity;
@@ -252,8 +290,9 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mBottomSheetController = bottomSheetController;
         mProfile = profile;
         mV1ActionOptions = actionOptions;
-        mTabSupplier = tabProvider;
+        mWindowAndroid = windowAndroid;
         mShareSupplier = shareDelegateSupplier;
+        mScrollableContainerDelegate = externalScrollableContainerDelegate;
 
         Resources resources = mActivity.getResources();
         mDefaultMarginPixels = mStreamWrapper.defaultMarginPixels(activity);
@@ -286,6 +325,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         if (mEnhancedProtectionPromoController != null) {
             mEnhancedProtectionPromoController.destroy();
         }
+        if (mScrollableContainerDelegate != null && mHeaderIphScrollListener != null) {
+            mScrollableContainerDelegate.removeScrollListener(mHeaderIphScrollListener);
+        }
+        mScrollableContainerDelegate = null;
+        mHeaderIphScrollListener = null;
     }
 
     @Override
@@ -350,7 +394,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mStreamCreatedTimeMs = SystemClock.elapsedRealtime();
         mStream = mStreamWrapper.createStream(mProfile, mActivity, mShowDarkBackground,
                 mSnackbarManager, mPageNavigationDelegate, mUiConfig, mIsPlaceholderShownInitially,
-                mBottomSheetController, mTabSupplier, mV1ActionOptions, mShareSupplier);
+                mBottomSheetController, mWindowAndroid, mV1ActionOptions, mShareSupplier);
 
         mStreamLifecycleManager = mDelegate.createStreamLifecycleManager(mStream, mActivity);
 
@@ -513,32 +557,6 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mStream.setHeaderViews(headers);
     }
 
-    /**
-     * Determines whether the feed header position in the recycler view is suitable for IPH.
-     *
-     * @param maxPosFraction The maximal fraction of the recycler view height starting from the top
-     *                       within which the top position of the feed header can be. The value has
-     *                       to be within the range [0.0, 1.0], where at 0.0 the feed header is at
-     *                       the very top of the recycler view and at 1.0 is at the very bottom and
-     *                       hidden.
-     * @return True If the feed header is at a position that is suitable to show the IPH.
-     */
-    boolean isFeedHeaderPositionInRecyclerViewSuitableForIPH(float maxPosFraction) {
-        assert maxPosFraction >= 0.0f
-                && maxPosFraction <= 1.0f
-            : "Max position fraction should be ranging between 0.0 and 1.0";
-
-        // Get the top position of the section header view in the recycler view.
-        int[] headerPositions = new int[2];
-        mSectionHeaderView.getLocationOnScreen(headerPositions);
-        int topPosInStream = headerPositions[1] - mRootView.getTop();
-
-        if (topPosInStream < 0) return false;
-        if (topPosInStream > maxPosFraction * mRootView.getHeight()) return false;
-
-        return true;
-    }
-
     public void onOverviewShownAtLaunch(long activityCreationTimeMs) {
         mMediator.onOverviewShownAtLaunch(activityCreationTimeMs, mIsPlaceholderShownInitially);
         StartSurfaceConfiguration.recordHistogram(FEED_STREAM_CREATED_TIME_MS_UMA,
@@ -581,5 +599,65 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     @VisibleForTesting
     public Stream getStreamForTesting() {
         return getStream();
+    }
+
+    /**
+     * Initializes things related to the IPH which will start listening to scroll events to
+     * determine whether the IPH should be triggered.
+     */
+    public void initializeIph() {
+        // Provide a delegate for the container of the feed surface that is handled by the feed
+        // coordinator itself when not provided externally (e.g., by the Start surface).
+        if (mScrollableContainerDelegate == null) {
+            mScrollableContainerDelegate = new ScrollableContainerDelegateImpl();
+        }
+
+        FeedSurfaceCoordinator coordinator = this;
+        HeaderIphScrollListener.Delegate delegate = new HeaderIphScrollListener.Delegate() {
+            @Override
+            public Tracker getFeatureEngagementTracker() {
+                return mTracker;
+            }
+            @Override
+            public void showMenuIph() {
+                mSectionHeaderView.showMenuIph(mUserEducationHelper);
+            }
+            @Override
+            public boolean isFeedExpanded() {
+                return mMediator.isExpanded();
+            }
+            @Override
+            public boolean isSignedIn() {
+                return IdentityServicesProvider.get()
+                        .getSigninManager(Profile.getLastUsedRegularProfile())
+                        .getIdentityManager()
+                        .hasPrimaryAccount();
+            }
+            @Override
+            public boolean isFeedHeaderPositionInContainerSuitableForIPH(
+                    float headerMaxPosFraction) {
+                return coordinator.isFeedHeaderPositionInContainerSuitableForIPH(
+                        headerMaxPosFraction);
+            }
+        };
+        mHeaderIphScrollListener =
+                new HeaderIphScrollListener(delegate, mScrollableContainerDelegate);
+        mScrollableContainerDelegate.addScrollListener(mHeaderIphScrollListener);
+    }
+
+    private boolean isFeedHeaderPositionInContainerSuitableForIPH(float headerMaxPosFraction) {
+        assert headerMaxPosFraction >= 0.0f
+                && headerMaxPosFraction <= 1.0f
+            : "Max position fraction should be ranging between 0.0 and 1.0";
+
+        int topPosInStream = mScrollableContainerDelegate.getTopPositionRelativeToContainerView(
+                mSectionHeaderView);
+        if (topPosInStream < 0) return false;
+        if (topPosInStream
+                > headerMaxPosFraction * mScrollableContainerDelegate.getRootViewHeight()) {
+            return false;
+        }
+
+        return true;
     }
 }

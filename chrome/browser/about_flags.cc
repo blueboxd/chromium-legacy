@@ -2927,6 +2927,10 @@ const FeatureEntry kFeatureEntries[] = {
         kOsCrOS,
         FEATURE_VALUE_TYPE(features::kNewShortcutMapping),
     },
+    {"improved-keyboard-shortcuts",
+     flag_descriptions::kImprovedKeyboardShortcutsName,
+     flag_descriptions::kImprovedKeyboardShortcutsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kImprovedKeyboardShortcuts)},
     {"shelf-hide-buttons-in-tablet",
      flag_descriptions::kHideShelfControlsInTabletModeName,
      flag_descriptions::kHideShelfControlsInTabletModeDescription, kOsCrOS,
@@ -3864,13 +3868,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilitySwitchAccessSetupGuide)},
-    {"enable-experimental-accessibility-chromevox-annotations",
-     flag_descriptions::kExperimentalAccessibilityChromeVoxAnnotationsName,
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxAnnotationsDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilityChromeVoxAnnotations)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -4518,10 +4515,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsAutoCreateDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsAutoCreate)},
 
-    {"tab-groups-collapse", flag_descriptions::kTabGroupsCollapseName,
-     flag_descriptions::kTabGroupsCollapseDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabGroupsCollapse)},
-
     {"tab-groups-collapse-freezing",
      flag_descriptions::kTabGroupsCollapseFreezingName,
      flag_descriptions::kTabGroupsCollapseFreezingDescription, kOsDesktop,
@@ -4898,11 +4891,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabEngagementReportingName,
      flag_descriptions::kTabEngagementReportingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabEngagementReportingAndroid)},
-
-    {"enable-duet-tabstrip-integration",
-     flag_descriptions::kDuetTabStripIntegrationAndroidName,
-     flag_descriptions::kDuetTabStripIntegrationAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDuetTabStripIntegrationAndroid)},
 
     {"enable-conditional-tabstrip",
      flag_descriptions::kConditionalTabStripAndroidName,
@@ -5609,11 +5597,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kDisablePeripheralDataAccessProtection)},
-
-    {"improved-keyboard-shortcuts",
-     flag_descriptions::kImprovedKeyboardShortcutsName,
-     flag_descriptions::kImprovedKeyboardShortcutsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kImprovedKeyboardShortcuts)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,

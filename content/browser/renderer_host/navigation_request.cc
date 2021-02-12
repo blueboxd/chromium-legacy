@@ -117,6 +117,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/net/ip_address_space_util.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -1605,9 +1606,21 @@ void NavigationRequest::BeginNavigation() {
         prerender_host_registry->FindHostToActivate(common_params_->url,
                                                     *frame_tree_node_);
 
-    // If `prerender_host_` exists, this navigation will activate the
-    // prerendered page on navigation commit.
-    prerender_host_ = std::move(prerender_host);
+    switch (blink::features::kPrerender2ImplementationParam.Get()) {
+      case blink::features::Prerender2Implementation::kWebContents:
+        // If `prerender_host_` exists, this navigation will activate the
+        // prerendered page on navigation commit.
+        prerender_host_ = std::move(prerender_host);
+        break;
+      // TODO(https://crbug.com/1170277): Remove once activation support is
+      // added to MPArch
+      case blink::features::Prerender2Implementation::kMPArch:
+        // The feature param disallows activation of the prerendered page for
+        // testing. Destroy `prerender_host` to dispose of the prerendered
+        // page.
+        prerender_host.reset();
+        break;
+    }
   }
 
   WillStartRequest();
@@ -2563,9 +2576,9 @@ void NavigationRequest::OnResponseStarted(
     // https://crbug.com/738634.
     SiteInstanceImpl* instance = render_frame_host_->GetSiteInstance();
     const IsolationContext& isolation_context = instance->GetIsolationContext();
-    auto site_info = SiteInstanceImpl::ComputeSiteInfo(
-        isolation_context, GetUrlInfo(),
-        instance->GetCoopCoepCrossOriginIsolatedInfo());
+    auto site_info =
+        SiteInfo::Create(isolation_context, GetUrlInfo(),
+                         instance->GetCoopCoepCrossOriginIsolatedInfo());
     if (!instance->HasSite() &&
         site_info.RequiresDedicatedProcess(isolation_context)) {
       instance->ConvertToDefaultOrSetSite(GetUrlInfo());
@@ -4555,9 +4568,8 @@ SiteInfo NavigationRequest::GetSiteInfoForCommonParamsURL(
     const CoopCoepCrossOriginIsolatedInfo& cross_origin_isolated_info) {
   // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
   // be correct for cross-BrowsingInstance redirects.
-  return SiteInstanceImpl::ComputeSiteInfo(
-      starting_site_instance_->GetIsolationContext(), GetUrlInfo(),
-      cross_origin_isolated_info);
+  return SiteInfo::Create(starting_site_instance_->GetIsolationContext(),
+                          GetUrlInfo(), cross_origin_isolated_info);
 }
 
 // TODO(zetamoo): Try to merge this function inside its callers.

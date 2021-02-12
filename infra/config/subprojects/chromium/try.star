@@ -449,6 +449,10 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = "android-weblayer-pie-x86-wpt-fyi-rel",
+)
+
+try_.chromium_android_builder(
     name = "android-webview-marshmallow-arm64-dbg",
 )
 
@@ -1312,6 +1316,7 @@ try_.chromium_mac_builder(
     main_list_view = "try",
     os = os.MAC_DEFAULT,
     tryjob = try_.job(),
+    grace_period = 2 * time.minute,
 )
 
 try_.chromium_mac_builder(

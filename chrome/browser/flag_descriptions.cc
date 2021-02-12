@@ -2855,10 +2855,6 @@ const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
 
-const char kDuetTabStripIntegrationAndroidName[] = "Duet-TabStrip Integration";
-const char kDuetTabStripIntegrationAndroidDescription[] =
-    "Allows users to access integration of Duet and TabStrip.";
-
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =
@@ -4309,11 +4305,6 @@ const char kExoLockNotificationName[] = "Notification bubble for UI lock";
 const char kExoLockNotificationDescription[] =
     "Show a notification bubble once an application has switched to "
     "non-immersive fullscreen mode or obtained pointer lock.";
-
-const char kExperimentalAccessibilityChromeVoxAnnotationsName[] =
-    "Enable experimental ChromeVox annotations feature.";
-const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[] =
-    "Allows users to create custom annotations for elements using ChromeVox.";
 
 const char kExperimentalAccessibilityDictationExtensionName[] =
     "Experimental accessibility dictation extension.";

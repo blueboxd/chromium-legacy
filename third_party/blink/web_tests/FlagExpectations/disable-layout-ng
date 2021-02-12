@@ -791,7 +791,6 @@ crbug.com/958381 virtual/text-antialias/international/bidi-layout-across-linebre
 
 ### Pass in Legacy, fail in NG
 crbug.com/958381 external/wpt/css/css-tables/visibility-collapse-rowspan-005.html [ Pass ]
-crbug.com/958381 fast/table/large-col-span-crash.html [ Pass ]
 crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ Pass ]
 crbug.com/958381 fast/table/table-all-rowspans-height-distribution-in-rows.html [ Pass ]
 crbug.com/958381 fast/table/table-rowspan-height-distribution-in-rows-1.html [ Pass ]
@@ -919,6 +918,13 @@ crbug.com/958381 fast/css/vertical-align-baseline-rowspan-008.htm [ Failure ]
 crbug.com/958381 fast/css/empty-cell-baseline.html [ Failure ]
 crbug.com/958381 fast/css/inline-table-first-row-empty-cell-non-auto.html [ Failure ]
 
+# New failures after TablesNG landed, most likely rebaselined tests
+crbug.com/958381 accessibility/table-column-track-merging.html [ Failure ]
+crbug.com/958381 fast/table/colspanMinWidth.html [ Failure ]
+crbug.com/958381 fast/table/colspanMinWidth-vertical.html [ Failure ]
+crbug.com/958381 fast/table/large-col-span-crash.html [ Failure ]
+crbug.com/958381 external/wpt/css/css-tables/column-track-merging.html [ Failure ]
+
 # TablesNG end
 
 ### compositing/filters/
@@ -974,3 +980,8 @@ crbug.com/1128262 external/wpt/css/css-flexbox/table-as-item-fixed-min-width-3.h
 crbug.com/6606 external/wpt/css/css-display/display-math-on-non-mathml-elements.html [ Failure ]
 crbug.com/6606 external/wpt/css/css-typed-om/the-stylepropertymap/properties/display.html [ Failure ]
 
+# CanvasFormattedText is supported only through layout NG
+crbug.com/1176933 fast/canvas/canvas-formattedtext-1.html [ Skip ]
+crbug.com/1176933 fast/canvas/canvas-formattedtext-2.html [ Skip ]
+crbug.com/1176933 virtual/gpu/fast/canvas/canvas-formattedtext-1.html [ Skip ]
+crbug.com/1176933 virtual/gpu/fast/canvas/canvas-formattedtext-2.html [ Skip ]

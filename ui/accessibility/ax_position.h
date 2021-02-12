@@ -351,7 +351,7 @@ class AXPosition {
     return GetNodeInTree(tree_id_, anchor_id_);
   }
 
-  virtual int GetAnchorSiblingCount() const {
+  int GetAnchorSiblingCount() const {
     if (IsNullPosition())
       return 0;
 
@@ -375,10 +375,7 @@ class AXPosition {
     DCHECK(GetAnchor());
     // If this position is anchored to an ignored node, then consider this
     // position to be ignored.
-    //
-    // TODO(nektar): Ensure that all methods skip over empty text nodes and
-    // remove the IsIgnoredForTextNavigation call.
-    if (GetAnchor()->IsIgnored() || GetAnchor()->IsIgnoredForTextNavigation())
+    if (GetAnchor()->IsIgnored())
       return true;
 
     switch (kind_) {
@@ -3733,7 +3730,6 @@ class AXPosition {
     // unignored child, making this a leaf tree or text position, or a leaf's
     // descendant.
     return !GetAnchor()->IsIgnored() &&
-           !GetAnchor()->IsIgnoredForTextNavigation() &&
            !IsPlatformDocument(GetAnchorRole()) && !IsInTextObject() &&
            !IsIframe(GetAnchorRole());
   }
@@ -3809,10 +3805,10 @@ class AXPosition {
 
   // Abstract methods.
 
-  // Returns the text that is present inside the anchor node, including any text
-  // found in descendant text nodes, based on the platform's text
-  // representation. Some platforms use an embedded object replacement character
-  // that replaces the text coming from each child node.
+  // Returns the text (in UTF16 format) that is present inside the anchor node,
+  // including any text found in descendant text nodes, based on the platform's
+  // text representation. Some platforms use an embedded object replacement
+  // character that replaces the text coming from most child nodes.
   virtual base::string16 GetText() const = 0;
 
   // Determines if the anchor containing this position is a <br> or a text
@@ -3830,15 +3826,11 @@ class AXPosition {
   // Returns the length of the text that is present inside the anchor node,
   // including any text found in descendant text nodes. This is based on the
   // platform's text representation. Some platforms use an embedded object
-  // character that replaces the text coming from each child node.
+  // character that replaces the text coming from most child nodes.
   //
   // Similar to "text_offset_", the length of the text is in UTF16 code units,
   // not in grapheme clusters.
-  virtual int MaxTextOffset() const {
-    if (IsNullPosition())
-      return INVALID_OFFSET;
-    return int{GetText().length()};
-  }
+  virtual int MaxTextOffset() const = 0;
 
   // Returns the accessibility role of this position's anchor node. If this is a
   // "null position", returns `ax::mojom::Role::kNone`.
@@ -3998,8 +3990,9 @@ class AXPosition {
   virtual AXNodeTextStyles GetTextStyles() const = 0;
   virtual std::vector<int32_t> GetWordStartOffsets() const = 0;
   virtual std::vector<int32_t> GetWordEndOffsets() const = 0;
-  virtual int32_t GetNextOnLineID(int32_t node_id) const = 0;
-  virtual int32_t GetPreviousOnLineID(int32_t node_id) const = 0;
+  virtual AXNodeData::AXID GetNextOnLineID(AXNodeData::AXID node_id) const = 0;
+  virtual AXNodeData::AXID GetPreviousOnLineID(
+      AXNodeData::AXID node_id) const = 0;
 
  private:
   // Defines the relationship between positions during traversal.

@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.app.flags.ChromeCachedFlags;
+import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingDelegateFactory;
 import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
@@ -118,7 +119,6 @@ import org.chromium.chrome.browser.layouts.LayoutManagerAppUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
-import org.chromium.chrome.browser.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -245,6 +245,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /** Used to access the {@link ShareDelegate} from {@link WindowAndroid}. */
     private final UnownedUserDataSupplier<ShareDelegate> mShareDelegateSupplier =
             new ShareDelegateSupplier();
+    private final ObservableSupplierImpl<TabModelOrchestrator> mTabModelOrchestratorSupplier =
+            new ObservableSupplierImpl<>();
     /** Used to access the {@link TabModelSelector} from {@link WindowAndroid}. */
     private final UnownedUserDataSupplier<TabModelSelector> mTabModelSelectorSupplier =
             new TabModelSelectorSupplier();
@@ -371,6 +373,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         // Create the orchestrator that manages Tab models and persistence
         mTabModelOrchestrator = createTabModelOrchestrator();
+        mTabModelOrchestratorSupplier.set(mTabModelOrchestrator);
 
         // There's no corresponding call to removeObserver() for this addObserver() because
         // mTabModelProfileSupplier has the same lifecycle as this activity.
@@ -1657,6 +1660,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     "Attempting to access TabModelSelector before initialization");
         }
         return mTabModelOrchestrator.getTabModelSelector();
+    }
+
+    /**
+     * Returns an {@link ObservableSupplier} for {@link TabModelOrchestrator}.
+     */
+    public final ObservableSupplier<TabModelOrchestrator> getTabModelOrchestratorSupplier() {
+        return mTabModelOrchestratorSupplier;
     }
 
     /**

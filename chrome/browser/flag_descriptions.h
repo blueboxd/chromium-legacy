@@ -2049,9 +2049,6 @@ extern const char kOmniboxKeywordSearchButtonDescription[];
 extern const char kOmniboxRefinedFocusStateName[];
 extern const char kOmniboxRefinedFocusStateDescription[];
 
-extern const char kPasswordsWeaknessCheckName[];
-extern const char kPasswordsWeaknessCheckDescription[];
-
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];
 
@@ -2937,9 +2934,6 @@ extern const char kPaintPreviewStartupDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kPdfViewerUpdateName[];
-extern const char kPdfViewerUpdateDescription[];
-
 extern const char kPdfViewerDocumentPropertiesName[];
 extern const char kPdfViewerDocumentPropertiesDescription[];
 

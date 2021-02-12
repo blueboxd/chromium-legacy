@@ -961,10 +961,8 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
 }
 
 void DocumentLoader::HandleRedirect(
-    WebNavigationParams::RedirectInfo& redirect) {
-  ResourceResponse redirect_response =
-      redirect.redirect_response.ToResourceResponse();
-  const KURL& url_before_redirect = redirect_response.CurrentRequestUrl();
+    const WebNavigationParams::RedirectInfo& redirect) {
+  const KURL url_before_redirect = url_;
   url_ = redirect.new_url;
   const KURL& url_after_redirect = url_;
 
@@ -1000,6 +998,8 @@ void DocumentLoader::HandleRedirect(
       probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
       url_after_redirect, http_method_, http_body_.get());
 
+  ResourceResponse redirect_response =
+      redirect.redirect_response.ToResourceResponse();
   navigation_timing_info_->AddRedirect(redirect_response, url_after_redirect);
 
   DCHECK(!GetTiming().FetchStart().is_null());
@@ -1793,8 +1793,14 @@ WindowAgent* GetWindowAgentForOrigin(LocalFrame* frame,
 }
 
 void DocumentLoader::InitializeWindow(Document* owner_document) {
+  // Provisional frames shouldn't be doing anything other than act as a
+  // placeholder. Enforce a strict sandbox and ensure a unique opaque origin.
+  // TODO(dcheng): Actually enforce strict sandbox flags for provisional frame.
+  // For some reason, doing so breaks some random devtools tests.
   auto sandbox_flags = CalculateSandboxFlags();
-  auto security_origin = CalculateOrigin(owner_document, sandbox_flags);
+  auto security_origin = frame_->IsProvisional()
+                             ? SecurityOrigin::CreateUniqueOpaque()
+                             : CalculateOrigin(owner_document, sandbox_flags);
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives

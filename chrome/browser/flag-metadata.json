@@ -2420,7 +2420,9 @@
   {
     "name": "enable-use-aaudio-driver",
     "owners": [ "tguilbert" ],
-    "expiry_milestone": 88
+    // This feature has launched and is on by default. We are still debugging a
+    // few occasional issues, for which it's useful to turns this flag off.
+    "expiry_milestone": 92
   },
   {
     "name": "enable-use-zoom-for-dsf",
@@ -3976,11 +3978,6 @@
     "name": "passwords-account-storage-iph",
     "owners": [ "mamir", "treib" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "passwords-weakness-check",
-    "owners": [ "irfedorova", "jdoerrie" ],
-    "expiry_milestone": 89
   },
   {
     "name": "pdf-form-save",

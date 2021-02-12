@@ -141,8 +141,12 @@ class PDFiumEngine : public PDFEngine,
   base::Optional<AccessibilityTextRunInfo> GetTextRunInfo(
       int page_index,
       int start_char_index) override;
-  std::vector<AccessibilityLinkInfo> GetLinkInfo(int page_index) override;
-  std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) override;
+  std::vector<AccessibilityLinkInfo> GetLinkInfo(
+      int page_index,
+      const std::vector<AccessibilityTextRunInfo>& text_runs) override;
+  std::vector<AccessibilityImageInfo> GetImageInfo(
+      int page_index,
+      uint32_t text_run_count) override;
   std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
       int page_index) override;
   std::vector<AccessibilityTextFieldInfo> GetTextFieldInfo(

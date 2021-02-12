@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/numerics/safe_math.h"
+#include "pdf/accessibility_helper.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/pdf_engine.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -17,95 +18,9 @@ namespace chrome_pdf {
 
 namespace {
 
-bool IsCharWithinTextRun(const AccessibilityTextRunInfo& text_run,
-                         uint32_t text_run_start_char_index,
-                         uint32_t char_index) {
-  return char_index >= text_run_start_char_index &&
-         char_index - text_run_start_char_index < text_run.len;
-}
-
-// If a valid text run range is not found for the char range then return the
-// fallback value.
-AccessibilityTextRunRangeInfo GetEnclosingTextRunRangeForCharRange(
-    const std::vector<AccessibilityTextRunInfo>& text_runs,
-    int start_char_index,
-    int char_count) {
-  // Initialize with fallback value.
-  AccessibilityTextRunRangeInfo text_range = {text_runs.size(), 0};
-  if (start_char_index < 0 || char_count <= 0)
-    return text_range;
-
-  base::CheckedNumeric<uint32_t> checked_end_char_index = char_count - 1;
-  checked_end_char_index += start_char_index;
-  if (!checked_end_char_index.IsValid())
-    return text_range;
-  uint32_t end_char_index = checked_end_char_index.ValueOrDie();
-  uint32_t current_char_index = 0;
-  base::Optional<uint32_t> start_text_run;
-  for (size_t i = 0; i < text_runs.size(); ++i) {
-    if (!start_text_run.has_value() &&
-        IsCharWithinTextRun(text_runs[i], current_char_index,
-                            start_char_index)) {
-      start_text_run = i;
-    }
-
-    if (start_text_run.has_value() &&
-        IsCharWithinTextRun(text_runs[i], current_char_index, end_char_index)) {
-      text_range.index = start_text_run.value();
-      text_range.count = i - text_range.index + 1;
-      break;
-    }
-    current_char_index += text_runs[i].len;
-  }
-  return text_range;
-}
-
 template <typename T>
 bool CompareTextRuns(const T& a, const T& b) {
   return a.text_range.index < b.text_range.index;
-}
-
-std::vector<AccessibilityLinkInfo> GetAccessibilityLinkInfo(
-    PDFEngine* engine,
-    int32_t page_index,
-    const std::vector<AccessibilityTextRunInfo>& text_runs) {
-  std::vector<PDFEngine::AccessibilityLinkInfo> engine_link_infos =
-      engine->GetLinkInfo(page_index);
-  std::vector<AccessibilityLinkInfo> link_infos;
-  link_infos.reserve(engine_link_infos.size());
-  for (size_t i = 0; i < engine_link_infos.size(); ++i) {
-    auto& cur_engine_info = engine_link_infos[i];
-    AccessibilityLinkInfo link_info;
-    link_info.url = std::move(cur_engine_info.url);
-    link_info.index_in_page = i;
-    link_info.bounds = cur_engine_info.bounds;
-    link_info.text_range = GetEnclosingTextRunRangeForCharRange(
-        text_runs, cur_engine_info.start_char_index,
-        cur_engine_info.char_count);
-    link_infos.push_back(std::move(link_info));
-  }
-  std::sort(link_infos.begin(), link_infos.end(),
-            CompareTextRuns<AccessibilityLinkInfo>);
-  return link_infos;
-}
-
-std::vector<AccessibilityImageInfo> GetAccessibilityImageInfo(
-    PDFEngine* engine,
-    int32_t page_index,
-    uint32_t text_run_count) {
-  std::vector<PDFEngine::AccessibilityImageInfo> engine_image_infos =
-      engine->GetImageInfo(page_index);
-  std::vector<AccessibilityImageInfo> image_infos;
-  image_infos.reserve(engine_image_infos.size());
-  for (auto& cur_engine_info : engine_image_infos) {
-    AccessibilityImageInfo image_info;
-    image_info.alt_text = std::move(cur_engine_info.alt_text);
-    image_info.bounds = cur_engine_info.bounds;
-    // TODO(mohitb): Update text run index to nearest text run to image bounds.
-    image_info.text_run_index = text_run_count;
-    image_infos.push_back(std::move(image_info));
-  }
-  return image_infos;
 }
 
 std::vector<AccessibilityHighlightInfo> GetAccessibilityHighlightInfo(
@@ -251,9 +166,9 @@ bool GetAccessibilityInfo(PDFEngine* engine,
   }
 
   page_info.text_run_count = text_runs.size();
-  page_objects.links = GetAccessibilityLinkInfo(engine, page_index, text_runs);
+  page_objects.links = engine->GetLinkInfo(page_index, text_runs);
   page_objects.images =
-      GetAccessibilityImageInfo(engine, page_index, page_info.text_run_count);
+      engine->GetImageInfo(page_index, page_info.text_run_count);
   page_objects.highlights =
       GetAccessibilityHighlightInfo(engine, page_index, text_runs);
   page_objects.form_fields = GetAccessibilityFormFieldInfo(

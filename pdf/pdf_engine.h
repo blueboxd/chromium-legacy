@@ -60,6 +60,8 @@ namespace chrome_pdf {
 class InputEvent;
 class Thumbnail;
 class UrlLoader;
+struct AccessibilityLinkInfo;
+struct AccessibilityImageInfo;
 struct AccessibilityTextRunInfo;
 struct DocumentAttachmentInfo;
 struct DocumentMetadata;
@@ -282,26 +284,6 @@ class PDFEngine {
         const base::Location& from_here = base::Location::Current()) = 0;
   };
 
-  struct AccessibilityLinkInfo {
-    AccessibilityLinkInfo();
-    AccessibilityLinkInfo(const AccessibilityLinkInfo& that);
-    ~AccessibilityLinkInfo();
-
-    std::string url;
-    int start_char_index;
-    int char_count;
-    gfx::RectF bounds;
-  };
-
-  struct AccessibilityImageInfo {
-    AccessibilityImageInfo();
-    AccessibilityImageInfo(const AccessibilityImageInfo& that);
-    ~AccessibilityImageInfo();
-
-    std::string alt_text;
-    gfx::RectF bounds;
-  };
-
   struct AccessibilityHighlightInfo {
     AccessibilityHighlightInfo();
     AccessibilityHighlightInfo(const AccessibilityHighlightInfo& that);
@@ -440,10 +422,14 @@ class PDFEngine {
       int start_char_index) = 0;
   // For all the links on page |page_index|, get their urls, underlying text
   // ranges and bounding boxes.
-  virtual std::vector<AccessibilityLinkInfo> GetLinkInfo(int page_index) = 0;
+  virtual std::vector<AccessibilityLinkInfo> GetLinkInfo(
+      int page_index,
+      const std::vector<AccessibilityTextRunInfo>& text_runs) = 0;
   // For all the images in page |page_index|, get their alt texts and bounding
   // boxes.
-  virtual std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) = 0;
+  virtual std::vector<AccessibilityImageInfo> GetImageInfo(
+      int page_index,
+      uint32_t text_run_count) = 0;
   // For all the highlights in page |page_index|, get their underlying text
   // ranges and bounding boxes.
   virtual std::vector<AccessibilityHighlightInfo> GetHighlightInfo(

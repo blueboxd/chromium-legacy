@@ -294,15 +294,6 @@ void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
   prefs->CommitPendingWrite();
 }
 
-// Returns time remaining to the next online login. The value can be negative
-// which means that online login should have been already happened in the past.
-base::TimeDelta TimeToOnlineSignIn(base::Time last_online_signin,
-                                   base::TimeDelta offline_signin_limit) {
-  const base::Time now = base::DefaultClock::GetInstance()->Now();
-  // Time left to the next forced online signin.
-  return offline_signin_limit - (now - last_online_signin);
-}
-
 base::Optional<EncryptionMigrationMode> GetEncryptionMigrationMode(
     const UserContext& user_context,
     bool has_incomplete_migration) {
@@ -474,7 +465,6 @@ void ExistingUserController::UpdateLoginDisplay(
     policy::PowerwashRequirementsChecker::Initialize();
   }
   bool show_users_on_signin;
-  user_manager::UserList filtered_users;
   user_manager::UserList saml_users_for_password_sync;
 
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
@@ -500,23 +490,15 @@ void ExistingUserController::UpdateLoginDisplay(
       AllowOfflineLoginOnErrorScreen(true /* allowed */);
     }
     const bool meets_allowlist_requirements =
-        !user->HasGaiaAccount() || user_manager->IsGaiaUserAllowed(*user);
-
-    // Public session accounts are always shown on login screen.
-    const bool meets_show_users_requirements =
-        show_users_on_signin ||
-        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-    if (meets_allowlist_requirements) {
-      if (meets_show_users_requirements) {
-        filtered_users.push_back(user);
-      }
-      if (user->using_saml()) {
-        saml_users_for_password_sync.push_back(user);
-      }
-    }
+        !user->HasGaiaAccount() ||
+        user_manager::UserManager::Get()->IsGaiaUserAllowed(*user);
+    if (meets_allowlist_requirements && user->using_saml())
+      saml_users_for_password_sync.push_back(user);
   }
 
-  ForceOnlineFlagChanged(filtered_users);
+  auto login_users = ExtractLoginUsers(users);
+  ForceOnlineFlagChanged(login_users);
+
   // ExistingUserController owns PasswordSyncTokenLoginCheckers only if user
   // pods are hidden.
   if (!show_users_on_signin && !saml_users_for_password_sync.empty()) {
@@ -531,25 +513,22 @@ void ExistingUserController::UpdateLoginDisplay(
   // If no user pods are visible, fallback to single new user pod which will
   // have guest session link.
   bool show_guest = user_manager->IsGuestSessionAllowed();
-  show_users_on_signin |= !filtered_users.empty();
+  show_users_on_signin |= !login_users.empty();
   bool allow_new_user = true;
   cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  GetLoginDisplay()->Init(filtered_users, show_guest, show_users_on_signin,
+  GetLoginDisplay()->Init(login_users, show_guest, show_users_on_signin,
                           allow_new_user);
   GetLoginDisplayHost()->OnPreferencesChanged();
 }
 
-// Check SAML offline time limits for `users` and schedules next
-// check if needed and returns true if any of user's force online
-// sign-in flag is changed.
+// Check GAIA with/without SAML offline time limits for `users` and
+// schedules next check if needed and returns true if any of user's force
+// online sign-in flag is changed.
 bool ExistingUserController::ForceOnlineFlagChanged(
     const user_manager::UserList& users) {
   bool force_online_flag_changed = false;
   base::TimeDelta min_delta = base::TimeDelta::Max();
   for (auto* user : users) {
-    if (!user->using_saml()) {
-      continue;
-    }
     const base::Optional<base::TimeDelta> offline_signin_limit =
         user_manager::known_user::GetOfflineSigninLimit(user->GetAccountId());
     if (!offline_signin_limit) {
@@ -558,8 +537,8 @@ bool ExistingUserController::ForceOnlineFlagChanged(
 
     const base::Time last_online_signin =
         user_manager::known_user::GetLastOnlineSignin(user->GetAccountId());
-    base::TimeDelta time_to_next_online_signin =
-        TimeToOnlineSignIn(last_online_signin, offline_signin_limit.value());
+    base::TimeDelta time_to_next_online_signin = login::TimeToOnlineSignIn(
+        last_online_signin, offline_signin_limit.value());
     if (time_to_next_online_signin > base::TimeDelta() &&
         time_to_next_online_signin < min_delta) {
       min_delta = time_to_next_online_signin;
@@ -1275,6 +1254,35 @@ bool ExistingUserController::password_changed() const {
     return login_performer_->password_changed();
 
   return password_changed_;
+}
+
+// static
+user_manager::UserList ExistingUserController::ExtractLoginUsers(
+    const user_manager::UserList& users) {
+  bool show_users_on_signin;
+  chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_users_on_signin);
+  user_manager::UserList filtered_users;
+  for (auto* user : users) {
+    // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
+    // kiosk UI) is currently disabled and it gets the apps directly from
+    // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
+    if (user->IsKioskType())
+      continue;
+    // TODO(xiyuan): Clean user profile whose email is not in allowlist.
+    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED)
+      continue;
+    const bool meets_allowlist_requirements =
+        !user->HasGaiaAccount() ||
+        user_manager::UserManager::Get()->IsGaiaUserAllowed(*user);
+    // Public session accounts are always shown on login screen.
+    const bool meets_show_users_requirements =
+        show_users_on_signin ||
+        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+    if (meets_allowlist_requirements && meets_show_users_requirements)
+      filtered_users.push_back(user);
+  }
+  return filtered_users;
 }
 
 void ExistingUserController::LoginAsGuest() {

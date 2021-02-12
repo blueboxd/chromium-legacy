@@ -4767,10 +4767,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessiblePDFFormDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kAccessiblePDFForm)},
 
-    {"pdf-viewer-update", flag_descriptions::kPdfViewerUpdateName,
-     flag_descriptions::kPdfViewerUpdateDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFViewerUpdate)},
-
     {"pdf-viewer-document-properties",
      flag_descriptions::kPdfViewerDocumentPropertiesName,
      flag_descriptions::kPdfViewerDocumentPropertiesDescription, kOsDesktop,
@@ -6714,12 +6710,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(download::features::kSmartSuggestionForLargeDownloads)},
 #endif  // defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-    {"passwords-weakness-check", flag_descriptions::kPasswordsWeaknessCheckName,
-     flag_descriptions::kPasswordsWeaknessCheckDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(password_manager::features::kPasswordsWeaknessCheck)},
-#endif  // !defined(OS_ANDROID)
 
     {"window-naming", flag_descriptions::kWindowNamingName,
      flag_descriptions::kWindowNamingDescription, kOsAll,

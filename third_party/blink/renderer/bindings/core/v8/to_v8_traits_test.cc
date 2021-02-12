@@ -4,8 +4,13 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_address_space.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_create_html_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/bindings/dictionary_base.h"
 
 namespace blink {
 
@@ -116,72 +121,52 @@ TEST(ToV8TraitsTest, FloatAndDouble) {
 TEST(ToV8TraitsTest, String) {
   const V8TestingScope scope;
   const String string("string");
-  const AtomicString atomic_string("atomicString");
-  const char* const charptr_string = "arrayString";
+  const char* const charptr_string = "charptrString";
   // ByteString
   TEST_TOV8_TRAITS(scope, IDLByteStringV2, "string", string);
-  TEST_TOV8_TRAITS(scope, IDLByteStringV2, "atomicString", atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLByteStringV2, "arrayString", charptr_string);
+  TEST_TOV8_TRAITS(scope, IDLByteStringV2, "charptrString", charptr_string);
   // DOMString
   TEST_TOV8_TRAITS(scope, IDLStringV2, "string", string);
-  TEST_TOV8_TRAITS(scope, IDLStringV2, "atomicString", atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLStringV2, "arrayString", charptr_string);
+  TEST_TOV8_TRAITS(scope, IDLStringV2, "charptrString", charptr_string);
   TEST_TOV8_TRAITS(scope, IDLStringTreatNullAsEmptyStringV2, "string", string);
-  TEST_TOV8_TRAITS(scope, IDLStringTreatNullAsEmptyStringV2, "atomicString",
-                   atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLStringTreatNullAsEmptyStringV2, "arrayString",
+  TEST_TOV8_TRAITS(scope, IDLStringTreatNullAsEmptyStringV2, "charptrString",
                    charptr_string);
   // USVString
   TEST_TOV8_TRAITS(scope, IDLUSVStringV2, "string", string);
-  TEST_TOV8_TRAITS(scope, IDLUSVStringV2, "atomicString", atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLUSVStringV2, "arrayString", charptr_string);
+  TEST_TOV8_TRAITS(scope, IDLUSVStringV2, "charptrString", charptr_string);
   // [StringContext=TrustedHTML] DOMString
   TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedHTMLV2, "string",
                    string);
-  TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedHTMLV2, "atomicString",
-                   atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedHTMLV2, "arrayString",
+  TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedHTMLV2, "charptrString",
                    charptr_string);
   TEST_TOV8_TRAITS(scope,
                    IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2,
                    "string", string);
   TEST_TOV8_TRAITS(scope,
                    IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2,
-                   "atomicString", atomic_string);
-  TEST_TOV8_TRAITS(scope,
-                   IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2,
-                   "arrayString", charptr_string);
+                   "charptrString", charptr_string);
   // [StringContext=TrustedScript] DOMString
   TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedScriptV2, "string",
                    string);
-  TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedScriptV2, "atomicString",
-                   atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedScriptV2, "arrayString",
-                   charptr_string);
+  TEST_TOV8_TRAITS(scope, IDLStringStringContextTrustedScriptV2,
+                   "charptrString", charptr_string);
   TEST_TOV8_TRAITS(scope,
                    IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2,
                    "string", string);
   TEST_TOV8_TRAITS(scope,
                    IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2,
-                   "atomicString", atomic_string);
-  TEST_TOV8_TRAITS(scope,
-                   IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2,
-                   "arrayString", charptr_string);
+                   "charptrString", charptr_string);
   // [StringContext=TrustedScriptURL] USVString
   TEST_TOV8_TRAITS(scope, IDLUSVStringStringContextTrustedScriptURLV2, "string",
                    string);
   TEST_TOV8_TRAITS(scope, IDLUSVStringStringContextTrustedScriptURLV2,
-                   "atomicString", atomic_string);
-  TEST_TOV8_TRAITS(scope, IDLUSVStringStringContextTrustedScriptURLV2,
-                   "arrayString", charptr_string);
+                   "charptrString", charptr_string);
 }
 
 TEST(ToV8TraitsTest, EmptyString) {
   const V8TestingScope scope;
   const String empty_string("");
   TEST_TOV8_TRAITS(scope, IDLStringV2, "", empty_string);
-  const AtomicString empty_atomic_string("");
-  TEST_TOV8_TRAITS(scope, IDLStringV2, "", empty_atomic_string);
   const char* const empty = "";
   TEST_TOV8_TRAITS(scope, IDLStringV2, "", empty);
 }
@@ -190,8 +175,6 @@ TEST(ToV8TraitsTest, NullStringInputForNoneNullableType) {
   const V8TestingScope scope;
   const String null_string;
   TEST_TOV8_TRAITS(scope, IDLStringV2, "", null_string);
-  const AtomicString null_atomic_string;
-  TEST_TOV8_TRAITS(scope, IDLStringV2, "", null_atomic_string);
   const char* const null = nullptr;
   TEST_TOV8_TRAITS(scope, IDLStringV2, "", null);
 }
@@ -235,6 +218,45 @@ TEST(ToV8TraitsTest, NullableScriptWrappable) {
   EventTarget* event_target = EventTarget::Create(scope.GetScriptState());
   TEST_TOV8_TRAITS(scope, IDLNullable<EventTarget>, "[object EventTarget]",
                    event_target);
+}
+
+TEST(ToV8TraitsTest, NullableDictionary) {
+  const V8TestingScope scope;
+  // bindings::DictionaryBase
+  TEST_TOV8_TRAITS(scope, IDLNullable<bindings::DictionaryBase>, "null",
+                   nullptr);
+  // IDLDictionaryBase
+  DOMPointInit* dom_point_init = DOMPointInit::Create();
+  TEST_TOV8_TRAITS(scope, IDLNullable<DOMPointInit>, "null", nullptr);
+  TEST_TOV8_TRAITS(scope, IDLNullable<DOMPointInit>, "[object Object]",
+                   dom_point_init);
+}
+
+TEST(ToV8TraitsTest, NullableCallbackFunction) {
+  const V8TestingScope scope;
+  TEST_TOV8_TRAITS(scope, IDLNullable<V8CreateHTMLCallback>, "null", nullptr);
+  V8CreateHTMLCallback* v8_create_html_callback =
+      V8CreateHTMLCallback::Create(scope.GetContext()->Global());
+  TEST_TOV8_TRAITS(scope, IDLNullable<V8CreateHTMLCallback>, "[object Window]",
+                   v8_create_html_callback);
+}
+
+TEST(ToV8TraitsTest, NullableCallbackInterface) {
+  const V8TestingScope scope;
+  TEST_TOV8_TRAITS(scope, IDLNullable<V8CreateHTMLCallback>, "null", nullptr);
+  V8EventListener* v8_event_listener =
+      V8EventListener::Create(scope.GetContext()->Global());
+  TEST_TOV8_TRAITS(scope, IDLNullable<V8EventListener>, "[object Window]",
+                   v8_event_listener);
+}
+
+TEST(ToV8TraitsTest, NullableEnumeration) {
+  const V8TestingScope scope;
+  TEST_TOV8_TRAITS(scope, IDLNullable<V8AddressSpace>, "null", base::nullopt);
+  const base::Optional<V8AddressSpace> v8_address_space =
+      V8AddressSpace::Create("public");
+  TEST_TOV8_TRAITS(scope, IDLNullable<V8AddressSpace>, "public",
+                   v8_address_space);
 }
 
 }  // namespace

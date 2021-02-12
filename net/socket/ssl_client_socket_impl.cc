@@ -1129,7 +1129,7 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   cert_verification_result_ = context_->cert_verifier()->Verify(
       CertVerifier::RequestParams(
           server_cert_, host_and_port_.host(), ssl_config_.GetCertVerifyFlags(),
-          ocsp_response.as_string(), sct_list.as_string()),
+          std::string(ocsp_response), std::string(sct_list)),
       &server_cert_verify_result_,
       base::BindOnce(&SSLClientSocketImpl::OnVerifyComplete,
                      base::Unretained(this)),
@@ -1211,7 +1211,9 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   // version.
   if (result == OK &&
       SSL_version(ssl_.get()) < context_->config().version_min_warn &&
-      base::FeatureList::IsEnabled(features::kLegacyTLSEnforced)) {
+      base::FeatureList::IsEnabled(features::kLegacyTLSEnforced) &&
+      !context_->ssl_config_service()->ShouldSuppressLegacyTLSWarning(
+          host_and_port_.host())) {
     server_cert_verify_result_.cert_status |= CERT_STATUS_LEGACY_TLS;
 
     // Only set the resulting net error if it hasn't been previously bypassed.

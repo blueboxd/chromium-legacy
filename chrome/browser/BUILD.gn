@@ -340,6 +340,8 @@ static_library("browser") {
     "component_updater/sth_set_component_remover.h",
     "component_updater/subresource_filter_component_installer.cc",
     "component_updater/subresource_filter_component_installer.h",
+    "component_updater/tls_deprecation_config_component_installer.cc",
+    "component_updater/tls_deprecation_config_component_installer.h",
     "component_updater/trust_token_key_commitments_component_installer.cc",
     "component_updater/trust_token_key_commitments_component_installer.h",
     "component_updater/zxcvbn_data_component_installer.cc",
@@ -1755,6 +1757,8 @@ static_library("browser") {
     "ssl/ssl_error_controller_client.h",
     "ssl/stateful_ssl_host_state_delegate_factory.cc",
     "ssl/stateful_ssl_host_state_delegate_factory.h",
+    "ssl/tls_deprecation_config.cc",
+    "ssl/tls_deprecation_config.h",
     "ssl/typed_navigation_upgrade_throttle.cc",
     "ssl/typed_navigation_upgrade_throttle.h",
     "startup_data.cc",
@@ -2736,6 +2740,7 @@ static_library("browser") {
       "android/feed/v2/refresh_task_scheduler_impl.cc",
       "android/feed/v2/refresh_task_scheduler_impl.h",
       "android/feedback/connectivity_checker.cc",
+      "android/feedback/screenshot_mode.h",
       "android/feedback/screenshot_task.cc",
       "android/foreign_session_helper.cc",
       "android/foreign_session_helper.h",
@@ -3244,6 +3249,7 @@ static_library("browser") {
       "//chrome/browser/endpoint_fetcher:jni_headers",
       "//chrome/browser/feedback/android",
       "//chrome/browser/flags:flags_android",
+      "//chrome/browser/language/android:jni_headers",
       "//chrome/browser/long_screenshots:services",
       "//chrome/browser/notifications/chime/android",
       "//chrome/browser/notifications/scheduler/public",
@@ -6770,6 +6776,7 @@ static_library("test_support") {
     "//google_apis:test_support",
     "//net:test_support",
     "//services/data_decoder/public/cpp:test_support",
+    "//services/network/public/proto:tls_deprecation_config_proto",
     "//services/preferences/public/cpp/tracked:test_support",
     "//skia",
     "//testing/gmock",
@@ -7035,6 +7042,9 @@ if (is_android) {
   }
   java_cpp_enum("tos_dialog_behavior_generated_enum") {
     sources = [ "first_run/android/first_run_prefs.h" ]
+  }
+  java_cpp_enum("screenshot_mode_enum") {
+    sources = [ "android/feedback/screenshot_mode.h" ]
   }
 }
 

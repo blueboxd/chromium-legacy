@@ -5667,7 +5667,10 @@ crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ 
 crbug.com/1176691 http/tests/devtools/security/interstitial-sidebar.js [ Failure Pass ]
 crbug.com/1176691 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
 
-
+# Temporarily disabled due to failures on https://ci.chromium.org/p/chromium/builders/ci/Linux%20Tests%20%28dbg%29%281%29
+crbug.com/1177568 http/tests/devtools/console/console-api-on-call-frame.js [ Pass Failure ]
+crbug.com/1177568 http/tests/devtools/runtime/evaluate-timeout.js [ Pass Failure ]
+crbug.com/1177568 http/tests/devtools/console/console-error-on-call-frame.js [ Pass Failure ]
 
 # Failing on Webkit Linux Leak
 crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]
@@ -5679,6 +5682,11 @@ crbug.com/1171283 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinc
 crbug.com/1176286 [ Linux ] http/tests/devtools/service-workers/service-workers-redundant.js [ Failure Pass ]
 crbug.com/1175901 [ Linux ] http/tests/devtools/console/console-search-reveals-messages.js [ Failure Pass ]
 crbug.com/1175901 [ Linux ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Failure Pass ]
+
+# Timing out on WebKit Linux Leak
+crbug.com/1176286 [ Linux ] http/tests/devtools/a11y-axe-core/settings/blackbox-a11y-test.js [ Failure Pass ]
+crbug.com/1176286 [ Linux ] http/tests/devtools/network/network-serviceworker-timing-view.js [ Failure Pass ]
+crbug.com/1176286 [ Linux ] http/tests/devtools/network/subresource-integrity-number-of-requests-for-stylesheet.js [ Failure Pass ]
 
 # The non-virtual versions of these tests time out due to syntax errors in script without import assertions enabled
 crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/css-module/css-module-worker-test.html [ Pass Timeout ]

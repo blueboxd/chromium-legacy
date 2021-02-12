@@ -2064,6 +2064,24 @@
             ]
         }
     ],
+    "CrosMemoryAblationStudy": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "CrosMemoryAblationStudy",
+                    "params": {
+                        "ablation-size-mb": "14"
+                    },
+                    "enable_features": [
+                        "CrosMemoryAblationStudy"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrosSchedulerCore": [
         {
             "platforms": [
@@ -4978,25 +4996,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableOverlayPrioritization"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PDFViewerUpdate": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PDFViewerUpdate"
                     ]
                 }
             ]

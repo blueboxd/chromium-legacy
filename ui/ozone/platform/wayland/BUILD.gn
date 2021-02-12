@@ -18,7 +18,6 @@ source_set("wayland") {
     "client_native_pixmap_factory_wayland.h",
     "common/data_util.cc",
     "common/data_util.h",
-    "common/wayland.cc",
     "common/wayland.h",
     "common/wayland_object.cc",
     "common/wayland_object.h",
@@ -375,9 +374,9 @@ source_set("wayland_unittests") {
   sources = [
     "common/wayland_util_unittest.cc",
     "gpu/wayland_overlay_manager_unittest.cc",
+    "host/wayland_clipboard_unittest.cc",
     "host/wayland_connection_unittest.cc",
     "host/wayland_cursor_factory_unittest.cc",
-    "host/wayland_data_device_unittest.cc",
     "host/wayland_data_drag_controller_unittest.cc",
     "host/wayland_event_source_unittest.cc",
     "host/wayland_input_method_context_unittest.cc",

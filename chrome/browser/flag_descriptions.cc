@@ -330,6 +330,11 @@ const char kChromeLabsDescription[] =
     "Access Chrome Labs through the toolbar menu to see featured user-facing "
     "experimental features.";
 
+const char kComputePressureAPIName[] = "Compute Pressure API";
+const char kComputePressureAPIDescription[] =
+    "Enables the experimental Compute Pressure API, giving websites access "
+    "to device compute performance data.";
+
 const char kContextMenuGoogleLensChipName[] =
     "Google Lens powered image search for surfaced as a chip below the context "
     "menu.";
@@ -713,6 +718,12 @@ const char kDesktopPWAsRunOnOsLoginDescription[] =
     "Enable installed PWAs to be configured to automatically start when the OS "
     "user logs in. Launching a PWA while the browser is not running is known "
     "to cause a failure to restore sessions. See https://crbug.com/938759.";
+
+const char kDesktopPWAsUrlHandlingName[] = "Desktop PWA URL handling";
+const char kDesktopPWAsUrlHandlingDescription[] =
+    "Enable web app manifests to declare URL handling behavior. Prototype "
+    "implementation of: "
+    "https://github.com/WICG/pwa-url-handler/blob/master/explainer.md";
 
 const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteName[] =
     "Migrate default G Suite Chrome apps to web apps";
@@ -1249,12 +1260,6 @@ const char kGlobalMediaControlsOverlayControlsDescription[] =
 
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
-
-const char kH264DecoderBufferIsCompleteFrameName[] =
-    "H.264 Decoder Buffer Is Complete Frame";
-const char kH264DecoderBufferIsCompleteFrameDescription[] =
-    "H.264 decoder will treat each DecoderBuffer as a complete frame. Defaults "
-    "to enabled.";
 
 const char kHandwritingGestureName[] = "Handwriting Gestures";
 const char kHandwritingGestureDescription[] =
@@ -3297,12 +3302,6 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
-const char kUpdateNotificationSchedulingIntegrationName[] =
-    "Enable update notification using notification scheduling system";
-const char kUpdateNotificationSchedulingIntegrationDescription[] =
-    "if enable update notification will hook up to notification scheduling "
-    "system in native side";
-
 const char kUserMediaScreenCapturingName[] = "Screen Capture API";
 const char kUserMediaScreenCapturingDescription[] =
     "Allows sites to request a video stream of your screen.";
@@ -3312,11 +3311,6 @@ const char kPrefetchNotificationSchedulingIntegrationName[] =
 const char kPrefetchNotificationSchedulingIntegrationDescription[] =
     "if enable prefetch notification service and background task will hook up "
     "to notification scheduling system in native side";
-
-const char kUpdateNotificationServiceImmediateShowOptionName[] =
-    "Update notification service debug options";
-const char kUpdateNotificationServiceImmediateShowOptionDescription[] =
-    "Show update notification right immediately";
 
 const char kUseChimeAndroidSdkDescription[] =
     "Enable Chime SDK to receive push notification.";
@@ -3655,11 +3649,6 @@ const char kUseAngleGL[] = "OpenGL";
 const char kUseAngleD3D11[] = "D3D11";
 const char kUseAngleD3D9[] = "D3D9";
 const char kUseAngleD3D11on12[] = "D3D11on12";
-
-const char kUseSerialBusEnumeratorName[] = "Use system serial port enumerator";
-const char kUseSerialBusEnumeratorDescription[] =
-    "Use the system-supplied enumerator for serial port devices instead of "
-    "enumerating devices implementing the COM port interface.";
 
 const char kUseWinrtMidiApiName[] = "Use Windows Runtime MIDI API";
 const char kUseWinrtMidiApiDescription[] =
@@ -4645,6 +4634,10 @@ const char kSharesheetContentPreviewsDescription[] =
 const char kSharesheetName[] = "Sharesheet";
 const char kSharesheetDescription[] = "Chrome OS sharesheet.";
 
+const char kChromeOSSharingHubName[] = "Chrome OS Sharing Hub";
+const char kChromeOSSharingHubDescription[] =
+    "Enables the Sharing Hub (share sheet) on ChromeOS via the Omnibox.";
+
 const char kShowBluetoothDebugLogToggleName[] =
     "Show Bluetooth debug log toggle";
 const char kShowBluetoothDebugLogToggleDescription[] =
@@ -4655,11 +4648,6 @@ const char kEnableBluetoothVerboseLogsForGooglersName[] =
     "Enable Bluetooth verbose logs for Googlers";
 const char kEnableBluetoothVerboseLogsForGooglersDescription[] =
     "Enables Bluetooth verbose logs for Googlers in feedback reports.";
-
-const char kShowBluetoothDeviceBatteryName[] = "Show Bluetooth device battery";
-const char kShowBluetoothDeviceBatteryDescription[] =
-    "Enables showing the battery level of connected and supported Bluetooth "
-    "devices in the System Tray and Settings UI.";
 
 const char kShowTapsName[] = "Show taps";
 const char kShowTapsDescription[] =

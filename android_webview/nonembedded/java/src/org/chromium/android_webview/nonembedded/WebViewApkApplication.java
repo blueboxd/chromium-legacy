@@ -137,7 +137,8 @@ public class WebViewApkApplication extends Application {
             }
             // Should not call LibraryLoader.initialize() since this will reset UmaRecorder
             // delegate.
-            LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_WEBVIEW);
+            LibraryLoader.getInstance().setLibraryProcessType(
+                    LibraryProcessType.PROCESS_WEBVIEW_NONEMBEDDED);
             LibraryLoader.getInstance().loadNow();
         } catch (Throwable unused) {
             // Happens for WebView Stub. Throws NoClassDefFoundError because of no
@@ -145,12 +146,12 @@ public class WebViewApkApplication extends Application {
             return false;
         }
         LibraryLoader.getInstance().switchCommandLineForWebView();
-        WebViewApkApplicationJni.get().initializePakResources();
+        WebViewApkApplicationJni.get().initializeGlobalsAndResources();
         return true;
     }
 
     @NativeMethods
     interface Natives {
-        void initializePakResources();
+        void initializeGlobalsAndResources();
     }
 }

@@ -204,6 +204,9 @@ extern const char kCheckOfflineCapabilityDescription[];
 extern const char kChromeLabsName[];
 extern const char kChromeLabsDescription[];
 
+extern const char kComputePressureAPIName[];
+extern const char kComputePressureAPIDescription[];
+
 extern const char kContextMenuGoogleLensChipName[];
 extern const char kContextMenuGoogleLensChipDescription[];
 
@@ -436,6 +439,9 @@ extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
 
 extern const char kDesktopPWAsRunOnOsLoginName[];
 extern const char kDesktopPWAsRunOnOsLoginDescription[];
+
+extern const char kDesktopPWAsUrlHandlingName[];
+extern const char kDesktopPWAsUrlHandlingDescription[];
 
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteName[];
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[];
@@ -734,9 +740,6 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
-
-extern const char kH264DecoderBufferIsCompleteFrameName[];
-extern const char kH264DecoderBufferIsCompleteFrameDescription[];
 
 extern const char kHandwritingGestureName[];
 extern const char kHandwritingGestureDescription[];
@@ -1899,11 +1902,6 @@ extern const char kUpdateMenuTypeInlineUpdateDownloadFailed[];
 extern const char kUpdateMenuTypeInlineUpdateDownloadCanceled[];
 extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
-extern const char kUpdateNotificationSchedulingIntegrationName[];
-extern const char kUpdateNotificationSchedulingIntegrationDescription[];
-extern const char kUpdateNotificationServiceImmediateShowOptionName[];
-extern const char kUpdateNotificationServiceImmediateShowOptionDescription[];
-
 extern const char kUserMediaScreenCapturingName[];
 extern const char kUserMediaScreenCapturingDescription[];
 
@@ -2102,9 +2100,6 @@ extern const char kUseAngleGL[];
 extern const char kUseAngleD3D11[];
 extern const char kUseAngleD3D9[];
 extern const char kUseAngleD3D11on12[];
-
-extern const char kUseSerialBusEnumeratorName[];
-extern const char kUseSerialBusEnumeratorDescription[];
 
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
@@ -2720,14 +2715,14 @@ extern const char kSharesheetContentPreviewsDescription[];
 extern const char kSharesheetName[];
 extern const char kSharesheetDescription[];
 
+extern const char kChromeOSSharingHubName[];
+extern const char kChromeOSSharingHubDescription[];
+
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];
 
 extern const char kEnableBluetoothVerboseLogsForGooglersName[];
 extern const char kEnableBluetoothVerboseLogsForGooglersDescription[];
-
-extern const char kShowBluetoothDeviceBatteryName[];
-extern const char kShowBluetoothDeviceBatteryDescription[];
 
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];

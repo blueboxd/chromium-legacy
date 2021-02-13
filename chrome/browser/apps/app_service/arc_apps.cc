@@ -115,7 +115,7 @@ void OnArcAppIconCompletelyLoaded(
                 ? apps::CompositeImagesAndApplyMask(
                       icon->foreground_image_skia(),
                       icon->background_image_skia())
-                : apps::ApplyBackgroundAndMask(icon->foreground_image_skia());
+                : apps::ApplyBackgroundAndMask(icon->image_skia());
       } else {
         iv->uncompressed = icon->image_skia();
       }
@@ -206,6 +206,10 @@ base::Optional<arc::UserInteractionType> GetUserInterationType(
     case apps::mojom::LaunchSource::kFromSharesheet:
       user_interaction_type =
           arc::UserInteractionType::APP_STARTED_FROM_SHARESHEET;
+      break;
+    case apps::mojom::LaunchSource::kFromFullRestore:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_FULL_RESTORE;
       break;
     default:
       NOTREACHED();

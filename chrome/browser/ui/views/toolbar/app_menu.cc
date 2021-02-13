@@ -47,6 +47,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/image_model.h"
@@ -851,22 +852,23 @@ bool AppMenu::CanDrop(MenuItemView* menu, const ui::OSExchangeData& data) {
          bookmark_menu_delegate_->CanDrop(menu, data);
 }
 
-int AppMenu::GetDropOperation(MenuItemView* item,
-                              const ui::DropTargetEvent& event,
-                              DropPosition* position) {
+ui::mojom::DragOperation AppMenu::GetDropOperation(
+    MenuItemView* item,
+    const ui::DropTargetEvent& event,
+    DropPosition* position) {
   return IsBookmarkCommand(item->GetCommand())
              ? bookmark_menu_delegate_->GetDropOperation(item, event, position)
-             : ui::DragDropTypes::DRAG_NONE;
+             : ui::mojom::DragOperation::kNone;
 }
 
-int AppMenu::OnPerformDrop(MenuItemView* menu,
-                           DropPosition position,
-                           const ui::DropTargetEvent& event) {
+ui::mojom::DragOperation AppMenu::OnPerformDrop(
+    MenuItemView* menu,
+    DropPosition position,
+    const ui::DropTargetEvent& event) {
   if (!IsBookmarkCommand(menu->GetCommand()))
-    return ui::DragDropTypes::DRAG_NONE;
+    return ui::mojom::DragOperation::kNone;
 
-  int result = bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
-  return result;
+  return bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
 }
 
 bool AppMenu::ShowContextMenu(MenuItemView* source,

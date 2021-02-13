@@ -28,6 +28,11 @@ const UiElement = {
   SCAN_SUCCESS: 5,
   SCAN_FAILURE: 6,
 };
+/**
+ * barcode format used by |BarcodeDetector|
+ * @private {string}
+ */
+const QR_CODE_FORMAT = 'qr_code';
 
 /**
  * Page in eSIM Setup flow that accepts activation code. User has option for
@@ -116,11 +121,19 @@ Polymer({
    */
   qrCodeDetector_: null,
 
+  /**
+   *  TODO(crbug.com/1093185): add type |BarcodeDetector| when externs
+   *  becomes available
+   *  @suppress {undefinedVars|missingProperties}
+   *  @private
+   */
+  barcodeDetectorClass_: BarcodeDetector,
+
 
   /** @override */
   ready() {
     this.setMediaDevices(navigator.mediaDevices);
-    this.initBarcodeDetector_();
+    this.initBarcodeDetector();
     this.state_ = PageState.INITIAL;
   },
 
@@ -150,12 +163,19 @@ Polymer({
    * @suppress {undefinedVars|missingProperties}
    * @private
    */
-  initBarcodeDetector_() {
-    this.qrCodeDetector_ = new BarcodeDetector({
-      formats: [
-        'qr_code',
-      ]
-    });
+  async initBarcodeDetector() {
+    const formats = await this.barcodeDetectorClass_.getSupportedFormats();
+
+    if (!formats || formats.length === 0) {
+      this.qrCodeDetector_ = null;
+      return;
+    }
+
+    const qrCodeFormat = formats.find(format => format === QR_CODE_FORMAT);
+    if (qrCodeFormat) {
+      this.qrCodeDetector_ =
+          new this.barcodeDetectorClass_({formats: [QR_CODE_FORMAT]});
+    }
   },
 
   /**
@@ -224,8 +244,8 @@ Polymer({
         })
         .then(stream => {
           this.stream_ = stream;
-          if (stream) {
-            const video = this.$.video;
+          if (this.stream_) {
+            const video = this.$$('#video');
             video.srcObject = stream;
             video.play();
           }
@@ -238,7 +258,12 @@ Polymer({
               PageState.SCANNING_USER_FACING :
               PageState.SCANNING_ENVIRONMENT_FACING;
 
-          this.detectQrCode_(stream);
+          if (this.stream_) {
+            this.detectQrCode_();
+          }
+        })
+        .catch(e => {
+          this.state_ = PageState.FAILURE;
         });
   },
 
@@ -246,14 +271,13 @@ Polymer({
    * Continuously checks stream if it contains a QR code. If a QR code is
    * detected, activationCode is set to the QR code's value and the detection
    * stops.
-   * @param {MediaStream} stream
    * @private
    */
-  async detectQrCode_(stream) {
+  async detectQrCode_() {
     try {
       this.qrCodeDetectorTimer_ = setInterval(
           (async function() {
-            const capturer = new ImageCapture(stream.getVideoTracks()[0]);
+            const capturer = new ImageCapture(this.stream_.getVideoTracks()[0]);
             const frame = await capturer.grabFrame();
             const activationCode = await this.detectActivationCode_(frame);
             if (activationCode) {
@@ -276,6 +300,10 @@ Polymer({
    * @private
    */
   async detectActivationCode_(frame) {
+    if (!this.qrCodeDetector_) {
+      return null;
+    }
+
     const qrCodes = await this.qrCodeDetector_.detect(frame);
     if (qrCodes.length > 0) {
       return qrCodes[0].rawValue;

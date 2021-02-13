@@ -35,7 +35,9 @@ namespace chrome_pdf {
 class PDFiumEngine;
 class Thumbnail;
 struct AccessibilityLinkInfo;
+struct AccessibilityHighlightInfo;
 struct AccessibilityImageInfo;
+struct AccessibilityTextFieldInfo;
 struct AccessibilityTextRunInfo;
 struct AccessibilityTextStyleInfo;
 
@@ -72,10 +74,12 @@ class PDFiumPage {
   std::vector<AccessibilityImageInfo> GetImageInfo(uint32_t text_run_count);
   // For all the highlights on the page, get their underlying text ranges and
   // bounding boxes.
-  std::vector<PDFEngine::AccessibilityHighlightInfo> GetHighlightInfo();
+  std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
+      const std::vector<AccessibilityTextRunInfo>& text_runs);
   // For all the text fields on the page, get their properties like name,
   // value, bounding boxes, etc.
-  std::vector<PDFEngine::AccessibilityTextFieldInfo> GetTextFieldInfo();
+  std::vector<AccessibilityTextFieldInfo> GetTextFieldInfo(
+      uint32_t text_run_count);
 
   enum Area {
     NONSELECTABLE_AREA,

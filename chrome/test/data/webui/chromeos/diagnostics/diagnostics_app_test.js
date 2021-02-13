@@ -110,7 +110,7 @@ export function appTestSuite() {
    * @return {!CrButtonElement}
    */
   function getSessionLogButton() {
-    return /** @type {!CrButtonElement} */ (page.$$('#sessionLogButton'));
+    return /** @type {!CrButtonElement} */ (page.$$('.session-log-button'));
   }
 
   /**
@@ -128,6 +128,16 @@ export function appTestSuite() {
    */
   function isToastVisible() {
     return page.$$('cr-toast').open;
+  }
+
+  /**
+   * @param {boolean} isLoggedIn
+   * @suppress {visibility} // access private member
+   * @return {!Promise}
+   */
+  function changeLoggedInState(isLoggedIn) {
+    page.isLoggedIn_ = isLoggedIn;
+    return flushTasks();
   }
 
   test('LandingPageLoaded', () => {
@@ -152,7 +162,7 @@ export function appTestSuite() {
           assertTrue(!!batteryStatus);
 
           // Verify the session log button is in the page.
-          const sessionLog = page.$$('#sessionLogButton');
+          const sessionLog = page.$$('.session-log-button');
           assertTrue(!!sessionLog);
         });
   });
@@ -221,5 +231,21 @@ export function appTestSuite() {
                 loadTimeData.getString('sessionLogToastTextFailure'));
           });
         });
+  });
+
+  test('SessionLogHiddenWhenNotLoggedIn', () => {
+    return initializeDiagnosticsApp(
+               fakeSystemInfo, fakeBatteryChargeStatus, fakeBatteryHealth,
+               fakeBatteryInfo, fakeCpuUsage, fakeMemoryUsage)
+        .then(() => changeLoggedInState(/* isLoggedIn */ (false)))
+        .then(() => assertFalse(isVisible(getSessionLogButton())));
+  });
+
+  test('SessionLogShownWhenLoggedIn', () => {
+    return initializeDiagnosticsApp(
+               fakeSystemInfo, fakeBatteryChargeStatus, fakeBatteryHealth,
+               fakeBatteryInfo, fakeCpuUsage, fakeMemoryUsage)
+        .then(() => changeLoggedInState(/* isLoggedIn */ (true)))
+        .then(() => assertTrue(isVisible(getSessionLogButton())));
   });
 }

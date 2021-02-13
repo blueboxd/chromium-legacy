@@ -18,70 +18,13 @@ namespace chrome_pdf {
 
 namespace {
 
-template <typename T>
-bool CompareTextRuns(const T& a, const T& b) {
-  return a.text_range.index < b.text_range.index;
-}
-
-std::vector<AccessibilityHighlightInfo> GetAccessibilityHighlightInfo(
-    PDFEngine* engine,
-    int32_t page_index,
-    const std::vector<AccessibilityTextRunInfo>& text_runs) {
-  std::vector<PDFEngine::AccessibilityHighlightInfo> engine_highlight_infos =
-      engine->GetHighlightInfo(page_index);
-  std::vector<AccessibilityHighlightInfo> highlight_infos;
-  highlight_infos.reserve(engine_highlight_infos.size());
-  for (size_t i = 0; i < engine_highlight_infos.size(); ++i) {
-    auto& cur_highlight_info = engine_highlight_infos[i];
-    AccessibilityHighlightInfo highlight_info;
-    highlight_info.index_in_page = i;
-    highlight_info.bounds = cur_highlight_info.bounds;
-    highlight_info.color = cur_highlight_info.color;
-    highlight_info.note_text = std::move(cur_highlight_info.note_text);
-    highlight_info.text_range = GetEnclosingTextRunRangeForCharRange(
-        text_runs, cur_highlight_info.start_char_index,
-        cur_highlight_info.char_count);
-    highlight_infos.push_back(std::move(highlight_info));
-  }
-
-  std::sort(highlight_infos.begin(), highlight_infos.end(),
-            CompareTextRuns<AccessibilityHighlightInfo>);
-  return highlight_infos;
-}
-
-std::vector<AccessibilityTextFieldInfo> GetAccessibilityTextFieldInfo(
-    PDFEngine* engine,
-    int32_t page_index,
-    uint32_t text_run_count) {
-  std::vector<PDFEngine::AccessibilityTextFieldInfo> engine_text_field_infos =
-      engine->GetTextFieldInfo(page_index);
-  std::vector<AccessibilityTextFieldInfo> text_field_infos;
-  text_field_infos.reserve(engine_text_field_infos.size());
-  for (size_t i = 0; i < engine_text_field_infos.size(); ++i) {
-    auto& cur_text_field_info = engine_text_field_infos[i];
-    AccessibilityTextFieldInfo text_field_info;
-    text_field_info.name = std::move(cur_text_field_info.name);
-    text_field_info.value = std::move(cur_text_field_info.value);
-    text_field_info.index_in_page = i;
-    text_field_info.is_read_only = cur_text_field_info.is_read_only;
-    text_field_info.is_required = cur_text_field_info.is_required;
-    text_field_info.is_password = cur_text_field_info.is_password;
-    // TODO(crbug.com/1030242): Update text run index to nearest text run to
-    // text field bounds.
-    text_field_info.text_run_index = text_run_count;
-    text_field_info.bounds = cur_text_field_info.bounds;
-    text_field_infos.push_back(std::move(text_field_info));
-  }
-  return text_field_infos;
-}
-
 AccessibilityFormFieldInfo GetAccessibilityFormFieldInfo(
     PDFEngine* engine,
     int32_t page_index,
     uint32_t text_run_count) {
   AccessibilityFormFieldInfo form_field_info;
   form_field_info.text_fields =
-      GetAccessibilityTextFieldInfo(engine, page_index, text_run_count);
+      engine->GetTextFieldInfo(page_index, text_run_count);
   return form_field_info;
 }
 
@@ -169,8 +112,7 @@ bool GetAccessibilityInfo(PDFEngine* engine,
   page_objects.links = engine->GetLinkInfo(page_index, text_runs);
   page_objects.images =
       engine->GetImageInfo(page_index, page_info.text_run_count);
-  page_objects.highlights =
-      GetAccessibilityHighlightInfo(engine, page_index, text_runs);
+  page_objects.highlights = engine->GetHighlightInfo(page_index, text_runs);
   page_objects.form_fields = GetAccessibilityFormFieldInfo(
       engine, page_index, page_info.text_run_count);
   return true;

@@ -939,6 +939,8 @@ static_library("ui") {
       "commander/open_url_command_source.h",
       "commander/simple_command_source.cc",
       "commander/simple_command_source.h",
+      "commander/window_command_source.cc",
+      "commander/window_command_source.h",
       "confirm_bubble_model.cc",
       "confirm_bubble_model.h",
       "content_settings/content_setting_bubble_model.cc",
@@ -1592,6 +1594,7 @@ static_library("ui") {
       "//third_party/blink/public/common:headers",
       "//third_party/libaddressinput",
       "//third_party/libaddressinput:strings",
+      "//ui/base/dragdrop/mojom",
       "//ui/events",
     ]
     public_deps += [ "//ui/base/dragdrop/mojom:mojom_headers" ]
@@ -4250,10 +4253,10 @@ static_library("ui") {
       "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",
       "//services/media_session/public/mojom",
-      "//ui/base/dragdrop/mojom:mojom_shared",
       "//ui/gfx/geometry",
       "//ui/views:buildflags",
     ]
+    public_deps += [ "//ui/base/dragdrop/mojom:mojom_headers" ]
 
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]
 

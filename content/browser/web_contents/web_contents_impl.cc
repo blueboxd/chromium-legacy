@@ -1215,12 +1215,15 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
   delegate_ = delegate;
   if (delegate_) {
     delegate_->Attach(this);
-    // Ensure the visible RVH reflects the new delegate's preferences.
-    if (view_)
-      view_->SetOverscrollControllerEnabled(CanOverscrollContent());
-    if (GetRenderViewHost())
-      RenderFrameDevToolsAgentHost::WebContentsCreated(this);
+    // RenderFrameDevToolsAgentHost should not be told about the main renderer
+    // frame until/unless there is a `delegate_`.
+    if (GetMainFrame()->IsRenderFrameLive())
+      RenderFrameDevToolsAgentHost::WebContentsMainFrameCreated(this);
   }
+
+  // Re-read values from the new delegate and apply them.
+  if (view_)
+    view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 }
 
 RenderFrameHostImpl* WebContentsImpl::GetMainFrame() {
@@ -2732,7 +2735,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   }
 
   frame_tree_.Init(site_instance.get(), params.renderer_initiated_creation,
-                   params.main_frame_name);
+                   params.main_frame_name, params.is_prerendering);
 
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
@@ -3630,6 +3633,7 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
       // newly created object and give it one of its own member variables.
       RenderWidgetHostView* widget_view = new_view->CreateViewForWidget(
           new_contents_impl->GetRenderViewHost()->GetWidget());
+      view_->SetOverscrollControllerEnabled(CanOverscrollContent());
       if (!renderer_started_hidden) {
         // RenderWidgets for frames always initialize as hidden. If the renderer
         // created this window as visible, then we show it here.
@@ -5355,7 +5359,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
 
   if (delegate_)
     delegate_->DidNavigateMainFramePostCommit(this);
-  view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 
   // The following events will not fire again if the page is restored from the
   // BackForwardCache. So fire them ourselves if needed.
@@ -5393,11 +5396,7 @@ bool WebContentsImpl::CanOverscrollContent() const {
   // Disable overscroll when touch emulation is on. See crbug.com/369938.
   if (force_disable_overscroll_content_)
     return false;
-
-  if (delegate_)
-    return delegate_->CanOverscrollContent();
-
-  return false;
+  return delegate_ && delegate_->CanOverscrollContent();
 }
 
 void WebContentsImpl::OnThemeColorChanged(RenderViewHostImpl* source) {
@@ -6313,6 +6312,15 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
         view_->Focus();
       }
     }
+
+    // RenderFrameDevToolsAgentHost should not be told about the main renderer
+    // frame until/unless there is a `delegate_`.
+    if (delegate_) {
+      // TODO(crbug.com/1164280): Under MPArch, with multiple frame trees in a
+      // WebContents, this is intended to just notify about the main frame of
+      // the root page.
+      RenderFrameDevToolsAgentHost::WebContentsMainFrameCreated(this);
+    }
   }
 
   observers_.NotifyObservers(&WebContentsObserver::RenderFrameCreated,
@@ -6783,16 +6791,6 @@ void WebContentsImpl::InnerWebContentsDetached(
     OnAudioStateChanged();
 }
 
-void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RenderViewCreated",
-                        "render_view_host",
-                        static_cast<void*>(render_view_host));
-  if (delegate_) {
-    view_->SetOverscrollControllerEnabled(CanOverscrollContent());
-    RenderFrameDevToolsAgentHost::WebContentsCreated(this);
-  }
-}
-
 void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RenderViewReady",
                         "render_view_host", static_cast<void*>(rvh));
@@ -7241,7 +7239,7 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
 void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::SetAsFocusedWebContentsIfNecessary");
-  DCHECK(!portal());
+  DCHECK(!GetOuterWebContents() || !IsPortal());
   // Only change focus if we are not currently focused.
   WebContentsImpl* old_contents = GetFocusedWebContents();
   if (old_contents == this)
@@ -7267,13 +7265,13 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SetFocusedFrame",
                         "frame_tree_node", static_cast<void*>(node),
                         "source_site_instance", static_cast<void*>(source));
-  DCHECK(!portal());
   frame_tree_.SetFocusedFrame(node, source);
 
   if (auto* inner_contents = node_.GetInnerWebContentsInFrame(node)) {
     // |this| is an outer WebContents and |node| represents an inner
     // WebContents. Transfer the focus to the inner contents if |this| is
     // focused.
+    DCHECK(!inner_contents->IsPortal());
     if (GetFocusedWebContents() == this)
       inner_contents->SetAsFocusedWebContentsIfNecessary();
   } else if (node_.OuterContentsFrameTreeNode() &&
@@ -7578,10 +7576,6 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_frame,
     if (old_rvh != new_rvh)
       NotifyViewSwapped(old_rvh, new_rvh);
 
-    // Make sure the visible RVH reflects the new delegate's preferences.
-    if (delegate_)
-      view_->SetOverscrollControllerEnabled(CanOverscrollContent());
-
     auto* rwhv = static_cast<RenderWidgetHostViewBase*>(new_frame->GetView());
     if (rwhv) {
       rwhv->SetMainFrameAXTreeID(new_frame->GetAXTreeID());
@@ -7628,6 +7622,7 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
       "render_view_host", static_cast<void*>(render_view_host));
   RenderWidgetHostViewBase* rwh_view =
       view_->CreateViewForWidget(render_view_host->GetWidget());
+  view_->SetOverscrollControllerEnabled(CanOverscrollContent());
   rwh_view->SetSize(GetSizeForMainFrame());
 }
 
@@ -8380,21 +8375,22 @@ RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
   return nullptr;
 }
 
-void WebContentsImpl::IsClipboardPasteAllowed(
+void WebContentsImpl::IsClipboardPasteContentAllowed(
     const GURL& url,
     const ui::ClipboardFormatType& data_type,
     const std::string& data,
-    IsClipboardPasteAllowedCallback callback) {
+    IsClipboardPasteContentAllowedCallback callback) {
   ++suppress_unresponsive_renderer_count_;
-  GetContentClient()->browser()->IsClipboardPasteAllowed(
+  GetContentClient()->browser()->IsClipboardPasteContentAllowed(
       this, url, data_type, data,
-      base::BindOnce(&WebContentsImpl::IsClipboardPasteAllowedWrapperCallback,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(
+          &WebContentsImpl::IsClipboardPasteContentAllowedWrapperCallback,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebContentsImpl::IsClipboardPasteAllowedWrapperCallback(
-    IsClipboardPasteAllowedCallback callback,
-    ClipboardPasteAllowed allowed) {
+void WebContentsImpl::IsClipboardPasteContentAllowedWrapperCallback(
+    IsClipboardPasteContentAllowedCallback callback,
+    ClipboardPasteContentAllowed allowed) {
   std::move(callback).Run(allowed);
   --suppress_unresponsive_renderer_count_;
 }

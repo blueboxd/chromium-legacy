@@ -73,6 +73,7 @@
 #include "extensions/common/extension_set.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -116,12 +117,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-using bookmarks::BookmarkModel;
-using bookmarks::BookmarkNode;
-using views::LabelButtonBorder;
-using views::MenuButton;
-
 namespace {
+
+using ::bookmarks::BookmarkModel;
+using ::bookmarks::BookmarkNode;
+using ::ui::mojom::DragOperation;
+using ::views::LabelButtonBorder;
+using ::views::MenuButton;
 
 // Margin around the content.
 constexpr int kBookmarkBarHorizontalMargin = 8;
@@ -429,7 +431,7 @@ struct BookmarkBarView::DropLocation {
   base::Optional<size_t> index;
 
   // Drop constants.
-  int operation = ui::DragDropTypes::DRAG_NONE;
+  DragOperation operation = DragOperation::kNone;
 
   // If true, the user is dropping on a folder.
   bool on = false;
@@ -919,7 +921,7 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
   View::PaintChildren(paint_info);
 
   if (drop_info_.get() && drop_info_->valid &&
-      drop_info_->location.operation != 0 &&
+      drop_info_->location.operation != DragOperation::kNone &&
       drop_info_->location.index.has_value() &&
       drop_info_->location.button_type != DROP_OVERFLOW &&
       !drop_info_->location.on) {
@@ -996,7 +998,7 @@ int BookmarkBarView::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (drop_info_->valid &&
       (drop_info_->x == event.x() && drop_info_->y == event.y())) {
     // The location of the mouse didn't change, return the last operation.
-    return drop_info_->location.operation;
+    return static_cast<int>(drop_info_->location.operation);
   }
 
   drop_info_->x = event.x();
@@ -1009,7 +1011,7 @@ int BookmarkBarView::OnDragUpdated(const ui::DropTargetEvent& event) {
     // The position we're going to drop didn't change, return the last drag
     // operation we calculated. Copy of the operation in case it changed.
     drop_info_->location.operation = location.operation;
-    return drop_info_->location.operation;
+    return static_cast<int>(drop_info_->location.operation);
   }
 
   StopShowFolderDropMenuTimer();
@@ -1040,7 +1042,7 @@ int BookmarkBarView::OnDragUpdated(const ui::DropTargetEvent& event) {
     StartShowFolderDropMenuTimer(node);
   }
 
-  return drop_info_->location.operation;
+  return static_cast<int>(drop_info_->location.operation);
 }
 
 void BookmarkBarView::OnDragExited() {
@@ -1058,14 +1060,15 @@ void BookmarkBarView::OnDragExited() {
   drop_info_.reset();
 }
 
-int BookmarkBarView::OnPerformDrop(const ui::DropTargetEvent& event) {
+DragOperation BookmarkBarView::OnPerformDrop(const ui::DropTargetEvent& event) {
   StopShowFolderDropMenuTimer();
 
   if (bookmark_drop_menu_)
     bookmark_drop_menu_->Cancel();
 
-  if (!drop_info_.get() || !drop_info_->location.operation)
-    return ui::DragDropTypes::DRAG_NONE;
+  if (!drop_info_.get() ||
+      drop_info_->location.operation == DragOperation::kNone)
+    return DragOperation::kNone;
 
   const BookmarkNode* root =
       (drop_info_->location.button_type == DROP_OTHER_FOLDER)
@@ -1091,7 +1094,7 @@ int BookmarkBarView::OnPerformDrop(const ui::DropTargetEvent& event) {
   }
   const bookmarks::BookmarkNodeData data = drop_info_->data;
   DCHECK(data.is_valid());
-  bool copy = drop_info_->location.operation == ui::DragDropTypes::DRAG_COPY;
+  bool copy = drop_info_->location.operation == DragOperation::kCopy;
   drop_info_.reset();
 
   base::RecordAction(base::UserMetricsAction("BookmarkBar_DragEnd"));
@@ -1829,7 +1832,7 @@ void BookmarkBarView::CalculateDropLocation(
                                            .get();
     location->operation = chrome::GetBookmarkDropOperation(
         profile, event, data, parent, parent->children().size());
-    if (!location->operation && !data.has_single_url() &&
+    if (location->operation != DragOperation::kNone && !data.has_single_url() &&
         data.GetFirstNode(model_, profile->GetPath()) == parent) {
       // Don't open a menu if the node being dragged is the menu to open.
       location->on = false;

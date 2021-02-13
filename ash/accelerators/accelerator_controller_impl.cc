@@ -285,7 +285,7 @@ void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
 
   Shell::Get()->window_cycle_controller()->HandleCycleWindow(
-      WindowCycleController::BACKWARD);
+      WindowCycleController::WindowCyclingDirection::kBackward);
 }
 
 void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
@@ -293,7 +293,7 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_Tab"));
 
   Shell::Get()->window_cycle_controller()->HandleCycleWindow(
-      WindowCycleController::FORWARD);
+      WindowCycleController::WindowCyclingDirection::kForward);
 }
 
 void HandleActivateDesk(const ui::Accelerator& accelerator) {
@@ -1719,8 +1719,7 @@ void AcceleratorControllerImpl::UnregisterAll(ui::AcceleratorTarget* target) {
 
 bool AcceleratorControllerImpl::IsActionForAcceleratorEnabled(
     const ui::Accelerator& accelerator) const {
-  std::map<ui::Accelerator, AcceleratorAction>::const_iterator it =
-      accelerators_.find(accelerator);
+  auto it = accelerators_.find(accelerator);
   return it != accelerators_.end() && CanPerformAction(it->second, accelerator);
 }
 
@@ -1766,8 +1765,7 @@ ui::AcceleratorHistory* AcceleratorControllerImpl::GetAcceleratorHistory() {
 
 bool AcceleratorControllerImpl::IsPreferred(
     const ui::Accelerator& accelerator) const {
-  std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
-      accelerators_.find(accelerator);
+  auto iter = accelerators_.find(accelerator);
   if (iter == accelerators_.end())
     return false;  // not an accelerator.
 
@@ -1776,8 +1774,7 @@ bool AcceleratorControllerImpl::IsPreferred(
 
 bool AcceleratorControllerImpl::IsReserved(
     const ui::Accelerator& accelerator) const {
-  std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
-      accelerators_.find(accelerator);
+  auto iter = accelerators_.find(accelerator);
   if (iter == accelerators_.end())
     return false;  // not an accelerator.
 
@@ -1794,8 +1791,7 @@ AcceleratorControllerImpl::GetCurrentAcceleratorRestriction() {
 
 bool AcceleratorControllerImpl::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  std::map<ui::Accelerator, AcceleratorAction>::const_iterator it =
-      accelerators_.find(accelerator);
+  auto it = accelerators_.find(accelerator);
   DCHECK(it != accelerators_.end());
   AcceleratorAction action = it->second;
   if (!CanPerformAction(action, accelerator))

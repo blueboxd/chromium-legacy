@@ -916,16 +916,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
       CommitPending(std::move(speculative_render_frame_host_), nullptr,
                     request->coop_status().require_browsing_instance_swap());
-
-      // Ensure that renderer-initiated main frame navigations that swap away
-      // from a non-live RenderFrameHost before commit do not leave the old URL
-      // visible in the address bar above a scriptable about:blank document.
-      // TODO(https://crbug.com/1072817): Remove this logic when removing the
-      // early commit.
-      if (frame_tree_node_->IsMainFrame() && request->IsRendererInitiated()) {
-        GetNavigationController().HideEntryForEarlySwapAfterCrash(
-            render_frame_host_.get());
-      }
     }
   }
   DCHECK(navigation_rfh &&
@@ -2484,22 +2474,6 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 
   speculative_render_frame_host_ = CreateSpeculativeRenderFrame(
       new_instance, recovering_without_early_commit);
-
-  // If RenderViewHost was created along with the speculative RenderFrameHost,
-  // ensure that RenderViewCreated() is fired for it. It is important to do
-  // this after speculative_render_frame_host_ is assigned, so that observers
-  // processing RenderViewCreated() can find it via
-  // RenderViewHostImpl::GetMainFrame(). Note that RenderViewHostImpl will not
-  // do this itself when the main frame is not present when the RenderView is
-  // created, as it defers that task to us here. Also RenderViewHostImpl will
-  // only notify the first time RenderViewCreated() is called, so it's
-  // acceptable to call it here unconditionally every time we make a
-  // speculative frame in the view.
-  if (speculative_render_frame_host_ && !frame_tree_node_->parent()) {
-    speculative_render_frame_host_->render_view_host()
-        ->DispatchRenderViewCreated();
-  }
-
   return !!speculative_render_frame_host_;
 }
 

@@ -106,15 +106,25 @@ Node* GetParentNodeForComputeParent(Node* node) {
 }
 
 #if DCHECK_IS_ON()
-bool IsValidRole(ax::mojom::blink::Role role, bool is_virtual_object) {
+bool IsValidRole(ax::mojom::blink::Role role) {
   // Check for illegal roles that should not be assigned in Blink.
   switch (role) {
-    case ax::mojom::blink::Role::kUnknown:
-      // Role::kUnknown is allowed on virtual objects with no set role.
-      return is_virtual_object;
+    case ax::mojom::blink::Role::kCaret:
+    case ax::mojom::blink::Role::kClient:
     case ax::mojom::blink::Role::kColumn:
-    case ax::mojom::blink::Role::kTableHeaderContainer:
+    case ax::mojom::blink::Role::kDesktop:
+    case ax::mojom::blink::Role::kKeyboard:
     case ax::mojom::blink::Role::kIgnored:
+    case ax::mojom::blink::Role::kImeCandidate:
+    case ax::mojom::blink::Role::kListGrid:
+    case ax::mojom::blink::Role::kPane:
+    case ax::mojom::blink::Role::kPdfActionableHighlight:
+    case ax::mojom::blink::Role::kPdfRoot:
+    case ax::mojom::blink::Role::kTableHeaderContainer:
+    case ax::mojom::blink::Role::kTitleBar:
+    case ax::mojom::blink::Role::kUnknown:
+    case ax::mojom::blink::Role::kWebView:
+    case ax::mojom::blink::Role::kWindow:
       return false;
     default:
       return true;
@@ -663,9 +673,8 @@ void AXObject::Init(AXObject* parent_if_known) {
   // ParentObject(), although it can use the DOM parent.
   role_ = DetermineAccessibilityRole();
 #if DCHECK_IS_ON()
-  DCHECK(IsValidRole(role_, IsVirtualObject()))
-      << "Illegal " << role_ << " for " << GetNode() << " "
-      << GetLayoutObject();
+  DCHECK(IsValidRole(role_)) << "Illegal " << role_ << " for " << GetNode()
+                             << " " << GetLayoutObject();
 #endif
 
   // Determine the parent as soon as possible.
@@ -2274,11 +2283,6 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (IsA<HTMLHtmlElement>(GetNode()))
     return RuntimeEnabledFeatures::AccessibilityExposeHTMLElementEnabled();
 
-  // If the node is part of the user agent shadow dom, it isn't interesting for
-  // paragraph navigation or LabelledBy/DescribedBy relationships.
-  if (GetNode()->IsInUserAgentShadowRoot())
-    return false;
-
   // Keep the internal accessibility tree consistent for videos which lack
   // a player and also inner text.
   if (RoleValue() == ax::mojom::blink::Role::kVideo ||
@@ -3310,11 +3314,6 @@ AXRestriction AXObject::Restriction() const {
 
   // This is a node that is not readonly and not disabled.
   return kRestrictionNone;
-}
-
-ax::mojom::blink::Role AXObject::DetermineAccessibilityRole() {
-  aria_role_ = DetermineAriaRoleAttribute();
-  return aria_role_;
 }
 
 ax::mojom::blink::Role AXObject::AriaRoleAttribute() const {
@@ -4921,8 +4920,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kArticle:
     case ax::mojom::blink::Role::kBanner:
     case ax::mojom::blink::Role::kBlockquote:
-    case ax::mojom::blink::Role::kCaret:
-    case ax::mojom::blink::Role::kClient:
     case ax::mojom::blink::Role::kColorWell:
     case ax::mojom::blink::Role::kComboBoxMenuButton:  // Only value from
                                                        // content.
@@ -4932,7 +4929,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kContentInfo:
     case ax::mojom::blink::Role::kDate:
     case ax::mojom::blink::Role::kDateTime:
-    case ax::mojom::blink::Role::kDesktop:
     case ax::mojom::blink::Role::kDialog:
     case ax::mojom::blink::Role::kDirectory:
     case ax::mojom::blink::Role::kDocCover:
@@ -4986,12 +4982,8 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kIframePresentational:
     case ax::mojom::blink::Role::kIframe:
     case ax::mojom::blink::Role::kImage:
-    case ax::mojom::blink::Role::kImeCandidate:  // Internal role, not used on
-                                                 // the web.
     case ax::mojom::blink::Role::kInputTime:
-    case ax::mojom::blink::Role::kKeyboard:
     case ax::mojom::blink::Role::kListBox:
-    case ax::mojom::blink::Role::kListGrid:
     case ax::mojom::blink::Role::kLog:
     case ax::mojom::blink::Role::kMain:
     case ax::mojom::blink::Role::kMarquee:
@@ -5002,7 +4994,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kMeter:
     case ax::mojom::blink::Role::kNavigation:
     case ax::mojom::blink::Role::kNote:
-    case ax::mojom::blink::Role::kPane:
     case ax::mojom::blink::Role::kPluginObject:
     case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kRadioGroup:
@@ -5023,14 +5014,11 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kTerm:
     case ax::mojom::blink::Role::kTextField:
     case ax::mojom::blink::Role::kTextFieldWithComboBox:
-    case ax::mojom::blink::Role::kTitleBar:
     case ax::mojom::blink::Role::kTimer:
     case ax::mojom::blink::Role::kToolbar:
     case ax::mojom::blink::Role::kTree:
     case ax::mojom::blink::Role::kTreeGrid:
     case ax::mojom::blink::Role::kVideo:
-    case ax::mojom::blink::Role::kWebView:
-    case ax::mojom::blink::Role::kWindow:
       result = false;
       break;
 
@@ -5119,13 +5107,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
       //   be assigned as the description of he parent Role::kRuby object.
       return !recursive;
 
-    case ax::mojom::blink::Role::kPdfActionableHighlight:
-    case ax::mojom::blink::Role::kPdfRoot:
-      LOG(ERROR) << "PDF specific highlight role, Blink shouldn't generate "
-                    "this role type";
-      NOTREACHED();
-      break;
-
     // A root web area normally only computes its name from the document title,
     // but a root web area inside a portal's main frame should compute its name
     // from its contents. This name is used by the portal element that hosts
@@ -5140,10 +5121,22 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
       return is_inside_portal && is_main_frame;
     }
 
+    case ax::mojom::blink::Role::kCaret:
+    case ax::mojom::blink::Role::kClient:
     case ax::mojom::blink::Role::kColumn:
+    case ax::mojom::blink::Role::kDesktop:
+    case ax::mojom::blink::Role::kKeyboard:
     case ax::mojom::blink::Role::kIgnored:
+    case ax::mojom::blink::Role::kImeCandidate:
+    case ax::mojom::blink::Role::kListGrid:
+    case ax::mojom::blink::Role::kPane:
+    case ax::mojom::blink::Role::kPdfActionableHighlight:
+    case ax::mojom::blink::Role::kPdfRoot:
     case ax::mojom::blink::Role::kTableHeaderContainer:
+    case ax::mojom::blink::Role::kTitleBar:
     case ax::mojom::blink::Role::kUnknown:
+    case ax::mojom::blink::Role::kWebView:
+    case ax::mojom::blink::Role::kWindow:
       NOTREACHED() << "Role shouldn't occur in Blink: " << ToString(true, true);
       break;
   }
@@ -5245,9 +5238,10 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
   String string_builder =
       AXObject::InternalRoleName(RoleValue()).GetString().EncodeForDebugging();
 
+  if (IsDetached())
+    string_builder = string_builder + " (detached)";
+
   if (verbose) {
-    if (IsDetached())
-      string_builder = string_builder + " (detached)";
     string_builder = string_builder + " axid#" + String::Number(AXObjectID());
     // Add useful HTML element info, like <div.myClass#myId>.
     if (GetElement()) {

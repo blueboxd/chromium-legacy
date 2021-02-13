@@ -2948,10 +2948,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kEnableBluetoothVerboseLogsForGooglers)},
-    {"show-bluetooth-device-battery",
-     flag_descriptions::kShowBluetoothDeviceBatteryName,
-     flag_descriptions::kShowBluetoothDeviceBatteryDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kShowBluetoothDeviceBattery)},
     {"show-taps", flag_descriptions::kShowTapsName,
      flag_descriptions::kShowTapsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kShowTaps)},
@@ -3432,6 +3428,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsRunOnOsLoginDescription,
      kOsWin | kOsLinux | kOsMac,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
+    {"enable-desktop-pwas-url-handling",
+     flag_descriptions::kDesktopPWAsUrlHandlingName,
+     flag_descriptions::kDesktopPWAsUrlHandlingDescription,
+     kOsWin | kOsLinux | kOsMac,
+     FEATURE_VALUE_TYPE(blink::features::kWebAppEnableUrlHandlers)},
     {"record-web-app-debug-info", flag_descriptions::kRecordWebAppDebugInfoName,
      flag_descriptions::kRecordWebAppDebugInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRecordWebAppDebugInfo)},
@@ -4684,13 +4685,6 @@ const FeatureEntry kFeatureEntries[] = {
          download::features::kUseDownloadOfflineContentProvider)},
 
 #if defined(OS_ANDROID)
-    {"update-notification-scheduling-integration",
-     flag_descriptions::kUpdateNotificationSchedulingIntegrationName,
-     flag_descriptions::kUpdateNotificationSchedulingIntegrationDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         chrome::android::kUpdateNotificationSchedulingIntegration)},
-
     {"screen-capture-android", flag_descriptions::kUserMediaScreenCapturingName,
      flag_descriptions::kUserMediaScreenCapturingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kUserMediaScreenCapturing)},
@@ -4703,17 +4697,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          chrome::android::kPrefetchNotificationSchedulingIntegration)},
-#endif
-
-#if defined(OS_ANDROID)
-    {"update-notification-scheduling-show-immediately",
-     flag_descriptions::kUpdateNotificationServiceImmediateShowOptionName,
-     flag_descriptions::
-         kUpdateNotificationServiceImmediateShowOptionDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         chrome::android::
-             kUpdateNotificationScheduleServiceImmediateShowOption)},
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -5838,6 +5821,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontAccessPersistentDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kFontAccessPersistent)},
 
+    {"compute-pressure", flag_descriptions::kComputePressureAPIName,
+     flag_descriptions::kComputePressureAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kComputePressure)},
+
     {"mouse-subframe-no-implicit-capture",
      flag_descriptions::kMouseSubframeNoImplicitCaptureName,
      flag_descriptions::kMouseSubframeNoImplicitCaptureDescription, kOsAll,
@@ -6595,6 +6582,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharesheetContentPreviewsName,
      flag_descriptions::kSharesheetContentPreviewsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSharesheetContentPreviews)},
+
+    {"chromeos-sharing-hub", flag_descriptions::kChromeOSSharingHubName,
+     flag_descriptions::kChromeOSSharingHubDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kChromeOSSharingHub)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"schemeful-same-site", flag_descriptions::kSchemefulSameSiteName,
@@ -6656,11 +6647,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableIncognitoShortcutOnDesktopDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kEnableIncognitoShortcutOnDesktop)},
 #endif  // defined(OS_WIN)
-
-    {"h264-decoder-is-buffer-complete-frame",
-     flag_descriptions::kH264DecoderBufferIsCompleteFrameName,
-     flag_descriptions::kH264DecoderBufferIsCompleteFrameDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kH264DecoderBufferIsCompleteFrame)},
 
     {"content-settings-redesign",
      flag_descriptions::kContentSettingsRedesignName,
@@ -6772,13 +6758,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
-#endif
-
-#if defined(OS_WIN)
-    {"use-serial-bus-enumerator",
-     flag_descriptions::kUseSerialBusEnumeratorName,
-     flag_descriptions::kUseSerialBusEnumeratorDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kUseSerialBusEnumerator)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

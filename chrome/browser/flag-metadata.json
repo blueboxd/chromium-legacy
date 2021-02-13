@@ -550,6 +550,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "chromeos-sharing-hub",
+    "owners": [ "ramyan", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "clear-cross-browsing-context-group-main-frame-name",
     "owners": [ "shuuran", "kaustubhag" ],
     "expiry_milestone": 92
@@ -612,6 +617,11 @@
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "compute-pressure",
+    "owners": [ "pwnall", "oyiptong" ],
+    "expiry_milestone": 96
   },
   {
     "name": "connectivity-diagnostics-webui",
@@ -876,7 +886,7 @@
   },
   {
     "name": "desktop-detailed-language-settings",
-    "owners": [ "joshsantana", "chrome-langauge@google.com" ],
+    "owners": [ "joshsantana", "chrome-language@google.com" ],
     "expiry_milestone": 93
   },
   {
@@ -1580,6 +1590,11 @@
     "name": "enable-desktop-pwas-tab-strip-link-capturing",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "enable-desktop-pwas-url-handling",
+    "owners": [ "luhua@microsoft.com", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-encryption-migration",
@@ -2961,11 +2976,6 @@
     "name": "global-media-controls-seamless-transfer",
     "owners": [ "noahrose@google.com", "steimel", "media-dev" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "h264-decoder-is-buffer-complete-frame",
-    "owners": [ "jkardatzke", "mcasas" ],
-    "expiry_milestone": 89
   },
   {
     "name": "handwriting-gesture",
@@ -4953,16 +4963,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "update-notification-scheduling-integration",
-    "owners": [ "//chrome/browser/updates/OWNERS" ],
-    "expiry_milestone": 89
-  },
-  {
-    "name": "update-notification-scheduling-show-immediately",
-    "owners": [ "//chrome/browser/updates/OWNERS" ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "updated_cellular_activation_ui",
     "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-connectivity@google.com" ],
     "expiry_milestone": 95
@@ -5039,11 +5039,6 @@
     "name": "use-search-click-for-right-click",
     "owners": [ "zentaro", "cros-peripherals@google.com" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "use-serial-bus-enumerator",
-    "owners": [ "reillyg" ],
-    "expiry_milestone": 89
   },
   {
     "name": "use-sync-sandbox",

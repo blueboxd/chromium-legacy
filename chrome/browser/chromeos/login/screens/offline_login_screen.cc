@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/offline_login_screen.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -34,10 +35,24 @@ constexpr char kUserActionCancel[] = "cancel";
 constexpr const base::TimeDelta kIdleTimeDelta =
     base::TimeDelta::FromMinutes(3);
 
+// These values should not be renumbered and numeric values should never
+// be reused. This must be kept in sync with ChromeOSHiddenUserPodsOfflineLogin
+// in tools/metrics/histogram/enums.xml
+enum class OfflineLoginEvent {
+  kOfflineLoginEnabled = 0,
+  kOfflineLoginBlockedByTimeLimit = 1,
+  kOfflineLoginBlockedByInvalidToken = 2,
+  kMaxValue = kOfflineLoginBlockedByInvalidToken,
+};
+
 inline std::string GetEnterpriseDomainManager() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->GetEnterpriseDomainManager();
+}
+
+void RecordEvent(OfflineLoginEvent event) {
+  base::UmaHistogramEnumeration("Login.OfflineLoginWithHiddenUserPods", event);
 }
 
 }  // namespace
@@ -154,7 +169,6 @@ void OfflineLoginScreen::HandleCompleteAuth(const std::string& email,
 
 void OfflineLoginScreen::HandleEmailSubmitted(const std::string& email) {
   bool offline_limit_expired = false;
-
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   const AccountId account_id = user_manager::known_user::GetAccountId(
       sanitized_email, std::string(), AccountType::UNKNOWN);
@@ -171,12 +185,22 @@ void OfflineLoginScreen::HandleEmailSubmitted(const std::string& email) {
                                   offline_signin_interval.value()) <=
         base::TimeDelta();
   }
-
   if (offline_limit_expired) {
+    RecordEvent(OfflineLoginEvent::kOfflineLoginBlockedByTimeLimit);
     view_->ShowOnlineRequiredDialog();
-  } else {
-    view_->ShowPasswordPage();
+    return;
   }
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (user && user->force_online_signin()) {
+    RecordEvent(OfflineLoginEvent::kOfflineLoginBlockedByInvalidToken);
+    view_->ShowPasswordPage();
+    return;
+  }
+
+  RecordEvent(OfflineLoginEvent::kOfflineLoginEnabled);
+  view_->ShowPasswordPage();
 }
 
 void OfflineLoginScreen::StartIdleDetection() {

@@ -807,7 +807,7 @@ Try tapping the mic to ask me anything.
         <ph name="AVAILABLE_MEMORY">$1<ex>13.12</ex></ph> GB of <ph name="TOTAL_MEMORY">$2<ex>16</ex></ph> GB available.
       </message>
       <message name="IDS_DIAGNOSTICS_CANCELLED_TEST_TEXT" desc="The text that displays the test that was cancelled.">
-        <ph name="TEST_NAME">$1<ex>Stress</ex></ph> Test has been cancelled
+        <ph name="TEST_NAME">$1<ex>Stress</ex></ph> test has been cancelled
       </message>
       <message name="IDS_DIAGNOSTICS_SESSION_LOG_TOAST_TEXT_SUCCESS" desc="The text shown when the session log is successfully saved to the users' device.">
         Download complete
@@ -896,7 +896,13 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_PORTAL_STATE" desc="Settings > Internet, label in network details page for the captive portal state.">
         Portal State
       </message>
-      <message name="IDS_ONC_PORTAL_STATE_NO_INTERNET" desc="Settings > Internet, text in network details page when no internet connection is avialable.">
+      <message name="IDS_ONC_PORTAL_STATE_UNKNOWN" desc="Settings > Internet, label when the captive portal state is unknown">
+        Unknown
+      </message>
+      <message name="IDS_ONC_PORTAL_STATE_ONLINE" desc="Settings > Internet, label when the captive portal state is online and there is no portal state is detected">
+        Online
+      </message>
+      <message name="IDS_ONC_PORTAL_STATE_NO_INTERNET" desc="Settings > Internet, text in network details page when no internet connection is available.">
         No internet
       </message>
       <message name="IDS_ONC_NOT_CONNECTED" desc="Settings > Internet, text in network summary when a network is not connecting or connected.">

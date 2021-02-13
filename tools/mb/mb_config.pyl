@@ -136,7 +136,7 @@
     },
 
     'chromium.angle': {
-      'android-angle-arm64-builder': 'angle_specific_android_release_trybot_arm64',
+      'android-angle-arm64-builder': 'angle_specific_no_trace_android_release_trybot_arm64',
       'android-angle-chromium-arm64-builder': 'gpu_tests_android_release_trybot_arm64_fastbuild',
       'android-angle-perf-arm64-builder': 'angle_specific_android_vulkan_ndk_release_trybot_dcheck_off_arm64',
       'android-angle-vk-arm-builder': 'angle_specific_android_vulkan_ndk_release_trybot',
@@ -1491,8 +1491,8 @@
       'shared_release_trybot_dcheck_off', 'arm64',
     ],
 
-    'angle_specific_android_release_trybot_arm64': [
-      'angle_specific_tests', 'android_without_codecs',
+    'angle_specific_no_trace_android_release_trybot_arm64': [
+      'angle_specific_no_trace_tests', 'android_without_codecs',
       'shared_release_trybot', 'arm64',
     ],
 
@@ -2367,7 +2367,7 @@
     ],
 
     'official_goma_fuchsia_arm64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs'
+      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_astro_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs'
     ],
 
     'official_goma_linux_pgo': [
@@ -2734,6 +2734,10 @@
                  'angle_trace_perf_tests', 'disable_nacl'],
     },
 
+    'angle_specific_no_trace_tests': {
+      'mixins': ['angle_gles1_conform_tests', 'angle_deqp_tests'],
+    },
+
     'angle_trace_perf_tests': {
       'gn_args': 'build_angle_trace_perf_tests=true',
     },
@@ -2981,6 +2985,10 @@
 
     'fuchsia': {
       'gn_args': 'target_os="fuchsia"',
+    },
+
+    'fuchsia_include_astro_images': {
+      'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/"]',
     },
 
     'full_symbols': {

@@ -96,7 +96,7 @@ if (is_android) {
       "//components/payments/content/android:java",
       "//components/payments/mojom:mojom_java",
       "//content/public/android:content_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/blink/public/mojom:android_mojo_bindings_java",
     ]
     sources = [ "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java" ]
@@ -883,7 +883,7 @@ if (!is_android) {
       "//ui/accessibility:test_support",
       "//ui/base:test_support",
       "//ui/base/clipboard:clipboard_test_support",
-      "//ui/base/dragdrop/mojom:mojom_shared",
+      "//ui/base/dragdrop/mojom",
       "//ui/compositor:test_support",
       "//ui/native_theme:test_support",
       "//ui/resources",
@@ -4247,6 +4247,7 @@ test("unit_tests") {
     "//components/page_load_metrics/browser:test_support",
     "//components/page_load_metrics/common:test_support",
     "//components/query_tiles:unit_tests",
+    "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/storage:test_support",
     "//components/resources",
     "//components/safe_browsing:buildflags",
@@ -5026,15 +5027,12 @@ test("unit_tests") {
       "../browser/nearby_sharing/instantmessaging/receive_messages_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/send_message_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/stream_parser_unittest.cc",
-      "../browser/nearby_sharing/mock_nearby_process_manager.cc",
-      "../browser/nearby_sharing/mock_nearby_process_manager.h",
       "../browser/nearby_sharing/mock_nearby_sharing_service.cc",
       "../browser/nearby_sharing/mock_nearby_sharing_service.h",
       "../browser/nearby_sharing/nearby_confirmation_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_connections_manager_impl_unittest.cc",
       "../browser/nearby_sharing/nearby_notification_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_per_session_discovery_manager_unittest.cc",
-      "../browser/nearby_sharing/nearby_process_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_receive_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_share_default_device_name_unittest.cc",
       "../browser/nearby_sharing/nearby_share_settings_unittest.cc",
@@ -5944,7 +5942,10 @@ test("unit_tests") {
 
     # The test fetches resources which means Mac need the app bundle to exist
     # on disk so it can pull from it.
-    deps += [ "//third_party/ocmock" ]
+    deps += [
+      "//chrome/services/mac_notifications/public/cpp:test_support",
+      "//third_party/ocmock",
+    ]
 
     sources += [
       "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm",
@@ -6740,6 +6741,7 @@ if (!is_android) {
         "../browser/ui/views/user_education/feature_promo_snooze_interactive_uitest.cc",
       ]
       deps += [
+        "//ui/base/dragdrop/mojom",
         "//ui/views",
         "//ui/views:test_support",
         "//ui/views:views_interactive_ui_tests",
@@ -6994,7 +6996,7 @@ if (is_android) {
       "//components/signin/public/android:java",
       "//components/sync/android:sync_java",
       "//content/public/test/android:content_java_test_support",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/junit",
     ]
     sources = [

@@ -337,6 +337,10 @@ const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
 const base::Feature kD3D11VideoDecoderVP9Profile2{
     "D3D11VideoDecoderEnableVP9Profile2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable D3D11VideoDecoder to decode AV1 video.
+const base::Feature kD3D11VideoDecoderAV1{"D3D11VideoDecoderEnableAV1",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Tell D3D11VideoDecoder not to switch the D3D11 device to multi-threaded mode.
 // This is to help us track down IGD crashes.
 const base::Feature kD3D11VideoDecoderSkipMultithreaded{
@@ -882,12 +886,5 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
 #endif
   return false;
 }
-
-// When enabled, causes the H264Decoder to treat each DecoderBuffer sent to it
-// as a complete frame, rather than waiting for a following indicator for frame
-// completeness. Temporary flag to allow verifying if this change breaks
-// anything.
-const base::Feature kH264DecoderBufferIsCompleteFrame{
-    "H264DecoderBufferIsCompleteFrame", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace media

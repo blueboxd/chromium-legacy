@@ -712,14 +712,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                  const GURL& url,
                                  bool user_gesture) override;
   bool IsAllowedToGoToEntryAtOffset(int32_t offset) override;
-  void IsClipboardPasteAllowed(
+  void IsClipboardPasteContentAllowed(
       const GURL& url,
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
-      IsClipboardPasteAllowedCallback callback) override;
-  void IsClipboardPasteAllowedWrapperCallback(
-      IsClipboardPasteAllowedCallback callback,
-      ClipboardPasteAllowed allowed);
+      IsClipboardPasteContentAllowedCallback callback) override;
+  void IsClipboardPasteContentAllowedWrapperCallback(
+      IsClipboardPasteContentAllowedCallback callback,
+      ClipboardPasteContentAllowed allowed);
   void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                 float page_scale_factor) override;
   void OnTextAutosizerPageInfoChanged(
@@ -792,7 +792,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // RenderFrameHostDelegate has the same method, so list it there because this
   // interface is going away.
   // WebContents* GetAsWebContents() override;
-  void RenderViewCreated(RenderViewHost* render_view_host) override;
   void RenderViewReady(RenderViewHost* render_view_host) override;
   void RenderViewTerminated(RenderViewHost* render_view_host,
                             base::TerminationStatus status,
@@ -861,7 +860,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* render_frame_host,
       const LoadCommittedDetails& details,
       const mojom::DidCommitProvisionalLoadParams&) override;
-  bool CanOverscrollContent() const override;
   void NotifyChangedNavigationState(InvalidateTypes changed_flags) override;
   bool ShouldTransferNavigation(bool is_main_frame_navigation) override;
   std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
@@ -1520,6 +1518,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // response. Will inform |delegate_| of the change in status so that it may,
   // for example, update the throbber.
   void SetNotWaitingForResponse();
+
+  // Determines if content is allowed to overscroll. This value comes from the
+  // WebContentsDelegate, but can also be overridden by the WebContents.
+  bool CanOverscrollContent() const;
 
   // Inner WebContents Helpers -------------------------------------------------
   //

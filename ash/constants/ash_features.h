@@ -78,8 +78,6 @@ extern const base::Feature kAssistPersonalInfoPhoneNumber;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAvatarToolbarButton;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kBetterUpdateScreen;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothAggressiveAppearanceFilter;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothWbsDogfood;
@@ -286,8 +284,6 @@ extern const base::Feature kShowBluetoothDebugLogToggle;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableBluetoothVerboseLogsForGooglers;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kShowBluetoothDeviceBattery;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartDimExperimentalComponent;
@@ -338,7 +334,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAssistantEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBetterUpdateEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCellularActivationUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsChildSpecificSigninEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDeepLinkingEnabled();

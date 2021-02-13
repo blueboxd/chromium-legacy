@@ -83,10 +83,10 @@ GEN('#include "content/public/test/browser_test.h"');
         test => registerTest('MultiDeviceSetup', 'oobe/login', ...test));
 
 [
-  // TODO(https://crbug.com/1173345): Reenable flaky test suite.
-  // ['ActivationCodePage', 'cellular_setup/activation_code_page_test.js',[
-  //   './cellular_setup/fake_media_devices.js',
-  // ]],
+  ['ActivationCodePage', 'cellular_setup/activation_code_page_test.js',[
+    './cellular_setup/fake_media_devices.js',
+    './cellular_setup/fake_barcode_detector.js',
+  ]],
   ['BasePage', 'cellular_setup/base_page_test.js', []],
   ['ButtonBar', 'cellular_setup/button_bar_test.js',[]],
   ['CellularSetup', 'cellular_setup/cellular_setup_test.js', [
@@ -97,6 +97,7 @@ GEN('#include "content/public/test/browser_test.h"');
   ['EsimFlowUi', 'cellular_setup/esim_flow_ui_test.js',[
     './cellular_setup/fake_cellular_setup_delegate.js',
     './cellular_setup/fake_esim_manager_remote.js',
+    './cellular_setup/fake_barcode_detector.js',
   ]],
   ['FinalPage', 'cellular_setup/final_page_test.js', [
     './cellular_setup/fake_cellular_setup_delegate.js',

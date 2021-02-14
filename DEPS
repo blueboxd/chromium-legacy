@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4f065e286df6863b86dcf7382a4bb78e56b39626',
+  'skia_revision': 'c3e152b9f7952a18e4b400f925489fc06d8b3fe2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '54c5ad5c9215feca69614565be7ec2030ee46cfb',
+  'freetype_revision': '7849316ccfc794026176d462b9008e7f4c4240fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -1276,7 +1276,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a95daea3feecfe72ca7510a8f221ef9f4ff1a2f0',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'e7557c20a3a0bdeb171ec0d5afa8173521b28a2f',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1584,7 +1584,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a7ae274b36c43fd5637acd2c24657de361141975',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@33201128883ce846640606a9436abb4b53141298',
     'condition': 'checkout_src_internal',
   },
 
@@ -1592,7 +1592,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 't5cufRYIXHjIG7WQN_u0X99gFV78luIPTdm1j0J0bycC',
+        'version': 'oluNMilK4Pra15kPi15lfGeLOuDGMxRN_dgG8L0dV7AC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1603,7 +1603,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'f2yD6zrh1QWjyrlW9rVKVDCiJ4Awgl0wr0eP_YzIZMoC',
+        'version': '_GnXWVQapKpM_jCmUs6jYBm7fkCpuCo1BkHxriwaPM0C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

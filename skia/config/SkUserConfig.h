@@ -214,6 +214,7 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_SUPPORT_NEAREST_PICTURESHADER_POSTFILTER
 
+#define SK_SUPPORT_LEGACY_IMAGEFILTER_IMAGE
 
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 
@@ -227,8 +228,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
 
 #define SK_SUPPORT_LEGACY_CONVEXITY_DIRECTION_CHANGE
-
-#define SK_SUPPORT_LEGACY_RUNTIME_EFFECTS
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

@@ -8,7 +8,7 @@ Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 
 This project is automatically built twice a day (00:00 and 12:00 JST) if no issues occurred.
 And note, uploaded without any tests, thus there is no guarantee for launching or proper operation.
-It's recommended to find and use stable build for daily use.
+It's recommended to find and use a stable build for daily use.
 
 ## working properly
 

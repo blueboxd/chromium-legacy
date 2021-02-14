@@ -1,3 +1,5 @@
+\[en/[ja](README.ja.md)\]
+
 # Chromium-legacy
 
 Chromium-legacy is the latest Chromium (equivalent to Chrome Canary) patched & built for legacy Mac OS X (10.7+).

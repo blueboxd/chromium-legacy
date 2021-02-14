@@ -6,6 +6,10 @@ Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 
 **NB: Not for natively supported environments (10.10+).**
 
+This project is automatically built twice a day (00:00 and 12:00 JST) if no issues occurred.
+And note, uploaded without any tests, thus there is no guarantee for launching or proper operation.
+It's recommended to find and use stable build for daily use.
+
 ## working properly
 
 - modern HTTP protocols (http2/http3/quic)
@@ -43,7 +47,7 @@ Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 
 ## building
 
-Build steps are almost same as [original Chromium's one](https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md).
+Build steps are almost same as [original Chromium's one](docs/mac_build_instructions.md).
 
 ### prerequisites
 
@@ -51,7 +55,7 @@ Build steps are almost same as [original Chromium's one](https://chromium.google
 - Xcode 12.2+
 - powerful CPUs
   - about 40mins to full build with `Xeon E5-2690 v4` & 2 x `Ryzen 9 3950X`
-  - about 3hrs+ to full build with `i9-9980HK`
+  - about 3hrs+ to full build with `Core i9-9980HK`
 
 ### TL;DR
 

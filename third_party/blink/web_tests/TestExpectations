@@ -348,6 +348,9 @@ crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html
 
 crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
+# Temporarily disabled DevTools tests, waiting for DevTools CLs to roll in.
+crbug.com/1178365 http/tests/devtools/elements/elements-panel-structure.js [ Pass Failure ]
+
 # Subpixel rounding differences that are incorrect.
 crbug.com/997202 compositing/overflow/scaled-overflow.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
@@ -5483,7 +5486,7 @@ crbug.com/1130020 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar
 crbug.com/1130020 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
 
 # WebBundle tests which fail
-crbug.com/1168449 external/wpt/web-bundle/subresource-loading/subresource-loading-cross-origin.tentative.html [ Pass Timeout ]
+crbug.com/1168449 external/wpt/web-bundle/subresource-loading/subresource-loading-cors-error.tentative.html [ Pass Timeout ]
 
 # Sheriff 2020-11-16
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Failure Timeout ]
@@ -5607,6 +5610,12 @@ crbug.com/1050549 http/tests/devtools/extensions/extensions-timeline-api.js [ Pa
 # Flaky test
 crbug.com/1173439 http/tests/devtools/service-workers/service-worker-manager.js [ Pass Timeout ]
 
+# Needs to be rebaselined after V8 CL rolls
+crbug.com/1177685 http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Pass Failure ]
+crbug.com/1177685 http/tests/devtools/console/function-name-in-console-message-stack.js [ Pass Failure ]
+crbug.com/1177685 http/tests/devtools/sources/debugger-pause/function-name-in-callstack.js [ Pass Failure ]
+crbug.com/1177685 http/tests/devtools/sources/debugger-ui/function-display-name-call-stack.js [ Pass Failure ]
+
 # Sheriff 2018-01-25
 crbug.com/893869 css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 crbug.com/1155125 [ Linux ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
@@ -5639,9 +5648,10 @@ crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-em
 # flaky test
 crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ Failure Pass ]
 
-# Temporarily disabled to enable frontend change (https://crrev.com/c/2687495) to go through
-crbug.com/1176691 http/tests/devtools/security/interstitial-sidebar.js [ Failure Pass ]
-crbug.com/1176691 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
+# Temporarily disabled due to failures on https://ci.chromium.org/p/chromium/builders/ci/Linux%20Tests%20%28dbg%29%281%29
+crbug.com/1177568 http/tests/devtools/console/console-api-on-call-frame.js [ Pass Failure ]
+crbug.com/1177568 http/tests/devtools/runtime/evaluate-timeout.js [ Pass Failure ]
+crbug.com/1177568 http/tests/devtools/console/console-error-on-call-frame.js [ Pass Failure ]
 
 # Failing on Webkit Linux Leak
 crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]
@@ -5670,3 +5680,7 @@ crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/jso
 # Sheriff 2021-02-11
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause.js [ Failure Pass ]
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause-infinite.js [ Failure Pass ]
+
+# Sheriff 2021-02-15
+crbug.com/1177996 [ Linux ] storage/websql/database-lock-after-reload.html [ Failure Pass ]
+crbug.com/1178018 [ Win7 ] external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Failure Pass ]

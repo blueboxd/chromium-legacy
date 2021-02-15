@@ -52,9 +52,13 @@ import java.util.concurrent.ExecutionException;
 /**
  * A credit card editor. Can be used for editing both local and server credit cards. Everything in
  * local cards can be edited. For server cards, only the billing address is editable.
+ *
+ * Note that this class is used by PaymentRequest only and will be removed when not needed any more.
+ * Please use {@link org.chromium.chrome.browser.autofill.settings.CardEditor} instead.
  */
-public class CardEditor extends EditorBase<AutofillPaymentInstrument>
-        implements CreditCardScanner.Delegate {
+@Deprecated
+public class CardEditor
+        extends EditorBase<AutofillPaymentInstrument> implements CreditCardScanner.Delegate {
     /** Description of a card network. */
     private static class CardIssuerNetwork {
         /**

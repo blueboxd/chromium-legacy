@@ -55,6 +55,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom-forward.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -622,7 +623,7 @@ class CONTENT_EXPORT NavigationRequest
     return begin_params_->request_destination;
   }
 
-  blink::WebMixedContentContextType mixed_content_context_type() const {
+  blink::mojom::MixedContentContextType mixed_content_context_type() const {
     return begin_params_->mixed_content_context_type;
   }
 
@@ -1602,7 +1603,7 @@ class CONTENT_EXPORT NavigationRequest
   // Prerender2:
   // This is valid only when this navigation will activate the prerendered
   // page.
-  std::unique_ptr<PrerenderHost> prerender_host_;
+  int prerender_frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 
   // The following fields that constitute the ClientSecurityState. This
   // state is used to take security decisions about the request, and later on

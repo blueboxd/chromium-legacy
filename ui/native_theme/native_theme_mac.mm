@@ -587,7 +587,7 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
   if (!should_only_use_dark_colors)
     InitializeDarkModeStateAndObserver();
 
-  static NSString **NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
+  static NSString * const*NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
   if(NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr) {
     if (!IsForcedHighContrast()) {
       set_preferred_contrast(CalculatePreferredContrast());

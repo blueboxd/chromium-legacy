@@ -1,4 +1,4 @@
-\[[en](README.md)\ja\]
+\[[en](README.md)/ja\]
 
 # Chromium-legacy
 

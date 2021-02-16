@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <dlfcn.h>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
@@ -160,6 +161,11 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
     const std::vector<uint8_t>& sps,
     const std::vector<uint8_t>& spsext,
     const std::vector<uint8_t>& pps) {
+  typedef OSStatus (*CMVideoFormatDescriptionCreateFromH264ParameterSetsPtr)(CFAllocatorRef allocator, size_t parameterSetCount, const uint8_t *const  _Nonnull *parameterSetPointers, const size_t *parameterSetSizes, int NALUnitHeaderLength, CMFormatDescriptionRef  _Nullable *formatDescriptionOut);
+  static const CMVideoFormatDescriptionCreateFromH264ParameterSetsPtr CMVideoFormatDescriptionCreateFromH264ParameterSetsFuncPtr =
+      reinterpret_cast<CMVideoFormatDescriptionCreateFromH264ParameterSetsPtr>(dlsym(((void *) -2), "CMVideoFormatDescriptionCreateFromH264ParameterSets"));
+  if(!CMVideoFormatDescriptionCreateFromH264ParameterSetsFuncPtr)
+		return base::ScopedCFTypeRef<CMFormatDescriptionRef>(nil);
   DCHECK(!sps.empty());
   DCHECK(!pps.empty());
 
@@ -179,7 +185,7 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
 
   // Construct a new format description from the parameter sets.
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
-  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
+  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSetsFuncPtr(
       kCFAllocatorDefault,
       nalu_data_ptrs.size(),     // parameter_set_count
       &nalu_data_ptrs.front(),   // &parameter_set_pointers
@@ -223,7 +229,6 @@ bool CreateVideoToolboxSession(
     const VTDecompressionOutputCallbackRecord* callback,
     base::ScopedCFTypeRef<VTDecompressionSessionRef>* session,
     gfx::Size* configured_size) {
-  
   // Prepare VideoToolbox configuration dictionaries.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
       CFDictionaryCreateMutable(kCFAllocatorDefault,
@@ -321,8 +326,11 @@ bool InitializeVideoToolboxInternal() {
 
   session.reset();
 
-  if (__builtin_available(macOS 11.0, *)) {
-//    VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
+  typedef void (*VTRegisterSupplementalVideoDecoderIfAvailablePtr)(CMVideoCodecType);
+  static const VTRegisterSupplementalVideoDecoderIfAvailablePtr VTRegisterSupplementalVideoDecoderIfAvailableFuncPtr =
+      reinterpret_cast<VTRegisterSupplementalVideoDecoderIfAvailablePtr>(dlsym(((void *) -2), "VTRegisterSupplementalVideoDecoderIfAvailable"));
+  if(VTRegisterSupplementalVideoDecoderIfAvailableFuncPtr) {
+    VTRegisterSupplementalVideoDecoderIfAvailableFuncPtr(kCMVideoCodecType_VP9);
 
     // Create a VP9 decoding session.
     if (!CreateVideoToolboxSession(

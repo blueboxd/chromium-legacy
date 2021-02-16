@@ -1501,7 +1501,8 @@ class MetricsWebContentsObserverBackForwardCacheTest
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackForwardCache,
           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
-        {});
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControl});
   }
 
   ~MetricsWebContentsObserverBackForwardCacheTest() override = default;

@@ -61,7 +61,7 @@ bool CreateMachPort(ScopedMachReceiveRight* receive,
     MACH_LOG(ERROR, kr) << "mach_port_construct:MACH_MSG_TYPE_PORT_SEND";
   }
 
-    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, ScopedMachReceiveRight::Receiver(*receive).get());
+  kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, ScopedMachReceiveRight::Receiver(*receive).get());
   if (kr != KERN_SUCCESS) {
     MACH_LOG(ERROR, kr) << "mach_port_construct";
     return false;

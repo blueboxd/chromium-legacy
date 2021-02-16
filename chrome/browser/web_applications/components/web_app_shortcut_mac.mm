@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
+#include <dlfcn.h>
 
 #include <algorithm>
 #include <list>
@@ -704,36 +705,40 @@ std::string GetBundleIdentifier(
 // user data dir.
 std::list<BundleInfoPlist> SearchForBundlesById(const std::string& bundle_id) {
   std::list<BundleInfoPlist> infos;
+typedef CFArrayRef (*LSCopyApplicationURLsForBundleIdentifierPtr)(CFStringRef, CFErrorRef  _Nullable *);
+static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsForBundleIdentifierFuncPtr =
+    reinterpret_cast<LSCopyApplicationURLsForBundleIdentifierPtr>(dlsym(((void *) -2), "LSCopyApplicationURLsForBundleIdentifier"));
+  if(LSCopyApplicationURLsForBundleIdentifierFuncPtr) {
+    // First search using LaunchServices
+    base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
+        base::SysUTF8ToCFStringRef(bundle_id));
+    base::scoped_nsobject<NSArray> bundle_urls(base::mac::CFToNSCast(
+        LSCopyApplicationURLsForBundleIdentifierFuncPtr(bundle_id_cf.get(), nullptr)));
+    for (NSURL* url : bundle_urls.get()) {
+      NSString* path_string = [url path];
+      base::FilePath bundle_path([path_string fileSystemRepresentation]);
+      BundleInfoPlist info(bundle_path);
+      if (!info.IsForCurrentUserDataDir())
+        continue;
+      infos.push_back(info);
+    }
+    if (!infos.empty())
+      return infos;
 
-//  // First search using LaunchServices
-//  base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
-//      base::SysUTF8ToCFStringRef(bundle_id));
-//  base::scoped_nsobject<NSArray> bundle_urls(base::mac::CFToNSCast(
-//      LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
-//  for (NSURL* url : bundle_urls.get()) {
-//    NSString* path_string = [url path];
-//    base::FilePath bundle_path([path_string fileSystemRepresentation]);
-//    BundleInfoPlist info(bundle_path);
-//    if (!info.IsForCurrentUserDataDir())
-//      continue;
-//    infos.push_back(info);
-//  }
-//  if (!infos.empty())
-//    return infos;
-//
-//  // LaunchServices can fail to locate a recently-created bundle. Search
-//  // for an app in the applications folder to handle this case.
-//  // https://crbug.com/937703
-//  infos = BundleInfoPlist::GetAllInPath(GetChromeAppsFolder(),
-//                                        true /* recursive */);
-//  for (auto it = infos.begin(); it != infos.end();) {
-//    const BundleInfoPlist& info = *it;
-//    if (info.GetBundleId() == bundle_id && info.IsForCurrentUserDataDir()) {
-//      ++it;
-//    } else {
-//      infos.erase(it++);
-//    }
-//  }
+    // LaunchServices can fail to locate a recently-created bundle. Search
+    // for an app in the applications folder to handle this case.
+    // https://crbug.com/937703
+    infos = BundleInfoPlist::GetAllInPath(GetChromeAppsFolder(),
+                                          true /* recursive */);
+    for (auto it = infos.begin(); it != infos.end();) {
+      const BundleInfoPlist& info = *it;
+      if (info.GetBundleId() == bundle_id && info.IsForCurrentUserDataDir()) {
+        ++it;
+      } else {
+        infos.erase(it++);
+      }
+    }
+  }
   return infos;
 }
 

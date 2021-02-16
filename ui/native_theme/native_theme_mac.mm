@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 #include <vector>
+#include <dlfcn.h>
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
@@ -586,11 +587,24 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
   if (!should_only_use_dark_colors)
     InitializeDarkModeStateAndObserver();
 
-  if (!IsForcedHighContrast()) {
-    set_preferred_contrast(CalculatePreferredContrast());
-    __block auto theme = this;
+  static NSString **NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
+  if(NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr) {
+    if (!IsForcedHighContrast()) {
+      set_preferred_contrast(CalculatePreferredContrast());
+      __block auto theme = this;
+      high_contrast_notification_token_ =
+          [[[NSWorkspace sharedWorkspace] notificationCenter]
+              addObserverForName:
+                  *NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr
+                          object:nil
+                           queue:nil
+                      usingBlock:^(NSNotification* notification) {
+                        theme->set_preferred_contrast(
+                            CalculatePreferredContrast());
+                        theme->NotifyObservers();
+                      }];
+    }
   }
-
   if (configure_web_instance)
     ConfigureWebInstance();
 }

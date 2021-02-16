@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/utsname.h>
 #include <sys/xattr.h>
+#include <dlfcn.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -64,28 +65,33 @@ class LoginItemsFileList {
   // retained reference to it. Caller is responsible for releasing the
   // reference.
   ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForApp(NSURL* url) {
-//    DCHECK(login_items_.get()) << "Initialize() failed or not called.";
-//
-//#pragma clang diagnostic push  // https://crbug.com/1154377
-//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-//    base::scoped_nsobject<NSArray> login_items_array(
-//        CFToNSCast(LSSharedFileListCopySnapshot(login_items_, nullptr)));
-//#pragma clang diagnostic pop
-//
-//    for (id login_item in login_items_array.get()) {
-//      LSSharedFileListItemRef item =
-//          reinterpret_cast<LSSharedFileListItemRef>(login_item);
-//#pragma clang diagnostic push  // https://crbug.com/1154377
-//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-//      ScopedCFTypeRef<CFURLRef> item_url(
-//          LSSharedFileListItemCopyResolvedURL(item, 0, nullptr));
-//#pragma clang diagnostic pop
-//
-//      if (item_url && CFEqual(item_url, url)) {
-//        return ScopedCFTypeRef<LSSharedFileListItemRef>(
-//            item, base::scoped_policy::RETAIN);
-//      }
-//    }
+    typedef CFURLRef (*LSSharedFileListItemCopyResolvedURLPtr)(LSSharedFileListItemRef, LSSharedFileListResolutionFlags, CFErrorRef*);
+    static const LSSharedFileListItemCopyResolvedURLPtr LSSharedFileListItemCopyResolvedURLFuncPtr =
+        reinterpret_cast<LSSharedFileListItemCopyResolvedURLPtr>(dlsym(((void *) -2), "LSSharedFileListItemCopyResolvedURL"));
+    if(LSSharedFileListItemCopyResolvedURLFuncPtr) {
+      DCHECK(login_items_.get()) << "Initialize() failed or not called.";
+
+#pragma clang diagnostic push  // https://crbug.com/1154377
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      base::scoped_nsobject<NSArray> login_items_array(
+          CFToNSCast(LSSharedFileListCopySnapshot(login_items_, nullptr)));
+#pragma clang diagnostic pop
+
+      for (id login_item in login_items_array.get()) {
+        LSSharedFileListItemRef item =
+            reinterpret_cast<LSSharedFileListItemRef>(login_item);
+#pragma clang diagnostic push  // https://crbug.com/1154377
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        ScopedCFTypeRef<CFURLRef> item_url(
+            LSSharedFileListItemCopyResolvedURLFuncPtr(item, 0, nullptr));
+#pragma clang diagnostic pop
+
+        if (item_url && CFEqual(item_url, url)) {
+          return ScopedCFTypeRef<LSSharedFileListItemRef>(
+              item, base::scoped_policy::RETAIN);
+        }
+      }
+    }
 
     return ScopedCFTypeRef<LSSharedFileListItemRef>();
   }

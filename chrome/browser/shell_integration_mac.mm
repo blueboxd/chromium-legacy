@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dlfcn.h>
+
 #include "chrome/browser/shell_integration.h"
 
 #include "base/mac/bundle_locations.h"
@@ -102,7 +104,26 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
 }
 
 base::string16 GetApplicationNameForProtocol(const GURL& url) {
-  return base::string16();
+  typedef CFURLRef (*LSCopyDefaultApplicationURLForURLPtr)(CFURLRef, LSRolesMask, CFErrorRef  _Nullable *);
+  static const LSCopyDefaultApplicationURLForURLPtr LSCopyDefaultApplicationURLForURLFuncPtr =
+      reinterpret_cast<LSCopyDefaultApplicationURLForURLPtr>(dlsym(((void *) -2), "LSCopyDefaultApplicationURLForURL"));
+  if(LSCopyDefaultApplicationURLForURLFuncPtr) {
+    NSURL* ns_url = [NSURL URLWithString:
+        base::SysUTF8ToNSString(url.possibly_invalid_spec())];
+    base::ScopedCFTypeRef<CFErrorRef> out_err;
+    base::ScopedCFTypeRef<CFURLRef> openingApp(LSCopyDefaultApplicationURLForURLFuncPtr(
+        (CFURLRef)ns_url, kLSRolesAll, out_err.InitializeInto()));
+    if (out_err) {
+      // likely kLSApplicationNotFoundErr
+      return base::string16();
+    }
+    NSString* appPath = [base::mac::CFToNSCast(openingApp.get()) path];
+    NSString* appDisplayName =
+        [[NSFileManager defaultManager] displayNameAtPath:appPath];
+    return base::SysNSStringToUTF16(appDisplayName);
+  } else {
+    return base::string16();
+  }
 }
 
 // Attempt to determine if this instance of Chrome is the default browser and

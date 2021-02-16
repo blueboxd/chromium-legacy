@@ -9,6 +9,8 @@
 #include <memory>
 #include <vector>
 
+#include <dlfcn.h>
+
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/auto_reset.h"
@@ -1763,8 +1765,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (BOOL)application:(NSApplication*)application
-    willContinueUserActivityWithType:(NSString*)userActivityType {
-  return NO;
+  willContinueUserActivityWithType:(NSString*)userActivityType {
+  static NSString **NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  if(NSUserActivityTypeBrowsingWebStr)
+    return [userActivityType isEqualToString:*NSUserActivityTypeBrowsingWebStr];
+  else
+    return NO;
 }
 
 - (BOOL)application:(NSApplication*)application
@@ -1772,6 +1778,14 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
 {
+  NSString *__autoreleasing *NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString*__autoreleasing*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  if(!NSUserActivityTypeBrowsingWebStr)
+    return NO;
+
+  if (![userActivity.activityType
+          isEqualToString:*NSUserActivityTypeBrowsingWebStr]) {
+    return NO;
+  }
 
   NSString* originString = base::mac::ObjCCast<NSString>(
       [userActivity.userInfo objectForKey:handoff::kOriginKey]);

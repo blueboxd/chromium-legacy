@@ -5,6 +5,7 @@
 #include "components/services/quarantine/common_mac.h"
 
 #import <ApplicationServices/ApplicationServices.h>
+#include <dlfcn.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -19,7 +20,42 @@ namespace quarantine {
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
-  return false;
+  static NSString **NSURLQuarantinePropertiesKeyStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSURLQuarantinePropertiesKey"));
+  if(NSURLQuarantinePropertiesKeyStr) {
+    base::scoped_nsobject<NSURL> file_url([[NSURL alloc]
+        initFileURLWithPath:base::SysUTF8ToNSString(file.value())]);
+    if (!file_url)
+      return false;
+
+    NSError* error = nil;
+    id quarantine_properties = nil;
+    BOOL success = [file_url getResourceValue:&quarantine_properties
+                                       forKey:*NSURLQuarantinePropertiesKeyStr
+                                        error:&error];
+    if (!success) {
+      std::string error_message(error ? error.description.UTF8String : "");
+      LOG(WARNING) << "Unable to get quarantine attributes for file "
+                   << file.value() << ". Error: " << error_message;
+      return false;
+    }
+
+    if (!quarantine_properties)
+      return true;
+
+    NSDictionary* quarantine_properties_dict =
+        base::mac::ObjCCast<NSDictionary>(quarantine_properties);
+    if (!quarantine_properties_dict) {
+      LOG(WARNING) << "Quarantine properties have wrong class: "
+                   << base::SysNSStringToUTF8(
+                          [[quarantine_properties class] description]);
+      return false;
+    }
+
+    properties->reset([quarantine_properties_dict mutableCopy]);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace quarantine

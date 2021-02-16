@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <memory>
+#include <dlfcn.h>
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
@@ -175,6 +176,18 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
 }
 
 void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
+  typedef void (*CFRunLoopTimerSetTolerancePtr)(CFRunLoopTimerRef, CFTimeInterval);
+  static const CFRunLoopTimerSetTolerancePtr CFRunLoopTimerSetToleranceFuncPtr =
+      reinterpret_cast<CFRunLoopTimerSetTolerancePtr>(dlsym(((void *) -2), "CFRunLoopTimerSetTolerance"));
+
+  if(CFRunLoopTimerSetToleranceFuncPtr) {
+    // The tolerance needs to be set before the fire date or it may be ignored.
+    if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
+      CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_, delta.InSecondsF() * 0.5);
+    } else {
+      CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_, 0);
+    }
+  }
   CFRunLoopTimerSetNextFireDate(
       delayed_work_timer_, CFAbsoluteTimeGetCurrent() + delta.InSecondsF());
 }

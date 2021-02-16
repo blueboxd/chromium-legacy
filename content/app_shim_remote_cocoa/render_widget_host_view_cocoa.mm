@@ -324,7 +324,7 @@ void ExtractUnderlines(NSAttributedString* string,
   [self.spellChecker
       showCorrectionIndicatorOfType:NSCorrectionIndicatorTypeDefault
                       primaryString:candidateResult.replacementString
-                 alternativeStrings:@[]
+                 alternativeStrings:@available(macOS 10.8, *)?candidateResult.alternativeStrings:@[]
                     forStringInRect:textRectInViewCoordinates
                                view:self
                   completionHandler:^(NSString* acceptedString) {

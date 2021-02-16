@@ -32,8 +32,6 @@ WaitableEvent::WaitableEvent(ResetPolicy reset_policy,
   options.mpl.mpl_qlimit = 1;
 
   mach_port_t name;
-//  kern_return_t kr = mach_port_construct(mach_task_self(), &options, 0, &name);
-//  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_construct";
   kern_return_t kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &name);
   if (kr != KERN_SUCCESS) {
     MACH_LOG(ERROR, kr) << "mach_port_allocate";

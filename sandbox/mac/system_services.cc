@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <dlfcn.h>
 
 #include "base/mac/mac_logging.h"
 
@@ -23,6 +24,24 @@ void _CSCheckFixDisable() API_AVAILABLE(macosx(10.15));
 namespace sandbox {
 
 void DisableLaunchServices() {
+  typedef CFURLRef (*_LSSetApplicationLaunchServicesServerConnectionStatusPtr)(uint64_t, bool (^connection_allowed)(CFDictionaryRef options));
+  static const _LSSetApplicationLaunchServicesServerConnectionStatusPtr _LSSetApplicationLaunchServicesServerConnectionStatusFuncPtr =
+      reinterpret_cast<_LSSetApplicationLaunchServicesServerConnectionStatusPtr>(dlsym(((void *) -2), "_LSSetApplicationLaunchServicesServerConnectionStatus"));
+  if(!_LSSetApplicationLaunchServicesServerConnectionStatusFuncPtr)
+    return;
+  // Allow the process to continue without a LaunchServices ASN. The
+  // INIT_Process function in HIServices will abort if it cannot connect to
+  // launchservicesd to get an ASN. By setting this flag, HIServices skips
+  // that.
+  OSStatus status = SetApplicationIsDaemon(true);
+  OSSTATUS_LOG_IF(ERROR, status != noErr, status) << "SetApplicationIsDaemon";
+
+  // Close any connections to launchservicesd and use an always-false predicate
+  // to discourage future attempts to connect.
+  _LSSetApplicationLaunchServicesServerConnectionStatusFuncPtr(
+      0, ^bool(CFDictionaryRef options) {
+        return false;
+      });
 }
 
 void DisableCoreServicesCheckFix() {

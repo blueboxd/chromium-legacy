@@ -5,6 +5,7 @@
 #include "media/gpu/mac/vt_video_encode_accelerator_mac.h"
 
 #include <memory>
+#include <dlfcn.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
@@ -509,7 +510,12 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
 bool VTVideoEncodeAccelerator::CreateCompressionSession(
     const gfx::Size& input_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
-return false;
+  typedef OSStatus (*VTCompressionSessionCreatePtr)(CFAllocatorRef, int32_t, int32_t, CMVideoCodecType, CFDictionaryRef, CFDictionaryRef, CFAllocatorRef, VTCompressionOutputCallback, void *, VTCompressionSessionRef  _Nullable *);
+  static const VTCompressionSessionCreatePtr VTCompressionSessionCreateFuncPtr =
+      reinterpret_cast<VTCompressionSessionCreatePtr>(dlsym(((void *) -2), "VTCompressionSessionCreate"));
+  if(!__builtin_available(macOS 10.8,*))
+    return false;
+
   std::vector<CFTypeRef> encoder_keys(
       1, kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder);
   std::vector<CFTypeRef> encoder_values(1, kCFBooleanTrue);
@@ -526,7 +532,13 @@ return false;
   // and invalidated. Internally, VideoToolbox will join all of its threads
   // before returning to the client. Therefore, when control returns to us, we
   // are guaranteed that the output callback will not execute again.
-OSStatus status=-1;
+  OSStatus status = VTCompressionSessionCreateFuncPtr(
+      kCFAllocatorDefault, input_size.width(), input_size.height(),
+      kCMVideoCodecType_H264, encoder_spec,
+      nullptr /* sourceImageBufferAttributes */,
+      nullptr /* compressedDataAllocator */,
+      &VTVideoEncodeAccelerator::CompressionCallback,
+      reinterpret_cast<void*>(this), compression_session_.InitializeInto());
   if (status != noErr) {
     DLOG(ERROR) << " VTCompressionSessionCreate failed: " << status;
     return false;

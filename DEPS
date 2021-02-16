@@ -199,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7cb0f6e9702a1929efa9aef419835b12daae2ed0',
+  'skia_revision': '262f24cdb80752b7a50452dc7f0ea941acdaf0f6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'ebacb645b20531cd78dc088730fb72269822eeb6',
+  'v8_revision': 'c126700cbc1f7391b8b717f7c54b4f9537355db7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'b2aeca5fda870751f3c9d645e0dca4c80fa1ae5a',
+  'freetype_revision': '215ae253304d610b90778d438abc1d019699ebd8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -270,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '35976bfcac506668c032dec650867e785b67dc91',
+  'catapult_revision': '7196d49df05035397b8a8b72e8d09da226835760',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -278,7 +278,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e7446350b3515b045d9990081395c9ca4dd36015',
+  'devtools_frontend_revision': '394d69d66747d3e1d5861bbd75ad872d6dcfeedb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -678,7 +678,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '09Q7fX-z4zxVsv_sl0K_cenKEZASVgwYe4goJB_KaIsC',
+          'version': 'YDEevqz5F0aJQBGJ8AJU5LTimI4h1A8Crua221hx910C',
       },
     ],
     'condition': 'checkout_android',
@@ -1276,7 +1276,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'dfc4b6961da21b049b18d4122d14cc578a7f3b8c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7c70b69611266b435b6e2f2f0b5a51d538e740cb',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1485,7 +1485,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a6647318b57c0a05d590c8c21fc22aba87f08749',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@a1175c67dd67f373b2c61821a5a9dd06467403f2',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@8355491a50698d24f540800e0c1d658ded9f65bd',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '732a76d9d3c70d6aa487216495eeb28518349c3a',
@@ -1584,7 +1584,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@114c24c588c7e21a1e277ebb8ab90382d93c43ac',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c8efd286c39b24cd7d074d7ebdc733b33d7acf10',
     'condition': 'checkout_src_internal',
   },
 
@@ -1603,7 +1603,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'Os_9rrCKg3GwxV8WB0RS0_Ipf6-l7EHKMPLsfIRop4AC',
+        'version': 'tuhQN4q6UdxjCsLgBZ1aD6tbbq_AmGUg21-8tMbvDDwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -534,10 +534,13 @@ void UiControllerAndroid::SetSpinPoodle(bool enabled) {
 
 void UiControllerAndroid::OnHeaderFeedbackButtonClicked() {
   JNIEnv* env = AttachCurrentThread();
+  // If the feedback is sent by interacting with the header, it's more likely
+  // that there is a problem with the bottomsheet, so in this case we don't send
+  // the website's screenshot (COMPOSITOR).
   Java_AutofillAssistantUiController_showFeedback(
       env, java_object_,
       ConvertUTF8ToJavaString(env, ui_delegate_->GetDebugContext()),
-      ScreenshotMode::COMPOSITOR);
+      ScreenshotMode::DEFAULT);
 }
 
 void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
@@ -854,7 +857,7 @@ void UiControllerAndroid::OnCancelButtonClicked(
     return;
   }
 
-  CloseOrCancel(index, TriggerContext::CreateEmpty(),
+  CloseOrCancel(index, std::make_unique<TriggerContext>(),
                 Metrics::DropOutReason::SHEET_CLOSED);
 }
 
@@ -922,7 +925,7 @@ bool UiControllerAndroid::OnBackButtonClicked() {
     ui_delegate_->OnStop(back_button_settings->message(),
                          back_button_settings->undo_label());
   } else {
-    CloseOrCancel(-1, TriggerContext::CreateEmpty(),
+    CloseOrCancel(-1, std::make_unique<TriggerContext>(),
                   Metrics::DropOutReason::BACK_BUTTON_CLICKED);
   }
   return true;

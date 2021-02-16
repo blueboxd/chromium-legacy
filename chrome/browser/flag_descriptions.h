@@ -1684,9 +1684,6 @@ extern const char kExploreSitesDescription[];
 extern const char kFillingPasswordsFromAnyOriginName[];
 extern const char kFillingPasswordsFromAnyOriginDescription[];
 
-extern const char kGamesHubName[];
-extern const char kGamesHubDescription[];
-
 extern const char kHomepagePromoCardName[];
 extern const char kHomepagePromoCardDescription[];
 
@@ -2146,9 +2143,6 @@ extern const char kMacSyscallSandboxDescription[];
 
 extern const char kMacV2GPUSandboxName[];
 extern const char kMacV2GPUSandboxDescription[];
-
-extern const char kMacSystemMediaPermissionsInfoUiName[];
-extern const char kMacSystemMediaPermissionsInfoUiDescription[];
 
 extern const char kMetalName[];
 extern const char kMetalDescription[];

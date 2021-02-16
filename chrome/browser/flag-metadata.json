@@ -1736,11 +1736,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-games-hub",
-    "owners": [ "csharp", "seblalancette", "tmartino" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 90
@@ -3302,11 +3297,6 @@
     "name": "mac-syscall-sandbox",
     "owners": [ "kerrnel@google.com" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "mac-system-media-permissions-info-ui",
-    "owners": [ "guidou", "engedy", "hkamila" ],
-    "expiry_milestone": 83
   },
   {
     "name": "mac-v2-gpu-sandbox",

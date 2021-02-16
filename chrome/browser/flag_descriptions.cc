@@ -2900,10 +2900,6 @@ const char kFillingPasswordsFromAnyOriginDescription[] =
     "button opens a different sheet that allows filling a password from any "
     "origin.";
 
-const char kGamesHubName[] = "Games Hub";
-const char kGamesHubDescription[] =
-    "Enables viewing and usage of the Games Hub.";
-
 const char kHomepagePromoCardName[] =
     "Enable homepage promo card on the New Tab Page";
 const char kHomepagePromoCardDescription[] =
@@ -3716,14 +3712,6 @@ const char kMacSyscallSandboxDescription[] =
 const char kMacV2GPUSandboxName[] = "Mac V2 GPU Sandbox";
 const char kMacV2GPUSandboxDescription[] =
     "Controls whether the GPU process on macOS uses the V1 or V2 sandbox.";
-
-const char kMacSystemMediaPermissionsInfoUiName[] =
-    "System media permissions info UI";
-const char kMacSystemMediaPermissionsInfoUiDescription[] =
-    "In case a website is trying to use the camera/microphone, but Chrome "
-    "itself is blocked on the system level to access these, show an icon in "
-    "the Omnibox, which, when clicked, displays a bubble with information on "
-    "how to toggle Chrome's system-level media permissions.";
 
 const char kMetalName[] = "Metal";
 const char kMetalDescription[] =

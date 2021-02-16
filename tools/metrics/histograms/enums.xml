@@ -30812,7 +30812,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3215" label="LegacyLayoutByPrinting"/>
   <int value="3216" label="OBSOLETE_LegacyLayoutByRuby"/>
   <int value="3217" label="LegacyLayoutBySVG"/>
-  <int value="3218" label="LegacyLayoutBySlider"/>
+  <int value="3218" label="OBSOLETE_LegacyLayoutBySlider"/>
   <int value="3219" label="LegacyLayoutByTable"/>
   <int value="3220" label="LegacyLayoutByTextCombine"/>
   <int value="3221" label="LegacyLayoutByTextControl"/>
@@ -31421,6 +31421,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3801" label="WasmModuleSharing"/>
   <int value="3802" label="CrossOriginWasmModuleSharing"/>
   <int value="3803" label="OverflowClipAlongEitherAxis"/>
+  <int value="3804" label="CreateJSONModuleScript"/>
+  <int value="3805" label="CreateCSSModuleScript"/>
+  <int value="3806" label="InsertHTMLCommandOnInput"/>
+  <int value="3807" label="InsertHTMLCommandOnTextarea"/>
+  <int value="3808" label="InsertHTMLCommandOnReadWritePlainText"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42919,7 +42924,6 @@ from previous Chrome versions.
   <int value="-2105498697" label="EnableImeSandbox:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
-  <int value="-2104654357" label="GamesHub:enabled"/>
   <int value="-2102286055" label="WebViewVulkanIntermediateBuffer:disabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2101338272" label="EnablePciguardUi:disabled"/>
@@ -46973,7 +46977,6 @@ from previous Chrome versions.
       label="OmniboxUIExperimentWhiteBackgroundOnBlur:disabled"/>
   <int value="1617187093" label="enable-improved-a2hs"/>
   <int value="1618633341" label="MashOopViz:enabled"/>
-  <int value="1619516032" label="GamesHub:disabled"/>
   <int value="1619842095" label="ColorProviderRedirection:enabled"/>
   <int value="1620369597" label="enable-unsafe-webgpu"/>
   <int value="1621298798" label="VrBrowserKeyboard:enabled"/>
@@ -70003,6 +70006,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="13" label="MobileIdentityConsistency rollback">
     Signout was forced because MobileIdentityConsistency feature is disabled
     when there's a primary account without sync consent.
+  </int>
+  <int value="14" label="Force Account ID migration">
+    Signout was forced because account ID migration from email to Gaia ID was
+    forced.
   </int>
 </enum>
 

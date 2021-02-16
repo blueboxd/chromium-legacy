@@ -2542,7 +2542,6 @@ enum WebFeature {
   kLegacyLayoutByMultiCol = 3214,
   kLegacyLayoutByPrinting = 3215,
   kLegacyLayoutBySVG = 3217,
-  kLegacyLayoutBySlider = 3218,
   kLegacyLayoutByTable = 3219,
   kLegacyLayoutByTextCombine = 3220,
   kLegacyLayoutByTextControl = 3221,
@@ -3124,6 +3123,11 @@ enum WebFeature {
   kWasmModuleSharing = 3801,
   kCrossOriginWasmModuleSharing = 3802,
   kOverflowClipAlongEitherAxis = 3803,
+  kCreateJSONModuleScript = 3804,
+  kCreateCSSModuleScript = 3805,
+  kInsertHTMLCommandOnInput = 3806,
+  kInsertHTMLCommandOnTextarea = 3807,
+  kInsertHTMLCommandOnReadWritePlainText = 3808,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

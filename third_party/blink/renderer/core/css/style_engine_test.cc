@@ -2108,7 +2108,9 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetStyleEngine().MarkForWhitespaceReattachment();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
@@ -2120,7 +2122,9 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetStyleEngine().MarkForWhitespaceReattachment();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
@@ -2131,7 +2135,9 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetStyleEngine().MarkForWhitespaceReattachment();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   EXPECT_TRUE(GetStyleEngine().NeedsLayoutTreeRebuild());
 }
 
@@ -4118,6 +4124,29 @@ TEST_F(StyleEngineTest, CounterContentNameCase) {
 
   // Hiragana "A"
   EXPECT_EQ(String(u"\u3042"), counter->GetText());
+}
+
+TEST_F(StyleEngineTest, NonDirtyStyleRecalcRoot) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <div id="host">
+      <span id="slotted"></span>
+    </div>
+  )HTML");
+
+  auto* host = GetDocument().getElementById("host");
+  auto* slotted = GetDocument().getElementById("slotted");
+
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.setInnerHTML("<slot></slot>");
+  UpdateAllLifecyclePhases();
+
+  slotted->remove();
+  GetDocument().body()->appendChild(slotted);
+  host->remove();
+  auto* recalc_root = GetStyleRecalcRoot();
+  ASSERT_TRUE(recalc_root);
+  EXPECT_TRUE(recalc_root->NeedsStyleRecalc());
 }
 
 }  // namespace blink

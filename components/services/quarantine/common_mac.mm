@@ -20,7 +20,7 @@ namespace quarantine {
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
-  static NSString **NSURLQuarantinePropertiesKeyStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSURLQuarantinePropertiesKey"));
+  static const NSString **NSURLQuarantinePropertiesKeyStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSURLQuarantinePropertiesKey"));
   if(NSURLQuarantinePropertiesKeyStr) {
     base::scoped_nsobject<NSURL> file_url([[NSURL alloc]
         initFileURLWithPath:base::SysUTF8ToNSString(file.value())]);

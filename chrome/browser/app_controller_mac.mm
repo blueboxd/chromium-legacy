@@ -1766,7 +1766,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (BOOL)application:(NSApplication*)application
   willContinueUserActivityWithType:(NSString*)userActivityType {
-  static NSString **NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static const NSString **NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(NSUserActivityTypeBrowsingWebStr)
     return [userActivityType isEqualToString:*NSUserActivityTypeBrowsingWebStr];
   else
@@ -1778,7 +1778,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
 {
-  NSString *__autoreleasing *NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString*__autoreleasing*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static const NSString **NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(!NSUserActivityTypeBrowsingWebStr)
     return NO;
 

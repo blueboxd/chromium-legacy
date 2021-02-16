@@ -6,7 +6,7 @@ Chromium-legacy is the latest Chromium (equivalent to Chrome Canary) patched & b
 ~~Not working on 10.9 for now.~~
 Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 
-**NB: Not for natively supported environments (10.10+).**
+**NB: Not for natively supported environments (10.11+).**
 
 This project is automatically built twice a day (00:00 and 12:00 JST) if no issues occurred.
 And note, uploaded without any tests, thus there is no guarantee for launching or proper operation.

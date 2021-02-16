@@ -1171,10 +1171,10 @@ config("compiler_deterministic") {
       ]
     } else {
       cflags += [
-         "-Wno-builtin-macro-redefined",
-         "-D__DATE__=",
-         "-D__TIME__=",
-         "-D__TIMESTAMP__=",
+        "-Wno-builtin-macro-redefined",
+        "-D__DATE__=",
+        "-D__TIME__=",
+        "-D__TIMESTAMP__=",
       ]
     }
   }

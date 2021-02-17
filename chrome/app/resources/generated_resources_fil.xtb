@@ -2465,7 +2465,6 @@ Inaatasan ka ng <ph name="DOMAIN" /> na panatilihing nakalagay ang iyong smart c
 <translation id="3742055079367172538">Nakakuha na ng screenshot</translation>
 <translation id="3742666961763734085">Hindi makahanap ng unit ng organisasyon na may ganyang pangalan. Pakisubukang muli.</translation>
 <translation id="3744111561329211289">Pag-sync sa background</translation>
-<translation id="3746127522257263495">Hindi sinusuportahan ang pagdaragdag ng G Suite for Education account sa mga Android app.</translation>
 <translation id="3747077776423672805">Para mag-alis ng mga app, pumunta sa Mga Setting &gt; Google Play Store &gt; Pamahalaan ang mga kagustuhan sa Android &gt; Mga App o Application manager. Pagkatapos ay i-tap ang app na gusto mong i-uninstall (maaaring kailanganin mong mag-swipe pakanan o pakaliwa para mahanap ang app). Pagkatapos, i-tap ang I-uninstall o I-disable.</translation>
 <translation id="3748706263662799310">Mag-ulat ng bug</translation>
 <translation id="3752582316358263300">OK...</translation>
@@ -5862,7 +5861,6 @@ Inaatasan ka ng <ph name="DOMAIN" /> na panatilihing nakalagay ang iyong smart c
 <translation id="7696063401938172191">Sa iyong '<ph name="PHONE_NAME" />':</translation>
 <translation id="7697166915480294040">Nakatago ang mga detalye habang ibinabahagi mo ang iyong screen</translation>
 <translation id="7697598343108519171">Gamitin ang camera para i-scan ang QR code</translation>
-<translation id="7699968112832915395">Hindi maidagdag ang account</translation>
 <translation id="7701040980221191251">Wala</translation>
 <translation id="7701869757853594372">Mga USER Handle</translation>
 <translation id="7701928712056789451">Posibleng mapanganib ang mga item na ito</translation>
@@ -6949,6 +6947,7 @@ Inaatasan ka ng <ph name="DOMAIN" /> na panatilihing nakalagay ang iyong smart c
 <translation id="8892168913673237979">Handa na ang lahat!</translation>
 <translation id="8893801527741465188">Tapos nang mag-uninstall</translation>
 <translation id="8893928184421379330">Paumanhin, hindi makilala ang device na <ph name="DEVICE_LABEL" />.</translation>
+<translation id="8894761918470382415">Proteksyon sa pag-access ng data para sa mga peripheral</translation>
 <translation id="8895454554629927345">Listahan ng bookmark</translation>
 <translation id="8898786835233784856">Select Next Tab</translation>
 <translation id="8898822736010347272">Nagpapadala ng mga URL ng ilang page na binibisita mo, limitadong impormasyon ng system, at ilang content ng page sa Google, para makatulong na tumuklas ng mga bagong banta at protektahan ang lahat ng nasa web.</translation>
@@ -7256,6 +7255,7 @@ Inaatasan ka ng <ph name="DOMAIN" /> na panatilihing nakalagay ang iyong smart c
 <translation id="942532530371314860">Nagbabahagi ng tab ng Chrome at audio ang <ph name="APP_NAME" />.</translation>
 <translation id="945522503751344254">Magpadala ng feedback</translation>
 <translation id="947329552760389097">&amp;Siyasatin ang Mga Element</translation>
+<translation id="949052952791086881">Hinihiling ng iyong administrator na mag-sign in ang user na ito habang online ang device</translation>
 <translation id="951991426597076286">Tanggihan</translation>
 <translation id="956500788634395331">Protektado ka mula sa mga potensyal na mapaminsalang extension</translation>
 <translation id="957960681186851048">Sinubukan ng site na ito na awtomatikong mag-download ng maraming file</translation>

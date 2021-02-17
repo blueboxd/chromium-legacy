@@ -2014,18 +2014,26 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
 
   base::AutoReset<bool> cq_recalc(&in_container_query_style_recalc_, true);
 
-  StyleRecalcContext style_recalc_context;
-
   WritingMode writing_mode = container.ComputedStyleRef().GetWritingMode();
   PhysicalSize physical_size = ToPhysicalSize(logical_size, writing_mode);
   PhysicalAxes physical_axes = ToPhysicalAxes(contained_axes, writing_mode);
-  style_recalc_context.cq_evaluator =
-      MakeGarbageCollected<ContainerQueryEvaluator>(
-          physical_size.width, physical_size.height, physical_axes);
+
+  if (auto* evaluator = container.GetContainerQueryEvaluator()) {
+    if (!evaluator->ContainerChanged(physical_size, physical_axes))
+      return;
+  } else {
+    container.SetContainerQueryEvaluator(
+        MakeGarbageCollected<ContainerQueryEvaluator>(physical_size,
+                                                      physical_axes));
+  }
 
   style_recalc_root_.Update(nullptr, &container);
   RecalcStyle({StyleRecalcChange::kRecalcContainerQueryDependent},
-              style_recalc_context);
+              StyleRecalcContext());
+
+  // Nodes are marked for whitespace reattachment for DOM removal only. This set
+  // should have been cleared before layout.
+  DCHECK(!NeedsWhitespaceReattachment());
 
   if (container.ChildNeedsReattachLayoutTree()) {
     DCHECK(layout_tree_rebuild_root_.GetRootNode());
@@ -2195,8 +2203,14 @@ void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
 void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
   DCHECK(!in_dom_removal_);
-  if (GetDocument().IsActive())
-    layout_tree_rebuild_root_.Update(ancestor, dirty_node);
+  if (!GetDocument().IsActive())
+    return;
+  if (InRebuildLayoutTree()) {
+    DCHECK(allow_mark_for_reattach_from_rebuild_layout_tree_);
+    return;
+  }
+  DCHECK(GetDocument().InStyleRecalc());
+  layout_tree_rebuild_root_.Update(ancestor, dirty_node);
 }
 
 bool StyleEngine::SupportsDarkColorScheme() {

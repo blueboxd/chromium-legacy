@@ -625,8 +625,8 @@ if (is_android) {
       "$root_gen_dir/components/dev_ui_components_resources.pak",
       "$root_out_dir/browser_tests.pak",
       "//components/test/data/payments/",
-      "//chrome/test/data/banners/",
       "//chrome/test/data/android/customtabs/",
+      "//chrome/test/data/banners/",
       "//chrome/test/data/ssl/",
       "//chrome/test/data/ads_observer/",
       "//content/test/data/",
@@ -937,6 +937,7 @@ if (!is_android) {
       "//components/test/data/update_client/",
       "//content/test/data/",
       "//google_apis/test/",
+      "//chrome/test/data/cart/",
       "//media/test/data/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",
@@ -1266,6 +1267,7 @@ if (!is_android) {
       "../browser/policy/hide_webstore_icon_policy_browsertest.cc",
       "../browser/policy/hsts_policy_browsertest.cc",
       "../browser/policy/media_stream_policy_browsertest.cc",
+      "../browser/policy/network_prediction_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
       "../browser/policy/policy_network_browsertest.cc",
@@ -1596,6 +1598,8 @@ if (!is_android) {
       "../renderer/autofill/password_generation_agent_browsertest.cc",
       "../renderer/autofill/password_generation_test_utils.cc",
       "../renderer/autofill/password_generation_test_utils.h",
+      "../renderer/cart/commerce_hint_agent_browsertest.cc",
+      "../renderer/cart/commerce_hint_agent_renderer_browsertest.cc",
       "../renderer/chrome_content_renderer_client_browsertest.cc",
       "../renderer/chrome_content_settings_agent_delegate_browsertest.cc",
       "../renderer/chrome_render_frame_observer_browsertest.cc",
@@ -1783,6 +1787,7 @@ if (!is_android) {
         "../browser/policy/audio_output_allowed_browsertest.cc",
         "../browser/policy/login_policy_test_base_browsertest.cc",
         "../browser/policy/note_taking_on_lock_screen_policy_browsertest.cc",
+        "../browser/policy/session_length_limit_policy_browsertest.cc",
         "../browser/policy/suggested_content_policy_browsertest.cc",
         "../browser/policy/system_features_policy_browsertest.cc",
         "../browser/renderer_context_menu/quick_answers_menu_observer_browsertest.cc",
@@ -1794,6 +1799,7 @@ if (!is_android) {
     if (!is_chromeos_ash) {
       sources += [
         "../browser/policy/native_messaging_policy_browsertest.cc",
+        "../browser/policy/variation_restrict_parameter_policy_browsertest.cc",
         "../browser/ui/views/accessibility/accessibility_focus_highlight_browsertest.cc",
       ]
     }
@@ -2566,7 +2572,6 @@ if (!is_android) {
         "../browser/chromeos/login/eula_browsertest.cc",
         "../browser/chromeos/login/existing_user_controller_browsertest.cc",
         "../browser/chromeos/login/guest_login_browsertest.cc",
-        "../browser/chromeos/login/hid_detection_browsertest.cc",
         "../browser/chromeos/login/lock/fingerprint_unlock_browsertest.cc",
         "../browser/chromeos/login/lock/lock_screen_browsertest.cc",
         "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
@@ -4106,6 +4111,7 @@ test("unit_tests") {
       "../browser/upgrade_detector/mock_build_state_observer.h",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
+      "../renderer/cart/commerce_hint_agent_unittest.cc",
     ]
   }
 

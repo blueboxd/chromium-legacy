@@ -2897,16 +2897,23 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     return;
   }
 
+  StyleRecalcContext child_recalc_context = style_recalc_context;
+
+  if (LayoutObject* layout_object = GetLayoutObject()) {
+    if (layout_object->IsContainerForContainerQueries())
+      child_recalc_context.cq_evaluator = GetContainerQueryEvaluator();
+  }
+
   if (child_change.TraversePseudoElements(*this)) {
-    UpdatePseudoElement(kPseudoIdBackdrop, child_change, style_recalc_context);
-    UpdatePseudoElement(kPseudoIdMarker, child_change, style_recalc_context);
-    UpdatePseudoElement(kPseudoIdBefore, child_change, style_recalc_context);
+    UpdatePseudoElement(kPseudoIdBackdrop, child_change, child_recalc_context);
+    UpdatePseudoElement(kPseudoIdMarker, child_change, child_recalc_context);
+    UpdatePseudoElement(kPseudoIdBefore, child_change, child_recalc_context);
   }
 
   if (child_change.TraverseChildren(*this)) {
     SelectorFilterParentScope filter_scope(*this);
     if (ShadowRoot* root = GetShadowRoot()) {
-      root->RecalcDescendantStyles(child_change, style_recalc_context);
+      root->RecalcDescendantStyles(child_change, child_recalc_context);
       // Sad panda. This is only to clear ensured ComputedStyles for elements
       // outside the flat tree for getComputedStyle() in the cases where we
       // kSubtreeStyleChange. Style invalidation and kLocalStyleChange will
@@ -2914,17 +2921,17 @@ void Element::RecalcStyle(const StyleRecalcChange change,
       // in Element::EnsureComputedStyle().
       if (child_change.RecalcDescendants()) {
         RecalcDescendantStyles(StyleRecalcChange::kClearEnsured,
-                               style_recalc_context);
+                               child_recalc_context);
       }
     } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
-      slot->RecalcStyleForSlotChildren(child_change, style_recalc_context);
+      slot->RecalcStyleForSlotChildren(child_change, child_recalc_context);
     } else {
-      RecalcDescendantStyles(child_change, style_recalc_context);
+      RecalcDescendantStyles(child_change, child_recalc_context);
     }
   }
 
   if (child_change.TraversePseudoElements(*this)) {
-    UpdatePseudoElement(kPseudoIdAfter, child_change, style_recalc_context);
+    UpdatePseudoElement(kPseudoIdAfter, child_change, child_recalc_context);
 
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
@@ -3199,6 +3206,9 @@ void Element::RebuildFirstLetterLayoutTree() {
   // up here for #outer after AttachLayoutTree is called on #inner at which
   // point the layout sub-tree is available for deciding on creating the
   // ::first-letter.
+  StyleEngine::AllowMarkForReattachFromRebuildLayoutTreeScope scope(
+      GetDocument().GetStyleEngine());
+
   UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRebuildLayoutTree);
   if (PseudoElement* element = GetPseudoElement(kPseudoIdFirstLetter)) {
     WhitespaceAttacher whitespace_attacher;
@@ -3223,8 +3233,11 @@ void Element::RebuildMarkerLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     // The layout tree rebuilding for markers should be done similarly to how
     // it is done for ::first-letter.
     if (LayoutObject* layout_object = GetLayoutObject()) {
-      if (layout_object->IsListItem() && !marker->GetLayoutObject())
+      if (layout_object->IsListItem() && !marker->GetLayoutObject()) {
+        StyleEngine::AllowMarkForReattachFromRebuildLayoutTreeScope scope(
+            GetDocument().GetStyleEngine());
         marker->SetNeedsReattachLayoutTree();
+      }
     }
 
     if (marker->NeedsRebuildLayoutTree(whitespace_attacher))
@@ -4560,6 +4573,16 @@ DisplayLockContext& Element::EnsureDisplayLockContext() {
   return *EnsureElementRareData().EnsureDisplayLockContext(this);
 }
 
+ContainerQueryEvaluator* Element::GetContainerQueryEvaluator() const {
+  if (HasRareData())
+    return GetElementRareData()->GetContainerQueryEvaluator();
+  return nullptr;
+}
+
+void Element::SetContainerQueryEvaluator(ContainerQueryEvaluator* evaluator) {
+  EnsureElementRareData().SetContainerQueryEvaluator(evaluator);
+}
+
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
 static Node* ContextNodeForInsertion(const String& where,
                                      Element* element,
@@ -4986,6 +5009,7 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
   if (text_node_changed || remaining_text_layout_object->PreviousSibling() !=
                                element->GetLayoutObject())
     change = change.ForceReattachLayoutTree();
+
   element->RecalcStyle(change, style_recalc_context);
 
   if (element->NeedsReattachLayoutTree() &&

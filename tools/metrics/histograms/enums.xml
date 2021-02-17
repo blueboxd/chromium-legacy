@@ -1449,6 +1449,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="In Session Idle"/>
 </enum>
 
+<enum name="AMDDeviceId">
+  <int value="26464" label="0x6760, Radeon HD 6490M"/>
+  <int value="26657" label="0x6821, Radeon R9 M370X"/>
+</enum>
+
 <enum name="Android.ChildProcessBindingStateCombination">
   <int value="0" label="No waived no moderate no strong"/>
   <int value="1" label="No waived no moderate has strong"/>
@@ -5822,6 +5827,10 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AutofillSaveCreditCardPrompt">
+  <obsolete>
+    Deprecated in 02/2021. The corresponding histogram has been replaced by new
+    ones.
+  </obsolete>
   <int value="0" label="Show requested"/>
   <int value="1" label="Shown"/>
   <int value="2" label="Ended, invalid legal message"/>
@@ -20425,6 +20434,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="DriveFileError">
+  <obsolete>
+    Deprecated February 2021.
+  </obsolete>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="FILE_ERROR_OK"/>
   <int value="2" label="FILE_ERROR_FAILED"/>
@@ -55095,6 +55107,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Skip"/>
   <int value="3" label="Sign In"/>
   <int value="4" label="Navigated Away Through Browser History"/>
+</enum>
+
+<enum name="NvidiaDeviceId">
+  <int value="4073" label="0x0FE9, GeForce GT 750M"/>
+  <int value="7825" label="0x1E91, RTX 2070 Super"/>
 </enum>
 
 <enum name="OAuth2BadRequestError">

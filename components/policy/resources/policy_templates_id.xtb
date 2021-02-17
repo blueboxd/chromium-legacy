@@ -997,6 +997,11 @@ Jika kebijakan ini ditetapkan ke False, layar privasi akan selalu dinonaktifkan.
 Jika kebijakan ini ditetapkan, pengguna tidak dapat mengganti nilainya.
 
 Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan tetapi dapat dikontrol oleh pengguna.</translation>
+<translation id="241739814668386424"> Jika kebijakan ini dinonaktifkan, pengguna tidak akan dapat menghubungkan sepenuhnya perangkat periferal Thunderbolt/USB4 melalui tunneling PCIe.
+
+      Jika kebijakan ini diaktifkan, pengguna akan dapat menghubungkan sepenuhnya perangkat periferal Thunderbolt/USB4 melalui tunneling PCIe.
+
+      Kebijakan ini dinonaktifkan secara default.</translation>
 <translation id="2421677964966613267">Kebijakan ini tidak digunakan lagi di M88, Flash tidak lagi didukung oleh Chrome. Jika kebijakan disetel, Anda akan dapat menetapkan daftar pola URL yang menentukan situs yang tidak dapat menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
       Tidak menyetel kebijakan berarti <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> akan berlaku untuk semua situs, jika disetel. Jika tidak, setelan pribadi pengguna akan digunakan.
@@ -1446,6 +1451,27 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       URL harus berisi skema HTTPS, misalnya "https://example.com".
 
       Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
+<translation id="2972531017545674240">Menyetel kebijakan akan menentukan daftar aplikasi web yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan pengguna.
+
+      Setiap item daftar kebijakan adalah objek yang berisi satu elemen wajib:
+      <ph name="URL_LABEL" /> (URL aplikasi web yang akan diinstal)
+
+      dan 3 elemen opsional:
+      - <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />
+      (untuk cara aplikasi web terbuka—tab baru adalah default)
+
+      - <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" />
+      (Berlaku jika Anda ingin membuat pintasan desktop <ph name="LINUX_OS_NAME" /> dan
+      <ph name="MS_WIN_NAME" />).
+
+      - <ph name="FALLBACK_APP_NAME_LABEL" />
+      (Mulai dari <ph name="PRODUCT_NAME" /> versi 90,
+      memungkinkan Anda mengganti nama aplikasi jika aplikasi bukan
+      Progressive Web App (PWA), atau mengganti nama aplikasi yang diinstal
+      sementara jika aplikasi adalah PWA tetapi perlu autentikasi sebelum
+      penginstalan dapat diselesaikan.)
+
+      Lihat <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> untuk menyematkan aplikasi ke rak <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2976429807269247880">Setelan perilaku cookie <ph name="ATTRIBUTE_SAMESITE_NAME" /> lama</translation>
 <translation id="2985927503455169394">Gunakan mode default pengalaman aktivasi Asisten</translation>
 <translation id="2987155890997901449">Aktifkan ARC</translation>
@@ -2290,13 +2316,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Jika <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME" /> tidak disetel, tidak ada kata kunci untuk mengaktifkan penyedia penelusuran.</translation>
 <translation id="4090088362777472639">Hash SHA-256 gambar playbook Ansible.</translation>
-<translation id="409035987613226003">Jika kebijakan ini disetel ke Aktif, pelaporan penggunaan anonim dan data yang berhubungan dengan error tentang Chrome ke Google akan aktif dan pengguna tidak akan dapat mengubah setelan ini. Jika kebijakan disetel ke Nonaktif, informasi ini tidak akan dikirim ke Google.
-
-      Jika kebijakan disetel, pengguna tidak dapat mengubahnya. Jika tidak disetel, pengguna akan memilih perilaku saat penginstalan atau dijalankan pertama kali
-
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.
-
-      (Untuk Chrome OS, lihat DeviceMetricsReportingEnabled.)</translation>
 <translation id="4097556069183835428">Jika kebijakan ditetapkan ke Tidak ada (None), kaca pembesar layar akan dinonaktifkan.
 
       Jika kebijakan ditetapkan, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, kaca pembesar layar mula-mula akan dinonaktifkan, tetapi pengguna dapat mengaktifkannya kapan saja.</translation>
@@ -4138,13 +4157,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan disetel ke Nonaktif, ikon fitur eksperimental browser akan dihapus dari toolbar.
 
       chrome://flags dan cara lain untuk menonaktifkan dan mengaktifkan fitur browser akan tetap berperilaku sebagaimana mestinya terlepas dari apakah kebijakan ini disetel ke Aktif atau Nonaktif.</translation>
-<translation id="6793420507738858152">Jika diaktifkan, fitur <ph name="PRODUCT_NAME" /> akan mengirimkan header permintaan terperinci yang memberikan informasi tentang browser dan lingkungan pengguna.
-
-      Ini adalah fitur tambahan, tetapi header baru dapat menyebabkan error di situs yang membatasi karakter yang mungkin ada di dalam permintaan.
-
-      Jika kebijakan ini diaktifkan atau tidak disetel, fitur <ph name="PRODUCT_NAME" /> akan diaktifkan. Jika kebijakan dinonaktifkan, fitur tidak akan tersedia.
-
-      Kebijakan perusahaan ini berlaku untuk adaptasi jangka pendek dan akan tersedia setidaknya sampai Chrome 91.</translation>
 <translation id="6795485990775913659">Hanya izinkan pencetakan tanpa PIN</translation>
 <translation id="6800181452282128474">Jangan kueri Server Quirks</translation>
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
@@ -4662,6 +4674,7 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7407441173422042771">Kebijakan ini mengontrol prediksi jaringan di <ph name="PRODUCT_NAME" />. Kebijakan ini mengontrol pengambilan data DNS, prakoneksi TCP dan SSL, serta pra-rendering halaman.
 
       Jika kebijakan disetel, pengguna tidak dapat mengubahnya. Jika tidak disetel, prediksi jaringan akan diaktifkan, tetapi pengguna dapat mengubahnya.</translation>
+<translation id="7412456346709338637">Mengaktifkan akses data periferal Thunderbolt/USB4</translation>
 <translation id="7417438464912687020">Izinkan koneksi akses jarak jauh ke perangkat ini</translation>
 <translation id="7417972229667085380">Persentase yang digunakan untuk menskalakan penundaan status menganggur dalam mode presentasi (tidak digunakan lagi)</translation>
 <translation id="7421483919690710988">Setel ukuran cache disk media dalam bita</translation>
@@ -5446,6 +5459,7 @@ Kebijakan akan dihapus pada M75.</translation>
       "1412.24.34": update hanya ke versi spesifik ini
 
       Peringatan: Sebaiknya Anda tidak mengonfigurasi batasan versi karena dapat mencegah pengguna dari menerima update software dan perbaikan keamanan kritis. Membatasi update ke prefiks versi spesifik dapat menimbulkan risiko bagi pengguna.</translation>
+<translation id="8510545352780142790">Menonaktifkan tunneling PCIe. Perangkat periferal Thunderbolt/USB4 yang didukung akan berfungsi pada kemampuan penuh</translation>
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
 <translation id="8519516251436131647">Mengaktifkan pintasan fitur aksesibilitas.
 
@@ -5483,6 +5497,7 @@ Kebijakan akan dihapus pada M75.</translation>
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
           Nilai kebijakan harus ditentukan dalam milidetik.</translation>
+<translation id="8599956038998209006">Mengaktifkan tunneling PCIe untuk perangkat periferal Thunderbolt/USB4, yang membatasi kemampuan perangkat tersebut</translation>
 <translation id="8603454805657060638">Menyetel kebijakan memungkinkan administrator mengubah alamat MAC (kontrol akses media) saat menghubungkan perangkat ke dok. Jika dok dihubungkan ke beberapa model perangkat, alamat MAC dok yang ditetapkan untuk perangkat akan membantu mengidentifikasi perangkat di Ethernet secara default.
 
       Jika 'DeviceDockMacAddress' dipilih atau kebijakan ini tidak disetel, alamat MAC dok yang ditetapkan untuk perangkat akan digunakan.

@@ -127,11 +127,9 @@ END_METADATA
 }  // namespace
 
 // static
-void ChromeLabsBubbleView::Show(
-    views::View* anchor_view,
-    std::unique_ptr<ChromeLabsBubbleViewModel> model) {
-  g_chrome_labs_bubble =
-      new ChromeLabsBubbleView(anchor_view, std::move(model));
+void ChromeLabsBubbleView::Show(views::View* anchor_view,
+                                const ChromeLabsBubbleViewModel* model) {
+  g_chrome_labs_bubble = new ChromeLabsBubbleView(anchor_view, model);
   views::Widget* const widget =
       BubbleDialogDelegateView::CreateBubble(g_chrome_labs_bubble);
   widget->Show();
@@ -155,10 +153,10 @@ ChromeLabsBubbleView::~ChromeLabsBubbleView() {
 
 ChromeLabsBubbleView::ChromeLabsBubbleView(
     views::View* anchor_view,
-    std::unique_ptr<ChromeLabsBubbleViewModel> model)
+    const ChromeLabsBubbleViewModel* model)
     : BubbleDialogDelegateView(anchor_view,
                                views::BubbleBorder::Arrow::TOP_RIGHT),
-      model_(std::move(model)) {
+      model_(model) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetShowCloseButton(true);
   SetTitle(l10n_util::GetStringUTF16(IDS_WINDOW_TITLE_EXPERIMENTS));
@@ -192,13 +190,17 @@ ChromeLabsBubbleView::ChromeLabsBubbleView(
         flags_state_->FindFeatureEntryByName(lab.internal_name);
     if (IsFeatureSupportedOnChannel(lab) &&
         IsFeatureSupportedOnPlatform(entry)) {
-      DCHECK_EQ(entry->type, flags_ui::FeatureEntry::FEATURE_VALUE);
+      bool valid_entry_type =
+          entry->type == flags_ui::FeatureEntry::FEATURE_VALUE ||
+          entry->type == flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE;
+      DCHECK(valid_entry_type);
       int default_index = GetIndexOfEnabledLabState(entry);
       menu_item_container_->AddChildView(
           CreateLabItem(lab, default_index, entry));
     }
   }
-  // TODO(elainechien): Build UI for 0 experiments case.
+  // ChromeLabsButton should not appear in the toolbar if there are no
+  // experiments to show. Therefore ChromeLabsBubble should not be created.
   DCHECK(menu_item_container_->children().size() >= 1);
 
   restart_prompt_ = AddChildView(std::make_unique<ChromeLabsFooter>());

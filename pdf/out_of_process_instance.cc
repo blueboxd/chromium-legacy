@@ -855,30 +855,32 @@ void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
 }
 
 void OutOfProcessInstance::EnableAccessibility() {
-  if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
+  if (accessibility_state() == AccessibilityState::kLoaded)
     return;
 
-  if (accessibility_state_ == ACCESSIBILITY_STATE_OFF)
-    accessibility_state_ = ACCESSIBILITY_STATE_PENDING;
+  if (accessibility_state() == AccessibilityState::kOff)
+    set_accessibility_state(AccessibilityState::kPending);
 
   if (document_load_state_ == LOAD_STATE_COMPLETE)
     LoadAccessibility();
 }
 
 void OutOfProcessInstance::LoadAccessibility() {
-  accessibility_state_ = ACCESSIBILITY_STATE_LOADED;
-  PP_PrivateAccessibilityDocInfo doc_info;
+  set_accessibility_state(AccessibilityState::kLoaded);
+  AccessibilityDocInfo doc_info;
   doc_info.page_count = engine()->GetNumberOfPages();
-  doc_info.text_accessible = PP_FromBool(
-      engine()->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE));
-  doc_info.text_copyable =
-      PP_FromBool(engine()->HasPermission(PDFEngine::PERMISSION_COPY));
+  doc_info.text_accessible =
+      engine()->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
+  doc_info.text_copyable = engine()->HasPermission(PDFEngine::PERMISSION_COPY);
 
   // A new document layout will trigger the creation of a new accessibility
   // tree, so |next_accessibility_page_index_| should be reset to ignore
   // outdated asynchronous calls of SendNextAccessibilityPage().
-  next_accessibility_page_index_ = 0;
-  pp::PDF::SetAccessibilityDocInfo(GetPluginInstance(), &doc_info);
+  set_next_accessibility_page_index(0);
+  PP_PrivateAccessibilityDocInfo pp_doc_info = {
+      doc_info.page_count, PP_FromBool(doc_info.text_accessible),
+      PP_FromBool(doc_info.text_copyable)};
+  pp::PDF::SetAccessibilityDocInfo(GetPluginInstance(), &pp_doc_info);
 
   // If the document contents isn't accessible, don't send anything more.
   if (!(engine()->HasPermission(PDFEngine::PERMISSION_COPY) ||
@@ -886,7 +888,7 @@ void OutOfProcessInstance::LoadAccessibility() {
     return;
   }
 
-  SendAccessibilityViewportInfo();
+  PrepareAndSetAccessibilityViewportInfo();
 
   // Schedule loading the first page.
   ScheduleTaskOnMainThread(
@@ -898,9 +900,9 @@ void OutOfProcessInstance::LoadAccessibility() {
 
 void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
   // Outdated calls are ignored.
-  if (page_index != next_accessibility_page_index_)
+  if (page_index != next_accessibility_page_index())
     return;
-  ++next_accessibility_page_index_;
+  set_next_accessibility_page_index(next_accessibility_page_index() + 1);
 
   AccessibilityPageInfo page_info;
   std::vector<AccessibilityTextRunInfo> text_runs;
@@ -931,26 +933,6 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
       page_index + 1);
 }
 
-void OutOfProcessInstance::SendAccessibilityViewportInfo() {
-  PP_PrivateAccessibilityViewportInfo viewport_info;
-  viewport_info.scroll.x = -plugin_offset().x();
-  viewport_info.scroll.y = -plugin_offset().y();
-  viewport_info.offset.x = available_area().x() / (device_scale() * zoom());
-  viewport_info.offset.y = available_area().y() / (device_scale() * zoom());
-
-  viewport_info.zoom = zoom();
-  viewport_info.scale = device_scale();
-  viewport_info.focus_info = {
-      PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE, 0, 0};
-
-  engine()->GetSelection(&viewport_info.selection_start_page_index,
-                         &viewport_info.selection_start_char_index,
-                         &viewport_info.selection_end_page_index,
-                         &viewport_info.selection_end_char_index);
-
-  pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &viewport_info);
-}
-
 void OutOfProcessInstance::SelectionChanged(const gfx::Rect& left,
                                             const gfx::Rect& right) {
   pp::Point l(left.x() + available_area().x(), left.y());
@@ -963,8 +945,8 @@ void OutOfProcessInstance::SelectionChanged(const gfx::Rect& left,
   pp::PDF::SelectionChanged(GetPluginInstance(),
                             PP_MakeFloatPoint(l.x(), l.y()), left.height(),
                             PP_MakeFloatPoint(r.x(), r.y()), right.height());
-  if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
-    SendAccessibilityViewportInfo();
+  if (accessibility_state() == AccessibilityState::kLoaded)
+    PrepareAndSetAccessibilityViewportInfo();
 }
 
 void OutOfProcessInstance::SetCaretPosition(const pp::FloatPoint& position) {
@@ -1185,7 +1167,7 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
 
   // Reload the accessibility tree on layout changes because the relative page
   // bounds are no longer valid.
-  if (layout.dirty() && accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
+  if (layout.dirty() && accessibility_state() == AccessibilityState::kLoaded)
     LoadAccessibility();
 }
 
@@ -1521,7 +1503,7 @@ void OutOfProcessInstance::DocumentLoadComplete() {
   SendMetadata();
   SendLoadingProgress(/*percentage=*/100);
 
-  if (accessibility_state_ == ACCESSIBILITY_STATE_PENDING)
+  if (accessibility_state() == AccessibilityState::kPending)
     LoadAccessibility();
 
   if (!full_)
@@ -1855,12 +1837,30 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
                                              float old_device_scale) {
   RecalculateAreas(old_zoom, old_device_scale);
 
-  if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
-    SendAccessibilityViewportInfo();
+  if (accessibility_state() == AccessibilityState::kLoaded)
+    PrepareAndSetAccessibilityViewportInfo();
 }
 
 Image OutOfProcessInstance::GetPluginImageData() const {
   return Image(pepper_image_data_);
+}
+
+void OutOfProcessInstance::SetAccessibilityViewportInfo(
+    const AccessibilityViewportInfo& viewport_info) {
+  PP_PrivateAccessibilityViewportInfo pp_viewport_info = {
+      viewport_info.zoom,
+      viewport_info.scale,
+      pp::Point(viewport_info.scroll.x(), viewport_info.scroll.y()),
+      pp::Point(viewport_info.offset.x(), viewport_info.offset.y()),
+      viewport_info.selection_start_page_index,
+      viewport_info.selection_start_char_index,
+      viewport_info.selection_end_page_index,
+      viewport_info.selection_end_char_index,
+      {static_cast<PP_PrivateFocusObjectType>(
+           viewport_info.focus_info.focused_object_type),
+       viewport_info.focus_info.focused_object_page_index,
+       viewport_info.focus_info.focused_annotation_index_in_page}};
+  pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &pp_viewport_info);
 }
 
 base::WeakPtr<PdfViewPluginBase> OutOfProcessInstance::GetWeakPtr() {

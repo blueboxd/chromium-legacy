@@ -16155,6 +16155,9 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="8" label="kOffByWorkaround">
     Video decoder off by GPU workaround.
   </int>
+  <int value="9" label="kUnsupportedOsVersion">
+    The current operating system is unsupported
+  </int>
 </enum>
 
 <enum name="D3D12FeatureLevel">
@@ -40517,6 +40520,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="User typed or autofilled values"/>
 </enum>
 
+<enum name="JobProtocolErrorLocation">
+  <int value="0" label="SessionStartReadingFailed"/>
+  <int value="1" label="CreateSessionFailed"/>
+  <int value="2" label="CryptoConnectFailedSync"/>
+  <int value="3" label="CryptoConnectFailedAsync"/>
+</enum>
+
 <enum name="JpegColorSpace">
   <int value="0" label="Unknown color space">
     This is the bucket that counts the images that did not fall under any of the
@@ -44125,6 +44135,7 @@ from previous Chrome versions.
       label="PolicyBlocklistThrottleRequiresPoliciesLoaded:disabled"/>
   <int value="-1060541241" label="ForcePreferredIntervalForVideo:enabled"/>
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
+  <int value="-1057056167" label="VirtualKeyboardMultipaste:enabled"/>
   <int value="-1056860259"
       label="OmniboxEnableClipboardProviderImageSuggestions:enabled"/>
   <int value="-1056629722" label="AssistantIntentTranslateInfo:enabled"/>
@@ -46953,6 +46964,7 @@ from previous Chrome versions.
   <int value="1597972555" label="ChromeSharingHubV15:enabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
+  <int value="1601231448" label="VirtualKeyboardMultipaste:disabled"/>
   <int value="1601582484" label="enable-crash-reporter-for-testing"/>
   <int value="1602627012" label="OverrideSitePrefsForHrefTranslate:enabled"/>
   <int value="1602791752" label="PreemtiveLinkToTextGeneration:enabled"/>
@@ -74760,6 +74772,15 @@ would be helpful to identify which type is being sent.
 <enum name="TileMemoryBudget">
   <int value="0" label="Within memory budget"/>
   <int value="1" label="Exceeded memory budget"/>
+</enum>
+
+<enum name="TimeLimitPolicyType">
+  <int value="0" label="No Time Limit"/>
+  <int value="1" label="Override Time Limit"/>
+  <int value="2" label="Bed Time Limit"/>
+  <int value="3" label="Screen Time Limit"/>
+  <int value="4" label="Web Time Limit"/>
+  <int value="5" label="App Time Limit"/>
 </enum>
 
 <enum name="TimeToInteractiveStatus">

@@ -136,6 +136,12 @@ const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
     "When enabled, will show a modified default browser fullscreen modal promo "
     "UI.";
 
+const char kDefaultBrowserFullscreenPromoCTAExperimentName[] =
+    "Default Browser Fullscreen modal experiment with different CTA";
+const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[] =
+    "When enabled, will show a modified default browser fullscreen modal promo "
+    "UI.";
+
 const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
     "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
 const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[] =
@@ -333,6 +339,12 @@ const char kOmniboxNewImplementationName[] =
     "Use experimental omnibox textfield";
 const char kOmniboxNewImplementationDescription[] =
     "Uses a textfield implementation that doesn't use UILabels internally";
+
+const char kPasswordReuseDetectionName[] =
+    "PhishGuard password reuse detection";
+const char kPasswordReuseDetectionDescription[] =
+    "Displays warning when user types or pastes a saved password into a "
+    "phishing website.";
 
 const char kRefactoredNTPName[] = "Enables refactored new tab page";
 const char kRefactoredNTPDescription[] =

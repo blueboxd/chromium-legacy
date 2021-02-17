@@ -4,6 +4,7 @@
 
 // clang-format off
 // #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+// #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
 // clang-format on
 
 /**
@@ -38,7 +39,7 @@
 /**
  * Returns whether a network is a pSIM network or not.
  * @private
- * @param {OncMojo.NetworkStateProperties} network
+ * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
  * @return {!Promise<boolean>}
  */
 function networkIsPSim_(network) {
@@ -47,4 +48,29 @@ function networkIsPSim_(network) {
   return networkConfig.getManagedProperties(network.guid).then((response) => {
     return !response.result.typeProperties.cellular.eid;
   });
+}
+
+/**
+ * Returns number of phyical SIM and eSIM slots on the current device
+ * @param {!chromeos.networkConfig.mojom.DeviceStateProperties}
+ *     deviceState
+ * @return {!{pSimSlots: number, eSimSlots: number}}
+ */
+/* #export */ function getSimSlotCount(deviceState) {
+  let pSimSlots = 0;
+  let eSimSlots = 0;
+
+  if (!deviceState || !deviceState.simInfos) {
+    return {pSimSlots, eSimSlots};
+  }
+
+  for (const simInfo of deviceState.simInfos) {
+    if (simInfo.eid) {
+      eSimSlots++;
+      continue;
+    }
+    pSimSlots++;
+  }
+
+  return {pSimSlots, eSimSlots};
 }

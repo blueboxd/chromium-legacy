@@ -2462,6 +2462,25 @@
             ]
         }
     ],
+    "DesktopReadLater": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReadLater"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopTabGroupsCollapse": [
         {
             "platforms": [
@@ -2565,6 +2584,21 @@
                 "linux",
                 "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DetectFormSubmissionOnFormClear"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DetectFormSubmissionOnFormClearIOS": [
+        {
+            "platforms": [
+                "ios"
             ],
             "experiments": [
                 {
@@ -2996,7 +3030,21 @@
                     ]
                 },
                 {
-                    "name": "ContextMenuPerformanceInfoUiDisabled",
+                    "name": "ContextMenuPerformanceInfoLinkPerformance",
+                    "params": {
+                        "use_link_performance_hints": "true"
+                    },
+                    "enable_features": [
+                        "ContextMenuPerformanceInfo",
+                        "OptimizationHintsFetchingAnonymousDataConsent",
+                        "PerformanceHintsObserver"
+                    ]
+                },
+                {
+                    "name": "ContextMenuPerformanceInfoLinkPerformanceUiDisabled",
+                    "params": {
+                        "use_link_performance_hints": "true"
+                    },
                     "enable_features": [
                         "OptimizationHintsFetchingAnonymousDataConsent",
                         "PerformanceHintsObserver"

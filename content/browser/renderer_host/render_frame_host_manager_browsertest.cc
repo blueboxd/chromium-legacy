@@ -2014,10 +2014,12 @@ IN_PROC_BROWSER_TEST_P(
   const GURL kCrossSiteURL =
       embedded_test_server()->GetURL("c.com", "/title1.html");
 
-  const GURL kOriginalSiteURL = SiteInstance::GetSiteForURL(
-      shell()->web_contents()->GetBrowserContext(), kOriginalURL);
-  const GURL kRedirectSiteURL = SiteInstance::GetSiteForURL(
-      shell()->web_contents()->GetBrowserContext(), kRedirectURL);
+  IsolationContext isolation_context(
+      shell()->web_contents()->GetBrowserContext());
+  const auto kOriginalSiteInfo =
+      SiteInfo::CreateForTesting(isolation_context, kOriginalURL);
+  const auto kRedirectSiteInfo =
+      SiteInfo::CreateForTesting(isolation_context, kRedirectURL);
 
   // First navigate to the initial URL.
   shell()->LoadURL(kOriginalURL);
@@ -2072,13 +2074,13 @@ IN_PROC_BROWSER_TEST_P(
   CHECK(speculative_rfh);
   EXPECT_TRUE(speculative_rfh->is_loading());
   if (AreAllSitesIsolatedForTesting()) {
-    EXPECT_EQ(kRedirectSiteURL,
-              speculative_rfh->GetSiteInstance()->GetSiteURL());
+    EXPECT_EQ(kRedirectSiteInfo,
+              speculative_rfh->GetSiteInstance()->GetSiteInfo());
   } else if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(speculative_rfh->GetSiteInstance()->IsDefaultSiteInstance());
   } else {
-    EXPECT_EQ(kOriginalSiteURL,
-              speculative_rfh->GetSiteInstance()->GetSiteURL());
+    EXPECT_EQ(kOriginalSiteInfo,
+              speculative_rfh->GetSiteInstance()->GetSiteInfo());
   }
   int site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
 
@@ -2098,8 +2100,8 @@ IN_PROC_BROWSER_TEST_P(
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(speculative_rfh->GetSiteInstance()->IsDefaultSiteInstance());
   } else {
-    EXPECT_EQ(kRedirectSiteURL,
-              speculative_rfh->GetSiteInstance()->GetSiteURL());
+    EXPECT_EQ(kRedirectSiteInfo,
+              speculative_rfh->GetSiteInstance()->GetSiteInfo());
     if (AreAllSitesIsolatedForTesting())
       EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
   }
@@ -2120,8 +2122,8 @@ IN_PROC_BROWSER_TEST_P(
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(speculative_rfh->GetSiteInstance()->IsDefaultSiteInstance());
   } else {
-    EXPECT_EQ(kOriginalSiteURL,
-              speculative_rfh->GetSiteInstance()->GetSiteURL());
+    EXPECT_EQ(kOriginalSiteInfo,
+              speculative_rfh->GetSiteInstance()->GetSiteInfo());
   }
   if (AreAllSitesIsolatedForTesting())
     EXPECT_NE(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
@@ -4526,7 +4528,6 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   scoped_refptr<SiteInstance> error_site_instance =
       child->current_frame_host()->GetSiteInstance();
-  EXPECT_EQ(success_site_instance, error_site_instance);
   EXPECT_TRUE(IsExpectedSubframeErrorTransition(success_site_instance.get(),
                                                 error_site_instance.get()));
   EXPECT_TRUE(IsOriginOpaqueAndCompatibleWithURL(child, error_url));
@@ -4818,6 +4819,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Reload the subframe while the network is down.
   {
+    scoped_refptr<SiteInstance> success_site_instance =
+        child->current_frame_host()->GetSiteInstance();
     std::unique_ptr<URLLoaderInterceptor> url_interceptor =
         SetupRequestFailForURL(test_url);
     TestNavigationObserver nav_observer(shell()->web_contents());
@@ -4831,10 +4834,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     // Error pages should commit in an opaque origin.
     EXPECT_TRUE(IsOriginOpaqueAndCompatibleWithURL(child, test_url));
 
-    // Error page isolation should apply only to the main frame - subframes
-    // should commit in their usual process / SiteInstance.
-    EXPECT_EQ(child_site_url,
-              child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+    EXPECT_TRUE(IsExpectedSubframeErrorTransition(
+        success_site_instance.get(),
+        child->current_frame_host()->GetSiteInstance()));
   }
 
   // Reload the subframe after the network is restored.

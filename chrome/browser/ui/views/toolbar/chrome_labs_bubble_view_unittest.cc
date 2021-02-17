@@ -24,69 +24,52 @@ namespace {
 const char kFirstTestFeatureId[] = "feature-1";
 const char kSecondTestFeatureId[] = "feature-2";
 const char kThirdTestFeatureId[] = "feature-3";
+
+const base::Feature kTestFeature1{"FeatureName1",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeature2{"FeatureName2",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeature3{"FeatureName3",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+const flags_ui::FeatureEntry::FeatureParam kTestVariationOther2[] = {
+    {"Param1", "Value"}};
+const flags_ui::FeatureEntry::FeatureVariation kTestVariations2[] = {
+    {"Description", kTestVariationOther2, 1, nullptr}};
+
 }  // namespace
 
 class ChromeLabsBubbleTest : public TestWithBrowserView {
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kChromeLabs);
-
-    const base::Feature kTestFeature1{"FeatureName1",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-    const base::Feature kTestFeature2{"FeatureName2",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-    const base::Feature kTestFeature3{"FeatureName3",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-    int os_other_than_current = 1;
-    while (os_other_than_current == flags_ui::FlagsState::GetCurrentPlatform())
-      os_other_than_current <<= 1;
-
     std::vector<flags_ui::FeatureEntry> entries = {
         {kFirstTestFeatureId, "", "",
          flags_ui::FlagsState::GetCurrentPlatform(),
          FEATURE_VALUE_TYPE(kTestFeature1)},
         {kSecondTestFeatureId, "", "",
          flags_ui::FlagsState::GetCurrentPlatform(),
-         FEATURE_VALUE_TYPE(kTestFeature2)},
+         FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature2, kTestVariations2,
+                                        "TestTrial")},
         // kThirdTestFeatureID will be the Id of a FeatureEntry that is not
         // compatible with the current platform.
-        {kThirdTestFeatureId, "", "", os_other_than_current,
-         FEATURE_VALUE_TYPE(kTestFeature3)}};
+        {kThirdTestFeatureId, "", "", 0, FEATURE_VALUE_TYPE(kTestFeature3)}};
     about_flags::testing::SetFeatureEntries(entries);
+    // Set up test data on the model.
+    scoped_chrome_labs_model_data_.SetModelDataForTesting(TestLabInfo());
 
     TestWithBrowserView::SetUp();
     profile()->GetPrefs()->SetBoolean(chrome_labs_prefs::kBrowserLabsEnabled,
                                       true);
 
     ChromeLabsButton* button = chrome_labs_button();
-    CreateTestLabInfo();
-    std::unique_ptr<ChromeLabsBubbleViewModel> test_model =
-        std::make_unique<ChromeLabsBubbleViewModel>();
-    test_model->SetLabInfoForTesting(GetTestLabInfo());
-    ChromeLabsBubbleView::Show(button, std::move(test_model));
+    ChromeLabsBubbleView::Show(button, chrome_labs_model());
   }
 
   void TearDown() override {
     chrome_labs_bubble()->GetFlagsStateForTesting()->Reset();
     TestWithBrowserView::TearDown();
   }
-
-  void CreateTestLabInfo() {
-    test_feature_info_.emplace_back(
-        LabInfo(kFirstTestFeatureId, base::ASCIIToUTF16(""),
-                base::ASCIIToUTF16(""), version_info::Channel::STABLE));
-
-    test_feature_info_.emplace_back(
-        LabInfo(kSecondTestFeatureId, base::ASCIIToUTF16(""),
-                base::ASCIIToUTF16(""), version_info::Channel::STABLE));
-
-    test_feature_info_.emplace_back(
-        LabInfo(kThirdTestFeatureId, base::ASCIIToUTF16(""),
-                base::ASCIIToUTF16(""), version_info::Channel::STABLE));
-  }
-
-  const std::vector<LabInfo>& GetTestLabInfo() { return test_feature_info_; }
 
   ChromeLabsBubbleView* chrome_labs_bubble() {
     return ChromeLabsBubbleView::GetChromeLabsBubbleViewForTesting();
@@ -99,6 +82,10 @@ class ChromeLabsBubbleTest : public TestWithBrowserView {
   views::View* chrome_labs_menu_item_container() {
     return ChromeLabsBubbleView::GetChromeLabsBubbleViewForTesting()
         ->GetMenuItemContainerForTesting();
+  }
+
+  ChromeLabsBubbleViewModel* chrome_labs_model() {
+    return browser_view()->toolbar()->chrome_labs_model();
   }
 
   flags_ui::FlagsState* flags_state() {
@@ -114,6 +101,12 @@ class ChromeLabsBubbleTest : public TestWithBrowserView {
   ChromeLabsItemView* first_lab_item() {
     views::View* menu_items = chrome_labs_menu_item_container();
     return static_cast<ChromeLabsItemView*>(menu_items->children().front());
+  }
+
+  // This corresponds with the feature of type FEATURE_WITH_PARAMS_VALUE
+  ChromeLabsItemView* second_lab_item() {
+    views::View* menu_items = chrome_labs_menu_item_container();
+    return static_cast<ChromeLabsItemView*>(menu_items->children()[1]);
   }
 
   // Returns true if the option at index |option_index| is the enabled feature
@@ -146,9 +139,25 @@ class ChromeLabsBubbleTest : public TestWithBrowserView {
   }
 
  private:
+  std::vector<LabInfo> TestLabInfo() {
+    std::vector<LabInfo> test_feature_info;
+    test_feature_info.emplace_back(
+        LabInfo(kFirstTestFeatureId, base::ASCIIToUTF16(""),
+                base::ASCIIToUTF16(""), version_info::Channel::STABLE));
+
+    test_feature_info.emplace_back(
+        LabInfo(kSecondTestFeatureId, base::ASCIIToUTF16(""),
+                base::ASCIIToUTF16(""), version_info::Channel::STABLE));
+
+    test_feature_info.emplace_back(
+        LabInfo(kThirdTestFeatureId, base::ASCIIToUTF16(""),
+                base::ASCIIToUTF16(""), version_info::Channel::STABLE));
+    return test_feature_info;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  std::vector<LabInfo> test_feature_info_;
+  ScopedChromeLabsModelDataForTesting scoped_chrome_labs_model_data_;
 };
 
 class ChromeLabsFeatureTest : public ChromeLabsBubbleTest,
@@ -165,6 +174,8 @@ class ChromeLabsFeatureTest : public ChromeLabsBubbleTest,
 // enable the corresponding option on the feature.
 TEST_P(ChromeLabsFeatureTest, ChangeSelectedOption) {
   int row = GetParam();
+
+  // FeatureEntry of type FEATURE_VALUE
   ChromeLabsItemView* lab_item = first_lab_item();
   views::Combobox* lab_item_combobox =
       lab_item->GetLabStateComboboxForTesting();
@@ -173,10 +184,23 @@ TEST_P(ChromeLabsFeatureTest, ChangeSelectedOption) {
 
   const flags_ui::FeatureEntry* feature_entry = lab_item->GetFeatureEntry();
   EXPECT_TRUE(IsSelected(row, feature_entry));
+
+  // FeatureEntry of type FEATURE_WITH_PARAMS_VALUE
+  ChromeLabsItemView* lab_item_with_params = second_lab_item();
+  views::Combobox* lab_item_with_params_combobox =
+      lab_item_with_params->GetLabStateComboboxForTesting();
+  lab_item_with_params_combobox->SetSelectedRow(row);
+
+  const flags_ui::FeatureEntry* feature_entry_with_params =
+      lab_item_with_params->GetFeatureEntry();
+  EXPECT_TRUE(IsSelected(row, feature_entry_with_params));
 }
 
 // For FeatureEntries of type FEATURE_VALUE, the option at index 1 corresponds
-// to "Enabled" and the option at index 2 corresponds to "Disabled".
+// to "Enabled" and the option at index 2 corresponds to "Disabled". For
+// FeatureEntries of type FEATURE_WITH_PARAMS_VALUE, the option at index 1
+// corresponds to "Enabled" and the option at index 2 corresponds to the first
+// additional parameter.
 INSTANTIATE_TEST_SUITE_P(All, ChromeLabsFeatureTest, testing::Values(1, 2));
 
 // This test checks that only the two features that are supported on the current
@@ -214,10 +238,7 @@ TEST_F(ChromeLabsBubbleTest, RestartPromptShows) {
   views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_view->GetWidget());
   ChromeLabsBubbleView::Hide();
   destroyed_waiter.Wait();
-  std::unique_ptr<ChromeLabsBubbleViewModel> test_model =
-      std::make_unique<ChromeLabsBubbleViewModel>();
-  test_model->SetLabInfoForTesting(GetTestLabInfo());
-  ChromeLabsBubbleView::Show(chrome_labs_button(), std::move(test_model));
+  ChromeLabsBubbleView::Show(chrome_labs_button(), chrome_labs_model());
   ChromeLabsBubbleView* bubble_view_after_restart = chrome_labs_bubble();
   EXPECT_TRUE(bubble_view_after_restart->IsRestartPromptVisibleForTesting());
 }

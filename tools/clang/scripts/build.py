@@ -468,7 +468,9 @@ def main():
     print('Install the Fuchsia SDK by adding fuchsia to the ')
     print('target_os section in your .gclient and running hooks, ')
     print('or pass --without-fuchsia.')
-    print('https://chromium.googlesource.com/chromium/src/+/master/docs/fuchsia_build_instructions.md')
+    print(
+        'https://chromium.googlesource.com/chromium/src/+/master/docs/fuchsia/build_instructions.md'
+    )
     print('for general Fuchsia build instructions.')
     return 1
 
@@ -1080,6 +1082,27 @@ def main():
         os.makedirs(fuchsia_lib_dst_dir)
       CopyFile(os.path.join(build_dir, 'lib', target_spec, builtins_a),
                fuchsia_lib_dst_dir)
+
+      # Build the Fuchsia profile runtime.
+      if target_arch == 'x86_64':
+        fuchsia_args.extend([
+            '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
+            '-DCOMPILER_RT_BUILD_PROFILE=ON',
+            '-DCMAKE_CXX_COMPILER_TARGET=%s-fuchsia' % target_arch,
+            '-DCMAKE_CXX_COMPILER_WORKS=ON',
+        ])
+        profile_build_dir = os.path.join(LLVM_BUILD_DIR,
+                                         'fuchsia-profile-' + target_arch)
+        if not os.path.exists(profile_build_dir):
+          os.mkdir(os.path.join(profile_build_dir))
+        os.chdir(profile_build_dir)
+        RunCommand(['cmake'] +
+                   fuchsia_args +
+                   [COMPILER_RT_DIR])
+        profile_a = 'libclang_rt.profile.a'
+        RunCommand(['ninja', profile_a])
+        CopyFile(os.path.join(profile_build_dir, 'lib', target_spec, profile_a),
+                              fuchsia_lib_dst_dir)
 
   # Run tests.
   if args.run_tests or args.llvm_force_head_revision:

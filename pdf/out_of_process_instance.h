@@ -185,6 +185,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void InitImageData(const gfx::Size& size) override;
   void OnGeometryChanged(double old_zoom, float old_device_scale) override;
   Image GetPluginImageData() const override;
+  void SetAccessibilityViewportInfo(
+      const AccessibilityViewportInfo& viewport_info) override;
 
  private:
   // Message handlers.
@@ -224,11 +226,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // Send accessibility information about the given page index.
   void SendNextAccessibilityPage(int32_t page_index);
-
-  // Send the accessibility information about the current viewport. This is
-  // done once when accessibility is first loaded and again when the geometry
-  // changes.
-  void SendAccessibilityViewportInfo();
 
   enum DocumentLoadState {
     LOAD_STATE_LOADING,
@@ -416,18 +413,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   bool did_call_start_loading_ = false;
 
   bool edit_mode_ = false;
-
-  // The current state of accessibility: either off, enabled but waiting
-  // for the document to load, or fully loaded.
-  enum AccessibilityState {
-    ACCESSIBILITY_STATE_OFF,
-    ACCESSIBILITY_STATE_PENDING,  // Enabled but waiting for doc to load.
-    ACCESSIBILITY_STATE_LOADED
-  } accessibility_state_ = ACCESSIBILITY_STATE_OFF;
-
-  // The next accessibility page index, used to track interprocess calls when
-  // reconstructing the tree for new document layouts.
-  int32_t next_accessibility_page_index_ = 0;
 
   base::WeakPtrFactory<OutOfProcessInstance> weak_factory_{this};
 };

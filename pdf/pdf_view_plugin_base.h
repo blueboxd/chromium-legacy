@@ -30,6 +30,7 @@ namespace chrome_pdf {
 class Image;
 class PDFiumEngine;
 class UrlLoader;
+struct AccessibilityViewportInfo;
 
 // Common base to share code between the two plugin implementations,
 // `OutOfProcessInstance` (Pepper) and `PdfViewWebPlugin` (Blink).
@@ -51,6 +52,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
                std::vector<gfx::Rect>& pending) override;
 
  protected:
+  enum class AccessibilityState {
+    kOff = 0,  // Off.
+    kPending,  // Enabled but waiting for doc to load.
+    kLoaded,   // Fully loaded.
+  };
+
   struct BackgroundPart {
     gfx::Rect location;
     uint32_t color;
@@ -130,6 +137,17 @@ class PdfViewPluginBase : public PDFEngine::Client,
   int GetDocumentPixelWidth() const;
   int GetDocumentPixelHeight() const;
 
+  // Prepare the accessibility information about the current viewport. Call
+  // SetAccessibilityViewportInfo() internally to set this information in the
+  // renderer. This is done once when accessibility is first loaded and again
+  // when the geometry changes.
+  void PrepareAndSetAccessibilityViewportInfo();
+
+  // Sets the accessibility information about the current viewport in the
+  // renderer.
+  virtual void SetAccessibilityViewportInfo(
+      const AccessibilityViewportInfo& viewport_info) = 0;
+
   const SkBitmap& image_data() const { return image_data_; }
   SkBitmap& mutable_image_data() { return image_data_; }
 
@@ -155,6 +173,18 @@ class PdfViewPluginBase : public PDFEngine::Client,
   bool stop_scrolling() const { return stop_scrolling_; }
   void set_stop_scrolling(bool stop_scrolling) {
     stop_scrolling_ = stop_scrolling;
+  }
+
+  AccessibilityState accessibility_state() { return accessibility_state_; }
+  void set_accessibility_state(AccessibilityState state) {
+    accessibility_state_ = state;
+  }
+
+  int32_t next_accessibility_page_index() {
+    return next_accessibility_page_index_;
+  }
+  void set_next_accessibility_page_index(int32_t page_index) {
+    next_accessibility_page_index_ = page_index;
   }
 
  private:
@@ -247,6 +277,13 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Whether the plugin has received a viewport changed message. Nothing should
   // be painted until this is received.
   bool received_viewport_message_ = false;
+
+  // The current state of accessibility.
+  AccessibilityState accessibility_state_ = AccessibilityState::kOff;
+
+  // The next accessibility page index, used to track interprocess calls when
+  // reconstructing the tree for new document layouts.
+  int32_t next_accessibility_page_index_ = 0;
 };
 
 }  // namespace chrome_pdf

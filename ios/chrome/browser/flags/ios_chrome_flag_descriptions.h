@@ -109,6 +109,12 @@ extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
+// Title and description for the flag to show a modified fullscreen modal promo
+// with a button that would send the users in the Settings.app to update the
+// default browser. Different from kDefaultBrowserFullscreenPromoExperimentName.
+extern const char kDefaultBrowserFullscreenPromoCTAExperimentName[];
+extern const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[];
+
 // Title and description for the flag to add the button in the settings to send
 // the users in the Settings.app to update the default browser.
 extern const char kDefaultBrowserSettingsName[];
@@ -285,6 +291,11 @@ extern const char kOmniboxLocalHistoryZeroSuggestDescription[];
 // to a new experimental one.
 extern const char kOmniboxNewImplementationName[];
 extern const char kOmniboxNewImplementationDescription[];
+
+// Title and description for the flag to enable PhishGuard password reuse
+// detection.
+extern const char kPasswordReuseDetectionName[];
+extern const char kPasswordReuseDetectionDescription[];
 
 // Title and description for the flag that enables the refactored new tab page.
 extern const char kRefactoredNTPName[];

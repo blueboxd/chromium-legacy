@@ -3843,6 +3843,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardBorderedKey)},
+    {"enable-cros-virtual-keyboard-multipaste",
+     flag_descriptions::kVirtualKeyboardMultipasteName,
+     flag_descriptions::kVirtualKeyboardMultipasteDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultipaste)},
     {"enable-experimental-accessibility-dictation-extension",
      flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
      flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,
@@ -3899,10 +3903,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPassiveEventListenerDefaultName,
      flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,
      MULTI_VALUE_TYPE(kPassiveListenersChoices)},
-    {"enable-experimental-fling-animation",
-     flag_descriptions::kExperimentalFlingAnimationName,
-     flag_descriptions::kExperimentalFlingAnimationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kExperimentalFlingAnimation)},
     {"enable-web-payments-experimental-features",
      flag_descriptions::kWebPaymentsExperimentalFeaturesName,
      flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,
@@ -5452,8 +5452,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
     {"enable-skia-renderer", flag_descriptions::kSkiaRendererName,
-     flag_descriptions::kSkiaRendererDescription,
-     kOsLinux | kOsWin | kOsAndroid | kOsMac,
+     flag_descriptions::kSkiaRendererDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

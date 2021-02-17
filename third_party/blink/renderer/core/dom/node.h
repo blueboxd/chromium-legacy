@@ -826,7 +826,6 @@ class CORE_EXPORT Node : public EventTarget {
                                                Event& underlying_event);
 
   void DispatchSimulatedClick(const Event* underlying_event,
-                              SimulatedClickMouseEventOptions = kSendNoEvents,
                               SimulatedClickCreationScope =
                                   SimulatedClickCreationScope::kFromUserAgent);
 
@@ -1143,6 +1142,16 @@ struct SpaceTrait<T, std::enable_if_t<std::is_base_of<blink::Node, T>::value>> {
   using Space = blink::NodeSpace;
 };
 }  // namespace cppgc
-#endif  // !USE_V8_OILPAN
+
+namespace blink {
+template <typename T>
+struct ThreadingTrait<
+    T,
+    std::enable_if_t<std::is_base_of<blink::Node, T>::value>> {
+  static constexpr ThreadAffinity kAffinity = kMainThreadOnly;
+};
+}  // namespace blink
+
+#endif  // USE_V8_OILPAN
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_

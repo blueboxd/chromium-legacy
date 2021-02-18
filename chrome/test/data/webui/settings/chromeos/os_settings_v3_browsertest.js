@@ -232,6 +232,21 @@ TEST_F(
     });
 
 // eslint-disable-next-line no-var
+var OSSettingsUserPageV3TestWithAccountManagementFlowsV2Enabled =
+    class extends OSSettingsLockScreenPageV3Test {
+  /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kAccountManagementFlowsV2']};
+  }
+};
+
+TEST_F(
+    'OSSettingsUserPageV3TestWithAccountManagementFlowsV2Enabled', 'AllJsTests',
+    () => {
+      mocha.run();
+    });
+
+// eslint-disable-next-line no-var
 var OSSettingsWallpaperSubpageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
@@ -255,21 +270,23 @@ TEST_F('OSSettingsWallpaperSubpageV3Test', 'AllJsTests', () => {
  ['AboutPage', 'os_about_page_tests.m.js'],
  ['AccountsPage', 'add_users_tests.m.js'],
  ['AmbientModePage', 'ambient_mode_page_test.m.js'],
+ ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.m.js'],
  ['AppsPage', 'apps_page_test.m.js'],
- ['AppManagementPage', 'app_management_page_tests.m.js'],
  ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
  ['AppManagementAppItem', 'app_item_test.m.js'],
  ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
  ['AppManagementChromeAppDetailView', 'chrome_app_detail_view_test.m.js'],
  ['AppManagementDomSwitch', 'dom_switch_test.m.js'],
  ['AppManagementMainView', 'main_view_test.m.js'],
- ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
+ ['AppManagementManagedApp', 'managed_apps_test.m.js'],
+ ['AppManagementPage', 'app_management_page_tests.m.js'],
  ['AppManagementPermissionItem', 'permission_item_test.m.js'],
  ['AppManagementPinToShelfItem', 'pin_to_shelf_item_test.m.js'],
  ['AppManagementPluginVmDetailView', 'plugin_vm_detail_view_test.m.js'],
+ ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
+ ['AppManagementReducers', 'reducers_test.m.js'],
  ['AppManagementToggleRow', 'toggle_row_test.m.js'],
  ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
- ['AppManagementManagedApp', 'managed_apps_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.m.js'],
@@ -281,6 +298,7 @@ TEST_F('OSSettingsWallpaperSubpageV3Test', 'AllJsTests', () => {
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.m.js'],
  ['EsimRenameDialog', 'esim_rename_dialog_test.m.js'],
  ['FilesPage', 'os_files_page_test.m.js'],
+ ['FingerprintPage', 'fingerprint_browsertest_chromeos.m.js'],
  ['GoogleAssistantPage', 'google_assistant_page_test.m.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.m.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.m.js'],
@@ -298,6 +316,10 @@ TEST_F('OSSettingsWallpaperSubpageV3Test', 'AllJsTests', () => {
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
+ [
+   'MultideviceNotificationAccessSetupDialog',
+   'multidevice_notification_access_setup_dialog_tests.m.js'
+ ],
  ['MultidevicePage', 'multidevice_page_tests.m.js'],
  ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.m.js'],
  ['MultideviceSubPage', 'multidevice_subpage_tests.m.js'],
@@ -343,6 +365,7 @@ TEST_F('OSSettingsWallpaperSubpageV3Test', 'AllJsTests', () => {
  ['TimezoneSelector', 'timezone_selector_test.m.js'],
  ['TimezoneSubpage', 'timezone_subpage_test.m.js'],
  ['TtsSubpage', 'tts_subpage_test.m.js'],
+ ['UserPage', 'user_page_tests.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

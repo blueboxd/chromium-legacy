@@ -59,8 +59,10 @@ class ProfilePicker {
   };
 
   // Shows the Profile picker for the given `entry_point` or re-activates an
-  // existing one. In the latter case, the displayed page is not updated.
-  static void Show(EntryPoint entry_point);
+  // existing one. In the latter case, the displayed page and the target url
+  // on profile selection is not updated.
+  static void Show(EntryPoint entry_point,
+                   const GURL& on_select_profile_target_url = GURL());
 
   // Starts the sign-in flow. The layout of the window gets updated for the
   // sign-in flow. At the same time, the new profile is created (with
@@ -70,6 +72,12 @@ class ProfilePicker {
   static void SwitchToSignIn(
       SkColor profile_color,
       base::OnceCallback<void(bool)> switch_finished_callback);
+
+  // Cancel the sign-in flow and returns back to the main picker screen (if the
+  // original EntryPoint was to open the picker). Must only be called from
+  // within the sign-in flow. This will delete the profile previously created
+  // for the sign-in flow.
+  static void CancelSignIn();
 
   // Finishes the sign-in flow by moving to the sync confirmation screen. It
   // uses the same new profile created by `SwitchToSignIn()`.
@@ -93,6 +101,10 @@ class ProfilePicker {
   // Getter of the path of profile which is selected in profile picker for force
   // signin.
   static base::FilePath GetForceSigninProfilePath();
+
+  // Getter of the target page  url. If not empty and is valid, it opens on
+  // profile selection instead of the new tab page.
+  static GURL GetOnSelectProfileTargetUrl();
 
   // Hides the profile picker.
   static void Hide();

@@ -21,6 +21,7 @@
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
 #include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #endif
@@ -106,6 +107,29 @@ struct BackupRefPtrImpl {
   // will occur.
 
   static ALWAYS_INLINE bool IsSupportedAndNotNull(void* ptr) {
+#if BUILDFLAG(MAKE_GIGACAGE_GRANULARITY_PARTITION_PAGE_SIZE)
+    // This covers the nullptr case, as address 0 is never in GigaCage.
+    bool ret = IsManagedByPartitionAllocNormalBuckets(ptr);
+
+    // There may be pointers immediately after the allocation, e.g.
+    //   CheckedPtr<T> ptr = AllocateNotFromPartitionAlloc(X * sizeof(T));
+    //   for (size_t i = 0; i < X; i++) { ptr++; }
+    // Such pointers are *not* at risk of accidentally falling into normal
+    // buckets, because:
+    // 1) On 64-bit systems, normal buckets are preceded by direct map.
+    // 2) On 32-bit systems, the guard pages and metadata of normal bucket super
+    //    pages are not considered to be part of normal buckets.
+    //
+    // This allows us to make a stronger assertion that if
+    // IsManagedByPartitionAllocNormalBuckets returns true for a valid pointer,
+    // it must be at least partition page away from the beginning of a super
+    // page.
+    if (ret) {
+      DCHECK(reinterpret_cast<uintptr_t>(ptr) % kSuperPageSize >=
+             PartitionPageSize());
+    }
+    return ret;
+#else
     // There is a problem on 32-bit systems, where the fake "GigaCage" has many
     // normal bucket pool regions spread throughout the address space. A pointer
     // immediately past an allocation may fall into the normal bucket pool,
@@ -129,6 +153,7 @@ struct BackupRefPtrImpl {
     // This covers the nullptr case, as address 0 is never in GigaCage.
     is_in_normal_buckets &= IsManagedByPartitionAllocNormalBuckets(ptr);
     return is_in_normal_buckets;
+#endif
   }
 
   // Wraps a pointer, and returns its uintptr_t representation.

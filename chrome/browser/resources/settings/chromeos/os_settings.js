@@ -103,6 +103,7 @@ export {KerberosAccountsBrowserProxyImpl, KerberosConfigErrorCode, KerberosError
 export {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from './metrics_recorder.m.js';
 export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.m.js';
 export {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubNotificationAccessStatus, SmartLockSignInEnabledState} from './multidevice_page/multidevice_constants.m.js';
+export {NotificationAccessSetupOperationStatus} from './multidevice_page/multidevice_notification_access_setup_dialog.m.js';
 export {Account, NearbyAccountManagerBrowserProxy, NearbyAccountManagerBrowserProxyImpl} from './nearby_share_page/nearby_account_manager_browser_proxy.m.js';
 export {getReceiveManager, observeReceiveManager, setReceiveManagerForTesting} from './nearby_share_page/nearby_share_receive_manager.m.js';
 export {dataUsageStringToEnum, NearbyShareDataUsage} from './nearby_share_page/types.m.js';
@@ -112,15 +113,17 @@ export {SwitchAccessSubpageBrowserProxy, SwitchAccessSubpageBrowserProxyImpl} fr
 export {TtsSubpageBrowserProxy, TtsSubpageBrowserProxyImpl} from './os_a11y_page/tts_subpage_browser_proxy.m.js';
 export {DeviceNameBrowserProxy, DeviceNameBrowserProxyImpl} from './os_about_page/device_name_browser_proxy.m.js';
 export {AndroidAppsBrowserProxyImpl} from './os_apps_page/android_apps_browser_proxy.m.js';
-export {updateArcSupported, updateSelectedAppId} from './os_apps_page/app_management_page/actions.m.js';
+export {addApp, changeApp, removeApp, updateArcSupported, updateSelectedAppId} from './os_apps_page/app_management_page/actions.m.js';
 export {BrowserProxy} from './os_apps_page/app_management_page/browser_proxy.m.js';
 export {ArcPermissionType, Bool, PageType, PermissionValueType, PluginVmPermissionType, PwaPermissionType, TriState} from './os_apps_page/app_management_page/constants.m.js';
 export {FakePageHandler} from './os_apps_page/app_management_page/fake_page_handler.m.js';
 export {PluginVmBrowserProxyImpl} from './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_browser_proxy.m.js';
-export {reduceAction} from './os_apps_page/app_management_page/reducers.m.js';
+export {AppState, reduceAction} from './os_apps_page/app_management_page/reducers.m.js';
 export {AppManagementStore} from './os_apps_page/app_management_page/store.m.js';
-export {convertOptionalBoolToBool, createEmptyState, createPermission, getPermissionValueBool} from './os_apps_page/app_management_page/util.m.js';
+export {convertOptionalBoolToBool, createEmptyState, createInitialState, createPermission, getPermissionValueBool} from './os_apps_page/app_management_page/util.m.js';
+export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.m.js';
 export {OsSyncBrowserProxyImpl} from './os_people_page/os_sync_browser_proxy.m.js';
+export {FingerprintLocation, FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.m.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.m.js';
 export {routes} from './os_route.m.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.m.js';

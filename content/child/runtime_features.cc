@@ -330,6 +330,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRPlaneDetection, features::kWebXrIncubations},
     {wf::EnableWebXRViewportScale, features::kWebXrIncubations},
     {wf::EnableWheelEventRegions, features::kWheelEventRegions},
+    {wf::EnableCompositeRelativeKeyframes,
+     features::kCompositeRelativeKeyframes},
     {wf::EnableKeyboardAccessibleTooltip, features::kKeyboardAccessibleTooltip},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
@@ -392,7 +394,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kWebAppManifestDisplayOverride},
           {"WebAppWindowControlsOverlay",
            features::kWebAppWindowControlsOverlay},
-          {"WebXRMultiGpu", blink::features::kWebXrMultiGpu},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

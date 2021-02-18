@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -164,7 +165,7 @@ LocalActionId FeedStream::Metadata::GetNextActionId() {
   return LocalActionId(id);
 }
 
-FeedStream::Stream::Stream() : type(kInterestStream) {}
+FeedStream::Stream::Stream() = default;
 FeedStream::Stream::~Stream() = default;
 
 FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
@@ -282,8 +283,12 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
   stream.surface_updater->LoadStreamComplete(stream.model != nullptr,
                                              result.final_status);
 
-  if (result.loaded_new_content_from_network && prefetch_service_)
-    prefetch_service_->NewSuggestionsAvailable();
+  if (result.loaded_new_content_from_network) {
+    if (result.stream_type.IsInterest())
+      UpdateExperiments(result.experiments);
+    if (prefetch_service_)
+      prefetch_service_->NewSuggestionsAvailable();
+  }
 }
 
 void FeedStream::OnEnterBackground() {
@@ -315,6 +320,11 @@ std::string FeedStream::GetSessionId() const {
 
 void FeedStream::PrefetchImage(const GURL& url) {
   delegate_->PrefetchImage(url);
+}
+
+void FeedStream::UpdateExperiments(Experiments experiments) {
+  delegate_->RegisterExperiments(experiments);
+  prefs::SetExperiments(experiments, *profile_prefs_);
 }
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
@@ -537,6 +547,12 @@ void FeedStream::ForceRefreshForDebuggingTask() {
   UnloadModel(kInterestStream);
   store_->ClearStreamData(kInterestStream, base::DoNothing());
   TriggerStreamLoad(kInterestStream);
+
+  if (base::FeatureList::IsEnabled(kWebFeed)) {
+    UnloadModel(kWebFeedStream);
+    store_->ClearStreamData(kWebFeedStream, base::DoNothing());
+    TriggerStreamLoad(kWebFeedStream);
+  }
 }
 
 std::string FeedStream::DumpStateForDebugging() {
@@ -575,12 +591,6 @@ base::Time FeedStream::GetLastFetchTime() {
   if (fetch_time > base::Time::Now())
     return base::Time();
   return fetch_time;
-}
-
-bool FeedStream::HasSurfaceAttached() const {
-  // TODO(crbug/1152592): Make ClearAll() work with multiple streams.
-  const Stream* stream = FindStream(kInterestStream);
-  return stream && stream->surface_updater->HasSurfaceAttached();
 }
 
 void FeedStream::LoadModelForTesting(const StreamType& stream_type,
@@ -788,8 +798,12 @@ void FeedStream::ExecuteRefreshTask() {
 
 void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
   metrics_reporter_->OnBackgroundRefresh(result.final_status);
-  if (result.loaded_new_content_from_network && prefetch_service_)
-    prefetch_service_->NewSuggestionsAvailable();
+  if (result.loaded_new_content_from_network) {
+    if (result.stream_type.IsInterest())
+      UpdateExperiments(result.experiments);
+    if (prefetch_service_)
+      prefetch_service_->NewSuggestionsAvailable();
+  }
 
   // Add prefetch images to task queue without waiting to finish
   // since we treat them as best-effort.
@@ -806,8 +820,16 @@ void FeedStream::ClearAll() {
 
 void FeedStream::FinishClearAll() {
   prefs::ClearClientInstanceId(*profile_prefs_);
+  // Clear any experiments stored.
+  prefs::SetExperiments({}, *profile_prefs_);
   metadata_.Populate(feedstore::Metadata());
   delegate_->ClearAll();
+
+  for (auto& item : streams_) {
+    if (item.second.surface_updater->HasSurfaceAttached()) {
+      TriggerStreamLoad(item.second.type);
+    }
+  }
 }
 
 ImageFetchId FeedStream::FetchImage(
@@ -874,6 +896,13 @@ void FeedStream::UnloadModel(const StreamType& stream_type) {
   stream->surface_updater->SetModel(nullptr);
   stream->model.reset();
 }
+
+void FeedStream::UnloadModels() {
+  for (auto& item : streams_) {
+    UnloadModel(item.second.type);
+  }
+}
+
 void FeedStream::ReportOpenAction(const StreamType& stream_type,
                                   const std::string& slice_id) {
   Stream& stream = GetStream(stream_type);
@@ -990,4 +1019,5 @@ void FeedStream::ReportStreamScrollStart() {
 void FeedStream::ReportOtherUserAction(FeedUserActionType action_type) {
   metrics_reporter_->OtherUserAction(action_type);
 }
+
 }  // namespace feed

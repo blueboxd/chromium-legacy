@@ -1187,7 +1187,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
     // |this| may have been deleted.
     return;
   }
-  if (!network_context_client_) {
+  if (!auth_cert_observer_) {
     OnAuthCredentials(base::nullopt);
     return;
   }
@@ -1199,14 +1199,9 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
 
   DCHECK(!auth_challenge_responder_receiver_.is_bound());
 
-  auto head = mojom::URLResponseHead::New();
-  if (url_request->response_headers())
-    head->headers = url_request->response_headers();
-  head->auth_challenge_info = auth_info;
-  network_context_client_->OnAuthRequired(
-      fetch_window_id_, factory_params_->process_id, render_frame_id_,
-      request_id_, url_request_->url(), first_auth_attempt_, auth_info,
-      std::move(head),
+  auth_cert_observer_->OnAuthRequired(
+      fetch_window_id_, request_id_, url_request_->url(), first_auth_attempt_,
+      auth_info, url_request->response_headers(),
       auth_challenge_responder_receiver_.BindNewPipeAndPassRemote());
 
   auth_challenge_responder_receiver_.set_disconnect_handler(
@@ -1227,24 +1222,17 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
     return;
   }
 
-  if (!network_context_client_) {
-    ContinueWithoutCertificate();
+  if (!auth_cert_observer_) {
+    CancelRequest();
     return;
   }
 
   // Set up mojo endpoints for ClientCertificateResponder and bind to the
   // Receiver. This enables us to receive messages regarding the client
   // certificate selection.
-  if (fetch_window_id_) {
-    network_context_client_->OnCertificateRequested(
-        fetch_window_id_, -1 /* process_id */, -1 /* routing_id */, request_id_,
-        cert_info, client_cert_responder_receiver_.BindNewPipeAndPassRemote());
-  } else {
-    network_context_client_->OnCertificateRequested(
-        base::nullopt /* window_id */, factory_params_->process_id,
-        render_frame_id_, request_id_, cert_info,
-        client_cert_responder_receiver_.BindNewPipeAndPassRemote());
-  }
+  auth_cert_observer_->OnCertificateRequested(
+      fetch_window_id_, cert_info,
+      client_cert_responder_receiver_.BindNewPipeAndPassRemote());
   client_cert_responder_receiver_.set_disconnect_handler(
       base::BindOnce(&URLLoader::CancelRequest, base::Unretained(this)));
 }

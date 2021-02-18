@@ -54,17 +54,16 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"cpuPrimeSearchRoutineText",
        IDS_DIAGNOSTICS_CPU_PRIME_SEARCH_ROUTINE_TEXT},
       {"cpuSpeedLabel", IDS_DIAGNOSTICS_CPU_SPEED_LABEL},
-      {"cpuSpeedText", IDS_DIAGNOSTICS_CPU_SPEED_TEXT},
       {"cpuStressRoutineText", IDS_DIAGNOSTICS_CPU_STRESS_ROUTINE_TEXT},
       {"cpuTempLabel", IDS_DIAGNOSTICS_CPU_TEMPERATURE_LABEL},
       {"cpuTempText", IDS_DIAGNOSTICS_CPU_TEMPERATURE_TEXT},
       {"cpuTitle", IDS_DIAGNOSTICS_CPU_TITLE},
-      {"cpuThrottleTooltipText", IDS_DIAGNOSTICS_CPU_THROTTLE_TOOLTIP_TEXT},
       {"cpuUsageLabel", IDS_DIAGNOSTICS_CPU_USAGE_LABEL},
       {"cpuUsageText", IDS_DIAGNOSTICS_CPU_USAGE_TEXT},
       {"cpuUsageTooltipText", IDS_DIAGNOSTICS_CPU_USAGE_TOOLTIP_TEXT},
       {"cpuUsageSystem", IDS_DIAGNOSTICS_CPU_USAGE_SYSTEM_LABEL},
       {"cpuUsageUser", IDS_DIAGNOSTICS_CPU_USAGE_USER_LABEL},
+      {"currentCpuSpeedText", IDS_DIAGNOSTICS_CPU_SPEED_TEXT},
       {"currentNowLabel", IDS_DIAGNOSTICS_CURRENT_NOW_LABEL},
       {"currentNowText", IDS_DIAGNOSTICS_CURRENT_NOW_TEXT},
       {"currentNowTooltipText", IDS_DIAGNOSTICS_CURRENT_NOW_TOOLTIP_TEXT},
@@ -115,10 +114,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
 void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           base::span<const webui::ResourcePath> resources,
                           int default_resource) {
-  for (const auto& resource : resources) {
-    source->AddResourcePath(resource.path, resource.id);
-  }
-
+  source->AddResourcePaths(resources);
   source->SetDefaultResource(default_resource);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);

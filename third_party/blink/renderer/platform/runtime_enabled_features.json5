@@ -379,7 +379,7 @@
     },
     {
       name: "CompositeRelativeKeyframes",
-      status: "stable",
+      // Controlled by base::Feature::kCompositeRelativeKeyframes.
     },
     {
       name: "CompositeSVG",
@@ -532,13 +532,7 @@
       status: "experimental",
     },
     {
-      // Experimental @font-face descriptor advance-override.
-      // Not standardized yet, and subject to changes.
-      name: "CSSFontFaceAdvanceOverride",
-      status: "test",
-      depends_on: ["CSSFontMetricsOverride"],
-    },
-    {
+      // TODO(xiaochengh): Rename it to AdvanceOverride
       // Experimental @font-face descriptor advance-proportional-override.
       // Not standardized yet, and subject to changes.
       name: "CSSFontFaceAdvanceProportionalOverride",
@@ -1181,10 +1175,6 @@
       depends_on: ["EditingNG"],
       // In Chrome, the flag is managed by Finch.
       status: "test",
-    },
-    {
-      name: "LayoutNGWebkitBox",
-      status: "stable",
     },
     {
       name: "LazyFrameLoading",
@@ -2338,12 +2328,6 @@
       origin_trial_feature_name: "WebXRLightEstimation",
       depends_on: ["WebXRARModule"],
       status: "experimental",
-    },
-    {
-      name: "WebXRMultiGpu",
-      depends_on: ["WebXR"],
-      // Enabled when blink::features::kWebXrMultiGpu is enabled.
-      status: "stable",
     },
     {
       name: "WebXRPlaneDetection",

@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "cc/paint/paint_canvas.h"
 #include "net/cookies/site_for_cookies.h"
+#include "pdf/accessibility_structs.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdf_init.h"
 #include "pdf/pdfium/pdfium_engine.h"
@@ -408,15 +409,24 @@ void PdfViewWebPlugin::InitImageData(const gfx::Size& size) {
   mutable_image_data() = CreateN32PremulSkBitmap(gfx::SizeToSkISize(size));
 }
 
-void PdfViewWebPlugin::OnGeometryChanged(double old_zoom,
-                                         float old_device_scale) {
-  RecalculateAreas(old_zoom, old_device_scale);
-
-  // TODO(https://crbug.com/1144444): Add a Pepper-free implementation to update
-  // accessibility information in the viewport.
+// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
+// accessibility document information.
+void PdfViewWebPlugin::SetAccessibilityDocInfo(
+    const AccessibilityDocInfo& doc_info) {
+  NOTIMPLEMENTED();
 }
 
-// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to send
+// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
+// accessibility page information.
+void PdfViewWebPlugin::SetAccessibilityPageInfo(
+    AccessibilityPageInfo page_info,
+    std::vector<AccessibilityTextRunInfo> text_runs,
+    std::vector<AccessibilityCharInfo> chars,
+    AccessibilityPageObjects page_objects) {
+  NOTIMPLEMENTED();
+}
+
+// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
 // accessibility viewport information.
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     const AccessibilityViewportInfo& viewport_info) {

@@ -75,37 +75,6 @@ bool StyleStrokeData::operator==(const StyleStrokeData& other) const {
          visited_link_paint == other.visited_link_paint;
 }
 
-StyleStopData::StyleStopData()
-    : color(SVGComputedStyle::InitialStopColor()),
-      opacity(SVGComputedStyle::InitialStopOpacity()) {}
-
-StyleStopData::StyleStopData(const StyleStopData& other)
-    : RefCounted<StyleStopData>(), color(other.color), opacity(other.opacity) {}
-
-bool StyleStopData::operator==(const StyleStopData& other) const {
-  return color == other.color && opacity == other.opacity;
-}
-
-StyleMiscData::StyleMiscData()
-    : baseline_shift_value(SVGComputedStyle::InitialBaselineShiftValue()),
-      flood_color(SVGComputedStyle::InitialFloodColor()),
-      lighting_color(SVGComputedStyle::InitialLightingColor()),
-      flood_opacity(SVGComputedStyle::InitialFloodOpacity()) {}
-
-StyleMiscData::StyleMiscData(const StyleMiscData& other)
-    : RefCounted<StyleMiscData>(),
-      baseline_shift_value(other.baseline_shift_value),
-      flood_color(other.flood_color),
-      lighting_color(other.lighting_color),
-      flood_opacity(other.flood_opacity) {}
-
-bool StyleMiscData::operator==(const StyleMiscData& other) const {
-  return flood_color == other.flood_color &&
-         lighting_color == other.lighting_color &&
-         baseline_shift_value == other.baseline_shift_value &&
-         flood_opacity == other.flood_opacity;
-}
-
 StyleResourceData::StyleResourceData()
     : masker(SVGComputedStyle::InitialMaskerResource()) {}
 

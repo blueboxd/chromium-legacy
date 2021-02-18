@@ -74,6 +74,9 @@ extern const char kAllowInsecureLocalhostDescription[];
 extern const char kAllowSyncXHRInPageDismissalName[];
 extern const char kAllowSyncXHRInPageDismissalDescription[];
 
+extern const char kAnimatedImageResumeName[];
+extern const char kAnimatedImageResumeDescription[];
+
 extern const char kAriaElementReflectionName[];
 extern const char kAriaElementReflectionDescription[];
 
@@ -1507,9 +1510,6 @@ extern const char kWebXrRuntimeChoiceOpenXR[];
 extern const char kWebXrIncubationsName[];
 extern const char kWebXrIncubationsDescription[];
 
-extern const char kWebXrMultiGpuName[];
-extern const char kWebXrMultiGpuDescription[];
-
 extern const char kWindowNamingName[];
 extern const char kWindowNamingDescription[];
 
@@ -1634,6 +1634,12 @@ extern const char kContextualSearchDebugDescription[];
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 
+extern const char kContextualSearchLiteralSearchTapName[];
+extern const char kContextualSearchLiteralSearchTapDescription[];
+
+extern const char kContextualSearchLongpressPanelHelpName[];
+extern const char kContextualSearchLongpressPanelHelpDescription[];
+
 extern const char kContextualSearchLongpressResolveName[];
 extern const char kContextualSearchLongpressResolveDescription[];
 
@@ -1721,6 +1727,9 @@ extern const char kMessagesForAndroidInfrastructureDescription[];
 
 extern const char kMessagesForAndroidPasswordsName[];
 extern const char kMessagesForAndroidPasswordsDescription[];
+
+extern const char kMessagesForAndroidPopupBlockedName[];
+extern const char kMessagesForAndroidPopupBlockedDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
@@ -2529,6 +2538,9 @@ extern const char kMagnifierNewFocusFollowingDescription[];
 
 extern const char kMagnifierPanningImprovementsName[];
 extern const char kMagnifierPanningImprovementsDescription[];
+
+extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
+extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
 
 extern const char kFilesAppCopyImageName[];
 extern const char kFilesAppCopyImageDescription[];

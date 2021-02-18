@@ -66,6 +66,7 @@ class FeedStream : public FeedStreamApi,
     virtual void ClearAll() = 0;
     virtual bool IsSignedIn() = 0;
     virtual void PrefetchImage(const GURL& url) = 0;
+    virtual void RegisterExperiments(const Experiments& experiments) = 0;
   };
 
   // Forwards to |feed::TranslateWireResponse()| by default. Can be overridden
@@ -227,7 +228,6 @@ class FeedStream : public FeedStreamApi,
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
 
-  bool HasSurfaceAttached() const;
   bool IsSignedIn() const { return delegate_->IsSignedIn(); }
 
   // Determines if we should attempt loading the stream or refreshing at all.
@@ -251,9 +251,11 @@ class FeedStream : public FeedStreamApi,
   // user credentials.
   bool ShouldForceSignedOutFeedQueryRequest() const;
 
-  // Unloads the model. Surfaces are not updated, and will remain frozen until a
-  // model load is requested.
+  // Unloads one stream model. Surfaces are not updated, and will remain frozen
+  // until a model load is requested.
   void UnloadModel(const StreamType& stream_type);
+  // Unloads all stream models.
+  void UnloadModels();
 
   // Triggers a stream load. The load will be aborted if |ShouldAttemptLoad()|
   // is not true.
@@ -349,6 +351,7 @@ class FeedStream : public FeedStreamApi,
   Stream& GetStream(const StreamType& type);
   Stream* FindStream(const StreamType& type);
   const Stream* FindStream(const StreamType& type) const;
+  void UpdateExperiments(Experiments experiments);
 
   // Unowned.
 

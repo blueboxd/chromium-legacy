@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/services/mac_notifications/mac_notification_service_utils.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_utils_mac.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -21,14 +22,15 @@ API_AVAILABLE(macosx(10.14))
 @interface AlertUNNotificationCenterDelegate
     : NSObject <UNUserNotificationCenterDelegate>
 - (instancetype)initWithActionHandler:
-    (mojo::PendingRemote<notifications::mojom::MacNotificationActionHandler>)
-        handler;
+    (mojo::PendingRemote<
+        mac_notifications::mojom::MacNotificationActionHandler>)handler;
 @end
 
+namespace mac_notifications {
+
 MacNotificationServiceUN::MacNotificationServiceUN(
-    mojo::PendingReceiver<notifications::mojom::MacNotificationService> service,
-    mojo::PendingRemote<notifications::mojom::MacNotificationActionHandler>
-        handler,
+    mojo::PendingReceiver<mojom::MacNotificationService> service,
+    mojo::PendingRemote<mojom::MacNotificationActionHandler> handler,
     UNUserNotificationCenter* notification_center)
     : binding_(this, std::move(service)),
       delegate_([[AlertUNNotificationCenterDelegate alloc]
@@ -43,8 +45,48 @@ MacNotificationServiceUN::~MacNotificationServiceUN() {
   [notification_center_ setDelegate:nil];
 }
 
+void MacNotificationServiceUN::DisplayNotification(
+    mojom::NotificationPtr notification) {
+  base::scoped_nsobject<UNMutableNotificationContent> content(
+      [[UNMutableNotificationContent alloc] init]);
+
+  // TODO(knollr): Fill with actual values from |notification|.
+  [content setTitle:@"title"];
+  [content setSubtitle:@"subtitle"];
+  [content setBody:@"body"];
+  [content setUserInfo:GetMacNotificationUserInfo(notification)];
+
+  std::string notification_id = DeriveMacNotificationId(
+      notification->id->profile->incognito, notification->id->profile->id,
+      notification->id->id);
+
+  // This uses a private API to prevent notifications from dismissing after
+  // clicking on them. This only affects the default action though, other action
+  // buttons will still dismiss the notification on click.
+  if ([content respondsToSelector:@selector
+               (shouldPreventNotificationDismissalAfterDefaultAction)]) {
+    [content setValue:@YES
+               forKey:@"shouldPreventNotificationDismissalAfterDefaultAction"];
+  }
+
+  NSString* notification_id_ns = base::SysUTF8ToNSString(notification_id);
+  UNNotificationRequest* request =
+      [UNNotificationRequest requestWithIdentifier:notification_id_ns
+                                           content:content.get()
+                                           trigger:nil];
+
+  auto completion_handler = ^(NSError* _Nullable error) {
+    // TODO(knollr): Add UMA logging for display errors.
+    if (error != nil) {
+      DVLOG(1) << "Displaying notification did not succeed";
+    }
+  };
+  [notification_center_ addNotificationRequest:request
+                         withCompletionHandler:completion_handler];
+}
+
 void MacNotificationServiceUN::GetDisplayedNotifications(
-    notifications::mojom::ProfileIdentifierPtr profile,
+    mojom::ProfileIdentifierPtr profile,
     GetDisplayedNotificationsCallback callback) {
   // Move |callback| into block storage so we can use it from the block below.
   __block GetDisplayedNotificationsCallback block_callback =
@@ -60,7 +102,7 @@ void MacNotificationServiceUN::GetDisplayedNotifications(
 
   [notification_center_ getDeliveredNotificationsWithCompletionHandler:^(
                             NSArray<UNNotification*>* _Nonnull toasts) {
-    std::vector<notifications::mojom::NotificationIdentifierPtr> notifications;
+    std::vector<mojom::NotificationIdentifierPtr> notifications;
 
     for (UNNotification* toast in toasts) {
       NSDictionary* user_info = [[[toast request] content] userInfo];
@@ -74,12 +116,10 @@ void MacNotificationServiceUN::GetDisplayedNotifications(
 
       if (!profile_id || ([profile_id isEqualToString:toast_profile_id] &&
                           incognito == toast_incognito)) {
-        auto profile_identifier = notifications::mojom::ProfileIdentifier::New(
+        auto profile_identifier = mojom::ProfileIdentifier::New(
             base::SysNSStringToUTF8(toast_profile_id), toast_incognito);
-        notifications.push_back(
-            notifications::mojom::NotificationIdentifier::New(
-                base::SysNSStringToUTF8(toast_id),
-                std::move(profile_identifier)));
+        notifications.push_back(mojom::NotificationIdentifier::New(
+            base::SysNSStringToUTF8(toast_id), std::move(profile_identifier)));
       }
     }
 
@@ -89,7 +129,7 @@ void MacNotificationServiceUN::GetDisplayedNotifications(
 }
 
 void MacNotificationServiceUN::CloseNotification(
-    notifications::mojom::NotificationIdentifierPtr identifier) {
+    mojom::NotificationIdentifierPtr identifier) {
   NSString* notification_id = base::SysUTF8ToNSString(DeriveMacNotificationId(
       identifier->profile->incognito, identifier->profile->id, identifier->id));
   [notification_center_
@@ -116,13 +156,15 @@ void MacNotificationServiceUN::RequestPermission() {
                                       completionHandler:resultHandler];
 }
 
+}  // namespace mac_notifications
+
 @implementation AlertUNNotificationCenterDelegate {
-  mojo::Remote<notifications::mojom::MacNotificationActionHandler> _handler;
+  mojo::Remote<mac_notifications::mojom::MacNotificationActionHandler> _handler;
 }
 
 - (instancetype)initWithActionHandler:
-    (mojo::PendingRemote<notifications::mojom::MacNotificationActionHandler>)
-        handler {
+    (mojo::PendingRemote<
+        mac_notifications::mojom::MacNotificationActionHandler>)handler {
   if ((self = [super init])) {
     _handler.Bind(std::move(handler));
   }
@@ -145,7 +187,7 @@ void MacNotificationServiceUN::RequestPermission() {
 - (void)userNotificationCenter:(UNUserNotificationCenter*)center
     didReceiveNotificationResponse:(UNNotificationResponse*)response
              withCompletionHandler:(void (^)(void))completionHandler {
-  auto actionInfo = notifications::mojom::NotificationActionInfo::New();
+  auto actionInfo = mac_notifications::mojom::NotificationActionInfo::New();
   // TODO(knollr): Fill |action_info| with details from |response|.
   _handler->OnNotificationAction(std::move(actionInfo));
   completionHandler();

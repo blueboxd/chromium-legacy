@@ -38,8 +38,6 @@ SVGComputedStyle::SVGComputedStyle() {
 
   fill = initial_style->fill;
   stroke = initial_style->stroke;
-  stops = initial_style->stops;
-  misc = initial_style->misc;
   inherited_resources = initial_style->inherited_resources;
   resources = initial_style->resources;
 
@@ -51,8 +49,6 @@ SVGComputedStyle::SVGComputedStyle(CreateInitialType) {
 
   fill.Init();
   stroke.Init();
-  stops.Init();
-  misc.Init();
   inherited_resources.Init();
   resources.Init();
 }
@@ -61,13 +57,10 @@ SVGComputedStyle::SVGComputedStyle(const SVGComputedStyle& other)
     : RefCounted<SVGComputedStyle>() {
   fill = other.fill;
   stroke = other.stroke;
-  stops = other.stops;
-  misc = other.misc;
   inherited_resources = other.inherited_resources;
   resources = other.resources;
 
   svg_inherited_flags = other.svg_inherited_flags;
-  svg_noninherited_flags = other.svg_noninherited_flags;
 }
 
 SVGComputedStyle::~SVGComputedStyle() = default;
@@ -83,9 +76,7 @@ bool SVGComputedStyle::InheritedEqual(const SVGComputedStyle& other) const {
 }
 
 bool SVGComputedStyle::NonInheritedEqual(const SVGComputedStyle& other) const {
-  return stops == other.stops && misc == other.misc &&
-         resources == other.resources &&
-         svg_noninherited_flags == other.svg_noninherited_flags;
+  return resources == other.resources;
 }
 
 void SVGComputedStyle::InheritFrom(const SVGComputedStyle& svg_inherit_parent) {
@@ -98,9 +89,6 @@ void SVGComputedStyle::InheritFrom(const SVGComputedStyle& svg_inherit_parent) {
 
 void SVGComputedStyle::CopyNonInheritedFromCached(
     const SVGComputedStyle& other) {
-  svg_noninherited_flags = other.svg_noninherited_flags;
-  stops = other.stops;
-  misc = other.misc;
   resources = other.resources;
 }
 
@@ -142,13 +130,7 @@ bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
   if (svg_inherited_flags.text_anchor !=
           other.svg_inherited_flags.text_anchor ||
       svg_inherited_flags.dominant_baseline !=
-          other.svg_inherited_flags.dominant_baseline ||
-      svg_noninherited_flags.f.baseline_shift !=
-          other.svg_noninherited_flags.f.baseline_shift)
-    return true;
-
-  // Text related properties influence layout.
-  if (misc->baseline_shift_value != other.misc->baseline_shift_value)
+          other.svg_inherited_flags.dominant_baseline)
     return true;
 
   // These properties affect the cached stroke bounding box rects.
@@ -192,14 +174,6 @@ bool SVGComputedStyle::DiffNeedsPaintInvalidation(
       return true;
   }
 
-  // Painting related properties only need paint invalidation.
-  if (misc.Get() != other.misc.Get()) {
-    if (misc->flood_color != other.misc->flood_color ||
-        misc->flood_opacity != other.misc->flood_opacity ||
-        misc->lighting_color != other.misc->lighting_color)
-      return true;
-  }
-
   // If fill changes, we just need to issue paint invalidations. Fill boundaries
   // are not influenced by this, only by the Path, that LayoutSVGPath contains.
   if (fill.Get() != other.fill.Get()) {
@@ -207,11 +181,6 @@ bool SVGComputedStyle::DiffNeedsPaintInvalidation(
         fill->opacity != other.fill->opacity)
       return true;
   }
-
-  // If gradient stops change, we just need to issue paint invalidations. Style
-  // updates are already handled through SVGStopElement.
-  if (stops != other.stops)
-    return true;
 
   // Changes of these flags only cause paint invalidations.
   if (svg_inherited_flags.shape_rendering !=

@@ -1100,17 +1100,6 @@ class ComputedStyle : public ComputedStyleBase,
   const SVGComputedStyle& SvgStyle() const { return *svg_style_.Get(); }
   SVGComputedStyle& AccessSVGStyle() { return *svg_style_.Access(); }
 
-  // baseline-shift
-  EBaselineShift BaselineShift() const { return SvgStyle().BaselineShift(); }
-  const Length& BaselineShiftValue() const {
-    return SvgStyle().BaselineShiftValue();
-  }
-  void SetBaselineShiftValue(const Length& value) {
-    SVGComputedStyle& svg_style = AccessSVGStyle();
-    svg_style.SetBaselineShift(BS_LENGTH);
-    svg_style.SetBaselineShiftValue(value);
-  }
-
   WindRule ClipRule() const { return SvgStyle().ClipRule(); }
   EColorInterpolation ColorInterpolation() const {
     return SvgStyle().ColorInterpolation();
@@ -1140,30 +1129,9 @@ class ComputedStyle : public ComputedStyleBase,
   float FillOpacity() const { return SvgStyle().FillOpacity(); }
   void SetFillOpacity(float f) { AccessSVGStyle().SetFillOpacity(f); }
 
-  // stop-color
-  void SetStopColor(const StyleColor& c) { AccessSVGStyle().SetStopColor(c); }
-
-  // flood-color
-  const StyleColor& FloodColor() const { return SvgStyle().FloodColor(); }
-  void SetFloodColor(const StyleColor& c) { AccessSVGStyle().SetFloodColor(c); }
-
-  // lighting-color
-  const StyleColor& LightingColor() const { return SvgStyle().LightingColor(); }
-  void SetLightingColor(const StyleColor& c) {
-    AccessSVGStyle().SetLightingColor(c);
-  }
-
-  // flood-opacity
-  float FloodOpacity() const { return SvgStyle().FloodOpacity(); }
-  void SetFloodOpacity(float f) { AccessSVGStyle().SetFloodOpacity(f); }
-
   StyleSVGResource* MaskerResource() const {
     return SvgStyle().MaskerResource();
   }
-
-  // stop-opacity
-  float StopOpacity() const { return SvgStyle().StopOpacity(); }
-  void SetStopOpacity(float f) { AccessSVGStyle().SetStopOpacity(f); }
 
   // marker-* helpers
   StyleSVGResource* MarkerStartResource() const {
@@ -2855,6 +2823,7 @@ class ComputedStyle : public ComputedStyleBase,
     return ColumnRuleColorInternal();
   }
   const StyleColor& OutlineColor() const { return OutlineColorInternal(); }
+  const StyleColor& StopColor() const { return StopColorInternal(); }
   const StyleColor& TextDecorationColor() const {
     return TextDecorationColorInternal();
   }
@@ -2952,8 +2921,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
-
-  const StyleColor& StopColor() const { return SvgStyle().StopColor(); }
 
   // Appearance accessors are private to make sure callers use
   // EffectiveAppearance in almost all cases.

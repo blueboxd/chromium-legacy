@@ -58,6 +58,11 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kAnimatedImageResumeName[] = "Use animated image resume behavior";
+const char kAnimatedImageResumeDescription[] =
+    "Resumes animated images from the last frame drawn rather than attempt "
+    "to catch up to the frame that should be drawn based on current time.";
+
 const char kAriaElementReflectionName[] = "Enable ARIA element reflection";
 const char kAriaElementReflectionDescription[] =
     "Enable setting ARIA relationship attributes that reference other elements "
@@ -2597,10 +2602,6 @@ const char kWebXrIncubationsName[] = "WebXR Incubations";
 const char kWebXrIncubationsDescription[] =
     "Enables experimental features for WebXR.";
 
-const char kWebXrMultiGpuName[] = "WebXR Multi GPU Support";
-const char kWebXrMultiGpuDescription[] =
-    "Improves WebXR support for computers with more than one GPU.";
-
 const char kWindowNamingName[] = "Window Naming";
 const char kWindowNamingDescription[] =
     "Whether the window naming UI is enabled.";
@@ -2799,6 +2800,22 @@ const char kContextualSearchDefinitionsDescription[] =
     "Enables touch-activated contextual definitions of words on a page to be "
     "presented in the caption of the Touch to Search Bar.";
 
+const char kContextualSearchLiteralSearchTapName[] =
+    "Contextual Search literal search with tap";
+const char kContextualSearchLiteralSearchTapDescription[] =
+    "Enables Contextual Search to be activated with a single tap and produce "
+    "a literal search. This is intended to be used in conjunction with the "
+    "long-press resolve feature to allow both gestures to trigger a form of "
+    "Touch to Search.";
+
+const char kContextualSearchLongpressPanelHelpName[] =
+    "Contextual Search long-press In-Panel-Help";
+const char kContextualSearchLongpressPanelHelpDescription[] =
+    "Adds a help section that appears directly within the panel that promotes "
+    "using the longpress gesture instead of the tap gesture. This is intended "
+    "to be used in conjunction with the long-press resolve feature to help "
+    "users transition to the other gesture.";
+
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
 const char kContextualSearchLongpressResolveDescription[] =
@@ -2952,6 +2969,9 @@ const char kMessagesForAndroidInfrastructureDescription[] =
 const char kMessagesForAndroidPasswordsName[] = "Passwords Messages UI";
 const char kMessagesForAndroidPasswordsDescription[] =
     "When enabled, password infobars will use the new Messages UI.";
+const char kMessagesForAndroidPopupBlockedName[] = "Popup Blocked Messages UI";
+const char kMessagesForAndroidPopupBlockedDescription[] =
+    "When enabled, popup blocked infobars will use the new Messages UI.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
@@ -4318,6 +4338,13 @@ const char kMagnifierPanningImprovementsName[] =
 const char kMagnifierPanningImprovementsDescription[] =
     "Enable feature which adds additional mouse and keyboard panning "
     "functionality in Magnifier.";
+
+const char kMagnifierContinuousMouseFollowingModeSettingName[] =
+    "Enable ability to choose continuous mouse following mode in Magnifier "
+    "settings";
+const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
+    "Enable feature which adds ability to choose new continuous mouse "
+    "following mode in Magnifier settings.";
 
 const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
 const char kFilesAppCopyImageDescription[] =

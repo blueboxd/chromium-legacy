@@ -95,6 +95,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &embedder_support::kShowTrustedPublisherURL,
     &features::kClearOldBrowsingData,
     &features::kContinuousSearch,
+    &features::kDexFixer,
     &features::kDownloadsLocationChange,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
@@ -133,6 +134,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAssistantIntentExperimentId,
     &kAssistantIntentPageUrl,
     &kAssistantIntentTranslateInfo,
+    &kAppLaunchpad,
     &kBentoOffline,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
@@ -352,6 +354,9 @@ const base::Feature kAssistantIntentPageUrl{"AssistantIntentPageUrl",
 
 const base::Feature kAssistantIntentTranslateInfo{
     "AssistantIntentTranslateInfo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAppLaunchpad{"AppLaunchpad",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};

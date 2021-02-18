@@ -11664,6 +11664,7 @@ histogram as enum -->
   <int value="6" label="CustomData"/>
   <int value="7" label="WebSmartPaste"/>
   <int value="8" label="Svg"/>
+  <int value="9" label="Filenames"/>
 </enum>
 
 <enum name="ClipboardFormatWrite">
@@ -11676,6 +11677,7 @@ histogram as enum -->
   <int value="6" label="CustomData"/>
   <int value="7" label="WebSmartPaste"/>
   <int value="8" label="Svg"/>
+  <int value="9" label="Filenames"/>
 </enum>
 
 <enum name="ClipboardHistoryDisplayFormat">
@@ -12773,7 +12775,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Cookies setting"/>
   <int value="1" label="Images setting"/>
   <int value="2" label="JavaScript setting"/>
-  <int value="3" label="Plugins setting [removed in M90]"/>
+  <int value="3" label="Plugins setting"/>
   <int value="4" label="Popups setting"/>
   <int value="5" label="Location setting"/>
   <int value="6" label="Notifications setting"/>
@@ -44170,6 +44172,7 @@ from previous Chrome versions.
       label="HappinessTrackingSurveysForDesktopSettingsPrivacy:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
+  <int value="-1041150041" label="ContextualSearchLiteralSearchTap:disabled"/>
   <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
   <int value="-1039889738" label="NativeNotifications:enabled"/>
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
@@ -44816,6 +44819,7 @@ from previous Chrome versions.
   <int value="-430369215" label="AssistPersonalInfo:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
+  <int value="-428082036" label="AnimatedImageResume:disabled"/>
   <int value="-427163069" label="isolation-by-default"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
@@ -45267,6 +45271,8 @@ from previous Chrome versions.
       label="OmniboxUIExperimentUnboldSuggestionText:disabled"/>
   <int value="-13918890" label="disable-download-notification"/>
   <int value="-12225998" label="ShareButtonInTopToolbar:disabled"/>
+  <int value="-11983392"
+      label="MagnifierContinuousMouseFollowingModeSetting:enabled"/>
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
   <int value="-10709540"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
@@ -45690,6 +45696,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:enabled"/>
   <int value="400272381" label="LazyFrameLoading:disabled"/>
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
+  <int value="401606992" label="AnimatedImageResume:enabled"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="403288255" label="enable-wheel-scroll-latching"/>
@@ -46125,6 +46132,7 @@ from previous Chrome versions.
   <int value="792307132"
       label="KeyboardBasedDisplayArrangementInSettings:enabled"/>
   <int value="792884862" label="EnableSharedImageForWebview:enabled"/>
+  <int value="793816915" label="MessagesForAndroidPopupBlocked:disabled"/>
   <int value="798696013" label="ImeInputLogicMozc:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="802463708" label="WebViewSurfaceControl:enabled"/>
@@ -46769,6 +46777,7 @@ from previous Chrome versions.
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1394896630" label="PrinterStatusDialog:enabled"/>
   <int value="1394925480" label="SharesheetContentPreviews:enabled"/>
+  <int value="1397053154" label="ContextualSearchLiteralSearchTap:enabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1398049903" label="WebUIDarkMode:disabled"/>
   <int value="1398148960" label="LanguageSettingsUpdate:disabled"/>
@@ -47350,6 +47359,8 @@ from previous Chrome versions.
   <int value="1943083555" label="NotificationScheduleService:enabled"/>
   <int value="1944156526" label="sync-url"/>
   <int value="1945031120" label="LanguageSettingsUpdate2:disabled"/>
+  <int value="1946014982"
+      label="MagnifierContinuousMouseFollowingModeSetting:disabled"/>
   <int value="1947350992" label="drop-sync-credential:disabled"/>
   <int value="1948978490" label="PaintPreviewDemo:disabled"/>
   <int value="1949019439"
@@ -47364,6 +47375,7 @@ from previous Chrome versions.
       label="SignedExchangePrefetchCacheForNavigations:enabled"/>
   <int value="1954778883" label="COLRV1Fonts:disabled"/>
   <int value="1955238689" label="OmniboxMaxURLMatches:disabled"/>
+  <int value="1955669770" label="MessagesForAndroidPopupBlocked:enabled"/>
   <int value="1957273171" label="PageAlmostIdle:disabled"/>
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>
   <int value="1957472162"
@@ -48266,16 +48278,16 @@ from previous Chrome versions.
   <int value="2" label="Non layer viewport constrained (obsolete)"/>
   <int value="3" label="Threaded scrolling disabled"/>
   <int value="4" label="Scrollbar scrolling"/>
-  <int value="5" label="Frame overlay"/>
+  <int value="5" label="Frame overlay (obsolete)"/>
   <int value="6" label="Non-fast scrollable region"/>
   <int value="7" label="Event handlers (obsolete)"/>
   <int value="8" label="Failed hit test"/>
   <int value="9" label="No scrolling layer"/>
   <int value="10" label="Not scrollable"/>
-  <int value="11" label="Continuing main thread scroll"/>
+  <int value="11" label="Continuing main thread scroll (obsolete)"/>
   <int value="12" label="Non-invertible transform"/>
-  <int value="13" label="Page based scrolling"/>
-  <int value="14" label="Animating scroll on main thread"/>
+  <int value="13" label="Page based scrolling (obsolete)"/>
+  <int value="14" label="Animating scroll on main thread (obsolete)"/>
   <int value="15" label="Has sticky position objects (obsolete)"/>
   <int value="16" label="Requires hit testing on custom scrollbars (obsolete)"/>
   <int value="17" label="Has opacity (obsolete)"/>
@@ -79287,6 +79299,30 @@ others/histograms.xml -->
   <int value="8" label="Internal error"/>
   <int value="9" label="Invalid QR"/>
   <int value="10" label="Invalid server link data"/>
+</enum>
+
+<enum name="WebAuthenticationChromeOSGetAssertionResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Verification failed"/>
+  <int value="3" label="Verification timeout"/>
+  <int value="4" label="Invalid request"/>
+  <int value="5" label="Internal error"/>
+  <int value="6" label="No credential id matched"/>
+  <int value="7" label="Another request pending"/>
+  <int value="8" label="Canceled"/>
+</enum>
+
+<enum name="WebAuthenticationChromeOSMakeCredentialResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Verification failed"/>
+  <int value="3" label="Verification timeout"/>
+  <int value="4" label="Invalid request"/>
+  <int value="5" label="Internal error"/>
+  <int value="6" label="Excluded credential id matched"/>
+  <int value="7" label="Another request pending"/>
+  <int value="8" label="Canceled"/>
 </enum>
 
 <enum name="WebAuthenticationFidoTransport">

@@ -1380,6 +1380,21 @@
             ]
         }
     ],
+    "CertDualVerificationTrial": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CertDualVerificationTrial"
+                    ]
+                }
+            ]
+        }
+    ],
     "CertVerifierBuiltin": [
         {
             "platforms": [
@@ -2463,7 +2478,7 @@
             ]
         }
     ],
-    "DesktopReadLater": [
+    "DesktopReadingList": [
         {
             "platforms": [
                 "chromeos",
@@ -2524,6 +2539,25 @@
                         "EnableNewBadgeOnMenuItems",
                         "IPH_DesktopSnoozeFeature",
                         "IPH_DesktopTabGroupsNewGroup"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopTabScrolling": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ScrollableTabStrip"
                     ]
                 }
             ]
@@ -3927,21 +3961,6 @@
             ]
         }
     ],
-    "InterestFeedV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InterestFeedV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "InvalidateBookmarkSyncMetadataIfClientTagMissing": [
         {
             "platforms": [
@@ -4439,6 +4458,40 @@
             ]
         }
     ],
+    "MigrateDefaultChromeAppToWebAppsGSuite": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210111",
+                    "enable_features": [
+                        "MigrateDefaultChromeAppToWebAppsGSuite"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MigrateDefaultChromeAppToWebAppsNonGSuite": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210111",
+                    "enable_features": [
+                        "MigrateDefaultChromeAppToWebAppsNonGSuite"
+                    ]
+                }
+            ]
+        }
+    ],
     "MixedFormInterstitial": [
         {
             "platforms": [
@@ -4472,6 +4525,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MobileIdentityConsistency"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MultipleBlinkIsolates": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "mode": "per_render_process_host"
+                    },
+                    "enable_features": [
+                        "MBIMode"
                     ]
                 }
             ]
@@ -4851,6 +4922,25 @@
                     "disable_features": [
                         "OmniboxLocalZeroSuggestForAuthenticatedUsers",
                         "OmniboxZeroSuggestCaching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxButtonRowPedalsDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "ButtonRowWithPedalsAndKeywordButton",
+                    "enable_features": [
+                        "OmniboxKeywordSearchButton"
                     ]
                 }
             ]
@@ -7755,6 +7845,25 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-VP9-PerformanceFlags": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "use_per_layer_speed,min_pixel_count:0|129600,base_layer_speed:5|7,high_layer_speed:8|8,deblock_mode:1|0,_V3"
                 }
             ]
         }

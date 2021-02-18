@@ -130,6 +130,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "animated-image-resume",
+    "owners": [ "cblume", "vmpstr" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "app-cache",
     "owners": [ "enne" ],
     "expiry_milestone": 90
@@ -678,9 +683,19 @@
     "expiry_milestone": 82
   },
   {
+    "name": "contextual-search-literal-search-tap",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
+    "expiry_milestone": 92
+  },
+  {
+    "name": "contextual-search-longpress-panel-help",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "contextual-search-ml-tap-suppression",
@@ -700,7 +715,7 @@
   {
     "name": "contextual-search-translations",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "contextual-search-twv-impl",
@@ -1929,6 +1944,11 @@
   {
     "name": "enable-login-detection",
     "owners": [ "rajendrant", "mcrouse", "tbansal" ],
+    "expiry_milestone": 92
+  },
+  {
+    "name": "enable-magnifier-continuous-mouse-following-mode-setting",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 92
   },
   {
@@ -3413,6 +3433,11 @@
     "name": "messages-for-android-passwords",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "messages-for-android-popup-blocked",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 97
   },
   {
     "name": "messages-save-card-infobar",
@@ -5203,11 +5228,6 @@
     "name": "webxr-incubations",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "webxr-multi-gpu",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 88
   },
   {
     "name": "webxr-runtime",

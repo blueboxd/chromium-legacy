@@ -11,20 +11,23 @@
 #include <vector>
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/services/mac_notifications/mac_notification_service_utils.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_utils_mac.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 @interface AlertNSNotificationCenterDelegate
     : NSObject <NSUserNotificationCenterDelegate>
 - (instancetype)initWithActionHandler:
-    (mojo::PendingRemote<notifications::mojom::MacNotificationActionHandler>)
-        handler;
+    (mojo::PendingRemote<
+        mac_notifications::mojom::MacNotificationActionHandler>)handler;
 @end
 
+namespace mac_notifications {
+
 MacNotificationServiceNS::MacNotificationServiceNS(
-    mojo::PendingReceiver<notifications::mojom::MacNotificationService> service,
-    mojo::PendingRemote<notifications::mojom::MacNotificationActionHandler>
-        handler,
+    mojo::PendingReceiver<mojom::MacNotificationService> service,
+    mojo::PendingRemote<mojom::MacNotificationActionHandler> handler,
     NSUserNotificationCenter* notification_center)
     : binding_(this, std::move(service)),
       delegate_([[AlertNSNotificationCenterDelegate alloc]
@@ -37,10 +40,29 @@ MacNotificationServiceNS::~MacNotificationServiceNS() {
   [notification_center_ setDelegate:nil];
 }
 
+void MacNotificationServiceNS::DisplayNotification(
+    mojom::NotificationPtr notification) {
+  base::scoped_nsobject<NSUserNotification> toast(
+      [[NSUserNotification alloc] init]);
+
+  // TODO(knollr): Fill with values from |notification|.
+  [toast setTitle:@"title"];
+  [toast setSubtitle:@"subtitle"];
+  [toast setInformativeText:@"informative"];
+  [toast setUserInfo:GetMacNotificationUserInfo(notification)];
+
+  NSString* notification_id = base::SysUTF8ToNSString(DeriveMacNotificationId(
+      notification->id->profile->incognito, notification->id->profile->id,
+      notification->id->id));
+  [toast setIdentifier:notification_id];
+
+  [notification_center_ deliverNotification:toast.get()];
+}
+
 void MacNotificationServiceNS::GetDisplayedNotifications(
-    notifications::mojom::ProfileIdentifierPtr profile,
+    mojom::ProfileIdentifierPtr profile,
     GetDisplayedNotificationsCallback callback) {
-  std::vector<notifications::mojom::NotificationIdentifierPtr> notifications;
+  std::vector<mojom::NotificationIdentifierPtr> notifications;
   // Note: |profile| might be null if we want all notifications.
   NSString* profile_id = profile ? base::SysUTF8ToNSString(profile->id) : nil;
   bool incognito = profile && profile->incognito;
@@ -56,9 +78,9 @@ void MacNotificationServiceNS::GetDisplayedNotifications(
 
     if (!profile_id || ([profile_id isEqualToString:toast_profile_id] &&
                         incognito == toast_incognito)) {
-      auto profile_identifier = notifications::mojom::ProfileIdentifier::New(
+      auto profile_identifier = mojom::ProfileIdentifier::New(
           base::SysNSStringToUTF8(toast_profile_id), toast_incognito);
-      notifications.push_back(notifications::mojom::NotificationIdentifier::New(
+      notifications.push_back(mojom::NotificationIdentifier::New(
           base::SysNSStringToUTF8(toast_id), std::move(profile_identifier)));
     }
   }
@@ -67,7 +89,7 @@ void MacNotificationServiceNS::GetDisplayedNotifications(
 }
 
 void MacNotificationServiceNS::CloseNotification(
-    notifications::mojom::NotificationIdentifierPtr identifier) {
+    mojom::NotificationIdentifierPtr identifier) {
   NSString* notification_id = base::SysUTF8ToNSString(identifier->id);
   NSString* profile_id = base::SysUTF8ToNSString(identifier->profile->id);
   bool incognito = identifier->profile->incognito;
@@ -94,13 +116,15 @@ void MacNotificationServiceNS::CloseAllNotifications() {
   [notification_center_ removeAllDeliveredNotifications];
 }
 
+}  // namespace mac_notifications
+
 @implementation AlertNSNotificationCenterDelegate {
-  mojo::Remote<notifications::mojom::MacNotificationActionHandler> _handler;
+  mojo::Remote<mac_notifications::mojom::MacNotificationActionHandler> _handler;
 }
 
 - (instancetype)initWithActionHandler:
-    (mojo::PendingRemote<notifications::mojom::MacNotificationActionHandler>)
-        handler {
+    (mojo::PendingRemote<
+        mac_notifications::mojom::MacNotificationActionHandler>)handler {
   if ((self = [super init])) {
     _handler.Bind(std::move(handler));
   }
@@ -109,7 +133,7 @@ void MacNotificationServiceNS::CloseAllNotifications() {
 
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
-  auto actionInfo = notifications::mojom::NotificationActionInfo::New();
+  auto actionInfo = mac_notifications::mojom::NotificationActionInfo::New();
   // TODO(knollr): Fill |action_info| with details from |notification|.
   _handler->OnNotificationAction(std::move(actionInfo));
 }
@@ -122,7 +146,7 @@ void MacNotificationServiceNS::CloseAllNotifications() {
 // notifications closed by the user.
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
                didDismissAlert:(NSUserNotification*)notification {
-  auto actionInfo = notifications::mojom::NotificationActionInfo::New();
+  auto actionInfo = mac_notifications::mojom::NotificationActionInfo::New();
   // TODO(knollr): Fill |action_info| with details from |notification|.
   _handler->OnNotificationAction(std::move(actionInfo));
 }
@@ -135,7 +159,7 @@ void MacNotificationServiceNS::CloseAllNotifications() {
     didRemoveDeliveredNotifications:(NSArray*)notifications {
   for (NSUserNotification* notification in notifications) {
     DCHECK(notification);
-    auto actionInfo = notifications::mojom::NotificationActionInfo::New();
+    auto actionInfo = mac_notifications::mojom::NotificationActionInfo::New();
     // TODO(knollr): Fill |action_info| with details from |notification|.
     _handler->OnNotificationAction(std::move(actionInfo));
   }

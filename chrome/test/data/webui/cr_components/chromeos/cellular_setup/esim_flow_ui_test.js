@@ -13,6 +13,7 @@
 // #import {assertEquals, assertTrue} from '../../../chai_assert.js';
 // #import {FakeESimManagerRemote} from './fake_esim_manager_remote.m.js';
 // #import {FakeCellularSetupDelegate} from './fake_cellular_setup_delegate.m.js';
+// #import {FakeBarcodeDetector} from './fake_barcode_detector.m.js';
 // clang-format on
 
 suite('CrComponentsEsimFlowUiTest', function() {
@@ -25,6 +26,8 @@ suite('CrComponentsEsimFlowUiTest', function() {
   let confirmationCodePage;
   let finalPage;
 
+  let focusDefaultButtonEventFired = false;
+
   async function flushAsync() {
     Polymer.dom.flush();
     // Use setTimeout to wait for the next macrotask.
@@ -34,6 +37,10 @@ suite('CrComponentsEsimFlowUiTest', function() {
   setup(function() {
     eSimManagerRemote = new cellular_setup.FakeESimManagerRemote();
     cellular_setup.setESimManagerRemoteForTesting(eSimManagerRemote);
+
+    document.addEventListener('focus-default-button', () => {
+      focusDefaultButtonEventFired = true;
+    });
 
     eSimPage = document.createElement('esim-flow-ui');
     eSimPage.delegate = new cellular_setup.FakeCellularSetupDelegate();
@@ -114,6 +121,11 @@ suite('CrComponentsEsimFlowUiTest', function() {
                                        cellularSetup.ButtonState.DISABLED);
   }
 
+  function assertFocusDefaultButtonEventFired() {
+    assertTrue(focusDefaultButtonEventFired);
+    focusDefaultButtonEventFired = false;
+  }
+
   async function assertProfileLoadingPageAndContinue() {
     assertSelectedPage(
         cellular_setup.ESimPageName.PROFILE_LOADING, profileLoadingPage);
@@ -146,6 +158,10 @@ suite('CrComponentsEsimFlowUiTest', function() {
       eSimManagerRemote.addEuiccForTest(0);
       const availableEuiccs = await eSimManagerRemote.getAvailableEuiccs();
       euicc = availableEuiccs.euiccs[0];
+
+      activationCodePage.barcodeDetectorClass_ = FakeBarcodeDetector;
+      activationCodePage.initBarcodeDetector();
+      await flushAsync();
       eSimPage.initSubflow();
 
       await assertProfileLoadingPageAndContinue();
@@ -159,8 +175,11 @@ suite('CrComponentsEsimFlowUiTest', function() {
       assertActivationCodePage(/*forwardButtonShouldBeEnabled=*/ true);
     });
 
-    // TODO(crbug.com/1178379) Fails consistenly.
-    test.skip('Invalid activation code', async function() {
+    test('Invalid activation code', async function() {
+      activationCodePage.barcodeDetectorClass_ = FakeBarcodeDetector;
+      activationCodePage.initBarcodeDetector();
+      await flushAsync();
+
       euicc.setProfileInstallResultForTest(
           chromeos.cellularSetup.mojom.ProfileInstallResult
               .kErrorInvalidActivationCode);
@@ -168,11 +187,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
       await attemptProfileInstall();
 
       // Install should fail and still be at activation code page.
-      // TODO(crbug.com/1093185): Update the following call to
-      // assertActivationCodePage(/*forwardButtonShouldBeEnabled=*/true) once
-      // this test passes.
-      assertSelectedPage(
-          cellular_setup.ESimPageName.ACTIVATION_CODE, activationCodePage);
+      assertActivationCodePage(/*forwardButtonShouldBeEnabled=*/ true);
       assertTrue(activationCodePage.$$('#scanSuccessContainer').hidden);
       assertFalse(activationCodePage.$$('#scanFailureContainer').hidden);
     });
@@ -338,10 +353,12 @@ suite('CrComponentsEsimFlowUiTest', function() {
       euicc = availableEuiccs.euiccs[0];
       eSimPage.initSubflow();
 
+      assertFocusDefaultButtonEventFired();
       await assertProfileLoadingPageAndContinue();
 
       // Should go to profile discovery page.
       assertProfileDiscoveryPage();
+      assertFocusDefaultButtonEventFired();
     });
 
     function skipDiscovery() {
@@ -353,9 +370,11 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
       // Should now be at the activation code page.
       assertActivationCodePage(/*forwardButtonShouldBeEnabled=*/ false);
+      assertFocusDefaultButtonEventFired();
 
       // Insert an activation code.
       activationCodePage.$$('#activationCode').value = 'ACTIVATION_CODE';
+      assertFalse(focusDefaultButtonEventFired);
 
       assertActivationCodePage(/*forwardButtonShouldBeEnabled=*/ true);
     }
@@ -382,14 +401,17 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
           // Confirmation code page should be showing.
           assertConfirmationCodePage(/*forwardButtonShouldBeEnabled=*/ false);
+          assertFocusDefaultButtonEventFired();
           confirmationCodePage.$$('#confirmationCode').value =
               'CONFIRMATION_CODE';
+          assertFalse(focusDefaultButtonEventFired);
 
           // Simulate pressing 'Backward'.
           assertTrue(eSimPage.attemptBackwardNavigation());
           await flushAsync();
 
           assertActivationCodePage(/*forwardButtonShouldBeEnabled=*/ true);
+          assertFocusDefaultButtonEventFired();
           assertEquals(
               activationCodePage.$$('#activationCode').value,
               'ACTIVATION_CODE');
@@ -399,6 +421,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           await flushAsync();
 
           assertProfileDiscoveryPage();
+          assertFocusDefaultButtonEventFired();
           assertEquals(
               eSimPage.forwardButtonLabel, 'Skip & Set up new profile');
 
@@ -439,6 +462,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
       // Confirmation code page should be showing.
       assertConfirmationCodePage(/*forwardButtonShouldBeEnabled=*/ false);
+      assertFocusDefaultButtonEventFired();
 
       profileList.profiles[0].setProfileInstallResultForTest(
           chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess);
@@ -448,6 +472,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
       // Should go to final page.
       await assertFinalPageAndPressDoneButton(false);
+      assertFocusDefaultButtonEventFired();
     });
 
     test(

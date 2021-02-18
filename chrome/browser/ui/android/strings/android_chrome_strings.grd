@@ -798,7 +798,7 @@ Today, websites rely on many technologies, like third-party cookies, for importa
 
 Privacy Sandbox preserves the vitality of the open web by creating better ways to perform these services – without breaking sites, and while preventing you from being surreptitiously tracked across the web.
 
-Privacy Sandbox is still in active development and is available in selected regions. For now, sites may try out Privacy Sandbox while continuing to use current web technologies like third-party cookies.
+Privacy Sandbox is still in active development and is available in selected regions. For now, sites may try out Privacy Sandbox while continuing to use current web technologies like third-party cookies. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_TOGGLE" desc="Title for the Privacy Sandbox toggle.">
         Enable Privacy Sandbox
@@ -811,7 +811,7 @@ Privacy Sandbox is still in active development and is available in selected regi
 <ph name="BEGIN_LIST_ITEM2">&lt;li2&gt;</ph>Advertisers can study the effectiveness of ads in a way that does not track you across sites.<ph name="END_LIST_ITEM2">&lt;/li2&gt;</ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_SNACKBAR_MESSAGE" desc="The text displayed in the snackbar, which gives the user an option to navigate to the Privacy Sandbox settings page. 'Privacy sandbox' has TC ID 5753235213964358658.">
-        Explore the Privacy Sandbox
+        Learn about and control new technologies that aim to replace third-party cookies
       </message>
 
       <!-- Secure DNS Settings.  Used by //chrome/browser/privacy. -->
@@ -1233,11 +1233,20 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_LANGUAGES_SETTINGS_AUTOMATIC" desc="Title of Translation settings that lists languages that should be automatically translated.">
         Automatically translate these languages
       </message>
-      <message name="IDS_LANGUAGES_SETTINGS_DONT_OFFER_LANG" desc="Title of Translation settings that lists languages where no prompt to translate will be shown.">
+      <message name="IDS_LANGUAGES_SETTINGS_AUTOMATIC_TITLE" desc="Short title for Translation settings page showing a list of languages that should be automatically translated.">
+        Automatically translate
+      </message>
+      <message name="IDS_LANGUAGES_SETTINGS_DONT_OFFER_LANGS" desc="Title of Translation settings that lists languages where no prompt to translate will be shown.">
         Don’t offer to translate these languages
+      </message>
+      <message name="IDS_LANGUAGES_SETTINGS_NEVER_LANGS_TITLE" desc="Short title for Translation settings page showing a list of languages that should never be translated">
+        Never translate
       </message>
       <message name="IDS_LANGUAGES_SETTINGS_DONT_OFFER_SITES" desc="Title of Translation settings that lists websites where no prompt to translate will be shown.">
         Don’t offer to translate these sites
+      </message>
+      <message name="IDS_LANGUAGES_SETTINGS_NEVER_SITES_TITLE" desc="Short title for Translation settings page showing a list of sites that should never be translated">
+        Never translate sites
       </message>
 
       <!-- Lite Mode-->
@@ -2111,6 +2120,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_CONTEXTMENU_SEARCH_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens. [CHAR-LIMIT=30]">
         Search with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
+      <message name="IDS_CONTEXTMENU_SEARCH_IMAGE_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens. [CHAR-LIMIT=30]">
+        Search image with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
       <message name="IDS_CONTEXTMENU_SHOP_SIMILAR_PRODUCTS" desc="Context sensitive menu item for deep linking into google lens for shopping results. [CHAR-LIMIT=30]">
         Shop similar products <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>

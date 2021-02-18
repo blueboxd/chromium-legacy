@@ -2633,6 +2633,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchDefinitionsName,
      flag_descriptions::kContextualSearchDefinitionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDefinitions)},
+    {"contextual-search-literal-search-tap",
+     flag_descriptions::kContextualSearchLiteralSearchTapName,
+     flag_descriptions::kContextualSearchLiteralSearchTapDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLiteralSearchTap)},
+    {"contextual-search-longpress-panel-help",
+     flag_descriptions::kContextualSearchLongpressPanelHelpName,
+     flag_descriptions::kContextualSearchLongpressPanelHelpDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLongpressPanelHelp)},
     {"contextual-search-longpress-resolve",
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
@@ -3504,9 +3514,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-incubations", flag_descriptions::kWebXrIncubationsName,
      flag_descriptions::kWebXrIncubationsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrIncubations)},
-    {"webxr-multi-gpu", flag_descriptions::kWebXrMultiGpuName,
-     flag_descriptions::kWebXrMultiGpuDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(blink::features::kWebXrMultiGpu)},
     {"webxr-runtime", flag_descriptions::kWebXrForceRuntimeName,
      flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
@@ -3888,6 +3895,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMagnifierPanningImprovementsName,
      flag_descriptions::kMagnifierPanningImprovementsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kMagnifierPanningImprovements)},
+    {"enable-magnifier-continuous-mouse-following-mode-setting",
+     flag_descriptions::kMagnifierContinuousMouseFollowingModeSettingName,
+     flag_descriptions::
+         kMagnifierContinuousMouseFollowingModeSettingDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kMagnifierContinuousMouseFollowingModeSetting)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_MAC)
     {"enable-immersive-fullscreen-toolbar",
@@ -6700,6 +6714,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidPasswordsName,
      flag_descriptions::kMessagesForAndroidPasswordsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPasswords)},
+    {"messages-for-android-popup-blocked",
+     flag_descriptions::kMessagesForAndroidPopupBlockedName,
+     flag_descriptions::kMessagesForAndroidPopupBlockedDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPopupBlocked)},
 #endif
 
 #if defined(OS_ANDROID)
@@ -6817,6 +6835,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopInProductHelpSnoozeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(feature_engagement::kIPHDesktopSnoozeFeature)},
 #endif  // defined(TOOLKIT_VIEWS)
+
+    {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
+     flag_descriptions::kAnimatedImageResumeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kAnimatedImageResume)},
 
 #if !defined(OS_ANDROID)
     {"sct-auditing", flag_descriptions::kSCTAuditingName,

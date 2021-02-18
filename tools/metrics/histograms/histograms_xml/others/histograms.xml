@@ -16603,8 +16603,9 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="TouchBar.Default.Metrics" enum="DefaultTouchBarActions"
-    expires_after="M85">
-  <owner>spqchan@chromium.org</owner>
+    expires_after="M91">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>chrome-mac-dev@google.com</owner>
   <summary>Tracks the usage of the default touch bar buttons.</summary>
 </histogram>
 
@@ -18154,6 +18155,44 @@ regressions. -->
     The time between the phone connecting to the tunnel server (and thus
     starting its BLE broadcast) to the point where it receives the handshake
     message from the desktop.
+  </summary>
+</histogram>
+
+<histogram name="WebAuthentication.ChromeOS.GetAssertionStatus"
+    enum="WebAuthenticationChromeOSGetAssertionResult"
+    expires_after="2021-11-19">
+  <owner>yichengli@chromium.org</owner>
+  <owner>martinkr@google.com</owner>
+  <summary>Records the outcome of GetAssertion on Chrome OS.</summary>
+</histogram>
+
+<histogram name="WebAuthentication.ChromeOS.MakeCredentialStatus"
+    enum="WebAuthenticationChromeOSMakeCredentialResult"
+    expires_after="2021-11-19">
+  <owner>yichengli@chromium.org</owner>
+  <owner>martinkr@google.com</owner>
+  <summary>Records the outcome of MakeCredential on Chrome OS.</summary>
+</histogram>
+
+<histogram name="WebAuthentication.ChromeOS.StartupRecordCount" units="records"
+    expires_after="2021-11-19">
+  <owner>yichengli@chromium.org</owner>
+  <owner>martinkr@google.com</owner>
+  <summary>
+    Records the number of records of the user's WebAuthn credentials created on
+    Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="WebAuthentication.ChromeOS.UserVerificationRequired"
+    enum="Boolean" expires_after="2021-11-19">
+  <owner>yichengli@chromium.org</owner>
+  <owner>martinkr@google.com</owner>
+  <summary>
+    Records whether the Chrome OS platform authenticator should try to verify
+    the user (instead of requiring power button press). Note that a
+    presence-only request may get upgraded to user-verification. Also note that
+    &quot;true&quot; does not mean the user is actually verified.
   </summary>
 </histogram>
 

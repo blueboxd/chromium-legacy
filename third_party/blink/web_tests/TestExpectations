@@ -5555,12 +5555,6 @@ crbug.com/1154940 [ Win7 ] inspector-protocol/overlay/overlay-persistent-overlay
 # DevTools roll
 crbug.com/1144171 http/tests/devtools/report-API-errors.js [ Skip ]
 
-# Tests that need to be rebaselined after https://crrev.com/c/2697190 lands
-crbug.com/1178530 http/tests/devtools/console/console-dir.js [ Pass Failure ]
-crbug.com/1178530 http/tests/devtools/console/console-format.js [ Pass Failure ]
-crbug.com/1178530 http/tests/devtools/console/console-format-broken-unicode.js [ Pass Failure ]
-crbug.com/1178530 http/tests/devtools/console/console-truncate-long-messages.js [ Pass Failure ]
-
 # Sheriff 2020-12-07
 crbug.com/1156175 external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
@@ -5624,12 +5618,6 @@ crbug.com/1050549 http/tests/devtools/extensions/extensions-timeline-api.js [ Pa
 
 # Flaky test
 crbug.com/1173439 http/tests/devtools/service-workers/service-worker-manager.js [ Pass Timeout ]
-
-# Needs to be rebaselined after V8 CL rolls
-crbug.com/1177685 http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Pass Failure ]
-crbug.com/1177685 http/tests/devtools/console/function-name-in-console-message-stack.js [ Pass Failure ]
-crbug.com/1177685 http/tests/devtools/sources/debugger-pause/function-name-in-callstack.js [ Pass Failure ]
-crbug.com/1177685 http/tests/devtools/sources/debugger-ui/function-display-name-call-stack.js [ Pass Failure ]
 
 # Sheriff 2018-01-25
 crbug.com/893869 css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
@@ -5725,3 +5713,6 @@ crbug.com/1179857 [ Linux ] http/tests/inspector-protocol/dom/dom-getFrameOwner.
 crbug.com/1179905 [ Linux ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure ]
 crbug.com/1179969 [ Mac ] external/wpt/service-workers/service-worker/claim-fetch.https.html [ Failure ]
 crbug.com/1179969 [ Mac ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/claim-fetch.https.html [ Failure ]
+
+# DevTools roll
+crbug.com/1134103 http/tests/devtools/coverage/decorations-after-script-formatter.js [ Skip ]

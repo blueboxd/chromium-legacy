@@ -101,15 +101,15 @@ StyleResolverState::~StyleResolverState() {
   animation_update_.Clear();
 }
 
-void StyleResolverState::SetStyle(ComputedStyle* style) {
+void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
   style_ = std::move(style);
   css_to_length_conversion_data_ = CSSToLengthConversionData(
-      style_, RootElementStyle(), GetDocument().GetLayoutView(),
+      style_.get(), RootElementStyle(), GetDocument().GetLayoutView(),
       style_->EffectiveZoom());
 }
 
-ComputedStyle* StyleResolverState::TakeStyle() {
+scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
   return std::move(style_);
 }
 
@@ -134,21 +134,24 @@ CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData()
   return UnzoomedLengthConversionData(Style());
 }
 
-void StyleResolverState::SetParentStyle(const ComputedStyle* parent_style) {
-  parent_style_ = parent_style;
+void StyleResolverState::SetParentStyle(
+    scoped_refptr<const ComputedStyle> parent_style) {
+  parent_style_ = std::move(parent_style);
 }
 
 void StyleResolverState::SetLayoutParentStyle(
-    const ComputedStyle* parent_style) {
-  layout_parent_style_ = parent_style;
+    scoped_refptr<const ComputedStyle> parent_style) {
+  layout_parent_style_ = std::move(parent_style);
 }
 
 void StyleResolverState::LoadPendingResources() {
   if (pseudo_request_type_ == PseudoElementStyleRequest::kForComputedStyle ||
       (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
-      StyleRef().Display() == EDisplay::kNone ||
-      StyleRef().IsEnsuredOutsideFlatTree())
+      (StyleRef().Display() == EDisplay::kNone &&
+       !GetElement().LayoutObjectIsNeeded(StyleRef())) ||
+      StyleRef().IsEnsuredOutsideFlatTree()) {
     return;
+  }
 
   if (StyleRef().StyleType() == kPseudoIdTargetText) {
     // Do not load any resources for ::target-text since that could leak text

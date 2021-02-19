@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/audio/audio_devices_pref_handler_impl.h"
+#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -49,7 +51,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_data_snapshotd_delegate.h"
-#include "chrome/browser/chromeos/arc/enterprise/arc_force_installed_apps_tracker.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/crosapi/browser_manager.h"
@@ -148,8 +149,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/audio/audio_devices_pref_handler_impl.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
 #include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
@@ -683,7 +682,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       std::make_unique<arc::data_snapshotd::ArcDataSnapshotdManager>(
           g_browser_process->local_state(),
           std::make_unique<arc::data_snapshotd::ArcDataSnapshotdDelegate>(),
-          std::make_unique<arc::data_snapshotd::ArcForceInstalledAppsTracker>(),
           base::BindOnce(chrome::AttemptUserExit));
   if (base::FeatureList::IsEnabled(::features::kWilcoDtc))
     wilco_dtc_supportd_manager_ = std::make_unique<WilcoDtcSupportdManager>();

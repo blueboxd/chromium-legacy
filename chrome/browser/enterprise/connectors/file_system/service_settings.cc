@@ -7,22 +7,6 @@
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/policy/core/browser/url_util.h"
 
-#if defined(USE_OFFICIAL_ENTERPRISE_CONNECTORS_API_KEYS)
-#include "google_apis/internal/enterprise_connectors_api_keys.h"
-#endif
-
-// Used to indicate an unset key/id/secret.  This works better with
-// various unit tests than leaving the token empty.
-#define DUMMY_API_TOKEN "dummytoken"
-
-#if !defined(CLIENT_ID_CONNECTOR_PARTNER_BOX)
-#define CLIENT_ID_CONNECTOR_PARTNER_BOX DUMMY_API_TOKEN
-#endif
-
-#if !defined(CLIENT_SECRET_CONNECTOR_PARTNER_BOX)
-#define CLIENT_SECRET_CONNECTOR_PARTNER_BOX DUMMY_API_TOKEN
-#endif
-
 constexpr char kWildcardMimeType[] = "*";
 
 namespace enterprise_connectors {
@@ -43,6 +27,8 @@ FileSystemServiceSettings::FileSystemServiceSettings(
   }
   if (!service_provider_)
     return;
+
+  service_provider_name_ = *service_provider_name;
 
   const std::string* enterprise_id =
       settings_value.FindStringKey(kKeyEnterpriseId);
@@ -105,12 +91,13 @@ base::Optional<FileSystemSettings> FileSystemServiceSettings::GetSettings(
     return base::nullopt;
 
   FileSystemSettings settings;
+  settings.service_provider = service_provider_name_;
   settings.home = GURL(service_provider_->fs_home_url());
   settings.authorization_endpoint =
       GURL(service_provider_->fs_authorization_endpoint());
   settings.token_endpoint = GURL(service_provider_->fs_token_endpoint());
-  settings.client_id = CLIENT_ID_CONNECTOR_PARTNER_BOX;
-  settings.client_secret = CLIENT_SECRET_CONNECTOR_PARTNER_BOX;
+  settings.client_id = service_provider_->fs_client_id();
+  settings.client_secret = service_provider_->fs_client_secret();
   settings.scopes = service_provider_->fs_scopes();
   settings.max_direct_size = service_provider_->fs_max_direct_size();
   settings.mime_types = std::move(mime_types);

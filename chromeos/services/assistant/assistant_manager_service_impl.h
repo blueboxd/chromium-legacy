@@ -18,6 +18,7 @@
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "chromeos/assistant/internal/action/assistant_action_observer.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
@@ -128,7 +129,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void Stop() override;
   State GetState() const override;
   void SetUser(const base::Optional<UserInfo>& user) override;
-  void EnableAmbientMode(bool enabled) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
   void SetArcPlayStoreEnabled(bool enable) override;
@@ -329,6 +329,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       scoped_app_list_event_subscriber_{this};
   base::ObserverList<CommunicationErrorObserver> error_observers_;
   base::ObserverList<AssistantManagerService::StateObserver> state_observers_;
+  base::ScopedObservation<action::CrosActionModule,
+                          action::AssistantActionObserver>
+      scoped_action_observer_{this};
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 

@@ -95,10 +95,13 @@ struct ReportingSettings {
 
 struct FileSystemSettings {
   FileSystemSettings();
+  FileSystemSettings(const FileSystemSettings&);
   FileSystemSettings(FileSystemSettings&&);
+  FileSystemSettings& operator=(const FileSystemSettings&);
   FileSystemSettings& operator=(FileSystemSettings&&);
   ~FileSystemSettings();
 
+  std::string service_provider;
   GURL home;
   GURL authorization_endpoint;
   GURL token_endpoint;

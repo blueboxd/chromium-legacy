@@ -5,6 +5,7 @@
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -128,6 +129,14 @@ class ServiceControllerProxy : public ServiceController {
     inner_service_controller_->DisconnectFromEndpoint(client, endpoint_id);
   }
 
+  void Stop() override {
+    if (!inner_service_controller_)
+      return;
+    // TODO(crbug/1176249): This stops the service controller for all Cores that
+    // share this inner_service_controller_.
+    inner_service_controller_->Stop();
+  }
+
  private:
   // This is intentionally a reference to the unique_ptr owned by
   // NearbyConnections. During the shutdown flow, NearbyConnection will clean up
@@ -213,16 +222,17 @@ NearbyConnections::NearbyConnections(
       on_disconnect_(std::move(on_disconnect)),
       service_controller_(std::move(service_controller)),
       thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  nearby_connections_.set_disconnect_handler(
-      base::BindOnce(&NearbyConnections::OnDisconnect,
-                     weak_ptr_factory_.GetWeakPtr(), "Nearby Connections"));
+  nearby_connections_.set_disconnect_handler(base::BindOnce(
+      &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr(),
+      MojoDependencyName::kNearbyConnections));
 
   if (dependencies->bluetooth_adapter) {
     bluetooth_adapter_.Bind(std::move(dependencies->bluetooth_adapter),
                             io_task_runner);
     bluetooth_adapter_.set_disconnect_handler(
         base::BindOnce(&NearbyConnections::OnDisconnect,
-                       weak_ptr_factory_.GetWeakPtr(), "Bluetooth Adapter"),
+                       weak_ptr_factory_.GetWeakPtr(),
+                       MojoDependencyName::kBluetoothAdapter),
         base::SequencedTaskRunnerHandle::Get());
   }
 
@@ -231,7 +241,8 @@ NearbyConnections::NearbyConnections(
       io_task_runner);
   socket_manager_.set_disconnect_handler(
       base::BindOnce(&NearbyConnections::OnDisconnect,
-                     weak_ptr_factory_.GetWeakPtr(), "Socket Manager"),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     MojoDependencyName::kSocketManager),
       base::SequencedTaskRunnerHandle::Get());
 
   mdns_responder_.Bind(
@@ -239,7 +250,8 @@ NearbyConnections::NearbyConnections(
       io_task_runner);
   mdns_responder_.set_disconnect_handler(
       base::BindOnce(&NearbyConnections::OnDisconnect,
-                     weak_ptr_factory_.GetWeakPtr(), "MDNS Responder"),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     MojoDependencyName::kMdnsResponder),
       base::SequencedTaskRunnerHandle::Get());
 
   ice_config_fetcher_.Bind(
@@ -247,7 +259,8 @@ NearbyConnections::NearbyConnections(
       io_task_runner);
   ice_config_fetcher_.set_disconnect_handler(
       base::BindOnce(&NearbyConnections::OnDisconnect,
-                     weak_ptr_factory_.GetWeakPtr(), "Ice Config Fetcher"),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     MojoDependencyName::kIceConfigFetcher),
       base::SequencedTaskRunnerHandle::Get());
 
   webrtc_signaling_messenger_.Bind(
@@ -255,7 +268,7 @@ NearbyConnections::NearbyConnections(
   webrtc_signaling_messenger_.set_disconnect_handler(
       base::BindOnce(&NearbyConnections::OnDisconnect,
                      weak_ptr_factory_.GetWeakPtr(),
-                     "WebRTC Signaling Messenger"),
+                     MojoDependencyName::kWebRtcSignalingMessenger),
       base::SequencedTaskRunnerHandle::Get());
 
   // There should only be one instance of NearbyConnections in a process.
@@ -308,11 +321,37 @@ NearbyConnections::~NearbyConnections() {
   VLOG(1) << "Nearby Connections: shutdown complete";
 }
 
-void NearbyConnections::OnDisconnect(const std::string dependency_name) {
-  LOG(WARNING) << "Nearby dependency mojo disconnected: [" << dependency_name
-               << "]";
-  if (on_disconnect_)
-    std::move(on_disconnect_).Run();
+std::string NearbyConnections::GetMojoDependencyName(
+    MojoDependencyName dependency_name) {
+  switch (dependency_name) {
+    case MojoDependencyName::kNearbyConnections:
+      return "Nearby Connections";
+    case MojoDependencyName::kBluetoothAdapter:
+      return "Bluetooth Adapter";
+    case MojoDependencyName::kSocketManager:
+      return "Socket Manager";
+    case MojoDependencyName::kMdnsResponder:
+      return "MDNS Responder";
+    case MojoDependencyName::kIceConfigFetcher:
+      return "ICE Config Fetcher";
+    case MojoDependencyName::kWebRtcSignalingMessenger:
+      return "WebRTC Signaling Messenger";
+  }
+}
+
+void NearbyConnections::OnDisconnect(MojoDependencyName dependency_name) {
+  if (!on_disconnect_) {
+    return;
+  }
+
+  LOG(WARNING) << "Nearby dependency mojo disconnected: ["
+               << GetMojoDependencyName(dependency_name) << "]";
+  base::UmaHistogramEnumeration(
+      "Nearby.Connections.UtilityProcessShutdownReason."
+      "DisconnectedMojoDependency",
+      dependency_name);
+
+  std::move(on_disconnect_).Run();
   // Note: |this| might be destroyed here.
 }
 

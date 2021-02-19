@@ -600,6 +600,8 @@ void ExtensionDownloader::CreateManifestLoader() {
     // Non-webstore sources may require HTTP auth.
     resource_request->credentials_mode =
         network::mojom::CredentialsMode::kInclude;
+    resource_request->site_for_cookies =
+        net::SiteForCookies::FromUrl(active_request->full_url());
   }
 
   manifest_loader_ = network::SimpleURLLoader::Create(
@@ -1178,6 +1180,9 @@ void ExtensionDownloader::CreateExtensionLoader() {
   if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
     extension_loader_resource_request_->credentials_mode =
         network::mojom::CredentialsMode::kOmit;
+  } else {
+    extension_loader_resource_request_->site_for_cookies =
+        net::SiteForCookies::FromUrl(fetch->url);
   }
 
   if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
@@ -1420,8 +1425,8 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
         signin::ScopeSet webstore_scopes;
         webstore_scopes.insert(kWebstoreOAuth2Scope);
         identity_manager_->RemoveAccessTokenFromCache(
-            identity_manager_->GetPrimaryAccountId(), webstore_scopes,
-            access_token_);
+            identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync),
+            webstore_scopes, access_token_);
         access_token_.clear();
         return true;
       }

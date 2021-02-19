@@ -1101,6 +1101,7 @@
                     "params": {
                         "TimeToLiveInBackForwardCacheInSeconds": "180",
                         "allowed_websites": "https://domain1.org,https://domain2.org",
+                        "check_eligibility_after_pagehide": "true",
                         "enable_same_site": "true",
                         "geolocation_supported": "true",
                         "service_worker_supported": "true"
@@ -1427,29 +1428,6 @@
                     },
                     "enable_features": [
                         "ChangeExtensionEventPageSuspendDelay"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ChangePasswordURLUsingAffiliations": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "ChangePasswordURLUsingAffiliations",
-                    "enable_features": [
-                        "ChangePasswordAffiliationInfo",
-                        "UseOfHashAffiliationFetcher"
                     ]
                 }
             ]
@@ -2668,6 +2646,21 @@
             ]
         }
     ],
+    "DexFixer": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DexFixer"
+                    ]
+                }
+            ]
+        }
+    ],
     "DiceMultilogin": [
         {
             "platforms": [
@@ -3186,8 +3179,8 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "EnhancedProtectionPromoMaxImpressionsAndroid": "13",
-                        "SigninPromoMaxImpressionsAndroid": "13"
+                        "EnhancedProtectionPromoMaxImpressionsAndroid": "10",
+                        "SigninPromoMaxImpressionsAndroid": "10"
                     },
                     "enable_features": [
                         "EnhancedProtectionPromoCard"
@@ -5919,6 +5912,27 @@
                     },
                     "enable_features": [
                         "IPH_ReadLaterContextMenu"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RelatedSearches": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "language_allowlist": "en",
+                        "needs_content": "true",
+                        "needs_url": "true",
+                        "stamp": "1Rb"
+                    },
+                    "enable_features": [
+                        "RelatedSearches"
                     ]
                 }
             ]

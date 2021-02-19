@@ -51,6 +51,13 @@ std::unique_ptr<WindowInfo> GetWindowInfo(aura::Window* window) {
   return FullRestoreReadHandler::GetInstance()->GetWindowInfo(window);
 }
 
+int32_t FetchRestoreWindowId(const std::string& app_id) {
+  if (!ash::features::IsFullRestoreEnabled())
+    return 0;
+
+  return FullRestoreReadHandler::GetInstance()->FetchRestoreWindowId(app_id);
+}
+
 bool ShouldRestore(const AccountId& account_id) {
   return FullRestoreInfo::GetInstance()->ShouldRestore(account_id);
 }
@@ -84,6 +91,8 @@ void ModifyWidgetParams(int32_t restore_window_id,
 
   if (window_info->desk_id)
     out_params->workspace = base::NumberToString(*window_info->desk_id);
+  out_params->visible_on_all_workspaces =
+      window_info->visible_on_all_workspaces.has_value();
   if (window_info->current_bounds)
     out_params->bounds = *window_info->current_bounds;
   if (window_info->restore_bounds) {

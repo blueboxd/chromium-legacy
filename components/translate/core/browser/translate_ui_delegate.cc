@@ -9,6 +9,10 @@
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "components/language/core/common/language_experiments.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -68,6 +72,10 @@ bool IsLikelyAmpCacheUrl(const GURL& url) {
 
 namespace translate {
 
+LanguageNameTriple::LanguageNameTriple() = default;
+LanguageNameTriple::~LanguageNameTriple() = default;
+LanguageNameTriple::LanguageNameTriple(const LanguageNameTriple&) = default;
+
 TranslateUIDelegate::TranslateUIDelegate(
     const base::WeakPtr<TranslateManager>& translate_manager,
     const std::string& original_language,
@@ -82,16 +90,41 @@ TranslateUIDelegate::TranslateUIDelegate(
   DCHECK(translate_driver_);
   DCHECK(translate_manager_);
 
+  std::string locale =
+      TranslateDownloadManager::GetInstance()->application_locale();
+
+  if (base::FeatureList::IsEnabled(
+          language::kContentLanguagesInLanguagePicker)) {
+    std::vector<std::string> content_language_codes;
+    prefs_->GetTranslatableContentLanguages(locale, &content_language_codes);
+    translatable_content_languages_.reserve(content_language_codes.size());
+    for (std::string& language_code : content_language_codes) {
+      LanguageNameTriple languageInfo;
+      languageInfo.code = language_code;
+      languageInfo.name =
+          l10n_util::GetDisplayNameForLocale(language_code, locale, true);
+      languageInfo.native_name = l10n_util::GetDisplayNameForLocale(
+          language_code, language_code, true);
+      translatable_content_languages_.emplace_back(languageInfo);
+    }
+  }
+
   std::vector<std::string> language_codes;
   TranslateDownloadManager::GetSupportedLanguages(
       prefs_->IsTranslateAllowedByPolicy(), &language_codes);
+  // Reserve additional space for unknown language option on Android if feature
+  // is enabled, and on Desktop always.
+  std::vector<std::string>::size_type languages_size = language_codes.size();
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(language::kDetectedSourceLanguageOption))
+    languages_size += 1;
+#elif !defined(OS_IOS)
+  languages_size += 1;
+#endif
+  languages_.reserve(languages_size);
 
   // Preparing for the alphabetical order in the locale.
-  std::string locale =
-      TranslateDownloadManager::GetInstance()->application_locale();
   std::unique_ptr<icu::Collator> collator = CreateCollator(locale);
-
-  languages_.reserve(language_codes.size());
   for (std::string& language_code : language_codes) {
     base::string16 language_name =
         l10n_util::GetDisplayNameForLocale(language_code, locale, true);
@@ -123,6 +156,27 @@ TranslateUIDelegate::TranslateUIDelegate(
         // the language codes.
         return lhs.first < rhs.first;
       });
+
+  // Add unknown language option to the front of the list on Android if feature
+  // is enabled, and on Desktop always.
+  bool add_unknown_language_option = true;
+#if defined(OS_IOS)
+  add_unknown_language_option = false;
+#elif defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(language::kDetectedSourceLanguageOption))
+    add_unknown_language_option = false;
+#endif
+  if (add_unknown_language_option) {
+    //  Experiment in place to replace the "Unknown" string with "Detected
+    //  Language".
+    base::string16 unknown_language_string =
+        base::FeatureList::IsEnabled(language::kDetectedSourceLanguageOption)
+            ? l10n_util::GetStringUTF16(IDS_TRANSLATE_DETECTED_LANGUAGE)
+            : l10n_util::GetStringUTF16(IDS_TRANSLATE_UNKNOWN_SOURCE_LANGUAGE);
+    languages_.emplace_back("und", unknown_language_string);
+    std::rotate(languages_.rbegin(), languages_.rbegin() + 1,
+                languages_.rend());
+  }
 
   for (std::vector<LanguageNamePair>::const_iterator iter = languages_.begin();
        iter != languages_.end(); ++iter) {
@@ -219,6 +273,36 @@ base::string16 TranslateUIDelegate::GetLanguageNameAt(size_t index) const {
     return base::string16();
   DCHECK_LT(index, GetNumberOfLanguages());
   return languages_[index].second;
+}
+
+void TranslateUIDelegate::GetContentLanguagesNames(
+    std::vector<base::string16>* content_languages) const {
+  DCHECK(content_languages != nullptr);
+  content_languages->clear();
+
+  for (auto& entry : translatable_content_languages_) {
+    content_languages->push_back(entry.name);
+  }
+}
+
+void TranslateUIDelegate::GetContentLanguagesNativeNames(
+    std::vector<base::string16>* native_content_languages) const {
+  DCHECK(native_content_languages != nullptr);
+  native_content_languages->clear();
+
+  for (auto& entry : translatable_content_languages_) {
+    native_content_languages->push_back(entry.native_name);
+  }
+}
+
+void TranslateUIDelegate::GetContentLanguagesCodes(
+    std::vector<std::string>* content_codes) const {
+  DCHECK(content_codes != nullptr);
+  content_codes->clear();
+
+  for (auto& entry : translatable_content_languages_) {
+    content_codes->push_back(entry.code);
+  }
 }
 
 std::string TranslateUIDelegate::GetOriginalLanguageCode() const {

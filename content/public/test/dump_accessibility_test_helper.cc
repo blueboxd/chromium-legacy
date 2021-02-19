@@ -172,103 +172,116 @@ void DumpAccessibilityTestHelper::SetUpCommandLine(
   }
 }
 
-bool DumpAccessibilityTestHelper::ParsePropertyFilter(
-    const std::string& line,
-    std::vector<AXPropertyFilter>* filters) const {
-  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
-  if (!mapping) {
-    return false;
-  }
+DumpAccessibilityTestHelper::Scenario::Scenario(
+    const std::vector<ui::AXPropertyFilter>& default_filters)
+    : property_filters(default_filters) {}
+DumpAccessibilityTestHelper::Scenario::Scenario(Scenario&&) = default;
+DumpAccessibilityTestHelper::Scenario::~Scenario() = default;
+DumpAccessibilityTestHelper::Scenario&
+DumpAccessibilityTestHelper::Scenario::operator=(Scenario&&) = default;
 
-  std::string directive = mapping->directive_prefix + "-ALLOW-EMPTY:";
-  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
-    filters->emplace_back(line.substr(directive.size()),
-                          AXPropertyFilter::ALLOW_EMPTY);
-    return true;
-  }
+DumpAccessibilityTestHelper::Scenario
+DumpAccessibilityTestHelper::ParseScenario(
+    const std::vector<std::string>& lines,
+    const std::vector<ui::AXPropertyFilter>& default_filters) {
+  Scenario scenario(default_filters);
+  for (const std::string& line : lines) {
+    // Directives have format of @directive:value.
+    if (!base::StartsWith(line, "@")) {
+      continue;
+    }
 
-  directive = mapping->directive_prefix + "-ALLOW:";
-  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
-    filters->emplace_back(line.substr(directive.size()),
-                          AXPropertyFilter::ALLOW);
-    return true;
-  }
+    auto directive_end_pos = line.find_first_of(':');
+    if (directive_end_pos == std::string::npos) {
+      continue;
+    }
 
-  directive = mapping->directive_prefix + "-SCRIPT:";
-  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
-    filters->emplace_back(line.substr(directive.size()),
-                          AXPropertyFilter::SCRIPT);
-    return true;
-  }
+    Directive directive = ParseDirective(line.substr(0, directive_end_pos));
+    if (directive == kNone)
+      continue;
 
-  directive = mapping->directive_prefix + "-DENY:";
-  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
-    filters->emplace_back(line.substr(directive.size()),
-                          AXPropertyFilter::DENY);
-    return true;
+    std::string value = line.substr(directive_end_pos + 1);
+    ProcessDirective(directive, value, &scenario);
   }
-
-  return false;
+  return scenario;
 }
 
-bool DumpAccessibilityTestHelper::ParseNodeFilter(
-    const std::string& line,
-    std::vector<AXNodeFilter>* filters) const {
-  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
-  if (!mapping) {
-    return false;
-  }
-
-  std::string directive = mapping->directive_prefix + "-DENY-NODE:";
-  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
-    const auto& node_filter = line.substr(directive.size());
-    const auto& parts = base::SplitString(
-        node_filter, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    // Silently skip over parsing errors like the rest of the enclosing code.
-    if (parts.size() == 2) {
-      filters->emplace_back(parts[0], parts[1]);
-      return true;
+void DumpAccessibilityTestHelper::ProcessDirective(Directive directive,
+                                                   const std::string& value,
+                                                   Scenario* scenario) const {
+  switch (directive) {
+    case kNoLoadExpected:
+      scenario->no_load_expected.push_back(value);
+      break;
+    case kWaitFor:
+      scenario->wait_for.push_back(value);
+      break;
+    case kExecuteAndWaitFor:
+      scenario->execute.push_back(value);
+      break;
+    case kRunUntil:
+      scenario->run_until.push_back(value);
+      break;
+    case kDefaultActionOn:
+      scenario->default_action_on.push_back(value);
+      break;
+    case kPropertyFilterAllow:
+      scenario->property_filters.emplace_back(value, AXPropertyFilter::ALLOW);
+      break;
+    case kPropertyFilterAllowEmpty:
+      scenario->property_filters.emplace_back(value,
+                                              AXPropertyFilter::ALLOW_EMPTY);
+      break;
+    case kPropertyFilterDeny:
+      scenario->property_filters.emplace_back(value, AXPropertyFilter::DENY);
+      break;
+    case kScript:
+      scenario->property_filters.emplace_back(value, AXPropertyFilter::SCRIPT);
+      break;
+    case kNodeFilter: {
+      const auto& parts = base::SplitString(value, "=", base::TRIM_WHITESPACE,
+                                            base::SPLIT_WANT_NONEMPTY);
+      if (parts.size() == 2)
+        scenario->node_filters.emplace_back(parts[0], parts[1]);
+      else
+        LOG(WARNING) << "Failed to parse node filter " << value;
+      break;
     }
+    default:
+      NOTREACHED() << "Unrecognized " << directive << " directive";
+      break;
   }
-
-  return false;
 }
 
 DumpAccessibilityTestHelper::Directive
-DumpAccessibilityTestHelper::ParseDirective(const std::string& line) const {
-  // Directives have format of @directive:value.
-  if (!base::StartsWith(line, "@")) {
-    return {};
-  }
-
-  auto directive_end_pos = line.find_first_of(':');
-  if (directive_end_pos == std::string::npos) {
-    return {};
-  }
-
+DumpAccessibilityTestHelper::ParseDirective(
+    const std::string& directive) const {
   const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
-  if (!mapping) {
-    return {};
-  }
+  if (!mapping)
+    return kNone;
 
-  std::string directive = line.substr(0, directive_end_pos);
-  std::string value = line.substr(directive_end_pos + 1);
-  if (directive == "@NO-LOAD-EXPECTED") {
-    return {Directive::kNoLoadExpected, value};
-  }
-  if (directive == "@WAIT-FOR") {
-    return {Directive::kWaitFor, value};
-  }
-  if (directive == "@EXECUTE-AND-WAIT-FOR") {
-    return {Directive::kExecuteAndWaitFor, value};
-  }
-  if (directive == mapping->directive_prefix + "-RUN-UNTIL-EVENT") {
-    return {Directive::kRunUntil, value};
-  }
-  if (directive == "@DEFAULT-ACTION-ON") {
-    return {Directive::kDefaultActionOn, value};
-  }
-  return {};
+  if (directive == "@NO-LOAD-EXPECTED")
+    return kNoLoadExpected;
+  if (directive == "@WAIT-FOR")
+    return kWaitFor;
+  if (directive == "@EXECUTE-AND-WAIT-FOR")
+    return kExecuteAndWaitFor;
+  if (directive == mapping->directive_prefix + "-RUN-UNTIL-EVENT")
+    return kRunUntil;
+  if (directive == "@DEFAULT-ACTION-ON")
+    return kDefaultActionOn;
+  if (directive == mapping->directive_prefix + "-ALLOW")
+    return kPropertyFilterAllow;
+  if (directive == mapping->directive_prefix + "-ALLOW-EMPTY")
+    return kPropertyFilterAllowEmpty;
+  if (directive == mapping->directive_prefix + "-DENY")
+    return kPropertyFilterDeny;
+  if (directive == mapping->directive_prefix + "-SCRIPT")
+    return kScript;
+  if (directive == mapping->directive_prefix + "-DENY-NODE")
+    return kNodeFilter;
+
+  return kNone;
 }
 
 // static

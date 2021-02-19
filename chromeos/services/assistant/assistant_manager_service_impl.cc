@@ -10,7 +10,6 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
@@ -221,7 +220,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     base::Optional<std::string> device_id_override,
     std::unique_ptr<LibassistantServiceHost> libassistant_service_host)
     : action_module_(std::make_unique<action::CrosActionModule>(
-          this,
           features::IsAppSupportEnabled(),
           features::IsWaitSchedulingEnabled())),
       assistant_settings_(
@@ -242,6 +240,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           device_id_override,
           ShouldPutLogsInHomeDirectory())),
       weak_factory_(this) {
+  scoped_action_observer_.Observe(action_module_.get());
+
   if (libassistant_service_host) {
     // During unittests a custom host is passed in, so we'll use that one.
     libassistant_service_host_ = std::move(libassistant_service_host);
@@ -263,6 +263,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   platform_delegate_->Bind(assistant_proxy_->ExtractPlatformDelegate());
   audio_input_host_ = delegate_->CreateAudioInputHost(
       assistant_proxy_->ExtractAudioInputController());
+
+  assistant_settings_->Initialize(
+      assistant_proxy_->ExtractSpeakerIdEnrollmentController());
 
   media_host_->Initialize(&assistant_proxy_->media_controller(),
                           assistant_proxy_->ExtractMediaDelegate());
@@ -288,16 +291,6 @@ void AssistantManagerServiceImpl::Start(const base::Optional<UserInfo>& user,
   started_time_ = base::TimeTicks::Now();
 
   EnableHotword(enable_hotword);
-
-  // Check the AmbientModeState to keep us synced on |ambient_state|.
-  if (chromeos::features::IsAmbientModeEnabled()) {
-    auto* model = ash::AmbientUiModel::Get();
-    // Could be nullptr in test.
-    if (model) {
-      EnableAmbientMode(model->ui_visibility() !=
-                        ash::AmbientUiVisibility::kClosed);
-    }
-  }
 
   InitAssistant(user, assistant_state()->locale().value());
 }
@@ -329,12 +322,6 @@ void AssistantManagerServiceImpl::SetUser(
 
   VLOG(1) << "Set user information (Gaia ID and access token).";
   service_controller().SetAuthTokens(ToAuthTokensOrEmpty(user));
-}
-
-void AssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {
-  // Update |action_module_| accordingly, as some actions, e.g. open URL
-  // in the browser, are not supported in ambient mode.
-  action_module_->SetAmbientModeEnabled(enabled);
 }
 
 void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {

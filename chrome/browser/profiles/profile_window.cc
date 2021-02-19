@@ -64,7 +64,7 @@
 #endif  // !defined (OS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/profile_picker.h"
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 using base::UserMetricsAction;
@@ -212,8 +212,7 @@ void OpenBrowserWindowForProfile(ProfileManager::CreateCallback callback,
             ->GetProfileAttributesStorage()
             .GetProfileAttributesWithPath(profile->GetPath());
     if (entry && entry->IsSigninRequired()) {
-      UserManager::Show(profile->GetPath(),
-                        profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+      ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileLocked);
       return;
     }
   }
@@ -293,13 +292,6 @@ bool HasProfileSwitchTargets(Profile* profile) {
   return number_of_profiles >= min_profiles;
 }
 
-void ProfileBrowserCloseSuccess(const base::FilePath& profile_path) {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
 void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesEntry* entry =
@@ -315,8 +307,7 @@ void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
 
   chrome::HideTaskManager();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  UserManager::Show(profile_path,
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileLocked);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -338,11 +329,11 @@ bool IsLockAvailable(Profile* profile) {
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager->HasPrimaryAccount())
+  if (!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync))
     return false;
   base::Optional<AccountInfo> primary_account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo());
+          identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   std::string hosted_domain = primary_account_info.has_value()
                                   ? primary_account_info.value().hosted_domain
                                   : "";

@@ -36,56 +36,11 @@
 #include "third_party/blink/renderer/core/style/unzoomed_length.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class StyleSVGResource;
-
-enum ETextAnchor { TA_START, TA_MIDDLE, TA_END };
-
-enum EColorInterpolation { CI_AUTO, CI_SRGB, CI_LINEARRGB };
-
-enum EColorRendering { CR_AUTO, CR_OPTIMIZESPEED, CR_OPTIMIZEQUALITY };
-enum EShapeRendering {
-  SR_AUTO,
-  SR_OPTIMIZESPEED,
-  SR_CRISPEDGES,
-  SR_GEOMETRICPRECISION
-};
-
-enum EDominantBaseline {
-  DB_AUTO,
-  DB_USE_SCRIPT,
-  DB_NO_CHANGE,
-  DB_RESET_SIZE,
-  DB_IDEOGRAPHIC,
-  DB_ALPHABETIC,
-  DB_HANGING,
-  DB_MATHEMATICAL,
-  DB_CENTRAL,
-  DB_MIDDLE,
-  DB_TEXT_AFTER_EDGE,
-  DB_TEXT_BEFORE_EDGE
-};
-
-enum EPaintOrderType {
-  PT_NONE = 0,
-  PT_FILL = 1,
-  PT_STROKE = 2,
-  PT_MARKERS = 3
-};
-
-enum EPaintOrder {
-  kPaintOrderNormal = 0,
-  kPaintOrderFillStrokeMarkers = 1,
-  kPaintOrderFillMarkersStroke = 2,
-  kPaintOrderStrokeFillMarkers = 3,
-  kPaintOrderStrokeMarkersFill = 4,
-  kPaintOrderMarkersFillStroke = 5,
-  kPaintOrderMarkersStrokeFill = 6
-};
 
 // Inherited/Non-Inherited Style Datastructures
 class StyleFillData : public RefCounted<StyleFillData> {
@@ -143,31 +98,6 @@ class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
  private:
   StyleStrokeData();
   StyleStrokeData(const StyleStrokeData&);
-};
-
-// Non-inherited resources
-class StyleResourceData : public RefCounted<StyleResourceData> {
-  USING_FAST_MALLOC(StyleResourceData);
-
- public:
-  static scoped_refptr<StyleResourceData> Create() {
-    return base::AdoptRef(new StyleResourceData);
-  }
-  ~StyleResourceData();
-  scoped_refptr<StyleResourceData> Copy() const {
-    return base::AdoptRef(new StyleResourceData(*this));
-  }
-
-  bool operator==(const StyleResourceData&) const;
-  bool operator!=(const StyleResourceData& other) const {
-    return !(*this == other);
-  }
-
-  scoped_refptr<StyleSVGResource> masker;
-
- private:
-  StyleResourceData();
-  StyleResourceData(const StyleResourceData&);
 };
 
 // Inherited resources

@@ -496,7 +496,7 @@ const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
 
 // Flips chrome://os-settings to show Polymer 3 version
 const base::Feature kOsSettingsPolymer3{"OsSettingsPolymer3",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Provides a UI for users to view information about their Android phone
 // and perform phone-side actions within Chrome OS.
@@ -633,8 +633,8 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 // - Moves app, wallpaper and Wi-Fi sync to OS settings
 // - Provides a separate toggle for OS preferences, distinct from browser
 //   preferences
-// - Makes the OS ModelTypes run in sync transport mode, controlled by a
-//   master pref for the OS sync feature
+// - Makes the OS ModelTypes run in sync transport mode, controlled by a single
+//   pref for the entire OS sync feature
 // - Updates the OOBE sync consent screen
 //
 // NOTE: The feature is rolling out via a client-side Finch trial, so the actual

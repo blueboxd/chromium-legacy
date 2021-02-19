@@ -193,7 +193,7 @@ LayoutObject* HTMLCanvasElement::CreateLayoutObject(const ComputedStyle& style,
       context_->SetIsBeingDisplayed(style.Visibility() ==
                                     EVisibility::kVisible);
     }
-    return new LayoutHTMLCanvas(this);
+    return MakeGarbageCollected<LayoutHTMLCanvas>(this);
   }
   return HTMLElement::CreateLayoutObject(style, legacy);
 }
@@ -287,15 +287,19 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   auto* old_contents_cc_layer = ContentsCcLayer();
   auto* result = GetCanvasRenderingContextInternal(type, attributes);
 
+  Document& doc = GetDocument();
   if (IdentifiabilityStudySettings::Get()->ShouldSample(
           IdentifiableSurface::Type::kCanvasRenderingContext)) {
-    Document& doc = GetDocument();
     IdentifiabilityMetricBuilder(doc.UkmSourceID())
         .Set(IdentifiableSurface::FromTypeAndToken(
                  IdentifiableSurface::Type::kCanvasRenderingContext,
                  CanvasRenderingContext::ContextTypeFromId(type)),
              !!result)
         .Record(doc.UkmRecorder());
+  }
+  if (attributes.color_space != kSRGBCanvasColorSpaceName ||
+      attributes.pixel_format != kUint8CanvasPixelFormatName) {
+    UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
   }
 
   if (ContentsCcLayer() != old_contents_cc_layer)
@@ -1651,8 +1655,22 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
 
   // TODO(jochin): Consider using ResourceProvider()->RestoreBackBuffer() here
   // to avoid all of this clip stack manipulation.
-  if (image)
-    canvas2d_bridge_->DrawFullImage(image->PaintImageForCurrentFrame());
+  if (image) {
+    auto paint_image = image->PaintImageForCurrentFrame();
+    if (!canvas2d_bridge_->IsAccelerated() && paint_image.IsTextureBacked()) {
+      // If new bridge is unaccelrated we must read back |paint_image| here.
+      // DrawFullImage will record the image and potentially raster on a worker
+      // thread, but texture backed PaintImages can't be used on a different
+      // thread.
+      auto sk_image = paint_image.GetSwSkImage();
+      auto content_id = paint_image.GetContentIdForFrame(0);
+      auto builder =
+          cc::PaintImageBuilder::WithProperties(std::move(paint_image))
+              .set_image(sk_image, content_id);
+      paint_image = builder.TakePaintImage();
+    }
+    canvas2d_bridge_->DrawFullImage(paint_image);
+  }
 
   RestoreCanvasMatrixClipStack(canvas);
   canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(canvas);

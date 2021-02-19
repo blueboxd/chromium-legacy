@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/plane.h"
@@ -35,6 +36,7 @@ class ScriptState;
 class VideoFrameInit;
 
 class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
+                                        public CanvasImageSource,
                                         public ImageBitmapSource {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -86,6 +88,10 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   // media::VideoFrame. The cloned frame will not be closed when |this| is,
   // and its lifetime should be independently managed.
   VideoFrame* clone(ScriptState*, ExceptionState&);
+
+  // TODO(crbug.com/1179109): Remove this method. Internal callers should only
+  // hold onto scoped_refptr objects instead of blink::VideoFrames. Internal
+  // callers should use VideoFrameHandle::CloneForInternalUse().
   VideoFrame* CloneFromNative(ExecutionContext*);
 
   ScriptPromise createImageBitmap(ScriptState*,
@@ -98,6 +104,16 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
 
   // GarbageCollected override
   void Trace(Visitor*) const override;
+
+  // CanvasImageSource implementation
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               const FloatSize&) override;
+  bool WouldTaintOrigin() const override;
+  FloatSize ElementSize(const FloatSize&,
+                        const RespectImageOrientationEnum) const override;
+  bool IsVideoFrame() const override;
+  bool IsOpaque() const override;
+  bool IsAccelerated() const override;
 
  private:
   // ImageBitmapSource implementation

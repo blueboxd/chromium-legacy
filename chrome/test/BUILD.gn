@@ -3821,7 +3821,6 @@ test("unit_tests") {
     "../browser/ssl/insecure_sensitive_input_driver_unittest.cc",
     "../browser/ssl/security_state_tab_helper_unittest.cc",
     "../browser/ssl/ssl_config_service_manager_pref_unittest.cc",
-    "../browser/ssl/tls_deprecation_config_unittest.cc",
     "../browser/status_icons/status_icon_menu_model_unittest.cc",
     "../browser/status_icons/status_icon_unittest.cc",
     "../browser/status_icons/status_tray_unittest.cc",
@@ -4220,6 +4219,7 @@ test("unit_tests") {
     "//chrome/browser/payments:unittests",
     "//chrome/browser/persisted_state_db:persisted_state_db",
     "//chrome/browser/privacy_budget:unit_tests",
+    "//chrome/browser/ui:test_support",
     "//chrome/browser/updates/announcement_notification:unit_tests",
     "//chrome/browser/video_tutorials:unit_tests",
     "//chrome/browser/web_share_target:unit_tests",
@@ -5810,7 +5810,7 @@ test("unit_tests") {
 
   if (is_linux || is_chromeos || is_mac || is_win) {
     sources += [
-      "../browser/enterprise/connectors/file_system/box_access_token_fetcher_unittest.cc",
+      "../browser/enterprise/connectors/file_system/access_token_fetcher_unittest.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_flow_unittest.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_test_helper.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_test_helper.h",
@@ -6003,8 +6003,7 @@ test("unit_tests") {
     }
   }
   if (is_win || is_mac) {
-    sources +=
-        [ "../browser/notifications/notification_image_retainer_unittest.cc" ]
+    deps += [ "//chrome/common/notifications:unit_tests" ]
   }
   if (is_win || is_mac || is_chromeos_ash) {
     sources += [ "../browser/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
@@ -6748,7 +6747,6 @@ if (!is_android) {
         "../browser/ui/views/tabs/tab_hover_card_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/test/view_event_test_base.cc",
         "../browser/ui/views/test/view_event_test_base.h",
-        "../browser/ui/views/toolbar/toolbar_action_view_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/user_education/feature_promo_snooze_interactive_uitest.cc",

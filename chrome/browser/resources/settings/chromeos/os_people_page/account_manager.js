@@ -190,16 +190,6 @@ Polymer({
   },
 
   /**
-   * @return {string} tooltip text
-   * @private
-   */
-  getSecondaryAccountsTooltip_() {
-    return this.getAccounts_().length === 0 ?
-        this.i18n('accountListTooltipNoSecondaryAccounts') :
-        this.i18n('accountListTooltip');
-  },
-
-  /**
    * @param {string} iconUrl
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
@@ -431,18 +421,5 @@ Polymer({
     this.browserProxy_.removeAccount(
         /** @type {?settings.Account} */ (this.actionMenuAccount_));
     this.closeActionMenu_();
-  },
-
-  /**
-   * @param {Event} event
-   * @private
-   */
-  goToSyncSettings_(event) {
-    event.detail.event.preventDefault();
-    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
-      settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC);
-    } else {
-      settings.Router.getInstance().navigateTo(settings.routes.SYNC_ADVANCED);
-    }
   },
 });

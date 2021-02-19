@@ -137,7 +137,7 @@
   {
     "name": "app-cache",
     "owners": [ "enne" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "app-service-adaptive-icon",
@@ -256,6 +256,11 @@
     "name": "auto-screen-brightness",
     "owners": [ "jiameng", "napper" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "autofill-address-save-prompt",
+    "owners": [ "mamir", "koerber" ],
+    "expiry_milestone": 95
   },
   {
     "name": "autofill-always-return-cloud-tokenized-card",
@@ -878,7 +883,7 @@
     "name": "decouple-sync-from-android-auto-sync",
     "owners": [ "victorvianna@google.com", "treib@chromium.org" ],
     "expiry_milestone": 92
-  },  
+  },
   {
     "name": "default-browser-fullscreen-promo-cta-experiment",
     "owners": [ "javierrobles", "bling-team@google.com" ],
@@ -938,6 +943,11 @@
     "name": "detect-target-embedding-lookalikes",
     "owners": [ "jdeblasio", "meacer" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "detected-source-language-option",
+    "owners": [ "cuianthony", "chrome-language" ],
+    "expiry_milestone": 93
   },
   {
     "name": "device-discovery-notifications",
@@ -3992,12 +4002,12 @@
   {
     "name": "password-change-in-settings",
     "owners": [ "kolos" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "password-change-support",
     "owners": [ "selakovic@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 95
   },
   {
     "name": "password-check",
@@ -4016,7 +4026,7 @@
   {
     "name": "password-scripts-fetching",
     "owners": [ "kolos" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "PasswordImport",

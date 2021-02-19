@@ -55,7 +55,6 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -450,8 +449,11 @@ bool RenderViewHostImpl::CreateRenderView(
           main_rfh->policy_container_host()->CreatePolicyContainerForBlink();
     }
   }
-  params->main_frame_frame_token =
-      main_rfh ? main_rfh->GetFrameToken() : main_rfph->GetFrameToken();
+  if (main_rfh) {
+    params->main_frame_frame_token = main_rfh->GetFrameToken();
+  } else {
+    params->main_frame_frame_token = main_rfph->GetFrameToken();
+  }
   params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
@@ -571,6 +573,26 @@ void RenderViewHostImpl::OnBackForwardCacheTimeout() {
       }
     }
   }
+}
+
+void RenderViewHostImpl::MaybeEvictFromBackForwardCache() {
+  // TODO(yuzus): Implement a method to get a list of RenderFrameHosts
+  // associated with |this|, instead of iterating through all the
+  // RenderFrameHosts in bfcache.
+  const auto& entries =
+      frame_tree_->controller().GetBackForwardCache().GetEntries();
+  for (auto& entry : entries) {
+    for (auto* const rvh : entry->render_view_hosts) {
+      if (rvh == this) {
+        RenderFrameHostImpl* rfh = entry->render_frame_host.get();
+        rfh->MaybeEvictFromBackForwardCache();
+      }
+    }
+  }
+}
+
+bool RenderViewHostImpl::DidReceiveBackForwardCacheAck() {
+  return GetPageLifecycleStateManager()->DidReceiveBackForwardCacheAck();
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

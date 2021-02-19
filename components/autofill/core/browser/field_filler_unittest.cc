@@ -811,6 +811,17 @@ class AutofillSelectWithStatesTest
         std::unique_ptr<Source>(
             new TestdataSource(true, file_path.AsUTF8Unsafe())),
         std::unique_ptr<Storage>(new NullStorage), "en-US");
+
+    test::PopulateAlternativeStateNameMapForTesting(
+        "US", "California",
+        {{.canonical_name = "California",
+          .abbreviations = {"CA"},
+          .alternative_names = {}}});
+    test::PopulateAlternativeStateNameMapForTesting(
+        "US", "North Carolina",
+        {{.canonical_name = "North Carolina",
+          .abbreviations = {"NC"},
+          .alternative_names = {}}});
     // Make sure the normalizer is done initializing its member(s) in
     // background task(s).
     task_environment_.RunUntilIdle();
@@ -1745,6 +1756,29 @@ TEST_F(AutofillFieldFillerTest, FillStateFieldWhenStateIsNotInOptions) {
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16(""), field.value);
+}
+
+// Tests that Autofill uses the static states data of US as a fallback mechanism
+// for filling when |AlternativeStateNameMap| is not populated.
+TEST_F(AutofillFieldFillerTest,
+       FillStateFieldWhenAlternativeStateNameMapIsNotPopulated) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"Colorado", "Connecticut", "California"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CO"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("Colorado"), field.value);
 }
 
 }  // namespace autofill

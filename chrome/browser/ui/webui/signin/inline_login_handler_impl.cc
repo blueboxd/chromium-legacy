@@ -45,13 +45,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/signin/profile_customization_bubble_sync_controller.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -253,13 +253,12 @@ void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
                                  InlineLoginHandlerImpl* handler) {
   SetProfileLocked(profile_path, false);
   handler->CloseDialogFromJavascript();
-  UserManager::Hide();
+  ProfilePicker::Hide();
 }
 
 void LockProfileAndShowUserManager(const base::FilePath& profile_path) {
   SetProfileLocked(profile_path, true);
-  UserManager::Show(profile_path,
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileLocked);
 }
 
 // Callback for DiceTurnOnSyncHelper.
@@ -270,7 +269,8 @@ void OnSyncSetupComplete(Profile* profile,
   DCHECK(signin_util::IsForceSigninEnabled());
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  bool has_primary_account = identity_manager->HasPrimaryAccount();
+  bool has_primary_account =
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
   if (has_primary_account && !password.empty()) {
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(profile,
@@ -287,7 +287,8 @@ void OnSyncSetupComplete(Profile* profile,
 
   if (has_primary_account && is_force_sign_in_with_usermanager &&
       base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
-    CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+    CoreAccountInfo primary_account =
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
     base::Optional<AccountInfo> primary_account_info =
         identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             primary_account);
@@ -403,7 +404,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
-  std::string primary_email = identity_manager->GetPrimaryAccountInfo().email;
+  std::string primary_email =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+          .email;
   if (gaia::AreEmailsSame(email_, primary_email) &&
       reason == HandlerSigninReason::UNLOCK && !password_.empty() &&
       profiles::IsLockAvailable(profile_)) {
@@ -441,7 +444,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
 
     identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
-        identity_manager->GetPrimaryAccountId(),
+        identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
         gaia::GaiaSource::kPrimaryAccountManager, {});
 
     signin_metrics::LogSigninReason(
@@ -485,7 +488,7 @@ void InlineSigninHelper::CreateSyncStarter(const std::string& refresh_token) {
   DCHECK(signin_util::IsForceSigninEnabled());
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
-  if (identity_manager->HasPrimaryAccount()) {
+  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     // Already signed in, nothing to do.
     return;
   }
@@ -675,7 +678,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   ProfileManager* manager = g_browser_process->profile_manager();
   base::FilePath path = profiles::GetPathOfProfileWithEmail(manager, email);
   if (path.empty())
-    path = UserManager::GetSigninProfilePath();
+    path = ProfilePicker::GetForceSigninProfilePath();
   if (path.empty())
     return;
 
@@ -786,7 +789,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   if (reason == HandlerSigninReason::UNLOCK) {
     std::string primary_username =
         IdentityManagerFactory::GetForProfile(profile)
-            ->GetPrimaryAccountInfo()
+            ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
             .email;
     if (!gaia::AreEmailsSame(default_email, primary_username))
       can_offer_for = CAN_OFFER_SIGNIN_FOR_SECONDARY_ACCOUNT;
@@ -852,7 +855,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
 
   if (profile->IsSystemProfile())
     profile = g_browser_process->profile_manager()->GetProfileByPath(
-        UserManager::GetSigninProfilePath());
+        ProfilePicker::GetForceSigninProfilePath());
   if (!error_msg.empty()) {
     LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
         browser, base::UTF8ToUTF16(error_msg), email);

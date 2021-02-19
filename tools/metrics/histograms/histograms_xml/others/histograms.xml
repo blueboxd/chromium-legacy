@@ -1770,6 +1770,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.OpenBookmarkTimeInterval.{BookmarkType}" units="ms"
+    expires_after="2022-02-15">
+  <owner>dtrainor@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Logs the duration in milliseconds between bookmark creation time and
+    bookmark open time based on device local time. Recorded when the bookmark is
+    opened. Bookmark folder is not considered. Can be logged in multiple browser
+    sessions.
+  </summary>
+  <token key="BookmarkType">
+    <variant name="Normal" summary="A normal bookmark."/>
+    <variant name="Partner" summary="A partner bookmark."/>
+    <variant name="ReadingList" summary="A reading list article."/>
+  </token>
+</histogram>
+
 <histogram name="Bookmarks.OpenBookmarkType" enum="BookmarkType"
     expires_after="2021-08-01">
   <owner>wychen@chromium.org</owner>
@@ -2016,6 +2033,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cast.Sender.CastTimeRemainingPercentage" units="%"
     expires_after="2021-07-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring. A new metrics,
+    &quot;Cast.Sender.Clank.CastTimeRemainingPercentage&quot; now collects the
+    same data but at a different location.
+  </obsolete>
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -2025,8 +2048,56 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.Clank.CastTimeRemainingPercentage" units="count"
+    expires_after="2022-02-09">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records the percentage of the video left at the time the remote playback is
+    stopped. This will be recorded when the playback is stopped by the user, or
+    when it's stopped by the cast device. To reduce the number of empty buckets,
+    the result is rounded and a value of 1 means 10%.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.Clank.FullscreenControlsAction"
+    enum="MediaCommand" expires_after="2022-02-09">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Record each interaction with the fullscreen remote playback controls on
+    Clank.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.Clank.NotificationControlsAction"
+    enum="CastNotificationControls" expires_after="2022-02-09">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Record each interaction with the cast notification controls on Clank.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.Clank.SessionTimeWithoutMediaElementPercentage"
+    units="count" expires_after="2022-02-09">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records the ratio of the time the media element was detached from the remote
+    playback session to the total duration of the session (as from when the
+    element has been attached till when the session stopped or disconnected). To
+    reduce the number of empty buckets, the result is rounded and a value of 1
+    means 10%.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.DeviceType" enum="RemotePlaybackDeviceType"
     expires_after="2021-06-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring.
+  </obsolete>
   <owner>tguilbert@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2038,6 +2109,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cast.Sender.FullscreenControlsActionWithMediaElement"
     enum="MediaCommand" expires_after="2021-06-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring.
+  </obsolete>
   <owner>tguilbert@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2048,6 +2123,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cast.Sender.FullscreenControlsActionWithoutMediaElement"
     enum="MediaCommand" expires_after="2021-06-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring.
+  </obsolete>
   <owner>tguilbert@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2058,6 +2137,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cast.Sender.MediaElementPresentWhenShowFullscreenControls"
     enum="BooleanPresent" expires_after="2021-06-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring.
+  </obsolete>
   <owner>tguilbert@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2066,8 +2149,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.RemotePlayback.InitiationLocation"
+    enum="RemotePlaybackInitiationLocation" expires_after="2022-01-05">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records where the user started RemotePlayback on Clank. This does not
+    include RemotePlayback sessions initiated through the Cast SDK.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.SessionTimeWithoutMediaElementPercentage"
     units="%" expires_after="2021-06-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring. A new metrics,
+    &quot;Cast.Sender.Clank.SessionTimeWithoutMediaElementPercentage&quot; now
+    collects the same data but at a different location.
+  </obsolete>
   <owner>tguilbert@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2080,6 +2179,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cast.Sender.UrlResolveResult"
     enum="RemotePlaybackUrlResolveResult" expires_after="2021-06-01">
+  <obsolete>
+    Deprecated as of 2021/02 as it's not been collected for a while due to
+    refactoring.
+  </obsolete>
   <owner>tguilbert@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -7904,6 +8007,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="LanguageDetection.TFLiteModel.LanguageDetectionModelState"
+    enum="LanguageDetectionModelState" expires_after="M94">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    The state of the language detection model used by a TranslateAgent. Recorded
+    once per model load attempt for each renderer process.
+  </summary>
+</histogram>
+
+<histogram name="LanguageDetection.TFLiteModel.WasModelAvailableForDetection"
+    enum="BooleanAvailable" expires_after="M94">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Whether the TFLite-based language detection model was available when page
+    content was extracted and a language determination was needed. Recorded once
+    per page load.
+  </summary>
+</histogram>
+
 <histogram name="LanguageSettings.Actions" enum="LanguageSettingsActionType"
     expires_after="2021-12-01">
   <owner>perrier@chromium.org</owner>
@@ -9824,6 +9948,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records why the Sharing utility process, which hosts Nearby Connections, was
     shut down: for an expected reason (i.e., shut down request from a client),
     or another unexpected reason (e.g., a crash).
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.UtilityProcessShutdownReason.DisconnectedMojoDependency"
+    enum="NearbyConnectionsUtilityProcessMojoDependencyName"
+    expires_after="2022-01-26">
+  <owner>hansberry@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records which Mojo dependency of the Sharing utility process disconnected.
+    This is a break down of the &quot;Mojo pipe disconnection&quot; bucket of
+    Nearby.Connections.UtilityProcessShutdownReason.
   </summary>
 </histogram>
 
@@ -12868,6 +13005,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ReadingList.WebUI.ReadingListDataReceived" units="ms"
     expires_after="2021-08-15">
+  <obsolete>
+    Deprecated as of 2021/02. Metric is no longer needed.
+  </obsolete>
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -18504,7 +18644,7 @@ regressions. -->
 </histogram>
 
 <histogram base="true" name="WebFont.HttpCacheStatus" enum="HttpCachePattern"
-    expires_after="2020-11-08">
+    expires_after="2021-11-08">
   <owner>yaoxia@chromium.org</owner>
   <owner>shivanisha@chromium.org</owner>
   <summary>

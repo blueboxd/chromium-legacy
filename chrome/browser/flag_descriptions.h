@@ -89,6 +89,9 @@ extern const char kConversionMeasurementApiDescription[];
 extern const char kConversionMeasurementDebugModeName[];
 extern const char kConversionMeasurementDebugModeDescription[];
 
+extern const char kDetectedSourceLanguageOptionName[];
+extern const char kDetectedSourceLanguageOptionDescription[];
+
 extern const char kDetectFormSubmissionOnFormClearName[];
 extern const char kDetectFormSubmissionOnFormClearDescription[];
 
@@ -338,6 +341,9 @@ extern const char kEnableAudioFocusEnforcementDescription[];
 
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
+
+extern const char kEnableAutofillAddressSavePromptName[];
+extern const char kEnableAutofillAddressSavePromptDescription[];
 
 extern const char kEnableAutofillCreditCardAblationExperimentDisplayName[];
 extern const char kEnableAutofillCreditCardAblationExperimentDescription[];

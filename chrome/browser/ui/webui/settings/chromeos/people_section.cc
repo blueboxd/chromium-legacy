@@ -339,8 +339,6 @@ const std::vector<SearchConcept>& GetParentalSearchConcepts() {
 void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
                                   Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"accountManagerPrimaryAccountDescription",
-       IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_DESCRIPTION},
       {"accountManagerChildDescription",
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION},
       {"accountManagerChildFirstMessage",
@@ -349,9 +347,6 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_SECOND_MESSAGE},
       {"accountManagerSecondaryAccountDescription",
        IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DESCRIPTION},
-      {"accountListTooltip", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_TOOLTIP},
-      {"accountListTooltipNoSecondaryAccounts",
-       IDS_SETTINGS_ACCOUNT_MANAGER_LIST_TOOLTIP_NO_SECONDARY_ACCOUNTS},
       {"accountManagerPrimaryAccountTooltip",
        IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP},
       {"accountManagerEducationAccountLabel",
@@ -384,6 +379,13 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+  html_source->AddString(
+      "accountListDescription",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_ACCOUNT_MANAGER_LIST_DESCRIPTION,
+                                 user->GetGivenName()));
+
   html_source->AddString("accountManagerLearnMoreUrl",
                          chrome::kAccountManagerLearnMoreURL);
   html_source->AddLocalizedString(
@@ -399,13 +401,10 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
         {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_V2},
         {"accountListHeaderChild",
          IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_CHILD},
+        {"accountManagerDescription",
+         IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2},
     };
     html_source->AddLocalizedStrings(kLocalizedStringsV2);
-
-    html_source->AddString(
-        "accountManagerDescription",
-        l10n_util::GetStringFUTF16(IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2,
-                                   ui::GetChromeOSDeviceName()));
   } else {
     static constexpr webui::LocalizedString kLocalizedStringsV1[] = {
         {"accountManagerDescription", IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION},

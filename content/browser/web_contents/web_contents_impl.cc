@@ -103,7 +103,6 @@
 #include "content/browser/xr/service/xr_runtime_manager_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/ax_inspect_factory.h"
@@ -941,8 +940,6 @@ WebContentsImpl::~WebContentsImpl() {
 
   color_chooser_.reset();
   find_request_manager_.reset();
-
-  NotifyDisconnected();
 
   // Notify any observer that have a reference on this WebContents.
   NotificationService::current()->Notify(
@@ -2083,6 +2080,11 @@ void WebContentsImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::SetIgnoreInputEvents",
                         "ignore_input_events", ignore_input_events);
   ignore_input_events_ = ignore_input_events;
+}
+
+bool WebContentsImpl::HasActiveEffectivelyFullscreenVideo() {
+  return IsFullscreen() &&
+         media_web_contents_observer_->HasActiveEffectivelyFullscreenVideo();
 }
 
 #if defined(OS_ANDROID)
@@ -6203,20 +6205,6 @@ void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_frame,
                              old_frame, new_frame);
 }
 
-// TODO(avi): Remove this entire function because this notification is already
-// covered by two observer functions. http://crbug.com/170921
-void WebContentsImpl::NotifyDisconnected() {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::NotifyDisconnected");
-  if (!notify_disconnection_)
-    return;
-
-  notify_disconnection_ = false;
-  NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      Source<WebContents>(this),
-      NotificationService::NoDetails());
-}
-
 void WebContentsImpl::NotifyNavigationEntryCommitted(
     const LoadCommittedDetails& load_details) {
   OPTIONAL_TRACE_EVENT0("content",
@@ -6624,10 +6612,6 @@ RenderFrameHostImpl* WebContentsImpl::GetPendingMainFrame() {
   return GetRenderManager()->speculative_frame_host();
 }
 
-bool WebContentsImpl::HasActiveEffectivelyFullscreenVideo() const {
-  return media_web_contents_observer_->HasActiveEffectivelyFullscreenVideo();
-}
-
 bool WebContentsImpl::IsPictureInPictureAllowedForFullscreenVideo() const {
   return media_web_contents_observer_
       ->IsPictureInPictureAllowedForFullscreenVideo();
@@ -6853,7 +6837,6 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   // webpage? Once this function is called at a more granular frame level, we
   // probably will need to more granularly reset the state here.
   ResetLoadProgressState();
-  NotifyDisconnected();
   SetMainFrameProcessStatus(status, error_code);
 
   TRACE_EVENT0("content",

@@ -7081,8 +7081,7 @@
       {
         "args": [
           "--ozone-platform=x11",
-          "--enable-features=UseOzonePlatform",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_cc_unittests.filter"
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -15057,6 +15056,11 @@
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       }
+    ]
+  },
+  "linux-extended-tracing-rel": {
+    "additional_compile_targets": [
+      "all"
     ]
   },
   "linux-gcc-rel": {

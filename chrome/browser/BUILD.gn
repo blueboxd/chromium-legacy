@@ -338,8 +338,6 @@ static_library("browser") {
     "component_updater/sth_set_component_remover.h",
     "component_updater/subresource_filter_component_installer.cc",
     "component_updater/subresource_filter_component_installer.h",
-    "component_updater/tls_deprecation_config_component_installer.cc",
-    "component_updater/tls_deprecation_config_component_installer.h",
     "component_updater/trust_token_key_commitments_component_installer.cc",
     "component_updater/trust_token_key_commitments_component_installer.h",
     "component_updater/zxcvbn_data_component_installer.cc",
@@ -1751,8 +1749,6 @@ static_library("browser") {
     "ssl/ssl_error_controller_client.h",
     "ssl/stateful_ssl_host_state_delegate_factory.cc",
     "ssl/stateful_ssl_host_state_delegate_factory.h",
-    "ssl/tls_deprecation_config.cc",
-    "ssl/tls_deprecation_config.h",
     "ssl/typed_navigation_upgrade_throttle.cc",
     "ssl/typed_navigation_upgrade_throttle.h",
     "startup_data.cc",
@@ -2406,6 +2402,7 @@ static_library("browser") {
       "apps/digital_goods/util.h",
     ]
     deps += [
+      "//ash/components/audio",
       "//ash/constants",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/nearby_sharing/common",
@@ -2415,7 +2412,6 @@ static_library("browser") {
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings",
-      "//chromeos/audio",
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/camera_app_ui:mojo_bindings",
       "//chromeos/components/chromebox_for_meetings/buildflags",
@@ -3571,8 +3567,8 @@ static_library("browser") {
       "enterprise/connectors/connectors_service.h",
       "enterprise/connectors/enterprise_connectors_policy_handler.cc",
       "enterprise/connectors/enterprise_connectors_policy_handler.h",
-      "enterprise/connectors/file_system/box_access_token_fetcher.cc",
-      "enterprise/connectors/file_system/box_access_token_fetcher.h",
+      "enterprise/connectors/file_system/access_token_fetcher.cc",
+      "enterprise/connectors/file_system/access_token_fetcher.h",
       "enterprise/connectors/file_system/box_api_call_endpoints.cc",
       "enterprise/connectors/file_system/box_api_call_endpoints.h",
       "enterprise/connectors/file_system/box_api_call_flow.cc",
@@ -4634,7 +4630,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos_ash) {
     sources += [
       "feedback/system_logs/log_sources/user_log_files_log_source.cc",
       "feedback/system_logs/log_sources/user_log_files_log_source.h",
@@ -5187,13 +5183,13 @@ static_library("browser") {
   if (is_win || is_mac) {
     # Sources(generally "desktop OS importers") used only on Mac & Windows.
     sources += [
-      "notifications/notification_image_retainer.cc",
-      "notifications/notification_image_retainer.h",
       "recovery/recovery_install_global_error.cc",
       "recovery/recovery_install_global_error.h",
       "recovery/recovery_install_global_error_factory.cc",
       "recovery/recovery_install_global_error_factory.h",
     ]
+
+    deps += [ "//chrome/common/notifications" ]
 
     if (enable_chromium_updater) {
       deps += [ "//chrome/browser/updater:browser_updater_client" ]
@@ -6779,7 +6775,6 @@ static_library("test_support") {
     "//google_apis:test_support",
     "//net:test_support",
     "//services/data_decoder/public/cpp:test_support",
-    "//services/network/public/proto:tls_deprecation_config_proto",
     "//services/preferences/public/cpp/tracked:test_support",
     "//skia",
     "//testing/gmock",

@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -224,8 +225,10 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
   if (!profile->IsRegularProfile())
     return gfx::ImageSkia();
 
-  if (!IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount())
+  if (!IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount(
+          signin::ConsentLevel::kSync)) {
     return ColoredImageForMenu(kSyncPausedCircleIcon, gfx::kGoogleGrey500);
+  }
 
   const gfx::VectorIcon* icon = nullptr;
   ui::NativeTheme::ColorId color_id;
@@ -442,16 +445,14 @@ void ProfileMenuView::OnAddNewProfileButtonClicked() {
   RecordClick(ActionableItem::kAddNewProfileButton);
   if (!perform_menu_actions())
     return;
-  UserManager::Show(/*profile_path_to_focus=*/base::FilePath(),
-                    profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
+  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuAddNewProfile);
 }
 
 void ProfileMenuView::OnManageProfilesButtonClicked() {
   RecordClick(ActionableItem::kManageProfilesButton);
   if (!perform_menu_actions())
     return;
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
 }
 
 void ProfileMenuView::OnEditProfileButtonClicked() {
@@ -576,7 +577,7 @@ void ProfileMenuView::BuildSyncInfo() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
-  if (identity_manager->HasPrimaryAccount()) {
+  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     // Show sync state.
     const sync_ui_util::AvatarSyncErrorType error =
         sync_ui_util::GetAvatarSyncErrorType(browser()->profile());
@@ -671,7 +672,8 @@ void ProfileMenuView::BuildFeatureButtons() {
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   const bool has_primary_account =
-      !IsGuest(profile) && identity_manager->HasPrimaryAccount();
+      !IsGuest(profile) &&
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
   // The sign-out button is always at the bottom.
   if (has_unconsented_account && !has_primary_account) {
     AddFeatureButton(

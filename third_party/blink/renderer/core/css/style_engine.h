@@ -353,7 +353,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     style_recalc_root_.RemovedFromFlatTree(node);
   }
   void PseudoElementRemoved(Element& originating_element) {
-    layout_tree_rebuild_root_.ChildrenRemoved(originating_element);
+    layout_tree_rebuild_root_.SubtreeModified(originating_element);
   }
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
@@ -369,8 +369,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                const ActiveStyleSheetVector& new_style_sheets);
 
   void VisionDeficiencyChanged();
-  void ApplyVisionDeficiencyStyle(
-      scoped_refptr<ComputedStyle> layout_view_style);
+  void ApplyVisionDeficiencyStyle(ComputedStyle* layout_view_style);
 
   void CollectMatchingUserRules(ElementRuleCollector&) const;
 

@@ -92,7 +92,7 @@ class StyleResolver;
 class StyleSelfAlignmentData;
 class TransformationMatrix;
 
-typedef Vector<scoped_refptr<const ComputedStyle>, 4> PseudoElementStyleCache;
+typedef HeapVector<Member<const ComputedStyle>, 4> PseudoElementStyleCache;
 
 namespace css_longhand {
 
@@ -147,7 +147,7 @@ class WebkitTextStrokeColor;
 // Blink. It acts as a container where the computed value of every CSS property
 // can be stored and retrieved:
 //
-//   auto style = ComputedStyle::Create();
+//   ComputedStyle* style = ComputedStyle::Create();
 //   style->SetDisplay(EDisplay::kNone); //'display' keyword property
 //   style->Display();
 //
@@ -196,8 +196,8 @@ class WebkitTextStrokeColor;
 //
 // Since this class is huge, do not mark all of it CORE_EXPORT.  Instead,
 // export only the methods you need below.
-class ComputedStyle : public ComputedStyleBase,
-                      public RefCounted<ComputedStyle> {
+class ComputedStyle final : public GarbageCollected<ComputedStyle>,
+                            public ComputedStyleBase {
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
@@ -290,8 +290,7 @@ class ComputedStyle : public ComputedStyleBase,
   //    <script>
   //      getComputedStyle(div, "::before").color // still green.
   //    </script>
-  mutable std::unique_ptr<PseudoElementStyleCache>
-      cached_pseudo_element_styles_;
+  mutable Member<PseudoElementStyleCache> cached_pseudo_element_styles_;
 
   DataRef<SVGComputedStyle> svg_style_;
 
@@ -300,26 +299,24 @@ class ComputedStyle : public ComputedStyleBase,
   ALWAYS_INLINE ComputedStyle();
   ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
-  static scoped_refptr<ComputedStyle> CreateInitialStyle();
-  // TODO(crbug.com/794841): Remove this. Initial style should not be mutable.
-  CORE_EXPORT static ComputedStyle& MutableInitialStyle();
+  static ComputedStyle* CreateInitialStyle();
 
  public:
   using PassKey = base::PassKey<ComputedStyle>;
 
   ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle&);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
+  CORE_EXPORT void Trace(Visitor*) const;
 
-  CORE_EXPORT static scoped_refptr<ComputedStyle> Create();
-  static scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
+  CORE_EXPORT static ComputedStyle* Create();
+  static ComputedStyle* CreateAnonymousStyleWithDisplay(
       const ComputedStyle& parent_style,
       EDisplay);
-  static scoped_refptr<ComputedStyle>
-  CreateInheritedDisplayContentsStyleIfNeeded(
+  static ComputedStyle* CreateInheritedDisplayContentsStyleIfNeeded(
       const ComputedStyle& parent_style,
       const ComputedStyle& layout_parent_style);
-  CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
-  static const ComputedStyle& InitialStyle() { return MutableInitialStyle(); }
+  CORE_EXPORT static ComputedStyle* Clone(const ComputedStyle&);
+  CORE_EXPORT static const ComputedStyle& InitialStyle();
   static void InvalidateInitialStyle();
 
   // Find out how two ComputedStyles differ. Used for figuring out if style
@@ -401,8 +398,7 @@ class ComputedStyle : public ComputedStyleBase,
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   CORE_EXPORT const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
-  const ComputedStyle* AddCachedPseudoElementStyle(
-      scoped_refptr<const ComputedStyle>) const;
+  const ComputedStyle* AddCachedPseudoElementStyle(const ComputedStyle*) const;
   void ClearCachedPseudoElementStyles() const {
     if (cached_pseudo_element_styles_)
       cached_pseudo_element_styles_->clear();
@@ -1100,19 +1096,6 @@ class ComputedStyle : public ComputedStyleBase,
   const SVGComputedStyle& SvgStyle() const { return *svg_style_.Get(); }
   SVGComputedStyle& AccessSVGStyle() { return *svg_style_.Access(); }
 
-  WindRule ClipRule() const { return SvgStyle().ClipRule(); }
-  EColorInterpolation ColorInterpolation() const {
-    return SvgStyle().ColorInterpolation();
-  }
-  EColorInterpolation ColorInterpolationFilters() const {
-    return SvgStyle().ColorInterpolationFilters();
-  }
-  EColorRendering ColorRendering() const { return SvgStyle().ColorRendering(); }
-  EDominantBaseline DominantBaseline() const {
-    return SvgStyle().DominantBaseline();
-  }
-  WindRule FillRule() const { return SvgStyle().FillRule(); }
-
   const SVGPaint& FillPaint() const { return SvgStyle().FillPaint(); }
   const SVGPaint& InternalVisitedFillPaint() const {
     return SvgStyle().InternalVisitedFillPaint();
@@ -1129,10 +1112,6 @@ class ComputedStyle : public ComputedStyleBase,
   float FillOpacity() const { return SvgStyle().FillOpacity(); }
   void SetFillOpacity(float f) { AccessSVGStyle().SetFillOpacity(f); }
 
-  StyleSVGResource* MaskerResource() const {
-    return SvgStyle().MaskerResource();
-  }
-
   // marker-* helpers
   StyleSVGResource* MarkerStartResource() const {
     return SvgStyle().MarkerStartResource();
@@ -1148,10 +1127,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // paint-order helper
-  EPaintOrder PaintOrder() const { return SvgStyle().PaintOrder(); }
   EPaintOrderType PaintOrderType(unsigned index) const;
-
-  EShapeRendering ShapeRendering() const { return SvgStyle().ShapeRendering(); }
 
   // stroke helpers
   bool HasStroke() const { return !StrokePaint().IsNone(); }
@@ -1198,8 +1174,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetStrokeWidth(const UnzoomedLength& w) {
     AccessSVGStyle().SetStrokeWidth(w);
   }
-
-  ETextAnchor TextAnchor() const { return SvgStyle().TextAnchor(); }
 
   // Comparison operators
   // FIXME: Replace callers of operator== wth a named method instead, e.g.

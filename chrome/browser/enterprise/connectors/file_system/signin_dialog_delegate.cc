@@ -8,10 +8,9 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "chrome/browser/enterprise/connectors/file_system/box_access_token_fetcher.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -50,13 +49,9 @@ namespace enterprise_connectors {
 
 FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
     content::BrowserContext* browser_context,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const std::vector<std::string>& scopes,
+    const FileSystemSettings& settings,
     AuthorizationCompletedCallback callback)
-    : client_id_(client_id),
-      client_secret_(client_secret),
-      scopes_(scopes),
+    : settings_(settings),
       web_view_(std::make_unique<views::WebView>(browser_context)),
       callback_(std::move(callback)) {
   SetHasWindowSizeControls(true);
@@ -75,12 +70,13 @@ FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
       ->SetDelegate(this);
 
   Observe(web_view_->GetWebContents());
-  // TODO(https://crbug.com/1160015): pass in URL as arg and get from service
-  // provider config.
-  std::string url(kFileSystemBoxEndpointOAuth2Authorization);
-  url.append(client_id_);
-  url.append("&response_type=code");
-  web_view_->LoadInitialURL(GURL(url));
+
+  std::string query = base::StringPrintf("client_id=%s&response_type=code",
+                                         settings_.client_id.c_str());
+  url::Replacements<char> replacements;
+  replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+  GURL url = settings_.authorization_endpoint.ReplaceComponents(replacements);
+  web_view_->LoadInitialURL(url);
 }
 
 FileSystemSigninDialogDelegate::~FileSystemSigninDialogDelegate() = default;
@@ -88,15 +84,13 @@ FileSystemSigninDialogDelegate::~FileSystemSigninDialogDelegate() = default;
 // static
 void FileSystemSigninDialogDelegate::ShowDialog(
     content::WebContents* web_contents,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const std::vector<std::string>& scopes,
+    const FileSystemSettings& settings,
     AuthorizationCompletedCallback callback) {
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   gfx::NativeView parent = web_contents->GetNativeView();
 
   FileSystemSigninDialogDelegate* delegate = new FileSystemSigninDialogDelegate(
-      browser_context, client_id, client_secret, scopes, std::move(callback));
+      browser_context, settings, std::move(callback));
   // Object will be deleted internally by widget via DeleteDelegate().
   // TODO(https://crbug.com/1160012): use std::unique_ptr instead?
 
@@ -133,8 +127,7 @@ void FileSystemSigninDialogDelegate::RemoveObserver(
 
 // views::DialogDelegate:
 gfx::Size FileSystemSigninDialogDelegate::CalculatePreferredSize() const {
-  // TODO(https://crbug.com/1159213): need to tweak this; box sign in/consent
-  // page changes size.
+  // TODO(https://crbug.com/1159213): need to tweak this.
   return gfx::Size(800, 640);
 }
 
@@ -161,7 +154,7 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
   // Look for the auth_code.  It is found in the code= URL parameter.
   if (!net::GetValueForKeyInQuery(url, "code", &auth_code)) {
     DLOG(ERROR) << "Failed to extract authorization code from url: " << url;
-    // TODO(https://crbug.com/1159179): pop a box about authentication failure?
+    // TODO(https://crbug.com/1159179): pop dialog about authentication failure?
     return;
   }
 
@@ -173,20 +166,19 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
       &FileSystemSigninDialogDelegate::OnGotOAuthTokens, factory_.GetWeakPtr());
 
   // No refresh_token, so need to get both tokens with authorization code.
-  token_fetcher_ = std::make_unique<BoxAccessTokenFetcher>(
-      url_loader, std::string(), auth_code, std::move(callback));
-  token_fetcher_->Start(client_id_, client_secret_, scopes_);
+  token_fetcher_ = std::make_unique<AccessTokenFetcher>(
+      url_loader, settings_.service_provider, settings_.token_endpoint,
+      std::string(), auth_code, std::move(callback));
+  token_fetcher_->Start(settings_.client_id, settings_.client_secret,
+                        settings_.scopes);
 }
 
 void FileSystemSigninDialogDelegate::OnGotOAuthTokens(
     bool success,
     const std::string& access_token,
     const std::string& refresh_token) {
-  PrefService* prefs =
-      Profile::FromBrowserContext(web_view_->GetBrowserContext())->GetPrefs();
-  SetFileSystemOAuth2Tokens(prefs, "box", access_token, refresh_token);
   token_fetcher_ = nullptr;
-  std::move(callback_).Run(success);
+  std::move(callback_).Run(success, access_token, refresh_token);
   GetWidget()->Close();
 }
 

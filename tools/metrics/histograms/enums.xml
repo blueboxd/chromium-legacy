@@ -9503,6 +9503,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="HTML Video Element"/>
   <int value="6" label="OffscreenCanvas"/>
   <int value="7" label="SVG Image Element"/>
+  <int value="8" label="VideoFrame"/>
 </enum>
 
 <enum name="CanvasDisplayListFallbackReason">
@@ -9766,6 +9767,12 @@ Called by update_bad_message_reasons.py.-->
   <int value="0" label="Match"/>
   <int value="1" label="Mismatch"/>
   <int value="2" label="Missing"/>
+</enum>
+
+<enum name="CastNotificationControls">
+  <int value="0" label="Resume"/>
+  <int value="1" label="Pause"/>
+  <int value="2" label="Stop"/>
 </enum>
 
 <enum name="CastOverlayEvents">
@@ -16165,9 +16172,6 @@ metrics consent we also won't be able to send UMA metrics. -->
   </int>
   <int value="8" label="kOffByWorkaround">
     Video decoder off by GPU workaround.
-  </int>
-  <int value="9" label="kUnsupportedOsVersion">
-    The current operating system is unsupported
   </int>
 </enum>
 
@@ -23591,6 +23595,7 @@ Called by update_document_policy_enum.py.-->
   <int value="823" label="DeviceSystemWideTracingEnabled"/>
   <int value="824" label="WebAppSettings"/>
   <int value="825" label="DevicePciPeripheralDataAccessEnabled"/>
+  <int value="826" label="ContextAwareAccessSignalsAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31444,6 +31449,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3807" label="InsertHTMLCommandOnTextarea"/>
   <int value="3808" label="InsertHTMLCommandOnReadWritePlainText"/>
   <int value="3809" label="CSSAtRuleCounterStyle"/>
+  <int value="3810" label="CanvasUseColorSpace"/>
+  <int value="3811" label="SelectMenuElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41688,6 +41695,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8026721" label="Zaza"/>
 </enum>
 
+<enum name="LanguageDetectionModelState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Model File Invalid"/>
+  <int value="2" label="Model File Valid and Available"/>
+</enum>
+
 <enum name="LanguageSettingsActionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Click on the 'Add Language' button">
@@ -44102,6 +44115,7 @@ from previous Chrome versions.
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1109826787" label="AccessibilityExposeDisplayNone:enabled"/>
+  <int value="-1108636917" label="DetectedSourceLanguageOption:enabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
   <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
@@ -44189,6 +44203,7 @@ from previous Chrome versions.
   <int value="-1032884201" label="HeavyAdPrivacyMitigations:enabled"/>
   <int value="-1031350684" label="PdfIsolation:disabled"/>
   <int value="-1030530357" label="PwaInstallUseBottomSheet:disabled"/>
+  <int value="-1030513821" label="DetectedSourceLanguageOption:disabled"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
   <int value="-1028251580" label="GamepadPollingInterval:disabled"/>
@@ -45603,6 +45618,7 @@ from previous Chrome versions.
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
   <int value="317432596" label="DisplayLocking:disabled"/>
+  <int value="317889969" label="AutofillAddressProfileSavePrompt:disabled"/>
   <int value="319683583" label="ContentSuggestionsDebugLog:enabled"/>
   <int value="320121752" label="DelegateOverscrollSwipes:disabled"/>
   <int value="321366101" label="WebXRARDOMOverlay:enabled"/>
@@ -46246,6 +46262,7 @@ from previous Chrome versions.
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
+  <int value="917285134" label="AutofillAddressProfileSavePrompt:enabled"/>
   <int value="917561046" label="ConversionMeasurement:disabled"/>
   <int value="918046854" label="NtlmV2Enabled:disabled"/>
   <int value="918608729" label="finch-seed-min-download-period"/>
@@ -49787,6 +49804,7 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Connection retry"/>
   <int value="4" label="First by mDNS, then by DIAL"/>
   <int value="5" label="First by DIAL, then by mDNS"/>
+  <int value="6" label="Connection retry on error"/>
 </enum>
 
 <enum name="MediaRouterCreateRouteOutcome">
@@ -51933,6 +51951,15 @@ Called by update_use_counter_css.py.-->
   <int value="12" label="BLE error"/>
   <int value="13" label="Wi-Fi LAN error"/>
   <int value="14" label="Payload unknown"/>
+</enum>
+
+<enum name="NearbyConnectionsUtilityProcessMojoDependencyName">
+  <int value="0" label="Nearby Connections"/>
+  <int value="1" label="Bluetooth Adapter"/>
+  <int value="2" label="Socket Manager"/>
+  <int value="3" label="MDNS Responder"/>
+  <int value="4" label="ICE Config Fetcher"/>
+  <int value="5" label="WebRTC Signaling Messenger"/>
 </enum>
 
 <enum name="NearbyConnectionsUtilityProcessShutdownReason">
@@ -62771,6 +62798,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Add new profile button in the profile menu"/>
   <int value="3" label="Open new window after profile deletion"/>
   <int value="4" label="New session while running (e.g. from Windows tray)"/>
+  <int value="5" label="Profile locked"/>
+  <int value="6" label="Unable to create a browser"/>
+  <int value="7" label="Background mode manager"/>
 </enum>
 
 <enum name="ProfilePickerPages">
@@ -65181,9 +65211,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="RemotePlaybackDeviceType">
+  <obsolete>
+    Dprecated as of 2021/01.
+  </obsolete>
   <int value="0" label="Cast Generic Media Player"/>
   <int value="1" label="Cast YouTube Player"/>
   <int value="2" label="Non-Cast YouTube Player"/>
+</enum>
+
+<enum name="RemotePlaybackInitiationLocation">
+  <int value="0" label="RemotePlayback API implemented by the sites"/>
+  <int value="1" label="Cast button in the HTML media element"/>
 </enum>
 
 <enum name="RemotePlaybackUrlResolveResult">
@@ -79289,6 +79327,7 @@ others/histograms.xml -->
   <int value="10" label="Showed notification"/>
   <int value="11" label="Notification pressed"/>
   <int value="12" label="User unselected linking checkbox during QR scan"/>
+  <int value="13" label="USB transaction was successful"/>
 </enum>
 
 <enum name="WebAuthenticationCableV2MobileResult">

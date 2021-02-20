@@ -94,8 +94,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   bool CanRedo();
   void Undo();
   void Redo();
-  void HandleAccessibilityAction(
-      const PP_PdfAccessibilityActionData& action_data);
   int32_t PdfPrintBegin(const PP_PrintSettings_Dev* print_settings,
                         const PP_PdfPrintSettings_Dev* pdf_print_settings);
 

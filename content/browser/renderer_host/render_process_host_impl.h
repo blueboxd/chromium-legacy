@@ -72,6 +72,7 @@
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-forward.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
@@ -241,8 +242,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
   bool IsProcessBackgrounded() override;
-  void IncrementKeepAliveRefCount() override;
-  void DecrementKeepAliveRefCount() override;
+  void IncrementKeepAliveRefCount(KeepAliveSource source) override;
+  void DecrementKeepAliveRefCount(KeepAliveSource source) override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
   mojom::Renderer* GetRendererInterface() override;
@@ -305,7 +306,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // |new_routing_id| was not found in the token table.
   bool TakeFrameTokensForFrameRoutingID(
       int32_t new_routing_id,
-      base::UnguessableToken& frame_token,
+      blink::LocalFrameToken& frame_token,
       base::UnguessableToken& devtools_frame_token);
 
   // Called when the renderer has fully destroyed the associated RenderView
@@ -656,6 +657,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   }
 
   size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
+  // TODO(wjmaclean): remove this when the experiment is done.
+  std::string keep_alive_sources() const { return keep_alive_sources_; }
 
   PeerConnectionTrackerHost* GetPeerConnectionTrackerHost();
 
@@ -927,6 +930,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojo::OutgoingInvitation mojo_invitation_;
 
   size_t keep_alive_ref_count_;
+  std::string keep_alive_sources_;
 
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.

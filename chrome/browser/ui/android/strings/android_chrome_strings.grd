@@ -779,7 +779,7 @@ For example, some websites may respond to this request by showing you ads that a
       </message>
 
       <!-- Privacy Sandbox Settings. Used by //chrome/browser/privacy_sandbox. -->
-      <message name="IDS_PREFS_PRIVACY_SANDBOX" desc="Title for the 'Privacy Sandbox' page.">
+      <message name="IDS_PREFS_PRIVACY_SANDBOX" desc="Title for the 'Privacy Sandbox' page. 'Privacy Sandbox' is a noun phrase (title case).">
         Privacy Sandbox
       </message>
       <message name="IDS_PRIVACY_SANDBOX_STATUS_ENABLED" desc="Status text, displayed when the Privacy sandbox APIs are enabled.">
@@ -801,7 +801,7 @@ Privacy Sandbox preserves the vitality of the open web by creating better ways t
 Privacy Sandbox is still in active development and is available in selected regions. For now, sites may try out Privacy Sandbox while continuing to use current web technologies like third-party cookies. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_TOGGLE" desc="Title for the Privacy Sandbox toggle.">
-        Enable Privacy Sandbox
+        Privacy Sandbox trials
       </message>
       <message name="IDS_PRIVACY_SANDBOX_TOGGLE_DESCRIPTION" desc="Description for the Privacy Sandbox toggle.">
         When enabled, sites may use the privacy-preserving techniques shown here to provide their content and services. These include alternatives to cross-site tracking. More trials may be added over time.
@@ -4213,7 +4213,7 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
 
       <message name="IDS_SHARING_HIGHLIGHTS" desc="Label for Link-to-text button in the sharing hub.">
-        Link to text
+        Link to highlight
       </message>
 
       <message name="IDS_SHARING_COPIED" desc="Text shown in the toast notification when Copy is selected in the sharing hub.">
@@ -4273,15 +4273,15 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
 
       <message name="IDS_LINK_TO_TEXT_FAILURE_TOAST_MESSAGE" desc="Toast displayed when link to highlighted text was not possible to create.">
-        Can’t create link to text. Share link to page.
+        Can’t create link to highlight. Share link to page.
       </message>
 
       <message name="IDS_LINK_TO_TEXT_FAILURE_TOAST_MESSAGE_V2" desc="Toast displayed when link to highlighted text was not possible to create.">
-        Can’t create link to text
+        Can’t create link to highlight
       </message>
 
       <message name="IDS_LINK_TO_TEXT_SUCCESS_LINK_TOAST_MESSAGE" desc="Toast displayed when link to highlighted text was not possible to create.">
-        Include link to text
+        Include link to highlight
       </message>
 
       <message name="IDS_LINK_TO_TEXT_SUCCESS_TEXT_TOAST_MESSAGE" desc="Toast displayed when link to highlighted text was not possible to create.">

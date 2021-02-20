@@ -33,7 +33,9 @@ LibassistantService::LibassistantService(
           std::make_unique<ConversationController>(service_controller_.get())),
       conversation_state_listener_(
           std::make_unique<ConversationStateListenerImpl>(
-              &speech_recognition_observers_)),
+              &speech_recognition_observers_,
+              conversation_controller_->conversation_observers(),
+              audio_input_controller_.get())),
       display_controller_(
           std::make_unique<DisplayController>(&speech_recognition_observers_)),
       media_controller_(std::make_unique<MediaController>()),
@@ -48,6 +50,8 @@ LibassistantService::LibassistantService(
       media_controller_.get());
   service_controller_->AddAndFireAssistantManagerObserver(
       speaker_id_enrollment_controller_.get());
+  service_controller_->AddAndFireAssistantManagerObserver(
+      conversation_controller_.get());
 
   platform_api_->SetAudioInputProvider(
       &audio_input_controller_->audio_input_provider());
@@ -64,6 +68,8 @@ LibassistantService::~LibassistantService() {
   service_controller_->RemoveAssistantManagerObserver(media_controller_.get());
   service_controller_->RemoveAssistantManagerObserver(
       speaker_id_enrollment_controller_.get());
+  service_controller_->RemoveAssistantManagerObserver(
+      conversation_controller_.get());
 }
 
 void LibassistantService::Bind(

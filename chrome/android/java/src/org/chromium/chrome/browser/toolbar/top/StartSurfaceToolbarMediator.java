@@ -24,6 +24,7 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_HIGHLIGHT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TAB_SWITCHER_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TRANSLATION_Y;
 
 import android.view.View;
@@ -37,7 +38,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -56,6 +56,7 @@ class StartSurfaceToolbarMediator {
     private final Callback<IPHCommandBuilder> mShowIPHCallback;
     private final boolean mHideIncognitoSwitchWhenNoTabs;
     private final boolean mHideIncognitoSwitchOnHomePage;
+    private final boolean mShouldShowTabSwitcherButtonOnHomepage;
     private final Supplier<ButtonData> mIdentityDiscButtonSupplier;
 
     private TabModelSelector mTabModelSelector;
@@ -80,7 +81,8 @@ class StartSurfaceToolbarMediator {
             Supplier<ButtonData> identityDiscButtonSupplier,
             ObservableSupplier<Boolean> homepageEnabledSupplier,
             ObservableSupplier<Boolean> homepageManagedByPolicySupplier,
-            View.OnClickListener homeButtonOnClickHandler) {
+            View.OnClickListener homeButtonOnClickHandler,
+            boolean shouldShowTabSwitcherButtonOnHomepage) {
         mPropertyModel = model;
         mOverviewModeState = StartSurfaceState.NOT_SHOWN;
         mShowIPHCallback = showIPHCallback;
@@ -101,6 +103,7 @@ class StartSurfaceToolbarMediator {
                     HOMEPAGE_MANAGED_BY_POLICY_SUPPLIER, homepageManagedByPolicySupplier);
             mPropertyModel.set(HOME_BUTTON_CLICK_HANDLER, homeButtonOnClickHandler);
         }
+        mShouldShowTabSwitcherButtonOnHomepage = shouldShowTabSwitcherButtonOnHomepage;
     }
 
     void onNativeLibraryReady() {
@@ -144,6 +147,9 @@ class StartSurfaceToolbarMediator {
         updateLogoVisibility(mIsGoogleSearchEngine);
         updateIdentityDisc(mIdentityDiscButtonSupplier.get());
         updateTranslationY(mNonIncognitoHomepageTranslationY);
+        if (mShouldShowTabSwitcherButtonOnHomepage) {
+            updateTabSwitcherButtonVisibility();
+        }
     }
 
     void onStartSurfaceHeaderOffsetChanged(int verticalOffset) {
@@ -168,7 +174,7 @@ class StartSurfaceToolbarMediator {
         mTabModelSelector = selector;
 
         if (mTabModelSelectorObserver == null) {
-            mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            mTabModelSelectorObserver = new TabModelSelectorObserver() {
                 @Override
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                     mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
@@ -315,6 +321,13 @@ class StartSurfaceToolbarMediator {
         mPropertyModel.set(HOME_BUTTON_IS_VISIBLE,
                 isShownTabswitcherState && !mPropertyModel.get(IS_INCOGNITO)
                         && mShowHomeButtonOnTabSwitcher);
+    }
+
+    private void updateTabSwitcherButtonVisibility() {
+        // This button should only be shown on homepage. On tab switcher page, new tab button is
+        // shown.
+        boolean shouldTabSwitcherButton = mOverviewModeState == StartSurfaceState.SHOWN_HOMEPAGE;
+        mPropertyModel.set(TAB_SWITCHER_BUTTON_IS_VISIBLE, shouldTabSwitcherButton);
     }
 
     private void updateTranslationY(float transY) {

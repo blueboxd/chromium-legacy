@@ -126,9 +126,6 @@ const base::Feature kClearOldBrowsingData{"ClearOldBrowsingData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-const base::Feature kClickToOpenPDFPlaceholder{
-    "ClickToOpenPDFPlaceholder", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -747,11 +744,6 @@ const base::Feature kPrivacyReorderedAndroid{"PrivacyReorderedAndroid",
 // Enables the privacy sandbox settings page.
 const base::Feature kPrivacySandboxSettings{"PrivacySandboxSettings",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Whether to display redesign of the chrome privacy settings page
-// to the user.
-const base::Feature kPrivacySettingsRedesign{"PrivacySettingsRedesign",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.

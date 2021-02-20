@@ -117,10 +117,14 @@ android_library("services_java") {
 
 source_set("nonembedded") {
   sources = [
+    "component_updater/aw_component_installer_policy_delegate.cc",
+    "component_updater/aw_component_installer_policy_delegate.h",
     "component_updater/aw_component_update_service.cc",
     "component_updater/aw_component_update_service.h",
     "component_updater/aw_component_updater_configurator.cc",
     "component_updater/aw_component_updater_configurator.h",
+    "component_updater/installer_policies/aw_trust_token_key_commitments_component_installer_policy.cc",
+    "component_updater/installer_policies/aw_trust_token_key_commitments_component_installer_policy.h",
     "component_updater/registration.cc",
     "component_updater/registration.h",
     "webview_apk_application.cc",
@@ -133,6 +137,7 @@ source_set("nonembedded") {
     "//base",
     "//base",
     "//components/component_updater",
+    "//components/component_updater/installer_policies",
     "//components/prefs",
     "//components/services/patch/content",
     "//components/services/unzip/content",

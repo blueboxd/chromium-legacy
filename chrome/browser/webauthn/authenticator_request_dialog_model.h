@@ -15,7 +15,6 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
@@ -122,7 +121,7 @@ class AuthenticatorRequestDialogModel {
     virtual void OnStartOver() {}
 
     // Called just before the model is destructed.
-    virtual void OnModelDestroyed() = 0;
+    virtual void OnModelDestroyed(AuthenticatorRequestDialogModel* model) = 0;
 
     // Called when the UX flow has navigated to a different step, so the UI
     // should update.
@@ -164,7 +163,8 @@ class AuthenticatorRequestDialogModel {
     return current_step() == Step::kClosed;
   }
   bool should_dialog_be_hidden() const {
-    return current_step() == Step::kNotStarted;
+    return current_step() == Step::kNotStarted ||
+           current_step() == Step::kSubtleUI;
   }
 
   const TransportAvailabilityInfo* transport_availability() const {
@@ -510,9 +510,6 @@ class AuthenticatorRequestDialogModel {
   // displayed already and the user cancelled it. In this case, we shouldn't
   // jump straight to showing it again.
   bool win_native_api_already_tried_ = false;
-  // auto_advance_ will move the dialog to some |Step| when it triggers.
-  // Any transition prior to that will cancel |auto_advance_|.
-  base::Optional<base::OneShotTimer> auto_advance_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

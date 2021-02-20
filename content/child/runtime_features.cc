@@ -361,7 +361,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints},
           {"EditingNG", blink::features::kEditingNG},
-          {"FlexAspectRatio", blink::features::kFlexAspectRatio},
           {"FontAccess", blink::features::kFontAccess},
           {"FontAccessPersistent", blink::features::kFontAccessPersistent},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching},
@@ -394,6 +393,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kWebAppManifestDisplayOverride},
           {"WebAppWindowControlsOverlay",
            features::kWebAppWindowControlsOverlay},
+          {"WebAuthenticationConditionalUI", features::kWebAuthConditionalUI},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

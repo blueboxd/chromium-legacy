@@ -2135,6 +2135,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidWebViewActualUiThread">
+  <obsolete>
+    Removed 02/2020. The ActualUiThread metric has been removed.
+  </obsolete>
   <int value="0" label="The thread on which the first WebView was constructed"/>
   <int value="1" label="The main looper"/>
   <int value="2" label="Some other thread"/>
@@ -2271,6 +2274,11 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
   <int value="2" label="DIRECT"/>
+</enum>
+
+<enum name="AndroidWebViewSingleOrMultiProcess">
+  <int value="0" label="SINGLE_PROCESS"/>
+  <int value="1" label="MULTI_PROCESS"/>
 </enum>
 
 <enum name="AndroidWebViewSslErrorType">
@@ -7692,6 +7700,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanAddingBlacklistedDuplicatesPrevented">
   <int value="0" label="Not prevented"/>
   <int value="1" label="Prevented"/>
+</enum>
+
+<enum name="BooleanAffected">
+  <int value="0" label="Not Affected"/>
+  <int value="1" label="Affected"/>
 </enum>
 
 <enum name="BooleanAllowed">
@@ -24057,6 +24070,9 @@ Called by update_document_policy_enum.py.-->
   <int value="19" label="GestureTwoFingerTap"/>
   <int value="20" label="FirstGestureScrollUpdate"/>
   <int value="21" label="MouseDragged"/>
+  <int value="22" label="GesturePinchBegin"/>
+  <int value="23" label="GesturePinchEnd"/>
+  <int value="24" label="GesturePinchUpdate"/>
 </enum>
 
 <enum name="EventLatencyScrollInputType">
@@ -27148,6 +27164,10 @@ Called by update_extension_permission.py.-->
   <int value="39" label="DEPRECATED_ERROR_PARSING_DNR_RULESET"/>
   <int value="40" label="ERROR_INDEXING_DNR_RULESET"/>
   <int value="41" label="CRX_REQUIRED_PROOF_MISSING"/>
+  <int value="42" label="CRX_HEADER_VERIFIED_CONTENTS_UNCOMPRESSING_FAILURE"/>
+  <int value="43" label="MALFORMED_VERIFIED_CONTENTS"/>
+  <int value="44" label="COULD_NOT_CREATE_METADATA_DIRECTORY"/>
+  <int value="45" label="COULD_NOT_WRITE_VERIFIED_CONTENTS_INTO_FILE"/>
 </enum>
 
 <enum name="ExtensionUpdateCheckDataKey">
@@ -31459,6 +31479,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3809" label="CSSAtRuleCounterStyle"/>
   <int value="3810" label="CanvasUseColorSpace"/>
   <int value="3811" label="SelectMenuElement"/>
+  <int value="3812"
+      label="RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31774,7 +31796,9 @@ Called by update_feature_policy_enum.py.-->
   <int value="28" label="Tapped manage reactions"/>
 </enum>
 
-<enum name="FeedUserCommandType"/>
+<enum name="FeedUserCommandType">
+  <int value="0" label="Enum placerholder. See crbug/1179826"/>
+</enum>
 
 <enum name="FeedZeroStateShowReason">
   <int value="0" label="ERROR"/>
@@ -35634,6 +35658,7 @@ Called by update_feature_policy_enum.py.-->
 
 <enum name="GenericEnum">
   <summary>Generic enums where the label is just the raw number</summary>
+  <int value="0" label="Enum placerholder. See crbug/1179826"/>
 </enum>
 
 <enum name="GeolocationAuthorizationAction">
@@ -37605,6 +37630,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="kHidePreviews"/>
   <int value="6" label="kShowPod"/>
   <int value="7" label="kHidePod"/>
+  <int value="8" label="kDragAndDropToPin"/>
 </enum>
 
 <enum name="HomeButtonPreferenceStateType">
@@ -43901,6 +43927,7 @@ from previous Chrome versions.
       label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:disabled"/>
   <int value="-1301167148" label="WebViewZeroCopyVideo:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
+  <int value="-1295288468" label="MemoriesDebug:enabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
   <int value="-1292615467"
@@ -44052,6 +44079,7 @@ from previous Chrome versions.
   <int value="-1173361620" label="CCTModulePostMessage:disabled"/>
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
+  <int value="-1170286604" label="Commander:disabled"/>
   <int value="-1168910727"
       label="enable-experimental-accessibility-language-detection-dynamic"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
@@ -44624,6 +44652,7 @@ from previous Chrome versions.
   <int value="-650176557" label="OfflinePagesSvelteConcurrentLoading:enabled"/>
   <int value="-649956990" label="enable-harfbuzz-rendertext"/>
   <int value="-648925189" label="ExploreSites:enabled"/>
+  <int value="-648593261" label="Memories:enabled"/>
   <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
   <int value="-643217597" label="EduCoexistenceConsentLog:enabled"/>
   <int value="-642346675" label="DesktopPWAsAttentionBadgingCrOS:enabled"/>
@@ -45756,6 +45785,7 @@ from previous Chrome versions.
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
+  <int value="426199960" label="Commander:enabled"/>
   <int value="427184788" label="WebFeed:enabled"/>
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
@@ -46497,6 +46527,7 @@ from previous Chrome versions.
       label="ForceSecurePaymentConfirmationDialog:disabled"/>
   <int value="1117795262" label="BloatedRendererDetection:disabled"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
+  <int value="1118339487" label="MemoriesDebug:disabled"/>
   <int value="1120428727" label="TabGridLayoutAndroid:enabled"/>
   <int value="1126061778" label="CaptureThumbnailOnLoadFinished:enabled"/>
   <int value="1126956909" label="UseXpsForPrintingFromPdf:disabled"/>
@@ -47138,6 +47169,7 @@ from previous Chrome versions.
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1711286384" label="ContextMenuCopyImage:disabled"/>
+  <int value="1712622545" label="Memories:disabled"/>
   <int value="1712880335" label="FiltersInRecents:enabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
   <int value="1714016217" label="EnableHeuristicPalmDetectionFilter:enabled"/>
@@ -51860,6 +51892,34 @@ Called by update_use_counter_css.py.-->
   <int value="15" label="chrome-extension"/>
   <int value="16" label="view-source"/>
   <int value="17" label="externalfile"/>
+</enum>
+
+<enum name="NavigationSuggestionDigitalAssetLinkValidationEvent">
+  <int value="0" label="kNone"/>
+  <int value="1" label="kStarted">
+    A digital asset link validation started. Recorded once for a lookalike and
+    target site pair.
+  </int>
+  <int value="2" label="kLookalikeManifestFailed">
+    Failed to fetch the lookalike site's manifest. This could be because the
+    lookalike site doesn't serve a manifest, serves an invalid manifest or a
+    manifest that doesn't match the target site.
+  </int>
+  <int value="3" label="kLookalikeManifestTimedOut">
+    Timed out while fetching the lookalike site's manifest.
+  </int>
+  <int value="4" label="kTargetManifestFailed">
+    Failed to fetch the target site's manifest. This could be because the target
+    site doesn't serve a manifest, serves an invalid manifest or a manifest that
+    doesn't match the lookalike site.
+  </int>
+  <int value="5" label="kTargetManifestTimedOut">
+    Timed out while fetching the lookalike site's manifest.
+  </int>
+  <int value="6" label="kValidationSucceeded">
+    Validation of lookalike and target manifests succeeded, no need to show a
+    lookalike warning.
+  </int>
 </enum>
 
 <enum name="NavigationSuggestionEvent">
@@ -59333,6 +59393,7 @@ Called by update_net_trust_anchors.py.-->
     payment sheet. The cardinality is not too high since the total number of
     used bits is less than 4.
   </summary>
+  <int value="0" label="Enum placerholder. See crbug/1179826"/>
 </enum>
 
 <enum name="PaymentRequestMissingPaymentFields">
@@ -59341,6 +59402,7 @@ Called by update_net_trust_anchors.py.-->
     payment sheet. The cardinality is not too high since the total number of
     used bits is less than 6.
   </summary>
+  <int value="0" label="Enum placerholder. See crbug/1179826"/>
 </enum>
 
 <enum name="PaymentRequestMissingShippingFields">
@@ -59349,6 +59411,7 @@ Called by update_net_trust_anchors.py.-->
     payment sheet. The cardinality is not too high since the total number of
     used bits is less than 4.
   </summary>
+  <int value="0" label="Enum placerholder. See crbug/1179826"/>
 </enum>
 
 <enum name="PaymentRequestNoShowReason">
@@ -69116,6 +69179,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="Safety check, review extensions through caret navigation"/>
   <int value="10"
       label="Safety check, caret navigation to the Chrome cleaner UI"/>
+  <int value="11" label="Safety check, manage weak passwords"/>
 </enum>
 
 <enum name="SettingsSections">
@@ -76207,6 +76271,7 @@ Full version information for the fingerprint enum values:
     This gets populated by the GetEnumsNodes function in merge_xml.py when
     producing the merged XML file.
   </summary>
+  <int value="0" label="Enum placerholder. See crbug/1179826"/>
 </enum>
 
 <enum name="UkmResetReason">
@@ -78205,6 +78270,8 @@ Full version information for the fingerprint enum values:
   <int value="29" label="P016LE"/>
   <int value="30" label="XR30"/>
   <int value="31" label="XB30"/>
+  <int value="32" label="BGRA"/>
+  <int value="33" label="RGBAF16"/>
 </enum>
 
 <enum name="VideoPlayerCastAPIExtensionStatus">

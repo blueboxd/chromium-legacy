@@ -1079,7 +1079,6 @@ if (!is_android) {
       "../browser/idle/idle_browsertest.cc",
       "../browser/iframe_browsertest.cc",
       "../browser/image_fetcher/image_fetcher_impl_browsertest.cc",
-      "../browser/importer/firefox_importer_browsertest.cc",
       "../browser/importer/importer_unittest_utils.cc",
       "../browser/importer/importer_unittest_utils.h",
       "../browser/infobars/infobar_observer.cc",
@@ -1463,6 +1462,8 @@ if (!is_android) {
       "../browser/ui/popup_browsertest.cc",
       "../browser/ui/prefs/prefs_tab_helper_browsertest.cc",
       "../browser/ui/profile_error_browsertest.cc",
+      "../browser/ui/read_later/read_later_test_utils.cc",
+      "../browser/ui/read_later/read_later_test_utils.h",
       "../browser/ui/renderer_event_injection_browsertest.cc",
       "../browser/ui/search/instant_test_base.cc",
       "../browser/ui/search/instant_test_base.h",
@@ -1525,6 +1526,7 @@ if (!is_android) {
       "../browser/ui/views/web_apps/web_app_integration_browsertest_base.h",
       "../browser/ui/views/web_apps/web_app_tab_strip_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
+      "../browser/ui/views/webauthn/webauthn_icon_interactive_uitest.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
       "../browser/ui/web_applications/app_browser_controller_browsertest.cc",
       "../browser/ui/web_applications/create_shortcut_browsertest.cc",
@@ -3440,18 +3442,6 @@ group("telemetry_perf_webview_tests") {
   deps = [ "//chrome/test:telemetry_perf_tests" ]
 }
 
-if (is_mac) {
-  mojom("firefox_importer_interface") {
-    sources =
-        [ "../utility/importer/firefox_importer_unittest_utils_mac.mojom" ]
-    public_deps = [
-      "//chrome/common/importer:interfaces",
-      "//components/autofill/core/common/mojom:mojo_types",
-      "//mojo/public/mojom/base",
-    ]
-  }
-}
-
 test("unit_tests") {
   use_xvfb = use_xvfb_in_this_config
 
@@ -4796,8 +4786,6 @@ test("unit_tests") {
       "../test/base/browser_with_test_window_test.h",
       "../utility/importer/bookmark_html_reader_unittest.cc",
       "../utility/importer/bookmarks_file_importer_unittest.cc",
-      "../utility/importer/firefox_importer_unittest.cc",
-      "../utility/importer/firefox_importer_unittest_utils.h",
 
       # Android uses different way of showing feedback page
       "../browser/feedback/show_feedback_page_unittest.cc",
@@ -4838,7 +4826,6 @@ test("unit_tests") {
     if (is_mac) {
       sources += [
         "../browser/ui/content_settings/content_setting_media_image_model_unittest.mm",
-        "../utility/importer/firefox_importer_unittest_utils_mac.cc",
         "../utility/importer/safari_importer_unittest.mm",
       ]
 
@@ -4871,9 +4858,6 @@ test("unit_tests") {
     ]
     if (is_win) {
       deps += [ "//components/chrome_cleaner/public/proto:test_only_proto" ]
-    }
-    if (is_mac) {
-      deps += [ ":firefox_importer_interface" ]
     }
     if (is_chromeos_ash) {
       deps += [
@@ -5036,15 +5020,12 @@ test("unit_tests") {
       "../browser/nearby_sharing/instantmessaging/receive_messages_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/send_message_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/stream_parser_unittest.cc",
-      "../browser/nearby_sharing/mock_nearby_process_manager.cc",
-      "../browser/nearby_sharing/mock_nearby_process_manager.h",
       "../browser/nearby_sharing/mock_nearby_sharing_service.cc",
       "../browser/nearby_sharing/mock_nearby_sharing_service.h",
       "../browser/nearby_sharing/nearby_confirmation_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_connections_manager_impl_unittest.cc",
       "../browser/nearby_sharing/nearby_notification_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_per_session_discovery_manager_unittest.cc",
-      "../browser/nearby_sharing/nearby_process_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_receive_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_share_default_device_name_unittest.cc",
       "../browser/nearby_sharing/nearby_share_settings_unittest.cc",
@@ -5810,6 +5791,7 @@ test("unit_tests") {
 
   if (is_linux || is_chromeos || is_mac || is_win) {
     sources += [
+      "../browser/enterprise/connectors/device_trust/signal_reporter_unittest.cc",
       "../browser/enterprise/connectors/file_system/access_token_fetcher_unittest.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_flow_unittest.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_test_helper.cc",

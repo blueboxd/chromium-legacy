@@ -850,6 +850,12 @@ extern const char kMediaHistoryDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
+extern const char kMemoriesName[];
+extern const char kMemoriesDescription[];
+
+extern const char kMemoriesDebugName[];
+extern const char kMemoriesDebugDescription[];
+
 extern const char kMetricsSettingsAndroidName[];
 extern const char kMetricsSettingsAndroidDescription[];
 
@@ -1136,9 +1142,6 @@ extern const char kPrivacyReorderedAndroidDescription[];
 
 extern const char kPrivacySandboxSettingsName[];
 extern const char kPrivacySandboxSettingsDescription[];
-
-extern const char kPrivacySettingsRedesignName[];
-extern const char kPrivacySettingsRedesignDescription[];
 
 extern const char kForceEnablePrivetPrintingName[];
 extern const char kForceEnablePrivetPrintingDescription[];
@@ -2885,6 +2888,9 @@ extern const char kDirectManipulationStylusDescription[];
         // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+
+extern const char kCommanderName[];
+extern const char kCommanderDescription[];
 
 extern const char kDesktopRestructuredLanguageSettingsName[];
 extern const char kDesktopRestructuredLanguageSettingsDescription[];

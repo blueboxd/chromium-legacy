@@ -308,7 +308,9 @@ class NearbySharingServiceImpl
   void OnIncomingMutualAcceptanceTimeout(const ShareTarget& share_target);
   void OnOutgoingMutualAcceptanceTimeout(const ShareTarget& share_target);
 
-  void OnNearbyProcessStopped();
+  void OnNearbyProcessStopped(
+      chromeos::nearby::NearbyProcessManager::NearbyProcessShutdownReason
+          shutdown_reason);
   sharing::mojom::NearbySharingDecoder* GetNearbySharingDecoder();
 
   base::Optional<ShareTarget> CreateShareTarget(
@@ -346,6 +348,8 @@ class NearbySharingServiceImpl
 
   void OnStartAdvertisingResult(
       bool used_device_name,
+      NearbyConnectionsManager::ConnectionsStatus status);
+  void OnStartDiscoveryResult(
       NearbyConnectionsManager::ConnectionsStatus status);
   void SetInHighVisibility(bool in_high_visibility);
 

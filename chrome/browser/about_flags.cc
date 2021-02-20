@@ -92,6 +92,7 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/lookalikes/core/features.h"
+#include "components/memories/core/memories_features.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -4443,6 +4444,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxWebUIOmniboxPopupDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kWebUIOmniboxPopup)},
 
+    {"memories", flag_descriptions::kMemoriesName,
+     flag_descriptions::kMemoriesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(memories::kMemories)},
+
+    {"memories-debug", flag_descriptions::kMemoriesDebugName,
+     flag_descriptions::kMemoriesDebugDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(memories::kDebug)},
+
     {"search-prefetch", flag_descriptions::kEnableSearchPrefetchName,
      flag_descriptions::kEnableSearchPrefetchDescription, kOsAll,
      SINGLE_VALUE_TYPE(kSearchPrefetchServiceCommandLineFlag)},
@@ -4587,10 +4596,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReaderModeInCCT)},
 #endif  // !defined(OS_ANDROID)
-
-    {"click-to-open-pdf", flag_descriptions::kClickToOpenPDFName,
-     flag_descriptions::kClickToOpenPDFDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
@@ -5742,11 +5747,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kPrivacySandboxSettings)},
 
-    {"privacy-settings-redesign",
-     flag_descriptions::kPrivacySettingsRedesignName,
-     flag_descriptions::kPrivacySettingsRedesignDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPrivacySettingsRedesign)},
-
 #if defined(OS_ANDROID)
     {"safety-check-android", flag_descriptions::kSafetyCheckAndroidName,
      flag_descriptions::kSafetyCheckAndroidDescription, kOsAndroid,
@@ -6728,6 +6728,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+    {"commander", flag_descriptions::kCommanderName,
+     flag_descriptions::kCommanderDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kCommander)},
+
     {"desktop-restructured-language-settings",
      flag_descriptions::kDesktopRestructuredLanguageSettingsName,
      flag_descriptions::kDesktopRestructuredLanguageSettingsDescription,

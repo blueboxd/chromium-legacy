@@ -133,13 +133,13 @@ import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabbed_mode.TabbedAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHost;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -997,7 +997,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mHasDeterminedOverviewStateForCurrentSession = true;
         boolean isOverviewVisible = mOverviewModeController.overviewVisible();
 
-        if (shouldShowTabSwitcherOnStart() && !isOverviewVisible) {
+        if (shouldRefreshAndShowOverview(isOverviewVisible)) {
             if (getCurrentTabModel() != null) {
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
@@ -1026,6 +1026,16 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 && mOverviewModeController.overviewVisible()) {
             RecordUserAction.record("MobileStartup.UserEnteredTabSwitcher");
         }
+    }
+
+    private boolean shouldRefreshAndShowOverview(boolean isOverviewVisible) {
+        // If StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON is turned on, MV tiles and
+        // carousels may be hidden before Chrome is brought to the background. If overview should be
+        // shown, no matter overview was already visible or not, we should call
+        // showOverview(StartSurfaceState.SHOWING_START) to show MV tiles and carousels again.
+        return shouldShowTabSwitcherOnStart()
+                && (!isOverviewVisible
+                        || StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON.getValue());
     }
 
     private boolean shouldShowTabSwitcherOnStart() {
@@ -1646,7 +1656,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         mTabModelSelectorImpl = mTabModelOrchestrator.getTabModelSelector();
-        mTabModelSelectorImpl.addObserver(new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorImpl.addObserver(new TabModelSelectorObserver() {
             @Override
             public void onTabStateInitialized() {
                 if (!mCreatedTabOnStartup) return;
@@ -2334,8 +2344,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     @Override
     protected ModalDialogManager createModalDialogManager() {
         ModalDialogManager manager = super.createModalDialogManager();
-        mTabModalHandler = new TabModalLifetimeHandler(this, manager,
-                this::getAppBrowserControlsVisibilityDelegate, this::getTabObscuringHandler);
+        // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
+        mTabModalHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(), manager,
+                this::getAppBrowserControlsVisibilityDelegate, this::getTabObscuringHandler,
+                this::getToolbarManager, this::getContextualSearchManager,
+                getTabModelSelectorSupplier(), this::getBrowserControlsManager,
+                this::getFullscreenManager);
         return manager;
     }
 

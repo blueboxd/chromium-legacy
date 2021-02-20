@@ -580,11 +580,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "click-to-open-pdf",
-    "owners": [ "tommycli" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "client-storage-access-context-auditing",
     "owners": [
       "sauski",
@@ -617,6 +612,11 @@
     "name": "colr-v1-fonts",
     "owners": [ "drott", "layout-dev@chromium.org" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "commander",
+    "owners": [ "lgrey" ],
+    "expiry_milestone": 100
   },
   {
     "name": "composited-layer-borders",
@@ -2262,7 +2262,7 @@
   {
     "name": "enable-resampling-scroll-events-experimental-prediction",
     "owners": [ "input-dev" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-resource-loading-hints",
@@ -3415,6 +3415,16 @@
     "expiry_milestone": -1
   },
   {
+    "name": "memories",
+    "owners": [ "tommycli", "chrome-memories@google.com", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "memories-debug",
+    "owners": [ "manukh", "chrome-memories@google.com", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "messages-block-popup-infobars",
     "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
     "expiry_milestone": 85
@@ -3556,7 +3566,7 @@
   {
     "name": "new-content-suggestions-feed",
     "owners": [ "adamta", "sczs", "gogerald", "bling-flags@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "new-shortcut-mapping",
@@ -4183,15 +4193,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "privacy-settings-redesign",
-    "owners": [
-      "harrisonsean",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "prominent-dark-mode-active-tab-title",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
@@ -4328,7 +4329,7 @@
   {
     "name": "refactored-ntp",
     "owners": [ "adamta", "sczs" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "related-searches",

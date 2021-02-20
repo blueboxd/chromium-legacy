@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -17,8 +18,7 @@ namespace viz {
 class VIZ_SERVICE_EXPORT DisplayResourceProviderSkia
     : public DisplayResourceProvider {
  public:
-  explicit DisplayResourceProviderSkia(
-      SharedBitmapManager* shared_bitmap_manager);
+  DisplayResourceProviderSkia();
   ~DisplayResourceProviderSkia() override;
 
   // Maintains set of resources locked for external use by SkiaRenderer.
@@ -63,6 +63,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProviderSkia
       Child& child_info,
       DeleteStyle style,
       const std::vector<ResourceId>& unused) override;
+
+  // Used to release resources held by an external consumer.
+  ExternalUseClient* external_use_client_ = nullptr;
 };
 
 }  // namespace viz

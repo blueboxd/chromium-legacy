@@ -120,7 +120,7 @@ class WebBundleURLLoaderClient : public network::mojom::URLLoaderClient {
     options.capacity_num_bytes = kBlockedBodyAllocationSize;
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
-    MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+    MojoResult result = mojo::CreateDataPipe(&options, producer, consumer);
     if (result != MOJO_RESULT_OK) {
       wrapped_->OnComplete(
           URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
@@ -215,7 +215,7 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
     // Send empty body to the URLLoaderClient.
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
-    if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
+    if (CreateDataPipe(nullptr, producer, consumer) != MOJO_RESULT_OK) {
       OnFail(net::ERR_INSUFFICIENT_RESOURCES);
       return;
     }
@@ -511,6 +511,16 @@ void WebBundleURLLoaderFactory::StartSubresourceRequest(
   URLLoader* loader = new URLLoader(
       std::move(receiver), url_request, std::move(client),
       request_initiator_origin_lock_, std::move(trusted_header_client));
+
+  // Verify that WebBundle URL associated with the request is correct.
+  DCHECK(url_request.web_bundle_token_params.has_value());
+  if (url_request.web_bundle_token_params->bundle_url != bundle_url_) {
+    mojo::ReportBadMessage(
+        "WebBundleURLLoaderFactory: Bundle URL does not match");
+    loader->OnFail(net::ERR_INVALID_ARGUMENT);
+    return;
+  }
+
   if (!loader->trusted_header_client()) {
     QueueOrStartLoader(loader->GetWeakPtr());
     return;
@@ -686,7 +696,7 @@ void WebBundleURLLoaderFactory::SendResponseToLoader(
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
+  if (CreateDataPipe(nullptr, producer, consumer) != MOJO_RESULT_OK) {
     loader->OnFail(net::ERR_INSUFFICIENT_RESOURCES);
     return;
   }

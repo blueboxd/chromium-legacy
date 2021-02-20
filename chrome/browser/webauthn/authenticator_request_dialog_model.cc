@@ -105,23 +105,11 @@ AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel(
 
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)
-    observer.OnModelDestroyed();
+    observer.OnModelDestroyed(this);
 }
 
 void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
-  auto_advance_.reset();
   current_step_ = step;
-
-  if (current_step_ == Step::kCableActivate && cable_is_serverlink()) {
-    // Server-linked caBLEv2 automatically shows the USB hint if idle for 30
-    // seconds. This mirrors behaviour on the mobile side.
-    auto_advance_.emplace();
-    auto_advance_->Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(30),
-        base::BindOnce(&AuthenticatorRequestDialogModel::SetCurrentStep,
-                       GetWeakPtr(), Step::kAndroidAccessory));
-  }
-
   for (auto& observer : observers_)
     observer.OnStepTransition();
 }
@@ -142,10 +130,6 @@ void AuthenticatorRequestDialogModel::StartFlow(
   if (is_conditional) {
     // If this is a conditional request, keep the UI hidden while dispatching
     // requests.
-    // TODO(nsatragno): show a subtle bubble indicating the user they can insert
-    // and tap their security key.
-    // TODO(nsatragno): skip to the account selection screen when there are
-    // discoverable platform credentials available.
     SetCurrentStep(Step::kSubtleUI);
   } else {
     StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
@@ -386,9 +370,14 @@ void AuthenticatorRequestDialogModel::OnRequestComplete() {
 }
 
 void AuthenticatorRequestDialogModel::OnRequestTimeout() {
+  if (current_step_ == Step::kSubtleUI) {
+    Cancel();
+    return;
+  }
   // The request may time out while the UI shows a different error.
-  if (!is_request_complete())
+  if (!is_request_complete()) {
     SetCurrentStep(Step::kTimedOut);
+  }
 }
 
 void AuthenticatorRequestDialogModel::OnActivatedKeyNotRegistered() {

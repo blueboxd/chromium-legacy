@@ -2329,7 +2329,6 @@
 <translation id="3602290021589620013">மாதிரிக்காட்சி</translation>
 <translation id="3602870520245633055">பிரிண்ட் &amp; ஸ்கேன்</translation>
 <translation id="3603622770190368340">நெட்வொர்க் சான்றிதழ் பெறுதல்</translation>
-<translation id="3604193429970465812">இரண்டாம் நிலைக் கணக்குகள்</translation>
 <translation id="3604713164406837697">வால்பேப்பரை மாற்று</translation>
 <translation id="3605780360466892872">பட்டன்டவுண்</translation>
 <translation id="3608576286259426129">பயனர் படத்தின் மாதிரிக்காட்சி</translation>
@@ -2398,7 +2397,6 @@
 <translation id="3677911431265050325">மொபைல் தளத்தைக் கோரு</translation>
 <translation id="3677959414150797585">ஆப்ஸ், இணையப் பக்கங்கள் மற்றும் பல அடங்கும். உபயோகத் தரவுப் பகிர்வை தேர்வுசெய்திருந்தால் மட்டுமே பரிந்துரைகளை மேம்படுத்துவதற்காகப் புள்ளிவிவரங்களை அனுப்பும்.</translation>
 <translation id="3678156199662914018">நீட்டிப்பு: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3679608942832457508">இந்தக் கணக்கின் மூலம் நீங்கள் உள்நுழைந்துள்ள Chromebook சாதனங்கள் அனைத்திலும் உங்கள் ஆப்ஸும் OS அமைப்புகளும் ஒத்திசைக்கப்படும். <ph name="LINK_BEGIN" />ஒத்திசைவு அமைப்புகள்<ph name="LINK_END" /></translation>
 <translation id="3680683624079082902">’உரையிலிருந்து பேச்சு’ செயல்முறைக்கான குரல்</translation>
 <translation id="3681311097828166361">உங்கள் கருத்திற்கு நன்றி. இப்போது ஆஃப்லைனில் உள்ளீர்கள், உங்கள் அறிக்கை பின்னர் அனுப்பப்படும்.</translation>
 <translation id="3682824389861648626">நகர்வு வரம்பு</translation>
@@ -2665,6 +2663,7 @@
 <translation id="3943494825379372497">ஆப்ஸையும் பக்கங்களையும் மீட்டெடுக்க வேண்டுமா?</translation>
 <translation id="3943582379552582368">&amp;முந்தைய பக்கம்</translation>
 <translation id="3943857333388298514">ஒட்டு</translation>
+<translation id="3944266449990965865">திரை முழுவதும்</translation>
 <translation id="3948116654032448504">படத்தைத் &amp;தேடு <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3948507072814225786">பின்வரும் கோப்புறைகளில் உள்ள கோப்புகளை <ph name="ORIGIN" /> தளத்தால் திருத்த முடியும்</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
@@ -2717,6 +2716,7 @@
 <translation id="3994374631886003300"><ph name="DEVICE_TYPE" />ஐத் திறக்க, உங்கள் மொபைலைத் திறந்து, சாதனத்திற்கு அருகில் எடுத்து வரவும்.</translation>
 <translation id="3994878504415702912">&amp;பெரிதாக்கு</translation>
 <translation id="3995138139523574647">USB-C சாதனம் (வலது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
+<translation id="4002066346123236978">தலைப்பு</translation>
 <translation id="4002329649066944389">தளம் சார்ந்த விதிவிலக்குகளை நிர்வகித்தல்</translation>
 <translation id="4002440992267487163">பின் அமைவு</translation>
 <translation id="4005817994523282006">நேர மண்டலம் கண்டறிதல் முறை</translation>
@@ -2951,7 +2951,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K பயன்பாட்டில்)</translation>
 <translation id="4310139701823742692">கோப்பு தவறான வடிவமைப்பில் உள்ளது. PPD கோப்பைச் சரிபார்த்து, மீண்டும் முயலவும்.</translation>
 <translation id="431076611119798497">&amp;விவரங்கள்</translation>
-<translation id="4312701113286993760">{COUNT,plural, =1{1 Google கணக்கு}other{<ph name="EXTRA_ACCOUNTS" /> Google கணக்குகள்}}</translation>
 <translation id="4312866146174492540">தடு (இயல்பு)</translation>
 <translation id="4314815835985389558">ஒத்திசைவை நிர்வகிக்கும் பக்கம்</translation>
 <translation id="4316850752623536204">டெவலப்பர் இணையதளம்</translation>
@@ -3704,7 +3703,6 @@
 <translation id="5206787458656075734">{COUNT,plural, =1{களவாடப்பட்ட கடவுச்சொல் மாற்றப்பட்டது. இன்னும் # களவாடப்பட்ட கடவுச்சொல் உள்ளது. இப்போதே இந்தக் கடவுச்சொச்லைச் சரிபார்க்கும்படி Chrome பரிந்துரைக்கிறது.}other{களவாடப்பட்ட கடவுச்சொல் மாற்றப்பட்டது. இன்னும் # களவாடப்பட்ட கடவுச்சொற்கள் உள்ளன. இப்போதே இந்தக் கடவுச்சொற்களைச் சரிபார்க்கும்படி Chrome பரிந்துரைக்கிறது.}}</translation>
 <translation id="5207949376430453814">உரைச் சுட்டியைத் தனிப்படுத்து</translation>
 <translation id="5209320130288484488">சாதனங்கள் காணப்படவில்லை</translation>
-<translation id="5209572028385096813">இந்தப் பயனர் Family Link மூலம் நிர்வகிக்கப்படுகிறார்</translation>
 <translation id="5210365745912300556">தாவலை மூடுக</translation>
 <translation id="5213481667492808996">இப்போது உங்கள் '<ph name="NAME" />' டேட்டா சேவையைப் பயன்படுத்தலாம்</translation>
 <translation id="5213891612754844763">ப்ராக்ஸி அமைப்புகளைக் காட்டு</translation>
@@ -5368,7 +5366,6 @@
 <translation id="7121362699166175603">முகவரிப் பட்டியில் வரலாற்றையும் தானே நிரப்புதலையும் அழிக்கும். உங்கள் Google கணக்கு, <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> என்ற இணைப்பில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கக்கூடும்.</translation>
 <translation id="7121438501124788993">டெவெலப்பர் பயன்முறை</translation>
 <translation id="7121728544325372695">ஸ்மார்ட் டேஷ்கள்</translation>
-<translation id="7122353087820324370">ஆப்ஸும் OS அமைப்புகளும் இரண்டாம் நிலைக் கணக்குகளுடன் ஒத்திசைக்கப்படவில்லை.</translation>
 <translation id="7123030151043029868">பல கோப்புகளைத் தானாகவே பதிவிறக்க அனுமதிக்கப்பட்டுள்ள தளங்கள்</translation>
 <translation id="7123360114020465152">இனி ஆதரிக்கப்படாது</translation>
 <translation id="7125148293026877011">Crostiniயை நீக்கு</translation>
@@ -6081,7 +6078,6 @@
 <translation id="7928175190925744466">இந்தக் கடவுச்சொல்லை ஏற்கெனவே மாற்றிவிட்டீர்களா?</translation>
 <translation id="7930294771522048157">சேமிக்கப்பட்ட பேமெண்ட் முறைகள் இங்கு காண்பிக்கப்படும்</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> உங்கள் திரையையும் ஆடியோவையும் பகிர்கிறது.</translation>
-<translation id="7931318309563332511">தெரியவில்லை</translation>
 <translation id="793293630927785390">புதிய வைஃபை நெட்வொர்க் உரையாடல்</translation>
 <translation id="7932969338829957666">Linuxஸில் <ph name="BASE_DIR" /> என்பதில் பகிர்ந்த கோப்புறைகள் கிடைக்கின்றன.</translation>
 <translation id="7933314993013528982">{NUM_TABS,plural, =1{தளத்தின் ஒலியை இயக்கு}other{தளங்களின் ஒலியை இயக்கு}}</translation>
@@ -6429,7 +6425,6 @@
 <translation id="8316618172731049784"><ph name="DEVICE_NAME" /> சாதனத்துக்கு அனுப்பு</translation>
 <translation id="8317671367883557781">நெட்வொர்க் இணைப்பைச் சேர்</translation>
 <translation id="8319414634934645341">நீட்டிக்கப்பட்ட விசைப் பயன்பாடு</translation>
-<translation id="8320459152843401447">உங்கள் முழுத் திரை</translation>
 <translation id="8321476692217554900">அறிவிப்புகள்</translation>
 <translation id="8321837372750396788">இனி இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கும்.</translation>
 <translation id="8322814362483282060">இந்தப் பக்கம் உங்கள் மைக்ரோஃபோனை அணுகுவதிலிருந்து தடுக்கப்பட்டுள்ளது.</translation>

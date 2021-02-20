@@ -26,12 +26,8 @@ class ScopedAllowGpuAccessForDisplayResourceProvider {
   gpu::ScopedAllowScheduleGpuTask allow_gpu_;
 };
 
-DisplayResourceProviderSkia::DisplayResourceProviderSkia(
-    SharedBitmapManager* shared_bitmap_manager)
-    : DisplayResourceProvider(DisplayResourceProvider::kGpu,
-                              /*compositor_context_provider=*/nullptr,
-                              shared_bitmap_manager,
-                              /*enable_shared_images=*/true) {}
+DisplayResourceProviderSkia::DisplayResourceProviderSkia()
+    : DisplayResourceProvider(DisplayResourceProvider::kGpu) {}
 
 DisplayResourceProviderSkia::~DisplayResourceProviderSkia() {
   Destroy();
@@ -88,7 +84,7 @@ DisplayResourceProviderSkia::DeleteAndReturnUnusedResourcesToChildImpl(
 #if defined(OS_ANDROID)
     DeletePromotionHint(it);
 #endif
-    DeleteResourceInternal(it);
+    resources_.erase(it);
   }
 
   if (!image_contexts_to_return.empty()) {

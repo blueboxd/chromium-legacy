@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -167,6 +166,7 @@ class StartSurfaceMediator
     @Nullable
     private Boolean mFeedVisibilityInSharedPreferenceOnStartUp;
     private boolean mHadWarmStart;
+    private boolean mShowNewHomeSurface;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
@@ -195,7 +195,7 @@ class StartSurfaceMediator
 
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
 
-            mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            mTabModelSelectorObserver = new TabModelSelectorObserver() {
                 @Override
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                     // TODO(crbug.com/982018): Optimize to not listen for selected Tab model change
@@ -261,7 +261,7 @@ class StartSurfaceMediator
                 };
                 if (mTabModelSelector.getModels().isEmpty()) {
                     TabModelSelectorObserver selectorObserver =
-                            new EmptyTabModelSelectorObserver() {
+                            new TabModelSelectorObserver() {
                                 @Override
                                 public void onChange() {
                                     assert !mTabModelSelector.getModels().isEmpty();
@@ -425,6 +425,14 @@ class StartSurfaceMediator
         if (state == StartSurfaceState.SHOWING_HOMEPAGE) {
             mPropertyModel.set(RESET_TASK_SURFACE_HEADER_SCROLL_POSITION, true);
             mPropertyModel.set(RESET_FEED_SURFACE_SCROLL_POSITION, true);
+            if (StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON.getValue()) {
+                mShowNewHomeSurface = true;
+            }
+        }
+
+        if (state == StartSurfaceState.SHOWING_START && !mTabModelSelector.isIncognitoSelected()
+                && StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON.getValue()) {
+            mShowNewHomeSurface = false;
         }
 
         // Cache previous state.
@@ -490,8 +498,11 @@ class StartSurfaceMediator
             } else {
                 hasNormalTab = mTabModelSelector.getModel(false).getCount() > 0;
             }
-            setTabCarouselVisibility(hasNormalTab && !mIsIncognito);
-            setMVTilesVisibility(!mIsIncognito);
+
+            // If new home surface for home button is enabled, MV tiles and carousel tab switcher
+            // will not show.
+            setTabCarouselVisibility(hasNormalTab && !mIsIncognito && !mShowNewHomeSurface);
+            setMVTilesVisibility(!mIsIncognito && !mShowNewHomeSurface);
             setFakeBoxVisibility(!mIsIncognito);
             setSecondaryTasksSurfaceVisibility(mIsIncognito);
 

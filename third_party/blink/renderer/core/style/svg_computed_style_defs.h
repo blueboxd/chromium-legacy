@@ -30,10 +30,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/style_color.h"
-#include "third_party/blink/renderer/core/style/svg_dash_array.h"
-#include "third_party/blink/renderer/core/style/svg_paint.h"
-#include "third_party/blink/renderer/core/style/unzoomed_length.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -42,64 +38,6 @@
 namespace blink {
 
 class StyleSVGResource;
-
-// Inherited/Non-Inherited Style Datastructures
-class StyleFillData : public RefCounted<StyleFillData> {
-  USING_FAST_MALLOC(StyleFillData);
-
- public:
-  static scoped_refptr<StyleFillData> Create() {
-    return base::AdoptRef(new StyleFillData);
-  }
-  scoped_refptr<StyleFillData> Copy() const {
-    return base::AdoptRef(new StyleFillData(*this));
-  }
-
-  bool operator==(const StyleFillData&) const;
-  bool operator!=(const StyleFillData& other) const {
-    return !(*this == other);
-  }
-
-  float opacity;
-  SVGPaint paint;
-  SVGPaint visited_link_paint;
-
- private:
-  StyleFillData();
-  StyleFillData(const StyleFillData&);
-};
-
-class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
-  USING_FAST_MALLOC(StyleStrokeData);
-
- public:
-  static scoped_refptr<StyleStrokeData> Create() {
-    return base::AdoptRef(new StyleStrokeData);
-  }
-
-  scoped_refptr<StyleStrokeData> Copy() const {
-    return base::AdoptRef(new StyleStrokeData(*this));
-  }
-
-  bool operator==(const StyleStrokeData&) const;
-  bool operator!=(const StyleStrokeData& other) const {
-    return !(*this == other);
-  }
-
-  float opacity;
-  float miter_limit;
-
-  UnzoomedLength width;
-  Length dash_offset;
-  scoped_refptr<SVGDashArray> dash_array;
-
-  SVGPaint paint;
-  SVGPaint visited_link_paint;
-
- private:
-  StyleStrokeData();
-  StyleStrokeData(const StyleStrokeData&);
-};
 
 // Inherited resources
 class StyleInheritedResourceData

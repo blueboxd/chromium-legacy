@@ -28,6 +28,7 @@
 #include "chromeos/services/assistant/proxy/libassistant_service_host.h"
 #include "chromeos/services/assistant/proxy/service_controller_proxy.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/services/assistant/public/cpp/conversation_observer.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
@@ -41,7 +42,6 @@
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace ash {
-class AssistantAlarmTimerController;
 class AssistantNotificationController;
 class AssistantStateBase;
 }  // namespace ash
@@ -69,6 +69,7 @@ class PlatformDelegateImpl;
 class ServiceContext;
 class ServiceControllerProxy;
 class SpeechRecognitionObserverWrapper;
+class TimerHost;
 
 // Enumeration of Assistant query response type, also recorded in histograms.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -107,7 +108,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
       public AppListEventSubscriber,
-      private libassistant::mojom::StateObserver {
+      private libassistant::mojom::StateObserver,
+      public ConversationObserver {
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
@@ -170,6 +172,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void PauseTimer(const std::string& id) override;
   void RemoveAlarmOrTimer(const std::string& id) override;
   void ResumeTimer(const std::string& id) override;
+  void AddRemoteConversationObserver(ConversationObserver* observer) override;
 
   // AssistantActionObserver overrides:
   void OnScheduleWait(int id, int time_ms) override;
@@ -191,11 +194,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       int interaction_id,
       const ::assistant::api::client_op::GetDeviceSettingsArgs& args) override;
 
-  // assistant_client::ConversationStateListener overrides:
-  void OnConversationTurnFinished(
-      assistant_client::ConversationStateListener::Resolution resolution)
-      override;
-  void OnRespondingStarted(bool is_error_response) override;
+  // chromeos::assistant::ConversationObserver overrides:
+  void OnInteractionFinished(
+      AssistantInteractionResolution resolution) override;
 
   // AssistantManagerDelegate overrides:
   void OnConversationTurnStartedInternal(
@@ -211,12 +212,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   assistant_client::AssistantManager* assistant_manager();
   assistant_client::AssistantManagerInternal* assistant_manager_internal();
+  action::CrosActionModule* action_module();
   void SetMicState(bool mic_open);
-
-  // Get the action module for testing.
-  action::CrosActionModule* action_module_for_testing() {
-    return action_module_.get();
-  }
 
   base::Thread& GetBackgroundThreadForTesting();
 
@@ -230,12 +227,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnServiceRunning();
   bool IsServiceStarted() const;
 
-  void OnAlarmTimerStateChanged();
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
 
   void OnDeviceAppsEnabled(bool enabled);
-
-  void RegisterAlarmsTimersListener();
 
   void FillServerExperimentIds(std::vector<std::string>* server_experiment_ids);
 
@@ -260,7 +254,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void MaybeStopPreviousInteraction();
 
-  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller();
   ash::AssistantNotificationController* assistant_notification_controller();
   ash::AssistantScreenContextController* assistant_screen_context_controller();
   ash::AssistantStateBase* assistant_state();
@@ -279,7 +272,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void SetStateAndInformObservers(State new_state);
 
   State state_ = State::STOPPED;
-  std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<AssistantSettingsImpl> assistant_settings_;
 
   std::unique_ptr<AssistantProxy> assistant_proxy_;
@@ -295,6 +287,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   std::unique_ptr<LibassistantServiceHost> libassistant_service_host_;
   std::unique_ptr<AssistantDeviceSettingsDelegate> settings_delegate_;
   std::unique_ptr<MediaHost> media_host_;
+  std::unique_ptr<TimerHost> timer_host_;
   std::unique_ptr<AudioOutputDelegateImpl> audio_output_delegate_;
   std::unique_ptr<SpeechRecognitionObserverWrapper>
       speech_recognition_observer_;

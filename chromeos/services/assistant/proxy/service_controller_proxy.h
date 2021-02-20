@@ -16,9 +16,7 @@
 
 namespace assistant_client {
 
-class ActionModule;
 class AssistantManagerDelegate;
-class ConversationStateListener;
 
 }  // namespace assistant_client
 
@@ -56,9 +54,7 @@ class ServiceControllerProxy {
   //
   // Start() can only be called when the service is stopped.
   void Start(
-      assistant_client::ActionModule* action_module,
       assistant_client::AssistantManagerDelegate* assistant_manager_delegate,
-      assistant_client::ConversationStateListener* conversation_state_listener,
       BootupConfigPtr bootup_config,
       const std::string& locale,
       const std::string& locale_override,

@@ -46,20 +46,16 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
     // https://html.spec.whatwg.org/multipage/semantics.html#fetch-and-process-the-linked-resource
     request.SetRequestContext(
         mojom::blink::RequestContextType::SUBRESOURCE_WEBBUNDLE);
-    // Set request's mode and credentials mode. See
-    // https://html.spec.whatwg.org/multipage/#cors-settings-attribute
+
+    // https://github.com/WICG/webpackage/blob/main/explainers/subresource-loading.md#requests-mode-and-credentials-mode
+    request.SetMode(network::mojom::blink::RequestMode::kCors);
     switch (cross_origin_attribute_value) {
       case kCrossOriginAttributeNotSet:
-        request.SetMode(network::mojom::blink::RequestMode::kNoCors);
-        request.SetCredentialsMode(network::mojom::CredentialsMode::kInclude);
-        break;
       case kCrossOriginAttributeAnonymous:
-        request.SetMode(network::mojom::blink::RequestMode::kCors);
         request.SetCredentialsMode(
             network::mojom::CredentialsMode::kSameOrigin);
         break;
       case kCrossOriginAttributeUseCredentials:
-        request.SetMode(network::mojom::blink::RequestMode::kCors);
         request.SetCredentialsMode(network::mojom::CredentialsMode::kInclude);
         break;
     }
@@ -71,7 +67,7 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
     web_bundle_handles_.Add(this,
                             web_bundle_handle.InitWithNewPipeAndPassReceiver());
     request.SetWebBundleTokenParams(ResourceRequestHead::WebBundleTokenParams(
-        web_bundle_token_, std::move(web_bundle_handle)));
+        url_, web_bundle_token_, std::move(web_bundle_handle)));
 
     ExecutionContext* execution_context = document.GetExecutionContext();
     ResourceLoaderOptions resource_loader_options(
@@ -270,6 +266,11 @@ bool LinkWebBundle::ResourcesOrScopesMatch(const KURL& url) const {
 String LinkWebBundle::GetCacheIdentifier() const {
   DCHECK(bundle_loader_);
   return bundle_loader_->url().GetString();
+}
+
+const KURL& LinkWebBundle::GetBundleUrl() const {
+  DCHECK(bundle_loader_);
+  return bundle_loader_->url();
 }
 
 const base::UnguessableToken& LinkWebBundle::WebBundleToken() const {

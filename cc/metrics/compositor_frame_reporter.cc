@@ -979,7 +979,7 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
     // For scroll events, report total latency up to gpu-swap-begin. This is
     // useful in comparing new EventLatency metrics with LatencyInfo-based
     // scroll event latency metrics.
-    if (event_metrics->scroll_type() &&
+    if (event_metrics->ShouldReportScrollingTotalLatency() &&
         !viz_breakdown_.swap_timings.is_null()) {
       const base::TimeDelta swap_begin_latency =
           viz_breakdown_.swap_timings.swap_start - generated_timestamp;
@@ -1040,8 +1040,8 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
 
   const auto trace_track = perfetto::Track(reinterpret_cast<uint64_t>(this));
   TRACE_EVENT_BEGIN(
-      "cc,benchmark", "PipelineReporter", trace_track,
-      stage_history_.front().start_time, [&](perfetto::EventContext context) {
+      "cc,benchmark", "PipelineReporter", trace_track, args_.frame_time,
+      [&](perfetto::EventContext context) {
         using perfetto::protos::pbzero::ChromeFrameReporter;
         bool frame_dropped = TestReportType(FrameReportType::kDroppedFrame);
         ChromeFrameReporter::State state;

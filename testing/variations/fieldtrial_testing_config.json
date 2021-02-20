@@ -2002,6 +2002,7 @@
                         "session_rate": "<1"
                     },
                     "enable_features": [
+                        "ContextualSearchLiteralSearchTap",
                         "ContextualSearchTranslations",
                         "IPH_ContextualSearchTranslationEnable"
                     ]
@@ -2540,25 +2541,6 @@
                         "EnableNewBadgeOnMenuItems",
                         "IPH_DesktopSnoozeFeature",
                         "IPH_DesktopTabGroupsNewGroup"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DesktopTabScrolling": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ScrollableTabStrip"
                     ]
                 }
             ]

@@ -7,21 +7,30 @@
 
 #include "base/component_export.h"
 #include "base/optional.h"
+#include "chromeos/services/libassistant/assistant_manager_observer.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/libassistant/public/mojom/conversation_controller.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace assistant_client {
 class AssistantManagerInternal;
 }  // namespace assistant_client
 
 namespace chromeos {
+namespace assistant {
+namespace action {
+class CrosActionModule;
+}  // namespace action
+}  // namespace assistant
+
 namespace libassistant {
 
 class ServiceController;
 
 class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
-    : public mojom::ConversationController {
+    : public mojom::ConversationController,
+      public AssistantManagerObserver {
  public:
   using AssistantNotification = ::chromeos::assistant::AssistantNotification;
   using AssistantFeedback = ::chromeos::assistant::AssistantFeedback;
@@ -33,6 +42,16 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
 
   void Bind(mojo::PendingReceiver<mojom::ConversationController> receiver);
 
+  // AssistantManagerObserver:
+  void OnAssistantManagerCreated(
+      assistant_client::AssistantManager* assistant_manager,
+      assistant_client::AssistantManagerInternal* assistant_manager_internal)
+      override;
+  void OnAssistantManagerStarted(
+      assistant_client::AssistantManager* assistant_manager,
+      assistant_client::AssistantManagerInternal* assistant_manager_internal)
+      override;
+
   // mojom::ConversationController implementation:
   void SendTextQuery(
       const std::string& query,
@@ -43,6 +62,12 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
                             int32_t action_index) override;
   void DismissNotification(const AssistantNotification& notification) override;
   void SendAssistantFeedback(const AssistantFeedback& feedback) override;
+  void AddRemoteObserver(
+      mojo::PendingRemote<mojom::ConversationObserver> observer) override;
+
+  const mojo::RemoteSet<mojom::ConversationObserver>* conversation_observers() {
+    return &observers_;
+  }
 
  private:
   void SendVoicelessInteraction(const std::string& interaction,
@@ -52,9 +77,12 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   assistant_client::AssistantManagerInternal* assistant_manager_internal();
 
   mojo::Receiver<mojom::ConversationController> receiver_;
+  mojo::RemoteSet<mojom::ConversationObserver> observers_;
 
   // Owned by |LibassistantService|.
   ServiceController* const service_controller_;
+
+  std::unique_ptr<assistant::action::CrosActionModule> action_module_;
 };
 
 }  // namespace libassistant

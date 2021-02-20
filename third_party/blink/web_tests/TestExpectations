@@ -5356,9 +5356,6 @@ crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-
 # Sheriff 2020-11-20
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
 
-# Sheriff 2020-09-08
-crbug.com/1124978 [ Mac ] virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass Failure ]
-
 # Mac11.0 rebaseline
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-weight.html [ Failure ]
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-trak.html [ Failure ]
@@ -5653,6 +5650,14 @@ crbug.com/1177568 http/tests/devtools/console/console-api-on-call-frame.js [ Pas
 crbug.com/1177568 http/tests/devtools/runtime/evaluate-timeout.js [ Pass Failure ]
 crbug.com/1177568 http/tests/devtools/console/console-error-on-call-frame.js [ Pass Failure ]
 
+# Some cases in the non-virtual tests constantly fail, and their -expected.txt are rebaselined to
+# contain the FAIL expectations. The virtual/threaded-prefer-compositing variants sometimes produce
+# the same falures, while sometimes produce more PASSes.
+crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryListEvent.html [ Pass Failure ]
+crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Pass Failure ]
+crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget.html [ Pass Failure ]
+crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget-interop.html [ Pass Failure ]
+
 # Failing on Webkit Linux Leak
 crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]
 
@@ -5699,13 +5704,14 @@ crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_staleVi
 
 # Sheriff 2021-02-17
 crbug.com/1179117 [ Linux ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
-crbug.com/1179249 [ Mac10.13 ] http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]
 crbug.com/1179263 [ Linux ] http/tests/devtools/console/console-format-es6-symbols-error.js [ Pass Failure ]
 crbug.com/1179263 [ Linux ] http/tests/devtools/console/console-linkify-relative-links.js [ Pass Failure ]
 crbug.com/1179263 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Pass Failure ]
 
 # Ecosystem-Infra Sheriff 2021-02-17
 crbug.com/1179219 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-currentSrc.html [ Failure ]
+
+crbug.com/1165690 external/wpt/service-workers/service-worker/fetch-event.https.html [ Crash Failure ]
 
 # Sheriff 2021-02-18
 crbug.com/1179772 [ Win7 ] http/tests/devtools/console/console-preserve-log-x-process-navigation.js [ Pass Failure ]
@@ -5716,3 +5722,8 @@ crbug.com/1179969 [ Mac ] virtual/plz-dedicated-worker/external/wpt/service-work
 
 # DevTools roll
 crbug.com/1134103 http/tests/devtools/coverage/decorations-after-script-formatter.js [ Skip ]
+
+# Sheriff 2021-02-19
+crbug.com/1180227 [ Mac ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure ]
+crbug.com/1180227 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure ]
+crbug.com/1180274 [ Mac ] http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]

@@ -2242,6 +2242,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.ActualUiThread"
     enum="AndroidWebViewActualUiThread" expires_after="2021-03-31">
+  <obsolete>
+    Removed Feb 2021; they virtually always use the main thread.
+  </obsolete>
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -2815,6 +2818,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     with network service enabled is different from the old code path (for more
     details see go/wv-ns-behavior-differences). This data is recorded regardless
     of whether the network service is enabled or disabled.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SingleOrMultiProcess"
+    enum="AndroidWebViewSingleOrMultiProcess" expires_after="2022-01-22">
+  <owner>alexmitra@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether WebView is being run in a single process or multi-process.
+    This is recorded when WebView starts.
   </summary>
 </histogram>
 

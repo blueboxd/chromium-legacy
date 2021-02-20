@@ -20,6 +20,9 @@ namespace printing {
 class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
  public:
   explicit PrintingContextChromeos(Delegate* delegate);
+  // For testing
+  PrintingContextChromeos(Delegate* delegate,
+                          std::unique_ptr<CupsConnection> connection);
   PrintingContextChromeos(const PrintingContextChromeos&) = delete;
   PrintingContextChromeos& operator=(const PrintingContextChromeos&) = delete;
   ~PrintingContextChromeos() override;
@@ -48,7 +51,7 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
   // Lazily initializes |printer_|.
   Result InitializeDevice(const std::string& device);
 
-  CupsConnection connection_;
+  std::unique_ptr<CupsConnection> connection_;
   std::unique_ptr<CupsPrinter> printer_;
   std::vector<ScopedCupsOption> cups_options_;
   bool send_user_info_;

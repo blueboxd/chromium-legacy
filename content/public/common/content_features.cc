@@ -94,10 +94,10 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 // BackForwardCacheMemoryControls is enabled only on Android to disable
 // BackForwardCache for lower memory devices due to memory limiations.
 #if defined(OS_ANDROID)
-const base::Feature kBackForwardCacheMemoryControl{
+const base::Feature kBackForwardCacheMemoryControls{
     "BackForwardCacheMemoryControls", base::FEATURE_ENABLED_BY_DEFAULT};
 #else
-const base::Feature kBackForwardCacheMemoryControl{
+const base::Feature kBackForwardCacheMemoryControls{
     "BackForwardCacheMemoryControls", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
@@ -849,6 +849,10 @@ const base::Feature kWebAuthCable {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+
+// Controls whether WebAuthn conditional UI requests are supported.
+const base::Feature kWebAuthConditionalUI{"WebAuthenticationConditionalUI",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether Web Bluetooth should use the new permissions backend. The
 // new permissions backend uses ChooserContextBase, which is used by other

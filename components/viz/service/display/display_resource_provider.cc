@@ -14,19 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
-#include "components/viz/service/display/shared_bitmap_manager.h"
-#include "components/viz/service/display/skia_output_surface.h"
-#include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/trace_util.h"
-
-using gpu::gles2::GLES2Interface;
 
 namespace viz {
 
@@ -37,21 +27,10 @@ base::AtomicSequenceNumber g_next_display_resource_provider_tracing_id;
 
 }  // namespace
 
-DisplayResourceProvider::DisplayResourceProvider(
-    Mode mode,
-    ContextProvider* compositor_context_provider,
-    SharedBitmapManager* shared_bitmap_manager,
-    bool enable_shared_images)
+DisplayResourceProvider::DisplayResourceProvider(Mode mode)
     : mode_(mode),
-      compositor_context_provider_(compositor_context_provider),
-      shared_bitmap_manager_(shared_bitmap_manager),
-      tracing_id_(g_next_display_resource_provider_tracing_id.GetNext()),
-      enable_shared_images_(enable_shared_images) {
+      tracing_id_(g_next_display_resource_provider_tracing_id.GetNext()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // If no ContextProvider, then we are doing software compositing and a
-  // SharedBitmapManager must be given.
-  DCHECK(mode_ == kGpu || shared_bitmap_manager);
-
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   // TODO(crbug.com/517156): Get this working in Android Webview.
@@ -63,18 +42,6 @@ DisplayResourceProvider::DisplayResourceProvider(
 
 DisplayResourceProvider::~DisplayResourceProvider() {
   DCHECK(children_.empty()) << "Destroy() must be called before dtor";
-  GLES2Interface* gl = ContextGL();
-  if (gl)
-    gl->Finish();
-
-  while (!resources_.empty())
-    DeleteResourceInternal(resources_.begin());
-
-  if (compositor_context_provider_) {
-    // Check that all GL resources has been deleted.
-    for (const auto& pair : resources_)
-      DCHECK(!pair.second.is_gpu_resource_type());
-  }
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
@@ -335,24 +302,6 @@ DisplayResourceProvider::ChildResource* DisplayResourceProvider::TryGetResource(
   return &it->second;
 }
 
-void DisplayResourceProvider::DeleteResourceInternal(ResourceMap::iterator it) {
-  TRACE_EVENT0("viz", "DisplayResourceProvider::DeleteResourceInternal");
-  ChildResource* resource = &it->second;
-
-  if (resource->gl_id) {
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->DeleteTextures(1, &resource->gl_id);
-  }
-
-  resources_.erase(it);
-}
-
-GLES2Interface* DisplayResourceProvider::ContextGL() const {
-  ContextProvider* context_provider = compositor_context_provider_;
-  return context_provider ? context_provider->ContextGL() : nullptr;
-}
-
 void DisplayResourceProvider::TryReleaseResource(ResourceId id,
                                                  ChildResource* resource) {
   if (resource->marked_for_deletion && !resource->InUse()) {
@@ -541,29 +490,6 @@ void DisplayResourceProvider::ScopedReadLockSharedImage::Reset() {
   resource_provider_ = nullptr;
   resource_id_ = kInvalidResourceId;
   resource_ = nullptr;
-}
-
-DisplayResourceProvider::SynchronousFence::SynchronousFence(
-    gpu::gles2::GLES2Interface* gl)
-    : gl_(gl), has_synchronized_(true) {}
-
-DisplayResourceProvider::SynchronousFence::~SynchronousFence() = default;
-
-void DisplayResourceProvider::SynchronousFence::Set() {
-  has_synchronized_ = false;
-}
-
-bool DisplayResourceProvider::SynchronousFence::HasPassed() {
-  if (!has_synchronized_) {
-    has_synchronized_ = true;
-    Synchronize();
-  }
-  return true;
-}
-
-void DisplayResourceProvider::SynchronousFence::Synchronize() {
-  TRACE_EVENT0("viz", "DisplayResourceProvider::SynchronousFence::Synchronize");
-  gl_->Finish();
 }
 
 DisplayResourceProvider::ScopedBatchReturnResources::ScopedBatchReturnResources(

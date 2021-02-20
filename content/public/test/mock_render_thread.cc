@@ -51,7 +51,7 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   void GenerateFrameRoutingID(
       GenerateFrameRoutingIDCallback callback) override {
     int routing_id;
-    base::UnguessableToken frame_token;
+    blink::LocalFrameToken frame_token;
     base::UnguessableToken devtools_frame_token;
     RenderThread::Get()->GenerateFrameRoutingID(routing_id, frame_token,
                                                 devtools_frame_token);
@@ -147,10 +147,10 @@ int MockRenderThread::GenerateRoutingID() {
 
 bool MockRenderThread::GenerateFrameRoutingID(
     int32_t& routing_id,
-    base::UnguessableToken& frame_token,
+    blink::LocalFrameToken& frame_token,
     base::UnguessableToken& devtools_frame_token) {
   routing_id = GetNextRoutingID();
-  frame_token = base::UnguessableToken::Create();
+  frame_token = blink::LocalFrameToken();
   devtools_frame_token = base::UnguessableToken::Create();
   return true;
 }
@@ -288,32 +288,30 @@ void MockRenderThread::OnCreateWindow(
   frame_routing_id_to_initial_browser_brokers_.emplace(
       reply->main_frame_route_id,
       reply->main_frame_interface_broker.InitWithNewPipeAndPassReceiver());
-
   reply->main_frame_frame_token = base::UnguessableToken::Create();
-  reply->main_frame_widget_route_id = GetNextRoutingID();
   reply->cloned_session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
 
+  auto widget_params = mojom::CreateFrameWidgetParams::New();
+  widget_params->routing_id = GetNextRoutingID();
   mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
       blink_frame_widget_receiver =
           blink_frame_widget.BindNewEndpointAndPassDedicatedReceiver();
-
   mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
   ignore_result(
       blink_frame_widget_host.BindNewEndpointAndPassDedicatedReceiver());
-
   mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
       blink_widget.BindNewEndpointAndPassDedicatedReceiver();
-
   mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
   ignore_result(blink_widget_host.BindNewEndpointAndPassDedicatedReceiver());
 
-  reply->frame_widget = std::move(blink_frame_widget_receiver);
-  reply->frame_widget_host = blink_frame_widget_host.Unbind();
-  reply->widget = std::move(blink_widget_receiver);
-  reply->widget_host = blink_widget_host.Unbind();
+  widget_params->frame_widget = std::move(blink_frame_widget_receiver);
+  widget_params->frame_widget_host = blink_frame_widget_host.Unbind();
+  widget_params->widget = std::move(blink_widget_receiver);
+  widget_params->widget_host = blink_widget_host.Unbind();
+  reply->widget_params = std::move(widget_params);
 }
 
 }  // namespace content

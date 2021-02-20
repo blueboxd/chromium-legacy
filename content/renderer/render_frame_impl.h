@@ -75,6 +75,7 @@
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
@@ -174,7 +175,9 @@ class CONTENT_EXPORT RenderFrameImpl
       RenderViewImpl* render_view,
       CompositorDependencies* compositor_deps,
       blink::WebFrame* opener,
-      mojom::CreateViewParamsPtr* params);
+      bool is_for_nested_main_frame,
+      mojom::CreateFrameCommonParamsPtr common_params,
+      mojom::CreateLocalMainFrameParamsPtr params);
 
   // Creates a new RenderFrame with |routing_id|. If |previous_routing_id| is
   // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into
@@ -208,7 +211,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::Optional<base::UnguessableToken>& opener_frame_token,
       int parent_routing_id,
       int previous_sibling_routing_id,
-      const base::UnguessableToken& frame_token,
+      const blink::LocalFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       mojom::FrameReplicationStatePtr replicated_state,
       CompositorDependencies* compositor_deps,
@@ -847,7 +850,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void Unload(int proxy_routing_id,
               bool is_loading,
               mojom::FrameReplicationStatePtr replicated_frame_state,
-              const base::UnguessableToken& frame_token) override;
+              const blink::RemoteFrameToken& frame_token) override;
   void Delete(mojom::FrameDeleteIntention intent) override;
   void BlockRequests() override;
   void ResumeBlockedRequests() override;

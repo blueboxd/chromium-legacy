@@ -1361,6 +1361,8 @@ static_library("ui") {
       "webui/extensions/extensions_ui.h",
       "webui/favicon_source.cc",
       "webui/favicon_source.h",
+      "webui/feedback/feedback_ui.cc",
+      "webui/feedback/feedback_ui.h",
       "webui/help/version_updater.h",
       "webui/history/browsing_history_handler.cc",
       "webui/history/browsing_history_handler.h",
@@ -4233,8 +4235,12 @@ static_library("ui") {
       "views/webauthn/ring_progress_bar.h",
       "views/webauthn/sheet_view_factory.cc",
       "views/webauthn/sheet_view_factory.h",
+      "views/webauthn/webauthn_bubble_view.cc",
+      "views/webauthn/webauthn_bubble_view.h",
       "views/webauthn/webauthn_hover_button.cc",
       "views/webauthn/webauthn_hover_button.h",
+      "views/webauthn/webauthn_icon_view.cc",
+      "views/webauthn/webauthn_icon_view.h",
       "views/webid/webid_permission_infobar.cc",
       "views/webid/webid_permission_infobar.h",
       "views/webid/webid_signin_window.cc",
@@ -4253,6 +4259,8 @@ static_library("ui") {
       "webauthn/transport_hover_list_model.h",
       "webauthn/transport_utils.cc",
       "webauthn/transport_utils.h",
+      "webauthn/webauthn_ui_helpers.cc",
+      "webauthn/webauthn_ui_helpers.h",
     ]
 
     deps += [

@@ -1100,21 +1100,12 @@ class ComputedStyle : public ComputedStyleBase,
   const SVGComputedStyle& SvgStyle() const { return *svg_style_.Get(); }
   SVGComputedStyle& AccessSVGStyle() { return *svg_style_.Access(); }
 
-  const SVGPaint& FillPaint() const { return SvgStyle().FillPaint(); }
-  const SVGPaint& InternalVisitedFillPaint() const {
-    return SvgStyle().InternalVisitedFillPaint();
-  }
-
   // fill helpers
   bool HasFill() const { return !FillPaint().IsNone(); }
   bool IsFillColorCurrentColor() const {
     return FillPaint().HasCurrentColor() ||
            InternalVisitedFillPaint().HasCurrentColor();
   }
-
-  // fill-opacity
-  float FillOpacity() const { return SvgStyle().FillOpacity(); }
-  void SetFillOpacity(float f) { AccessSVGStyle().SetFillOpacity(f); }
 
   // marker-* helpers
   StyleSVGResource* MarkerStartResource() const {
@@ -1142,42 +1133,8 @@ class ComputedStyle : public ComputedStyleBase,
     return StrokePaint().HasCurrentColor() ||
            InternalVisitedStrokePaint().HasCurrentColor();
   }
-  const SVGPaint& StrokePaint() const { return SvgStyle().StrokePaint(); }
-  const SVGPaint& InternalVisitedStrokePaint() const {
-    return SvgStyle().InternalVisitedStrokePaint();
-  }
-
-  // stroke-dasharray
-  SVGDashArray* StrokeDashArray() const { return SvgStyle().StrokeDashArray(); }
   bool HasDashArray() const { return !StrokeDashArray()->data.IsEmpty(); }
-  void SetStrokeDashArray(scoped_refptr<SVGDashArray> array) {
-    AccessSVGStyle().SetStrokeDashArray(std::move(array));
-  }
-
-  // stroke-dashoffset
-  const Length& StrokeDashOffset() const {
-    return SvgStyle().StrokeDashOffset();
-  }
-  void SetStrokeDashOffset(const Length& d) {
-    AccessSVGStyle().SetStrokeDashOffset(d);
-  }
-
-  LineCap CapStyle() const { return SvgStyle().CapStyle(); }
-  LineJoin JoinStyle() const { return SvgStyle().JoinStyle(); }
-
-  // stroke-miterlimit
-  float StrokeMiterLimit() const { return SvgStyle().StrokeMiterLimit(); }
-  void SetStrokeMiterLimit(float f) { AccessSVGStyle().SetStrokeMiterLimit(f); }
-
-  // stroke-opacity
-  float StrokeOpacity() const { return SvgStyle().StrokeOpacity(); }
-  void SetStrokeOpacity(float f) { AccessSVGStyle().SetStrokeOpacity(f); }
-
-  // stroke-width
-  const UnzoomedLength& StrokeWidth() const { return SvgStyle().StrokeWidth(); }
-  void SetStrokeWidth(const UnzoomedLength& w) {
-    AccessSVGStyle().SetStrokeWidth(w);
-  }
+  bool StrokeDashArrayDataEquivalent(const ComputedStyle&) const;
 
   // Comparison operators
   // FIXME: Replace callers of operator== wth a named method instead, e.g.

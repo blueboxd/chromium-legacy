@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cad4709ca475e941b2e662b5021c5204f861ed6d',
+  'skia_revision': '13d6c4f55db0d1429f889704ed9b2e48968ac7a3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd3d30921fc4c74ff24d27c1ad038445fa497046e',
+  'angle_revision': '5c931b61258f96fb1956cd8adc9f5b7d982e8c63',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -327,7 +327,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'db84462f353edac711fa9fdb84a106d88c0941df',
+  'quiche_revision': '2475cc8246d3e77e391347ae319f0ab9db132fb4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1508,7 +1508,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a6647318b57c0a05d590c8c21fc22aba87f08749',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@5f81547e86081a4a6d2ef4858416b4bcaffe2d10',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@a1794e66c4f4300d7b025148b457c38ac1429ac0',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '732a76d9d3c70d6aa487216495eeb28518349c3a',
@@ -1615,7 +1615,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'rhogRkuiMSjaBODb5hMTY1dHgPxtbZxutIlYIl4wWJUC',
+        'version': 'UAnGHXH0xBDwwVUiiaXtC7F0v6OuFlFYPPn2cLddKZ8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1626,7 +1626,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'l-3LY0G1JZpIY4FskUVmQzWyyWnVfHGXKpcMNAGC25UC',
+        'version': 'nZe2CuKahHGsYQCa2ARa3zgjajjwixWupmmS9h_Ve_cC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

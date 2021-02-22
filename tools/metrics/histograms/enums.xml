@@ -3292,6 +3292,17 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Can not install host code"/>
 </enum>
 
+<enum name="ArcClipboardDragDropEvent">
+  <int value="0" label="Text clipboard set from Chrome"/>
+  <int value="1" label="Image clipboard set from Chrome"/>
+  <int value="2" label="Text clipboard set from ARC"/>
+  <int value="3" label="Image clipboard set from ARC"/>
+  <int value="4" label="Text dropped from Chrome"/>
+  <int value="5" label="Image dropped from Chrome"/>
+  <int value="6" label="Text dropped from ARC"/>
+  <int value="7" label="Image dropped from ARC"/>
+</enum>
+
 <enum name="ArcCodeRelocationResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error bootlockboxd not ready"/>
@@ -44070,6 +44081,7 @@ from previous Chrome versions.
   <int value="-1182777927" label="ShareButtonInTopToolbar:enabled"/>
   <int value="-1182087678"
       label="CrossOriginOpenerPolicyAccessReporting:disabled"/>
+  <int value="-1179917414" label="DefaultChromeAppUninstallSync:disabled"/>
   <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1176748003"
@@ -44395,6 +44407,7 @@ from previous Chrome versions.
   <int value="-887094098" label="ForcedColors:enabled"/>
   <int value="-886912558" label="ChromeHomePromo:enabled"/>
   <int value="-886898803" label="CooperativeScheduling:enabled"/>
+  <int value="-886509859" label="DefaultChromeAppUninstallSync:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-885209667" label="FilesZipMount:disabled"/>
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
@@ -62144,6 +62157,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="PriorityChanged"/>
 </enum>
 
+<enum name="PrivacySandboxReferrer">
+  <int value="0" label="Privacy Settings"/>
+  <int value="1" label="Cookie Settings Snackbar"/>
+</enum>
+
 <enum name="PrivacyScreenToggleUISurface">
   <int value="0" label="KeyboardShortcut"/>
   <int value="1" label="FeaturePod"/>
@@ -67754,6 +67772,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="DATABASE_INTERSTITIAL_BYPASS"/>
   <int value="3" label="CSD_INTERSITITAL_BYPASS"/>
   <int value="4" label="REAL_TIME_INTERSTITIAL_BYPASS"/>
+  <int value="5" label="DANGEROUS_DOWNLOAD_BYPASS"/>
+  <int value="6" label="PASSWORD_REUSE_MODAL_BYPASS"/>
 </enum>
 
 <enum name="SBPhishingClassifierEvent">

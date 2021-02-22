@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
-import {browserProxy} from '../browser_proxy/browser_proxy.js';
-// eslint-disable-next-line no-unused-vars
 import {Camera3DeviceInfo} from '../device/camera3_device_info.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -13,6 +11,8 @@ import {
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 import * as dom from '../dom.js';
+import * as loadTimeData from '../models/load_time_data.js';
+import {ChromeHelper} from '../mojo/chrome_helper.js';
 import * as nav from '../nav.js';
 import * as state from '../state.js';
 import {
@@ -61,9 +61,8 @@ export class BaseSettings extends View {
     dom.getFrom(this.root, '.menu-header button', HTMLButtonElement)
         .addEventListener('click', () => this.leave());
     dom.getAllFrom(this.root, '.menu-item', HTMLElement).forEach((element) => {
-      /** @type {function(!Event=)|undefined} */
       const handler = itemHandlers[element.id];
-      if (handler) {
+      if (handler !== undefined) {
         element.addEventListener('click', handler);
       }
     });
@@ -135,7 +134,8 @@ export class PrimarySettings extends BaseSettings {
         // Prevent setting view overlapping preview when sending app window
         // feedback screenshot b/155938542.
         this.leave();
-        browserProxy.openFeedback();
+        ChromeHelper.getInstance().openFeedbackDialog(
+            loadTimeData.getI18nMessage('feedback_description_placeholder'));
       },
       'settings-help': () => util.openHelp(),
     });
@@ -372,11 +372,11 @@ export class ResolutionSettings extends BaseSettings {
     if (resolutions.some(
             (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
                 toMegapixel(r) === toMegapixel(findR))) {
-      return browserProxy.getI18nMessage(
+      return loadTimeData.getI18nMessage(
           'label_detail_photo_resolution', r.width / d, r.height / d, r.width,
           r.height, toMegapixel(r));
     } else {
-      return browserProxy.getI18nMessage(
+      return loadTimeData.getI18nMessage(
           'label_photo_resolution', r.width / d, r.height / d, toMegapixel(r));
     }
   }
@@ -388,7 +388,7 @@ export class ResolutionSettings extends BaseSettings {
    * @private
    */
   videoOptTextTempl_(r) {
-    return browserProxy.getI18nMessage(
+    return loadTimeData.getI18nMessage(
         'label_video_resolution', r.height, r.width);
   }
 
@@ -625,7 +625,7 @@ export class ResolutionSettings extends BaseSettings {
    * @param {function(!Resolution, !ResolutionList): string} optTextTempl
    *     Template generating text content for each resolution option from its
    *     width and height.
-   * @param {function(!Resolution)} onChange Called when selected option
+   * @param {function(!Resolution): void} onChange Called when selected option
    *     changed with resolution of newly selected option.
    * @param {!ResolutionList} resolutions Resolutions of its width and height to
    *     be updated with.

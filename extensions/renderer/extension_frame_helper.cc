@@ -118,11 +118,11 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
   if (render_frame->IsMainFrame()) {
     // Manages its own lifetime.
     new AutomationApiHelper(render_frame);
-
-    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-        base::BindRepeating(&ExtensionFrameHelper::BindLocalFrame,
-                            weak_ptr_factory_.GetWeakPtr()));
   }
+
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&ExtensionFrameHelper::BindLocalFrame,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ExtensionFrameHelper::~ExtensionFrameHelper() {
@@ -383,14 +383,12 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnExtensionSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed, OnAppWindowClosed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -441,7 +439,7 @@ void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
           error_message, render_frame());
 }
 
-void ExtensionFrameHelper::OnExtensionSetTabId(int tab_id) {
+void ExtensionFrameHelper::SetTabId(int32_t tab_id) {
   CHECK_EQ(tab_id_, -1);
   CHECK_GE(tab_id, 0);
   tab_id_ = tab_id;
@@ -480,7 +478,7 @@ void ExtensionFrameHelper::SetFrameName(const std::string& name) {
   render_frame()->GetWebFrame()->SetName(blink::WebString::FromUTF8(name));
 }
 
-void ExtensionFrameHelper::OnAppWindowClosed(bool send_onclosed) {
+void ExtensionFrameHelper::AppWindowClosed(bool send_onclosed) {
   DCHECK(render_frame()->IsMainFrame());
 
   if (!send_onclosed)

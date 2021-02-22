@@ -598,10 +598,6 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_ExecuteDeclarativeScript,
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
                     int /* id of browser window */)
 
-// Tell the render view what its tab ID is.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_SetTabId,
-                    int /* id of tab */)
-
 // Tell the renderer to update an extension's permission set.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
                      ExtensionMsg_UpdatePermissions_Params)
@@ -682,9 +678,6 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_DispatchOnDisconnect,
                     int /* worker_thread_id */,
                     extensions::PortId /* port_id */,
                     std::string /* error_message */)
-
-// Notify the renderer that its window has closed.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_AppWindowClosed, bool /* send_onclosed */)
 
 // Notify the renderer that an extension wants notifications when certain
 // searches match the active page.  This message replaces the old set of

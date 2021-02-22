@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 import * as animate from '../../animation.js';
-import {browserProxy} from '../../browser_proxy/browser_proxy.js';
 // eslint-disable-next-line no-unused-vars
 import {Camera3DeviceInfo} from '../../device/camera3_device_info.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../../device/device_info_updater.js';
 import * as dom from '../../dom.js';
 import {sendBarcodeEnabledEvent} from '../../metrics.js';
+import * as localStorage from '../../models/local_storage.js';
 import * as nav from '../../nav.js';
 import * as state from '../../state.js';
 import {Facing, Mode, PerfEvent, ViewName} from '../../type.js';
@@ -21,7 +21,8 @@ import * as util from '../../util.js';
 export class Options {
   /**
    * @param {!DeviceInfoUpdater} infoUpdater
-   * @param {function()} doSwitchDevice Callback to trigger device switching.
+   * @param {function(): !Promise} doSwitchDevice Callback to trigger device
+   *     switching.
    */
   constructor(infoUpdater, doSwitchDevice) {
     /**
@@ -32,7 +33,7 @@ export class Options {
     this.infoUpdater_ = infoUpdater;
 
     /**
-     * @type {function()}
+     * @type {function(): !Promise}
      * @private
      * @const
      */
@@ -121,11 +122,10 @@ export class Options {
     });
 
     // Restore saved mirroring states per video device.
-    browserProxy.localStorageGet({mirroringToggles: {}})
+    localStorage.get({mirroringToggles: {}})
         .then((values) => this.mirroringToggles_ = values['mirroringToggles']);
     // Remove the deprecated values.
-    browserProxy.localStorageRemove(
-        ['effectIndex', 'toggleMulti', 'toggleMirror']);
+    localStorage.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
 
     this.infoUpdater_.addDeviceChangeListener(async (updater) => {
       state.set(
@@ -236,7 +236,7 @@ export class Options {
    */
   saveMirroring_() {
     this.mirroringToggles_[this.videoDeviceId_] = this.toggleMirror_.checked;
-    browserProxy.localStorageSet({mirroringToggles: this.mirroringToggles_});
+    localStorage.set({mirroringToggles: this.mirroringToggles_});
   }
 
   /**

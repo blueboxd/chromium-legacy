@@ -6,7 +6,6 @@ import {
   AppWindow,  // eslint-disable-line no-unused-vars
   getDefaultWindowSize,
 } from './app_window.js';
-import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assert, assertInstanceof} from './chrome_util.js';
 import {
   PhotoConstraintsPreferrer,
@@ -19,6 +18,9 @@ import {GalleryButton} from './gallerybutton.js';
 import {Intent} from './intent.js';
 import * as metrics from './metrics.js';
 import * as filesystem from './models/file_system.js';
+import * as loadTimeData from './models/load_time_data.js';
+import * as localStorage from './models/local_storage.js';
+import {ChromeHelper} from './mojo/chrome_helper.js';
 import {notifyCameraResourceReady} from './mojo/device_operator.js';
 import * as nav from './nav.js';
 import {PerfLogger} from './perf.js';
@@ -38,7 +40,6 @@ import {
 import {View} from './views/view.js';
 import {Warning, WarningType} from './views/warning.js';
 import {WaitableEvent} from './waitable_event.js';
-import {windowController} from './window_controller/window_controller.js';
 
 /**
  * The app window instance which is used for communication with Tast tests. For
@@ -127,7 +128,7 @@ export class App {
       }
     }, {passive: false, capture: true});
 
-    document.title = browserProxy.getI18nMessage('name');
+    document.title = loadTimeData.getI18nMessage('name');
     util.setupI18nElements(document.body);
     this.setupToggles_();
     this.setupSettingEffect_();
@@ -158,7 +159,7 @@ export class App {
    * @private
    */
   setupToggles_() {
-    browserProxy.localStorageGet({expert: false})
+    localStorage.get({expert: false})
         .then((values) => state.set(state.State.EXPERT, values['expert']));
     dom.getAll('input', HTMLInputElement).forEach((element) => {
       element.addEventListener('keypress', (event) => {
@@ -172,7 +173,7 @@ export class App {
           ({[element.dataset['key']]: element.checked});
       const save = (element) => {
         if (element.dataset['key'] !== undefined) {
-          browserProxy.localStorageSet(payload(element));
+          localStorage.set(payload(element));
         }
       };
       element.addEventListener('change', (event) => {
@@ -195,7 +196,7 @@ export class App {
       });
       if (element.dataset['key'] !== undefined) {
         // Restore the previously saved state on startup.
-        browserProxy.localStorageGet(payload(element))
+        localStorage.get(payload(element))
             .then(
                 (values) => util.toggleChecked(
                     element, values[element.dataset['key']]));
@@ -217,7 +218,7 @@ export class App {
    * @return {!Promise}
    */
   async start() {
-    document.documentElement.dir = browserProxy.getTextDirection();
+    document.documentElement.dir = loadTimeData.getTextDirection();
     try {
       await filesystem.initialize();
       const cameraDir = filesystem.getCameraDirectory();
@@ -229,7 +230,6 @@ export class App {
     }
 
     const showWindow = (async () => {
-      windowController.enable();
       // For intent only requiring open camera with specific mode without
       // returning the capture result, finish it directly.
       if (this.intent_ !== null && !this.intent_.shouldHandleResult) {
@@ -253,7 +253,8 @@ export class App {
       assert(cameraResourceInitialized.isSignaled());
       await this.suspend();
     };
-    await browserProxy.initCameraUsageMonitor(exploitUsage, releaseUsage);
+    await ChromeHelper.getInstance().initCameraUsageMonitor(
+        exploitUsage, releaseUsage);
 
     const startCamera = (async () => {
       await cameraResourceInitialized.wait();
@@ -267,11 +268,10 @@ export class App {
 
       nav.close(ViewName.SPLASH);
       nav.open(ViewName.CAMERA);
-      await browserProxy.setLaunchingFromWindowCreationStartTime(async () => {
-        const windowCreationTime = window['windowCreationTime'];
-        this.perfLogger_.start(
-            PerfEvent.LAUNCHING_FROM_WINDOW_CREATION, windowCreationTime);
-      });
+
+      const windowCreationTime = window['windowCreationTime'];
+      this.perfLogger_.start(
+          PerfEvent.LAUNCHING_FROM_WINDOW_CREATION, windowCreationTime);
       this.perfLogger_.stop(
           PerfEvent.LAUNCHING_FROM_WINDOW_CREATION, {hasError: !isSuccess});
       if (appWindow !== null) {
@@ -321,7 +321,6 @@ export class App {
   async suspend() {
     state.set(state.State.SUSPEND, true);
     await this.cameraView_.start();
-    windowController.disable();
     nav.open(ViewName.WARNING, WarningType.CAMERA_PAUSED);
   }
 
@@ -330,7 +329,6 @@ export class App {
    */
   resume() {
     state.set(state.State.SUSPEND, false);
-    windowController.enable();
     nav.close(ViewName.WARNING, WarningType.CAMERA_PAUSED);
   }
 }
@@ -356,7 +354,7 @@ let instance = null;
 
   state.set(state.State.INTENT, intent !== null);
 
-  browserProxy.setupUnloadListener(() => {
+  window.addEventListener('unload', () => {
     // For SWA, we don't cancel the unhandled intent here since there is no
     // guarantee that asynchronous calls in unload listener can be executed
     // properly. Therefore, we moved the logic for canceling unhandled intent to

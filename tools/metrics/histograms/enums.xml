@@ -1450,8 +1450,45 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AMDDeviceId">
-  <int value="26464" label="0x6760, Radeon HD 6490M"/>
-  <int value="26657" label="0x6821, Radeon R9 M370X"/>
+  <int value="5592" label="0x15D8, Picasso"/>
+  <int value="5597"
+      label="0x15DD, Raven Ridge [Radeon Vega Series / Radeon Vega Mobile
+             Series]"/>
+  <int value="5686" label="0x1636, Renoir"/>
+  <int value="26112" label="0x6600, Mars [Radeon HD 8670A/8670M/8750M]"/>
+  <int value="26113" label="0x6601, Mars [Radeon HD 8730M]"/>
+  <int value="26129"
+      label="0x6611, Oland [Radeon HD 8570 / R5 430 OEM / R7 240/340 / Radeon
+             520 OEM]"/>
+  <int value="26208"
+      label="0x6660, Sun XT [Radeon HD 8670A/8670M/8690M / R5 M330 / M430 /
+             Radeon 520 Mobile]"/>
+  <int value="26213"
+      label="0x6665, Jet PRO [Radeon R5 M230 / R7 M260DX / Radeon 520 Mobile]"/>
+  <int value="26223" label="0x666F, Sun LE [Radeon HD 8550M / R5 M230]"/>
+  <int value="26464" label="0x6760, Seymour [Radeon HD 6400M/7400M Series]"/>
+  <int value="26591"
+      label="0x67DF, Ellesmere [Radeon RX 470/480/570/570X/580/580X/590]"/>
+  <int value="26607"
+      label="0x67EF, Baffin [Radeon RX 460/560D / Pro
+             450/455/460/555/555X/560/560X]"/>
+  <int value="26657"
+      label="0x6821, Venus XT [Radeon HD 8870M / R9 M270X/M370X]"/>
+  <int value="26688" label="0x6840, Thames [Radeon HD 7500M/7600M Series]"/>
+  <int value="26873"
+      label="0x68F9, Cedar [Radeon HD 5000/6000/7350/8350 Series]"/>
+  <int value="26880"
+      label="0x6900, Topaz XT [Radeon R7 M260/M265 / M340/M360 / M440/M445 /
+             530/535 / 620/625 Mobile]"/>
+  <int value="27015"
+      label="0x6987, Lexa [Radeon 540X/550X/630 / RX 640 / E9171 MCM]"/>
+  <int value="27039"
+      label="0x699F, Lexa PRO [Radeon 540/540X/550/550X / RX 540X/550/550X]"/>
+  <int value="27055" label="0x69AF, Vega 12 [Radeon Pro Vega 20]"/>
+  <int value="29471"
+      label="0x731F, Navi 10 [Radeon RX 5600 OEM/5600 XT / 5700/5700 XT]"/>
+  <int value="29504"
+      label="0x7340, Navi 14 [Radeon RX 5500/5500M / Pro 5500M]"/>
 </enum>
 
 <enum name="Android.ChildProcessBindingStateCombination">
@@ -3885,6 +3922,14 @@ others/histograms.xml -->
   <int value="7" label="kBackInLauncherDeprecated"/>
 </enum>
 
+<enum name="AssistantConsentOutcome">
+  <int value="0" label="ACCEPTED-VIA-BUTTON"/>
+  <int value="1" label="ACCEPTED-VIA-SETTINGS"/>
+  <int value="2" label="REJECTED-VIA-BUTTON"/>
+  <int value="3" label="REJECTED-VIA-SETTINGS"/>
+  <int value="4" label="REJECTED-VIA-DISMISS"/>
+</enum>
+
 <enum name="AssistantEntryPoint">
   <int value="0" label="kUnspecified"/>
   <int value="1" label="kDeepLink"/>
@@ -4486,6 +4531,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="AuthenticatedLaunchUserEvent">
+  <obsolete>
+    Removed in M90.
+  </obsolete>
   <int value="0" label="Local Reauth Dialog"/>
   <int value="1" label="Gaia Reauth Dialog"/>
   <int value="2" label="Supervised Profile Blocked Warning"/>
@@ -15147,6 +15195,11 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="10" label="ConfigureContainer"/>
 </enum>
 
+<enum name="CrostiniInstallSource">
+  <int value="0" label="Component"/>
+  <int value="1" label="DLC"/>
+</enum>
+
 <enum name="CrostiniResult">
   <int value="0" label="SUCCESS"/>
   <int value="4" label="CREATE_DISK_IMAGE_FAILED"/>
@@ -18061,8 +18114,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="72" label="Tab Modal Confirm"/>
   <int value="73" label="Task Manager"/>
   <int value="74" label="Teleport Warning"/>
-  <int value="75" label="User Manager"/>
-  <int value="76" label="User Manager Profile"/>
+  <int value="75" label="User Manager (Obsolete)"/>
+  <int value="76" label="User Manager Profile (Obsolete)"/>
   <int value="77" label="Validation Message"/>
   <int value="78" label="Web Share Target Picker"/>
   <int value="79" label="Zoom"/>
@@ -18094,6 +18147,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="105" label="Signin Reauth Dialog"/>
   <int value="106"
       label="Confirmation Box for getCurrentBrowsingContextMedia API"/>
+  <int value="107" label="Profile picker force signin"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -27338,6 +27392,7 @@ Called by update_extension_permission.py.-->
   <int value="1" label="Supervised User"/>
   <int value="2" label="Supervised Student"/>
   <int value="3" label="Student at Home"/>
+  <int value="4" label="Regular User"/>
 </enum>
 
 <enum name="FaultTolerantHeap">
@@ -44425,6 +44480,7 @@ from previous Chrome versions.
       label="OmniboxEnableClipboardProviderTextSuggestions:enabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
+  <int value="-871784177" label="DeprecateMenagerieAPI:enabled"/>
   <int value="-871520682"
       label="AccessibilityInternalsPageImprovements:enabled"/>
   <int value="-870994173" label="NtpChromeCartModule:enabled"/>
@@ -44717,6 +44773,7 @@ from previous Chrome versions.
   <int value="-603649079" label="ContextualSearchRankerQuery:enabled"/>
   <int value="-601384286" label="disable-contextual-search"/>
   <int value="-600792432" label="WebVrAutopresentFromIntent:disabled"/>
+  <int value="-600726805" label="DeprecateMenagerieAPI:disabled"/>
   <int value="-599932554" label="DoodlesOnLocalNtp:disabled"/>
   <int value="-599005750" label="ScanningUI:disabled"/>
   <int value="-598050737" label="disable-es3-apis"/>
@@ -45306,6 +45363,7 @@ from previous Chrome versions.
   <int value="-37966026" label="PermissionPredictions:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
   <int value="-36234530" label="PluginVmShowMicrophonePermissions:enabled"/>
+  <int value="-36077995" label="SplitCacheByNetworkIsolationKey:disabled"/>
   <int value="-35745997" label="TabSearch:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-35256214" label="InterestFeedNoticeCardAutoDismiss:enabled"/>
@@ -46656,6 +46714,7 @@ from previous Chrome versions.
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
   <int value="1222032915"
       label="kAutofillRationalizeRepeatedServerPredictions:enabled"/>
+  <int value="1222309415" label="SplitCacheByNetworkIsolationKey:enabled"/>
   <int value="1222808563" label="DisableInitialMostVisitedFadeIn:disabled"/>
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1227633129" label="NtpChromeCartModule:disabled"/>
@@ -52063,6 +52122,13 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Invalid Operation"/>
 </enum>
 
+<enum name="NearbyShareDeviceType">
+  <int value="0" label="Unknown device type"/>
+  <int value="1" label="Phone"/>
+  <int value="2" label="Tablet"/>
+  <int value="3" label="Laptop"/>
+</enum>
+
 <enum name="NearbyShareDiscoveryProgress">
   <int value="0" label="Discovery not attempted"/>
   <int value="1" label="Failed to start discovery"/>
@@ -55233,8 +55299,41 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NvidiaDeviceId">
-  <int value="4073" label="0x0FE9, GeForce GT 750M"/>
-  <int value="7825" label="0x1E91, RTX 2070 Super"/>
+  <int value="1600" label="0x0640, GeForce 9500 GT"/>
+  <int value="2601" label="0x0A29, GeForce GT 330M"/>
+  <int value="4053" label="0x0FD5, GeForce GT 650M Mac Edition"/>
+  <int value="4056" label="0x0FD8, GeForce GT 640M Mac Edition"/>
+  <int value="4073" label="0x0FE9, GeForce GT 750M Mac Edition"/>
+  <int value="4074" label="0x0FEA, GeForce GT 755M Mac Edition"/>
+  <int value="4416"
+      label="0x1140, GeForce 610M/710M/810M/820M / GT 620M/625M/630M/720M"/>
+  <int value="4509" label="0x119D, GeForce GTX 775M Mac Edition"/>
+  <int value="4510" label="0x119E, GeForce GTX 780M Mac Edition"/>
+  <int value="4514" label="0x11A2, GeForce GTX 675MX Mac Edition"/>
+  <int value="4515" label="0x11A3, GeForce GTX 680MX"/>
+  <int value="4761" label="0x1299, GeForce 920M"/>
+  <int value="4929" label="0x1341, GeForce 840M"/>
+  <int value="4935" label="0x1347, GeForce 940M"/>
+  <int value="4941" label="0x134D, GeForce 940MX"/>
+  <int value="4943" label="0x134F, GeForce 920MX"/>
+  <int value="5018" label="0x139A, GeForce GTX 950M"/>
+  <int value="5019" label="0x139B, GeForce GTX 960M"/>
+  <int value="5965" label="0x174D, GeForce MX130"/>
+  <int value="5966" label="0x174E, GeForce MX110"/>
+  <int value="7171" label="0x1C03, GeForce GTX 1060 6GB"/>
+  <int value="7200" label="0x1C20, GeForce GTX 1060 Mobile"/>
+  <int value="7298" label="0x1C82, GeForce GTX 1050 Ti"/>
+  <int value="7308" label="0x1C8C, GeForce GTX 1050 Ti Mobile"/>
+  <int value="7309" label="0x1C8D, GeForce GTX 1050 Mobile"/>
+  <int value="7440" label="0x1D10, GeForce MX150"/>
+  <int value="7441" label="0x1D11, GeForce MX230"/>
+  <int value="7443" label="0x1D13, GeForce MX250"/>
+  <int value="7825" label="0x1E91, GeForce RTX 2070 SUPER Mobile / Max-Q"/>
+  <int value="7957" label="0x1F15, GeForce RTX 2060 Mobile"/>
+  <int value="8081" label="0x1F91, GeForce GTX 1650 Mobile / Max-Q"/>
+  <int value="8085" label="0x1F95, GeForce GTX 1650 Ti Mobile"/>
+  <int value="8089" label="0x1F99, GeForce ?"/>
+  <int value="8593" label="0x2191, GeForce GTX 1660 Ti Mobile"/>
 </enum>
 
 <enum name="OAuth2BadRequestError">
@@ -62624,6 +62723,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ProfileCreateResult">
+  <obsolete>
+    Removed M90.
+  </obsolete>
   <int value="0" label="Failed locally"/>
   <int value="1" label="Failed remotely"/>
   <int value="2" label="Created but not initialized (should never happen)"/>
@@ -79373,6 +79475,30 @@ others/histograms.xml -->
   <int value="2" label="Source Node start()"/>
 </enum>
 
+<enum name="WebAuthenticationAOADiscoveryEvent">
+  <int value="0" label="Started"/>
+  <int value="1" label="An AOA USB device appeared during a WebAuthn request"/>
+  <int value="2"
+      label="A non-AOA USB device was plugged in during a WebAuthn request"/>
+  <int value="3"
+      label="A non-AOA device did not have an AOA configuration interface"/>
+  <int value="4" label="Failed to open an AOA device"/>
+  <int value="5"
+      label="Failed to set the active configuration of an AOA device"/>
+  <int value="6" label="Failed to claim the interface of an AOA device"/>
+  <int value="7" label="Failed to write a sync message to an AOA device"/>
+  <int value="8" label="Failed to read a sync reply from an AOA device"/>
+  <int value="9" label="AOA device successfully discovered"/>
+  <int value="10" label="Failed to open a non-AOA device"/>
+  <int value="11"
+      label="Failed to get version information from non-AOA device"/>
+  <int value="12" label="AOA version one not supported"/>
+  <int value="13" label="Failed to set AOA configuration strings"/>
+  <int value="14" label="Device requested to switch to AOA mode"/>
+  <int value="15"
+      label="One or more previously discovered devices are still connected"/>
+</enum>
+
 <enum name="WebAuthenticationAttestationPromptResult">
   <int value="0" label="Queried"/>
   <int value="1" label="Timeout"/>
@@ -79410,6 +79536,18 @@ others/histograms.xml -->
   <int value="7" label="Timeout"/>
 </enum>
 
+<enum name="WebAuthenticationCableV2DiscoveryEvent">
+  <int value="0" label="Discovery started"/>
+  <int value="1" label="Pairing information was provided to this discovery"/>
+  <int value="2" label="QR keys were provided to this discovery"/>
+  <int value="3"
+      label="Keys from an extension were provided to this discovery"/>
+  <int value="4" label="An EID matched a pending tunnel"/>
+  <int value="5" label="An EID matched a QR code"/>
+  <int value="6" label="An EID matched an extension"/>
+  <int value="7" label="An EID was ignored because it didn't match anything"/>
+</enum>
+
 <enum name="WebAuthenticationCableV2MobileEvent">
   <int value="0" label="QR read"/>
   <int value="1" label="Server-linked connection started"/>
@@ -79439,6 +79577,20 @@ others/histograms.xml -->
   <int value="8" label="Internal error"/>
   <int value="9" label="Invalid QR"/>
   <int value="10" label="Invalid server link data"/>
+</enum>
+
+<enum name="WebAuthenticationCableV2TunnelEvent">
+  <int value="0"
+      label="Tunnel attempt started for QR- or extension-based connection"/>
+  <int value="1" label="Tunnel attempt started for linked connected"/>
+  <int value="2" label="Tunnel connected"/>
+  <int value="3" label="Contact ID was invalid"/>
+  <int value="4" label="Tunnel failed with unexpected HTTP 410 status"/>
+  <int value="5" label="Tunnel failed"/>
+  <int value="6" label="Handshake failed"/>
+  <int value="7" label="Error processing post-handshake message"/>
+  <int value="8" label="Tunnel established"/>
+  <int value="9" label="Failed to decrypt main-flow message"/>
 </enum>
 
 <enum name="WebAuthenticationChromeOSGetAssertionResult">

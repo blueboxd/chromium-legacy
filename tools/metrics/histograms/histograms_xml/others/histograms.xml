@@ -1776,14 +1776,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>xingliu@chromium.org</owner>
   <summary>
     Logs the duration in milliseconds between bookmark creation time and
-    bookmark open time based on device local time. Recorded when the bookmark is
-    opened. Bookmark folder is not considered. Can be logged in multiple browser
-    sessions.
+    bookmark open time based on device local time. Recorded when {BookmarkType}
+    is opened. Bookmark folder is not considered. The creation and open can
+    happen on different runs of Chrome.
   </summary>
   <token key="BookmarkType">
-    <variant name="Normal" summary="A normal bookmark."/>
-    <variant name="Partner" summary="A partner bookmark."/>
-    <variant name="ReadingList" summary="A reading list article."/>
+    <variant name="Normal" summary="a normal bookmark."/>
+    <variant name="Partner" summary="a partner bookmark."/>
+    <variant name="ReadingList" summary="a reading list article."/>
   </token>
 </histogram>
 
@@ -10198,6 +10198,131 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Nearby.Share.Contacts.DownloadPageCount.{Result}"
+    units="pages" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Contacts are downloaded in pages, i.e., multiple ListContactPeople RPC
+    request/responses. Records the {Result}. Emitted every time contacts are
+    downloaded for use in Nearby Share. Because contacts are not stored locally,
+    contacts are downloaded for users with Nearby Share enabled at least once a
+    day, when a user enters Nearby Share settings, and during an active sharing
+    flow.
+  </summary>
+  <token key="Result">
+    <variant name="Failure" summary="page number of the first HTTP failure"/>
+    <variant name="Success"
+        summary="number of pages needed to download the user's full contact
+                 list"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Contacts.DownloadResult" enum="BooleanSuccess"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records whether or not the full, possibly paginated contact download from
+    the Nearby server was successful. Emitted every time contacts are downloaded
+    for use in Nearby Share. Because contacts are not stored locally, contacts
+    are downloaded for users with Nearby Share enabled at least once a day, when
+    a user enters Nearby Share settings, and during an active sharing flow.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Contacts.HttpResult" enum="NearbyShareHttpResult"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the result of each ListContactPeople RPC call to the Nearby Share
+    server. Emitted every time contacts are downloaded for use in Nearby Share.
+    Due to pagination, this is emitted for every page of contacts downloaded.
+    Because contacts are not stored locally, contacts are downloaded for users
+    with Nearby Share enabled at least once a day, when a user enters Nearby
+    Share settings, and during an active sharing flow.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Contacts.NumContacts.{Type}" units="contacts"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the number of {Type} contacts downloaded from the Nearby server.
+    Emitted every time contacts are downloaded for use in Nearby Share. Because
+    contacts are not stored locally, contacts are downloaded for users with
+    Nearby Share enabled at least once a day, when a user enters Nearby Share
+    settings, and during an active sharing flow.
+  </summary>
+  <token key="Type">
+    <variant name="DeviceContactType" summary="device-type"/>
+    <variant name="GoogleContactType" summary="Google-type"/>
+    <variant name="Reachable" summary="reachable"/>
+    <variant name="Selected"
+        summary="selected (selected-contacts visibility mode only)"/>
+    <variant name="Unfiltered" summary="unfiltered"/>
+    <variant name="UnknownContactType" summary="unknown-type"/>
+    <variant name="Unreachable" summary="unreachable"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Contacts.Percent{Type}" units="%"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the percentage of {Type} Emitted every time contacts are downloaded
+    for use in Nearby Share. Because contacts are not stored locally, contacts
+    are downloaded for users with Nearby Share enabled at least once a day, when
+    a user enters Nearby Share settings, and during an active sharing flow.
+  </summary>
+  <token key="Type">
+    <variant name="DeviceContactType"
+        summary="unfiltered contacts that are device-type contacts."/>
+    <variant name="Reachable"
+        summary="unfiltered contacts that are reachable."/>
+    <variant name="Selected"
+        summary="(filtered) contacts that are selected by the user in the
+                 setting/onboarding UI. Only emitted for users in
+                 selected-contacts visibility mode."/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.Contacts.TimeToDownload.{Result}" units="ms"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the time spent {Result}. Emitted every time contacts are downloaded
+    for use in Nearby Share. Because contacts are not stored locally, contacts
+    are downloaded for users with Nearby Share enabled at least once a day, when
+    a user enters Nearby Share settings, and during an active sharing flow.
+  </summary>
+  <token key="Result">
+    <variant name="Failure" summary="downloading contacts before failure"/>
+    <variant name="Success"
+        summary="to successfully download the user's full contact list"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.DeviceType{Direction}"
+    enum="NearbyShareDeviceType" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the device type that the user {Direction}. Emitted when a transfer
+    completes successfully, fails, or was aborted by the user, for example, by
+    cancelling the transfer.
+  </summary>
+  <token key="Direction">
+    <variant name="" summary="sent to or received from"/>
+    <variant name=".Receive" summary="received from"/>
+    <variant name=".Send" summary="sent to"/>
+  </token>
+</histogram>
+
 <histogram name="Nearby.Share.Discovery.Delay.FromStartDiscoveryTo{EndState}"
     units="ms" expires_after="2021-08-19">
   <owner>nohle@chromium.org</owner>
@@ -10279,6 +10404,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     allowed by policy, or the user onboarded but later disabled the feature.
     Emitted when the Nearby Share service starts. This happens at login if the
     feature flag is on.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.IsKnownContact" enum="BooleanKnown"
+    expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records whether or not the device shared with is a known contact, i.e.,
+    contact-based sharing. Emitted when a transfer completes successfully,
+    fails, or was aborted by the user, for example, by cancelling the transfer.
   </summary>
 </histogram>
 
@@ -18317,217 +18453,6 @@ regressions. -->
   <owner>ortuno@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>Records the result of WebAppUrlLoader::PrepareForLoad().</summary>
-</histogram>
-
-<histogram name="WebAuthentication.AttestationPromptResult"
-    enum="WebAuthenticationAttestationPromptResult" expires_after="2020-11-29">
-  <obsolete>
-    Removed 12/2020.
-  </obsolete>
-  <owner>agl@chromium.org</owner>
-  <summary>
-    Tracks events related to prompting users for permission to pass WebAuthn
-    attestation information back to origins. &quot;Queried&quot; means that the
-    embedder was queried for a decision. (Since such decisions can be resolved
-    by enterprise policy, that doesn't imply that a user saw a permissions
-    prompt in every case.) Then one of four things can happen: a timeout, a
-    positive or negative resolution, or the request is abandoned. The latter
-    case occurs when, for example, the tab is closed or the user navigates away.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.CableV1DiscoveryEvent"
-    enum="WebAuthenticationCableV1DiscoveryEvent" expires_after="2021-08-09">
-  <owner>agl@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records events that occur during caBLE v1 authenticator discovery so that
-    potential discovery failures can be identified.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.CableV2.MobileEvent"
-    enum="WebAuthenticationCableV2MobileEvent" expires_after="2021-11-19">
-  <owner>agl@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records events that occur during a caBLE v2 transaction from the mobile
-    side.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.CableV2.MobileResult"
-    enum="WebAuthenticationCableV2MobileResult" expires_after="2021-11-19">
-  <owner>agl@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>Records the outcome of caBLEv2 transactions.</summary>
-</histogram>
-
-<histogram name="WebAuthentication.CableV2.RendezvousTime" units="ms"
-    expires_after="2021-11-19">
-  <owner>agl@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    The time between the phone connecting to the tunnel server (and thus
-    starting its BLE broadcast) to the point where it receives the handshake
-    message from the desktop.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.ChromeOS.GetAssertionStatus"
-    enum="WebAuthenticationChromeOSGetAssertionResult"
-    expires_after="2021-11-19">
-  <owner>yichengli@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>Records the outcome of GetAssertion on Chrome OS.</summary>
-</histogram>
-
-<histogram name="WebAuthentication.ChromeOS.MakeCredentialStatus"
-    enum="WebAuthenticationChromeOSMakeCredentialResult"
-    expires_after="2021-11-19">
-  <owner>yichengli@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>Records the outcome of MakeCredential on Chrome OS.</summary>
-</histogram>
-
-<histogram name="WebAuthentication.ChromeOS.StartupRecordCount" units="records"
-    expires_after="2021-11-19">
-  <owner>yichengli@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records the number of records of the user's WebAuthn credentials created on
-    Chrome OS.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.ChromeOS.UserVerificationRequired"
-    enum="Boolean" expires_after="2021-11-19">
-  <owner>yichengli@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records whether the Chrome OS platform authenticator should try to verify
-    the user (instead of requiring power button press). Note that a
-    presence-only request may get upgraded to user-verification. Also note that
-    &quot;true&quot; does not mean the user is actually verified.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.CredentialRequestAllowCredentialsCount"
-    units="credentials" expires_after="2021-05-16">
-  <obsolete>
-    Removed 12/2020.
-  </obsolete>
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    When a relying party is attempting to authenticate a user using the
-    WebAuthentication API, this metric reports the number of valid credentials
-    that the RP has registered for the user.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.GetAssertionRequestTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2021-12-01">
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records the transport used for all WebAuthentication GetAssertion requests
-    sent to authenticators. This does not necessarily mean that there was a
-    success response from any given authenticator.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.GetAssertionResponseTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2021-12-01">
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records the transport used when an authenticator responds with success to a
-    WebAuthentication GetAssertion request.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.IsUVPlatformAuthenticatorAvailable"
-    enum="Boolean" expires_after="2021-12-01">
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Record at startup whether the current system has a platform authenticator
-    available; i.e. whether IsUVPAA JS call would return true or false. This
-    metric is downsampled by factor 10,000 on macOS.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.MakeCredentialExcludeCredentialsCount"
-    units="credentials" expires_after="2021-05-16">
-  <obsolete>
-    Removed 12/2020.
-  </obsolete>
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    When a relying party is attempting to register a credential for a new user
-    using the WebAuthentication API, this metric reports the number of existing
-    credentials already registered in order to prevent re-registration.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.MakeCredentialRequestTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2021-12-01">
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records the transport used for all WebAuthentication MakeCredential requests
-    sent to authenticators. This does not necessarily mean that there was a
-    success response from any given authenticator.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.MakeCredentialResponseTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2021-12-01">
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records the transport used when an authenticator responds with success to a
-    WebAuthentication MakeCredential request.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.RelyingPartySecurityCheckFailure"
-    enum="WebAuthenticationRelyingPartySecurityCheckFailure"
-    expires_after="2020-12-31">
-  <obsolete>
-    Removed 12/2020.
-  </obsolete>
-  <owner>kenrb@chromium.org</owner>
-  <owner>martinkr@google.com</owner>
-  <summary>
-    Records failures associated with verifying the relying party origin when
-    that relying party is attempting to make a credential or get an assertion
-    using the WebAuthentication API. Failures include when the relying party's
-    origin is opaque or non-secure, or when the caller-provided relying party ID
-    or app ID is not valid for this origin.
-  </summary>
-</histogram>
-
-<histogram name="WebAuthentication.U2FAttestationPromptResult"
-    enum="WebAuthenticationU2FAttestationPromptResult"
-    expires_after="2021-06-06">
-  <obsolete>
-    Removed 12/2020.
-  </obsolete>
-  <owner>agl@chromium.org</owner>
-  <summary>
-    Tracks events related to prompting users for permission to pass U2F
-    attestation information back to origins. &quot;Queried&quot; means that the
-    embedder was queried for a decision. (Since such decisions can be resolved
-    by enterprise policy, that doesn't imply that a user saw a permissions
-    prompt in every case.) Then either a positive or negative result can happen.
-    However, note some complications: a negative will be recorded when the tab
-    is closed or the user navigates away, and a positive result will be recorded
-    when the user accepts the permission prompt but the request has already
-    timed out.
-  </summary>
 </histogram>
 
 <histogram name="WebContextFetcher.Time.RunJavaScript" units="ms"

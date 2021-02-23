@@ -201,6 +201,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Assistant.VoiceSearch.ConsentOutcome"
+    enum="AssistantConsentOutcome" expires_after="2021-06-20">
+  <owner>wylieb@chromium.org</owner>
+  <owner>fgorski@chromium.org</owner>
+  <summary>
+    (Android only) Reports the outcome of the consent dialog shown for the
+    assistant.
+  </summary>
+</histogram>
+
 <histogram name="Assistant.VoiceSearch.UserEligibility" enum="BooleanEligible"
     expires_after="2021-06-20">
   <owner>wylieb@chromium.org</owner>
@@ -305,7 +315,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="QuickAnswers.ContextMenu.Close.Duration{InteractionType}"
-    units="ms" expires_after="2021-02-14">
+    units="ms" expires_after="2021-06-27">
   <owner>updowndota@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>

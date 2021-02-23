@@ -5419,6 +5419,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+    {"deprecate-menagerie-api", flag_descriptions::kDeprecateMenagerieAPIName,
+     flag_descriptions::kDeprecateMenagerieAPIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(switches::kDeprecateMenagerieAPI)},
     {"mobile-identity-consistency",
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
@@ -7105,6 +7108,11 @@ const FeatureEntry kFeatureEntries[] = {
         FEATURE_VALUE_TYPE(features::kUIDebugTools),
     },
 #endif
+    {"http-cache-partitioning",
+     flag_descriptions::kSplitCacheByNetworkIsolationKeyName,
+     flag_descriptions::kSplitCacheByNetworkIsolationKeyDescription,
+     kOsWin | kOsLinux | kOsMac | kOsCrOS | kOsAndroid,
+     FEATURE_VALUE_TYPE(net::features::kSplitCacheByNetworkIsolationKey)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-scalable-status-area", flag_descriptions::kScalableStatusAreaName,

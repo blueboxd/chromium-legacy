@@ -351,6 +351,9 @@ void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
   }
 
   auto& paint_controller = GetPaintController();
+
+  base::Optional<PaintChunkSubset> previous_chunks;
+
   PaintController::ScopedBenchmarkMode scoped_benchmark_mode(paint_controller,
                                                              benchmark_mode);
   bool cached = !paint_controller.ShouldForcePaintForBenchmark() &&
@@ -360,10 +363,17 @@ void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
                 paint_controller.ClientCacheIsValid(*this) &&
                 previous_interest_rect_ == new_interest_rect;
   if (!cached) {
+    if (ShouldCreateLayersAfterPaint())
+      previous_chunks.emplace(paint_controller.GetPaintArtifactShared());
+
     GraphicsContext context(paint_controller);
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     paint_controller.UpdateCurrentPaintChunkProperties(
         nullptr, layer_state_->state.GetPropertyTreeState());
+    // If this uses pre-CAP compositing, contents_opaque will be calculated by
+    // CompositedLayerMapping; otherwise, it is calculated by PaintChunker.
+    paint_controller.SetShouldComputeContentsOpaque(
+        ShouldCreateLayersAfterPaint());
     previous_interest_rect_ = new_interest_rect;
     client_.PaintContents(this, context, painting_phase_, new_interest_rect);
     paint_controller.CommitNewDisplayItems();
@@ -411,6 +421,14 @@ void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
           cc::DisplayItemList::kTopLevelDisplayItemList,
           base::OptionalOrNullptr(raster_under_invalidation_params));
       raster_invalidated_ = false;
+    }
+  }
+
+  if (ShouldCreateLayersAfterPaint() && previous_chunks) {
+    if (auto* paint_artifact_compositor =
+            client_.GetPaintArtifactCompositor()) {
+      paint_artifact_compositor->SetNeedsFullUpdateAfterPaintIfNeeded(
+          *previous_chunks, chunks);
     }
   }
 

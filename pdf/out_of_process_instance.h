@@ -82,7 +82,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // pp::Private:
   pp::Var GetLinkAtPosition(const pp::Point& point);
   void GetPrintPresetOptionsFromDocument(PP_PdfPrintPresetOptions_Dev* options);
-  void EnableAccessibility();
   void SetCaretPosition(const pp::FloatPoint& position);
   void MoveRangeSelectionExtent(const pp::FloatPoint& extent);
   void SetSelectionBounds(const pp::FloatPoint& base,
@@ -223,12 +222,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void RecordDocumentMetrics();
   void UserMetricsRecordAction(const std::string& action);
 
-  enum DocumentLoadState {
-    LOAD_STATE_LOADING,
-    LOAD_STATE_COMPLETE,
-    LOAD_STATE_FAILED,
-  };
-
   // Must match SaveRequestType in chrome/browser/resources/pdf/constants.js.
   enum class SaveRequestType {
     kAnnotation = 0,
@@ -357,8 +350,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // The callback for receiving the password from the page.
   base::OnceCallback<void(const std::string&)> password_callback_;
 
-  DocumentLoadState document_load_state_ = LOAD_STATE_LOADING;
-  DocumentLoadState preview_document_load_state_ = LOAD_STATE_COMPLETE;
+  DocumentLoadState preview_document_load_state_ = DocumentLoadState::kComplete;
 
   // Used so that we only tell the browser once about an unsupported feature, to
   // avoid the infobar going up more than once.

@@ -94,6 +94,11 @@ const char kDefaultChromeAppUninstallSyncDescription[] =
     "Synchronizes uninstallation of default Chrome apps across Chrome OS "
     "devices.";
 
+const char kDeprecateMenagerieAPIName[] = "Deprecate Menagerie API on Android";
+const char kDeprecateMenagerieAPIDescription[] =
+    "If enabled, the legacy Menagerie API for profile data will be replaced by "
+    "the new profile data source";
+
 const char kDetectedSourceLanguageOptionName[] =
     "Use Detected Language string on Desktop and Android";
 const char kDetectedSourceLanguageOptionDescription[] =
@@ -2263,6 +2268,11 @@ const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
     "If enabled, when the user enters text in the omnibox that looks like a "
     "a query, any service worker associated with the search engine the query "
     "will be sent to is started early.";
+
+const char kSplitCacheByNetworkIsolationKeyName[] = "HTTP Cache Partitioning";
+const char kSplitCacheByNetworkIsolationKeyDescription[] =
+    "Partitions the HTTP Cache by (top-level site, current-frame site) to "
+    "disallow cross-site tracking.";
 
 const char kStrictOriginIsolationName[] = "Strict-Origin-Isolation";
 const char kStrictOriginIsolationDescription[] =

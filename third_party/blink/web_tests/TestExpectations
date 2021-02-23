@@ -38,17 +38,11 @@ crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_ref_only.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.html [ Failure ]
 
-# WPT HTTP/2 is not supported by run_web_tests.
-crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.serviceworker.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.sharedworker.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.worker.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/http2-websocket.sub.h2.any.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/http2-websocket.sub.h2.any.worker.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=h2 [ Skip ]
-crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=https [ Skip ]
+# WPT HTTP/2 is not fully supported by run_web_tests.
+crbug.com/1048761 external/wpt/infrastructure/server/http2-websocket.sub.h2.any.html [ Failure ]
+crbug.com/1048761 external/wpt/infrastructure/server/http2-websocket.sub.h2.any.worker.html [ Failure ]
+crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=h2 [ Failure ]
+crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-wpt-flags.sub.html?wpt_flags=https [ Failure ]
 
 # The following tests pass or fail depending on the underlying protocol (HTTP/1.1 vs HTTP/2).
 # The results of failures could be also different depending on the underlying protocol.
@@ -2468,6 +2462,11 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-tables/col-definite-max-size-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-tables/col-definite-min-size-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-tables/col-definite-size-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-transforms/translate/translate-and-transform-attribute-in-svg.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-transforms/translate/translate-and-transform-css-property-in-svg.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-flexbox/table-as-item-specified-height.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-flexbox/table-as-item-specified-height.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-flexbox/table-as-item-specified-height.html [ Failure ]
@@ -5735,7 +5734,11 @@ crbug.com/1179969 [ Mac ] virtual/plz-dedicated-worker/external/wpt/service-work
 crbug.com/1134103 http/tests/devtools/coverage/decorations-after-script-formatter.js [ Skip ]
 
 # Sheriff 2021-02-19
-crbug.com/1180227 [ Mac ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure ]
+crbug.com/1180227 [ Mac ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure Crash ]
 crbug.com/1180227 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure ]
 crbug.com/1180274 [ Mac ] http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]
 crbug.com/1180479 [ Mac ] virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/scrollIntoView-smooth.html [ Failure Timeout Pass ]
+
+# Sheriff 2021-02-21
+crbug.com/1180491 [ Linux ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]
+crbug.com/1180491 [ Linux ] virtual/storage-access-api/external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]

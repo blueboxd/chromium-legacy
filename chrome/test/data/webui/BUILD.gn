@@ -19,10 +19,7 @@ if (include_js_tests) {
 
     sources = [
       "bookmarks/bookmarks_focus_test.js",
-      "cr_elements/cr_elements_focus_test.js",
       "cr_elements/cr_elements_v3_focus_test.js",
-      "cr_focus_outline_manager_test.js",
-      "cr_focus_row_behavior_interactive_test.js",
       "cr_focus_row_behavior_v3_interactive_test.js",
       "extensions/cr_extensions_interactive_ui_tests.js",
       "history/history_focus_test.js",
@@ -79,9 +76,7 @@ if (include_js_tests) {
       "assertions.js",
       "async_gen.js",
       "bookmarks/bookmarks_browsertest.js",
-      "cr_components/cr_components_browsertest.js",
       "cr_components/cr_components_v3_browsertest.js",
-      "cr_elements/cr_elements_browsertest.js",
       "cr_elements/cr_elements_v3_browsertest.js",
       "histograms/histograms_internals_ui_browsertest.js",
       "history/history_browsertest.js",
@@ -92,7 +87,6 @@ if (include_js_tests) {
       "management/a11y/management_a11y_test.js",
       "net_internals/net_internals_browsertest.js",
       "ntp4.js",
-      "resources/webui_resources_browsertest.js",
       "resources/webui_resources_v3_browsertest.js",
       "sandboxstatus_browsertest.js",
       "settings/a11y/v3_a11y_browsertest.js",
@@ -123,11 +117,8 @@ if (include_js_tests) {
     ]
 
     if (is_chromeos_ash) {
-      gen_include_files += [
-        # TODO(https://crbug.com/1045266): Migrate a11y tests to Polymer3.
-        # "settings/chromeos/a11y/os_settings_accessibility_test.js",
-        # "settings/chromeos/a11y/crostini_accessibility_test.js",
-      ]
+      gen_include_files +=
+          [ "settings/chromeos/a11y/os_settings_accessibility_v3_test.js" ]
     }
 
     extra_js_files = [
@@ -157,25 +148,13 @@ if (include_js_tests) {
         "cr_components/chromeos/cr_components_chromeos_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_v3_browsertest.js",
         "set_time_dialog_browsertest.js",
-
-        # TODO(https://crbug.com/1045266): Migrate a11y tests to Polymer3.
-        # "settings/chromeos/a11y/crostini_settings_details_a11y_test.js",
-        # "settings/chromeos/a11y/crostini_settings_export_import_a11y_test.js",
-        # "settings/chromeos/a11y/crostini_settings_shared_paths_a11y_test.js",
-        # "settings/chromeos/a11y/crostini_settings_shared_usb_devices_a11y_test.js",
-        # "settings/chromeos/a11y/crostini_settings_subpage_a11y_test.js",
-        # "settings/chromeos/a11y/google_assistant_a11y_test.js",
-        # "settings/chromeos/a11y/manage_accessibility_a11y_test.js",
-        # "settings/chromeos/a11y/multidevice_a11y_test.js",
-        # "settings/chromeos/a11y/multidevice_features_a11y_test.js",
-        # "settings/chromeos/a11y/tts_subpage_a11y_test.js",
+        "settings/chromeos/a11y/v3_os_a11y_browsertest.js",
         "settings/chromeos/os_settings_v3_browsertest.js",
         "sys_internals/sys_internals_browsertest.js",
       ]
     } else {
       sources += [
         "signin/signin_browsertest.js",
-        "user_manager/user_manager_browsertest.js",
         "welcome/a11y_tests.js",
         "welcome/welcome_browsertest.js",
       ]
@@ -226,6 +205,7 @@ if (include_js_tests) {
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_view_manager_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_elements/find_shortcut_behavior_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/fake_chrome_event.m.js",
+      "$root_gen_dir/chrome/test/data/webui/js/load_time_data_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
       "$root_gen_dir/chrome/test/data/webui/resources/list_property_update_behavior_tests.m.js",
@@ -542,7 +522,7 @@ group("modulize") {
     "./cr_components:modulize",
     "./cr_components/chromeos:modulize",
     "./cr_elements:modulize",
-    "./js/cr:modulize",
+    "./js:modulize",
     "./resources:modulize",
     "./settings:modulize",
   ]

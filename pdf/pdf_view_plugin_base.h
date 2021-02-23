@@ -57,6 +57,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
                std::vector<PaintReadyRect>& ready,
                std::vector<gfx::Rect>& pending) override;
 
+  // Enable accessibility for PDF plugin.
+  void EnableAccessibility();
+
   // Handle invoked accessibility actions.
   void HandleAccessibilityAction(const AccessibilityActionData& action_data);
 
@@ -65,6 +68,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
     kOff = 0,  // Off.
     kPending,  // Enabled but waiting for doc to load.
     kLoaded,   // Fully loaded.
+  };
+
+  enum class DocumentLoadState {
+    kLoading = 0,
+    kComplete,
+    kFailed,
   };
 
   struct BackgroundPart {
@@ -202,10 +211,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
     stop_scrolling_ = stop_scrolling;
   }
 
-  AccessibilityState accessibility_state() { return accessibility_state_; }
-  void set_accessibility_state(AccessibilityState state) {
-    accessibility_state_ = state;
+  DocumentLoadState document_load_state() { return document_load_state_; }
+  void set_document_load_state(DocumentLoadState state) {
+    document_load_state_ = state;
   }
+
+  AccessibilityState accessibility_state() { return accessibility_state_; }
 
  private:
   // Message handlers.
@@ -297,6 +308,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Whether the plugin has received a viewport changed message. Nothing should
   // be painted until this is received.
   bool received_viewport_message_ = false;
+
+  // The current state of document load.
+  DocumentLoadState document_load_state_ = DocumentLoadState::kLoading;
 
   // The current state of accessibility.
   AccessibilityState accessibility_state_ = AccessibilityState::kOff;

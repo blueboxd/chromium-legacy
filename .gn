@@ -71,8 +71,6 @@ no_check_targets = [
   "//chrome/browser/storage_access_api:*",  # 2 errors
   "//chrome/browser/touch_to_fill/android:*",  # 8 errors
   "//chrome/test:*",  # 2682 errors
-
-  "//extensions/browser/api/declarative:*",  # 20 errors
   "//extensions/browser/api/declarative_net_request:*",  # 18 errors
   "//extensions/browser/api/declarative_webrequest:*",  # 29 errors
   "//extensions/browser/api/web_request:*",  # 37 errors
@@ -86,7 +84,6 @@ no_check_targets = [
   "//ppapi/host:*",  # 1 error
   "//ppapi/native_client/src/untrusted/pnacl_irt_shim:*",  # 197 errors
   "//ppapi/proxy:*",  # 31 errors
-  "//ppapi/shared_impl:*",  # 3 errors
   "//ppapi/thunk:*",  # 1071 errors
   "//ppapi:*",  # 3 errors
   "//remoting/client/display:*",  # 55 errors
@@ -98,7 +95,6 @@ no_check_targets = [
   "//remoting/host/installer/mac:*",  # 1 error
   "//remoting/host/it2me:*",  # 18 errors
   "//remoting/host/mac:*",  # 49 errors
-  "//remoting/host/native_messaging:*",  # 3 errors
   "//remoting/host/security_key:*",  # 68 errors
   "//remoting/host/setup:*",  # 9 errors
   "//remoting/host/win:*",  # 43 errors

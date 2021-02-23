@@ -915,6 +915,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "deprecate-menagerie-api",
+    "owners": [ "aliceywang", "msarda", "triploblastic" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "desktop-detailed-language-settings",
     "owners": [ "joshsantana", "chrome-language@google.com" ],
     "expiry_milestone": 93
@@ -3093,6 +3098,11 @@
     "name": "homepage-promo-card",
     "owners": [ "wenyufu", "clank-app-team@google.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "http-cache-partitioning",
+    "owners": [ "shivanisha" ],
+    "expiry_milestone": 95
   },
   {
     "name": "ignore-gpu-blocklist",

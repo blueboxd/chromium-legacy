@@ -4219,6 +4219,38 @@ others/histograms.xml -->
   <int value="12" label="Other error (file missing)"/>
 </enum>
 
+<enum name="AttestationFlowStatus">
+<!--
+  Uninteresting/unused values are not labeled.
+  See "ChromeOS.Attestation.AttestationFlowStatus" histogram
+-->
+
+  <int value="10" label="Failure w/o proxy"/>
+  <int value="11" label="Fallback w/o proxy"/>
+  <int value="12" label="Success w/o proxy"/>
+  <int value="34" label="Failure w/ default flow being skipped w/ proxy"/>
+  <int value="35" label="Success w/ default flow being skipped w/ proxy"/>
+</enum>
+
+<enum name="AttestationStatus">
+<!--
+  The alias of `enum AttestationStatus` defined in
+  `system_api/dbus/attestation/interface.proto` in
+  `chromiumos/platform2` repository.
+-->
+
+  <int value="0" label="STATUS_SUCCESS"/>
+  <int value="1" label="STATUS_UNEXPECTED_DEVICE_ERROR"/>
+  <int value="2" label="STATUS_NOT_AVAILABLE"/>
+  <int value="3" label="STATUS_NOT_READY"/>
+  <int value="4" label="STATUS_NOT_ALLOWED"/>
+  <int value="5" label="STATUS_INVALID_PARAMETER"/>
+  <int value="6" label="STATUS_REQUEST_DENIED_BY_CA"/>
+  <int value="7" label="STATUS_CA_NOT_AVAILABLE"/>
+  <int value="8" label="STATUS_NOT_SUPPORTED"/>
+  <int value="9" label="STATUS_DBUS_ERROR"/>
+</enum>
+
 <enum name="AudioCaptureDeviceError">
   <int value="0" label="No error"/>
   <int value="1" label="Error during stream creation"/>
@@ -73238,6 +73270,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9" label="FailedCreatingSentinelFile"/>
   <int value="10" label="FailedDeletingSentinelFile"/>
   <int value="11" label="AbortedBecauseSentinelFileWasPresent"/>
+</enum>
+
+<enum name="SubresourceRedirectRedirectResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Redirectable"/>
+  <int value="2" label="Ineligible due to disallowed by Blink"/>
+  <int value="3" label="Ineligible subframe resource"/>
+  <int value="4" label="Ineligible subresource redirect failed"/>
+  <int value="5" label="Ineligible public image hints unavailable"/>
+  <int value="6"
+      label="Ineligible public image hints unavailable, but found to be
+             redirectable later"/>
+  <int value="7"
+      label="Ineligible public image hints unavailable, and found to be
+             missing in the hints later"/>
+  <int value="8" label="Ineligible missing in the public image hints"/>
+  <int value="9" label="Ineligible due to disallowed by robots rules"/>
+  <int value="10" label="Ineligible due to robots rules fetch timeout"/>
+  <int value="11" label="Ineligible due to logged-in page"/>
 </enum>
 
 <enum name="SubresourceRedirectRobotsRulesReceiveResult">

@@ -802,12 +802,6 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.NORMAL,
       states: [
         {
-          id: 'loading',
-          trigger: (screen) => {
-            screen.showLoadingScreenForTesting();
-          },
-        },
-        {
           id: 'us-terms-loaded',
           trigger: (screen) => {
             screen.clearDemoMode();
@@ -891,12 +885,9 @@ cr.define('cr.ui.login.debug', function() {
       id: 'parental-handoff',
       kind: ScreenKind.NORMAL,
       states: [{
-        id: 'parental-handoff',
+        id: 'default',
         data: {
-          title: 'Now it\'s Child 1\'s turn',
-          subtitle:
-              'You can hand this Chromebook to Child 1. Setup is almost done,' +
-              ' then it\'s time to explore.'
+          username: 'TestUsername',
         },
       }],
     },

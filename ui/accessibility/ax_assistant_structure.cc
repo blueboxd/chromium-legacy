@@ -4,7 +4,7 @@
 
 #include "ui/accessibility/ax_assistant_structure.h"
 
-#include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/optional.h"
@@ -324,6 +324,9 @@ void WalkAXTreeDepthFirst(const AXNode* node,
       result->selection =
           base::make_optional<gfx::Range>(start_selection, end_selection);
   }
+
+  result->html_tag =
+      node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
 
   for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
     AXNode* child = node->GetUnignoredChildAtIndex(i);

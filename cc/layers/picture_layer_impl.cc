@@ -1049,7 +1049,7 @@ void PictureLayerImpl::GetContentsResourceId(
     gfx::SizeF* resource_uv_size) const {
   // We need contents resource for backdrop filter masks only.
   if (!is_backdrop_filter_mask()) {
-    *resource_id = 0;
+    *resource_id = viz::kInvalidResourceId;
     return;
   }
 
@@ -1067,7 +1067,7 @@ void PictureLayerImpl::GetContentsResourceId(
 
   // Mask resource not ready yet.
   if (!iter || !*iter) {
-    *resource_id = 0;
+    *resource_id = viz::kInvalidResourceId;
     return;
   }
 
@@ -1079,7 +1079,7 @@ void PictureLayerImpl::GetContentsResourceId(
   const TileDrawInfo& draw_info = iter->draw_info();
   if (!draw_info.IsReadyToDraw() ||
       draw_info.mode() != TileDrawInfo::RESOURCE_MODE) {
-    *resource_id = 0;
+    *resource_id = viz::kInvalidResourceId;
     return;
   }
 
@@ -1370,11 +1370,14 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
     // Or when the raster scale is not affected by invalid scale and is too
     // small compared to the ideal scale.
     if (ideal_contents_scale_ >
-            raster_contents_scale_ *
-                kRatioToAdjustRasterScaleForTransformAnimation &&
-        !layer_tree_impl()->property_trees()->AnimationAffectedByInvalidScale(
-            transform_tree_index())) {
-      return true;
+        raster_contents_scale_ *
+            kRatioToAdjustRasterScaleForTransformAnimation) {
+      auto* property_trees = layer_tree_impl()->property_trees();
+      int transform_id = transform_tree_index();
+      if (property_trees->AnimationScaleCacheIsInvalid(transform_id) ||
+          !property_trees->AnimationAffectedByInvalidScale(transform_id)) {
+        return true;
+      }
     }
     return false;
   }

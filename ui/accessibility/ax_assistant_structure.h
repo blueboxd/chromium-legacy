@@ -5,7 +5,10 @@
 #ifndef UI_ACCESSIBILITY_AX_ASSISTANT_STRUCTURE_H_
 #define UI_ACCESSIBILITY_AX_ASSISTANT_STRUCTURE_H_
 
-#include <cstdint>
+#include <stdint.h>
+
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -48,6 +51,9 @@ struct AssistantNode {
   // Fake Android view class name of the element.  Each node is assigned
   // a closest approximation of Android's views to keep the server happy.
   std::string class_name;
+
+  // HTML tag name
+  std::string html_tag;
 
   // Accessibility functionality of the node inferred from DOM or based on HTML
   // role attribute.

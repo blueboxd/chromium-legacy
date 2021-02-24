@@ -11,7 +11,7 @@ script can be run in standalone mode to check for existing violations.
 Example command:
 
 $ git ls-files third_party/blink \
-    | python third_party/blink/tools/audit_non_blink_usage.py
+    | python third_party/blink/tools/blinkpy/presubmit/audit_non_blink_usage.py
 """
 
 import os
@@ -856,6 +856,7 @@ _CONFIG = [
             'third_party/blink/renderer/core/html/media/',
             'third_party/blink/renderer/modules/vr/',
             'third_party/blink/renderer/modules/webgl/',
+            'third_party/blink/renderer/modules/webgpu/',
             'third_party/blink/renderer/modules/xr/',
         ],
         # The modules listed above need access to the following GL drawing and
@@ -868,8 +869,11 @@ _CONFIG = [
             'gpu::Mailbox',
             'gpu::MailboxHolder',
             'display::Display',
+            'media::IsOpaque',
             'media::PaintCanvasVideoRenderer',
             'media::PIXEL_FORMAT_Y16',
+            'media::VideoFrame',
+            'viz::RasterContextProvider',
         ],
     },
     {
@@ -1311,6 +1315,13 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webaudio/',
         ],
         'allowed': ['fdlibm::.+'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/html/canvas/html_canvas_element.cc',
+            'third_party/blink/renderer/core/html/canvas/html_canvas_element.h',
+        ],
+        'allowed': ['viz::ResourceId'],
     },
 ]
 

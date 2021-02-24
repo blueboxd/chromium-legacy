@@ -7,9 +7,12 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "device/fido/cros/authenticator.h"
+#include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/fido_discovery_base.h"
 
 namespace device {
@@ -28,7 +31,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoChromeOSDiscovery
   void Start() override;
 
  private:
-  void AddAuthenticatorIfIsUVPAA();
+  void OnU2FServiceAvailable(bool u2f_service_available);
   void MaybeAddAuthenticator(bool is_available);
   void OnHasLegacyU2fCredential(bool has_credential);
 

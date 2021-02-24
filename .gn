@@ -64,7 +64,7 @@ default_args = {
 # "gn check" or "gn gen --check".
 no_check_targets = [
   # //chrome/*, https://crbug.com/949535
-  "//chrome/browser/media/router/discovery:*",  # 26 errors
+  "//chrome/browser/media/router/discovery:*",  # 7 errors
   "//chrome/browser/media/router:*",  # 225 errors
   "//chrome/browser/safe_browsing/android:*",  # 3 errors
   "//chrome/browser/safety_check/android:*",  # 3 errors
@@ -91,7 +91,6 @@ no_check_targets = [
   "//remoting/codec:*",  # 32 errors
   "//remoting/host/chromeos:*",  # 10 errors
   "//remoting/host/file_transfer:*",  # 43 errors
-  "//remoting/host/input_monitor:*",  # 3 errors
   "//remoting/host/installer/mac:*",  # 1 error
   "//remoting/host/it2me:*",  # 18 errors
   "//remoting/host/mac:*",  # 49 errors

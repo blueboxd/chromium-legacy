@@ -72,6 +72,7 @@ class CORE_EXPORT LayoutShiftTracker final
   void NotifyScroll(mojom::blink::ScrollType, ScrollOffset delta);
   void NotifyViewportSizeChanged();
   void NotifyFindInPageInput();
+  void NotifyChangeEvent();
   bool IsActive() const { return is_active_; }
   double Score() const { return score_; }
   double WeightedScore() const { return weighted_score_; }
@@ -167,6 +168,8 @@ class CORE_EXPORT LayoutShiftTracker final
   LayoutShift::AttributionList CreateAttributionList() const;
   void SubmitPerformanceEntry(double score_delta, bool input_detected) const;
   void NotifyPrePaintFinishedInternal();
+  double LastInputTimestamp() const;
+  void UpdateTimerAndInputTimestamp();
 
   Member<LocalFrameView> frame_view_;
   bool is_active_;

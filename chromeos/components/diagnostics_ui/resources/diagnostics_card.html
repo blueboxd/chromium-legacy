@@ -17,6 +17,10 @@
     position: relative;
   }
 
+  ::slotted([slot=title]) {
+    @apply --diagnostics-card-title-font;
+  }
+
   ::slotted([slot=left-panel]) {
     flex: 1;
     margin-bottom: 16px;
@@ -35,7 +39,7 @@
   }
 
   .card-wrapper {
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: var(--diagnostics-box-shadow);
     margin: 10px 0;
   }

@@ -3931,10 +3931,10 @@ class AXPosition {
   }
 
   // Returns the accessibility role of this position's anchor node. If this is a
-  // "null position", returns `ax::mojom::Role::kNone`.
+  // "null position", returns `ax::mojom::Role::kUnknown`.
   ax::mojom::Role GetRole() const {
     if (IsNullPosition())
-      return ax::mojom::Role::kNone;
+      return ax::mojom::Role::kUnknown;
     return GetAnchor()->data().role;
   }
 
@@ -4012,7 +4012,7 @@ class AXPosition {
 
   void Initialize(AXPositionKind kind,
                   AXTreeID tree_id,
-                  int32_t anchor_id,
+                  AXNodeID anchor_id,
                   int child_index,
                   int text_offset,
                   ax::mojom::TextAffinity affinity) {
@@ -4037,7 +4037,7 @@ class AXPosition {
   // Abstract methods.
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
-                   int32_t* child_id) const {
+                   AXNodeID* child_id) const {
     DCHECK(tree_id);
     DCHECK(child_id);
     if (!GetAnchor() || child_index < 0 || child_index >= AnchorChildCount()) {
@@ -4075,7 +4075,7 @@ class AXPosition {
   // When a child is ignored, it looks for unignored nodes of that child's
   // children until there are no more descendants.
   //
-  // E.g.
+  // For example:
   // ++TextField
   // ++++GenericContainer ignored
   // ++++++StaticText "Hello"
@@ -4130,7 +4130,7 @@ class AXPosition {
     return GetAnchor()->GetLowestPlatformAncestor();
   }
 
-  void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const {
+  void AnchorParent(AXTreeID* tree_id, AXNodeID* parent_id) const {
     DCHECK(tree_id);
     DCHECK(parent_id);
     *tree_id = AXTreeIDUnknown();
@@ -4189,28 +4189,35 @@ class AXPosition {
       case AXEmbeddedObjectBehavior::kSuppressCharacter:
         return false;
       case AXEmbeddedObjectBehavior::kExposeCharacter:
-        // We expose an "object replacement character" for all nodes except
-        // (A) textual nodes and (B) nodes that are invisible to platform APIs,
-        // AKA nodes that are descendants of platform leaves. In the former
-        // case, textual nodes are represented by their actual text in the text
-        // of their parent nodes, in order to maintain compatibility with how
-        // Firefox exposes text in IAccessibleText. For the latter case, an
-        // example of a platform leaf is a plain text field because all of the
-        // accessibility subtree inside the text field is not visible to
-        // platform APIs.
+        // We expose an "object replacement character" for all nodes except:
+        // A) Textual nodes, such as static text, inline text boxes and line
+        // breaks, and B) Nodes that are invisible to platform APIs.
         //
-        // Please note that for navigational purposes, we need to expose an
-        // "object replacement character" in empty controls, such as in an empty
-        // text field. The presence or the absence of accessible content inside
-        // a control might alter whether an "object replacement character" would
-        // be exposed in that control, in contrast to ordinary text such as in
-        // the case of a non-empty plain text field which should only have
-        // textual nodes inside it. This is because empty controls need to act
-        // as a word and character boundary. See
-        // `AXPosition::IsEmptyObjectReplacedByCharacter()` for more
-        // information.
-        return !IsNullPosition() && !GetAnchor()->IsText() &&
-               !GetAnchor()->IsChildOfLeaf();
+        // In the first case, textual nodes cannot be represented by an "object
+        // replacement character" in the hypertext of their unignored parents,
+        // because we want to maintain compatibility with how Firefox exposes
+        // text in IAccessibleText. In the second case, ignored nodes and nodes
+        // that are descendants of platform leaves should maintain the actual
+        // text of all their static text descendants, otherwise there would be
+        // loss of information while traversing the accessibility tree upwards.
+        // An example of a platform leaf is a plain text field, because all of
+        // the accessibility subtree inside the text field is hidden from
+        // platform APIs. An example of how an ignored node can affect the
+        // hypertext of an unignored ancestor is shown below:
+        // ++kTextField "Hello"
+        // ++++kGenericContainer ignored "Hello"
+        // ++++++kStaticText "Hello"
+        // ++++++++kInlineTextBox "Hello"
+        // The generic container, even though it is ignored, should nevertheless
+        // maintain the text of its static text child and not use an "object
+        // replacement character". Otherwise, the value of the text field would
+        // be wrong.
+        //
+        // Please note that there is one more method that controls whether an
+        // "object replacement character" would be exposed. See
+        // `AXPosition::IsEmptyObjectReplacedByCharacter()`.
+        return !IsNullPosition() && !GetAnchor()->IsIgnored() &&
+               !GetAnchor()->IsText() && !GetAnchor()->IsChildOfLeaf();
     }
   }
 
@@ -4226,7 +4233,7 @@ class AXPosition {
 
   ax::mojom::Role GetAnchorRole() const {
     if (IsNullPosition())
-      return ax::mojom::Role::kNone;
+      return ax::mojom::Role::kUnknown;
     return GetRole(GetAnchor());
   }
 

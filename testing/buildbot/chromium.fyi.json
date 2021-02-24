@@ -532,6 +532,23 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Mac-11.0|Mac-10.16"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "components_browsertests",
         "test_id_prefix": "ninja://components:components_browsertests/"
       },
@@ -2144,6 +2161,16 @@
       }
     ]
   },
+  "TSAN Debug (reclient)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
+  "TSAN Release (reclient)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
   "VR Linux": {
     "additional_compile_targets": [
       "vr_common_perftests"
@@ -2531,6 +2558,17 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "merge": {
@@ -7589,6 +7627,57 @@
         },
         "test": "android_sync_integration_tests",
         "test_id_prefix": "ninja://chrome/test:android_sync_integration_tests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "android_webview_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "android_webview_unittests",
+        "test_id_prefix": "ninja://android_webview/test:android_webview_unittests/"
       },
       {
         "args": [
@@ -13767,7 +13856,8 @@
       {
         "args": [
           "--ram-size-mb=16384",
-          "--code-coverage"
+          "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -13785,6 +13875,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13803,7 +13894,9 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
+          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs",
+          "--child-arg=--ozone-platform=headless"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -13821,6 +13914,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13830,7 +13924,8 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
         },
         "test": "base_unittests",
         "test_id_prefix": "ninja://base:base_unittests/"
@@ -13839,6 +13934,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13857,6 +13953,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13875,6 +13972,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13893,6 +13991,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13912,6 +14011,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.blink_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13930,6 +14030,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13948,6 +14049,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13966,6 +14068,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -13984,6 +14087,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14002,6 +14106,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14020,6 +14125,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14038,6 +14144,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14048,35 +14155,18 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "cc_unittests",
         "test_id_prefix": "ninja://cc:cc_unittests/"
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "components_unittests",
-        "test_id_prefix": "ninja://components:components_unittests/"
-      },
-      {
-        "args": [
-          "--ram-size-mb=16384",
-          "--code-coverage",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
+          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs",
+          "--child-arg=--ozone-platform=headless"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -14095,6 +14185,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14113,6 +14204,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14131,6 +14223,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14149,6 +14242,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14167,6 +14261,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14185,6 +14280,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14203,6 +14299,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14221,6 +14318,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14230,7 +14328,8 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gfx_unittests",
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
@@ -14239,6 +14338,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14257,6 +14357,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14274,7 +14375,8 @@
       {
         "args": [
           "--ram-size-mb=16384",
-          "--code-coverage"
+          "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -14283,7 +14385,8 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
         },
         "test": "gpu_unittests",
         "test_id_prefix": "ninja://gpu:gpu_unittests/"
@@ -14293,6 +14396,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14311,6 +14415,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14329,6 +14434,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14347,6 +14453,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14365,6 +14472,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14383,6 +14491,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14401,6 +14510,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14410,7 +14520,8 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
         },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
@@ -14419,6 +14530,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14428,7 +14540,8 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "mojo_unittests",
         "test_id_prefix": "ninja://mojo:mojo_unittests/"
@@ -14437,6 +14550,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14456,6 +14570,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14475,6 +14590,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14493,6 +14609,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14512,6 +14629,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14530,6 +14648,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14548,6 +14667,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14566,7 +14686,9 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
+          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs",
+          "--child-arg=--ozone-platform=headless"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -14584,6 +14706,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14603,6 +14726,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14622,6 +14746,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14640,6 +14765,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14659,7 +14785,9 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter",
           "--ram-size-mb=16384",
           "--code-coverage",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
+          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs",
+          "--child-arg=--ozone-platform=headless"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -14677,6 +14805,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14694,7 +14823,8 @@
       {
         "args": [
           "--ram-size-mb=16384",
-          "--code-coverage"
+          "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -14712,6 +14842,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14729,7 +14860,8 @@
       {
         "args": [
           "--ram-size-mb=16384",
-          "--code-coverage"
+          "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -14747,6 +14879,7 @@
         "args": [
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_profile_data": true,
@@ -14768,6 +14901,7 @@
           "bin/run_angle_unittests",
           "--ram-size-mb=16384",
           "--code-coverage",
+          "--code-coverage-dir=${ISOLATED_OUTDIR}",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "isolate_name": "angle_unittests",
@@ -44684,6 +44818,24 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "components_browsertests",
         "test_id_prefix": "ninja://components:components_browsertests/"
       },
@@ -46326,6 +46478,23 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "merge": {
@@ -48333,6 +48502,24 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -50503,6 +50690,24 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "merge": {
@@ -55522,6 +55727,24 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Mac-10.13.6"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -64980,6 +65203,19 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "isolate_profile_data": true,

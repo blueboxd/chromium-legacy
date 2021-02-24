@@ -3679,6 +3679,30 @@
           "disable_accelerated_h264_encode",
           "disable_accelerated_vp8_encode"
         ]
+    },
+    {
+      "id": 367,
+      "cr_bugs": [1180962],
+      "description": "ANGLE cannot recover from context lost",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "ANGLE.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 368,
+      "cr_bugs": [1181358],
+      "description": "High D3D11VideoDecoder error rates for AV1 content on Intel GPUs",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "disable_accelerated_av1_decode_d3d11"
+      ]
     }
   ]
 }

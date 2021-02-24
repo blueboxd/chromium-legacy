@@ -1467,6 +1467,8 @@ if (!is_android) {
       "../browser/ui/popup_browsertest.cc",
       "../browser/ui/prefs/prefs_tab_helper_browsertest.cc",
       "../browser/ui/profile_error_browsertest.cc",
+      "../browser/ui/read_later/read_later_test_utils.cc",
+      "../browser/ui/read_later/read_later_test_utils.h",
       "../browser/ui/renderer_event_injection_browsertest.cc",
       "../browser/ui/search/instant_test_base.cc",
       "../browser/ui/search/instant_test_base.h",
@@ -5149,6 +5151,7 @@ test("unit_tests") {
       "//chrome/services/sharing/nearby/decoder:unit_tests",
       "//chrome/services/sharing/nearby/platform:unit_tests",
       "//chromeos/assistant:buildflags",
+      "//chromeos/dbus/u2f",
       "//chromeos/services/machine_learning/public/cpp:test_support",
       "//chromeos/services/nearby/public/cpp:test_support",
       "//components/arc:arc_test_support",
@@ -5687,6 +5690,7 @@ test("unit_tests") {
       "../browser/safe_browsing/safe_browsing_metrics_collector_unittest.cc",
       "../browser/safe_browsing/threat_details_unittest.cc",
       "../browser/safe_browsing/ui_manager_unittest.cc",
+      "../browser/safe_browsing/user_population_unittest.cc",
     ]
 
     # TODO(crbug/1056278): Enable this on Fuchsia
@@ -6100,6 +6104,7 @@ test("unit_tests") {
       "../browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc",
       "../browser/ui/views/bubble/bubble_contents_wrapper_unittest.cc",
       "../browser/ui/views/bubble/webui_bubble_dialog_view_unittest.cc",
+      "../browser/ui/views/bubble/webui_bubble_manager_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
       "../browser/ui/views/content_setting_bubble_contents_unittest.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",

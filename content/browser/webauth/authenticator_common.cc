@@ -19,8 +19,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversion_utils.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -512,9 +510,11 @@ void IsUserVerifyingPlatformAuthenticatorAvailableImpl(
 #if defined(OS_MAC)
   const base::Optional<device::fido::mac::AuthenticatorConfig> config =
       delegate->GetTouchIdAuthenticatorConfig();
-  std::move(callback).Run(config &&
-                          IsUVPlatformAuthenticatorAvailable(*config));
-  return;
+  if (!config) {
+    std::move(callback).Run(false);
+    return;
+  }
+  IsUVPlatformAuthenticatorAvailable(*config, std::move(callback));
 #elif defined(OS_WIN)
   // TODO(crbug.com/908622): Enable platform authenticators in Incognito on
   // Windows once the API allows triggering an adequate warning dialog.
@@ -523,19 +523,12 @@ void IsUserVerifyingPlatformAuthenticatorAvailableImpl(
     return;
   }
 
-  std::move(callback).Run(IsUVPlatformAuthenticatorAvailable(
-      discovery_factory->win_webauthn_api()));
-  return;
+  IsUVPlatformAuthenticatorAvailable(discovery_factory->win_webauthn_api(),
+                                     std::move(callback));
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  // ChromeOS needs to do a dbus call to determine platform authenticator
-  // availability. The call is fast in practice, but nonetheless may
-  // theoretically block.
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
-      base::BindOnce(&IsUVPlatformAuthenticatorAvailable), std::move(callback));
+  IsUVPlatformAuthenticatorAvailable(std::move(callback));
 #else
   std::move(callback).Run(false);
-  return;
 #endif
 }
 
@@ -585,6 +578,12 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
 
+#if !defined(OS_WIN)
+  // kAndroidAccessory doesn't work on Windows because of USB stack issues.
+  // Note: even if this value were inserted it wouldn't take effect on Windows
+  // versions with a native API because FidoRequestHandlerBase filters out
+  // non-kCloudAssistedBluetoothLowEnergy transports in that case.
+
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
       base::FeatureList::IsEnabled(device::kWebAuthCableServerLink)) {
     // In order for AOA to be active the |AuthenticatorRequestClientDelegate|
@@ -592,6 +591,7 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
     // |kWebAuthPhoneSupport| is enabled, or if a V2 caBLE extension is seen.
     transports.insert(device::FidoTransportProtocol::kAndroidAccessory);
   }
+#endif
 
   return transports;
 }

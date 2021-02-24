@@ -23,7 +23,6 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
-#include "third_party/webrtc/common_video/libyuv/include/webrtc_libyuv.h"
 
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
@@ -155,8 +154,10 @@ void PepperVideoCaptureHost::OnFrameReady(
           media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
         // NV12 is the only supported GMB pixel format at the moment.
         DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_NV12);
+        // TODO(crbug.com/1181292): wire up GpuVideoAcceleratorFactories and add
+        // SharedMemoryPool to pass here to allow DXGI GMBs processing.
         scoped_refptr<media::VideoFrame> mapped_frame =
-            media::ConvertToMemoryMappedFrame(frame);
+            media::ConvertToMemoryMappedFrame(frame, nullptr, nullptr);
         scoped_refptr<media::VideoFrame> dst_frame =
             media::VideoFrame::WrapExternalData(
                 media::PIXEL_FORMAT_I420, frame->natural_size(),

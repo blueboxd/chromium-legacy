@@ -177,10 +177,12 @@ bool ShowPluginVm(const Profile* profile, const PrefService& pref_service) {
 AppsSection::AppsSection(Profile* profile,
                          SearchTagRegistry* search_tag_registry,
                          PrefService* pref_service,
-                         ArcAppListPrefs* arc_app_list_prefs)
+                         ArcAppListPrefs* arc_app_list_prefs,
+                         apps::AppServiceProxy* app_service_proxy)
     : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service),
-      arc_app_list_prefs_(arc_app_list_prefs) {
+      arc_app_list_prefs_(arc_app_list_prefs),
+      app_service_proxy_(app_service_proxy) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.AddSearchTags(GetAppsSearchConcepts());
 
@@ -234,7 +236,8 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
 void AppsSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::AndroidAppsHandler>(profile()));
+      std::make_unique<chromeos::settings::AndroidAppsHandler>(
+          profile(), app_service_proxy_));
 
   if (ShowPluginVm(profile(), *pref_service_)) {
     web_ui->AddMessageHandler(std::make_unique<GuestOsHandler>(profile()));
@@ -324,7 +327,6 @@ void AppsSection::AddAndroidAppStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
       {"androidAppsDisableDialogRemove",
        IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE},
-      {"androidAppsManageAppLinks", IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddLocalizedString("androidAppsPageTitle",

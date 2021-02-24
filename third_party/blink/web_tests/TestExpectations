@@ -95,6 +95,19 @@ crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/i
 crbug.com/901056 virtual/synchronous_html_parser/fast/css/focus-display-block-inline.html [ Failure Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/fast/css/fontfaceset-multiple-families.html [ Failure Pass ]
 
+# Unknown media state problem (probably due to layout occuring earlier than expected)
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-cuechange.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-remove-insert-ready-state.html [ Failure Pass ]
+crbug.com/901056 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event.html [ Failure Pass ]
+# These tests fail on the baseline parser, pass on the foreground, but foreground versions cannot be rebaselined due to path length restrictions.
+crbug.com/901056 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event.html [ Pass ]
+
+
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -174,7 +187,6 @@ crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-text
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-Bitmaprenderer-toBlob-worker.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-clearRect.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-getImageData.html [ Pass Failure ]
-crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-createImageBitmap-recursive.html [ Pass Failure ]
 
 # We're rolling these tests out on Windows first, other platforms to follow. When removing [ Skip ]
 # for a platform please add the platform tag to the failing tests above.
@@ -624,6 +636,9 @@ crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pas
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-004.html [ Failure ]
 crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-003.html [ Failure ]
+crbug.com/1179497 external/wpt/css/css-tables/col-definite-max-size-001.html [ Failure ]
+crbug.com/1179497 external/wpt/css/css-tables/col-definite-min-size-001.html [ Failure ]
+crbug.com/1179497 external/wpt/css/css-tables/col-definite-size-001.html [ Failure ]
 
 # [css-contain]
 
@@ -2480,9 +2495,6 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/rgba-004.html [ Failure
 crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-color/rgba-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-color/rgba-004.html [ Failure ]
 crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/hsl-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-tables/col-definite-max-size-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-tables/col-definite-min-size-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-tables/col-definite-size-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-transforms/translate/translate-and-transform-attribute-in-svg.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-transforms/translate/translate-and-transform-css-property-in-svg.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/focus-visible-007.html [ Timeout ]
@@ -5661,10 +5673,6 @@ crbug.com/1168785 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/aut
 # Sheriff 2021-01-29
 crbug.com/1172437 svg/hixie/perf/004.xml [ Timeout Pass ]
 
-# COEP reporting for PlzDedicatedWorker
-crbug.com/1060837 external/wpt/html/cross-origin-embedder-policy/reporting-to-owner.https.html [ Timeout ]
-crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-to-owner.https.html [ Pass ]
-
 # flaky test
 crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ Failure Pass ]
 
@@ -5689,6 +5697,16 @@ crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.
 
 # Timing out on Fuchsia
 crbug.com/1171283 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Pass Timeout ]
+
+# Temporarily add tests here until error message is fixed
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.worker.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.worker.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.worker.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/type.tentative.any.html [ Pass Failure ]
+crbug.com/v8/11356 external/wpt/wasm/jsapi/table/type.tentative.any.worker.html [ Pass Failure ]
 
 # Sheriff 2021-02-09
 crbug.com/1176286 [ Linux ] http/tests/devtools/service-workers/service-workers-redundant.js [ Failure Pass ]
@@ -5758,3 +5776,11 @@ crbug.com/1180627 [ Linux ] virtual/threaded-prefer-compositing/external/wpt/css
 # Sheriff 2021-02-23
 crbug.com/1181466 [ Mac ] external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
 crbug.com/1181466 [ Mac ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
+
+# Sheriff 2021-02-24
+crbug.com/1181466 [ Linux ] external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
+crbug.com/1181466 [ Linux ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
+crbug.com/1181667 [ Linux ] external/wpt/css/selectors/focus-visible-011.html [ Pass Failure ]
+crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
+crbug.com/1045052 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
+crbug.com/1181740 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-time-stamp.js [ Pass Failure ]

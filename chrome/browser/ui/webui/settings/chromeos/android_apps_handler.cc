@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"  // kSettingsAppId
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -20,7 +21,9 @@
 namespace chromeos {
 namespace settings {
 
-AndroidAppsHandler::AndroidAppsHandler(Profile* profile) : profile_(profile) {}
+AndroidAppsHandler::AndroidAppsHandler(Profile* profile,
+                                       apps::AppServiceProxy* app_service_proxy)
+    : profile_(profile), app_service_proxy_(app_service_proxy) {}
 
 AndroidAppsHandler::~AndroidAppsHandler() {}
 
@@ -33,10 +36,6 @@ void AndroidAppsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "showAndroidAppsSettings",
       base::BindRepeating(&AndroidAppsHandler::ShowAndroidAppsSettings,
-                          weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
-      "showAndroidManageAppLinks",
-      base::BindRepeating(&AndroidAppsHandler::ShowAndroidManageAppLinks,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -111,21 +110,10 @@ void AndroidAppsHandler::ShowAndroidAppsSettings(const base::ListValue* args) {
   args->GetBoolean(0, &activated_from_keyboard);
   int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;
 
-  DCHECK(
-      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_));
-  apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
+  app_service_proxy_->Launch(
       arc::kSettingsAppId, flags,
       apps::mojom::LaunchSource::kFromParentalControls,
       apps::MakeWindowInfo(GetDisplayIdForCurrentProfile()));
-}
-
-void AndroidAppsHandler::ShowAndroidManageAppLinks(
-    const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
-
-  arc::LaunchSettingsAppActivity(profile_, arc::kSettingsAppDomainUrlActivity,
-                                 ui::EF_NONE /* flags */,
-                                 GetDisplayIdForCurrentProfile());
 }
 
 int64_t AndroidAppsHandler::GetDisplayIdForCurrentProfile() {

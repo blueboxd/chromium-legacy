@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.password_entry_edit;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -25,12 +26,37 @@ import org.chromium.ui.widget.ChromeImageButton;
 public class CredentialEditFragmentView extends PreferenceFragmentCompat {
     private ComponentStateDelegate mComponentStateDelegate;
 
+    interface UiActionHandler {
+        /** Called when the user clicks the button to mask/unmask the password */
+        void onMaskOrUnmaskPassword();
+
+        /**
+         * Called when the user clicks the button to copy the username
+         *
+         * @param context application context that can be used to get the {@link ClipboardManager}
+         */
+
+        void onCopyUsername(Context context);
+
+        /**
+         * Called when the user clicks the button to copy the password
+         *
+         * @param context application context that can be used to get the {@link ClipboardManager}
+         */
+        void onCopyPassword(Context context);
+    }
+
     // TODO(crbug.com/1178519): The coordinator should be made a LifecycleObserver instead.
     interface ComponentStateDelegate {
         /**
          * Called when the fragment is started.
          */
         void onStartFragment();
+
+        /**
+         * Called when the fragment is resumed.
+         */
+        void onResumeFragment();
 
         /**
          * Signals that the component is no longer needed.
@@ -74,6 +100,12 @@ public class CredentialEditFragmentView extends PreferenceFragmentCompat {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mComponentStateDelegate != null) mComponentStateDelegate.onResumeFragment();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (getActivity().isFinishing() && mComponentStateDelegate != null) {
@@ -83,6 +115,23 @@ public class CredentialEditFragmentView extends PreferenceFragmentCompat {
 
     void dismiss() {
         getActivity().finish();
+    }
+
+    void setUiActionHandler(UiActionHandler uiActionHandler) {
+        ChromeImageButton usernameCopyButton = getView().findViewById(R.id.copy_username_button);
+        usernameCopyButton.setOnClickListener(
+                (unusedView)
+                        -> uiActionHandler.onCopyUsername(getActivity().getApplicationContext()));
+
+        ChromeImageButton passwordCopyButton = getView().findViewById(R.id.copy_password_button);
+        passwordCopyButton.setOnClickListener(
+                (unusedView)
+                        -> uiActionHandler.onCopyPassword(getActivity().getApplicationContext()));
+
+        ChromeImageButton passwordVisibilityButton =
+                getView().findViewById(R.id.password_visibility_button);
+        passwordVisibilityButton.setOnClickListener(
+                (unusedView) -> uiActionHandler.onMaskOrUnmaskPassword());
     }
 
     void setUrlOrApp(String urlOrApp) {
@@ -105,7 +154,6 @@ public class CredentialEditFragmentView extends PreferenceFragmentCompat {
 
     void changePasswordVisibility(boolean visible) {
         EditText passwordText = getView().findViewById(R.id.password);
-
         if (visible) {
             getActivity().getWindow().setFlags(
                     WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -117,8 +165,9 @@ public class CredentialEditFragmentView extends PreferenceFragmentCompat {
             passwordText.setInputType(InputType.TYPE_CLASS_TEXT
                     | InputType.TYPE_TEXT_VARIATION_PASSWORD | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         }
-        ChromeImageButton viewPasswordButton = getView().findViewById(R.id.view_password_button);
-        viewPasswordButton.setImageResource(
+        ChromeImageButton passwordVisibilityButton =
+                getView().findViewById(R.id.password_visibility_button);
+        passwordVisibilityButton.setImageResource(
                 visible ? R.drawable.ic_visibility_off_black : R.drawable.ic_visibility_black);
     }
 

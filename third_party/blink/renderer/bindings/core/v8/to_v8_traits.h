@@ -146,24 +146,25 @@ struct ToV8Traits<IDLFloatingPointNumberTypeBase<T, mode>> {
 template <typename T>
 struct ToV8Traits<
     T,
-    typename std::enable_if_t<
-        std::is_same<IDLByteStringV2, T>::value ||
-        std::is_same<IDLStringV2, T>::value ||
-        std::is_same<IDLStringTreatNullAsEmptyStringV2, T>::value ||
-        std::is_same<IDLUSVStringV2, T>::value ||
-        std::is_same<IDLStringStringContextTrustedHTMLV2, T>::value ||
-        std::is_same<IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2,
-                     T>::value ||
-        std::is_same<IDLStringStringContextTrustedScriptV2, T>::value ||
-        std::is_same<
-            IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2,
-            T>::value ||
-        std::is_same<IDLUSVStringStringContextTrustedScriptURLV2, T>::value>> {
+    typename std::enable_if_t<std::is_base_of<IDLStringTypeBase, T>::value>> {
   static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
                                         const String& value)
       WARN_UNUSED_RESULT {
     // if |value| is a null string, V8String() returns an empty string.
     return V8String(script_state->GetIsolate(), value);
+  }
+};
+
+// Object
+template <>
+struct ToV8Traits<IDLObject> {
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const ScriptValue& script_value)
+      WARN_UNUSED_RESULT {
+    DCHECK(!script_value.IsEmpty());
+    v8::Local<v8::Value> v8_value = script_value.V8Value();
+    DCHECK(v8_value->IsObject());
+    return v8_value;
   }
 };
 
@@ -287,8 +288,7 @@ struct ToV8Traits<T,
     // Callback functions are not wrappers nor clonable. ToV8 on a callback
     // function must be used only when it's in the same world.
     DCHECK(callback);
-    DCHECK(&callback->GetWorld() ==
-           &ScriptState::From(script_state->GetContext())->World());
+    DCHECK(&callback->GetWorld() == &script_state->World());
     return callback->CallbackObject().template As<v8::Value>();
   }
 };
@@ -304,8 +304,7 @@ struct ToV8Traits<T,
     // Callback Interfaces are not wrappers nor clonable. ToV8 on a callback
     // interface must be used only when it's in the same world.
     DCHECK(callback);
-    DCHECK(&callback->GetWorld() ==
-           &ScriptState::From(script_state->GetContext())->World());
+    DCHECK(&callback->GetWorld() == &script_state->World());
     return callback->CallbackObject().template As<v8::Value>();
   }
 };
@@ -411,37 +410,15 @@ inline v8::MaybeLocal<v8::Value> ToV8HelperRecord(ScriptState* script_state,
 // IDLSequence
 template <typename T>
 struct ToV8Traits<IDLSequence<T>> {
- private:
-  using ElementType =
-      std::conditional_t<std::is_base_of<IDLBase, T>::value,
-                         typename NativeValueTraits<T>::ImplType,
-                         T>;
-
- public:
-  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
-                                        const Vector<ElementType>& value) {
+  static v8::MaybeLocal<v8::Value> ToV8(
+      ScriptState* script_state,
+      const typename IDLSequence<T>::ImplType& value) {
     return bindings::ToV8HelperSequence<T>(script_state, value);
   }
 
   static v8::MaybeLocal<v8::Value> ToV8(
       ScriptState* script_state,
-      const HeapVector<Member<ElementType>>& value) {
-    return bindings::ToV8HelperSequence<T>(script_state, value);
-  }
-
-  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
-                                        const HeapVector<ElementType>& value) {
-    return bindings::ToV8HelperSequence<T>(script_state, value);
-  }
-
-  static v8::MaybeLocal<v8::Value> ToV8(
-      ScriptState* script_state,
-      const HeapVector<Member<ElementType>>* value) {
-    return bindings::ToV8HelperSequence<T>(script_state, *value);
-  }
-
-  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
-                                        const HeapVector<ElementType>* value) {
+      const typename IDLSequence<T>::ImplType* value) {
     return bindings::ToV8HelperSequence<T>(script_state, *value);
   }
 };
@@ -450,39 +427,15 @@ struct ToV8Traits<IDLSequence<T>> {
 // K must be based of IDL String types.
 template <typename K, typename V>
 struct ToV8Traits<IDLRecord<K, V>> {
- private:
-  using ValueType = std::conditional_t<std::is_base_of<IDLBase, V>::value,
-                                       typename NativeValueTraits<V>::ImplType,
-                                       V>;
-
- public:
   static v8::MaybeLocal<v8::Value> ToV8(
       ScriptState* script_state,
-      const Vector<std::pair<String, ValueType>>& value) {
+      const typename IDLRecord<K, V>::ImplType& value) {
     return bindings::ToV8HelperRecord<V>(script_state, value);
   }
 
   static v8::MaybeLocal<v8::Value> ToV8(
       ScriptState* script_state,
-      const HeapVector<std::pair<String, Member<ValueType>>>& value) {
-    return bindings::ToV8HelperRecord<V>(script_state, value);
-  }
-
-  static v8::MaybeLocal<v8::Value> ToV8(
-      ScriptState* script_state,
-      const HeapVector<std::pair<String, ValueType>>& value) {
-    return bindings::ToV8HelperRecord<V>(script_state, value);
-  }
-
-  static v8::MaybeLocal<v8::Value> ToV8(
-      ScriptState* script_state,
-      const HeapVector<std::pair<String, Member<ValueType>>>* value) {
-    return bindings::ToV8HelperRecord<V>(script_state, *value);
-  }
-
-  static v8::MaybeLocal<v8::Value> ToV8(
-      ScriptState* script_state,
-      const HeapVector<std::pair<String, ValueType>>* value) {
+      const typename IDLRecord<K, V>::ImplType* value) {
     return bindings::ToV8HelperRecord<V>(script_state, *value);
   }
 };
@@ -534,19 +487,7 @@ struct ToV8Traits<IDLNullable<IDLFloatingPointNumberTypeBase<T, mode>>> {
 template <typename T>
 struct ToV8Traits<
     IDLNullable<T>,
-    typename std::enable_if_t<
-        std::is_same<IDLByteStringV2, T>::value ||
-        std::is_same<IDLStringV2, T>::value ||
-        std::is_same<IDLStringTreatNullAsEmptyStringV2, T>::value ||
-        std::is_same<IDLUSVStringV2, T>::value ||
-        std::is_same<IDLStringStringContextTrustedHTMLV2, T>::value ||
-        std::is_same<IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2,
-                     T>::value ||
-        std::is_same<IDLStringStringContextTrustedScriptV2, T>::value ||
-        std::is_same<
-            IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2,
-            T>::value ||
-        std::is_same<IDLUSVStringStringContextTrustedScriptURLV2, T>::value>> {
+    typename std::enable_if_t<std::is_base_of<IDLStringTypeBase, T>::value>> {
   static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
                                         const String& value)
       WARN_UNUSED_RESULT {
@@ -616,7 +557,7 @@ struct ToV8Traits<IDLNullable<T>,
                                         T* callback) WARN_UNUSED_RESULT {
     if (!callback)
       return v8::Null(script_state->GetIsolate());
-    return ToV8Traits<CallbackFunctionBase>::ToV8(script_state, callback);
+    return ToV8Traits<T>::ToV8(script_state, callback);
   }
 };
 
@@ -629,7 +570,7 @@ struct ToV8Traits<IDLNullable<T>,
                                         T* callback) WARN_UNUSED_RESULT {
     if (!callback)
       return v8::Null(script_state->GetIsolate());
-    return ToV8Traits<CallbackInterfaceBase>::ToV8(script_state, callback);
+    return ToV8Traits<T>::ToV8(script_state, callback);
   }
 };
 

@@ -45,13 +45,13 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
+#include "chrome/browser/ash/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -103,6 +103,7 @@
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -341,6 +342,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
 
+    chromeos::DBusThreadManager::Initialize();
+
     app_list::AppListSyncableServiceFactory::SetUseInTesting(true);
 
     BrowserWithTestWindowTest::SetUp();
@@ -539,6 +542,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     arc_test_.TearDown();
     launcher_controller_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
+    chromeos::DBusThreadManager::Shutdown();
     app_list::AppListSyncableServiceFactory::SetUseInTesting(false);
   }
 

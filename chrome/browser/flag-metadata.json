@@ -2498,7 +2498,7 @@
   {
     "name": "enable-unsafe-webgpu",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 98
   },
   {
     "name": "enable-use-aaudio-driver",
@@ -2859,6 +2859,11 @@
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "filling-across-affiliated-websites",
+    "owners": [ "vsemeniuk", "vasilii" ],
+    "expiry_milestone": 93
   },
   {
     "name": "filling-passwords-from-any-origin",
@@ -3322,6 +3327,11 @@
     "name": "legacy-tls-interstitial",
     "owners": [ "cthomp" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "lens-camera-assisted-search",
+    "owners": [ "yusuyoutube", "benwgold", "fgorski", "wylieb", "lens-chrome" ],
+    "expiry_milestone": 94
   },
   {
     "name": "list-all-display-modes",

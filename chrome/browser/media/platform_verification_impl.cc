@@ -24,7 +24,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chromeos/settings/cros_settings_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -143,7 +143,7 @@ void PlatformVerificationImpl::GetStorageId(uint32_t version,
     ComputeStorageId(
         GetStorageIdSaltFromProfile(render_frame_host_), origin(),
         base::BindOnce(&PlatformVerificationImpl::OnStorageIdResponse,
-                       weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 #endif  // BUILDFLAG(ENABLE_CDM_STORAGE_ID)

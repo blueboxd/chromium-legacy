@@ -6050,6 +6050,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextMenuTranslateWithGoogleLensDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuTranslateWithGoogleLens)},
+
+    {"lens-camera-assisted-search",
+     flag_descriptions::kLensCameraAssistedSearchName,
+     flag_descriptions::kLensCameraAssistedSearchDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kLensCameraAssistedSearch)},
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7132,6 +7137,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContentLanguagesInLanguagePickerName, kOsAndroid,
      FEATURE_VALUE_TYPE(language::kContentLanguagesInLanguagePicker)},
 #endif
+
+    {"filling-across-affiliated-websites",
+     flag_descriptions::kFillingAcrossAffiliatedWebsitesName,
+     flag_descriptions::kFillingAcrossAffiliatedWebsitesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kFillingAcrossAffiliatedWebsites)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

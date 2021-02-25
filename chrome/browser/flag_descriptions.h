@@ -712,6 +712,9 @@ extern const char kEffectiveConnectionType4GDescription[];
 extern const char kFileHandlingAPIName[];
 extern const char kFileHandlingAPIDescription[];
 
+extern const char kFillingAcrossAffiliatedWebsitesName[];
+extern const char kFillingAcrossAffiliatedWebsitesDescription[];
+
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
 
@@ -837,6 +840,9 @@ extern const char kLegacyTLSEnforcedDescription[];
 
 extern const char kLegacyTLSWarningsName[];
 extern const char kLegacyTLSWarningsDescription[];
+
+extern const char kLensCameraAssistedSearchName[];
+extern const char kLensCameraAssistedSearchDescription[];
 
 extern const char kLiteVideoName[];
 extern const char kLiteVideoDescription[];

@@ -15203,6 +15203,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="5" label="DISK_STATUS_DESTROYED"/>
   <int value="6" label="DISK_STATUS_IN_PROGRESS"/>
   <int value="7" label="DISK_STATUS_RESIZED"/>
+  <int value="8" label="DISK_STATUS_NOT_ENOUGH_SPACE"/>
 </enum>
 
 <!-- Keep this in sync with CrostiniDiskImageType in crostini_simple_types.h -->
@@ -30971,12 +30972,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3202" label="V8Document_HasTrustToken_Method"/>
   <int value="3203" label="ForceLoadAtTop"/>
   <int value="3204" label="OBSOLETE_LegacyLayoutByButton"/>
-  <int value="3205" label="LegacyLayoutByDeprecatedFlexBox"/>
+  <int value="3205" label="OBSOLETE_LegacyLayoutByDeprecatedFlexBox"/>
   <int value="3206" label="LegacyLayoutByDetailsMarker"/>
   <int value="3207" label="LegacyLayoutByEditing"/>
   <int value="3208" label="OBSOLETE_LegacyLayoutByFieldSet"/>
   <int value="3209" label="OBSOLETE_LegacyLayoutByFileUploadControl"/>
-  <int value="3210" label="LegacyLayoutByFlexBox"/>
+  <int value="3210" label="OBSOLETE_LegacyLayoutByFlexBox"/>
   <int value="3211" label="LegacyLayoutByFrameSet"/>
   <int value="3212" label="LegacyLayoutByGrid"/>
   <int value="3213" label="OBSOLETE_LegacyLayoutByMenuList"/>
@@ -30989,7 +30990,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3220" label="LegacyLayoutByTextCombine"/>
   <int value="3221" label="LegacyLayoutByTextControl"/>
   <int value="3222" label="LegacyLayoutByVTTCue"/>
-  <int value="3223" label="LegacyLayoutByWebkitBoxWithoutVerticalLineClamp"/>
+  <int value="3223"
+      label="OBSOLETE_LegacyLayoutByWebkitBoxWithoutVerticalLineClamp"/>
   <int value="3224"
       label="LegacyLayoutByTableFlexGridBlockInNGFragmentationContext"/>
   <int value="3225" label="DocumentPolicyHeader"/>
@@ -45392,6 +45394,7 @@ from previous Chrome versions.
   <int value="-106373261" label="PaintPreviewDemo:enabled"/>
   <int value="-104106119" label="WebViewJavaJsBridgeMojo:disabled"/>
   <int value="-102537270" label="extension-content-verification"/>
+  <int value="-102387656" label="FillingAcrossAffiliatedWebsites:disabled"/>
   <int value="-102227288" label="PasswordExport:disabled"/>
   <int value="-100148609" label="EvDetailsInPageInfo:disabled"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
@@ -46370,6 +46373,7 @@ from previous Chrome versions.
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="802463708" label="WebViewSurfaceControl:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
+  <int value="804958673" label="LensCameraAssistedSearch:enabled"/>
   <int value="805882800" label="SafetyCheckChromeCleanerChild:disabled"/>
   <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
@@ -47072,6 +47076,7 @@ from previous Chrome versions.
   <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
   <int value="1454028829" label="EnhancedProtectionPromoCard:disabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>
+  <int value="1454295160" label="LensCameraAssistedSearch:disabled"/>
   <int value="1454363479" label="disable-storage-manager"/>
   <int value="1454527518" label="ArcNativeBridgeExperiment:enabled"/>
   <int value="1455881930" label="V8VmFuture:enabled"/>
@@ -47569,6 +47574,7 @@ from previous Chrome versions.
   <int value="1923496816" label="AssistantIntentTranslateInfo:disabled"/>
   <int value="1923780021" label="PrivacyReorderedAndroid:enabled"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
+  <int value="1925213304" label="FillingAcrossAffiliatedWebsites:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>
   <int value="1927218315" label="ShelfNewUi:disabled"/>
@@ -51589,6 +51595,7 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="Received unexpected payload type"/>
   <int value="11" label="Connection lost"/>
   <int value="12" label="Nearby process crash"/>
+  <int value="13" label="Nearby process Mojo dependency disconnection"/>
 </enum>
 
 <enum name="MultiDeviceNearbyMessageAction">
@@ -60743,6 +60750,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="INVALID_LICENSE"/>
   <int value="25" label="OFFLINE"/>
   <int value="26" label="LIST_VM_DISKS_FAILED"/>
+  <int value="27" label="OUT_OF_DISK_SPACE"/>
 </enum>
 
 <enum name="PluginVmSetupResult">

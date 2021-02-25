@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
@@ -44,18 +46,24 @@ OfferNotificationBubbleControllerImpl::OfferNotificationBubbleControllerImpl(
     : AutofillBubbleControllerBase(web_contents) {}
 
 base::string16 OfferNotificationBubbleControllerImpl::GetWindowTitle() const {
-  // TODO(crbug/1093057): Finalize string for the offer notification bubble.
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_REMINDER_TITLE);
 }
 
 base::string16 OfferNotificationBubbleControllerImpl::GetOkButtonLabel() const {
-  // TODO(crbug/1093057): Finalize string.
-  return base::string16();
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_OFFERS_REMINDER_POSITIVE_BUTTON_LABEL);
 }
 
 AutofillBubbleBase*
 OfferNotificationBubbleControllerImpl::GetOfferNotificationBubbleView() const {
   return bubble_view();
+}
+
+const CreditCard* OfferNotificationBubbleControllerImpl::GetLinkedCard() const {
+  if (card_.has_value())
+    return &(*card_);
+
+  return nullptr;
 }
 
 bool OfferNotificationBubbleControllerImpl::IsIconVisible() const {
@@ -70,7 +78,8 @@ void OfferNotificationBubbleControllerImpl::OnBubbleClosed(
 }
 
 void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
-    const std::vector<GURL>& origins_to_display_bubble) {
+    const std::vector<GURL>& origins_to_display_bubble,
+    const CreditCard* card) {
   // If icon/bubble is already visible, that means we have already shown a
   // notification for this page.
   if (IsIconVisible() || bubble_view())
@@ -79,6 +88,8 @@ void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
   origins_to_display_bubble_.clear();
   for (auto origin : origins_to_display_bubble)
     origins_to_display_bubble_.emplace_back(origin);
+
+  card_ = *card;
 
   is_user_gesture_ = false;
   Show();
@@ -110,6 +121,7 @@ void OfferNotificationBubbleControllerImpl::DidFinishNavigation(
 
   // Reset variables.
   origins_to_display_bubble_.clear();
+  UpdatePageActionIcon();
 
   // Hide the bubble.
   HideBubble();
@@ -127,6 +139,9 @@ void OfferNotificationBubbleControllerImpl::DoShowBubble() {
                       ->ShowOfferNotificationBubble(web_contents(), this,
                                                     is_user_gesture_));
   DCHECK(bubble_view());
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnBubbleShown();
 
   // TODO(crbug.com/1093057): Add logging metrics.
 }

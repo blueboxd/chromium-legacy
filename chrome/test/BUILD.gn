@@ -2460,6 +2460,17 @@ if (!is_android) {
         "../browser/ash/login/demo_mode/demo_setup_browsertest.cc",
         "../browser/ash/login/demo_mode/demo_setup_test_utils.cc",
         "../browser/ash/login/demo_mode/demo_setup_test_utils.h",
+        "../browser/ash/login/enrollment/enrollment_local_policy_server_browsertest.cc",
+        "../browser/ash/login/enrollment/enrollment_screen_browsertest.cc",
+        "../browser/ash/login/enrollment/hands_off_enrollment_browsertest.cc",
+        "../browser/ash/login/enrollment/mock_auto_enrollment_check_screen.cc",
+        "../browser/ash/login/enrollment/mock_auto_enrollment_check_screen.h",
+        "../browser/ash/login/lock/fingerprint_unlock_browsertest.cc",
+        "../browser/ash/login/lock/lock_screen_browsertest.cc",
+        "../browser/ash/login/lock/screen_locker_browsertest.cc",
+        "../browser/ash/login/lock/screen_locker_tester.cc",
+        "../browser/ash/login/lock/screen_locker_tester.h",
+        "../browser/ash/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/ash/profiles/profile_helper_browsertest.cc",
         "../browser/ash/system/device_disabling_browsertest.cc",
         "../browser/ash/system/tray_accessibility_browsertest.cc",
@@ -2564,21 +2575,11 @@ if (!is_android) {
         "../browser/chromeos/login/device_family_link_allowed_policy_browsertest.cc",
         "../browser/chromeos/login/enable_debugging_browsertest.cc",
         "../browser/chromeos/login/encryption_migration_browsertest.cc",
-        "../browser/chromeos/login/enrollment/enrollment_local_policy_server_browsertest.cc",
-        "../browser/chromeos/login/enrollment/enrollment_screen_browsertest.cc",
-        "../browser/chromeos/login/enrollment/hands_off_enrollment_browsertest.cc",
-        "../browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.cc",
-        "../browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h",
         "../browser/chromeos/login/enterprise_enrollment_browsertest.cc",
         "../browser/chromeos/login/error_screen_browsertest.cc",
         "../browser/chromeos/login/eula_browsertest.cc",
         "../browser/chromeos/login/existing_user_controller_browsertest.cc",
         "../browser/chromeos/login/guest_login_browsertest.cc",
-        "../browser/chromeos/login/lock/fingerprint_unlock_browsertest.cc",
-        "../browser/chromeos/login/lock/lock_screen_browsertest.cc",
-        "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
-        "../browser/chromeos/login/lock/screen_locker_tester.cc",
-        "../browser/chromeos/login/lock/screen_locker_tester.h",
         "../browser/chromeos/login/login_auth_recorder_browsertest.cc",
         "../browser/chromeos/login/login_browsertest.cc",
         "../browser/chromeos/login/login_manager_test.cc",
@@ -2595,8 +2596,8 @@ if (!is_android) {
         "../browser/chromeos/login/oobe_localization_browsertest.cc",
         "../browser/chromeos/login/password_change_browsertest.cc",
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
-        "../browser/chromeos/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/chromeos/login/reset_browsertest.cc",
+        "../browser/chromeos/login/saml/fake_saml_idp_mixin.cc",
         "../browser/chromeos/login/saml/password_change_extension_browsertest.cc",
         "../browser/chromeos/login/saml/password_change_success_detection_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
@@ -4439,6 +4440,7 @@ test("unit_tests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/location/android:test_support",
+      "//components/messages/android:test_support",
       "//components/module_installer/android:module_installer_java",
       "//components/permissions/android:test_support",
       "//content/public/android:content_java",
@@ -4637,6 +4639,7 @@ test("unit_tests") {
       "../browser/ui/browser_unittest.cc",
       "../browser/ui/browser_window_state_unittest.cc",
       "../browser/ui/commander/commander_controller_unittest.cc",
+      "../browser/ui/commander/entity_match_unittest.cc",
       "../browser/ui/commander/fuzzy_finder_unittest.cc",
       "../browser/ui/content_settings/content_setting_bubble_model_unittest.cc",
       "../browser/ui/content_settings/content_setting_image_model_unittest.cc",
@@ -4944,7 +4947,7 @@ test("unit_tests") {
     }
   }
 
-  if (enable_native_notifications) {
+  if (enable_system_notifications) {
     # TODO(crbug.com/1052397): Rename is_chromeos_lacros to is_chromeos_lacros.
     if ((is_linux || is_chromeos_lacros) && !is_chromeos_lacros) {
       sources += [ "../browser/notifications/notification_platform_bridge_linux_unittest.cc" ]
@@ -4967,11 +4970,12 @@ test("unit_tests") {
   }
 
   if (is_chromeos_lacros) {
-    assert(enable_native_notifications)
+    assert(enable_system_notifications)
     sources += [
       "../browser/lacros/client_cert_store_lacros_unittest.cc",
       "../browser/lacros/lacros_chrome_service_delegate_impl_unittest.cc",
       "../browser/lacros/metrics_reporting_observer_unittest.cc",
+      "../browser/metrics/lacros_metrics_provider_unittest.cc",
       "../browser/notifications/notification_platform_bridge_lacros_unittest.cc",
       "../common/chrome_paths_lacros_unittest.cc",
     ]
@@ -5599,11 +5603,11 @@ test("unit_tests") {
     }
     if (is_chromeos_ash) {
       sources += [
+        "../browser/ash/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
+        "../browser/ash/login/easy_unlock/easy_unlock_notification_controller_chromeos_unittest.cc",
+        "../browser/ash/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
+        "../browser/ash/login/easy_unlock/easy_unlock_service_regular_unittest.cc",
         "../browser/chromeos/extensions/extensions_permissions_tracker_unittest.cc",
-        "../browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
-        "../browser/chromeos/login/easy_unlock/easy_unlock_notification_controller_chromeos_unittest.cc",
-        "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
-        "../browser/chromeos/login/easy_unlock/easy_unlock_service_regular_unittest.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
         "../browser/extensions/external_pref_loader_unittest.cc",
         "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
@@ -6891,7 +6895,7 @@ if (!is_android) {
       }
     }
 
-    if (!enable_native_notifications) {
+    if (!enable_system_notifications) {
       sources += [ "../browser/notifications/notification_ui_manager_interactive_uitest.cc" ]
     }
 

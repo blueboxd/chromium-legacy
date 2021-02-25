@@ -331,7 +331,6 @@ _BANNED_IOS_EGTEST_FUNCTIONS = (
 _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^base/callback.h',  # Intentional.
   '^base/cancelable_callback.h',  # Intentional.
-  '^chrome/browser/apps/guest_view/web_view_browsertest.cc',
   "^chrome/browser/ash/accessibility/",
   '^chrome/browser/media_galleries/',
   "^chrome/browser/metrics/",
@@ -3154,12 +3153,14 @@ def CheckSetNoParent(input_api, output_api):
               found_owners_files.add(glob)
 
     # Check that every set noparent line has a corresponding file:// line
-    # listed in build/OWNERS.setnoparent.
-    for set_noparent_line in found_set_noparent_lines:
-      if set_noparent_line in found_owners_files:
-        continue
-      errors.append('  %s:%d' % (f.LocalPath(),
-                                 found_set_noparent_lines[set_noparent_line]))
+    # listed in build/OWNERS.setnoparent. An exception is made for top level
+    # directories since src/OWNERS shouldn't review them.
+    if f.LocalPath().count('/') != 1:
+      for set_noparent_line in found_set_noparent_lines:
+        if set_noparent_line in found_owners_files:
+          continue
+        errors.append('  %s:%d' % (f.LocalPath(),
+                                   found_set_noparent_lines[set_noparent_line]))
 
   results = []
   if errors:

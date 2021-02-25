@@ -2495,21 +2495,7 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/rgba-004.html [ Failure
 crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-color/rgba-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-color/rgba-004.html [ Failure ]
 crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/hsl-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/translate/translate-and-transform-attribute-in-svg.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/translate/translate-and-transform-css-property-in-svg.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/focus-visible-007.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webcodecs/videoFrame-drawImage.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webcodecs/videoFrame-drawImage.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webcodecs/videoFrame-drawImage.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/webcodecs/videoFrame-drawImage.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/webcodecs/videoFrame-drawImage.any.worker.html [ Crash ]
-crbug.com/626703 [ Win ] external/wpt/webcodecs/videoFrame-drawImage.any.worker.html [ Crash ]
-crbug.com/626703 [ Linux ] external/wpt/webcodecs/videoFrame-createImageBitmap.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webcodecs/videoFrame-createImageBitmap.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webcodecs/videoFrame-createImageBitmap.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/webcodecs/videoFrame-createImageBitmap.any.worker.html [ Crash ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/webcodecs/videoFrame-createImageBitmap.any.worker.html [ Crash ]
-crbug.com/626703 [ Win ] external/wpt/webcodecs/videoFrame-createImageBitmap.any.worker.html [ Crash ]
 crbug.com/626703 external/wpt/uievents/keyboard/modifier-keys-combinations.html [ Timeout ]
 crbug.com/626703 external/wpt/uievents/keyboard/modifier-keys.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-backgrounds/background-repeat-space-1b.html [ Failure ]
@@ -3662,7 +3648,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-024.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-025.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-layout-properties.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-box-sizing-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/iner-ignores-first-letter-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-gutters-and-flex-content-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-tracks-stretched-with-different-flex-factors-sum.html [ Failure ]
@@ -5698,16 +5683,6 @@ crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.
 # Timing out on Fuchsia
 crbug.com/1171283 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Pass Timeout ]
 
-# Temporarily add tests here until error message is fixed
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.worker.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.worker.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.worker.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/type.tentative.any.html [ Pass Failure ]
-crbug.com/v8/11356 external/wpt/wasm/jsapi/table/type.tentative.any.worker.html [ Pass Failure ]
-
 # Sheriff 2021-02-09
 crbug.com/1176286 [ Linux ] http/tests/devtools/service-workers/service-workers-redundant.js [ Failure Pass ]
 crbug.com/1175901 [ Linux ] http/tests/devtools/console/console-search-reveals-messages.js [ Failure Pass ]
@@ -5767,6 +5742,10 @@ crbug.com/1180227 [ Linux ] virtual/feature-policy-permissions/external/wpt/medi
 crbug.com/1180274 [ Mac ] http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]
 crbug.com/1180479 [ Mac ] virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/scrollIntoView-smooth.html [ Failure Timeout Pass ]
 
+# Temporarily disabled to enable frontend change (https://crrev.com/c/2716285) to go through
+crbug.com/1176691 http/tests/devtools/security/interstitial-sidebar.js [ Failure Pass ]
+crbug.com/1176691 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
+
 # Sheriff 2021-02-21
 crbug.com/1180491 [ Linux ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]
 crbug.com/1180491 [ Linux ] virtual/storage-access-api/external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]
@@ -5774,13 +5753,13 @@ crbug.com/1180627 [ Linux ] external/wpt/css/cssom-view/MediaQueryList-addListen
 crbug.com/1180627 [ Linux ] virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-addListener-removeListener.html [ Pass Failure ]
 
 # Sheriff 2021-02-23
-crbug.com/1181466 [ Mac ] external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
-crbug.com/1181466 [ Mac ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
+crbug.com/1181466 external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
+crbug.com/1181466 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
 
 # Sheriff 2021-02-24
-crbug.com/1181466 [ Linux ] external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
-crbug.com/1181466 [ Linux ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
 crbug.com/1181667 [ Linux ] external/wpt/css/selectors/focus-visible-011.html [ Pass Failure ]
 crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
 crbug.com/1045052 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
 crbug.com/1181740 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-time-stamp.js [ Pass Failure ]
+crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Pass Failure ]
+crbug.com/1181886 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html [ Pass Timeout ]

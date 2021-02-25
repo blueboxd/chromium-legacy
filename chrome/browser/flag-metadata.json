@@ -639,6 +639,14 @@
     "expiry_milestone": 90
   },
   {
+    "name": "content-languages-in-language-picker",
+    "owners": [
+      "basiaz",
+      "chrome-language"
+    ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "content-settings-redesign",
     "owners": [
       "harrisonsean",
@@ -1754,11 +1762,6 @@
     "expiry_milestone": 99
   },
   {
-    "name": "enable-first-scroll-latency-measurement",
-    "owners": [ "tommckee", "speed-metrics-dev" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enable-force-dark",
     "owners": [ "pdr", "khorimoto@chromium.org", "jessejames@chromium.org" ],
     "expiry_milestone": 99
@@ -2045,11 +2048,6 @@
     "name": "enable-nacl",
     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "enable-native-notifications",
-    "owners": [ "peter", "finnur", "knollr" ],
-    "expiry_milestone": 90
   },
   {
     "name": "enable-navigation-predictor",
@@ -2412,6 +2410,11 @@
     "name": "enable-sync-requires-policies-loaded",
     "owners": ["ydago"],
     "expiry_milestone": 95
+  },
+  {
+    "name": "enable-system-notifications",
+    "owners": [ "peter", "finnur", "knollr" ],
+    "expiry_milestone": 94
   },
   {
     "name": "enable-tab-engagement-reporting",
@@ -4734,11 +4737,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "shutdown-support-for-keepalive",
-    "owners": [ "yhirano" ],
-    "expiry_milestone": 92
-  },
-  {
     "name" : "side-panel",
     "owners": [ "chrome-desktop-ui-sea@google.com", "pbos" ],
     "expiry_milestone" : 92
@@ -4772,8 +4770,8 @@
   },
   {
     "name": "smart-suggestion-for-large-downloads",
-    "owners": [ "vuhung", "shaktisahu"],
-    "expiry_milestone": 89
+    "owners": [ "shaktisahu" ],
+    "expiry_milestone": 91
   },
   {
     "name": "smbfs-file-shares",

@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/isolated_origin_util.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
@@ -149,7 +150,7 @@ base::debug::CrashKeyString* GetKilledProcessOriginLockKey() {
 
 base::debug::CrashKeyString* GetCanAccessDataFailureReasonKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "can_access_data_failure_reason", base::debug::CrashKeySize::Size256);
+      "can_access_data_failure_reason", base::debug::CrashKeySize::Size64);
   return crash_key;
 }
 
@@ -773,7 +774,16 @@ bool ChildProcessSecurityPolicyImpl::IsolatedOriginEntry::MatchesProfile(
   return false;
 }
 
-ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
+// Make sure BrowsingInstance state is cleaned up after the max amount of time
+// RenderProcessHost might stick around for various IncrementKeepAliveRefCount
+// calls. For now, track that as the KeepAliveHandleFactory timeout (the current
+// longest value) plus the unload timeout, with a bit of an extra margin.
+// // TODO(wjmaclean): Refactor IncrementKeepAliveRefCount to track how much
+// time is needed rather than leaving the interval open ended, so that we can
+// enforce a max delay here and in RenderProcessHost. https://crbug.com/1181838
+ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl()
+    : browsing_instance_cleanup_delay_in_seconds_(
+          RenderFrameHostImpl::kKeepAliveHandleFactoryTimeoutInSeconds + 2) {
   // We know about these schemes and believe them to be safe.
   RegisterWebSafeScheme(url::kHttpScheme);
   RegisterWebSafeScheme(url::kHttpsScheme);
@@ -1633,15 +1643,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
         // BrowsingInstances are registered in the process. Allow this for now,
         // to maintain legacy behavior, until we rule out all the ways it can
         // happen.
-        RenderProcessHostImpl* child_host = static_cast<RenderProcessHostImpl*>(
-            RenderProcessHost::FromID(child_id));
-        DCHECK(child_host);
-        failure_reason =
-            base::StringPrintf("No BIids, keep_alive_count = %zu, sources = %s",
-                               child_host->keep_alive_ref_count(),
-                               child_host->keep_alive_sources().c_str());
-        // This will fall through to the call to
-        // LogCanAccessDataForOriginCrashKeys and log the failure reason.
+        return true;
       }
       for (auto browsing_instance_id :
            security_state->browsing_instance_ids()) {

@@ -1134,6 +1134,7 @@ test("content_browsertests") {
     "../browser/renderer_host/input/wheel_event_listener_browsertest.cc",
     "../browser/renderer_host/input/wheel_scroll_latching_browsertest.cc",
     "../browser/renderer_host/media/video_capture_browsertest.cc",
+    "../browser/renderer_host/modal_close_listener_host_browsertest.cc",
     "../browser/renderer_host/navigation_controller_impl_browsertest.cc",
     "../browser/renderer_host/navigation_request_browsertest.cc",
     "../browser/renderer_host/page_lifecycle_state_manager_browsertest.cc",
@@ -1244,7 +1245,6 @@ test("content_browsertests") {
     "../test/content_browser_test_test.cc",
     "../test/top_frame_population_browsertest.cc",
     "../test/url_loader_interceptor_test.cc",
-    "../test/webui_resource_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -1289,7 +1289,6 @@ test("content_browsertests") {
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
-    "//content/browser/resources/media:media_internals_resources_grit",
     "//content/child:for_content_tests",
     "//content/gpu",
     "//content/public/browser",

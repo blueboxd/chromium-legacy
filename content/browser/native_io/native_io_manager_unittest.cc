@@ -21,6 +21,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/native_io/native_io.mojom.h"
 #include "url/gurl.h"
@@ -54,6 +55,47 @@ class NativeIOManagerSync {
                     }));
     run_loop.Run();
     return success_code;
+  }
+
+  std::vector<url::Origin> GetOriginsForType(blink::mojom::StorageType type) {
+    std::vector<url::Origin> origins;
+    base::RunLoop run_loop;
+    io_manager_->GetOriginsForType(
+        type, base::BindLambdaForTesting(
+                  [&](const std::vector<url::Origin>& returned_origins) {
+                    origins = returned_origins;
+                    run_loop.Quit();
+                  }));
+    run_loop.Run();
+    return origins;
+  }
+
+  std::vector<url::Origin> GetOriginsForHost(blink::mojom::StorageType type,
+                                             const std::string& host) {
+    std::vector<url::Origin> origins;
+    base::RunLoop run_loop;
+    io_manager_->GetOriginsForHost(
+        type, host,
+        base::BindLambdaForTesting(
+            [&](const std::vector<url::Origin>& returned_origins) {
+              origins = returned_origins;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return origins;
+  }
+
+  int64_t GetOriginUsage(const url::Origin& origin,
+                         blink::mojom::StorageType type) {
+    int64_t usage;
+    base::RunLoop run_loop;
+    io_manager_->GetOriginUsage(
+        origin, type, base::BindLambdaForTesting([&](int64_t returned_usage) {
+          usage = returned_usage;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return usage;
   }
 
  private:
@@ -229,14 +271,6 @@ class NativeIOManagerTest : public testing::TestWithParam<bool> {
         quota_manager_proxy_.get());
   }
 
-  std::string GetTooLongFilename() {
-    int limit = base::GetMaximumPathComponentLength(data_dir_.GetPath());
-    EXPECT_GT(limit, 0);
-
-    std::string too_long_filename(limit + 1, 'x');
-    return too_long_filename;
-  }
-
   // This must be above NativeIOManager, to ensure that no file is accessed when
   // the temporary directory is deleted.
   base::ScopedTempDir data_dir_;
@@ -257,12 +291,23 @@ class NativeIOManagerTest : public testing::TestWithParam<bool> {
   std::unique_ptr<NativeIOHostSync> example_host_;
   std::unique_ptr<NativeIOHostSync> google_host_;
 
-  // Names disallowed by NativeIO
-  const std::vector<std::string> bad_names_ = {
-      "Uppercase",
-      "has-dash",
-      "has.dot",
-      "has/slash",
+  struct Filename {
+    std::string name;
+    bool valid;
+  };
+
+  const std::vector<Filename> filenames_ = {
+      {"ascii", true},
+      {"_underscores_", true},
+      {std::string(99, 'x'), true},
+      {std::string(100, 'x'), true},
+      {"Uppercase", false},
+      {"Uppercase", false},
+      {"has-dash", false},
+      {"has.dot", false},
+      {"has/slash", false},
+      {std::string(101, 'x'), false},
+      {std::string(9999, 'x'), false},
   };
 
   bool allow_set_length_ipc() { return GetParam(); }
@@ -272,27 +317,20 @@ class NativeIOManagerTest : public testing::TestWithParam<bool> {
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 };
 
-TEST_P(NativeIOManagerTest, OpenFile_BadNames) {
-  for (const std::string& bad_name : bad_names_) {
+TEST_P(NativeIOManagerTest, OpenFile_Names) {
+  for (const Filename& filename : filenames_) {
     mojo::test::BadMessageObserver bad_message_observer;
 
     mojo::Remote<blink::mojom::NativeIOFileHost> file_host;
     std::pair<base::File, NativeIOErrorPtr> result = example_host_->OpenFile(
-        bad_name, file_host.BindNewPipeAndPassReceiver());
-    EXPECT_FALSE(result.first.IsValid());
-    EXPECT_EQ(result.second->type, NativeIOErrorType::kUnknown);
-    EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+        filename.name, file_host.BindNewPipeAndPassReceiver());
+    EXPECT_EQ(result.first.IsValid(), filename.valid);
+
+    if (!filename.valid) {
+      EXPECT_EQ(result.second->type, NativeIOErrorType::kUnknown);
+      EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+    }
   }
-  // TODO(rstz): Have the renderer process disallow too long filenames and then
-  // re-enable testing for long filenames on Windows.
-#if !defined(OS_WIN)
-  std::string too_long_filename = GetTooLongFilename();
-  mojo::Remote<blink::mojom::NativeIOFileHost> file_host;
-  std::pair<base::File, NativeIOErrorPtr> result = example_host_->OpenFile(
-      too_long_filename, file_host.BindNewPipeAndPassReceiver());
-  EXPECT_FALSE(result.first.IsValid());
-  EXPECT_EQ(result.second->type, NativeIOErrorType::kInvalidState);
-#endif  // !defined(OS_WIN)
 }
 
 TEST_P(NativeIOManagerTest, OpenFile_Locks_OpenFile) {
@@ -336,15 +374,17 @@ TEST_P(NativeIOManagerTest, OpenFile_SameName) {
   EXPECT_EQ(kTestData, std::string(read_buffer, kTestData.size()));
 }
 
-// TODO(rstz): Consider failing upon deletion of an overly long file name for
-// consistency with rename and open.
-TEST_P(NativeIOManagerTest, DeleteFile_BadNames) {
-  for (const std::string& bad_name : bad_names_) {
-    mojo::test::BadMessageObserver bad_message_observer;
-
-    EXPECT_EQ(example_host_->DeleteFile(bad_name)->type,
-              NativeIOErrorType::kUnknown);
-    EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+TEST_P(NativeIOManagerTest, DeleteFile_Names) {
+  for (const Filename& filename : filenames_) {
+    if (filename.valid) {
+      EXPECT_EQ(example_host_->DeleteFile(filename.name)->type,
+                NativeIOErrorType::kSuccess);
+    } else {
+      mojo::test::BadMessageObserver bad_message_observer;
+      EXPECT_EQ(example_host_->DeleteFile(filename.name)->type,
+                NativeIOErrorType::kUnknown);
+      EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+    }
   }
 }
 
@@ -444,7 +484,7 @@ TEST_P(NativeIOManagerTest, RenameFile_AfterOpenAndRename) {
   EXPECT_EQ("renamed_test_file", file_names[0]);
 }
 
-TEST_P(NativeIOManagerTest, RenameFile_BadNames) {
+TEST_P(NativeIOManagerTest, RenameFile_Names) {
   mojo::Remote<blink::mojom::NativeIOFileHost> file_host_remote;
   std::pair<base::File, NativeIOErrorPtr> result = example_host_->OpenFile(
       "test_file", file_host_remote.BindNewPipeAndPassReceiver());
@@ -452,24 +492,31 @@ TEST_P(NativeIOManagerTest, RenameFile_BadNames) {
   NativeIOFileHostSync file_host(file_host_remote.get());
   file_host.Close();
 
-  for (const std::string& bad_name : bad_names_) {
-    mojo::test::BadMessageObserver bad_message_observer;
+  for (const Filename& filename : filenames_) {
+    if (filename.valid) {
+      EXPECT_EQ(example_host_->RenameFile("test_file", filename.name)->type,
+                NativeIOErrorType::kSuccess);
+      EXPECT_EQ(example_host_->RenameFile(filename.name, "inexistant_test_file")
+                    ->type,
+                NativeIOErrorType::kSuccess);
 
-    EXPECT_EQ(example_host_->RenameFile("test_file", bad_name)->type,
-              NativeIOErrorType::kUnknown);
-    EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+      // Return to initial state
+      EXPECT_EQ(
+          example_host_->RenameFile("inexistant_test_file", "test_file")->type,
+          NativeIOErrorType::kSuccess);
+    } else {
+      mojo::test::BadMessageObserver bad_message_observer;
 
-    EXPECT_EQ(example_host_->RenameFile(bad_name, "inexistant_test_file")->type,
-              NativeIOErrorType::kUnknown);
-    EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+      EXPECT_EQ(example_host_->RenameFile("test_file", filename.name)->type,
+                NativeIOErrorType::kUnknown);
+      EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+
+      EXPECT_EQ(example_host_->RenameFile(filename.name, "inexistant_test_file")
+                    ->type,
+                NativeIOErrorType::kUnknown);
+      EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+    }
   }
-  // TODO(rstz): Have the renderer process disallow too long filenames and then
-  // re-enable testing for long filenames on Windows.
-#if !defined(OS_WIN)
-  std::string too_long_filename = GetTooLongFilename();
-  EXPECT_EQ(example_host_->RenameFile("test_file", too_long_filename)->type,
-            NativeIOErrorType::kInvalidState);
-#endif  // !defined(OS_WIN)
 }
 
 #if defined(OS_MAC)
@@ -616,7 +663,6 @@ TEST_P(NativeIOManagerTest, DeleteOriginData_ConcurrentDeletion) {
           ->OpenFile("test_file",
                      example_host_remote.BindNewPipeAndPassReceiver())
           .first;
-  EXPECT_TRUE(example_file.IsValid());
   example_file.Close();
   NativeIOFileHostSync example_file_host(example_host_remote.get());
   example_file_host.Close();
@@ -634,6 +680,160 @@ TEST_P(NativeIOManagerTest, DeleteOriginData_ConcurrentDeletion) {
             blink::mojom::QuotaStatusCode::kOk);
 
   EXPECT_TRUE(!base::PathExists(manager_->RootPathForOrigin(example_origin)));
+}
+
+TEST_P(NativeIOManagerTest, GetOriginsByType_Empty) {
+  std::vector<url::Origin> origins =
+      sync_manager_->GetOriginsForType(blink::mojom::StorageType::kTemporary);
+
+  EXPECT_EQ(0u, origins.size());
+}
+
+TEST_P(NativeIOManagerTest, GetOriginsByType_ReturnsInactiveOrigins) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> example_host_remote;
+  base::File example_file =
+      example_host_
+          ->OpenFile("test_file",
+                     example_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+  example_file.Close();
+  NativeIOFileHostSync example_file_host(example_host_remote.get());
+  example_file_host.Close();
+
+  std::vector<url::Origin> origins =
+      sync_manager_->GetOriginsForType(blink::mojom::StorageType::kTemporary);
+
+  EXPECT_EQ(1u, origins.size());
+  EXPECT_EQ(url::Origin::Create(GURL(kExampleOrigin)), origins[0]);
+}
+
+TEST_P(NativeIOManagerTest, GetOriginsByType_ReturnsActiveOrigins) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> example_host_remote;
+  base::File example_file =
+      example_host_
+          ->OpenFile("test_file",
+                     example_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+
+  std::vector<url::Origin> origins =
+      sync_manager_->GetOriginsForType(blink::mojom::StorageType::kTemporary);
+
+  EXPECT_EQ(1u, origins.size());
+  EXPECT_EQ(url::Origin::Create(GURL(kExampleOrigin)), origins[0]);
+
+  EXPECT_TRUE(example_file.IsValid());
+  example_file.Close();
+  NativeIOFileHostSync example_file_host(example_host_remote.get());
+  example_file_host.Close();
+}
+
+TEST_P(NativeIOManagerTest,
+       GetOriginsByType_EmptyForUnimplementedStorageTypes) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> example_host_remote;
+  base::File example_file =
+      example_host_
+          ->OpenFile("test_file",
+                     example_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+  example_file.Close();
+  NativeIOFileHostSync example_file_host(example_host_remote.get());
+  example_file_host.Close();
+
+  std::vector<url::Origin> origins =
+      sync_manager_->GetOriginsForType(blink::mojom::StorageType::kPersistent);
+  EXPECT_EQ(0u, origins.size());
+  origins =
+      sync_manager_->GetOriginsForType(blink::mojom::StorageType::kSyncable);
+  EXPECT_EQ(0u, origins.size());
+  origins = sync_manager_->GetOriginsForType(
+      blink::mojom::StorageType::kQuotaNotManaged);
+  EXPECT_EQ(0u, origins.size());
+}
+
+TEST_P(NativeIOManagerTest, GetOriginsByHost_ReturnsActiveOrigins) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> example_file_host_remote;
+  base::File example_file =
+      example_host_
+          ->OpenFile("test_file",
+                     example_file_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+
+  mojo::Remote<blink::mojom::NativeIOHost> example_with_port_host_remote;
+  std::string example_with_port_origin =
+      std::string(kExampleOrigin).append(":1");
+  manager_->BindReceiver(
+      url::Origin::Create(GURL(example_with_port_origin)),
+      example_with_port_host_remote.BindNewPipeAndPassReceiver());
+  NativeIOHostSync example_with_port_host(example_with_port_host_remote.get());
+  mojo::Remote<blink::mojom::NativeIOFileHost>
+      example_with_port_file_host_remote;
+  base::File example_with_port_file =
+      example_with_port_host
+          .OpenFile(
+              "test_file",
+              example_with_port_file_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+
+  mojo::Remote<blink::mojom::NativeIOFileHost> google_file_host_remote;
+  base::File google_file =
+      google_host_
+          ->OpenFile("test_file",
+                     google_file_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+
+  example_file.Close();
+  NativeIOFileHostSync example_file_host(example_file_host_remote.get());
+  example_file_host.Close();
+  example_with_port_file.Close();
+  NativeIOFileHostSync example_with_port_file_host(
+      example_with_port_file_host_remote.get());
+  example_with_port_file_host.Close();
+  google_file.Close();
+  NativeIOFileHostSync google_file_host(google_file_host_remote.get());
+  google_file_host.Close();
+
+  std::vector<url::Origin> example_origins = sync_manager_->GetOriginsForHost(
+      blink::mojom::StorageType::kTemporary, "example.com");
+  EXPECT_EQ(2u, example_origins.size());
+  EXPECT_THAT(
+      example_origins,
+      testing::Contains(url::Origin::Create(GURL(example_with_port_origin))));
+  EXPECT_THAT(example_origins,
+              testing::Contains(url::Origin::Create(GURL(kExampleOrigin))));
+
+  std::vector<url::Origin> google_origins = sync_manager_->GetOriginsForHost(
+      blink::mojom::StorageType::kTemporary, "google.com");
+  EXPECT_EQ(1u, google_origins.size());
+  EXPECT_EQ(url::Origin::Create(GURL(kGoogleOrigin)), google_origins[0]);
+}
+
+TEST_P(NativeIOManagerTest, GetOriginUsage_ActiveOriginUsage) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> example_host_remote;
+  base::File example_file =
+      example_host_
+          ->OpenFile("test_file",
+                     example_host_remote.BindNewPipeAndPassReceiver())
+          .first;
+  int64_t expected_usage = 100;
+  example_file.SetLength(expected_usage);
+
+  example_file.Close();
+  NativeIOFileHostSync example_file_host(example_host_remote.get());
+  example_file_host.Close();
+
+  int64_t usage =
+      sync_manager_->GetOriginUsage(url::Origin::Create(GURL(kExampleOrigin)),
+                                    blink::mojom::StorageType::kTemporary);
+
+  EXPECT_EQ(expected_usage, usage);
+}
+
+TEST_P(NativeIOManagerTest, GetOriginUsage_NonexistingOriginUsage) {
+  int64_t usage =
+      sync_manager_->GetOriginUsage(url::Origin::Create(GURL(kExampleOrigin)),
+                                    blink::mojom::StorageType::kTemporary);
+
+  EXPECT_EQ(0u, usage);
 }
 
 INSTANTIATE_TEST_CASE_P(,

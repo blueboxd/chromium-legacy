@@ -203,7 +203,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Cros.Actions" enum="NotificationTypeDetailed"
-    expires_after="2021-07-18">
+    expires_after="2021-12-31">
+  <owner>tbarzic@chromium.org</owner>
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -437,8 +438,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.NotifierType" enum="NotifierType"
-    expires_after="M85">
+    expires_after="2021-12-31">
+  <owner>tbarzic@chromium.org</owner>
   <owner>tengs@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
   <summary>
     The number of times a notification was added for the various types of
     sources.
@@ -765,6 +768,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Notifications.UsingNativeNotificationCenter"
     enum="BooleanNativeNotifications" expires_after="never">
+  <obsolete>
+    Replaced by Notifications.UsingSystemNotificationCenter in October 2020.
+  </obsolete>
+<!-- expires-never: core to the notification user experience. -->
+
+  <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>
+    Indicates if Chrome is using system notifications or the Chrome notification
+    center. Logged on each start up.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.UsingSystemNotificationCenter"
+    enum="BooleanSystemNotifications" expires_after="never">
 <!-- expires-never: core to the notification user experience. -->
 
   <owner>peter@chromium.org</owner>

@@ -4278,7 +4278,7 @@ static_library("browser") {
   }
 
   if (is_chromeos_ash) {
-    assert(enable_native_notifications)
+    assert(enable_system_notifications)
     sources += [
       "apps/app_service/app_notifications.cc",
       "apps/app_service/app_notifications.h",
@@ -4612,10 +4612,6 @@ static_library("browser") {
   } else {  # Non - ChromeOS.
     sources += [
       "fullscreen.h",
-
-      # ChromeOS accessibility metrics provider is in chromeos_metrics_provider.
-      "metrics/accessibility_metrics_provider.cc",
-      "metrics/accessibility_metrics_provider.h",
       "policy/browser_signin_policy_handler.cc",
       "policy/browser_signin_policy_handler.h",
       "policy/cloud/user_cloud_policy_manager_builder.cc",
@@ -4644,7 +4640,7 @@ static_library("browser") {
   }
 
   if (is_chromeos_lacros) {
-    assert(enable_native_notifications)
+    assert(enable_system_notifications)
     sources += [
       "chrome_browser_main_parts_lacros.cc",
       "chrome_browser_main_parts_lacros.h",
@@ -4893,7 +4889,7 @@ static_library("browser") {
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]
 
-    if (enable_native_notifications) {
+    if (enable_system_notifications) {
       sources += [
         "notifications/notification_platform_bridge_win.cc",
         "notifications/notification_platform_bridge_win.h",
@@ -5028,6 +5024,8 @@ static_library("browser") {
       "notifications/alert_dispatcher_mojo.mm",
       "notifications/alert_dispatcher_xpc.h",
       "notifications/alert_dispatcher_xpc.mm",
+      "notifications/mac_notification_provider_factory.h",
+      "notifications/mac_notification_provider_factory.mm",
       "notifications/notification_alert_service_bridge.h",
       "notifications/notification_alert_service_bridge.mm",
       "notifications/notification_platform_bridge_mac.h",
@@ -5058,6 +5056,7 @@ static_library("browser") {
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
       "//chrome/browser/ui/cocoa/notifications:common",
+      "//chrome/services/mac_notifications",
       "//chrome/services/mac_notifications/public/cpp",
       "//chrome/services/mac_notifications/public/mojom",
       "//components/crash/core/app",
@@ -5152,7 +5151,7 @@ static_library("browser") {
     if (!is_chromeos_lacros) {
       sources += [ "platform_util_linux.cc" ]
 
-      if (enable_native_notifications) {
+      if (enable_system_notifications) {
         sources += [
           "notifications/notification_platform_bridge_linux.cc",
           "notifications/notification_platform_bridge_linux.h",
@@ -5662,8 +5661,6 @@ static_library("browser") {
       "guest_view/web_view/chrome_web_view_permission_helper_delegate.h",
       "guest_view/web_view/context_menu_content_type_web_view.cc",
       "guest_view/web_view/context_menu_content_type_web_view.h",
-      "loader/url_loader_factory_proxy_impl.cc",
-      "loader/url_loader_factory_proxy_impl.h",
       "media/extension_media_access_handler.cc",
       "media/extension_media_access_handler.h",
       "media/webrtc/desktop_capture_access_handler.cc",

@@ -174,6 +174,7 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.webapps.ShortcutSource;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -1035,7 +1036,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // showOverview(StartSurfaceState.SHOWING_START) to show MV tiles and carousels again.
         return shouldShowTabSwitcherOnStart()
                 && (!isOverviewVisible
-                        || StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON.getValue());
+                        || StartSurfaceConfiguration.shouldShowNewSurfaceFromHomeButton());
     }
 
     private boolean shouldShowTabSwitcherOnStart() {
@@ -1906,6 +1907,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                                 == StartSurfaceState.SHOWN_TABSWITCHER)) {
             mOverviewModeController.hideOverview(true);
             return true;
+        }
+
+        final WebContents webContents = currentTab.getWebContents();
+        if (webContents != null) {
+            RenderFrameHost focusedFrame = webContents.getFocusedFrame();
+            if (focusedFrame != null && focusedFrame.signalModalCloseWatcherIfActive()) return true;
         }
 
         if (getToolbarManager().back()) return true;

@@ -83,6 +83,9 @@ extern const char kAriaElementReflectionDescription[];
 extern const char kCOLRV1FontsName[];
 extern const char kCOLRV1FontsDescription[];
 
+extern const char kContentLanguagesInLanguagePickerName[];
+extern const char kContentLanguagesInLanguagePickerDescription[];
+
 extern const char kConversionMeasurementApiName[];
 extern const char kConversionMeasurementApiDescription[];
 
@@ -690,9 +693,6 @@ extern const char kExtensionsOnChromeUrlsDescription[];
 extern const char kFilteringScrollPredictionName[];
 extern const char kFilteringScrollPredictionDescription[];
 
-extern const char kFirstScrollLatencyMeasurementName[];
-extern const char kFirstScrollLatencyMeasurementDescription[];
-
 extern const char kFractionalScrollOffsetsName[];
 extern const char kFractionalScrollOffsetsDescription[];
 
@@ -926,8 +926,8 @@ extern const char kNotificationSchedulerDebugOptionName[];
 extern const char kNotificationSchedulerDebugOptionDescription[];
 extern const char kNotificationSchedulerImmediateBackgroundTaskDescription[];
 
-extern const char kNotificationsNativeFlagName[];
-extern const char kNotificationsNativeFlagDescription[];
+extern const char kNotificationsSystemFlagName[];
+extern const char kNotificationsSystemFlagDescription[];
 
 extern const char kUseMultiloginEndpointName[];
 extern const char kUseMultiloginEndpointDescription[];

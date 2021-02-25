@@ -76,6 +76,12 @@ const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
 const char kConditionalTabStripAndroidDescription[] =
     "Allows users to access conditional tab strip.";
 
+const char kContentLanguagesInLanguagePickerName[] =
+    "Content languages in language picker";
+const char kContentLanguagesInLanguagePickerDescription[] =
+    "Enables bringing user's content languages that are translatable to the "
+    "top of the list with all languages shown in the translate menu";
+
 const char kConversionMeasurementApiName[] = "Conversion Measurement API";
 const char kConversionMeasurementApiDescription[] =
     "Enables usage of the Conversion Measurement API. Requires "
@@ -1172,12 +1178,6 @@ const char kFilteringScrollPredictionName[] = "Filtering scroll prediction";
 const char kFilteringScrollPredictionDescription[] =
     "Enable filtering of predicted scroll events";
 
-const char kFirstScrollLatencyMeasurementName[] =
-    "First Scroll Latency Measurement";
-const char kFirstScrollLatencyMeasurementDescription[] =
-    "Enables measurement of the latency between user input events and visual "
-    "updates for the first scroll of a navigation.";
-
 const char kFractionalScrollOffsetsName[] = "Fractional Scroll Offsets";
 const char kFractionalScrollOffsetsDescription[] =
     "Enables fractional scroll offsets inside Blink, exposing non-integer "
@@ -1552,9 +1552,9 @@ const char kNotificationSchedulerDebugOptionDescription[] =
 const char kNotificationSchedulerImmediateBackgroundTaskDescription[] =
     "Show scheduled notification right away.";
 
-const char kNotificationsNativeFlagName[] = "Enable native notifications.";
-const char kNotificationsNativeFlagDescription[] =
-    "Enable support for using the native notification toasts and notification "
+const char kNotificationsSystemFlagName[] = "Enable system notifications.";
+const char kNotificationsSystemFlagDescription[] =
+    "Enable support for using the system notification toasts and notification "
     "center on platforms where these are available.";
 
 const char kUpdateHoverAtBeginFrameName[] = "Update hover at the begin frame";

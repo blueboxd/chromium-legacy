@@ -12,6 +12,7 @@
 
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/components/audio/cras_audio_handler.h"
+#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -19,6 +20,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
+#include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -45,6 +47,7 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_resources_remover.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/breakpad_consent_watcher.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -89,7 +92,6 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_screen_extensions_lifetime_manager.h"
 #include "chrome/browser/chromeos/login/login_screen_extensions_storage_cleaner.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -1103,13 +1105,24 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
                  base::BindOnce(&CrosUsbDetector::ConnectToDeviceManager,
                                 base::Unretained(cros_usb_detector_.get())));
 
+  bool pcie_tunneling_allowed = false;
+  CrosSettings::Get()->GetBoolean(chromeos::kDevicePeripheralDataAccessEnabled,
+                                  &pcie_tunneling_allowed);
+
   // External PCI devices are only allowed in non-guest, primary users.
   if (!user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
       ProfileHelper::IsPrimaryProfile(profile())) {
-    bool enabled = false;
-    CrosSettings::Get()->GetBoolean(
-        chromeos::kDevicePeripheralDataAccessEnabled, &enabled);
-    PciguardClient::Get()->SendExternalPciDevicesPermissionState(enabled);
+    PciguardClient::Get()->SendExternalPciDevicesPermissionState(
+        pcie_tunneling_allowed);
+  }
+
+  if (chromeos::features::IsPciguardUiEnabled()) {
+    ash::PciePeripheralManager::Initialize(
+        user_manager::UserManager::Get()->IsLoggedInAsGuest(),
+        pcie_tunneling_allowed);
+    ash::Shell::Get()
+        ->pcie_peripheral_notification_controller()
+        ->OnPciePeripheralManagerInitialized();
   }
 
   crostini_unsupported_action_notifier_ =

@@ -426,23 +426,10 @@ class ActiveURLMessageFilter : public mojo::MessageFilter {
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
 // static
-LocalFrame* LocalFrame::FromFrameToken(
-    const base::UnguessableToken& frame_token) {
-  LocalFramesByTokenMap& local_frames_map = GetLocalFramesMap();
-  auto it = local_frames_map.find(base::UnguessableTokenHash()(frame_token));
-  return it == local_frames_map.end() ? nullptr : it->value.Get();
-}
-
-// static
 LocalFrame* LocalFrame::FromFrameToken(const LocalFrameToken& frame_token) {
-  return FromFrameToken(frame_token.value());
-}
-
-// static
-LocalFrame* LocalFrame::FromFrameToken(const FrameToken& frame_token) {
-  if (!frame_token.Is<LocalFrameToken>())
-    return nullptr;
-  return FromFrameToken(frame_token.GetAs<LocalFrameToken>());
+  LocalFramesByTokenMap& local_frames_map = GetLocalFramesMap();
+  auto it = local_frames_map.find(LocalFrameToken::Hasher()(frame_token));
+  return it == local_frames_map.end() ? nullptr : it->value.Get();
 }
 
 void LocalFrame::Init(Frame* opener) {
@@ -2111,9 +2098,10 @@ void LocalFrame::SetOpener(Frame* opener_frame) {
   auto* web_frame = WebFrame::FromCoreFrame(this);
   if (web_frame && Opener() != opener_frame) {
     GetLocalFrameHostRemote().DidChangeOpener(
-        opener_frame ? base::Optional<base::UnguessableToken>(
-                           opener_frame->GetFrameToken())
-                     : base::nullopt);
+        opener_frame
+            ? base::Optional<blink::LocalFrameToken>(
+                  opener_frame->GetFrameToken().GetAs<LocalFrameToken>())
+            : base::nullopt);
   }
   SetOpenerDoNotNotify(opener_frame);
 }
@@ -3400,7 +3388,7 @@ void LocalFrame::BindReportingObserver(
 }
 
 void LocalFrame::UpdateOpener(
-    const base::Optional<base::UnguessableToken>& opener_frame_token) {
+    const base::Optional<blink::FrameToken>& opener_frame_token) {
   if (auto* web_frame = WebFrame::FromCoreFrame(this)) {
     Frame* opener_frame = nullptr;
     if (opener_frame_token)

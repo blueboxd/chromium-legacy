@@ -939,6 +939,8 @@ static_library("ui") {
       "commander/commander_frontend.h",
       "commander/commander_view_model.cc",
       "commander/commander_view_model.h",
+      "commander/entity_match.cc",
+      "commander/entity_match.h",
       "commander/open_url_command_source.cc",
       "commander/open_url_command_source.h",
       "commander/simple_command_source.cc",
@@ -2148,8 +2150,6 @@ static_library("ui") {
       "views/frame/immersive_mode_controller_chromeos.cc",
       "views/frame/immersive_mode_controller_chromeos.h",
       "views/frame/native_browser_frame_factory_chromeos.cc",
-      "views/frame/top_controls_slide_controller_chromeos.cc",
-      "views/frame/top_controls_slide_controller_chromeos.h",
       "views/platform_keys_certificate_selector_chromeos.cc",
       "views/platform_keys_certificate_selector_chromeos.h",
       "views/plugin_vm/plugin_vm_installer_view.cc",
@@ -2628,6 +2628,7 @@ static_library("ui") {
       "//ash/assistant/util",
       "//ash/components/account_manager",
       "//ash/components/audio",
+      "//ash/components/pcie_peripheral",
       "//ash/constants",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
@@ -2803,6 +2804,8 @@ static_library("ui") {
       "views/frame/browser_non_client_frame_view_chromeos.cc",
       "views/frame/browser_non_client_frame_view_chromeos.h",
       "views/frame/browser_non_client_frame_view_factory_chromeos.cc",
+      "views/frame/top_controls_slide_controller_chromeos.cc",
+      "views/frame/top_controls_slide_controller_chromeos.h",
     ]
     deps += [ "//components/account_manager_core:account_manager_core" ]
   }

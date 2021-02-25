@@ -13809,6 +13809,13 @@ should be able to be added at any place in this file.
   <description>User pressed the fakebox on NTP. iOS only.</description>
 </action>
 
+<action name="MobileFakeViewNTPTapped">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed the fake view on the top of NTP. iOS only.
+  </description>
+</action>
+
 <action name="MobileFirstEditInOmnibox">
   <obsolete>Deprecated as of 12/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -21728,6 +21735,27 @@ should be able to be added at any place in this file.
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
     The link's favicon was shown in the sharing hub preview.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.LinkGeneration.Failure">
+  <owner>cheickcisse@google.com</owner>
+  <description>
+    The user request to share link-to-text in the sharing hub failed.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.LinkGeneration.Link">
+  <owner>cheickcisse@google.com</owner>
+  <description>
+    The user requested sharing the link-to-text in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.LinkGeneration.Text">
+  <owner>cheickcisse@google.com</owner>
+  <description>
+    The user requested sharing the text only in the sharing hub.
   </description>
 </action>
 

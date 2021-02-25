@@ -2612,6 +2612,29 @@
             ]
         }
     ],
+    "DevToolsLayoutHats": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "probability": "1.0",
+                        "user_prompted": "true"
+                    },
+                    "enable_features": [
+                        "HaTSDesktopDevToolsLayoutPanel"
+                    ]
+                }
+            ]
+        }
+    ],
     "DexFixer": [
         {
             "platforms": [
@@ -8026,7 +8049,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "avx2_allowed": "true",
+                        "avx2_allowed": "false",
                         "extra_saturation_margin": "5",
                         "gain_applier_speech_frames_threshold": "6",
                         "initial_saturation_margin": "20",
@@ -8196,21 +8219,6 @@
                     "name": "Enabled_20201211",
                     "enable_features": [
                         "WheelEventRegions"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WifiSyncAndroid": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WifiSyncAndroid"
                     ]
                 }
             ]

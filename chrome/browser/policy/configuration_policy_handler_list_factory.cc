@@ -1290,13 +1290,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  { key::kAllowNativeNotifications,
-    prefs::kAllowNativeNotifications,
-    base::Value::Type::BOOLEAN },
-#endif // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-
   { key::kScrollToTextFragmentEnabled,
     prefs::kScrollToTextFragmentEnabled,
     base::Value::Type::BOOLEAN },
@@ -1339,6 +1332,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kWebXRImmersiveArEnabled,
     base::Value::Type::BOOLEAN },
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+  { key::kFetchKeepaliveDurationOnShutdown,
+    prefs::kFetchKeepaliveDurationOnShutdown,
+    base::Value::Type::INTEGER },
+#endif  // !defined(OS_ANDROID)
 
 };
 // clang-format on
@@ -1964,6 +1963,18 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<SpellcheckLanguageBlocklistPolicyHandler>(
           policy::key::kSpellcheckLanguageBlocklist));
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(key::kAllowNativeNotifications,
+                                            prefs::kAllowNativeNotifications,
+                                            base::Value::Type::BOOLEAN),
+      std::make_unique<SimplePolicyHandler>(key::kAllowSystemNotifications,
+                                            prefs::kAllowSystemNotifications,
+                                            base::Value::Type::BOOLEAN)));
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   return handlers;
 }

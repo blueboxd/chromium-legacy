@@ -9076,6 +9076,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Suppressed"/>
 </enum>
 
+<enum name="BooleanSystemNotifications">
+  <int value="0" label="Using Chrome notifications"/>
+  <int value="1" label="Using system notifications"/>
+</enum>
+
 <enum name="BooleanTabDiscard">
   <int value="0" label="Memory OK, no discards"/>
   <int value="1" label="Memory low, tabs discarded"/>
@@ -13089,6 +13094,10 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Invalid Package"/>
   <int value="7" label="Lens Shop Supported"/>
   <int value="8" label="Lens Search And Shop Supported"/>
+  <int value="9" label="Camera Not Available"/>
+  <int value="10" label="Low End Device"/>
+  <int value="11" label="Lens Camera Assisted Search Supported"/>
+  <int value="12" label="Lens Translate Supported"/>
 </enum>
 
 <enum name="ContextMenuOption">
@@ -23718,14 +23727,16 @@ Called by update_document_policy_enum.py.-->
   <int value="816" label="BrowserLabsEnabled"/>
   <int value="817" label="WindowOcclusionEnabled"/>
   <int value="818" label="DeviceAllowMGSToStoreDisplayProperties"/>
-  <int value="819" label="SSLErrorOverrideAllowedForUrls"/>
+  <int value="819" label="SSLErrorOverrideAllowedForOrigins"/>
   <int value="820" label="WebXRImmersiveArEnabled"/>
   <int value="821" label="GaiaOfflineSigninTimeLimitDays"/>
-  <int value="822" label="FileSystemEnterpriseConnector"/>
+  <int value="822" label="SendDownloadToCloudEnterpriseConnector"/>
   <int value="823" label="DeviceSystemWideTracingEnabled"/>
   <int value="824" label="WebAppSettings"/>
   <int value="825" label="DevicePciPeripheralDataAccessEnabled"/>
   <int value="826" label="ContextAwareAccessSignalsAllowlist"/>
+  <int value="827" label="FetchKeepaliveDurationOnShutdown"/>
+  <int value="828" label="AllowSystemNotifications"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31593,6 +31604,21 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3812"
       label="RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial"/>
   <int value="3813" label="WebAppManifestCaptureLinks"/>
+  <int value="3814" label="SanitizerAPICreated"/>
+  <int value="3815" label="SanitizerAPIDefaultConfiguration"/>
+  <int value="3816" label="SanitizerAPIToString"/>
+  <int value="3817" label="SanitizerAPIToFragment"/>
+  <int value="3818" label="SanitizerAPIActionTaken"/>
+  <int value="3819" label="SanitizerAPIFromString"/>
+  <int value="3820" label="SanitizerAPIFromDocument"/>
+  <int value="3821" label="SanitizerAPIFromFragment"/>
+  <int value="3822" label="StorageFoundationOpen"/>
+  <int value="3823" label="StorageFoundationRead"/>
+  <int value="3824" label="StorageFoundationReadSync"/>
+  <int value="3825" label="StorageFoundationWrite"/>
+  <int value="3826" label="StorageFoundationWriteSync"/>
+  <int value="3827" label="StorageFoundationFlush"/>
+  <int value="3828" label="StorageFoundationFlushSync"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35971,6 +35997,25 @@ Called by update_feature_policy_enum.py.-->
   <int value="3" label="Url override was available in the FacetGroup and used"/>
 </enum>
 
+<enum name="GetCurrentBrowsingContextMediaExplicitSelectionUserInteraction">
+  <int value="0" label="kDialogDismissed"/>
+  <int value="1" label="kUserCancelled"/>
+  <int value="2" label="kUserSelectedScreen"/>
+  <int value="3" label="kUserSelectedWindow"/>
+  <int value="4" label="kUserSelectedOtherTab"/>
+  <int value="5" label="kUserSelectedThisTabAsGenericTab"/>
+  <int value="6" label="kUserSelectedThisTab"/>
+</enum>
+
+<enum name="GetDisplayMediaUserInteraction">
+  <int value="0" label="kDialogDismissed"/>
+  <int value="1" label="kUserCancelled"/>
+  <int value="2" label="kUserSelectedScreen"/>
+  <int value="3" label="kUserSelectedWindow"/>
+  <int value="4" label="kUserSelectedOtherTab"/>
+  <int value="5" label="kUserSelectedThisTab"/>
+</enum>
+
 <enum name="GetEncryptionKeyAction">
   <int value="0" label="Key is successfully found - not first time"/>
   <int value="1" label="Key is successfully found for the first time"/>
@@ -38764,6 +38809,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="11"
       label="Image queued for transcoding was stored back to cache."/>
   <int value="12" label="Load image metadata"/>
+</enum>
+
+<enum name="ImageSmoothingQuality">
+  <int value="0" label="Image smoothing quality sets to None"/>
+  <int value="1" label="Image smoothing quality sets to Low"/>
+  <int value="2" label="Image smoothing quality sets to Medium"/>
+  <int value="3" label="Image smoothing quality sets to High"/>
 </enum>
 
 <enum name="IMEAssistiveAction">
@@ -43307,6 +43359,7 @@ from previous Chrome versions.
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1936032607" label="enable-experimental-webassembly-features"/>
+  <int value="-1935787681" label="SystemNotifications:disabled"/>
   <int value="-1935055754" label="WebShare:enabled"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
@@ -43935,6 +43988,7 @@ from previous Chrome versions.
       label="SyncPseudoUSSHistoryDeleteDirectives:enabled"/>
   <int value="-1390005994" label="AppCache:disabled"/>
   <int value="-1388817073" label="OmniboxReverseAnswers:disabled"/>
+  <int value="-1388044691" label="ContentLanguagesInLanguagePicker:enabled"/>
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1386790338" label="ImeMozcProto:disabled"/>
   <int value="-1386776772" label="FilesZipPack:disabled"/>
@@ -45132,6 +45186,7 @@ from previous Chrome versions.
   <int value="-300542825" label="ChromeShareQRCode:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
+  <int value="-298458993" label="SystemNotifications:enabled"/>
   <int value="-297716805"
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-296762162" label="ExoOrdinalMotion:enabled"/>
@@ -46018,6 +46073,7 @@ from previous Chrome versions.
   <int value="538468149" label="OfflinePagesCT:enabled"/>
   <int value="538600423" label="OmniboxDocumentProvider:enabled"/>
   <int value="538685995" label="InstallableInkDrop:enabled"/>
+  <int value="541667888" label="ContentLanguagesInLanguagePicker:disabled"/>
   <int value="542930298" label="WebAppEnableLinkCapturing:disabled"/>
   <int value="542960889" label="HeavyAdIntervention:enabled"/>
   <int value="544443920" label="QuickAnswers:disabled"/>
@@ -67358,7 +67414,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="PROXY_FETCH"/>
   <int value="1" label="PRIVATE_IP"/>
   <int value="2" label="OFF_THE_RECORD"/>
-  <int value="3" label="MATCH_CSD_WHITELIST"/>
+  <int value="3" label="MATCH_CSD_ALLOWLIST"/>
   <int value="4" label="TOO_MANY_REPORTS"/>
   <int value="5" label="UNSUPPORTED_MIME_TYPE"/>
   <int value="6" label="NO_DATABASE_MANAGER"/>

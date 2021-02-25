@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FocusRingManager} from './focus_ring_manager.js';
 import {MenuManager} from './menu_manager.js';
 import {Navigator} from './navigator.js';
 import {SAChildNode, SARootNode} from './nodes/switch_access_node.js';
 import {SwitchAccess} from './switch_access.js';
-import {PointScanState, SAConstants, SwitchAccessMenuAction} from './switch_access_constants.js';
+import {SAConstants, SwitchAccessMenuAction} from './switch_access_constants.js';
 
 /**
  * Class to handle performing actions with Switch Access, including determining
@@ -25,15 +24,6 @@ export class ActionManager {
 
     /** @private {!Array<!SAConstants.MenuType>} */
     this.menuStack_ = [];
-
-    /** @private {boolean} */
-    this.inPointScanMode_ = false;
-
-    /** @private {?constants.Point} */
-    this.pointScanPoint_ = null;
-
-    /** @private {function(constants.Point)} */
-    this.pointScanListener_ = this.handleOnPointScanSet_.bind(this);
   }
 
   static get instance() {
@@ -52,6 +42,11 @@ export class ActionManager {
     ActionManager.instance.menuStack_ = [];
     ActionManager.instance.actionNode_ = null;
     MenuManager.close();
+    if (SwitchAccess.mode === SAConstants.Mode.POINT_SCAN) {
+      Navigator.byPoint.start();
+    } else {
+      Navigator.byPoint.stop();
+    }
   }
 
   /**
@@ -85,6 +80,11 @@ export class ActionManager {
     ActionManager.instance.openCurrentMenu_();
   }
 
+  /** @param {!SAConstants.MenuType} menu */
+  static openMenu(menu) {
+    ActionManager.instance.menuStack_.push(menu);
+    ActionManager.instance.openCurrentMenu_();
+  }
 
   /**
    * Given the action to be performed, appropriately handles performing it.
@@ -117,14 +117,6 @@ export class ActionManager {
     if (node.equals(ActionManager.instance.actionNode_)) {
       ActionManager.refreshMenu();
     }
-  }
-
-  /**
-   * @return {boolean} True if in point scanning mode, false if in item scanning
-   * mode.
-   */
-  static inPointScanMode() {
-    return ActionManager.instance.inPointScanMode_;
   }
 
   // ================= Private Methods ==================
@@ -183,7 +175,11 @@ export class ActionManager {
    * @private
    */
   addGlobalActions_(actions) {
-    actions.push(SwitchAccessMenuAction.POINT_SCAN);
+    if (SwitchAccess.mode === SAConstants.Mode.POINT_SCAN) {
+      actions.push(SwitchAccessMenuAction.ITEM_SCAN);
+    } else {
+      actions.push(SwitchAccessMenuAction.POINT_SCAN);
+    }
     actions.push(SwitchAccessMenuAction.SETTINGS);
     return actions;
   }
@@ -224,11 +220,10 @@ export class ActionManager {
    * @private
    */
   getLocationForCurrentMenuAndNode_() {
-    if (this.currentMenuType_ === SAConstants.MenuType.POINT_SCAN_MENU &&
-        this.pointScanPoint_) {
+    if (this.currentMenuType_ === SAConstants.MenuType.POINT_SCAN_MENU) {
       return {
-        left: Math.floor(this.pointScanPoint_.x),
-        top: Math.floor(this.pointScanPoint_.y),
+        left: Math.floor(Navigator.byPoint.currentPoint.x),
+        top: Math.floor(Navigator.byPoint.currentPoint.y),
         width: 1,
         height: 1
       };
@@ -256,7 +251,10 @@ export class ActionManager {
         return true;
       case SwitchAccessMenuAction.POINT_SCAN:
         ActionManager.exitCurrentMenu();
-        this.startPointScan_();
+        Navigator.byPoint.start();
+        return true;
+      case SwitchAccessMenuAction.ITEM_SCAN:
+        Navigator.byPoint.stop();
         return true;
       default:
         return false;
@@ -271,23 +269,24 @@ export class ActionManager {
    * @private
    */
   handlePointScanActions_(action) {
-    if (!this.pointScanPoint_) {
+    if (SwitchAccess.mode !== SAConstants.Mode.POINT_SCAN) {
       return false;
     }
 
     switch (action) {
       case SwitchAccessMenuAction.LEFT_CLICK:
         EventGenerator.sendMouseClick(
-            this.pointScanPoint_.x, this.pointScanPoint_.y);
-        this.stopPointScan_();
+            Navigator.byPoint.currentPoint.x, Navigator.byPoint.currentPoint.y);
+        Navigator.byPoint.start();
         return true;
       case SwitchAccessMenuAction.RIGHT_CLICK:
         EventGenerator.sendMouseClick(
-            this.pointScanPoint_.x, this.pointScanPoint_.y, {
+            Navigator.byPoint.currentPoint.x, Navigator.byPoint.currentPoint.y,
+            {
               mouseButton:
                   chrome.accessibilityPrivate.SyntheticMouseEventButton.RIGHT
             });
-        this.stopPointScan_();
+        Navigator.byPoint.start();
         return true;
       default:
         return false;
@@ -338,35 +337,5 @@ export class ActionManager {
         }
         this.openCurrentMenu_();
     }
-  }
-
-  /** @private */
-  startPointScan_() {
-    this.inPointScanMode_ = true;
-    FocusRingManager.clearAll();
-    chrome.accessibilityPrivate.onPointScanSet.addListener(
-        this.pointScanListener_);
-    chrome.accessibilityPrivate.setPointScanState(PointScanState.START);
-  }
-
-  /** @private */
-  stopPointScan_() {
-    chrome.accessibilityPrivate.setPointScanState(PointScanState.STOP);
-    this.pointScanPoint_ = null;
-    this.inPointScanMode_ = false;
-  }
-
-  /**
-   * Shows the point scan menu and sets the point scan position
-   * coordinates.
-   * @param {!constants.Point} point
-   * @private
-   */
-  handleOnPointScanSet_(point) {
-    this.pointScanPoint_ = point;
-    this.menuStack_.push(SAConstants.MenuType.POINT_SCAN_MENU);
-    this.openCurrentMenu_();
-    chrome.accessibilityPrivate.onPointScanSet.removeListener(
-        this.pointScanListener_);
   }
 }

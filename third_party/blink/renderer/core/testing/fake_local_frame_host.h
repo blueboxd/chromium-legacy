@@ -125,18 +125,20 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       const WTF::String& mime_type,
       network::mojom::blink::RequestDestination request_destination) override;
   void DidChangeFrameOwnerProperties(
-      const base::UnguessableToken& child_frame_token,
+      const blink::FrameToken& child_frame_token,
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
       const base::Optional<LocalFrameToken>& opener_frame) override;
-  void DidChangeCSPAttribute(const base::UnguessableToken& child_frame_token,
+  void DidChangeCSPAttribute(const blink::FrameToken& child_frame_token,
                              network::mojom::blink::ContentSecurityPolicyPtr
                                  parsed_csp_attribute) override;
-  void DidChangeFramePolicy(const base::UnguessableToken& child_frame_token,
+  void DidChangeFramePolicy(const blink::FrameToken& child_frame_token,
                             const FramePolicy& frame_policy) override;
   void CapturePaintPreviewOfSubframe(
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
+  void SetModalCloseListener(
+      mojo::PendingRemote<mojom::blink::ModalCloseListener>) override;
   void Detach() override;
   void GetKeepAliveHandleFactory(
       mojo::PendingReceiver<mojom::blink::KeepAliveHandleFactory> receiver)

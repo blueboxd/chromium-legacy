@@ -13923,7 +13923,7 @@
     },
     {
       'name': 'EasyUnlockAllowed',
-      'owners': ['file://chrome/browser/chromeos/login/easy_unlock/OWNERS', 'hansberry@chromium.org'],
+      'owners': ['file://chrome/browser/ash/login/easy_unlock/OWNERS', 'hansberry@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:38-'],
@@ -14071,8 +14071,7 @@
           'supported_on': ['chrome.win:70-', 'chrome.mac:70-'],
         },
       ],
-      'supported_on': ['chrome.*:70-', 'android:70-'],
-      'future_on': [ 'ios' ],
+      'supported_on': ['chrome.*:70-', 'android:70-', 'ios:90-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False
@@ -14081,15 +14080,15 @@
       'id': 487,
       'caption': '''Browser sign in settings''',
       'tags': [],
-      'desc': '''This policy controls the sign-in behavior of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their account and use account related services like Chrome sync.
+      'desc': '''This policy controls the sign-in behavior of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their account and use account related services like <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync.
 
-      If the policy is set to "Disable browser sign-in" then the user can not sign in to the browser and use account based services. In this case browser level features like Chrome sync can not be used and will be unavailable. If the user was signed in and the policy is set "Disabled" they will be signed out the next time they run Chrome but their local profile data like bookmarks, passwords etc. will stay preserved. The user will still be able to sign into and use Google web services like Gmail.
+      If the policy is set to "Disable browser sign-in" then the user cannot sign in to the browser and use account-based services. In this case browser-level features like <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync cannot be used and will be unavailable. On <ph name="IOS_NAME">iOS</ph>, if the user was signed in and the policy is set to "Disabled" they will be signed out immediately. On other platforms, they will be signed out the next time they run <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. On all platforms, their local profile data like bookmarks, passwords etc. will be preserved and still usable. The user will still be able to sign into and use Google web services like Gmail.
 
-      If the policy is set to "Enable browser sign-in," then the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means the user's account information will be kept by the browser. However, it does not mean that Chrome sync will be turned on per default; the user must separately opt-in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome sync, use the "SyncDisabled" policy.
+      If the policy is set to "Enable browser sign-in," then the user is allowed to sign in to the browser. On all platforms except <ph name="IOS_NAME">iOS</ph>, the user is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means the user's account information will be kept by the browser. However, it does not mean that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync will be turned on by default; the user must separately opt-in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync, use the <ph name="SYNC_POLICY_NAME">SyncDisabled</ph> policy.
 
-      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome sync for the account, except for the case when sync was disabled by the domain admin or via the "SyncDisabled" policy. The default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556. This option does not support Linux and Android, it will fallback to "Enable browser sign-in" if used.
+      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync for the account, except for the case when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync was disabled by the domain admin or via the <ph name="SYNC_POLICY_NAME">SyncDisabled</ph> policy. The default value of <ph name="GUEST_MODE_POLICY_NAME">BrowserGuestModeEnabled</ph> will be set to disabled. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556 . This option is not supported on <ph name="LINUX_OS_NAME">Linux</ph>, <ph name="ANDROID_NAME">Android</ph> or <ph name="IOS_NAME">iOS</ph>. It will fall back to "Enable browser sign-in" if used.
 
-      If this policy is not set then the user can decide if they want to enable the browser sign in option and use it as they see fit.''',
+      If this policy is not set then the user can decide if they want to enable browser sign-in in the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings and use it as they see fit.''',
     },
     {
       'name': 'SSLVersionMin',
@@ -23353,15 +23352,49 @@ If this policy is left unset, privacy screen is disabled initially but can be co
         'per_profile': True,
       },
       'default': True,
+      'deprecated': True,
       'example_value': True,
       'id': 678,
       'caption': '''Allows native notifications''',
       'tags': [],
-      'desc': '''Configures whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on Linux will use native notifications.
+      'desc': '''This policy is deprecated, please use the '<ph name="ALLOW_SYSTEM_NOTIFICATIONS_POLICY_NAME">AllowSystemNotifications</ph>' policy instead.
+
+Configures whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on Linux will use native notifications.
 
 If set to True or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to use native notifications.
 
 If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use native notifications. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Message Center will be used as a fallback.''',
+    },
+    {
+      'name': 'AllowSystemNotifications',
+      'owners': ['file://chrome/browser/notifications/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.linux:90-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'default': True,
+      'example_value': True,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow system notifications to be used',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow system notifications to be used',
+        },
+      ],
+      'id': 828,
+      'caption': '''Allows system notifications''',
+      'tags': [],
+      'desc': '''Configures whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on Linux will use system notifications.
+
+If set to True or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to use system notifications.
+
+If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use system notifications. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Message Center will be used as a fallback.''',
     },
     {
       'name': 'RequiredClientCertificateForUser',
@@ -24726,6 +24759,28 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       The <ph name="RUN_ON_OS_LOGIN_FIELD">"run_on_os_login"</ph> field specifies if a web app can be run during OS login. If this field is set to <ph name="BLOCKED">"blocked"</ph>, the web app will not run during OS login and the user will not be able to enable this later. If this field is set to <ph name="RUN_WINDOWED">"run_windowed"</ph>, the web app will run during OS login and the user will not be able to disable this later. If this field is set to <ph name="ALLOWED">"allowed"</ph>, the user will be able to configure the web app to run at OS login. The default configuration only allows the <ph name="ALLOWED">"allowed"</ph> and <ph name="BLOCKED">"blocked"</ph> values.
       ''',
     },
+    {
+      'name': 'FetchKeepaliveDurationOnShutdown',
+      'owners': ['yhirano@chromium.org'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 5 },
+      'default': 0,
+      'supported_on': ['chrome.*:90-', 'chrome_os:90-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 827,
+      'caption': 'Fetch keepalive duration on Shutdown',
+      'tags': [],
+      'desc': '''Controls the duration (in seconds) allowed for keepalive requests on browser shutdown.
+
+      When specified, browser shutdown can be blocked up to the specified seconds,
+      to process keepalive (https://fetch.spec.whatwg.org/#request-keepalive-flag) requests.
+
+      The default value (0) means this feature is disabled.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -25652,6 +25707,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 826,
+  'highest_id_currently_used': 828,
   'highest_atomic_group_id_currently_used': 40
 }

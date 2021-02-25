@@ -78,23 +78,10 @@ FloatRect DeNormalizeRect(const gfx::RectF& normalized, const IntRect& base) {
 }  // namespace
 
 // static
-RemoteFrame* RemoteFrame::FromFrameToken(
-    const base::UnguessableToken& frame_token) {
-  RemoteFramesByTokenMap& remote_frames_map = GetRemoteFramesMap();
-  auto it = remote_frames_map.find(base::UnguessableTokenHash()(frame_token));
-  return it == remote_frames_map.end() ? nullptr : it->value.Get();
-}
-
-// static
 RemoteFrame* RemoteFrame::FromFrameToken(const RemoteFrameToken& frame_token) {
-  return FromFrameToken(frame_token.value());
-}
-
-// static
-RemoteFrame* RemoteFrame::FromFrameToken(const FrameToken& frame_token) {
-  if (!frame_token.Is<RemoteFrameToken>())
-    return nullptr;
-  return FromFrameToken(frame_token.GetAs<RemoteFrameToken>());
+  RemoteFramesByTokenMap& remote_frames_map = GetRemoteFramesMap();
+  auto it = remote_frames_map.find(RemoteFrameToken::Hasher()(frame_token));
+  return it == remote_frames_map.end() ? nullptr : it->value.Get();
 }
 
 RemoteFrame::RemoteFrame(
@@ -749,7 +736,7 @@ void RemoteFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
 }
 
 void RemoteFrame::UpdateOpener(
-    const base::Optional<base::UnguessableToken>& opener_frame_token) {
+    const base::Optional<blink::FrameToken>& opener_frame_token) {
   if (auto* web_frame = WebFrame::FromCoreFrame(this)) {
     Frame* opener_frame = nullptr;
     if (opener_frame_token)
@@ -786,9 +773,10 @@ void RemoteFrame::SetOpener(Frame* opener_frame) {
       // update another frame's opener.
       DCHECK(opener_frame->IsLocalFrame());
       GetRemoteFrameHostRemote().DidChangeOpener(
-          opener_frame ? base::Optional<base::UnguessableToken>(
-                             opener_frame->GetFrameToken())
-                       : base::nullopt);
+          opener_frame
+              ? base::Optional<blink::LocalFrameToken>(
+                    opener_frame->GetFrameToken().GetAs<LocalFrameToken>())
+              : base::nullopt);
     }
   }
   SetOpenerDoNotNotify(opener_frame);

@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/notification_icons_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -145,17 +146,16 @@ void NotificationIconsController::AddNotificationTrayItems(
         std::make_unique<NotificationIconTrayItemView>(tray_->shelf())));
   }
 
-  hidden_notification_count_view_ = tray_container->AddChildView(
-      std::make_unique<HiddenNotificationCountView>(tray_->shelf(), this));
+  notification_counter_view_ = tray_container->AddChildView(
+      std::make_unique<NotificationCounterView>(tray_->shelf(), this));
+
+  quiet_mode_view_ = tray_container->AddChildView(
+      std::make_unique<QuietModeView>(tray_->shelf()));
 
   separator_ = tray_container->AddChildView(
       std::make_unique<SeparatorTrayItemView>(tray_->shelf()));
 
   OnSystemTrayButtonSizeChanged(tray_->model()->GetSystemTrayButtonSize());
-
-  // TODO(crbug.com/1161557): Refactor the code by moving
-  // |notification_counter_item_| and |quiet_mode_view_| of UnifiedSystemTray
-  // into this controller.
 }
 
 bool NotificationIconsController::TrayItemHasNotification() const {
@@ -179,7 +179,7 @@ bool NotificationIconsController::ShouldShowNotificationItemsInTray() {
 
 base::string16 NotificationIconsController::GetAccessibleNameString() const {
   if (!TrayItemHasNotification())
-    return base::EmptyString16();
+    return notification_counter_view_->GetAccessibleNameString();
 
   std::vector<base::string16> status;
   status.push_back(l10n_util::GetPluralStringFUTF16(
@@ -188,23 +188,30 @@ base::string16 NotificationIconsController::GetAccessibleNameString() const {
   for (NotificationIconTrayItemView* tray_item : tray_items_) {
     status.push_back(tray_item->GetAccessibleNameString());
   }
-  status.push_back(hidden_notification_count_view_->label()->GetTooltipText());
+  status.push_back(notification_counter_view_->GetAccessibleNameString());
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_NOTIFICATIONS_ICONS_ACCESSIBLE_NAME, status, nullptr);
+}
+
+void NotificationIconsController::UpdateNotificationIndicators() {
+  notification_counter_view_->Update();
+  quiet_mode_view_->Update();
 }
 
 void NotificationIconsController::OnSystemTrayButtonSizeChanged(
     UnifiedSystemTrayModel::SystemTrayButtonSize system_tray_size) {
   icons_view_visible_ =
+      features::IsScalableStatusAreaEnabled() &&
       system_tray_size != UnifiedSystemTrayModel::SystemTrayButtonSize::kSmall;
   UpdateNotificationIcons();
-  hidden_notification_count_view_->Update();
+  UpdateNotificationIndicators();
 }
 
 void NotificationIconsController::OnNotificationAdded(const std::string& id) {
   message_center::Notification* notification =
       message_center::MessageCenter::Get()->FindVisibleNotificationById(id);
-  if (!ShouldShowNotification(notification))
+  // `notification` is null if it is not visible.
+  if (!notification || !ShouldShowNotification(notification))
     return;
 
   // Reset the notification icons if a notification is added since we don't
@@ -229,7 +236,7 @@ void NotificationIconsController::OnNotificationUpdated(const std::string& id) {
 void NotificationIconsController::OnSessionStateChanged(
     session_manager::SessionState state) {
   UpdateNotificationIcons();
-  hidden_notification_count_view_->Update();
+  UpdateNotificationIndicators();
 }
 
 void NotificationIconsController::UpdateNotificationIcons() {

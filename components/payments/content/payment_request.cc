@@ -721,8 +721,8 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
     DCHECK(state()->IsInitialized() && spec()->IsInitialized());
     journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SKIPPED_SHOW);
   } else if (state()->IsInitialized() && spec()->IsInitialized()) {
-    // Set EVENT_SHOWN only after state() and spec() initialization.
-    journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
+    // Set "shown" only after state() and spec() initialization.
+    journey_logger_.SetShown();
   }
   return skipped_payment_request_ui_;
 }
@@ -732,8 +732,7 @@ void PaymentRequest::OnPaymentResponseAvailable(
   DCHECK(!response->method_name.empty());
   DCHECK(!response->stringified_details.empty());
 
-  journey_logger_.SetEventOccurred(
-      JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+  journey_logger_.SetReceivedInstrumentDetails();
 
   // Log the correct "selected instrument" metric according to its type and
   // the method name in response.

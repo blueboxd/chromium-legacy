@@ -1090,6 +1090,9 @@ extern const char kOverrideSitePrefsForHrefTranslateDescription[];
 extern const char kUpdateHoverAtBeginFrameName[];
 extern const char kUpdateHoverAtBeginFrameDescription[];
 
+extern const char kOverscrollHistoryNavigationName[];
+extern const char kOverscrollHistoryNavigationDescription[];
+
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
@@ -2769,6 +2772,9 @@ extern const char kShowBluetoothDebugLogToggleDescription[];
 
 extern const char kEnableBluetoothVerboseLogsForGooglersName[];
 extern const char kEnableBluetoothVerboseLogsForGooglersDescription[];
+
+extern const char kShowDateInTrayName[];
+extern const char kShowDateInTrayDescription[];
 
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];

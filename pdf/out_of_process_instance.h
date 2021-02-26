@@ -26,7 +26,6 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -99,11 +98,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void FlushCallback(int32_t result);
 
   // PdfViewPluginBase:
-  void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void DidScroll(const gfx::Vector2d& offset) override;
-  void ScrollToX(int x_in_screen_coords) override;
-  void ScrollToY(int y_in_screen_coords) override;
-  void ScrollBy(const gfx::Vector2d& scroll_delta) override;
   void ScrollToPage(int page) override;
   void NavigateTo(const std::string& url,
                   WindowOpenDisposition disposition) override;
@@ -144,7 +139,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
-  void IsSelectingChanged(bool is_selecting) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void EnteredEditMode() override;
   void DocumentFocusChanged(bool document_has_focus) override;
@@ -197,10 +191,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
   void HandleSaveAttachmentMessage(const pp::VarDictionary& dict);
   void HandleSaveMessage(const pp::VarDictionary& dict);
-  void HandleUpdateScrollMessage(const pp::VarDictionary& dict);
-
-  // Repaints plugin contents based on the current scroll position.
-  void UpdateScroll();
 
   void ResetRecentlySentFindUpdate(int32_t);
 
@@ -300,9 +290,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // The current cursor.
   PP_CursorType_Dev cursor_ = PP_CURSORTYPE_POINTER;
-
-  // The scroll position in CSS pixels.
-  gfx::Point scroll_position_;
 
   // True if the plugin is full-page.
   bool full_ = false;

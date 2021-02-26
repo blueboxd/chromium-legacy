@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '77637f2dd222530c721018185a90e24a51e7a745',
+  'angle_revision': '23462996035db5276d7afc60fd023d95ddc5e996',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -224,7 +224,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'df97b13e53d1b96151fa119e3e94db19f5df097b',
+  'pdfium_revision': 'd459c6d096f40018b5ffdad085c2da0a56fcb811',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -283,7 +283,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd07fa527425d5592b973cc0404050130a3cb20d8',
+  'devtools_frontend_revision': '984bca8a715a6e29fb1bc68388f6d7ffb32d40bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -323,7 +323,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '545a6970cbe9e986dd25e01f7ecf2f9a1b17c756',
+  'dawn_revision': '6cbef93c73ceff40010e74533d461f80e2afbd51',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -534,7 +534,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/ios/third_party/earl_grey2/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'c05dde42f334844e33846b5a63bf4224dd739346',
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '13806baea65bbbae086eb914d9c3e34a6e3bb6d1',
       'condition': 'checkout_ios',
   },
 
@@ -694,7 +694,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'oTxh0RwMCrhwEvOXDzS05sD3KmU_QLH-ZgxIlGfuC_gC',
+          'version': 'Y8qIePEZorBfD5r25tWeuWXvLyctrYTxBHiBnReggZwC',
       },
     ],
     'condition': 'checkout_android',
@@ -927,7 +927,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7d690053cbb9914e0c014ec10fe181bfcd6ec2dc',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8a2e6a7ae010a064744acd16ef26aa27a5df6e34',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1299,7 +1299,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '5a0eb94b534a629ba1f71cabc94f04cfc1bfdc0c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9e99a0f72008421f9f07ccf0b0f67c6d10d03831',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1607,7 +1607,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@545f52c6cc4fb4a9ad69ddf030d3d902d2f0bb86',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cd81b422118630913342c86c187a3b33096690a8',
     'condition': 'checkout_src_internal',
   },
 

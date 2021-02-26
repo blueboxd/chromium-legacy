@@ -36,7 +36,6 @@
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/document_attachment_info.h"
-#include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/bitmap.h"
@@ -92,22 +91,6 @@ constexpr char kType[] = "type";
 constexpr char kJSMessageId[] = "messageId";
 // Beep message arguments. (Plugin -> Page).
 constexpr char kJSBeepType[] = "beep";
-// UpdateScroll message arguments. (Page -> Plugin).
-constexpr char kJSUpdateScrollType[] = "updateScroll";
-constexpr char kJSUpdateScrollX[] = "x";
-constexpr char kJSUpdateScrollY[] = "y";
-// Stop scrolling message (Page -> Plugin)
-constexpr char kJSStopScrollingType[] = "stopScrolling";
-// Document dimension arguments (Plugin -> Page).
-constexpr char kJSDocumentDimensionsType[] = "documentDimensions";
-constexpr char kJSDocumentWidth[] = "width";
-constexpr char kJSDocumentHeight[] = "height";
-constexpr char kJSLayoutOptions[] = "layoutOptions";
-constexpr char kJSPageDimensions[] = "pageDimensions";
-constexpr char kJSPageX[] = "x";
-constexpr char kJSPageY[] = "y";
-constexpr char kJSPageWidth[] = "width";
-constexpr char kJSPageHeight[] = "height";
 // Document print preview loaded (Plugin -> Page)
 constexpr char kJSPreviewLoadedType[] = "printPreviewLoaded";
 // Attachments (Plugin -> Page)
@@ -168,12 +151,6 @@ constexpr char kJSPrintPreviewPageCount[] = "pageCount";
 constexpr char kJSLoadPreviewPageType[] = "loadPreviewPage";
 constexpr char kJSPreviewPageUrl[] = "url";
 constexpr char kJSPreviewPageIndex[] = "index";
-// Set scroll position (Plugin -> Page)
-constexpr char kJSSetScrollPositionType[] = "setScrollPosition";
-constexpr char kJSPositionX[] = "x";
-constexpr char kJSPositionY[] = "y";
-// Scroll by (Plugin -> Page)
-constexpr char kJSScrollByType[] = "scrollBy";
 // Navigate to the given URL (Plugin -> Page)
 constexpr char kJSNavigateType[] = "navigate";
 constexpr char kJSNavigateUrl[] = "url";
@@ -191,9 +168,6 @@ constexpr char kJSEmailCc[] = "cc";
 constexpr char kJSEmailBcc[] = "bcc";
 constexpr char kJSEmailSubject[] = "subject";
 constexpr char kJSEmailBody[] = "body";
-// Selecting text in document (Plugin -> Page)
-constexpr char kJSSetIsSelectingType[] = "setIsSelecting";
-constexpr char kJSIsSelecting[] = "isSelecting";
 
 // Editing forms in document (Plugin -> Page)
 constexpr char kJSSetIsEditingType[] = "setIsEditing";
@@ -747,9 +721,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 
   std::string type = dict.Get(kType).AsString();
 
-  if (type == kJSUpdateScrollType) {
-    HandleUpdateScrollMessage(dict);
-  } else if (type == kJSGetPasswordCompleteType) {
+  if (type == kJSGetPasswordCompleteType) {
     HandleGetPasswordCompleteMessage(dict);
   } else if (type == kJSPrintType) {
     Print();
@@ -761,8 +733,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     HandleResetPrintPreviewModeMessage(dict);
   } else if (type == kJSLoadPreviewPageType) {
     HandleLoadPreviewPageMessage(dict);
-  } else if (type == kJSStopScrollingType) {
-    set_stop_scrolling(true);
   } else if (type == kJSGetThumbnailType) {
     HandleGetThumbnailMessage(dict);
   } else {
@@ -840,20 +810,12 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
                               view.GetDeviceScale());
 
   if (is_print_preview_ && !stop_scrolling()) {
-    scroll_position_ = PointFromPPPoint(view.GetScrollOffset());
+    set_scroll_position(PointFromPPPoint(view.GetScrollOffset()));
     UpdateScroll();
   }
 
   // Scrolling in the main PDF Viewer UI is already handled by
   // HandleUpdateScrollMessage().
-}
-
-void OutOfProcessInstance::UpdateScroll() {
-  DCHECK(!stop_scrolling());
-  gfx::PointF scroll_position_float(scroll_position_.x(), scroll_position_.y());
-  scroll_position_float = BoundScrollPositionToDocument(scroll_position_float);
-  engine()->ScrolledToXPosition(scroll_position_float.x() * device_scale());
-  engine()->ScrolledToYPosition(scroll_position_float.y() * device_scale());
 }
 
 void OutOfProcessInstance::DidChangeFocus(bool has_focus) {
@@ -1082,57 +1044,9 @@ pp::VarArray OutOfProcessInstance::GetDocumentAttachments() {
   return attachments;
 }
 
-void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
-  pp::VarDictionary dimensions;
-  dimensions.Set(kType, kJSDocumentDimensionsType);
-  dimensions.Set(kJSDocumentWidth, pp::Var(layout.size().width()));
-  dimensions.Set(kJSDocumentHeight, pp::Var(layout.size().height()));
-  dimensions.Set(kJSLayoutOptions, VarFromValue(layout.options().ToValue()));
-  pp::VarArray page_dimensions_array;
-  for (size_t i = 0; i < layout.page_count(); ++i) {
-    const gfx::Rect& page_rect = layout.page_rect(i);
-    pp::VarDictionary page_dimensions;
-    page_dimensions.Set(kJSPageX, pp::Var(page_rect.x()));
-    page_dimensions.Set(kJSPageY, pp::Var(page_rect.y()));
-    page_dimensions.Set(kJSPageWidth, pp::Var(page_rect.width()));
-    page_dimensions.Set(kJSPageHeight, pp::Var(page_rect.height()));
-    page_dimensions_array.Set(i, page_dimensions);
-  }
-  dimensions.Set(kJSPageDimensions, page_dimensions_array);
-  PostMessage(dimensions);
-
-  // Reload the accessibility tree on layout changes because the relative page
-  // bounds are no longer valid.
-  if (layout.dirty() && accessibility_state() == AccessibilityState::kLoaded)
-    LoadAccessibility();
-}
-
 void OutOfProcessInstance::DidScroll(const gfx::Vector2d& offset) {
   if (!image_data().drawsNothing())
     paint_manager().ScrollRect(available_area(), offset);
-}
-
-void OutOfProcessInstance::ScrollToX(int x_in_screen_coords) {
-  pp::VarDictionary position;
-  position.Set(kType, kJSSetScrollPositionType);
-  position.Set(kJSPositionX, pp::Var(x_in_screen_coords / device_scale()));
-  PostMessage(position);
-}
-
-void OutOfProcessInstance::ScrollToY(int y_in_screen_coords) {
-  pp::VarDictionary position;
-  position.Set(kType, kJSSetScrollPositionType);
-  float new_y_viewport_coords = y_in_screen_coords / device_scale();
-  position.Set(kJSPositionY, pp::Var(new_y_viewport_coords));
-  PostMessage(position);
-}
-
-void OutOfProcessInstance::ScrollBy(const gfx::Vector2d& scroll_delta) {
-  pp::VarDictionary position;
-  position.Set(kType, kJSScrollByType);
-  position.Set(kJSPositionX, pp::Var(scroll_delta.x() / device_scale()));
-  position.Set(kJSPositionY, pp::Var(scroll_delta.y() / device_scale()));
-  PostMessage(position);
 }
 
 void OutOfProcessInstance::ScrollToPage(int page) {
@@ -1637,24 +1551,6 @@ void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {
   }
 }
 
-void OutOfProcessInstance::HandleUpdateScrollMessage(
-    const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSUpdateScrollX)).is_number() ||
-      !dict.Get(pp::Var(kJSUpdateScrollY)).is_number()) {
-    NOTREACHED();
-    return;
-  }
-
-  if (stop_scrolling()) {
-    return;
-  }
-
-  int x = dict.Get(pp::Var(kJSUpdateScrollX)).AsInt();
-  int y = dict.Get(pp::Var(kJSUpdateScrollY)).AsInt();
-  scroll_position_ = gfx::Point(x, y);
-  UpdateScroll();
-}
-
 void OutOfProcessInstance::PreviewDocumentLoadComplete() {
   if (preview_document_load_state_ != DocumentLoadState::kLoading ||
       preview_pages_info_.empty()) {
@@ -1833,13 +1729,6 @@ void OutOfProcessInstance::AppendBlankPrintPreviewPages() {
 
 bool OutOfProcessInstance::IsPrintPreview() {
   return is_print_preview_;
-}
-
-void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
-  pp::VarDictionary message;
-  message.Set(kType, kJSSetIsSelectingType);
-  message.Set(kJSIsSelecting, pp::Var(is_selecting));
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::EnteredEditMode() {

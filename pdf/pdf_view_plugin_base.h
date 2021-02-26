@@ -49,8 +49,13 @@ class PdfViewPluginBase : public PDFEngine::Client,
   PdfViewPluginBase& operator=(const PdfViewPluginBase& other) = delete;
 
   // PDFEngine::Client:
+  void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const gfx::Rect& rect) override;
+  void ScrollToX(int x_screen_coords) override;
+  void ScrollToY(int y_screen_coords) override;
+  void ScrollBy(const gfx::Vector2d& delta) override;
   SkColor GetBackgroundColor() override;
+  void SetIsSelecting(bool is_selecting) override;
 
   // PaintManager::Client
   void OnPaint(const std::vector<gfx::Rect>& paint_rects,
@@ -151,6 +156,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // aren't painted by the PDF engine).
   void CalculateBackgroundParts();
 
+  // Repaints the plugin contents based on the current scroll position.
+  void UpdateScroll();
+
   // Bound the given scroll position to the document.
   gfx::PointF BoundScrollPositionToDocument(const gfx::PointF& scroll_position);
 
@@ -210,10 +218,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   float device_scale() const { return device_scale_; }
 
-  bool stop_scrolling() const { return stop_scrolling_; }
-  void set_stop_scrolling(bool stop_scrolling) {
-    stop_scrolling_ = stop_scrolling;
+  void set_scroll_position(const gfx::Point& scroll_position) {
+    scroll_position_ = scroll_position;
   }
+
+  bool stop_scrolling() const { return stop_scrolling_; }
 
   DocumentLoadState document_load_state() { return document_load_state_; }
   void set_document_load_state(DocumentLoadState state) {
@@ -233,6 +242,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void HandleSetBackgroundColorMessage(const base::Value& message);
   void HandleSetReadOnlyMessage(const base::Value& message);
   void HandleSetTwoUpViewMessage(const base::Value& message);
+  void HandleStopScrollingMessage(const base::Value& /*message*/);
+  void HandleUpdateScrollMessage(const base::Value& message);
   void HandleViewportMessage(const base::Value& message);
 
   // Paints the given invalid area of the plugin to the given graphics device.
@@ -298,6 +309,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // True if we request a new bitmap rendering.
   bool needs_reraster_ = true;
+
+  // The scroll position in CSS pixels.
+  gfx::Point scroll_position_;
 
   // The scroll position for the last raster, before any transformations are
   // applied.

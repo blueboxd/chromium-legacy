@@ -197,15 +197,7 @@ void PdfViewWebPlugin::DidFinishLoading() {}
 
 void PdfViewWebPlugin::DidFailLoading(const blink::WebURLError& error) {}
 
-void PdfViewWebPlugin::ProposeDocumentLayout(const DocumentLayout& layout) {}
-
 void PdfViewWebPlugin::DidScroll(const gfx::Vector2d& offset) {}
-
-void PdfViewWebPlugin::ScrollToX(int x_in_screen_coords) {}
-
-void PdfViewWebPlugin::ScrollToY(int y_in_screen_coords) {}
-
-void PdfViewWebPlugin::ScrollBy(const gfx::Vector2d& scroll_delta) {}
 
 void PdfViewWebPlugin::ScrollToPage(int page) {}
 
@@ -296,8 +288,6 @@ void PdfViewWebPlugin::FormTextFieldFocusChange(bool in_focus) {}
 bool PdfViewWebPlugin::IsPrintPreview() {
   return false;
 }
-
-void PdfViewWebPlugin::IsSelectingChanged(bool is_selecting) {}
 
 void PdfViewWebPlugin::SelectionChanged(const gfx::Rect& left,
                                         const gfx::Rect& right) {}

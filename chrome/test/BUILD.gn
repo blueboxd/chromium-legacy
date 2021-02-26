@@ -574,6 +574,7 @@ if (is_android) {
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
       "../browser/android/tab_android_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
+      "../browser/browsing_data/access_context_audit_browsertest.cc",
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/metrics/metrics_service_user_demographics_browsertest.cc",
       "../browser/metrics/ukm_browsertest.cc",
@@ -2518,6 +2519,16 @@ if (!is_android) {
         "../browser/ash/profiles/profile_helper_browsertest.cc",
         "../browser/ash/system/device_disabling_browsertest.cc",
         "../browser/ash/system/tray_accessibility_browsertest.cc",
+        "../browser/ash/web_applications/camera_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/diagnostics_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/eche_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/help_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/media_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/print_management_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/scanning_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/settings_app_integration_browsertest.cc",
+        "../browser/ash/web_applications/system_web_app_integration_test.cc",
+        "../browser/ash/web_applications/system_web_app_integration_test.h",
         "../browser/chrome_main_browsertest.cc",
         "../browser/chromeos/apps/apk_web_app_installer_browsertest.cc",
         "../browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge_browsertest.cc",
@@ -2761,16 +2772,6 @@ if (!is_android) {
         "../browser/chromeos/scoped_test_system_nss_key_slot_mixin.h",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
-        "../browser/chromeos/web_applications/camera_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/diagnostics_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/eche_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/help_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/media_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/print_management_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/scanning_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/settings_app_integration_browsertest.cc",
-        "../browser/chromeos/web_applications/system_web_app_integration_test.cc",
-        "../browser/chromeos/web_applications/system_web_app_integration_test.h",
         "../browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service_browsertest.cc",
         "../browser/device_api/device_attribute_api_browsertest.cc",
         "../browser/download/notification/download_notification_browsertest.cc",
@@ -2881,8 +2882,8 @@ if (!is_android) {
       data += [ "../browser/resources/chromeos/accessibility/switch_access/test_support.js" ]
       if (!is_official_build) {
         sources += [
-          "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc",
-          "../browser/chromeos/web_applications/telemetry_extension_integration_browsertest.cc",
+          "../browser/ash/web_applications/sample_system_web_app_integration_browsertest.cc",
+          "../browser/ash/web_applications/telemetry_extension_integration_browsertest.cc",
         ]
       }
       if (use_cups) {
@@ -3476,6 +3477,8 @@ test("unit_tests") {
     "../browser/bluetooth/bluetooth_chooser_context_unittest.cc",
     "../browser/bookmarks/managed_bookmark_service_unittest.cc",
     "../browser/browser_about_handler_unittest.cc",
+    "../browser/browsing_data/access_context_audit_database_unittest.cc",
+    "../browser/browsing_data/access_context_audit_service_unittest.cc",
     "../browser/browsing_data/browsing_data_history_observer_service_unittest.cc",
     "../browser/browsing_data/browsing_data_media_license_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_quota_helper_unittest.cc",
@@ -3983,6 +3986,7 @@ test("unit_tests") {
       "../browser/global_keyboard_shortcuts_mac_unittest.mm",
       "../browser/mac/exception_processor_unittest.mm",
       "../browser/mac/keystone_glue_unittest.mm",
+      "../browser/notifications/alert_dispatcher_mojo_unittest.mm",
       "../browser/notifications/notification_alert_service_bridge_unittest.mm",
       "../browser/notifications/notification_platform_bridge_mac_unittest.mm",
       "../browser/notifications/notification_platform_bridge_mac_unnotification_unittest.mm",
@@ -4053,8 +4057,6 @@ test("unit_tests") {
 
   if (!is_android) {
     sources += [
-      "../browser/browsing_data/access_context_audit_database_unittest.cc",
-      "../browser/browsing_data/access_context_audit_service_unittest.cc",
       "../browser/browsing_data/chrome_browsing_data_lifetime_manager_unittest.cc",
       "../browser/component_updater/soda_component_installer_unittest.cc",
       "../browser/component_updater/soda_language_pack_component_installer_unittest.cc",

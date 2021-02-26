@@ -136,11 +136,11 @@ class PDFEngine {
     // Scroll the horizontal/vertical scrollbars to a given position.
     // Values are in screen coordinates, where 0 is the top/left of the document
     // and a positive value is the distance in pixels from that line.
-    virtual void ScrollToX(int x_in_screen_coords) {}
-    virtual void ScrollToY(int y_in_screen_coords) {}
+    virtual void ScrollToX(int x_screen_coords) {}
+    virtual void ScrollToY(int y_screen_coords) {}
 
     // Scroll by a given delta relative to the current position.
-    virtual void ScrollBy(const gfx::Vector2d& scroll_delta) {}
+    virtual void ScrollBy(const gfx::Vector2d& delta) {}
 
     // Scroll to zero-based |page|.
     virtual void ScrollToPage(int page) {}
@@ -250,7 +250,7 @@ class PDFEngine {
     virtual SkColor GetBackgroundColor() = 0;
 
     // Sets selection status.
-    virtual void IsSelectingChanged(bool is_selecting) {}
+    virtual void SetIsSelecting(bool is_selecting) {}
 
     virtual void SelectionChanged(const gfx::Rect& left,
                                   const gfx::Rect& right) {}

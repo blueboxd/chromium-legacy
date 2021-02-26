@@ -144,6 +144,14 @@ void JourneyLogger::SetEventOccurred(Event event) {
   events_ |= event;
 }
 
+void JourneyLogger::SetShown() {
+  SetEventOccurred(EVENT_SHOWN);
+}
+
+void JourneyLogger::SetReceivedInstrumentDetails() {
+  SetEventOccurred(EVENT_RECEIVED_INSTRUMENT_DETAILS);
+}
+
 void JourneyLogger::SetPayClicked() {
   SetEventOccurred(EVENT_PAY_CLICKED);
 }

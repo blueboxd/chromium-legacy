@@ -29,6 +29,7 @@
 #include "base/values.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
+#include "pdf/document_layout.h"
 #include "pdf/paint_ready_rect.h"
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
@@ -39,6 +40,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/skia_util.h"
 
 namespace chrome_pdf {
@@ -86,6 +88,31 @@ PdfViewPluginBase::PdfViewPluginBase() = default;
 
 PdfViewPluginBase::~PdfViewPluginBase() = default;
 
+void PdfViewPluginBase::ProposeDocumentLayout(const DocumentLayout& layout) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "documentDimensions");
+  message.SetIntKey("width", layout.size().width());
+  message.SetIntKey("height", layout.size().height());
+  message.SetKey("layoutOptions", layout.options().ToValue());
+  base::Value page_dimensions_list(base::Value::Type::LIST);
+  for (size_t i = 0; i < layout.page_count(); ++i) {
+    const gfx::Rect& page_rect = layout.page_rect(i);
+    base::Value page_dimensions(base::Value::Type::DICTIONARY);
+    page_dimensions.SetIntKey("x", page_rect.x());
+    page_dimensions.SetIntKey("y", page_rect.y());
+    page_dimensions.SetIntKey("width", page_rect.width());
+    page_dimensions.SetIntKey("height", page_rect.height());
+    page_dimensions_list.Append(std::move(page_dimensions));
+  }
+  message.SetKey("pageDimensions", std::move(page_dimensions_list));
+  SendMessage(std::move(message));
+
+  // Reload the accessibility tree on layout changes because the relative page
+  // bounds are no longer valid.
+  if (layout.dirty() && accessibility_state_ == AccessibilityState::kLoaded)
+    LoadAccessibility();
+}
+
 void PdfViewPluginBase::Invalidate(const gfx::Rect& rect) {
   if (in_paint_) {
     deferred_invalidates_.push_back(rect);
@@ -96,8 +123,44 @@ void PdfViewPluginBase::Invalidate(const gfx::Rect& rect) {
   paint_manager_.InvalidateRect(offset_rect);
 }
 
+void PdfViewPluginBase::ScrollToX(int x_screen_coords) {
+  const float x_scroll_pos = x_screen_coords / device_scale_;
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "setScrollPosition");
+  message.SetDoubleKey("x", x_scroll_pos);
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::ScrollToY(int y_screen_coords) {
+  const float y_scroll_pos = y_screen_coords / device_scale_;
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "setScrollPosition");
+  message.SetDoubleKey("y", y_scroll_pos);
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::ScrollBy(const gfx::Vector2d& delta) {
+  const float x_delta = delta.x() / device_scale_;
+  const float y_delta = delta.y() / device_scale_;
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "scrollBy");
+  message.SetDoubleKey("x", x_delta);
+  message.SetDoubleKey("y", y_delta);
+  SendMessage(std::move(message));
+}
+
 SkColor PdfViewPluginBase::GetBackgroundColor() {
   return background_color_;
+}
+
+void PdfViewPluginBase::SetIsSelecting(bool is_selecting) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "setIsSelecting");
+  message.SetBoolKey("isSelecting", is_selecting);
+  SendMessage(std::move(message));
 }
 
 void PdfViewPluginBase::HandleMessage(const base::Value& message) {
@@ -117,6 +180,8 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
            &PdfViewPluginBase::HandleSetBackgroundColorMessage},
           {"setReadOnly", &PdfViewPluginBase::HandleSetReadOnlyMessage},
           {"setTwoUpView", &PdfViewPluginBase::HandleSetTwoUpViewMessage},
+          {"stopScrolling", &PdfViewPluginBase::HandleStopScrollingMessage},
+          {"updateScroll", &PdfViewPluginBase::HandleUpdateScrollMessage},
           {"viewport", &PdfViewPluginBase::HandleViewportMessage},
       });
 
@@ -306,6 +371,15 @@ void PdfViewPluginBase::CalculateBackgroundParts() {
     background_parts_.push_back(part);
 }
 
+void PdfViewPluginBase::UpdateScroll() {
+  DCHECK(!stop_scrolling_);
+  const gfx::PointF scaled_scroll_position = gfx::ScalePoint(
+      BoundScrollPositionToDocument(gfx::PointF(scroll_position_)),
+      device_scale_);
+  engine()->ScrolledToXPosition(scaled_scroll_position.x());
+  engine()->ScrolledToYPosition(scaled_scroll_position.y());
+}
+
 gfx::PointF PdfViewPluginBase::BoundScrollPositionToDocument(
     const gfx::PointF& scroll_position) {
   float max_x = std::max(
@@ -482,6 +556,20 @@ void PdfViewPluginBase::HandleSetReadOnlyMessage(const base::Value& message) {
 
 void PdfViewPluginBase::HandleSetTwoUpViewMessage(const base::Value& message) {
   engine()->SetTwoUpView(message.FindBoolKey("enableTwoUpView").value());
+}
+
+void PdfViewPluginBase::HandleStopScrollingMessage(
+    const base::Value& /*message*/) {
+  stop_scrolling_ = true;
+}
+
+void PdfViewPluginBase::HandleUpdateScrollMessage(const base::Value& message) {
+  if (stop_scrolling_)
+    return;
+
+  scroll_position_ = gfx::Point(message.FindIntKey("x").value(),
+                                message.FindIntKey("y").value());
+  UpdateScroll();
 }
 
 void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {

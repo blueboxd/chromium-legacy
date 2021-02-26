@@ -1772,6 +1772,7 @@
     "ClientStorageAccessContextAuditing": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -7897,6 +7898,24 @@
             "experiments": [
                 {
                     "name": "quantile:0.95,forget_factor:0.983,resample_interval_ms:500"
+                }
+            ]
+        }
+    ],
+    "WebRTC-Bwe-ReceiverLimitCapsOnly": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
                 }
             ]
         }

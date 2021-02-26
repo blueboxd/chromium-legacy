@@ -3150,6 +3150,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebBluetoothNewPermissionsBackend)},
 #if defined(USE_AURA)
+    {"overscroll-history-navigation",
+     flag_descriptions::kOverscrollHistoryNavigationName,
+     flag_descriptions::kOverscrollHistoryNavigationDescription, kOsAura,
+     FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
      MULTI_VALUE_TYPE(kPullToRefreshChoices)},
@@ -6630,8 +6634,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"client-storage-access-context-auditing",
      flag_descriptions::kClientStorageAccessContextAuditingName,
-     flag_descriptions::kClientStorageAccessContextAuditingDescription,
-     kOsDesktop,
+     flag_descriptions::kClientStorageAccessContextAuditingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClientStorageAccessContextAuditing)},
 
     {"clipboard-filenames", flag_descriptions::kClipboardFilenamesName,
@@ -7196,6 +7199,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-scalable-status-area", flag_descriptions::kScalableStatusAreaName,
      flag_descriptions::kScalableStatusAreaDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kScalableStatusArea)},
+
+    {"enable-show-date-in-tray", flag_descriptions::kShowDateInTrayName,
+     flag_descriptions::kShowDateInTrayDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kShowDateInTrayButton)},
 #endif
 
     {"autofill-address-save-prompt",
@@ -7453,6 +7460,26 @@ std::vector<FeatureEntry>* GetEntriesForTesting() {
   return entries.get();
 }
 
+void SetFeatureEntries(const std::vector<FeatureEntry>& entries) {
+  CHECK(GetEntriesForTesting()->empty());  // IN-TEST
+  for (const auto& entry : entries)
+    GetEntriesForTesting()->push_back(entry);  // IN-TEST
+  FlagsStateSingleton::GetInstance()->RebuildState(
+      *GetEntriesForTesting());  // IN-TEST
+}
+
+ScopedFeatureEntries::ScopedFeatureEntries(
+    const std::vector<flags_ui::FeatureEntry>& entries) {
+  SetFeatureEntries(entries);
+}
+
+ScopedFeatureEntries::~ScopedFeatureEntries() {
+  GetEntriesForTesting()->clear();  // IN-TEST
+  // Restore the flag state to the production flags.
+  FlagsStateSingleton::GetInstance()->RebuildState(
+      *GetEntriesForTesting());  // IN-TEST
+}
+
 const FeatureEntry* GetFeatureEntries(size_t* count) {
   if (!GetEntriesForTesting()->empty()) {
     *count = GetEntriesForTesting()->size();
@@ -7460,13 +7487,6 @@ const FeatureEntry* GetFeatureEntries(size_t* count) {
   }
   *count = base::size(kFeatureEntries);
   return kFeatureEntries;
-}
-
-void SetFeatureEntries(const std::vector<FeatureEntry>& entries) {
-  GetEntriesForTesting()->clear();
-  for (const auto& entry : entries)
-    GetEntriesForTesting()->push_back(entry);
-  FlagsStateSingleton::GetInstance()->RebuildState(*GetEntriesForTesting());
 }
 
 }  // namespace testing

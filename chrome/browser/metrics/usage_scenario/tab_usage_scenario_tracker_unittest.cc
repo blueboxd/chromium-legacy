@@ -8,9 +8,13 @@
 
 #include "base/time/time.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/test_screen.h"
@@ -19,6 +23,8 @@
 namespace metrics {
 
 namespace {
+
+constexpr base::TimeDelta kInterval = base::TimeDelta::FromMinutes(2);
 
 // Inherit from ChromeRenderViewHostTestHarness for access to test profile.
 class TabUsageScenarioTrackerTest : public ChromeRenderViewHostTestHarness {
@@ -49,7 +55,28 @@ class TabUsageScenarioTrackerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::WebContents> CreateWebContents() {
     std::unique_ptr<content::WebContents> contents(
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    ukm::InitializeSourceUrlRecorderForWebContents(contents.get());
     return contents;
+  }
+
+  void MakeTabVisible(content::WebContents* contents) {
+    contents->WasShown();
+    tab_usage_scenario_tracker_->OnTabVisibilityChanged(contents);
+  }
+
+  void MakeTabHidden(content::WebContents* contents) {
+    contents->WasHidden();
+    tab_usage_scenario_tracker_->OnTabVisibilityChanged(contents);
+  }
+
+  void MakeTabOccluded(content::WebContents* contents) {
+    contents->WasOccluded();
+    tab_usage_scenario_tracker_->OnTabVisibilityChanged(contents);
+  }
+
+  void NavigateAndCommitTab(content::WebContents* contents, const GURL& gurl) {
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(contents, gurl);
+    tab_usage_scenario_tracker_->OnMainFrameNavigationCommitted(contents);
   }
 
  protected:
@@ -57,14 +84,14 @@ class TabUsageScenarioTrackerTest : public ChromeRenderViewHostTestHarness {
   display::Screen* previous_screen_;
   UsageScenarioDataStoreImpl usage_scenario_data_store_;
   std::unique_ptr<TabUsageScenarioTracker> tab_usage_scenario_tracker_;
+  ukm::TestAutoSetUkmRecorder ukm_recorder_;
 };
 
 }  // namespace
 
 TEST_F(TabUsageScenarioTrackerTest, NewVisibleTabMeansOneVisibleWindow) {
   auto contents = CreateWebContents();
-  tab_usage_scenario_tracker_->OnTabAddedForTesting(
-      contents.get(), content::Visibility::VISIBLE);
+  tab_usage_scenario_tracker_->OnTabAdded(contents.get());
 
   // Only one WebContent was shown which means only one visible window.
   UsageScenarioDataStore::IntervalData interval_data =
@@ -74,10 +101,7 @@ TEST_F(TabUsageScenarioTrackerTest, NewVisibleTabMeansOneVisibleWindow) {
 
 TEST_F(TabUsageScenarioTrackerTest, VisibilityUpdateOnVisibleWindowIsNoop) {
   auto contents = CreateWebContents();
-  tab_usage_scenario_tracker_->OnTabAddedForTesting(
-      contents.get(), content::Visibility::VISIBLE);
-  tab_usage_scenario_tracker_->OnTabVisibilityChanged(
-      contents.get(), content::Visibility::VISIBLE);
+  tab_usage_scenario_tracker_->OnTabAdded(contents.get());
 
   // Only one WebContent was shown which means only one visible window.
   // The call to OnVisibilityChanged should not create a visible window count
@@ -90,14 +114,10 @@ TEST_F(TabUsageScenarioTrackerTest, VisibilityUpdateOnVisibleWindowIsNoop) {
 TEST_F(TabUsageScenarioTrackerTest, HidingWebContentsMakesWindowInvisible) {
   // WebContents starts out visible.
   auto contents = CreateWebContents();
-  tab_usage_scenario_tracker_->OnTabAddedForTesting(
-      contents.get(), content::Visibility::VISIBLE);
-  tab_usage_scenario_tracker_->OnTabVisibilityChanged(
-      contents.get(), content::Visibility::VISIBLE);
+  tab_usage_scenario_tracker_->OnTabAdded(contents.get());
 
   // WebContents is hidden.
-  tab_usage_scenario_tracker_->OnTabVisibilityChanged(
-      contents.get(), content::Visibility::HIDDEN);
+  MakeTabHidden(contents.get());
 
   // Grab the interval data.
   UsageScenarioDataStore::IntervalData interval_data =
@@ -112,17 +132,77 @@ TEST_F(TabUsageScenarioTrackerTest, HidingWebContentsMakesWindowInvisible) {
   EXPECT_EQ(interval_data.max_visible_window_count, 0);
 }
 
+TEST_F(TabUsageScenarioTrackerTest, TrackingOfVisibleWebContents) {
+  // Start with 2 hidden WebContents.
+  auto contents1 = CreateWebContents();
+  contents1->WasHidden();
+  auto contents2 = CreateWebContents();
+  contents2->WasHidden();
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents2.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 2);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 0);
+
+  // Make one contents visible.
+  MakeTabVisible(contents1.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 2);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 1);
+
+  // |contents1| is visible, removing it should update the number of currently
+  // visible windows.
+  tab_usage_scenario_tracker_->OnTabRemoved(contents1.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 1);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 0);
+
+  tab_usage_scenario_tracker_->OnTabRemoved(contents2.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 0);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 0);
+}
+
+TEST_F(TabUsageScenarioTrackerTest, TrackingOfOccludedWebContents) {
+  // Start with 2 hidden WebContents.
+  auto contents1 = CreateWebContents();
+  contents1->WasHidden();
+  auto contents2 = CreateWebContents();
+  contents2->WasHidden();
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents2.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 2);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 0);
+
+  // Make one contents occluded.
+  MakeTabOccluded(contents1.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 2);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 0);
+
+  // Make one content visible.
+  MakeTabVisible(contents2.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 2);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 1);
+
+  // Then make it occluded.
+  MakeTabOccluded(contents2.get());
+  EXPECT_EQ(usage_scenario_data_store_.current_tab_count_for_testing(), 2);
+  EXPECT_EQ(
+      usage_scenario_data_store_.current_visible_window_count_for_testing(), 0);
+}
+
 TEST_F(TabUsageScenarioTrackerTest, FullScreenVideoSingleMonitor) {
   // WebContents starts out visible.
   auto contents = CreateWebContents();
-  tab_usage_scenario_tracker_->OnTabAddedForTesting(
-      contents.get(), content::Visibility::VISIBLE);
+  tab_usage_scenario_tracker_->OnTabAdded(contents.get());
 
   // WebContents is playing video fullscreen.
   tab_usage_scenario_tracker_->OnMediaEffectivelyFullscreenChanged(
       contents.get(), true);
 
-  static constexpr base::TimeDelta kInterval = base::TimeDelta::FromMinutes(2);
   task_environment()->FastForwardBy(kInterval);
 
   // Grab the interval data.
@@ -165,15 +245,13 @@ TEST_F(TabUsageScenarioTrackerTest, VideoInVisibleTab) {
   // Create 2 tabs, one visible and one hidden.
   auto contents1 = CreateWebContents();
   auto contents2 = CreateWebContents();
-  tab_usage_scenario_tracker_->OnTabAddedForTesting(
-      contents1.get(), content::Visibility::VISIBLE);
-  tab_usage_scenario_tracker_->OnTabAddedForTesting(
-      contents1.get(), content::Visibility::HIDDEN);
+  contents2->WasHidden();
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents2.get());
 
   // Pretend that |content1| is playing a video while being visible.
   tab_usage_scenario_tracker_->OnVideoStartedPlaying(contents1.get());
 
-  static constexpr base::TimeDelta kInterval = base::TimeDelta::FromMinutes(2);
   task_environment()->FastForwardBy(kInterval);
 
   // Grab the interval data and ensure that the time playing a video in the
@@ -193,12 +271,12 @@ TEST_F(TabUsageScenarioTrackerTest, VideoInVisibleTab) {
   tab_usage_scenario_tracker_->OnVideoStoppedPlaying(contents1.get());
   task_environment()->FastForwardBy(kInterval);
   interval_data = usage_scenario_data_store_.ResetIntervalData();
-  EXPECT_EQ(interval_data.time_playing_video_in_visible_tab, base::TimeDelta());
+  EXPECT_TRUE(interval_data.time_playing_video_in_visible_tab.is_zero());
 
   // There's still a video playing in the second tab, make it visible and ensure
   // that things are reported properly.
-  tab_usage_scenario_tracker_->OnTabVisibilityChanged(
-      contents2.get(), content::Visibility::VISIBLE);
+  contents2->WasShown();
+  tab_usage_scenario_tracker_->OnTabVisibilityChanged(contents2.get());
   task_environment()->FastForwardBy(kInterval);
   interval_data = usage_scenario_data_store_.ResetIntervalData();
   EXPECT_EQ(interval_data.time_playing_video_in_visible_tab, kInterval);
@@ -208,7 +286,266 @@ TEST_F(TabUsageScenarioTrackerTest, VideoInVisibleTab) {
   tab_usage_scenario_tracker_->OnVideoStoppedPlaying(contents2.get());
   task_environment()->FastForwardBy(kInterval);
   interval_data = usage_scenario_data_store_.ResetIntervalData();
-  EXPECT_EQ(interval_data.time_playing_video_in_visible_tab, base::TimeDelta());
+  EXPECT_TRUE(interval_data.time_playing_video_in_visible_tab.is_zero());
+}
+
+TEST_F(TabUsageScenarioTrackerTest, VisibleTabPlayingVideoRemoved) {
+  auto contents1 = CreateWebContents();
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+
+  // Pretend that |content1| is playing a video while being visible.
+  tab_usage_scenario_tracker_->OnVideoStartedPlaying(contents1.get());
+  static constexpr base::TimeDelta kInterval = base::TimeDelta::FromMinutes(2);
+  task_environment()->FastForwardBy(kInterval);
+  UsageScenarioDataStore::IntervalData interval_data =
+      usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(kInterval, interval_data.time_playing_video_in_visible_tab);
+
+  tab_usage_scenario_tracker_->OnTabRemoved(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_TRUE(interval_data.time_playing_video_in_visible_tab.is_zero());
+}
+
+TEST_F(TabUsageScenarioTrackerTest, UKMVisibility1tab) {
+  const GURL kUrl1("https://foo.com/subfoo");
+  const GURL kUrl2("https://bar.com/subbar");
+
+  // Test case with only one tab with a navigation that has already been
+  // committed when it starts being tracked.
+  auto contents1 = CreateWebContents();
+  EXPECT_EQ(content::Visibility::VISIBLE, contents1->GetVisibility());
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(contents1.get(),
+                                                             GURL(kUrl1));
+  auto source_id_1 = ukm::GetSourceIdForWebContentsDocument(contents1.get());
+  EXPECT_NE(ukm::kInvalidSourceId, source_id_1);
+
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  auto interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_1, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_1, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  MakeTabHidden(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(ukm::kInvalidSourceId,
+            interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(0U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  // Reloading the tab while it's not visible shouldn't change anything.
+  content::NavigationSimulator::Reload(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(ukm::kInvalidSourceId,
+            interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(0U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  // Make the tab visible and navigate to a different URL.
+  MakeTabVisible(contents1.get());
+  NavigateAndCommitTab(contents1.get(), kUrl2);
+  auto source_id_2 = ukm::GetSourceIdForWebContentsDocument(contents1.get());
+  EXPECT_NE(source_id_1, source_id_2);
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_2, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  // Reloading the tab while it's visible shouldn't change anything.
+  content::NavigationSimulator::Reload(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_2, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+}
+
+TEST_F(TabUsageScenarioTrackerTest, UKMVisibility1tabLateNavigation) {
+  const GURL kUrl1("https://foo.com/subfoo");
+  // Test case with only one tab with a navigation that gets committed after
+  // starting to track the tab.
+  auto contents1 = CreateWebContents();
+  EXPECT_EQ(content::Visibility::VISIBLE, contents1->GetVisibility());
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+
+  task_environment()->FastForwardBy(kInterval);
+  auto interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(ukm::kInvalidSourceId,
+            interval_data.source_id_for_longest_visible_origin);
+  EXPECT_TRUE(
+      interval_data.source_id_for_longest_visible_origin_duration.is_zero());
+  EXPECT_EQ(0U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  NavigateAndCommitTab(contents1.get(), kUrl1);
+  auto source_id_1 = ukm::GetSourceIdForWebContentsDocument(contents1.get());
+  EXPECT_NE(ukm::kInvalidSourceId, source_id_1);
+
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_1, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+}
+
+TEST_F(TabUsageScenarioTrackerTest, UKMVisibilityMultipleTabs) {
+  const GURL kUrl1("https://foo.com/subfoo");
+  const GURL kUrl2("https://bar.com/subbar");
+  const GURL kUrl3("https://foo.com/foo2");
+
+  // Create 3 tabs: one is visible, one is hidden and one is occluded.
+  auto contents1 = CreateWebContents();
+  auto contents2 = CreateWebContents();
+  auto contents3 = CreateWebContents();
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents2.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents3.get());
+  EXPECT_EQ(content::Visibility::VISIBLE, contents1->GetVisibility());
+  MakeTabHidden(contents2.get());
+  MakeTabOccluded(contents3.get());
+
+  NavigateAndCommitTab(contents1.get(), kUrl1);
+  NavigateAndCommitTab(contents2.get(), kUrl2);
+  NavigateAndCommitTab(contents3.get(), kUrl3);
+
+  task_environment()->FastForwardBy(kInterval);
+  auto interval_data = usage_scenario_data_store_.ResetIntervalData();
+  auto source_id_1 = ukm::GetSourceIdForWebContentsDocument(contents1.get());
+  EXPECT_EQ(source_id_1, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  // Make a second tab visible and make the hidden one occluded.
+  task_environment()->FastForwardBy(kInterval);
+  MakeTabVisible(contents2.get());
+  MakeTabHidden(contents3.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_1, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(2 * kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(2U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  // Mark the first tab as hidden.
+  MakeTabOccluded(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  auto source_id_2 = ukm::GetSourceIdForWebContentsDocument(contents2.get());
+  EXPECT_EQ(source_id_2, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+
+  // Finally, mark the third tab as visible.
+  MakeTabHidden(contents2.get());
+  MakeTabVisible(contents3.get());
+  task_environment()->FastForwardBy(kInterval);
+  interval_data = usage_scenario_data_store_.ResetIntervalData();
+  auto source_id_3 = ukm::GetSourceIdForWebContentsDocument(contents3.get());
+  EXPECT_EQ(source_id_3, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+  EXPECT_EQ(1U,
+            usage_scenario_data_store_.GetVisibleSourceIdsForTesting().size());
+}
+
+TEST_F(TabUsageScenarioTrackerTest, UKMVisibilityMultipleVisibilityEvents) {
+  const GURL kUrl1("https://foo.com/subfoo");
+
+  auto contents1 = CreateWebContents();
+  EXPECT_EQ(content::Visibility::VISIBLE, contents1->GetVisibility());
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(contents1.get(),
+                                                             GURL(kUrl1));
+  auto source_id_1 = ukm::GetSourceIdForWebContentsDocument(contents1.get());
+  EXPECT_NE(ukm::kInvalidSourceId, source_id_1);
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+
+  task_environment()->FastForwardBy(kInterval);
+  MakeTabHidden(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  MakeTabVisible(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  MakeTabHidden(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+
+  auto interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_1, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(2 * kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
+}
+
+TEST_F(TabUsageScenarioTrackerTest,
+       UKMVisibilityMultipleVisibleTabsSameOrigin) {
+  const GURL kUrl1("https://foo.com/subfoo");
+  const GURL kUrl2("https://bar.com/subbar");
+  const GURL kUrl3("https://foo.com/foo2");
+
+  // Create 3 tabs: one is visible, one is hidden and one is occluded.
+  auto contents1 = CreateWebContents();
+  auto contents2 = CreateWebContents();
+  auto contents3 = CreateWebContents();
+  tab_usage_scenario_tracker_->OnTabAdded(contents1.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents2.get());
+  tab_usage_scenario_tracker_->OnTabAdded(contents3.get());
+  EXPECT_EQ(content::Visibility::VISIBLE, contents1->GetVisibility());
+  EXPECT_EQ(content::Visibility::VISIBLE, contents2->GetVisibility());
+  EXPECT_EQ(content::Visibility::VISIBLE, contents3->GetVisibility());
+
+  NavigateAndCommitTab(contents1.get(), kUrl1);
+  NavigateAndCommitTab(contents2.get(), kUrl2);
+  NavigateAndCommitTab(contents3.get(), kUrl3);
+
+  auto source_id_1 = ukm::GetSourceIdForWebContentsDocument(contents1.get());
+  auto source_id_2 = ukm::GetSourceIdForWebContentsDocument(contents2.get());
+  auto source_id_3 = ukm::GetSourceIdForWebContentsDocument(contents3.get());
+  EXPECT_NE(source_id_1, source_id_2);
+  EXPECT_NE(source_id_1, source_id_3);
+  EXPECT_NE(source_id_2, source_id_3);
+
+  task_environment()->FastForwardBy(kInterval * 2);
+  MakeTabHidden(contents1.get());
+  task_environment()->FastForwardBy(kInterval);
+  MakeTabHidden(contents3.get());
+  task_environment()->FastForwardBy(kInterval);
+  MakeTabHidden(contents2.get());
+
+  // contents1 visible for 2*kInterval
+  // contents2 visible for 4*kInterval
+  // contents3 visible for 3*kInterval
+  // The origin foo.com was visible for the longest time (5*kInterval).
+  // source_id_3 is the source id that was visible for the longest time for
+  // origin foo.com. Therefore, expect:
+  //     source_id_for_longest_visible_origin = source_id_3
+  //     source_id_for_longest_visible_origin_duration = 3*kInterval
+
+  auto interval_data = usage_scenario_data_store_.ResetIntervalData();
+  EXPECT_EQ(source_id_3, interval_data.source_id_for_longest_visible_origin);
+  EXPECT_EQ(3 * kInterval,
+            interval_data.source_id_for_longest_visible_origin_duration);
 }
 
 }  // namespace metrics

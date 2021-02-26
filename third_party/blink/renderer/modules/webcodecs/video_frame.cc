@@ -16,20 +16,20 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_plane_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_plane_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_pixel_format.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_factories.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_image_util.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
-
-// TODO(crbug.com/1175907): Remove this include once we remove
-// VideoFrame::createImageBitmap().
-#include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_factories.h"  // nogncheck
 
 namespace blink {
 
@@ -206,30 +206,71 @@ VideoFrame::VideoFrame(scoped_refptr<VideoFrameHandle> handle)
 
 // static
 VideoFrame* VideoFrame::Create(ScriptState* script_state,
-                               ImageBitmap* source,
-                               VideoFrameInit* init,
+                               const CanvasImageSourceUnion& source,
+                               const VideoFrameInit* init,
                                ExceptionState& exception_state) {
-  if (!source) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
-                                      "No source was provided");
+  auto* image_source = ToCanvasImageSource(source, exception_state);
+  if (!image_source) {
+    // ToCanvasImageSource() will throw a source appropriate exception.
     return nullptr;
   }
 
-  if (!source->BitmapImage()) {
+  if (image_source->WouldTaintOrigin()) {
+    exception_state.ThrowSecurityError(
+        "VideoFrames can't be created from tainted sources.");
+    return nullptr;
+  }
+
+  // Special case <video> and VideoFrame to directly use the underlying frame.
+  if (source.IsVideoFrame() || source.IsHTMLVideoElement()) {
+    scoped_refptr<media::VideoFrame> source_frame;
+    if (source.IsVideoFrame()) {
+      if (!init || (!init->hasTimestamp() && !init->hasDuration()))
+        return source.GetAsVideoFrame()->clone(script_state, exception_state);
+      source_frame = source.GetAsVideoFrame()->frame();
+    } else if (source.IsHTMLVideoElement()) {
+      if (auto* wmp = source.GetAsHTMLVideoElement()->GetWebMediaPlayer())
+        source_frame = wmp->GetCurrentFrame();
+    }
+
+    if (!source_frame) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Invalid source state");
+      return nullptr;
+    }
+
+    // We can't modify the timestamp or duration directly since there may be
+    // other owners accessing these fields concurrently.
+    if (init && (init->hasTimestamp() || init->hasDuration())) {
+      source_frame = media::VideoFrame::WrapVideoFrame(
+          source_frame, source_frame->format(), source_frame->visible_rect(),
+          source_frame->natural_size());
+      if (init->hasTimestamp()) {
+        source_frame->set_timestamp(
+            base::TimeDelta::FromMicroseconds(init->timestamp()));
+      }
+      if (init->hasDuration()) {
+        source_frame->metadata().frame_duration =
+            base::TimeDelta::FromMicroseconds(init->duration());
+      }
+    }
+
+    return MakeGarbageCollected<VideoFrame>(
+        std::move(source_frame), ExecutionContext::From(script_state));
+  }
+
+  SourceImageStatus status = kInvalidSourceImageStatus;
+  auto image = image_source->GetSourceImageForCanvas(&status, FloatSize());
+  if (!image || status != kNormalSourceImageStatus) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid source state");
     return nullptr;
   }
 
-  if (source->WouldTaintOrigin()) {
-    exception_state.ThrowSecurityError(
-        "VideoFrames can't be created from tainted ImageBitmaps.");
-    return nullptr;
-  }
+  const auto timestamp = base::TimeDelta::FromMicroseconds(
+      (init && init->hasTimestamp()) ? init->timestamp() : 0);
 
-  const auto timestamp = base::TimeDelta::FromMicroseconds(init->timestamp());
-  const auto sk_image =
-      source->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+  const auto sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   const auto sk_image_info = sk_image->imageInfo();
 
   auto sk_color_space = sk_image_info.refColorSpace();
@@ -261,8 +302,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
         kRec709_SkYUVColorSpace, sk_color_space, sk_image_info.bounds(),
         sk_image_info.dimensions(), SkImage::RescaleGamma::kSrc,
         SkImage::RescaleMode::kRepeatedCubic, &OnYUVReadbackDone, &result);
-    GrDirectContext* gr_context =
-        source->BitmapImage()->ContextProvider()->GetGrContext();
+    GrDirectContext* gr_context = image->ContextProvider()->GetGrContext();
     DCHECK(gr_context);
     gr_context->flushAndSubmit(/*syncCpu=*/true);
 
@@ -274,6 +314,10 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 
     frame = std::move(result.frame);
     frame->set_color_space(gfx_color_space);
+    if (init && init->hasDuration()) {
+      frame->metadata().frame_duration =
+          base::TimeDelta::FromMicroseconds(init->duration());
+    }
     return MakeGarbageCollected<VideoFrame>(
         std::move(frame), ExecutionContext::From(script_state));
   }
@@ -286,6 +330,10 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     return nullptr;
   }
   frame->set_color_space(gfx_color_space);
+  if (init && init->hasDuration()) {
+    frame->metadata().frame_duration =
+        base::TimeDelta::FromMicroseconds(init->duration());
+  }
   return MakeGarbageCollected<VideoFrame>(
       base::MakeRefCounted<VideoFrameHandle>(
           std::move(frame), std::move(sk_image),
@@ -296,7 +344,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 VideoFrame* VideoFrame::Create(ScriptState* script_state,
                                const String& format,
                                const HeapVector<Member<PlaneInit>>& planes,
-                               VideoFrameInit* init,
+                               const VideoFramePlaneInit* init,
                                ExceptionState& exception_state) {
   if (!init->hasCodedWidth() || !init->hasCodedHeight()) {
     exception_state.ThrowDOMException(

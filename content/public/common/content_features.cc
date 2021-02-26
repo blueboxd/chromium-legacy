@@ -56,7 +56,7 @@ const base::Feature kAudioServiceOutOfProcess {
 // kAudioServiceOutOfProcess feature is enabled.
 const base::Feature kAudioServiceSandbox {
   "AudioServiceSandbox",
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_FUCHSIA)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -68,20 +68,8 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable using the BackForwardCache.
-// BackForwardCache is enabled only on Android for the moment, as some
-// desktop-specific features (including extensions) are not compatible with
-// bfcache yet. Tracking bug for enabling bfcache on desktop:
-// https://crbug.com/1171298.
-// Please note that while enabling BackForwardCache feature for tests, disable
-// BackForwardCacheMemoryControl to allow BackForwardCache for all devices
-// regardless of their memory.
-#if defined(OS_ANDROID)
-const base::Feature kBackForwardCache{"BackForwardCache",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-#else
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // BackForwardCache is disabled on low memory devices. The threshold is defined
 // via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
@@ -752,6 +740,15 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// This feature is for a reverse Origin Trial, enabling SharedArrayBuffer and
+// WebAssemblyThreads for sites as they migrate towards requiring cross-origin
+// isolation for these features.
+// TODO(bbudge): Remove when the deprecation is complete.
+// https://developer.chrome.com/origintrials/#/view_trial/303992974847508481
+// https://crbug.com/1144104
+const base::Feature kUnrestrictedSharedArrayBuffer{
+    "UnrestrictedSharedArrayBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we

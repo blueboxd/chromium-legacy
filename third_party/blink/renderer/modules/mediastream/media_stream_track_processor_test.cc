@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track_generator.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_generator_init.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
@@ -351,9 +352,10 @@ TEST_F(MediaStreamTrackProcessorTest, ProcessorConnectsToGenerator) {
           exception_state);
 
   // Create generator and connect it to a mock sink.
+  MediaStreamTrackGeneratorInit* init = MediaStreamTrackGeneratorInit::Create();
+  init->setKind("video");
   MediaStreamTrackGenerator* track_generator =
-      MakeGarbageCollected<MediaStreamTrackGenerator>(
-          script_state, MediaStreamSource::kTypeVideo, "track_id");
+      MediaStreamTrackGenerator::Create(script_state, init, exception_state);
   MockMediaStreamVideoSink mock_video_sink;
   mock_video_sink.ConnectToTrack(
       WebMediaStreamTrack(track_generator->Component()));
@@ -411,7 +413,7 @@ TEST_F(MediaStreamTrackProcessorTest, EndedTrack) {
             ESErrorType::kTypeError);
 }
 
-TEST_F(MediaStreamTrackProcessorTest, CloseOnTrackEnd) {
+TEST_F(MediaStreamTrackProcessorTest, VideoCloseOnTrackEnd) {
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
@@ -430,7 +432,7 @@ TEST_F(MediaStreamTrackProcessorTest, CloseOnTrackEnd) {
   EXPECT_TRUE(readable->IsClosed());
 }
 
-TEST_F(MediaStreamTrackProcessorTest, NoCloseOnTrackDisable) {
+TEST_F(MediaStreamTrackProcessorTest, VideoNoCloseOnTrackDisable) {
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
@@ -438,6 +440,44 @@ TEST_F(MediaStreamTrackProcessorTest, NoCloseOnTrackDisable) {
       CreatePushableVideoSource();
   MediaStreamTrack* track = CreateVideoMediaStreamTrack(
       v8_scope.GetExecutionContext(), pushable_video_source);
+
+  MediaStreamTrackProcessor* track_processor =
+      MediaStreamTrackProcessor::Create(script_state, track, exception_state);
+  ReadableStream* readable = track_processor->readable(script_state);
+  EXPECT_FALSE(readable->IsClosed());
+
+  track->setEnabled(false);
+
+  EXPECT_FALSE(readable->IsClosed());
+}
+
+TEST_F(MediaStreamTrackProcessorTest, AudioCloseOnTrackEnd) {
+  V8TestingScope v8_scope;
+  ScriptState* script_state = v8_scope.GetScriptState();
+  ExceptionState& exception_state = v8_scope.GetExceptionState();
+  std::unique_ptr<PushableMediaStreamAudioSource> pushable_audio_source =
+      CreatePushableAudioSource();
+  MediaStreamTrack* track = CreateAudioMediaStreamTrack(
+      v8_scope.GetExecutionContext(), std::move(pushable_audio_source));
+
+  MediaStreamTrackProcessor* track_processor =
+      MediaStreamTrackProcessor::Create(script_state, track, exception_state);
+  ReadableStream* readable = track_processor->readable(script_state);
+  EXPECT_FALSE(readable->IsClosed());
+
+  track->stopTrack(v8_scope.GetExecutionContext());
+
+  EXPECT_TRUE(readable->IsClosed());
+}
+
+TEST_F(MediaStreamTrackProcessorTest, AudioNoCloseOnTrackDisable) {
+  V8TestingScope v8_scope;
+  ScriptState* script_state = v8_scope.GetScriptState();
+  ExceptionState& exception_state = v8_scope.GetExceptionState();
+  std::unique_ptr<PushableMediaStreamAudioSource> pushable_audio_source =
+      CreatePushableAudioSource();
+  MediaStreamTrack* track = CreateAudioMediaStreamTrack(
+      v8_scope.GetExecutionContext(), std::move(pushable_audio_source));
 
   MediaStreamTrackProcessor* track_processor =
       MediaStreamTrackProcessor::Create(script_state, track, exception_state);

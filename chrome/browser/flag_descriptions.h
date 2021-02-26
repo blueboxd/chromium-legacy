@@ -910,6 +910,9 @@ extern const char kNewProfilePickerDescription[];
 extern const char kSignInProfileCreationName[];
 extern const char kSignInProfileCreationDescription[];
 
+extern const char kSignInProfileCreationEnterpriseName[];
+extern const char kSignInProfileCreationEnterpriseDescription[];
+
 extern const char kSyncingCompromisedCredentialsName[];
 extern const char kSyncingCompromisedCredentialsDescription[];
 
@@ -1622,9 +1625,6 @@ extern const char kCCTTargetTranslateLanguageDescription[];
 extern const char kContinuousSearchName[];
 extern const char kContinuousSearchDescription[];
 
-extern const char kShareButtonInTopToolbarName[];
-extern const char kShareButtonInTopToolbarDescription[];
-
 extern const char kChromeShareHighlightsAndroidName[];
 extern const char kChromeShareHighlightsAndroidDescription[];
 
@@ -1875,6 +1875,9 @@ extern const char kRelatedSearchesUiDescription[];
 extern const char kReportFeedUserActionsName[];
 extern const char kReportFeedUserActionsDescription[];
 
+extern const char kRequestDesktopSiteForTabletsName[];
+extern const char kRequestDesktopSiteForTabletsDescription[];
+
 extern const char kSafeBrowsingClientSideDetectionAndroidName[];
 extern const char kSafeBrowsingClientSideDetectionAndroidDescription[];
 
@@ -1943,6 +1946,10 @@ extern const char kVideoTutorialsDescription[];
 extern const char kVideoTutorialsInstantFetchName[];
 extern const char kVideoTutorialsInstantFetchDescription[];
 
+extern const char kAdaptiveButtonInTopToolbarName[];
+extern const char kAdaptiveButtonInTopToolbarDescription[];
+extern const char kShareButtonInTopToolbarName[];
+extern const char kShareButtonInTopToolbarDescription[];
 extern const char kVoiceButtonInTopToolbarName[];
 extern const char kVoiceButtonInTopToolbarDescription[];
 

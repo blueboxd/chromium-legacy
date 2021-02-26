@@ -1962,6 +1962,7 @@ http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
 # feature with site isolation enabled, we use a different virtual test suite
 # than not-site-per-process, named no-auto-wpt-origin-isolation.
 external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Skip ]
+virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Pass ]
 virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Pass ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
@@ -2238,7 +2239,6 @@ crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-cross-or
 crbug.com/626703 external/wpt/pointerevents/html/pointerevent_drag_interaction-manual.html [ Skip ]
 crbug.com/626703 external/wpt/uievents/order-of-events/focus-events/focus-contained-manual.html [ Skip ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_multiple_primary_pointers_boundary_events-manual.html [ Skip ]
-crbug.com/626703 external/wpt/touch-events/multi-touch-interactions-manual.html [ Skip ]
 crbug.com/626703 external/wpt/uievents/order-of-events/focus-events/legacy-manual.html [ Skip ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_pointerId_scope-manual.html [ Skip ]
 

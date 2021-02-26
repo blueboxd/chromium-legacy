@@ -291,7 +291,13 @@ const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
 
 // Enables toggling Pciguard settings through Settings UI.
 const base::Feature kEnablePciguardUi{"EnablePciguardUi",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables SAML re-authentication on the lock screen once the sign-in time
+// limit expires.
+const base::Feature kEnableSamlReauthenticationOnLockscreen{
+    "EnableSamlReauthenticationOnLockScreen",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
@@ -825,6 +831,10 @@ bool IsPciguardUiEnabled() {
 
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
+}
+
+bool IsSamlReauthenticationOnLockscreenEnabled() {
+  return base::FeatureList::IsEnabled(kEnableSamlReauthenticationOnLockscreen);
 }
 
 bool IsPinSetupForFamilyLinkEnabled() {

@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_image_source_util.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/plane.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
@@ -27,13 +28,14 @@ class VideoFrame;
 
 namespace blink {
 
-class ImageBitmap;
+class CanvasImageSource;
 class ExceptionState;
 class ExecutionContext;
 class PlaneInit;
 class ScriptPromise;
 class ScriptState;
 class VideoFrameInit;
+class VideoFramePlaneInit;
 
 class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                                         public CanvasImageSource,
@@ -51,13 +53,13 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
 
   // video_frame.idl implementation.
   static VideoFrame* Create(ScriptState*,
-                            ImageBitmap*,
-                            VideoFrameInit*,
+                            const CanvasImageSourceUnion&,
+                            const VideoFrameInit*,
                             ExceptionState&);
   static VideoFrame* Create(ScriptState*,
                             const String& format,
-                            const HeapVector<Member<PlaneInit>>& planes,
-                            VideoFrameInit* init,
+                            const HeapVector<Member<PlaneInit>>&,
+                            const VideoFramePlaneInit*,
                             ExceptionState&);
 
   String format() const;
@@ -94,6 +96,8 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   // callers should use VideoFrameHandle::CloneForInternalUse().
   VideoFrame* CloneFromNative(ExecutionContext*);
 
+  // TODO(crbug.com/1175907): Remove this method. window.createImageBitmap() is
+  // the preferred mechanism.
   ScriptPromise createImageBitmap(ScriptState*,
                                   const ImageBitmapOptions*,
                                   ExceptionState&);

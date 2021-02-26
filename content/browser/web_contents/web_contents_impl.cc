@@ -4544,7 +4544,7 @@ void WebContentsImpl::OnSavePage() {
   if (!IsSavable()) {
     download::RecordSavePackageEvent(
         download::SAVE_PACKAGE_DOWNLOAD_ON_NON_HTML);
-    SaveFrame(GetLastCommittedURL(), Referrer());
+    SaveFrame(GetLastCommittedURL(), Referrer(), GetMainFrame());
     return;
   }
 
@@ -4573,16 +4573,21 @@ bool WebContentsImpl::SavePage(const base::FilePath& main_file,
   return save_package_->Init(SavePackageDownloadCreatedCallback());
 }
 
-void WebContentsImpl::SaveFrame(const GURL& url, const Referrer& referrer) {
+void WebContentsImpl::SaveFrame(const GURL& url,
+                                const Referrer& referrer,
+                                RenderFrameHost* rfh) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::SaveFrame");
-  SaveFrameWithHeaders(url, referrer, std::string(), base::string16());
+  SaveFrameWithHeaders(url, referrer, std::string(), base::string16(), rfh);
 }
 
 void WebContentsImpl::SaveFrameWithHeaders(
     const GURL& url,
     const Referrer& referrer,
     const std::string& headers,
-    const base::string16& suggested_filename) {
+    const base::string16& suggested_filename,
+    RenderFrameHost* rfh) {
+  DCHECK(rfh);
+
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SaveFrameWithHeaders",
                         "url", base::trace_event::ValueToString(url), "headers",
                         headers);
@@ -4603,7 +4608,7 @@ void WebContentsImpl::SaveFrameWithHeaders(
 
   if (!GetLastCommittedURL().is_valid())
     return;
-  if (delegate_ && delegate_->SaveFrame(url, referrer))
+  if (delegate_ && delegate_->SaveFrame(url, referrer, rfh))
     return;
 
   // TODO(nasko): This check for main frame is incorrect and should be fixed
@@ -4660,6 +4665,10 @@ void WebContentsImpl::SaveFrameWithHeaders(
   }
   params->set_suggested_name(suggested_filename);
   params->set_download_source(download::DownloadSource::WEB_CONTENTS_API);
+  params->set_isolation_info(
+      static_cast<RenderFrameHostImpl*>(rfh)->ComputeIsolationInfoForNavigation(
+          url));
+
   BrowserContext::GetDownloadManager(GetBrowserContext())
       ->DownloadUrl(std::move(params));
 }
@@ -4934,15 +4943,13 @@ int WebContentsImpl::DownloadImageInFrame(
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DownloadImageInFrame");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static int next_image_download_id = 0;
+  const int download_id = ++next_image_download_id;
 
   RenderFrameHostImpl* initiator_frame =
       initiator_frame_routing_id.child_id
           ? RenderFrameHostImpl::FromID(initiator_frame_routing_id)
           : GetMainFrame();
-  const mojo::Remote<blink::mojom::ImageDownloader>& mojo_image_downloader =
-      initiator_frame->GetMojoImageDownloader();
-  const int download_id = ++next_image_download_id;
-  if (!mojo_image_downloader) {
+  if (!initiator_frame->IsRenderFrameLive()) {
     // If the renderer process is dead (i.e. crash, or memory pressure on
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinitely since the IPC would be dropped. Now,
@@ -4956,7 +4963,7 @@ int WebContentsImpl::DownloadImageInFrame(
     return download_id;
   }
 
-  mojo_image_downloader->DownloadImage(
+  initiator_frame->GetMojoImageDownloader()->DownloadImage(
       url, is_favicon, preferred_size, max_bitmap_size, bypass_cache,
       base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
                      weak_factory_.GetWeakPtr(), std::move(callback),
@@ -6458,8 +6465,8 @@ void WebContentsImpl::RunJavaScriptDialog(
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   bool suppress_this_message = should_suppress || !has_handlers;
 
-  if (base::FeatureList::IsEnabled(
-          features::kSuppressDifferentOriginSubframeJSDialogs)) {
+  if (GetContentClient()->browser()->SuppressDifferentOriginSubframeJSDialogs(
+          GetBrowserContext())) {
     bool is_different_origin_subframe =
         render_frame_host->GetLastCommittedURL().GetOrigin() !=
         render_frame_host->GetMainFrame()->GetLastCommittedURL().GetOrigin();

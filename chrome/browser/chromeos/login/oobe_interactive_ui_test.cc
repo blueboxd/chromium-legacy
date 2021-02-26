@@ -20,6 +20,9 @@
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher.h"
+#include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
+#include "chrome/browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -27,9 +30,6 @@
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
-#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
-#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
-#include "chrome/browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
@@ -123,6 +123,8 @@ void RunWelcomeScreenChecks() {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+
+  EXPECT_TRUE(test::IsScanningRequestedOnNetworkScreen());
 }
 
 void RunNetworkSelectionScreenChecks() {
@@ -133,6 +135,7 @@ void RunNetworkSelectionScreenChecks() {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS().CreateFocusWaiter({"network-selection", "nextButton"})->Wait();
+  EXPECT_TRUE(test::IsScanningRequestedOnNetworkScreen());
 }
 
 void RunEulaScreenChecks() {
@@ -146,6 +149,7 @@ void RunEulaScreenChecks() {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+  EXPECT_FALSE(test::IsScanningRequestedOnNetworkScreen());
 }
 
 void WaitForGaiaSignInScreen(bool arc_available) {

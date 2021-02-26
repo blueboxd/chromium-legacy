@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
+#include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 // This bridge is responsible for creating and releasing its Java counterpart,
 // in order to launch or dismiss the edit UI.
@@ -21,6 +22,8 @@ class CredentialEditBridge {
   // shared.
   static std::unique_ptr<CredentialEditBridge> MaybeCreate(
       const password_manager::PasswordForm* credential,
+      std::vector<base::string16> existing_usernames,
+      password_manager::SavedPasswordsPresenter* saved_passwords_presenter,
       base::OnceClosure dismissal_callback,
       const base::android::JavaRef<jobject>& context,
       const base::android::JavaRef<jobject>& settings_launcher);
@@ -32,15 +35,26 @@ class CredentialEditBridge {
   // Called by Java to get the credential to be edited.
   void GetCredential(JNIEnv* env);
 
+  // Called by Java to get the existing usernames.
+  void GetExistingUsernames(JNIEnv* env);
+
+  // Called by Java to save the changes to the edited credential.
+  void SaveChanges(JNIEnv* env,
+                   const base::android::JavaParamRef<jstring>& username,
+                   const base::android::JavaParamRef<jstring>& password);
+
   // Called by Java to signal that the UI was dismissed.
   void OnUIDismissed(JNIEnv* env);
 
  private:
-  CredentialEditBridge(const password_manager::PasswordForm* credential,
-                       base::OnceClosure dismissal_callback,
-                       const base::android::JavaRef<jobject>& context,
-                       const base::android::JavaRef<jobject>& settings_launcher,
-                       base::android::ScopedJavaGlobalRef<jobject> java_bridge);
+  CredentialEditBridge(
+      const password_manager::PasswordForm* credential,
+      std::vector<base::string16> existing_usernames,
+      password_manager::SavedPasswordsPresenter* saved_passwords_presenter,
+      base::OnceClosure dismissal_callback,
+      const base::android::JavaRef<jobject>& context,
+      const base::android::JavaRef<jobject>& settings_launcher,
+      base::android::ScopedJavaGlobalRef<jobject> java_bridge);
 
   // Returns the URL or app for which the credential was saved, formatted
   // for display.
@@ -53,6 +67,14 @@ class CredentialEditBridge {
 
   // The credential to be edited.
   const password_manager::PasswordForm* credential_ = nullptr;
+
+  // All the usernames saved for the current site/app.
+  std::vector<base::string16> existing_usernames_;
+
+  // The backend to route the edit event to. Should be owned by the the owner of
+  // the bridge.
+  password_manager::SavedPasswordsPresenter* saved_passwords_presenter_ =
+      nullptr;
 
   // Callback invoked when the UI is being dismissed from the Java side.
   base::OnceClosure dismissal_callback_;

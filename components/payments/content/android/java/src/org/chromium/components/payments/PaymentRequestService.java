@@ -694,7 +694,7 @@ public class PaymentRequestService
                 Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
                 /*callback=*/this);
         mInvokedPaymentApp = paymentApp;
-        mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
+        mJourneyLogger.setPayClicked();
         boolean isAutofillCard = paymentApp.isAutofillInstrument();
         // Record what type of app was selected when "Pay" was clicked.
         boolean isGooglePaymentApp = false;
@@ -706,11 +706,11 @@ public class PaymentRequestService
             }
         }
         if (isAutofillCard) {
-            mJourneyLogger.setEventOccurred(Event.SELECTED_CREDIT_CARD);
+            mJourneyLogger.setSelectedMethod(PaymentMethodCategory.BASIC_CARD);
         } else if (isGooglePaymentApp) {
-            mJourneyLogger.setEventOccurred(Event.SELECTED_GOOGLE);
+            mJourneyLogger.setSelectedMethod(PaymentMethodCategory.GOOGLE);
         } else {
-            mJourneyLogger.setEventOccurred(Event.SELECTED_OTHER);
+            mJourneyLogger.setSelectedMethod(PaymentMethodCategory.OTHER);
         }
     }
 
@@ -897,12 +897,12 @@ public class PaymentRequestService
         mHasNonAutofillApp |= !paymentApp.isAutofillInstrument();
 
         if (paymentApp.isAutofillInstrument()) {
-            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_BASIC_CARD);
+            mJourneyLogger.setAvailableMethod(PaymentMethodCategory.BASIC_CARD);
         } else if (paymentApp.getInstrumentMethodNames().contains(MethodStrings.GOOGLE_PAY)
                 || paymentApp.getInstrumentMethodNames().contains(MethodStrings.ANDROID_PAY)) {
-            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_GOOGLE);
+            mJourneyLogger.setAvailableMethod(PaymentMethodCategory.GOOGLE);
         } else {
-            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
+            mJourneyLogger.setAvailableMethod(PaymentMethodCategory.OTHER);
         }
 
         mPendingApps.add(paymentApp);

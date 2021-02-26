@@ -96,6 +96,13 @@
         ],
       },
     },
+    'replacements': {
+      'Linux FYI Release (AMD RX 5500 XT)': {
+        'args': {
+          '--max-processes': '1',
+        },
+      },
+    },
   },
   'angle_perftests': {
     'remove_from': [
@@ -2875,6 +2882,9 @@
     },
   },
   'weblayer_browsertests': {
+    'remove_from': [
+      'android-pie-arm64-rel'
+    ],
     'modifications': {
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional

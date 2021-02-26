@@ -7,9 +7,11 @@
 
 #include "base/containers/flat_set.h"
 #include "chrome/browser/metrics/tab_stats/tab_stats_observer.h"
-#include "chrome/browser/metrics/usage_scenario/usage_scenario_tracker.h"
+#include "chrome/browser/metrics/usage_scenario/usage_scenario_data_store.h"
 #include "content/public/browser/visibility.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/display/display_observer.h"
+#include "url/origin.h"
 
 namespace content {
 class WebContents;
@@ -34,8 +36,9 @@ class TabUsageScenarioTracker : public TabStatsObserver,
   // TabStatsObserver:
   void OnTabAdded(content::WebContents* web_contents) override;
   void OnTabRemoved(content::WebContents* web_contents) override;
-  void OnTabVisibilityChanged(content::WebContents* web_contents,
-                              content::Visibility visibility) override;
+  void OnTabReplaced(content::WebContents* old_contents,
+                     content::WebContents* new_contents) override;
+  void OnTabVisibilityChanged(content::WebContents* web_contents) override;
   void OnTabInteraction(content::WebContents* web_contents) override;
   void OnMediaEffectivelyFullscreenChanged(content::WebContents* web_contents,
                                            bool is_fullscreen) override;
@@ -48,28 +51,35 @@ class TabUsageScenarioTracker : public TabStatsObserver,
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& new_display) override;
 
-  // Testing trampolines:
-  void OnTabAddedForTesting(content::WebContents* web_contents,
-                            content::Visibility initial_visibility);
-
  private:
-  // Internal versions of the TabStatsObserver functions that are more easily
-  // testable.
-  void OnTabAdded(content::WebContents* web_contents,
-                  content::Visibility initial_visibility);
+  using VisibleTabsMap = base::flat_map<content::WebContents*,
+                                        std::pair<ukm::SourceId, url::Origin>>;
+
+  // Should be called every time |content_with_media_playing_fullscreen_| needs
+  // to be reset.
+  void OnContentStoppedPlayingMediaFullScreen();
+
+  // Should be called when |visible_tab_iter| switch from being visible to non
+  // visible. |visible_tab_iter| should be an iterator in |visible_contents_|.
+  void OnTabBecameHidden(VisibleTabsMap::iterator* visible_tab_iter);
+
+  void InsertContentsInMapOfVisibleTabs(content::WebContents* web_contents);
 
   // Non-owning. Needs to outlive this class.
   UsageScenarioDataStoreImpl* usage_scenario_data_store_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // Keep track of the visible WebContents.
-  base::flat_set<content::WebContents*> visible_contents_;
-
   // Keep track of the WebContents currently playing video.
-  base::flat_set<content::WebContents*> contents_playing_video_;
+  base::flat_set<content::WebContents*> contents_playing_video_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // Indicates if there's a media currently playing fullscreen.
-  bool media_playing_fullscreen_ = false;
+  // Keep track of the visible WebContents and the navigation data associated to
+  // them. The associated sourceID for tabs that don't have committed a main
+  // frame navigation is ukm::kInvalidSourceID and the origin is empty.
+  VisibleTabsMap visible_tabs_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // WebContents currently playing video fullscreen, nullptr if there's none.
+  content::WebContents* content_with_media_playing_fullscreen_ = nullptr;
 
   // Used to verify that all access to |usage_scenario_data_store_| goes through
   // the same sequence as the one that created this object.

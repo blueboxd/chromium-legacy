@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.password_entry_edit;
 
+import static org.chromium.chrome.browser.password_entry_edit.CredentialEditProperties.DUPLICATE_USERNAME_ERROR;
+import static org.chromium.chrome.browser.password_entry_edit.CredentialEditProperties.EMPTY_PASSWORD_ERROR;
 import static org.chromium.chrome.browser.password_entry_edit.CredentialEditProperties.FEDERATION_ORIGIN;
 import static org.chromium.chrome.browser.password_entry_edit.CredentialEditProperties.PASSWORD;
 import static org.chromium.chrome.browser.password_entry_edit.CredentialEditProperties.PASSWORD_VISIBLE;
@@ -15,6 +17,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.password_entry_edit.CredentialEditCoordinator.CredentialActionDelegate;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditFragmentView.UiActionHandler;
 import org.chromium.chrome.browser.password_manager.settings.PasswordAccessReauthenticationHelper;
 import org.chromium.chrome.browser.password_manager.settings.PasswordAccessReauthenticationHelper.ReauthReason;
@@ -22,16 +25,25 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.widget.Toast;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Contains the logic for the edit component. It  updates the model when needed and reacts to UI
  * events (e.g. button clicks).
  */
 public class CredentialEditMediator implements UiActionHandler {
     private final PasswordAccessReauthenticationHelper mReauthenticationHelper;
+    private final CredentialActionDelegate mCredentialActionDelegate;
     private PropertyModel mModel;
+    private String mOriginalUsername;
+    private Set<String> mExistingUsernames;
 
-    CredentialEditMediator(PasswordAccessReauthenticationHelper reauthenticationHelper) {
+    CredentialEditMediator(PasswordAccessReauthenticationHelper reauthenticationHelper,
+            CredentialActionDelegate credentialActionDelegate) {
         mReauthenticationHelper = reauthenticationHelper;
+        mCredentialActionDelegate = credentialActionDelegate;
     };
 
     void initialize(PropertyModel model) {
@@ -39,11 +51,16 @@ public class CredentialEditMediator implements UiActionHandler {
     }
 
     void setCredential(String username, String password) {
+        mOriginalUsername = username;
         mModel.set(USERNAME, username);
         mModel.set(PASSWORD, password);
         // TODO(crbug.com/1175785): Replace the password with the identity provider in the case
         // of federated credentials.
         mModel.set(PASSWORD_VISIBLE, !mModel.get(FEDERATION_ORIGIN).isEmpty());
+    }
+
+    void setExistingUsernames(String[] existingUsernames) {
+        mExistingUsernames = new HashSet<>(Arrays.asList(existingUsernames));
     }
 
     void dismiss() {
@@ -64,13 +81,21 @@ public class CredentialEditMediator implements UiActionHandler {
     }
 
     @Override
+    public void onSave() {
+        mCredentialActionDelegate.saveChanges(mModel.get(USERNAME), mModel.get(PASSWORD));
+    }
+
+    @Override
     public void onUsernameTextChanged(String username) {
         mModel.set(USERNAME, username);
+        mModel.set(DUPLICATE_USERNAME_ERROR,
+                !mOriginalUsername.equals(username) && mExistingUsernames.contains(username));
     }
 
     @Override
     public void onPasswordTextChanged(String password) {
         mModel.set(PASSWORD, password);
+        mModel.set(EMPTY_PASSWORD_ERROR, password.isEmpty());
     }
 
     @Override

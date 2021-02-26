@@ -44,8 +44,9 @@ public class LongScreenshotsCompositor {
             String directoryKey, PaintPreviewProto response, Callback<Integer> compositorCallback) {
         mCompositorCallback = compositorCallback;
 
-        mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, response,
-                url, directoryKey, true, this::onCompositorReady, this::onCompositorError);
+        mDelegate = getCompositorDelegateFactory().createForProto(nativePaintPreviewServiceProvider,
+                response, url, directoryKey, true, this::onCompositorReady,
+                this::onCompositorError);
     }
 
     /**
@@ -63,7 +64,7 @@ public class LongScreenshotsCompositor {
     @VisibleForTesting
     protected void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
             int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
-            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
+            UnguessableToken[] subFrameGuids, int[] subFrameClipRects, long nativeAxTree) {
         mCompositorCallback.onResult(CompositorStatus.OK);
     }
 

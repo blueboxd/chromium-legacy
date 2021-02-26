@@ -54,6 +54,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "adaptive-button-in-top-toolbar",
+    "owners": [ "bttk", "chrome-segmentation-platform@google.com" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "aggregated-ml-app-ranking",
     "owners": [ "pdyson", "jiameng" ],
     "expiry_milestone": 81
@@ -2326,6 +2331,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "enable-sign-in-profile-creation-enterprise",
+    "owners": [ "jkrcal", "my-chrome-everywhere@google.com" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-site-isolation-for-password-sites",
     "owners": [ "site-isolation-dev", "alexmos", "lukasza" ],
     // Note: while password-triggered site isolation launched in M77, it only
@@ -4417,6 +4427,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "request-desktop-site-for-tablets",
+    "owners": [ "gangwu@chromium.org", "fgorski@chromium.org" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "restore-gaia-cookies-if-deleted",
     "owners": [ "fernandex", "chrome-signin-team" ],
     "expiry_milestone": 96
@@ -5261,12 +5276,12 @@
   {
     "name": "webui-tab-strip",
     "owners": [ "dfried", "collinbaker", "johntlee" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 99
   },
   {
     "name": "webui-tab-strip-tab-drag-integration",
     "owners": [ "dfried", "collinbaker", "johntlee" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 99
   },
   {
     "name": "webxr-incubations",

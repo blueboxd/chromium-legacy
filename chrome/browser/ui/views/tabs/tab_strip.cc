@@ -29,6 +29,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -135,7 +136,8 @@ int g_drop_indicator_height = 0;
 
 // Listens in on the browser event stream (as a pre target event handler) and
 // hides an associated hover card on any keypress.
-class TabHoverCardEventSniffer : public ui::EventHandler {
+class TabHoverCardEventSniffer : public ui::EventHandler,
+                                 public views::WidgetObserver {
 // On Mac, events should be added to the root view.
 #if defined(OS_MAC)
   using OwnerView = views::View*;
@@ -162,13 +164,17 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
 
  protected:
   void AddPreTargetHandler() {
+    widget_observation_.Observe(tab_strip_->GetWidget());
     if (owner_view_)
       owner_view_->AddPreTargetHandler(this);
   }
 
   void RemovePreTargetHandler() {
-    if (owner_view_)
+    widget_observation_.Reset();
+    if (owner_view_) {
       owner_view_->RemovePreTargetHandler(this);
+      owner_view_ = nullptr;
+    }
   }
 
   // ui::EventTarget:
@@ -186,6 +192,11 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
     hover_card_->FadeOutToHide();
   }
 
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override {
+    RemovePreTargetHandler();
+  }
+
   base::StringPiece GetLogContext() const override {
     return "TabHoverCardEventSniffer";
   }
@@ -193,7 +204,9 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
  private:
   TabHoverCardBubbleView* const hover_card_;
   TabStrip* tab_strip_;
-  const OwnerView owner_view_;
+  OwnerView owner_view_;
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      widget_observation_{this};
 };
 
 // Provides the ability to monitor when a tab's bounds have been animated. Used
@@ -2293,12 +2306,6 @@ SkColor TabStrip::GetPaintedGroupColor(
 // TabStrip, views::AccessiblePaneView overrides:
 
 void TabStrip::Layout() {
-  if (IsAnimating()) {
-    // Hide tabs that have animated at least partially out of the clip region.
-    SetTabSlotVisibility();
-    return;
-  }
-
   if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
     // With tab scrolling, the tabstrip is solely responsible for its own
     // width.
@@ -2312,6 +2319,12 @@ void TabStrip::Layout() {
     const int width = std::min(max_width, std::max(min_width, available_width));
     SetBounds(0, 0, width, GetLayoutConstant(TAB_HEIGHT));
     SetTabSlotVisibility();
+  }
+
+  if (IsAnimating()) {
+    // Hide tabs that have animated at least partially out of the clip region.
+    SetTabSlotVisibility();
+    return;
   }
 
   // Only do a layout if our size or the available width changed.

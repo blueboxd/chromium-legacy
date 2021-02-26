@@ -463,6 +463,35 @@ const FeatureEntry::FeatureVariation kReaderModeDiscoverabilityVariations[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureVariation kAdaptiveButtonInTopToolbarVariations[] = {
+    {
+        "Always None",
+        (FeatureEntry::FeatureParam[]){{"mode", "always-none"}},
+        1,
+        nullptr,
+    },
+    {
+        "Always New Tab",
+        (FeatureEntry::FeatureParam[]){{"mode", "always-new-tab"}},
+        1,
+        nullptr,
+    },
+    {
+        "Always Share",
+        (FeatureEntry::FeatureParam[]){{"mode", "always-share"}},
+        1,
+        nullptr,
+    },
+    {
+        "Always Voice",
+        (FeatureEntry::FeatureParam[]){{"mode", "always-voice"}},
+        1,
+        nullptr,
+    },
+};
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kHideDismissButton[] = {
     {"dismiss_button", "hide"}};
 
@@ -1738,8 +1767,13 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
+    {"start_surface_variation", "single"}};
+
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"start_surface_variation", "single"},
-    {"hide_incognito_switch", "true"}};
+    {"omnibox_focused_on_new_tab", "true"},
+    {"home_button_on_grid_tab_switcher", "true"},
+    {"new_home_surface_from_home_button", "hide_tab_switcher_only"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
@@ -1762,8 +1796,7 @@ const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceSingleTabWithoutMvTiles[] = {
         {"start_surface_variation", "single"},
         {"show_last_active_tab_only", "true"},
-        {"exclude_mv_tiles", "true"},
-        {"hide_incognito_switch", "true"}};
+        {"exclude_mv_tiles", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
@@ -1796,6 +1829,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_TrendyTerms[] = {
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
+    {"Single Surface Finale", kStartSurfaceAndroid_SingleSurfaceFinale,
+     base::size(kStartSurfaceAndroid_SingleSurfaceFinale), nullptr},
     {"Single Surface V2", kStartSurfaceAndroid_SingleSurface_V2,
      base::size(kStartSurfaceAndroid_SingleSurface_V2), nullptr},
     {"Single Surface without MV Tiles",
@@ -1997,6 +2032,34 @@ const FeatureEntry::FeatureVariation
         {"(three button with add to option)",
          kTabbedAppOverflowMenuThreeButtonAddToOption,
          base::size(kTabbedAppOverflowMenuThreeButtonAddToOption), nullptr}};
+
+// Request Desktop Site on Tablet by default variations.
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets768[] = {
+    {"screen_width_dp", "768"},
+    {"enabled", "true"}};
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets960[] = {
+    {"screen_width_dp", "960"},
+    {"enabled", "true"}};
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets1024[] = {
+    {"screen_width_dp", "1024"},
+    {"enabled", "true"}};
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets1280[] = {
+    {"screen_width_dp", "1280"},
+    {"enabled", "true"}};
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets1920[] = {
+    {"screen_width_dp", "1920"},
+    {"enabled", "true"}};
+const FeatureEntry::FeatureVariation kRequestDesktopSiteForTabletsVariations[] =
+    {{"for 768dp+ screens", kRequestDesktopSiteForTablets768,
+      base::size(kRequestDesktopSiteForTablets768), nullptr},
+     {"for 960dp+ screens", kRequestDesktopSiteForTablets960,
+      base::size(kRequestDesktopSiteForTablets960), nullptr},
+     {"for 1024dp+ screens", kRequestDesktopSiteForTablets1024,
+      base::size(kRequestDesktopSiteForTablets1024), nullptr},
+     {"for 1280dp+ screens", kRequestDesktopSiteForTablets1280,
+      base::size(kRequestDesktopSiteForTablets1280), nullptr},
+     {"for 1920dp+ screens", kRequestDesktopSiteForTablets1920,
+      base::size(kRequestDesktopSiteForTablets1920), nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::FeatureVariation
@@ -3185,11 +3248,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSystemNotifications)},
 #endif  // BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_ANDROID)
+    {"adaptive-button-in-top-toolbar",
+     flag_descriptions::kAdaptiveButtonInTopToolbarName,
+     flag_descriptions::kAdaptiveButtonInTopToolbarDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kAdaptiveButtonInTopToolbar,
+                                    kAdaptiveButtonInTopToolbarVariations,
+                                    "AdaptiveButtonInTopToolbar")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
     {"voice-button-in-top-toolbar",
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
@@ -4332,6 +4399,12 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kTabbedAppOverflowMenuThreeButtonActionbar,
          kTabbedAppOverflowMenuThreeButtonActionbarVariations,
          "AndroidAppMenuUiReworkPhase4And5")},
+    {"request-desktop-site-for-tablets",
+     flag_descriptions::kRequestDesktopSiteForTabletsName,
+     flag_descriptions::kRequestDesktopSiteForTabletsDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kRequestDesktopSiteForTablets,
+                                    kRequestDesktopSiteForTabletsVariations,
+                                    "RequestDesktopSiteForTablets")},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -5164,6 +5237,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSignInProfileCreationDescription,
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kSignInProfileCreation)},
+
+    {"enable-sign-in-profile-creation-enterprise",
+     flag_descriptions::kSignInProfileCreationEnterpriseName,
+     flag_descriptions::kSignInProfileCreationEnterpriseDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kSignInProfileCreationEnterprise)},
 #endif
 
     {"destroy-profile-on-browser-close",

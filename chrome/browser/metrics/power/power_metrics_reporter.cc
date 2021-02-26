@@ -55,8 +55,10 @@ void PowerMetricsReporter::OnAggregatedMetricsSampled(
   ReportHistograms(sampling_interval, interval_duration,
                    discharge_mode_and_rate.first,
                    discharge_mode_and_rate.second);
-  ReportUKMs(metrics, interval_duration, discharge_mode_and_rate.first,
-             discharge_mode_and_rate.second);
+  if (report_ukms_) {
+    ReportUKMs(metrics, interval_duration, discharge_mode_and_rate.first,
+               discharge_mode_and_rate.second);
+  }
 }
 
 void PowerMetricsReporter::ReportHistograms(
@@ -155,6 +157,12 @@ void PowerMetricsReporter::ReportUKMs(
   builder.SetTimeWithOpenWebRTCConnectionSeconds(
       ukm::GetExponentialBucketMinForUserTiming(
           usage_metrics.time_with_open_webrtc_connection.InSeconds()));
+  builder.SetTimeSinceInteractionWithBrowserSeconds(
+      ukm::GetExponentialBucketMinForUserTiming(
+          usage_metrics.time_since_last_user_interaction_with_browser
+              .InSeconds()));
+  builder.SetVideoCaptureSeconds(ukm::GetExponentialBucketMinForUserTiming(
+      usage_metrics.time_capturing_video.InSeconds()));
 
   builder.Record(ukm_recorder);
 }

@@ -181,6 +181,19 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Disabled"/>
 </enum>
 
+<enum name="AccessibilityImageLabelModeAndroid">
+  <summary>
+    Tracks what mode the user has selected for accessibility image labels on
+    Android, either always enabled, always enabled but only on Wi-Fi, just once,
+    just once and don't ask again, or if they cancel.
+  </summary>
+  <int value="0" label="Enabled (always)"/>
+  <int value="1" label="Enabled (Only on WiFi)"/>
+  <int value="2" label="Just once"/>
+  <int value="3" label="Just once (Don't ask again)"/>
+  <int value="4" label="Cancel"/>
+</enum>
+
 <enum name="AccessibilityModeFlagEnum">
   <summary>Track individual accessibility mode flags that are enabled.</summary>
   <int value="0" label="Native APIs"/>
@@ -1193,6 +1206,14 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Sucess"/>
   <int value="1" label="Failed"/>
   <int value="2" label="Failed (missing product details)"/>
+</enum>
+
+<enum name="AdaptiveToolbarButtonVariant">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="None"/>
+  <int value="2" label="New tab"/>
+  <int value="3" label="Share"/>
+  <int value="4" label="Voice"/>
 </enum>
 
 <enum name="AdbSideloadingPromptEvent">
@@ -10830,6 +10851,17 @@ histogram as enum -->
   <int value="1" label="A hash is saved"/>
 </enum>
 
+<enum name="ChromeStartupDelegateFailureType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Service Missing"/>
+  <int value="2" label="Service Version Update Required"/>
+  <int value="3" label="Service Disabled"/>
+  <int value="4" label="Network Error"/>
+  <int value="5" label="Service Invalid"/>
+  <int value="6" label="Developer Error"/>
+  <int value="7" label="API Unavailable"/>
+</enum>
+
 <enum name="ChromeStartupDelegateResult">
   <int value="0" label="Failure"/>
   <int value="1" label="Allow"/>
@@ -17172,6 +17204,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="40" label="Stadia"/>
   <int value="41" label="ScanningApp"/>
   <int value="42" label="DiagnosticsApp"/>
+  <int value="43" label="PrintManagementApp"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -23738,6 +23771,7 @@ Called by update_document_policy_enum.py.-->
   <int value="826" label="ContextAwareAccessSignalsAllowlist"/>
   <int value="827" label="FetchKeepaliveDurationOnShutdown"/>
   <int value="828" label="AllowSystemNotifications"/>
+  <int value="829" label="SuppressDifferentOriginSubframeJSDialogs"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27434,6 +27468,13 @@ Called by update_extension_permission.py.-->
   <int value="3" label="Service error"/>
 </enum>
 
+<enum name="FamilyLinkManagedSiteList">
+  <int value="0" label="Empty"/>
+  <int value="1" label="Approved List Only"/>
+  <int value="2" label="Blocked List Only"/>
+  <int value="3" label="Both"/>
+</enum>
+
 <enum name="FamilyLinkUserLogSegment">
   <summary>
     Filters family link user metrics into categories of interest.
@@ -27441,6 +27482,12 @@ Called by update_extension_permission.py.-->
   <int value="0" label="Other Not Family Link"/>
   <int value="1" label="Under Age of Consent"/>
   <int value="2" label="Over Age of Consent"/>
+</enum>
+
+<enum name="FamilyLinkWebFilterType">
+  <int value="0" label="Allow All Sites"/>
+  <int value="1" label="Try To Block Mature Sites"/>
+  <int value="2" label="Only allow Certain Sites"/>
 </enum>
 
 <enum name="FamilyUserLogSegment">
@@ -31621,6 +31668,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3826" label="StorageFoundationWriteSync"/>
   <int value="3827" label="StorageFoundationFlush"/>
   <int value="3828" label="StorageFoundationFlushSync"/>
+  <int value="3829" label="UnrestrictedSharedArrayBuffer"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39623,6 +39671,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              PackageManager"/>
 </enum>
 
+<enum name="InstalledAppsDialogActions">
+  <int value="0" label="User closed dialog"/>
+  <int value="1" label="User clicked cancel button on dialog"/>
+  <int value="2" label="User clicked clear data button on dialog"/>
+</enum>
+
 <enum name="InstalledVersionPollType">
   <obsolete>
     Removed in M90.
@@ -44763,6 +44817,7 @@ from previous Chrome versions.
       label="DisablePeripheralDataAccessProtection:enabled"/>
   <int value="-711991950" label="SiteExplorationUi:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
+  <int value="-711422585" label="kSignInProfileCreationEnterprise:disabled"/>
   <int value="-709058455" label="ui-slow-animations"/>
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
   <int value="-706159808" label="QuickAnswersOnEditableText:disabled"/>
@@ -44770,6 +44825,7 @@ from previous Chrome versions.
   <int value="-704459022" label="ContinuousSearch:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
+  <int value="-700762821" label="RequestDesktopSiteForTablets:disabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-699198009" label="KeyboardShortcutViewer:enabled"/>
@@ -44895,6 +44951,7 @@ from previous Chrome versions.
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
+  <int value="-574217217" label="kSignInProfileCreationEnterprise:enabled"/>
   <int value="-574000901" label="AVIF:enabled"/>
   <int value="-573570330" label="QuickAnswersTranslationCloudAPI:disabled"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
@@ -45957,6 +46014,7 @@ from previous Chrome versions.
       label="AutofillSendExperimentIdsInPaymentsRPCs:disabled"/>
   <int value="418769094" label="MixedContentSiteSetting:enabled"/>
   <int value="420160748" label="CornerShortcuts:enabled"/>
+  <int value="420682005" label="AdaptiveButtonInTopToolbar:enabled"/>
   <int value="422307097" label="PhysicalWeb:disabled"/>
   <int value="422670720" label="ContextualSearchLongpressPanelHelp:disabled"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
@@ -46395,6 +46453,7 @@ from previous Chrome versions.
   <int value="828092263" label="TemporaryUnexpireFlagsM78:enabled"/>
   <int value="830282555" label="DecodeJpeg420ImagesToYUV:enabled"/>
   <int value="832142463" label="WebAssemblyStreaming:enabled"/>
+  <int value="832711367" label="RequestDesktopSiteForTablets:enabled"/>
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>
   <int value="835018878" label="disable-quic"/>
@@ -47682,6 +47741,7 @@ from previous Chrome versions.
   <int value="2001520126" label="AccountManagementFlowsV2:enabled"/>
   <int value="2001562962"
       label="enable-manual-fallback-for-password-saving:enabled"/>
+  <int value="2002113900" label="AdaptiveButtonInTopToolbar:disabled"/>
   <int value="2002573873" label="ChromeHomeMenuItemsExpandSheet:enabled"/>
   <int value="2003568209" label="TouchpadAndWheelScrollLatching:disabled"/>
   <int value="2003811018" label="enable-touch-support-for-screen-magnifier"/>
@@ -68156,7 +68216,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="InOrder"/>
   <int value="5" label="Async"/>
   <int value="6" label="Immediate"/>
-  <int value="7" label="ForceDefer"/>
+  <int value="7" label="ForceDefer (Deprecated Feb 2021)"/>
 </enum>
 
 <enum name="ScrollAnchorRestorationStatus">
@@ -74690,6 +74750,7 @@ would be helpful to identify which type is being sent.
   <int value="25" label="Chrome Reengagement 1"/>
   <int value="26" label="Chrome Reengagement 2"/>
   <int value="27" label="Chrome Reengagement 3"/>
+  <int value="28" label="Price Drop Alerts"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

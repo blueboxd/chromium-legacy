@@ -31,7 +31,8 @@ namespace {
 
 // Maximum number of notification icons shown in the system tray button.
 constexpr int kMaxNotificationIconsShown = 2;
-constexpr int kSeparatorPadding = 3;
+constexpr int kNotificationIconSpacing = 1;
+constexpr gfx::Insets kSeparatorPadding(6, 4);
 
 // We only show notification icon in the tray if it is either:
 // *   Pinned (generally used for background process such as sharing your
@@ -49,8 +50,7 @@ class SeparatorTrayItemView : public TrayItemView {
     views::Separator* separator = new views::Separator();
     separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kSeparatorColor));
-    separator->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kSeparatorPadding)));
+    separator->SetBorder(views::CreateEmptyBorder(kSeparatorPadding));
     AddChildView(separator);
   }
   ~SeparatorTrayItemView() override = default;
@@ -67,16 +67,17 @@ class SeparatorTrayItemView : public TrayItemView {
 NotificationIconTrayItemView::NotificationIconTrayItemView(Shelf* shelf)
     : TrayItemView(shelf) {
   CreateImageView();
+  image_view()->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(0, kNotificationIconSpacing)));
 }
 
 NotificationIconTrayItemView::~NotificationIconTrayItemView() = default;
 
 void NotificationIconTrayItemView::SetNotification(
     message_center::Notification* notification) {
-  notification_ = notification;
   notification_id_ = notification->id();
 
-  gfx::Image masked_small_icon = notification_->GenerateMaskedSmallIcon(
+  gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
       kUnifiedTrayIconSize,
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary));
@@ -89,38 +90,27 @@ void NotificationIconTrayItemView::SetNotification(
             AshColorProvider::ContentLayerType::kIconColorPrimary)));
   }
 
-  UpdateTooltipText();
+  image_view()->SetTooltipText(notification->title());
 }
 
 void NotificationIconTrayItemView::Reset() {
-  notification_ = nullptr;
   notification_id_ = std::string();
   image_view()->SetImage(gfx::ImageSkia());
   image_view()->SetTooltipText(base::string16());
 }
 
-void NotificationIconTrayItemView::UpdateTooltipText() {
-  if (notification_)
-    image_view()->SetTooltipText(notification_->title());
-}
-
-bool NotificationIconTrayItemView::HasNotification() {
-  return notification_;
-}
-
-base::string16 NotificationIconTrayItemView::GetAccessibleNameString() const {
-  if (!notification_)
+const base::string16& NotificationIconTrayItemView::GetAccessibleNameString()
+    const {
+  if (notification_id_.empty())
     return base::EmptyString16();
-  return notification_->title();
+  return image_view()->GetTooltipText();
 }
 
 const std::string& NotificationIconTrayItemView::GetNotificationId() const {
   return notification_id_;
 }
 
-void NotificationIconTrayItemView::HandleLocaleChange() {
-  UpdateTooltipText();
-}
+void NotificationIconTrayItemView::HandleLocaleChange() {}
 
 const char* NotificationIconTrayItemView::GetClassName() const {
   return "NotificationIconTrayItemView";
@@ -228,9 +218,9 @@ void NotificationIconsController::OnNotificationRemoved(const std::string& id,
 }
 
 void NotificationIconsController::OnNotificationUpdated(const std::string& id) {
-  NotificationIconTrayItemView* item = GetNotificationIconShownInTray(id);
-  if (item)
-    item->UpdateTooltipText();
+  // A notification update may impact certain notification icon(s) visibility in
+  // the tray, so update all notification icons.
+  UpdateNotificationIcons();
 }
 
 void NotificationIconsController::OnSessionStateChanged(

@@ -1038,7 +1038,7 @@ const char kEnablePciguardUiName[] =
     "Enable Pciguard (Thunderbolt + USB4 tunneling) UI for settings";
 const char kEnablePciguardUiDescription[] =
     "Enable toggling Pciguard settings through the Settings App. By default, "
-    "this flag is disabled.";
+    "this flag is enabled.";
 
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =
@@ -1527,6 +1527,11 @@ const char kNewProfilePickerDescription[] =
 const char kSignInProfileCreationName[] = "Profile creation flow with sign-in";
 const char kSignInProfileCreationDescription[] =
     "Enables a new sign-in flow in profile creation";
+
+const char kSignInProfileCreationEnterpriseName[] =
+    "Profile creation flow support for enterprise sign-in";
+const char kSignInProfileCreationEnterpriseDescription[] =
+    "Enables smoother enterprise experience in signed-in profile creation flow";
 
 const char kSyncingCompromisedCredentialsName[] = "Syncing of Security Issues";
 const char kSyncingCompromisedCredentialsDescription[] =
@@ -3246,6 +3251,13 @@ const char kReportFeedUserActionsDescription[] =
     "Enable the report of click actions on cards in Chrome's Feed on Android."
     " Also enable the feed header menu to manage the feed.";
 
+const char kRequestDesktopSiteForTabletsName[] =
+    "Request desktop site for tablets on Android";
+const char kRequestDesktopSiteForTabletsDescription[] =
+    "Requests a desktop site, if the screen size is large enough on Android."
+    " On tablets with small screens a mobile site will be requested by "
+    "default.";
+
 const char kSafeBrowsingClientSideDetectionAndroidName[] =
     "Safe Browsing Client Side Detection on Android";
 const char kSafeBrowsingClientSideDetectionAndroidDescription[] =
@@ -3282,10 +3294,6 @@ const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
 const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "
     "item.";
-
-const char kShareButtonInTopToolbarName[] = "Share Button In Top Toolbar";
-const char kShareButtonInTopToolbarDescription[] =
-    "Enables UI to initiate sharing from the top toolbar";
 
 const char kSiteIsolationForPasswordSitesName[] =
     "Site Isolation For Password Sites";
@@ -3381,9 +3389,17 @@ const char kVideoTutorialsInstantFetchName[] =
 const char kVideoTutorialsInstantFetchDescription[] =
     "Fetch video tutorials on startup";
 
+const char kAdaptiveButtonInTopToolbarName[] = "Adaptive button in top toolbar";
+const char kAdaptiveButtonInTopToolbarDescription[] =
+    "Enables showing an adaptive action button in the top toolbar";
+const char kShareButtonInTopToolbarName[] = "Share button in top toolbar";
+const char kShareButtonInTopToolbarDescription[] =
+    "Enables UI to initiate sharing from the top toolbar. Enabling Adaptive "
+    "Button overrides this.";
 const char kVoiceButtonInTopToolbarName[] = "Voice button in top toolbar";
 const char kVoiceButtonInTopToolbarDescription[] =
-    "Enables showing the voice search button in the top toolbar";
+    "Enables showing the voice search button in the top toolbar. Enabling "
+    "Adaptive Button overrides this.";
 
 const char kInlineUpdateFlowName[] = "Enable Google Play inline update flow";
 const char kInlineUpdateFlowDescription[] =

@@ -123,7 +123,8 @@ class PowerMetricsReporterUnitTest : public testing::Test {
         std::make_unique<FakeBatteryLevelProvider>(&battery_states_);
     battery_provider_ = battery_provider.get();
     power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
-        data_store_.GetWeakPtr(), std::move(battery_provider));
+        data_store_.AsWeakPtr(), std::move(battery_provider));
+    power_metrics_reporter_->EnableUKMReportingForTesting();
   }
 
  protected:
@@ -159,6 +160,10 @@ TEST_F(PowerMetricsReporterUnitTest, UKMs) {
   fake_interval_data.source_id_for_longest_visible_origin_duration =
       base::TimeDelta::FromSeconds(++fake_value);
   fake_interval_data.time_playing_video_in_visible_tab =
+      base::TimeDelta::FromSeconds(++fake_value);
+  fake_interval_data.time_since_last_user_interaction_with_browser =
+      base::TimeDelta::FromSeconds(++fake_value);
+  fake_interval_data.time_capturing_video =
       base::TimeDelta::FromSeconds(++fake_value);
 
   task_environment_.FastForwardBy(kExpectedMetricsCollectionInterval);
@@ -241,6 +246,15 @@ TEST_F(PowerMetricsReporterUnitTest, UKMs) {
   test_ukm_recorder_.ExpectEntryMetric(
       entries[0], UkmEntry::kIntervalDurationSecondsName,
       kExpectedMetricsCollectionInterval.InSeconds());
+  test_ukm_recorder_.ExpectEntryMetric(
+      entries[0], UkmEntry::kTimeSinceInteractionWithBrowserSecondsName,
+      ukm::GetExponentialBucketMinForUserTiming(
+          fake_interval_data.time_since_last_user_interaction_with_browser
+              .InSeconds()));
+  test_ukm_recorder_.ExpectEntryMetric(
+      entries[0], UkmEntry::kVideoCaptureSecondsName,
+      ukm::GetExponentialBucketMinForUserTiming(
+          fake_interval_data.time_capturing_video.InSeconds()));
 
   histogram_tester_.ExpectUniqueSample(kBatteryDischargeRateHistogramName, 2500,
                                        1);

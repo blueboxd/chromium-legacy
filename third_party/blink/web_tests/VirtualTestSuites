@@ -436,6 +436,7 @@
     "prefix": "plz-dedicated-worker",
     "bases": ["external/wpt/content-security-policy/inside-worker",
               "external/wpt/content-security-policy/worker-src",
+              "external/wpt/content-security-policy/gen",
               "external/wpt/fetch/",
               "external/wpt/html/browsers/offline/appcache/workers/",
               "external/wpt/html/cross-origin-embedder-policy",
@@ -516,6 +517,7 @@
       "external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html",
       "external/wpt/dom/events/EventListener-incumbent-global-1.sub.html",
       "external/wpt/dom/events/EventListener-incumbent-global-2.sub.html",
+      "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
       "http/tests/dom/EventListener-incumbent-global-1.html",
       "http/tests/dom/EventListener-incumbent-global-2.html",
       "external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html",
@@ -617,11 +619,6 @@
     "prefix": "async-script-scheduling-first-paint-or-finished-parsing",
     "bases": ["wpt_internal/async-script-scheduling"],
     "args": ["--enable-blink-features=DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsing"]
-  },
-  {
-    "prefix": "force-defer-script",
-    "bases": ["defer-script"],
-    "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
   },
   {
     "prefix": "force-eager",

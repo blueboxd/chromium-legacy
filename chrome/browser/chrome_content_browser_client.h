@@ -414,6 +414,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::wstring GetAppContainerSidForSandboxType(
       sandbox::policy::SandboxType sandbox_type) override;
   bool IsRendererCodeIntegrityEnabled() override;
+  void SessionEnding() override;
 #endif
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
@@ -741,6 +742,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if !defined(OS_ANDROID)
   base::TimeDelta GetKeepaliveTimerTimeout(content::BrowserContext* context);
 #endif  // !defined(OS_ANDROID)
+
+  bool SuppressDifferentOriginSubframeJSDialogs(
+      content::BrowserContext* browser_context) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

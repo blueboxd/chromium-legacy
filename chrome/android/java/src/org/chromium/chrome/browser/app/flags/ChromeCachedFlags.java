@@ -14,10 +14,12 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
+import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ public class ChromeCachedFlags {
 
         // clang-format off
         List<String> featuresToCache = Arrays.asList(
+                ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR,
                 ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM,
                 ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE,
                 ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY,
@@ -88,6 +91,7 @@ public class ChromeCachedFlags {
 
         // clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
+                AdaptiveToolbarFeatures.MODE_PARAM,
                 AppMenuPropertiesDelegateImpl.ACTION_BAR_VARIATION,
                 AppMenuPropertiesDelegateImpl.THREE_BUTTON_ACTION_BAR_VARIATION,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT,
@@ -95,11 +99,13 @@ public class ChromeCachedFlags {
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS,
                 PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL,
                 ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS,
+                ShoppingPersistedTabData.TIME_TO_LIVE_MS,
+                ShoppingPersistedTabData.DISPLAY_TIME_MS,
+                ShoppingPersistedTabData.STALE_TAB_THRESHOLD_SECONDS,
                 StartSurfaceConfiguration.HOME_BUTTON_ON_GRID_TAB_SWITCHER,
                 StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON,
                 StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB,
                 StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES,
-                StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
@@ -109,13 +115,11 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.TRENDY_ENDPOINT,
                 StartSurfaceConfiguration.TRENDY_FAILURE_MIN_PERIOD_MS,
                 StartSurfaceConfiguration.TRENDY_SUCCESS_MIN_PERIOD_MS,
+                StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
                 TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX,
                 TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP,
-                ShoppingPersistedTabData.TIME_TO_LIVE_MS,
-                ShoppingPersistedTabData.DISPLAY_TIME_MS,
-                ShoppingPersistedTabData.STALE_TAB_THRESHOLD_SECONDS,
                 TabUiFeatureUtilities.ENABLE_PRICE_TRACKING,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,

@@ -1230,6 +1230,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // Advance our de-jelly state. This is a no-op if de-jelly is not active.
   de_jelly_state_.AdvanceFrame(active_tree_.get());
 
+  if (settings_.enable_compositing_based_throttling)
+    throttle_decider_.Prepare();
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
     auto target_render_pass_id = it.target_render_surface()->render_pass_id();
@@ -1247,6 +1249,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                 render_surface->EffectTreeIndex(),
                 &target_render_pass->copy_requests);
       }
+      if (settings_.enable_compositing_based_throttling && target_render_pass)
+        throttle_decider_.ProcessRenderPass(*target_render_pass);
     } else if (it.state() ==
                EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
       RenderSurfaceImpl* render_surface = it.current_render_surface();
@@ -2414,6 +2418,12 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   devtools_instrumentation::DidDrawFrame(id_);
   benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
       rendering_stats_instrumentation_->TakeImplThreadRenderingStats());
+
+  if (settings_.enable_compositing_based_throttling &&
+      throttle_decider_.HasThrottlingChanged()) {
+    client_->FrameSinksToThrottleUpdated(throttle_decider_.ids());
+  }
+
   return true;
 }
 
@@ -3926,6 +3936,8 @@ LayerTreeHostImpl::ProcessCompositorDeltas() {
   commit_data->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
   commit_data->is_pinch_gesture_active = active_tree_->PinchGestureActive();
+  commit_data->is_scroll_active =
+      input_delegate_ && GetInputHandler().IsCurrentlyScrolling();
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
   // TODO(wjmaclean): Remove this DCHECK as a pre-condition to closing the bug.
   // https://crbug.com/845097

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.password_entry_edit.CredentialEditCoordinator.CredentialActionDelegate;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditCoordinator.UiDismissalHandler;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 
@@ -17,7 +18,7 @@ import org.chromium.components.browser_ui.settings.SettingsLauncher;
  * Class mediating the communication between the credential edit UI and the C++ part responsible
  * for saving the changes.
  */
-class CredentialEditBridge implements UiDismissalHandler {
+class CredentialEditBridge implements UiDismissalHandler, CredentialActionDelegate {
     private static CredentialEditBridge sCredentialEditBridge;
 
     private long mNativeCredentialEditBridge;
@@ -51,6 +52,9 @@ class CredentialEditBridge implements UiDismissalHandler {
         mCoordinator = coordinator;
         // This will result in setCredential being called from native with the required data.
         CredentialEditBridgeJni.get().getCredential(mNativeCredentialEditBridge);
+
+        // This will result in setExistingUsernames being called from native with the required data.
+        CredentialEditBridgeJni.get().getExistingUsernames(mNativeCredentialEditBridge);
     }
 
     @CalledByNative
@@ -58,6 +62,11 @@ class CredentialEditBridge implements UiDismissalHandler {
             String displayFederationOrigin) {
         mCoordinator.setCredential(
                 displayUrlOrAppName, username, password, displayFederationOrigin);
+    }
+
+    @CalledByNative
+    void setExistingUsernames(String[] existingUsernames) {
+        mCoordinator.setExistingUsernames(existingUsernames);
     }
 
     // This can be called either before or after the native counterpart has gone away, depending
@@ -71,6 +80,12 @@ class CredentialEditBridge implements UiDismissalHandler {
         sCredentialEditBridge = null;
     }
 
+    @Override
+    public void saveChanges(String username, String password) {
+        if (mNativeCredentialEditBridge == 0) return;
+        CredentialEditBridgeJni.get().saveChanges(mNativeCredentialEditBridge, username, password);
+    }
+
     @CalledByNative
     void destroy() {
         if (mCoordinator != null) mCoordinator.dismiss();
@@ -81,6 +96,8 @@ class CredentialEditBridge implements UiDismissalHandler {
     @NativeMethods
     interface Natives {
         void getCredential(long nativeCredentialEditBridge);
+        void getExistingUsernames(long nativeCredentialEditBridge);
+        void saveChanges(long nativeCredentialEditBridge, String username, String password);
         void onUIDismissed(long nativeCredentialEditBridge);
     }
 }

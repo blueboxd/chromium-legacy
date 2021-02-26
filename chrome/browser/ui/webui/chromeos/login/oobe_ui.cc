@@ -26,10 +26,10 @@
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
@@ -309,6 +309,11 @@ void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 
+void AddAppDownloadingResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("downloading_apps.json",
+                          IDR_APPS_DOWNLOADING_ANIMATION);
+}
+
 void AddDebuggerResources(content::WebUIDataSource* source) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool enable_debugger =
@@ -389,6 +394,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddGestureNavigationResources(source);
   AddMarketingOptInResources(source);
   AddMultiDeviceSetupResources(source);
+  AddAppDownloadingResources(source);
 
   AddDebuggerResources(source);
   AddTestAPIResources(source);

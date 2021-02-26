@@ -1230,6 +1230,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns whether renderer code integrity is enabled.
   // This is called on the UI thread.
   virtual bool IsRendererCodeIntegrityEnabled();
+
+  // Performs a fast and orderly shutdown of the browser.
+  virtual void SessionEnding() {}
 #endif
 
   // Binds a new media remoter service to |receiver|, if supported by the
@@ -2003,6 +2006,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Creates a modal window that intermediates the exchange of ID tokens.
   virtual std::unique_ptr<IdentityRequestDialogController>
   CreateIdentityRequestDialogController();
+
+  // Returns true if JS dialogs from an iframe with different origin from the
+  // main frame should be disallowed.
+  virtual bool SuppressDifferentOriginSubframeJSDialogs(
+      BrowserContext* browser_context);
 };
 
 }  // namespace content

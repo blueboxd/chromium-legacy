@@ -979,9 +979,6 @@
       status: "stable",
     },
     {
-      name: "ForceDeferScriptIntervention",
-    },
-    {
       // This is used in tests to perform memory measurement without
       // waiting for GC.
       name:"ForceEagerMeasureMemory",
@@ -2079,6 +2076,13 @@
     {
       name: "UnderlineOffsetThickness",
       status: "stable",
+    },
+    // This is a reverse OT used for a phased deprecation, on desktop
+    // https://crbug.com/1071424
+    {
+      name: "UnrestrictedSharedArrayBuffer",
+      origin_trial_feature_name: "UnrestrictedSharedArrayBuffer",
+      origin_trial_os: ["win", "mac", "linux", "chromeos"],
     },
     {
       name: "URLPattern",

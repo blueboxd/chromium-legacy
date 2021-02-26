@@ -187,7 +187,8 @@ public abstract class ChromeFeatureList {
                 featureName, paramName, defaultValue);
     }
 
-    /** Alphabetical: */
+    /* Alphabetical: */
+    public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR = "AdaptiveButtonInTopToolbar";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
     public static final String ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS =
             "AllowRemoteContextForNotifications";
@@ -412,6 +413,7 @@ public abstract class ChromeFeatureList {
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String RELATED_SEARCHES_UI = "RelatedSearchesUi";
+    public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
     public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
     public static final String SAFETY_CHECK_ANDROID = "SafetyCheckAndroid";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";

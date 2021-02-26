@@ -12226,6 +12226,11 @@ be describing additional metrics about the same event.
       value: 500.
     </summary>
   </metric>
+  <metric name="BrowserShuttingDown" enum="Boolean">
+    <summary>
+      Indicates if the browser is shutting down when this event is reported.
+    </summary>
+  </metric>
   <metric name="CPUTimeMs">
     <summary>
       The CPU time spent executing code, across all Chrome processes in the
@@ -12270,6 +12275,11 @@ be describing additional metrics about the same event.
       Sum of package exits from all Chrome processes (Mac-only).
     </summary>
   </metric>
+  <metric name="PlayingAudioSeconds">
+    <summary>
+      The time spent playing audio in at least one tab, in seconds.
+    </summary>
+  </metric>
   <metric name="TabClosed">
     <summary>
       The number of tabs that have been closed during the interval.
@@ -12278,6 +12288,18 @@ be describing additional metrics about the same event.
   <metric name="TimePlayingVideoInVisibleTab">
     <summary>
       The time spent playing video in at least one visible tab, in seconds.
+    </summary>
+  </metric>
+  <metric name="TimeSinceInteractionWithBrowserSeconds">
+    <summary>
+      The time since the last interaction with the browser when this event gets
+      recorded, in seconds.
+    </summary>
+  </metric>
+  <metric name="TimeSinceInteractionWithSystemSeconds">
+    <summary>
+      The time since the last interaction with the system when this event gets
+      recorded, in seconds.
     </summary>
   </metric>
   <metric name="TimeWithOpenWebRTCConnectionSeconds">
@@ -12303,6 +12325,11 @@ be describing additional metrics about the same event.
   <metric name="UserInteractionCount">
     <summary>
       Number of user interaction (scroll, click or typing) during the interval.
+    </summary>
+  </metric>
+  <metric name="VideoCaptureSeconds">
+    <summary>
+      The time spent capturing video in at least one tab, in seconds.
     </summary>
   </metric>
 </event>
@@ -12512,12 +12539,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="defer_all_script" enum="Boolean">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a DeferAllScript preview on a page load.
     </summary>
   </metric>
   <metric name="defer_all_script_eligibility_reason"
       enum="PreviewsEligibilityReason">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to the value of the last known reason a DeferAllScript preview was not
       eligible on this page load. The value of this metric corresponds to the
@@ -12598,6 +12631,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="opt_out">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to 1 when a user clicks &quot;Show Original&quot; on a preview page
       load using the infobar. Set to 2 when a user opts out of a Preview using
@@ -12605,6 +12641,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="origin_opt_out">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to 1 when previews were enabled but no preview was attempted because
       the origin provided a Cache-Control:no-transform header in the main frame
@@ -12614,6 +12653,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="previews_likely">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to 1 when a preview will be attempted for this page load. Otherwise
       this is not set. This does not imply that a preview will be committed,
@@ -12622,6 +12664,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="proxy_lite_page_eligibility_reason">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to the value of the last known reason a Data Reduction Proxy Lite Page
       preview was not eligible on this page load. The value of this metric
@@ -12666,6 +12711,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PreviewsCoinFlip" singular="True">
+  <obsolete>
+    Deprecated Feb 2021.
+  </obsolete>
   <owner>robertogden@chromium.org</owner>
   <summary>
     Coin flip experiment metrics associated with a Preview page load. See
@@ -12673,6 +12721,9 @@ be describing additional metrics about the same event.
     so that it can be recorded earlier than commit which happens in some cases.
   </summary>
   <metric name="coin_flip_result" enum="PreviewsCoinFlipResult">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       Set to 0 if there was no attempted preview for this page load, or the coin
       flip holdback is disabled in this session. Set to 1 if a preview was
@@ -12684,6 +12735,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PreviewsDeferAllScript" singular="True">
+  <obsolete>
+    Deprecated Feb 2021.
+  </obsolete>
   <owner>dougarnett@chromium.org</owner>
   <summary>
     Metrics associated with the intervention of deferring the execution of
@@ -12691,6 +12745,9 @@ be describing additional metrics about the same event.
     recorded when the HTML parsing of a mainframe has completed.
   </summary>
   <metric name="force_deferred_scripts_mainframe">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       The total number of mainframe scripts (inline and external) whose
       execution was force deferred (i.e., that otherwise would have been render
@@ -12698,6 +12755,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="force_deferred_scripts_mainframe_external">
+    <obsolete>
+      Deprecated Feb 2021.
+    </obsolete>
     <summary>
       The total number of mainframe external scripts whose execution was force
       deferred (i.e., that otherwise would have been render blocking).
@@ -12706,6 +12766,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PreviewsResourceLoadingHints" singular="True">
+  <obsolete>
+    Deprecated Feb 2021.
+  </obsolete>
   <owner>jegray@chromium.org</owner>
   <summary>
     Metrics associated with loading a resource loading hints based preview. This

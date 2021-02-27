@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b5af8bde13f6dd28bac94fcba7ed835eced40c64',
+  'angle_revision': 'c508e707f9a18cd20d04a02a4274364835113e95',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -224,7 +224,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'd459c6d096f40018b5ffdad085c2da0a56fcb811',
+  'pdfium_revision': 'a929df78632d703d9a9fca8fb946f6778c49703d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -327,7 +327,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'beabbe0e055ff13870a2a948e1cb16a8dbd96a41',
+  'quiche_revision': 'b427cc831731ccc772fac2b4aff5d651a72c9304',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1508,7 +1508,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a6647318b57c0a05d590c8c21fc22aba87f08749',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@60d5c56d9abd928c70649cb3b0ae4b4babe3729e',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@2b7341ccd9d8a495f0257063d0c5c78095fb9871',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '732a76d9d3c70d6aa487216495eeb28518349c3a',
@@ -1607,7 +1607,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@946407a6c2555d29b7e05c663cc1cd932c2ca0b0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@efc4a7b52faa57f928631e02abbedb54ec83b0b3',
     'condition': 'checkout_src_internal',
   },
 

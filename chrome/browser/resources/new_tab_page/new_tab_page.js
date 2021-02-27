@@ -14,7 +14,7 @@ import './app.js';
 
 export {BackgroundManager} from './background_manager.js';
 export {BrowserProxy} from './browser_proxy.js';
-export {BackgroundSelectionType} from './customize_dialog_types.js';
+export {BackgroundSelectionType, CustomizeDialogPage} from './customize_dialog_types.js';
 export {ImgElement} from './img.js';
 export {ChromeCartProxy} from './modules/cart/chrome_cart_proxy.js';
 export {chromeCartDescriptor} from './modules/cart/module.js';
@@ -25,6 +25,7 @@ export {FooProxy} from './modules/dummy/foo_proxy.js';
 export {dummyDescriptor} from './modules/dummy/module.js';
 // </if>
 export {ModuleDescriptor} from './modules/module_descriptor.js';
+export {ModuleHeaderElement} from './modules/module_header.js';
 export {ModuleRegistry} from './modules/module_registry.js';
 export {recipeTasksDescriptor, shoppingTasksDescriptor} from './modules/task_module/module.js';
 export {TaskModuleHandlerProxy} from './modules/task_module/task_module_handler_proxy.js';

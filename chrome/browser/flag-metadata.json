@@ -1180,6 +1180,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "draw-predicted-ink-point",
+    "owners": [ "mabian@microsoft.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "drive-fs-bidirectional-native-messaging",
     "owners": [ "austinct@chromium.org", "dats@chromium.org" ],
     "expiry_milestone": 90
@@ -2475,6 +2480,11 @@
     "name": "enable-table-ng",
     "owners": [ "atotic@google.com" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "enable-tflite-language-detection",
+    "owners": [ "mcrouse@chromium.org", "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 94 
   },
   {
     "name": "enable-tls13-early-data",
@@ -4180,7 +4190,7 @@
     "expiry_milestone": 100
   },
   {
-    "name": "preemtive-link-to-text-generation",
+    "name": "preemptive-link-to-text-generation",
     "owners": [ "cheickcisse@google.com" ],
     "expiry_milestone": 92
   },

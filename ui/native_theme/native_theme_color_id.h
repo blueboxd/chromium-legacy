@@ -95,9 +95,8 @@
   OP(kColorId_NotificationActionsRowBackground),                               \
   OP(kColorId_NotificationInlineSettingsBackground),                           \
   OP(kColorId_NotificationLargeImageBackground),                               \
-  OP(kColorId_NotificationPlaceholderIconColor),                               \
-  OP(kColorId_NotificationEmptyPlaceholderIconColor),                          \
-  OP(kColorId_NotificationEmptyPlaceholderTextColor),                          \
+  OP(kColorId_NotificationColor),                                              \
+  OP(kColorId_NotificationPlaceholderColor),                                   \
   OP(kColorId_NotificationDefaultAccentColor),                                 \
   OP(kColorId_NotificationInkDropBase),                                        \
   /* Slider */                                                                 \
@@ -154,7 +153,6 @@
   /* Colors for the material spinner (aka throbber). */                        \
   OP(kColorId_ThrobberSpinningColor),                                          \
   OP(kColorId_ThrobberWaitingColor),                                           \
-  OP(kColorId_ThrobberLightColor),                                             \
   /* Colors for Bubble Border */                                               \
   OP(kColorId_BubbleBorder),                                                   \
   /* Colors for Footnote Container. */                                         \

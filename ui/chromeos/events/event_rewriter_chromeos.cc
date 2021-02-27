@@ -563,6 +563,123 @@ bool IdentifyKeyboard(const InputDevice& keyboard_device,
   return true;
 }
 
+// Records a user action when the user press search plus a digit to
+// generate an F-key.
+void RecordSearchPlusDigitFKeyRewrite(ui::EventType event_type,
+                                      ui::KeyboardCode key_code) {
+  if (event_type != ET_KEY_PRESSED) {
+    return;
+  }
+
+  switch (key_code) {
+    case ui::VKEY_F1:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F1"));
+      break;
+    case ui::VKEY_F2:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F2"));
+      break;
+    case ui::VKEY_F3:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F3"));
+      break;
+    case ui::VKEY_F4:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F4"));
+      break;
+    case ui::VKEY_F5:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F5"));
+      break;
+    case ui::VKEY_F6:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F6"));
+      break;
+    case ui::VKEY_F7:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F7"));
+      break;
+    case ui::VKEY_F8:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F8"));
+      break;
+    case ui::VKEY_F9:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F9"));
+      break;
+    case ui::VKEY_F10:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F10"));
+      break;
+    case ui::VKEY_F11:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F11"));
+      break;
+    case ui::VKEY_F12:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F12"));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+// Records metrics for the Alt and Search based variants of keys in the
+// "six pack" eg. Home, End, PageUp, PageDown, Delete, Insert.
+void RecordSixPackEventRewrites(ui::EventType event_type,
+                                ui::KeyboardCode key_code,
+                                bool search_variant) {
+  if (event_type != ET_KEY_PRESSED) {
+    return;
+  }
+
+  if (search_variant) {
+    switch (key_code) {
+      case ui::VKEY_DELETE:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_Delete"));
+        break;
+      case ui::VKEY_INSERT:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_Insert"));
+        break;
+      case ui::VKEY_HOME:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_Home"));
+        break;
+      case ui::VKEY_END:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_End"));
+        break;
+      case ui::VKEY_PRIOR:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_PageUp"));
+        break;
+      case ui::VKEY_NEXT:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_PageDown"));
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else {
+    switch (key_code) {
+      case ui::VKEY_DELETE:
+        base::RecordAction(
+            base::UserMetricsAction("AltBasedKeyRewrite_Delete"));
+        break;
+      case ui::VKEY_HOME:
+        base::RecordAction(base::UserMetricsAction("AltBasedKeyRewrite_Home"));
+        break;
+      case ui::VKEY_END:
+        base::RecordAction(base::UserMetricsAction("AltBasedKeyRewrite_End"));
+        break;
+      case ui::VKEY_PRIOR:
+        base::RecordAction(
+            base::UserMetricsAction("AltBasedKeyRewrite_PageUp"));
+        break;
+      case ui::VKEY_NEXT:
+        base::RecordAction(
+            base::UserMetricsAction("AltBasedKeyRewrite_PageDown"));
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1295,6 +1412,8 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
         RewriteWithKeyboardRemappings(kSearchRemappings,
                                       base::size(kSearchRemappings), incoming,
                                       state, strict)) {
+      RecordSixPackEventRewrites(key_event.type(), state->key_code,
+                                 /*search_variant=*/true);
       return;
     }
   }
@@ -1321,6 +1440,8 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
       if (RewriteWithKeyboardRemappings(kNonSearchRemappings,
                                         base::size(kNonSearchRemappings),
                                         incoming, state)) {
+        RecordSixPackEventRewrites(key_event.type(), state->key_code,
+                                   /*search_variant=*/false);
         return;
       }
     } else {
@@ -1538,6 +1659,7 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
         if (state->code == map.input_dom_code) {
           state->flags &= ~EF_COMMAND_DOWN;
           ApplyRemapping(map.result, state);
+          RecordSearchPlusDigitFKeyRewrite(key_event.type(), state->key_code);
           return;
         }
       }

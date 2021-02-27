@@ -1766,7 +1766,7 @@ ci.cipd_3pp_builder(
         category = "3pp|linux",
         short_name = "amd64",
     ),
-    schedule = "0 7 * * 0 *",
+    schedule = "with 6h interval",
     triggered_by = [],
     properties = {
         "platform": "linux-amd64",
@@ -3431,6 +3431,15 @@ ci.fyi_builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "tgc",
+    ),
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "Linux Builder (goma cache silo)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "lgc",
     ),
     os = os.LINUX_DEFAULT,
 )

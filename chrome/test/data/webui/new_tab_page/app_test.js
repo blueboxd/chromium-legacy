@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, BackgroundManager, BackgroundSelectionType, BrowserProxy, ModuleRegistry, PromoBrowserCommandProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BackgroundManager, BackgroundSelectionType, BrowserProxy, CustomizeDialogPage, ModuleRegistry, PromoBrowserCommandProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
@@ -22,7 +22,7 @@ suite('NewTabPageAppTest', () => {
   let testProxy;
 
   /** @type {FakeMetricsPrivate} */
-  let fakeMetricsPrivate;
+  let metrics;
 
   /**
    * @implements {BackgroundManager}
@@ -65,10 +65,11 @@ suite('NewTabPageAppTest', () => {
     BackgroundManager.instance_ = backgroundManager;
     const moduleRegistry = TestBrowserProxy.fromClass(ModuleRegistry);
     moduleResolver = new PromiseResolver();
+    moduleRegistry.setResultFor('getDescriptors', []);
     moduleRegistry.setResultFor('initializeModules', moduleResolver.promise);
     ModuleRegistry.instance_ = moduleRegistry;
-    fakeMetricsPrivate = new FakeMetricsPrivate();
-    chrome.metricsPrivate = fakeMetricsPrivate;
+    metrics = new FakeMetricsPrivate();
+    chrome.metricsPrivate = metrics;
 
     app = document.createElement('ntp-app');
     document.body.appendChild(app);
@@ -467,16 +468,18 @@ suite('NewTabPageAppTest', () => {
             .dispatchEvent(new Event(
                 'ntp-middle-slot-promo-loaded',
                 {bubbles: true, composed: true}));
-        testProxy.callbackRouterRemote.setModulesVisible(visible);
+        testProxy.callbackRouterRemote.setDisabledModules(!visible, ['bar']);
         await flushTasks();  // Wait for module descriptor resolution.
 
         // Assert.
         const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
         assertEquals(2, modules.length);
+        assertEquals(1, testProxy.handler.getCallCount('onModulesRendered'));
+        const histogram = 'NewTabPage.Modules.EnabledOnNTPLoad';
+        assertEquals(1, metrics.count(`${histogram}.foo`, visible));
+        assertEquals(1, metrics.count(`${histogram}.bar`, false));
         assertEquals(
-            visible ? 1 : 0,
-            testProxy.handler.getCallCount('onModulesRendered'));
-        assertEquals(1, testProxy.handler.getCallCount('updateModulesVisible'));
+            1, testProxy.handler.getCallCount('updateDisabledModules'));
       });
     });
 
@@ -532,10 +535,8 @@ suite('NewTabPageAppTest', () => {
 
     test('modules can be disabled and restored', async () => {
       // Arrange.
+      let restoreCalled = false;
       const moduleElement = document.createElement('div');
-      loadTimeData.overrideValues({
-        disableModuleToastMessage: 'hello "$1"',
-      });
 
       // Act.
       moduleResolver.resolve([{
@@ -551,24 +552,27 @@ suite('NewTabPageAppTest', () => {
       assertFalse($$(app, '#removeModuleToast').open);
 
       // Act.
-      moduleElement.dispatchEvent(new Event('disable-module', {
+      moduleElement.dispatchEvent(new CustomEvent('disable-module', {
         bubbles: true,
         composed: true,
+        detail: {
+          message: 'Foo',
+          restoreCallback: _ => {
+            restoreCalled = true;
+          },
+        },
       }));
       await flushTasks();
 
       // Assert.
       assertTrue($$(app, '#removeModuleToast').open);
       assertEquals(
-          'hello "bar"',
-          $$(app, '#removeModuleToastMessage').textContent.trim());
+          'Foo', $$(app, '#removeModuleToastMessage').textContent.trim());
       assertNotStyle($$(app, '#undoRemoveModuleButton'), 'display', 'none');
+      assertEquals(1, metrics.count('NewTabPage.Modules.Disabled', 'foo'));
       assertEquals(
-          1, fakeMetricsPrivate.count('NewTabPage.Modules.Disabled', 'foo'));
-      assertEquals(
-          1,
-          fakeMetricsPrivate.count(
-              'NewTabPage.Modules.Disabled.ModuleRequest', 'foo'));
+          1, metrics.count('NewTabPage.Modules.Disabled.ModuleRequest', 'foo'));
+      assertFalse(restoreCalled);
 
       // Act.
       $$(app, '#undoRemoveModuleButton').click();
@@ -576,11 +580,30 @@ suite('NewTabPageAppTest', () => {
 
       // Assert.
       assertFalse($$(app, '#removeModuleToast').open);
+      assertTrue(restoreCalled);
+      assertEquals(1, metrics.count('NewTabPage.Modules.Enabled', 'foo'));
+      assertEquals(1, metrics.count('NewTabPage.Modules.Enabled.Toast', 'foo'));
+    });
+
+    test('modules can open customize dialog', async () => {
+      // Arrange.
+      const moduleElement = document.createElement('div');
+      moduleResolver.resolve([{
+        id: 'foo',
+        element: moduleElement,
+      }]);
+      await flushTasks();  // Wait for module descriptor resolution.
+
+      // Act.
+      moduleElement.dispatchEvent(
+          new Event('customize-module', {bubbles: true, composed: true}));
+      await flushTasks();  // Wait for customize dialog to open.
+
+      // Assert.
+      assertTrue(!!$$(app, 'ntp-customize-dialog'));
       assertEquals(
-          1, fakeMetricsPrivate.count('NewTabPage.Modules.Enabled', 'foo'));
-      assertEquals(
-          1,
-          fakeMetricsPrivate.count('NewTabPage.Modules.Enabled.Toast', 'foo'));
+          CustomizeDialogPage.MODULES,
+          $$(app, 'ntp-customize-dialog').selectedPage);
     });
   });
 });

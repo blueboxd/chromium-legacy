@@ -195,6 +195,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -749,6 +750,8 @@ const char* LifecycleStateToString(RenderFrameHostImpl::LifecycleState state) {
   switch (state) {
     case LifecycleState::kSpeculative:
       return "Speculative";
+    case LifecycleState::kPrerendering:
+      return "Prerendering";
     case LifecycleState::kActive:
       return "Active";
     case LifecycleState::kInBackForwardCache:
@@ -1058,6 +1061,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       lifecycle_state_(lifecycle_state) {
   DCHECK(delegate_);
   DCHECK(lifecycle_state_ == LifecycleState::kSpeculative ||
+         lifecycle_state_ == LifecycleState::kPrerendering ||
          lifecycle_state_ == LifecycleState::kActive);
   // Only main frames have `waiting_for_init_` set.
   DCHECK(!waiting_for_init_ || !parent_);
@@ -2908,9 +2912,7 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
     if (top_frame_site != cur_site) {
       party_context.insert(cur_site);
     }
-    if (!candidate_site_for_cookies.IsEquivalent(net::SiteForCookies(cur_site)))
-      candidate_site_for_cookies = net::SiteForCookies();
-    candidate_site_for_cookies.MarkIfCrossScheme(cur_origin);
+    candidate_site_for_cookies.CompareWithFrameTreeSiteAndRevise(cur_site);
   }
 
   return net::IsolationInfo::Create(request_type, top_frame_origin,
@@ -2925,15 +2927,6 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   DCHECK(!has_committed_any_navigation_);
   DCHECK(GetLastCommittedOrigin().opaque());
   DCHECK(isolation_info_.IsEmpty());
-
-  // If the document has a non-secure parent, then it is non-secure. Otherwise
-  // it depends if the creator has a potentially-trustworthy origin.
-  if (parent_ && !parent_->is_web_secure_context()) {
-    is_web_secure_context_ = false;
-  } else {
-    is_web_secure_context_ =
-        network::IsOriginPotentiallyTrustworthy(new_frame_creator);
-  }
 
   // Calculate and set |new_frame_origin|.
   bool new_frame_should_be_sandboxed =
@@ -4567,6 +4560,11 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 
 bool RenderFrameHostImpl::IsInactiveAndDisallowReactivation() {
   switch (lifecycle_state_) {
+    // TODO(https://crbug.com/1177729): Cancel prerendering when
+    // IsInactiveAndDisallowReactivation() is called in
+    // LifecycleState:kPrerendering state.
+    case LifecycleState::kPrerendering:
+      return false;
     case LifecycleState::kRunningUnloadHandlers:
     case LifecycleState::kReadyToBeDeleted:
       return true;
@@ -7303,17 +7301,21 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
 }
 
 bool RenderFrameHostImpl::IsCurrent() {
-  // Only documents in the kActive lifecycle state are considered current.
-  if (lifecycle_state_ != LifecycleState::kActive)
-    return false;
-
-  // When the document is transitioning away from kActive to a
+  // When the document is transitioning away from kActive/kPrerendering to a
   // yet-to-be-determined state, the RenderFrameHostManager has already
   // updated its current RenderFrameHost, and the old document is no longer
   // the current one. In that case, return false.
   if (has_pending_lifecycle_state_update_)
     return false;
-  return true;
+
+  // TODO(https://crbug.com/1177743): Remove this check and replace all the
+  // navigation-related IsCurrent checks with explicit checks allowing
+  // navigation when the document is in kPrerendering state.
+  if (lifecycle_state_ == LifecycleState::kPrerendering)
+    return true;
+
+  // Only documents in the kActive lifecycle state are considered current.
+  return lifecycle_state_ == LifecycleState::kActive;
 }
 
 size_t RenderFrameHostImpl::GetProxyCount() {
@@ -7868,6 +7870,9 @@ void RenderFrameHostImpl::OnPrerenderedPageActivated() {
   // TODO(crbug.com/1174506): Temporary until we understand the cause of the
   // crash. Return to DCHECKs after the bug is fixed.
   CHECK(blink::features::IsPrerender2Enabled());
+  // Update the |lifecycle_state_| to kActive on activation.
+  DCHECK_EQ(lifecycle_state_, LifecycleState::kPrerendering);
+  SetLifecycleState(LifecycleState::kActive);
   broker_.ReleaseMojoBinderPolicies();
   for (auto& child : children_)
     child->current_frame_host()->OnPrerenderedPageActivated();
@@ -8534,13 +8539,16 @@ RenderFrameHostImpl::CreateMessageFilterForAssociatedReceiver(
 network::mojom::ClientSecurityStatePtr
 RenderFrameHostImpl::BuildClientSecurityState() const {
   auto client_security_state = network::mojom::ClientSecurityState::New();
-  client_security_state->is_web_secure_context = is_web_secure_context();
-  client_security_state->cross_origin_embedder_policy =
-      cross_origin_embedder_policy_;
-  client_security_state->ip_address_space =
-      policy_container_host_->ip_address_space();
+
+  const PolicyContainerPolicies& policies = policy_container_host_->policies();
+  client_security_state->is_web_secure_context = policies.is_web_secure_context;
+  client_security_state->ip_address_space = policies.ip_address_space;
+
   client_security_state->private_network_request_policy =
       private_network_request_policy_;
+  client_security_state->cross_origin_embedder_policy =
+      cross_origin_embedder_policy_;
+
   return client_security_state;
 }
 
@@ -9075,9 +9083,6 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   if (!navigation_request->IsWaitingToCommit()) {
     return;
   }
-
-  // IsWebSecureContext() must only be called on ready-to-commit navigations.
-  is_web_secure_context_ = navigation_request->IsWebSecureContext();
 
   private_network_request_policy_ =
       navigation_request->private_network_request_policy();
@@ -10335,6 +10340,16 @@ void RenderFrameHostImpl::SetLifecycleStateToActive() {
   SetLifecycleState(LifecycleState::kActive);
 }
 
+void RenderFrameHostImpl::SetLifecycleStateToPrerendering() {
+  // Update the |lifecycle_state_| to kPrerendering on navigation commit when a
+  // speculative RenderFrameHost is created for navigation inside prerendered
+  // frame tree. This should happen before activation.
+  DCHECK(IsPrerendering());
+  DCHECK_EQ(lifecycle_state_, LifecycleState::kSpeculative);
+  DCHECK(children_.empty());
+  SetLifecycleState(LifecycleState::kPrerendering);
+}
+
 void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
   TRACE_EVENT2("content", "RenderFrameHostImpl::SetLifecycleState",
                "render_frame_host", base::trace_event::ToTracedValue(this),
@@ -10350,7 +10365,12 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
           // transitions happen to this state during its lifetime.
           StateTransitions<LifecycleState>({
               {LifecycleState::kSpeculative,
-               {LifecycleState::kActive, LifecycleState::kReadyToBeDeleted}},
+               {LifecycleState::kActive, LifecycleState::kPrerendering,
+                LifecycleState::kReadyToBeDeleted}},
+
+              {LifecycleState::kPrerendering,
+               {LifecycleState::kActive, LifecycleState::kRunningUnloadHandlers,
+                LifecycleState::kReadyToBeDeleted}},
 
               {LifecycleState::kActive,
                {LifecycleState::kInBackForwardCache,
@@ -10401,10 +10421,20 @@ void RenderFrameHostImpl::RecordDocumentCreatedUkmEvent(
       !is_main_frame() &&
       !GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(origin);
 
+  // Compares the subframe site with the main frame site. In the case of
+  // nested subframes such as A(B(A)), the bottom-most frame A is expected to
+  // have |is_cross_site_frame| set to false, even though this frame is cross-
+  // site from its parent frame B. This value is only used in manual analysis.
+  bool is_cross_site_frame =
+      !is_main_frame() &&
+      (net::SchemefulSite(origin) !=
+       net::SchemefulSite(GetMainFrame()->GetLastCommittedOrigin()));
+
   ukm::builders::DocumentCreated(document_ukm_source_id)
       .SetNavigationSourceId(GetPageUkmSourceId())
       .SetIsMainFrame(is_main_frame())
       .SetIsCrossOriginFrame(is_cross_origin_frame)
+      .SetIsCrossSiteFrame(is_cross_site_frame)
       .Record(ukm_recorder);
 }
 

@@ -2310,6 +2310,11 @@ def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   target file or directory, to avoid layering violations from being
   introduced. This check verifies that this happens.
   """
+  # We rely on Gerrit's code-owners to check approvals.
+  # input_api.gerrit is always set for Chromium, but other projects
+  # might not use Gerrit.
+  if not input_api.gerrit:
+    return []
   if input_api.change.issue:
     # Skip OWNERS check when Bot-Commit label is approved. This label is
     # intended for commits made by trusted bots that don't require review nor
@@ -2420,6 +2425,8 @@ def CheckSpamLogging(input_api, output_api):
                         r"dump_stability_report_main_win.cc$",
                     r"^components[\\/]media_control[\\/]renderer[\\/]"
                         r"media_playback_options\.cc$",
+                    r"^components[\\/]viz[\\/]service[\\/]display[\\/]"
+                        r"overlay_strategy_underlay_cast\.cc$",
                     r"^components[\\/]zucchini[\\/].*",
                     # TODO(peter): Remove exception. https://crbug.com/534537
                     r"^content[\\/]browser[\\/]notifications[\\/]"
@@ -4134,8 +4141,7 @@ def CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
 
   # Update this regexp if new revisions are added to the files.
   rev_regexp = input_api.re.compile(
-      ("'((clang_format|libcxx|libcxxabi)_revision|gn_version|"
-       "reclient_version)':"))
+      ("'((clang_format|libcxx|libcxxabi)_revision|gn_version)':"))
 
   # If a user is changing one revision, they need to change the same
   # line in both files. This means that any given change should contain

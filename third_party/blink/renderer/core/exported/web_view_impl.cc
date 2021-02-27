@@ -1298,8 +1298,9 @@ void WebViewImpl::SetScreenOrientationOverrideForTesting(
   for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame()) {
       if (WebFrameWidgetImpl* widget = static_cast<WebFrameWidgetImpl*>(
-              frame->ToWebLocalFrame()->FrameWidget()))
-        widget->UpdateScreenInfo(widget->GetScreenInfo());
+              frame->ToWebLocalFrame()->FrameWidget())) {
+        widget->UpdateScreenInfo(widget->GetScreenInfos());
+      }
     }
   }
 }
@@ -2651,6 +2652,10 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
     GetPageScaleConstraintsSet().SetNeedsReset(true);
     if (MainFrameImpl() && MainFrameImpl()->GetFrameView())
       MainFrameImpl()->GetFrameView()->SetNeedsLayout();
+  }
+
+  if (does_composite_) {
+    MainFrameImpl()->FrameWidgetImpl()->UpdateViewportDescription(description);
   }
 
   UpdateMainFrameLayoutSize();

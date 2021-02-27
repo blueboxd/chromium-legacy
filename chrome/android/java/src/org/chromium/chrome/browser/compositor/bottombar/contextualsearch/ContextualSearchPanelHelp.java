@@ -76,6 +76,7 @@ public class ContextualSearchPanelHelp {
 
     /**
      * @param panel             The panel.
+     * @param helpSectionHost   A reference the host of this section for notifications.
      * @param context           The Android Context used to inflate the View.
      * @param container         The container View used to inflate the View.
      * @param resourceLoader    The resource loader that will handle the snapshot capturing.

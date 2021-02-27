@@ -31669,6 +31669,26 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3827" label="StorageFoundationFlush"/>
   <int value="3828" label="StorageFoundationFlushSync"/>
   <int value="3829" label="UnrestrictedSharedArrayBuffer"/>
+  <int value="3830" label="FeaturePolicyJSAPIAllowsFeatureIFrame"/>
+  <int value="3831" label="FeaturePolicyJSAPIAllowsFeatureDocument"/>
+  <int value="3832" label="FeaturePolicyJSAPIAllowsFeatureOriginIFrame"/>
+  <int value="3833" label="FeaturePolicyJSAPIAllowsFeatureOriginDocument"/>
+  <int value="3834" label="FeaturePolicyJSAPIAllowedFeaturesIFrame"/>
+  <int value="3835" label="FeaturePolicyJSAPIAllowedFeaturesDocument"/>
+  <int value="3836" label="FeaturePolicyJSAPIFeaturesIFrame"/>
+  <int value="3837" label="FeaturePolicyJSAPIFeaturesDocument"/>
+  <int value="3838" label="FeaturePolicyJSAPIGetAllowlistIFrame"/>
+  <int value="3839" label="FeaturePolicyJSAPIGetAllowlistDocument"/>
+  <int value="3840" label="V8Screens_Onchange_AttributeGetter"/>
+  <int value="3841" label="V8Screens_Onchange_AttributeSetter"/>
+  <int value="3842" label="V8ScreenAdvanced_Left_AttributeGetter"/>
+  <int value="3843" label="V8ScreenAdvanced_Top_AttributeGetter"/>
+  <int value="3844" label="V8ScreenAdvanced_IsPrimary_AttributeGetter"/>
+  <int value="3845" label="V8ScreenAdvanced_IsInternal_AttributeGetter"/>
+  <int value="3846" label="V8ScreenAdvanced_DevicePixelRatio_AttributeGetter"/>
+  <int value="3847" label="V8ScreenAdvanced_Id_AttributeGetter"/>
+  <int value="3848" label="V8ScreenAdvanced_PointerTypes_AttributeGetter"/>
+  <int value="3849" label="V8ScreenAdvanced_Label_AttributeGetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35143,6 +35163,8 @@ Called by update_feature_policy_enum.py.-->
 <!-- Hash values can be produced using tool: bluetooth_metrics_hash -->
 
   <int value="7464675" label="pulse_oximeter"/>
+  <int value="13977722"
+      label="Vernier Sensors; d91714ef-28b9-4f91-ba16-f0d9a604f112"/>
   <int value="14295641"
       label="PocketLab; f000aa1e-0452-4000-b000-000000000000"/>
   <int value="26695985" label="fe20"/>
@@ -35242,6 +35264,8 @@ Called by update_feature_policy_enum.py.-->
   <int value="449334956"
       label="PocketLab; f000aa3d-0452-4000-b000-000000000000"/>
   <int value="452749537" label="fe6f"/>
+  <int value="482634289"
+      label="SAM Labs Blocks; 3b989460-975f-11e4-a9fb-0002a5d5c51b"/>
   <int value="486403409" label="fe7e"/>
   <int value="493187195"
       label="Insight cards; 13630000-aeb9-10cf-ef69-81e145a91113"/>
@@ -44967,7 +44991,6 @@ from previous Chrome versions.
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
-  <int value="-558488712" label="PreemtiveLinkToTextGeneration:disabled"/>
   <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
@@ -45231,6 +45254,7 @@ from previous Chrome versions.
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
   <int value="-313812707" label="VideoTutorials:disabled"/>
+  <int value="-312144677" label="TFLiteLanguageDetectionEnabled:disabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-310908854" label="new-wallpaper-picker"/>
   <int value="-310615515" label="EnableSuggestedFiles:disabled"/>
@@ -46537,6 +46561,7 @@ from previous Chrome versions.
   <int value="910725730" label="WebRtcHWVP9Encoding:disabled"/>
   <int value="911256399" label="GlobalMediaControlsModernUI:enabled"/>
   <int value="912119426" label="InfiniteSessionRestore:disabled"/>
+  <int value="912486595" label="draw-predicted-ink-point"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
@@ -46830,6 +46855,7 @@ from previous Chrome versions.
   <int value="1177628103" label="GaiaActionButtons:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
+  <int value="1179407596" label="PreemptiveLinkToTextGeneration:enabled"/>
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
@@ -47291,7 +47317,6 @@ from previous Chrome versions.
   <int value="1601231448" label="VirtualKeyboardMultipaste:disabled"/>
   <int value="1601582484" label="enable-crash-reporter-for-testing"/>
   <int value="1602627012" label="OverrideSitePrefsForHrefTranslate:enabled"/>
-  <int value="1602791752" label="PreemtiveLinkToTextGeneration:enabled"/>
   <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
   <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1604893983" label="VizForWebView:disabled"/>
@@ -47498,6 +47523,7 @@ from previous Chrome versions.
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
+  <int value="1799526742" label="PreemptiveLinkToTextGeneration:disabled"/>
   <int value="1801585504" label="ContextMenuShopWithGoogleLens:enabled"/>
   <int value="1802874714" label="QueryTilesEnableQueryEditing:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
@@ -47617,6 +47643,7 @@ from previous Chrome versions.
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1907273605" label="NtpZeroSuggest:disabled"/>
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
+  <int value="1911002680" label="TFLiteLanguageDetectionEnabled:enabled"/>
   <int value="1913263516" label="OculusVR:enabled"/>
   <int value="1913298816" label="OverlayScrollbar:enabled"/>
   <int value="1913926782" label="ChromeModernAlternateCardLayout:disabled"/>
@@ -56594,6 +56621,31 @@ Called by update_net_trust_anchors.py.-->
       label="Missing glyph image, but a fallback was found (deprecated)"/>
   <int value="5"
       label="Missing glyph path, but a fallback was found (deprecated)"/>
+</enum>
+
+<enum name="OpaqueResponseBlocking_ResponseHeadersHeuristic">
+  <summary>
+    Initial decision taken by Opaque Response Blocking (ORB, see also
+    https://github.com/annevk/orb) based on just the response headers.
+  </summary>
+  <int value="0" label="NonOpaqueResponse">
+    ORB only applies to opaque respones - the NonOpaqueResponse value covers:
+    mode != no-cors (e.g. mode=navigate or mode=cors) and browser-initiated
+    requests.
+  </int>
+  <int value="1" label="ProcessedBasedOnHeaders">
+    ORB algorithm is *surely* able to make a decision based on the response
+    headers. The ProcessedBasedOnHeaders enum value covers all subresource
+    requests: scripts, images, video, etc. (both same-origin and cross-origin
+    requests).
+  </int>
+  <int value="2" label="RequiresJavascriptParsing">
+    ORB algorithm *might* requires parsing the response body as Javascript.
+
+    This might be a false positive if the response: 1) sniffs as an
+    audio/image/video format 2) represents a valid range response for a media
+    element
+  </int>
 </enum>
 
 <enum name="OpenBrowserType">

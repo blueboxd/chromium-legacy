@@ -1168,7 +1168,7 @@
     {
       name: "LayoutNGTable",
       depends_on: ["LayoutNG"],
-      status: "test"
+      status: "stable"
     },
     {
       name: "LayoutNGTextControl",
@@ -1361,11 +1361,6 @@
       // Named pages for pagination (the "page" CSS property).
       name: "NamedPages",
       status: "stable",
-    },
-    {
-      name: "NativeIO",
-      origin_trial_feature_name: "StorageFoundationAPI",
-      status: "experimental",
     },
     {
       name: "NavigatorContentUtils",
@@ -1709,6 +1704,10 @@
       status: {"Android": "stable", "default": ""},
     },
     {
+      name: "RemoveMobileViewportDoubleTap",
+      status: "experimental"
+    },
+    {
       // See https://crbug.com/1012063
       name: "RequestVideoFrameCallback",
       status: "stable",
@@ -1946,6 +1945,11 @@
     },
     {
       name: "StorageBuckets",
+      status: "experimental",
+    },
+    {
+      name: "StorageFoundationAPI",
+      origin_trial_feature_name: "StorageFoundationAPI",
       status: "experimental",
     },
     {

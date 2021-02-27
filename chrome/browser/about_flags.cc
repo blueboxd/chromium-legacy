@@ -123,6 +123,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
+#include "components/shared_highlighting/core/common/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -1773,7 +1774,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"start_surface_variation", "single"},
     {"omnibox_focused_on_new_tab", "true"},
     {"home_button_on_grid_tab_switcher", "true"},
-    {"new_home_surface_from_home_button", "hide_tab_switcher_only"}};
+    {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
+    {"hide_switch_when_no_incognito_tabs", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
@@ -2401,6 +2403,17 @@ const FeatureEntry::Choice kFrameThrottleFpsChoices[] = {
     {flag_descriptions::kFrameThrottleFps30, ash::switches::kFrameThrottleFps,
      "30"}};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+const FeatureEntry::Choice kDrawPredictedPointsChoices[] = {
+    {flag_descriptions::kDrawPredictedPointsDefault, "", ""},
+    {flag_descriptions::kDraw1PredictedPoint12Ms,
+     switches::kDrawPredictedInkPoint, switches::kDraw1Point12Ms},
+    {flag_descriptions::kDraw2PredictedPoints6Ms,
+     switches::kDrawPredictedInkPoint, switches::kDraw2Points6Ms},
+    {flag_descriptions::kDraw1PredictedPoint6Ms,
+     switches::kDrawPredictedInkPoint, switches::kDraw1Point6Ms},
+    {flag_descriptions::kDraw2PredictedPoints3Ms,
+     switches::kDrawPredictedInkPoint, switches::kDraw2Points3Ms}};
 
 #if defined(OS_ANDROID)
 // The variations of --password-change-in-settings.
@@ -3043,7 +3056,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kDeprecateLowUsageCodecs)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && !defined(OS_ANDROID)
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
     {
         "enable-accelerated-video-decode",
         flag_descriptions::kAcceleratedVideoDecodeName,
@@ -3052,15 +3065,16 @@ const FeatureEntry kFeatureEntries[] = {
         FEATURE_VALUE_TYPE(media::kVaapiVideoDecodeLinux),
     },
 #else
+    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
+    // kOsCrOS.
     {
         "disable-accelerated-video-decode",
         flag_descriptions::kAcceleratedVideoDecodeName,
         flag_descriptions::kAcceleratedVideoDecodeDescription,
-        kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+        kOsMac | kOsWin | kOsCrOS | kOsAndroid | kOsLinux,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
-#endif  // (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) &&
-        // !defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) && !defined(OS_ANDROID)
     {
         "disable-accelerated-video-encode",
         flag_descriptions::kAcceleratedVideoEncodeName,
@@ -3315,10 +3329,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-    {"preemtive-link-to-text-generation",
-     flag_descriptions::kPreemtiveLinkToTextGenerationName,
-     flag_descriptions::kPreemtiveLinkToTextGenerationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPreemtiveLinkToTextGeneration)},
+    {"preemptive-link-to-text-generation",
+     flag_descriptions::kPreemptiveLinkToTextGenerationName,
+     flag_descriptions::kPreemptiveLinkToTextGenerationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPreemptiveLinkToTextGeneration)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"keyboard-based-display-arrangement-in-settings",
      flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
@@ -5469,10 +5483,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kD3D11VideoDecoder)},
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
+    // kOsCrOS.
     {"chromeos-direct-video-decoder",
      flag_descriptions::kChromeOSDirectVideoDecoderName,
-     flag_descriptions::kChromeOSDirectVideoDecoderDescription, kOsCrOS,
+     flag_descriptions::kChromeOSDirectVideoDecoderDescription,
+     kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(media::kUseChromeOSDirectVideoDecoder)},
 #endif
 
@@ -7229,6 +7246,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFillingAcrossAffiliatedWebsitesDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kFillingAcrossAffiliatedWebsites)},
+
+    {"draw-predicted-ink-point", flag_descriptions::kDrawPredictedPointsName,
+     flag_descriptions::kDrawPredictedPointsDescription, kOsAll,
+     MULTI_VALUE_TYPE(kDrawPredictedPointsChoices)},
+
+    {"enable-tflite-language-detection",
+     flag_descriptions::kTFLiteLanguageDetectionName,
+     flag_descriptions::kTFLiteLanguageDetectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionEnabled)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

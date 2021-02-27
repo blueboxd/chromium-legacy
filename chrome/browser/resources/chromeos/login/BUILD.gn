@@ -32,7 +32,6 @@ js_type_check("closure_compile_local") {
     ":gesture_navigation",
     ":marketing_opt_in",
     ":multidevice_setup_first_run",
-    ":navigation_bar",
     ":network_select_login",
     ":notification_card",
     ":offline_ad_login",
@@ -225,9 +224,6 @@ js_library("marketing_opt_in") {
   ]
 }
 
-js_library("navigation_bar") {
-}
-
 js_library("network_select_login") {
   deps = [
     "//ui/webui/resources/cr_components/chromeos/network:network_select",
@@ -393,9 +389,10 @@ js_library("recommend_apps") {
     "components:login_screen_behavior",
     "components:multi_step_behavior",
     "components:oobe_types",
-    "components/oobe_dialog:oobe_dialog",
+    "components/oobe_adaptive_dialog:oobe_adaptive_dialog",
     "components/oobe_dialog_host_behavior:oobe_dialog_host_behavior",
     "components/oobe_i18n_behavior:oobe_i18n_behavior",
+    "components/oobe_loading_dialog:oobe_loading_dialog",
   ]
 }
 

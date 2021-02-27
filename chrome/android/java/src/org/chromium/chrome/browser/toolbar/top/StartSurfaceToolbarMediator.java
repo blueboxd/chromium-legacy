@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.HOMEPAGE_MANAGED_BY_POLICY_SUPPLIER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.HOME_BUTTON_CLICK_HANDLER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.HOME_BUTTON_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_AT_START;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_CLICK_HANDLER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_DESCRIPTION;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IMAGE;
@@ -158,10 +159,10 @@ class StartSurfaceToolbarMediator {
         updateTranslationY(verticalOffset);
     }
 
-    boolean shouldHideToolbarContainer(int toolbarHeight) {
+    boolean shouldHideToolbarLayout(int toolbarHeight) {
         // If it's on the non-incognito homepage, start surface toolbar is visible (omnibox has no
         // focus), and scrolling offset is smaller than toolbar's height, we need to hide toolbar
-        // container until start surface toolbar is disappearing.
+        // layout until start surface toolbar is disappearing.
         return mOverviewModeState == StartSurfaceState.SHOWN_HOMEPAGE
                 && !mPropertyModel.get(IS_INCOGNITO) && mPropertyModel.get(IS_VISIBLE)
                 && -mPropertyModel.get(TRANSLATION_Y) != 0
@@ -344,6 +345,8 @@ class StartSurfaceToolbarMediator {
         // shown.
         boolean shouldTabSwitcherButton = mOverviewModeState == StartSurfaceState.SHOWN_HOMEPAGE;
         mPropertyModel.set(TAB_SWITCHER_BUTTON_IS_VISIBLE, shouldTabSwitcherButton);
+        // If tab switcher button is visible, we should move identity disc to the left.
+        mPropertyModel.set(IDENTITY_DISC_AT_START, shouldTabSwitcherButton);
     }
 
     private void updateTranslationY(float transY) {

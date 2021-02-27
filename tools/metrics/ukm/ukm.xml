@@ -4299,6 +4299,12 @@ be describing additional metrics about the same event.
       1.
     </summary>
   </metric>
+  <metric name="IsCrossSiteFrame">
+    <summary>
+      Whether the document was in a cross site iframe. This can either be 0 or
+      1.
+    </summary>
+  </metric>
   <metric name="IsMainFrame">
     <summary>
       Whether the document was in the main frame. This is can either be 0 or 1.
@@ -10664,6 +10670,14 @@ be describing additional metrics about the same event.
 
       Also note, this means that a page that is bookmarked, and then
       sebsequently un-bookmarked is counted as false.
+    </summary>
+  </metric>
+  <metric name="IsNTPCustomLink" enum="Boolean">
+    <summary>
+      Marked true if the page has been explicitly added (by the user) to the
+      list of custom links displayed in the NTP. Links added to the NTP by
+      History TopSites don't count for this. Always false on Android, because
+      Android does not have NTP custom links.
     </summary>
   </metric>
   <metric name="IsPlacedInTabGroup" enum="Boolean">

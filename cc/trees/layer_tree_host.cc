@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -490,10 +491,19 @@ void LayerTreeHost::CommitComplete() {
     client_->DidCompletePageScaleAnimation();
     did_complete_scale_animation_ = false;
   }
+}
 
-  for (auto& closure : committed_document_transition_callbacks_)
-    std::move(closure).Run();
-  committed_document_transition_callbacks_.clear();
+void LayerTreeHost::NotifyTransitionRequestsFinished(
+    const std::vector<uint32_t>& sequence_ids) {
+  // TODO(vmpstr): This might also be a good spot to expire long standing
+  // requests if they were not finished.
+  for (auto& sequence_id : sequence_ids) {
+    auto it = document_transition_callbacks_.find(sequence_id);
+    if (it == document_transition_callbacks_.end())
+      continue;
+    std::move(it->second).Run();
+    document_transition_callbacks_.erase(it);
+  }
 }
 
 void LayerTreeHost::SetLayerTreeFrameSink(
@@ -1358,6 +1368,14 @@ void LayerTreeHost::SetDisplayColorSpaces(
     layer->SetNeedsDisplay();
 }
 
+void LayerTreeHost::UpdateViewportIsMobileOptimized(
+    bool is_viewport_mobile_optimized) {
+  if (is_viewport_mobile_optimized_ == is_viewport_mobile_optimized)
+    return;
+  is_viewport_mobile_optimized_ = is_viewport_mobile_optimized;
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::SetExternalPageScaleFactor(
     float page_scale_factor,
     bool is_external_pinch_gesture_active) {
@@ -1627,10 +1645,13 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   // Transfer page transition directives.
   for (auto& request : document_transition_requests_) {
-    // Store the commit callback on LayerTreeHost, so that we can invoke them in
-    // CommitComplete.
-    committed_document_transition_callbacks_.push_back(
-        request->TakeCommitCallback());
+    // Store the commit callback on LayerTreeHost, so that we can invoke them
+    // when the request is finished.
+    DCHECK(!base::Contains(document_transition_callbacks_,
+                           request->sequence_id()));
+    document_transition_callbacks_[request->sequence_id()] =
+        request->TakeFinishedCallback();
+
     tree_impl->AddDocumentTransitionRequest(std::move(request));
   }
   document_transition_requests_.clear();
@@ -1655,6 +1676,7 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
 
   host_impl->SetDebugState(debug_state_);
   host_impl->SetVisualDeviceViewportSize(visual_device_viewport_size_);
+  host_impl->set_viewport_mobile_optimized(is_viewport_mobile_optimized_);
 }
 
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {

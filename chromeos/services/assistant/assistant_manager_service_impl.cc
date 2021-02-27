@@ -136,10 +136,10 @@ bool ShouldPutLogsInHomeDirectory() {
   return !redirect_logging;
 }
 
-ServiceControllerProxy::BootupConfigPtr CreateBootupConfig(
+chromeos::libassistant::mojom::BootupConfigPtr CreateBootupConfig(
     const base::Optional<std::string>& s3_server_uri_override,
     const base::Optional<std::string>& device_id_override) {
-  auto result = ServiceControllerProxy::BootupConfig::New();
+  auto result = chromeos::libassistant::mojom::BootupConfig::New();
   result->s3_server_uri_override = s3_server_uri_override;
   result->device_id_override = device_id_override;
   result->log_in_home_dir = ShouldPutLogsInHomeDirectory();
@@ -151,7 +151,7 @@ ServiceControllerProxy::BootupConfigPtr CreateBootupConfig(
 // Observer that will receive all speech recognition related events,
 // and forwards them to all |AssistantInteractionSubscriber|.
 class SpeechRecognitionObserverWrapper
-    : public libassistant::mojom::SpeechRecognitionObserver {
+    : public chromeos::libassistant::mojom::SpeechRecognitionObserver {
  public:
   explicit SpeechRecognitionObserverWrapper(
       const base::ObserverList<AssistantInteractionSubscriber>* observers)
@@ -169,7 +169,7 @@ class SpeechRecognitionObserverWrapper
     return receiver_.BindNewPipeAndPassRemote();
   }
 
-  // libassistant::mojom::SpeechRecognitionObserver implementation:
+  // chromeos::libassistant::mojom::SpeechRecognitionObserver implementation:
   void OnSpeechLevelUpdated(float speech_level_in_decibels) override {
     for (auto& it : interaction_subscribers_)
       it.OnSpeechLevelUpdated(speech_level_in_decibels);
@@ -564,6 +564,11 @@ void AssistantManagerServiceImpl::OnInteractionFinished(
   }
 }
 
+void AssistantManagerServiceImpl::OnHtmlResponse(const std::string& html,
+                                                 const std::string& fallback) {
+  receive_inline_response_ = true;
+}
+
 void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnScheduleWait, id, time_ms);
   DCHECK(features::IsWaitSchedulingEnabled());
@@ -593,16 +598,6 @@ void AssistantManagerServiceImpl::OnShowContextualQueryFallback() {
   // Show fallback text.
   OnShowText(l10n_util::GetStringUTF8(
       IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT));
-}
-
-void AssistantManagerServiceImpl::OnShowHtml(const std::string& html,
-                                             const std::string& fallback) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnShowHtml, html, fallback);
-
-  receive_inline_response_ = true;
-
-  for (auto& it : interaction_subscribers_)
-    it.OnHtmlResponse(html, fallback);
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestions(
@@ -778,8 +773,8 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 }
 
 void AssistantManagerServiceImpl::OnStateChanged(
-    libassistant::mojom::ServiceState new_state) {
-  using libassistant::mojom::ServiceState;
+    chromeos::libassistant::mojom::ServiceState new_state) {
+  using chromeos::libassistant::mojom::ServiceState;
 
   DVLOG(1) << "Libassistant service state changed to " << new_state;
   switch (new_state) {
@@ -1028,7 +1023,7 @@ AssistantManagerServiceImpl::main_task_runner() {
   return context_->main_task_runner();
 }
 
-AssistantProxy::DisplayController&
+chromeos::libassistant::mojom::DisplayController&
 AssistantManagerServiceImpl::display_controller() {
   return assistant_proxy_->display_controller();
 }

@@ -395,6 +395,14 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // compositors. This is specified in device viewport coordinate space.
   void SetVisualDeviceViewportSize(const gfx::Size&);
 
+  void set_viewport_mobile_optimized(bool viewport_mobile_optimized) {
+    is_viewport_mobile_optimized_ = viewport_mobile_optimized;
+  }
+
+  bool viewport_mobile_optimized() const {
+    return is_viewport_mobile_optimized_;
+  }
+
   // Updates registered ElementIds present in |changed_list|. Call this after
   // changing the property trees for the |changed_list| trees.
   void UpdateElements(ElementListType changed_list);
@@ -783,6 +791,9 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // Returns mutator events to be handled by BeginMainFrame.
   std::unique_ptr<MutatorEvents> TakeMutatorEvents();
 
+  // Returns all of the transition request sequence ids that were finished.
+  std::vector<uint32_t> TakeFinishedTransitionRequestSequenceIds();
+
   void ClearCaches();
 
   void UpdateImageDecodingHints(
@@ -1140,6 +1151,11 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   std::unique_ptr<Viewport> viewport_;
 
   gfx::Size visual_device_viewport_size_;
+  // Set to true if viewport is mobile optimized by using meta tag
+  // <meta name="viewport" content="width=device-width">
+  // or
+  // <meta name="viewport" content="initial-scale=1.0">
+  bool is_viewport_mobile_optimized_ = false;
 
   std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
       pending_tree_raster_duration_timer_;
@@ -1240,6 +1256,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // When enabled, calculates which frame sinks can be throttled based on
   // some pre-defined criteria.
   ThrottleDecider throttle_decider_;
+
+  std::vector<uint32_t> finished_transition_request_sequence_ids_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

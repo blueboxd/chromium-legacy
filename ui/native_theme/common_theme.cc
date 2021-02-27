@@ -4,19 +4,24 @@
 
 #include "ui/native_theme/common_theme.h"
 
+#include "base/containers/fixed_flat_map.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/native_theme_utils.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 namespace ui {
@@ -25,9 +30,9 @@ namespace {
 
 NativeTheme::SecurityChipColorId GetSecurityChipColorId(
     NativeTheme::ColorId color_id) {
-  static const base::NoDestructor<
-      base::flat_map<NativeTheme::ColorId, NativeTheme::SecurityChipColorId>>
-      color_id_map({
+  static constexpr const auto color_id_map =
+      base::MakeFixedFlatMap<NativeTheme::ColorId,
+                             NativeTheme::SecurityChipColorId>({
           {NativeTheme::kColorId_CustomTabBarSecurityChipDefaultColor,
            NativeTheme::SecurityChipColorId::DEFAULT},
           {NativeTheme::kColorId_CustomTabBarSecurityChipSecureColor,
@@ -37,7 +42,7 @@ NativeTheme::SecurityChipColorId GetSecurityChipColorId(
           {NativeTheme::kColorId_CustomTabBarSecurityChipDangerousColor,
            NativeTheme::SecurityChipColorId::DANGEROUS},
       });
-  return color_id_map->at(color_id);
+  return color_id_map.at(color_id);
 }
 
 base::Optional<SkColor> GetHighContrastColor(
@@ -359,17 +364,15 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
 
     // Notification
     case NativeTheme::kColorId_NotificationDefaultBackground:
-    case NativeTheme::kColorId_NotificationPlaceholderIconColor:
+    case NativeTheme::kColorId_NotificationColor:
       return base_theme->GetSystemColor(NativeTheme::kColorId_WindowBackground,
                                         color_scheme);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case NativeTheme::kColorId_NotificationButtonBackground:
       return SkColorSetA(SK_ColorWHITE, 0.9 * 0xff);
 #endif
-    case NativeTheme::kColorId_NotificationEmptyPlaceholderTextColor:
+    case NativeTheme::kColorId_NotificationPlaceholderColor:
       return SkColorSetA(SK_ColorWHITE, gfx::kDisabledControlAlpha);
-    case NativeTheme::kColorId_NotificationEmptyPlaceholderIconColor:
-      return SkColorSetA(SK_ColorWHITE, 0x60);
     case NativeTheme::kColorId_NotificationActionsRowBackground:
     case NativeTheme::kColorId_NotificationInlineSettingsBackground: {
       const SkColor bg = base_theme->GetSystemColor(
@@ -484,8 +487,6 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
           color_scheme);
 
     // Throbber
-    case NativeTheme::kColorId_ThrobberLightColor:
-      return SkColorSetRGB(0xF4, 0xF8, 0xFD);
     case NativeTheme::kColorId_ThrobberWaitingColor:
       return SkColorSetRGB(0xA6, 0xA6, 0xA6);
     case NativeTheme::kColorId_ThrobberSpinningColor:
@@ -597,17 +598,29 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   if (base_theme->UserHasContrastPreference()) {
     base::Optional<SkColor> color =
         GetHighContrastColor(color_id, color_scheme);
-    if (color.has_value())
+    if (color.has_value()) {
+      DVLOG(2) << "GetHighContrastColor: "
+               << "NativeTheme::ColorId: " << NativeThemeColorIdName(color_id)
+               << " Color: " << SkColorName(color.value());
       return color.value();
+    }
   }
 
   if (color_scheme == NativeTheme::ColorScheme::kDark) {
     base::Optional<SkColor> color = GetDarkSchemeColor(color_id);
-    if (color.has_value())
+    if (color.has_value()) {
+      DVLOG(2) << "GetDarkSchemeColor: "
+               << "NativeTheme::ColorId: " << NativeThemeColorIdName(color_id)
+               << " Color: " << SkColorName(color.value());
       return color.value();
+    }
   }
 
-  return GetDefaultColor(color_id, base_theme, color_scheme);
+  SkColor color = GetDefaultColor(color_id, base_theme, color_scheme);
+  DVLOG(2) << "GetHighContrastColor: "
+           << "NativeTheme::ColorId: " << NativeThemeColorIdName(color_id)
+           << " Color: " << SkColorName(color);
+  return color;
 }
 
 void CommonThemePaintMenuItemBackground(

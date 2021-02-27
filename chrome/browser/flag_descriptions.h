@@ -1408,6 +1408,9 @@ extern const char kTabOutlinesInLowContrastThemesDescription[];
 extern const char kTextFragmentColorChangeName[];
 extern const char kTextFragmentColorChangeDescription[];
 
+extern const char kTFLiteLanguageDetectionName[];
+extern const char kTFLiteLanguageDetectionDescription[];
+
 extern const char kTintCompositedContentName[];
 extern const char kTintCompositedContentDescription[];
 
@@ -1555,8 +1558,16 @@ extern const char kEnableVulkanDescription[];
 extern const char kSharedHighlightingUseBlocklistName[];
 extern const char kSharedHighlightingUseBlocklistDescription[];
 
-extern const char kPreemtiveLinkToTextGenerationName[];
-extern const char kPreemtiveLinkToTextGenerationDescription[];
+extern const char kPreemptiveLinkToTextGenerationName[];
+extern const char kPreemptiveLinkToTextGenerationDescription[];
+
+extern const char kDraw1PredictedPoint12Ms[];
+extern const char kDraw2PredictedPoints6Ms[];
+extern const char kDraw1PredictedPoint6Ms[];
+extern const char kDraw2PredictedPoints3Ms[];
+extern const char kDrawPredictedPointsDefault[];
+extern const char kDrawPredictedPointsDescription[];
+extern const char kDrawPredictedPointsName[];
 
 // Android --------------------------------------------------------------------
 
@@ -2271,11 +2282,6 @@ extern const char kDeprecateLowUsageCodecsDescription[];
 extern const char kPreferConstantFrameRateName[];
 extern const char kPreferConstantFrameRateDescription[];
 
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-extern const char kChromeOSDirectVideoDecoderName[];
-extern const char kChromeOSDirectVideoDecoderDescription[];
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-
 extern const char kCdmFactoryDaemonName[];
 extern const char kCdmFactoryDaemonDescription[];
 
@@ -2859,6 +2865,11 @@ extern const char kWifiSyncAndroidDescription[];
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+extern const char kChromeOSDirectVideoDecoderName[];
+extern const char kChromeOSDirectVideoDecoderDescription[];
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_WIN)
 extern const char kZeroCopyVideoCaptureName[];

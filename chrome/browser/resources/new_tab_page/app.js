@@ -22,7 +22,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
-import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog_types.js';
+import {BackgroundSelection, BackgroundSelectionType, CustomizeDialogPage} from './customize_dialog_types.js';
 import {ModuleDescriptor} from './modules/module_descriptor.js';
 import {ModuleRegistry} from './modules/module_registry.js';
 import {oneGoogleBarApi} from './one_google_bar_api.js';
@@ -121,6 +121,9 @@ class AppElement extends PolymerElement {
       /** @private */
       showCustomizeDialog_: Boolean,
 
+      /** @private {?string} */
+      selectedCustomizeDialogPage_: String,
+
       /** @private */
       showVoiceSearchOverlay_: Boolean,
 
@@ -203,17 +206,7 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
-      modulesEnabled_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('modulesEnabled'),
-        reflectToAttribute: true,
-      },
-
-      /** @private */
-      modulesVisible_: {
-        type: Boolean,
-        reflectToAttribute: true,
-      },
+      modulesVisibilityDetermined_: Boolean,
 
       /** @private */
       middleSlotPromoLoaded_: Boolean,
@@ -235,11 +228,12 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
-      modulesLoadedAndVisible_: {
+      modulesLoadedAndVisibilityDetermined_: {
         type: Boolean,
-        computed: `computeModulesLoadedAndVisible_(promoAndModulesLoaded_,
-            modulesVisible_)`,
-        observer: 'onModulesLoadedAndVisibleChange_',
+        computed: `computeModulesLoadedAndVisibilityDetermined_(
+          promoAndModulesLoaded_,
+          modulesVisibilityDetermined_)`,
+        observer: 'onModulesLoadedAndVisibilityDeterminedChange_',
       },
 
       /**
@@ -252,9 +246,21 @@ class AppElement extends PolymerElement {
       /** @private {!Array<!ModuleDescriptor>} */
       moduleDescriptors_: Object,
 
+      /** @private {!Array<string>} */
+      dismissedModules_: {
+        type: Array,
+        value: () => [],
+      },
+
+      /** @private {!{all: boolean, ids: !Array<string>}} */
+      disabledModules_: {
+        type: Object,
+        value: () => ({all: true, ids: []}),
+      },
+
       /**
        * Data about the most recently removed module.
-       * @type {?{element: !Element, message: string, undo: function()}}
+       * @type {?{message: string, undo: function()}}
        * @private
        */
       removedModuleData_: {
@@ -276,7 +282,7 @@ class AppElement extends PolymerElement {
     /** @private {?number} */
     this.setThemeListenerId_ = null;
     /** @private {?number} */
-    this.setModulesVisibleListenerId_ = null;
+    this.setDisabledModulesListenerId_ = null;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
     this.loadOneGoogleBar_();
@@ -301,11 +307,12 @@ class AppElement extends PolymerElement {
           performance.measure('theme-set');
           this.theme_ = theme;
         });
-    this.setModulesVisibleListenerId_ =
-        this.callbackRouter_.setModulesVisible.addListener(visible => {
-          this.modulesVisible_ = visible;
+    this.setDisabledModulesListenerId_ =
+        this.callbackRouter_.setDisabledModules.addListener((all, ids) => {
+          this.disabledModules_ = {all, ids};
+          this.modulesVisibilityDetermined_ = true;
         });
-    this.pageHandler_.updateModulesVisible();
+    this.pageHandler_.updateDisabledModules();
     this.eventTracker_.add(window, 'message', (event) => {
       /** @type {!Object} */
       const data = event.data;
@@ -344,6 +351,8 @@ class AppElement extends PolymerElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
+    this.callbackRouter_.removeListener(
+        assert(this.setDisabledModulesListenerId_));
     this.eventTracker_.removeAll();
   }
 
@@ -531,8 +540,8 @@ class AppElement extends PolymerElement {
    * @return {boolean}
    * @private
    */
-  computeModulesLoadedAndVisible_() {
-    return this.promoAndModulesLoaded_ && this.modulesVisible_;
+  computeModulesLoadedAndVisibilityDetermined_() {
+    return this.promoAndModulesLoaded_ && this.modulesVisibilityDetermined_;
   }
 
   /** @private */
@@ -560,6 +569,8 @@ class AppElement extends PolymerElement {
   /** @private */
   onCustomizeDialogClose_() {
     this.showCustomizeDialog_ = false;
+    // Let customize dialog decide what page to show on next open.
+    this.selectedCustomizeDialogPage_ = null;
   }
 
   /** @private */
@@ -628,9 +639,15 @@ class AppElement extends PolymerElement {
   }
 
   /** @private */
-  onModulesLoadedAndVisibleChange_() {
-    if (this.modulesLoadedAndVisible_) {
+  onModulesLoadedAndVisibilityDeterminedChange_() {
+    if (this.modulesLoadedAndVisibilityDetermined_) {
       this.pageHandler_.onModulesRendered(BrowserProxy.getInstance().now());
+      this.moduleDescriptors_.forEach(({id}) => {
+        chrome.metricsPrivate.recordBoolean(
+            `NewTabPage.Modules.EnabledOnNTPLoad.${id}`,
+            !this.disabledModules_.all &&
+                !this.disabledModules_.ids.includes(id));
+      });
     }
   }
 
@@ -871,14 +888,16 @@ class AppElement extends PolymerElement {
     const id = $$(this, '#modules').itemForElement(e.target).id;
     const restoreCallback = e.detail.restoreCallback;
     this.removedModuleData_ = {
-      element: /** @type {!Element} */ (e.target),
       message: e.detail.message,
       undo: () => {
+        this.splice('dismissedModules_', this.dismissedModules_.indexOf(id), 1);
         restoreCallback();
         this.pageHandler_.onRestoreModule(id);
       },
     };
-    this.removedModuleData_.element.hidden = true;
+    if (!this.dismissedModules_.includes(id)) {
+      this.push('dismissedModules_', id);
+    }
 
     // Notify the user.
     $$(this, '#removeModuleToast').show();
@@ -887,32 +906,50 @@ class AppElement extends PolymerElement {
   }
 
   /**
-   * @param {!Event} e
+   * @param {!CustomEvent<{message: string, restoreCallback: ?function()}>} e
+   *     Event notifying a module was disabled. Contains the message to show in
+   *     the toast.
    * @private
    */
   onDisableModule_(e) {
-    const descriptor = /** @type {!ModuleDescriptor} */ (
-        $$(this, '#modules').itemForElement(e.target));
+    const id = $$(this, '#modules').itemForElement(e.target).id;
+    const restoreCallback = e.detail.restoreCallback;
     this.removedModuleData_ = {
-      element: /** @type {!Element} */ (e.target),
-      message:
-          loadTimeData.getStringF('disableModuleToastMessage', descriptor.name),
+      message: e.detail.message,
       undo: () => {
-        this.pageHandler_.setModuleDisabled(descriptor.id, false);
+        if (restoreCallback) {
+          restoreCallback();
+        }
+        this.pageHandler_.setModuleDisabled(id, false);
         chrome.metricsPrivate.recordSparseHashable(
-            'NewTabPage.Modules.Enabled', descriptor.id);
+            'NewTabPage.Modules.Enabled', id);
         chrome.metricsPrivate.recordSparseHashable(
-            'NewTabPage.Modules.Enabled.Toast', descriptor.id);
+            'NewTabPage.Modules.Enabled.Toast', id);
       },
     };
 
-    this.removedModuleData_.element.hidden = true;
-    this.pageHandler_.setModuleDisabled(descriptor.id, true);
+    this.pageHandler_.setModuleDisabled(id, true);
     $$(this, '#removeModuleToast').show();
     chrome.metricsPrivate.recordSparseHashable(
-        'NewTabPage.Modules.Disabled', descriptor.id);
+        'NewTabPage.Modules.Disabled', id);
     chrome.metricsPrivate.recordSparseHashable(
-        'NewTabPage.Modules.Disabled.ModuleRequest', descriptor.id);
+        'NewTabPage.Modules.Disabled.ModuleRequest', id);
+  }
+
+  /** @private */
+  onCustomizeModule_() {
+    this.showCustomizeDialog_ = true;
+    this.selectedCustomizeDialogPage_ = CustomizeDialogPage.MODULES;
+  }
+
+  /**
+   * @param {string} id
+   * @return {boolean}
+   * @private
+   */
+  moduleDisabled_(id) {
+    return this.disabledModules_.all || this.dismissedModules_.includes(id) ||
+        this.disabledModules_.ids.includes(id);
   }
 
   /**
@@ -921,7 +958,6 @@ class AppElement extends PolymerElement {
   onUndoRemoveModuleButtonClick_() {
     // Restore the module.
     this.removedModuleData_.undo();
-    this.removedModuleData_.element.hidden = false;
 
     // Notify the user.
     $$(this, '#removeModuleToast').hide();

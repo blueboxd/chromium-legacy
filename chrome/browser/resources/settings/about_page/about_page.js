@@ -354,7 +354,7 @@ Polymer({
 
 /** @private */
   onProjectTap_() {
-    window.location.href = 'https://github.com/blueboxd/chromium-legacy/';
+    window.open('https://github.com/blueboxd/chromium-legacy/','_blank');
   },
 
   // <if expr="chromeos">

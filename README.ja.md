@@ -1,11 +1,11 @@
-\[[en](README.md)/ja\]
+\[ [en](README.md) | ja \]
 
 # Chromium-legacy
 
-公式でのサポートが終了しているMac OS X向けの最新版Chromium（Chrome Canaryとほぼ同等）です。
+公式でのサポートが終了しているMac OS X (10.7/10.8/10.9/10.10)向けの最新版Chromium (Chrome Canaryとほぼ同等)です。
 10.11以降でも動作自体はしますが、一部機能が対応OS上であっても無効化されていることがあるため、特に理由がなければ公式ビルドの利用をお勧めします。
 
-なお、一日2回（0:00/12:00）自動でビルドされたものが**テストなし**でアップロードされているため、Chromiumの更新状況とタイミングによっては起動しなかったり正常に動作しない可能性もあります。
+なお、一日2回(0:00/12:00)自動でビルドされたものが**テストなし**でアップロードされているため、Chromiumの更新状況とタイミングによっては起動しなかったり正常に動作しない可能性もあります。
 日常用途としてはなるべく安定しているビルドを使い、頻繁なアップデートは避けた方がいいかもしれません。
 
 ## 機能
@@ -29,7 +29,7 @@
   - 10.7ではOpenGLが古すぎるためGPUは利用できず、すべてソフトウェアレンダリングやソフトウェアデコードとなります
   - 10.8/10.9では描画に問題が出るため`--disable-gpu-compositing`オプションによってGPU Compotisitingが無効化されています
 - サンドボックス
-  - ポリシが新しすぎてロードできないため`--no-sandbox`オプションで無効化されています
+  - 10.9以下ではポリシが新しすぎてロードできないため`--no-sandbox`オプションで無効化されています
     - 完全無効化ではなくポリシ側を書き直してロードできないか調査中です
 
 ## ビルド
@@ -38,10 +38,10 @@
 
 ### 要件
 
-- macOS 11.0 SDK
+- macOS 11.1 SDK
 - Xcode 12.2+
 - 強めのCPU
-  - `Xeon E5-2690 v4`と`Ryzen 9 3950X`を2台の分散ビルドでフルビルドに40分程度
+  - `Xeon E5-2690 v4`1台と`Ryzen 9 3950X`を2台の分散ビルドでフルビルドに40分程度
   - `Core i9-9980HK`単体でフルビルドに3-4時間
 
 ### TL;DR
@@ -50,6 +50,7 @@
 (なお簡略化のため10.7/10.8サポートなし)
 
 環境構築とビルド:
+
 ```bash
 mkdir chromium-project && cd chromium-project
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -64,6 +65,7 @@ ninja -C ../out/release chrome
 ```
 
 `/src`更新:
+
 ```bash
 cd chromium-project/chromium-legacy/src
 git pull
@@ -71,6 +73,7 @@ gclient sync -D
 ```
 
 リビルド:
+
 ```bash
 cd chromium-project/chromium-legacy/src
 ninja -C ../out/release chrome

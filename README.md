@@ -1,32 +1,32 @@
-\[en/[ja](README.ja.md)\]
+\[ en | [ja](README.ja.md) \]
 
 # Chromium-legacy
 
-Chromium-legacy is the latest Chromium (equivalent to Chrome Canary) patched & built for legacy Mac OS X (10.7+).
-~~Not working on 10.9 for now.~~
-Now working on 10.9. (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
+Chromium-legacy is the latest Chromium (almost equivalent to Chrome Canary without Google branding) patched & built for legacy Mac OS X series, not supported officially:
+
+- Mac OS X 10.7 / Lion
+- OS X 10.8 / Mountain Lion
+- OS X 10.9 / Mavericks
+- OS X 10.10 / Yosemite
 
 **NB: Not for natively supported environments (10.11+).**
 
-This project is automatically built twice a day (00:00 and 12:00 JST) if no issues occurred.
-And note, uploaded without any tests, thus there is no guarantee for launching or proper operation.
+This project is automatically built and uploaded twice a day (00:00 and 12:00 JST) if no issues occurred.
+And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
 It's recommended to find and use a stable build for daily use.
 
-## working properly
+## functionality
 
-- modern HTTP protocols (http2/http3/quic)
-- modern TLS
-- rendering
-  - [Skia is also patched](../../../skia) for compatibility
-- JavaScript
-  - latest V8 engine
-- media playing
-  - but due to no GPU assist, high CPU usage
+Basically equivalent to the same version of original Chromium except for limitations by old OSes (see below).
+
 - WebAuthn/FIDO2
-  - you need patch for IOHIDFamily to use USB keys on 10.7.
+  - you need patch for `IOHIDFamily.kext` to use USB keys on 10.7 (TBW)
 
 ## limitation / glitches
 
+- overall
+  - ~~not working on 10.9~~
+    - [Skia is patched](../../../skia) for compatibilty (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 - UI
   - windows
     - ~~close/minimize/resize buttons are invisible~~
@@ -37,23 +37,24 @@ It's recommended to find and use a stable build for daily use.
       - FIXED
   - menus/sheets
     - have no shadow
-    - ~~temporally FIXED (popups have some glitches on corners)~~
-      - reverted due to improper rendering of combo box
+      - ~~temporally FIXED (popups have some glitches on corners)~~
+        - reverted due to improper rendering of combo box
   - scrollbars
-    - won't disappear despite "Show scrollbars when scrolling" option is enabled
+    - won't disappear despite "Show scrollbars when scrolling" option is enabled when GPU compositing is disabled
 - GPU assists
   - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
   - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
 - Sandboxing
-  - sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies
+  - on 10.7/10.8/10.9, sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies
+    - *TODO: rewrite policies for old OSes*
 
 ## building
 
-Build steps are almost same as [original Chromium's one](docs/mac_build_instructions.md).
+Build steps are almost the same as the [original Chromium's one](docs/mac_build_instructions.md) except for compatibility patches.
 
 ### prerequisites
 
-- macOS 11.0 SDK
+- macOS 11.1 SDK
 - Xcode 12.2+
 - powerful CPUs
   - about 40mins to full build with `Xeon E5-2690 v4` & 2 x `Ryzen 9 3950X`
@@ -61,9 +62,10 @@ Build steps are almost same as [original Chromium's one](docs/mac_build_instruct
 
 ### TL;DR
 
-(lacks 10.7/10.8 support)
+(lacks 10.7/10.8 support, you need [patched skia](../../../skia), TBW)
 
 first setup & build:
+
 ```bash
 mkdir chromium-project && cd chromium-project
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -78,6 +80,7 @@ ninja -C ../out/release chrome
 ```
 
 to update src:
+
 ```bash
 cd chromium-project/chromium-legacy/src
 git pull
@@ -85,6 +88,7 @@ gclient sync -D
 ```
 
 to build:
+
 ```bash
 cd chromium-project/chromium-legacy/src
 ninja -C ../out/release chrome

@@ -3626,12 +3626,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/gr
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-overflow-auto-max-height-percentage.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-018.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-002.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-vertical-lr-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-vertical-lr-002.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-vertical-rl-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-percentage-margins-vertical-rl-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-items-relative-offsets-002.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-021.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-minimum-size-grid-items-022.html [ Failure ]
@@ -5593,7 +5587,7 @@ crbug.com/1164568 [ Mac ] external/wpt/html/cross-origin-opener-policy/reporting
 crbug.com/1163793 http/tests/inspector-protocol/page/page-events-associated.js [ Pass Failure ]
 
 # Sheriff 2021-01-13
-crbug.com/1164459 [ Mac10.15 ] external/wpt/preload/download-resources.html [ Pass Failure ]
+crbug.com/1164459 [ Mac10.15 ] external/wpt/preload/download-resources.html [ Pass Failure Timeout ]
 
 # Sheriff 2021-01-15
 crbug.com/1167222 http/tests/websocket/multiple-connections-throttled.html [ Pass Failure ]

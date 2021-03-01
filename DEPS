@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'dab9d90634892a2a0775c545a89781bded75f69b',
+  'skia_revision': '104e20f5b2b3c58cb643bde0bedd5d18a217939e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a6d4623970eda91638bd3c3638c9104bffcaa316',
+  'angle_revision': '5030228a178680bc342725c3db092e056b7f5fca',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -275,7 +275,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'df7850dcfe6d8270d224d49c5a8b63fb315c822f',
+  'catapult_revision': '65fe2292b5c55d371cb29d57d3607ede0fa447c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -323,7 +323,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '329c1c98fef964ea532a0579ae6f2553ff3382c5',
+  'dawn_revision': '19f111f69c550f5cddec76557a0b7808adae9c66',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -362,7 +362,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'e5c105d40a49b9cb853f217f898eed78af4155f4',
+  'tint_revision': '05d9bffdbda1d702df0ac61a6771a2beb67ec31a',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1299,7 +1299,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '99fc76f4d62d3afd3dd40addc61b1795d2b3e4f2',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8350088891312a8858f3d3f5f3b44cff8244d5ad',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1508,7 +1508,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a6647318b57c0a05d590c8c21fc22aba87f08749',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@2b7341ccd9d8a495f0257063d0c5c78095fb9871',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@11bd3ff6f8959067fc6eb36f3beaf92dd751f1c6',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '732a76d9d3c70d6aa487216495eeb28518349c3a',
@@ -1607,7 +1607,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a6c542a69f2795a7021f2b9e46363aa52d762633',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@78f7103f8c47175b3c8af3f6c160a92a948dae2f',
     'condition': 'checkout_src_internal',
   },
 

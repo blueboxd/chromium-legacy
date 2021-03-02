@@ -105,20 +105,17 @@ void ThreadState::NotifyGarbageCollection(v8::GCType type,
     if (type == v8::kGCTypeScavenge) {
       forced_scheduled_gc_for_testing_ = true;
     } else if (type == v8::kGCTypeMarkSweepCompact) {
-      // TODO(1056170): Only need to schedule a forced GC if stack was scanned
-      // conservatively in previous GC.
-      forced_scheduled_gc_for_testing_ = true;
+      forced_scheduled_gc_for_testing_ =
+          cppgc::subtle::HeapState::PreviousGCWasConservative(heap_handle());
     }
   }
 }
 
 void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
-  // Should only be used when attached to V8.
-  CHECK(isolate_);
   size_t previous_live_bytes = 0;
   for (size_t i = 0; i < 5; i++) {
-    // CppHeap registers itself as EmbedderHeapTracer internally.
-    isolate_->GetEmbedderHeapTracer()->GarbageCollectionForTesting(
+    // Either triggers unified heap or stand-alone garbage collections.
+    cpp_heap().CollectGarbageForTesting(
         stack_state == BlinkGC::kHeapPointersOnStack
             ? cppgc::EmbedderStackState::kMayContainHeapPointers
             : cppgc::EmbedderStackState::kNoHeapPointers);
@@ -138,6 +135,13 @@ void ThreadState::CollectNodeAndCssStatistics(
                             size_t allocated_css_bytes)> callback) {
   // TODO(1181269): Implement.
   std::move(callback).Run(0u, 0u);
+}
+
+void ThreadState::EnableDetachedGarbageCollectionsForTesting() {
+  cpp_heap().EnableDetachedGarbageCollectionsForTesting();
+  // Detached GCs cannot rely on the V8 platform being initialized which is
+  // needed by cppgc to perform a garbage collection.
+  v8::V8::InitializePlatform(gin::V8Platform::Get());
 }
 
 }  // namespace blink

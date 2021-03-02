@@ -6230,7 +6230,6 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
-        <index fields="profile.country"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6245,7 +6244,6 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
-        <index fields="profile.country"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6255,11 +6253,11 @@ be describing additional metrics about the same event.
   <metric name="Percentile95">
     <summary>
       The 95-th percentile dropped frames within a fixed-duration sliding window
-      (as a percentage).
+      (as a percentage). So out of all PerecentDroppedFrames of sliding windows
+      the 95th percentile will be reported here.
     </summary>
     <aggregation>
       <history>
-        <index fields="profile.country"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6281,11 +6279,50 @@ be describing additional metrics about the same event.
   <metric name="WorstCase">
     <summary>
       The maximum number of dropped frames (as a percentage) within a
-      fixed-duration sliding window.
+      fixed-duration sliding window. So out of all PerecentDroppedFrames of
+      sliding windows the max percentile will be reported here.
     </summary>
     <aggregation>
       <history>
-        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WorstCaseAfter1Sec">
+    <summary>
+      The same as WorstCase metric, but only the sliding windows which starts 1
+      second after first contentful paint will be taken into account.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WorstCaseAfter2Sec">
+    <summary>
+      The same as WorstCase metric, but only the sliding windows which starts 2
+      second after first contentful paint will be taken into account.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WorstCaseAfter5Sec">
+    <summary>
+      The same as WorstCase metric, but only the sliding windows which starts 5
+      second after first contentful paint will be taken into account.
+    </summary>
+    <aggregation>
+      <history>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -14850,6 +14887,22 @@ be describing additional metrics about the same event.
       The user's first interaction with the Translate UI.
     </summary>
   </metric>
+  <metric name="HTMLContentLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
+      enum="CLD3LanguageCode">
+    <summary>
+      The HTML language content attribute specified by the document. Note that
+      the semantic_type attribute is included in order to remain consistent with
+      the previous Translate UKM proto.
+    </summary>
+  </metric>
+  <metric name="HTMLDocumentLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
+      enum="CLD3LanguageCode">
+    <summary>
+      The HTML language attribute specified by the document. Note that the
+      semantic_type attribute is included in order to remain consistent with the
+      previous Translate UKM proto.
+    </summary>
+  </metric>
   <metric name="InitialSourceLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
       enum="CLD3LanguageCode">
     <summary>
@@ -14885,6 +14938,21 @@ be describing additional metrics about the same event.
     <summary>
       Across all translations during this page load, the maximum amount of time
       (in milliseconds) it took to translate the page.
+    </summary>
+  </metric>
+  <metric name="ModelDetectedLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
+      enum="CLD3LanguageCode">
+    <summary>
+      The language that was estimated by the language model based on the page's
+      content. Note that the semantic_type attribute is included in order to
+      remain consistent with the previous Translate UKM proto.
+    </summary>
+  </metric>
+  <metric name="ModelDetectionReliabilityScore">
+    <summary>
+      The score, or confidence, of the language detection model's prediction
+      about the language of the page content. The score is between 0 and 100,
+      higher means more confident.
     </summary>
   </metric>
   <metric name="NumReversions">

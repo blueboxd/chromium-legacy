@@ -126,8 +126,7 @@ class MediaInterfaceProxy final : public media::mojom::InterfaceFactory {
       const media::CdmConfig& cdm_config,
       CreateCdmCallback callback,
       mojo::PendingRemote<media::mojom::ContentDecryptionModule> receiver,
-      const base::Optional<base::UnguessableToken>& cdm_id,
-      mojo::PendingRemote<media::mojom::Decryptor> decryptor,
+      media::mojom::CdmContextPtr cdm_context,
       const std::string& error_message);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -136,8 +135,9 @@ class MediaInterfaceProxy final : public media::mojom::InterfaceFactory {
   void ConnectToMFMediaService();
   InterfaceFactory* GetMFMediaInterfaceFactory();
   void OnMFMediaServiceConnectionError();
-  bool ShouldUseMediaFoundationServiceForCdm(const std::string& key_system,
-                                             base::FilePath& cdm_path);
+  bool ShouldUseMediaFoundationServiceForCdm(
+      const std::string& key_system,
+      const media::CdmConfig& cdm_config);
 
   mojo::Remote<media::mojom::InterfaceFactory> mf_interface_factory_remote_;
   media::mojom::MediaService* mf_service_ptr_ = nullptr;

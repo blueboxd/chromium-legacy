@@ -40,6 +40,11 @@
 // controller.
 @property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
+// Identity disc shown in the NTP.
+// TODO(crbug.com/1170995): Remove once the Feed header properly supports
+// ContentSuggestions.
+@property(nonatomic, weak) UIButton* identityDiscButton;
+
 // Initializes view controller with NTP content view controllers.
 // |discoverFeedViewController| represents the Discover feed for suggesting
 // articles. |contentSuggestionsViewController| represents other content
@@ -70,10 +75,6 @@
 
 // Returns the current height of the content suggestions content.
 - (CGFloat)contentSuggestionsContentHeight;
-
-// Handles device rotation logic.
-// TODO(crbug.com/1177953): Detect device rotation in NewTabPageViewController.
-- (void)handleDeviceRotation;
 
 @end
 

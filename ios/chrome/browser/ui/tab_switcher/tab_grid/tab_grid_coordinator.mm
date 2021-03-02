@@ -14,6 +14,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/policy/policy_features.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -62,6 +65,7 @@
                                   TabGridMediatorDelegate,
                                   TabPresentationDelegate,
                                   TabGridViewControllerDelegate,
+                                  SceneStateObserver,
                                   ViewControllerTraitCollectionObserver> {
   // Use an explicit ivar instead of synthesizing as the setter isn't using the
   // ivar.
@@ -102,6 +106,9 @@
 // The timestamp of the user exiting the tab grid.
 @property(nonatomic, assign) base::TimeTicks tabGridExitTime;
 
+// The page configuration used when create the tab grid view controller;
+@property(nonatomic, assign) TabGridPageConfiguration pageConfiguration;
+
 @end
 
 @implementation TabGridCoordinator
@@ -131,6 +138,16 @@
                               forProtocol:@protocol(BrowsingDataCommands)];
     _regularBrowser = regularBrowser;
     _incognitoBrowser = incognitoBrowser;
+
+    if (IsIncognitoModeDisabled(
+            _regularBrowser->GetBrowserState()->GetPrefs())) {
+      _pageConfiguration = TabGridPageConfiguration::kIncognitoPageDisabled;
+    } else if (IsIncognitoModeForced(
+                   _incognitoBrowser->GetBrowserState()->GetPrefs())) {
+      _pageConfiguration = TabGridPageConfiguration::kIncognitoPageOnly;
+    } else {
+      _pageConfiguration = TabGridPageConfiguration::kAllPagesEnabled;
+    }
   }
   return self;
 }
@@ -462,8 +479,9 @@
   [self.dispatcher startDispatchingToTarget:reauthAgent
                                 forProtocol:@protocol(IncognitoReauthCommands)];
 
-  TabGridViewController* baseViewController =
-      [[TabGridViewController alloc] init];
+  TabGridViewController* baseViewController;
+  baseViewController = [[TabGridViewController alloc]
+      initWithPageConfiguration:_pageConfiguration];
   baseViewController.handler =
       HandlerForProtocol(self.dispatcher, ApplicationCommands);
   baseViewController.reauthHandler =
@@ -552,6 +570,10 @@
     [self installThumbStrip];
   }
 
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.regularBrowser)->GetSceneState();
+  [sceneState addObserver:self];
+
   // Once the mediators are set up, stop keeping pointers to the browsers used
   // to initialize them.
   _regularBrowser = nil;
@@ -559,6 +581,10 @@
 }
 
 - (void)stop {
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.regularBrowser)->GetSceneState();
+  [sceneState removeObserver:self];
+
   if ([self isThumbStripEnabled]) {
     [self uninstallThumbStrip];
   }
@@ -697,6 +723,12 @@
   [self.delegate tabGridDismissTransitionDidEnd:self];
 }
 
+- (void)openLinkWithURL:(const GURL&)URL {
+  id<ApplicationCommands> handler =
+      HandlerForProtocol(self.dispatcher, ApplicationCommands);
+  [handler openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:URL]];
+}
+
 #pragma mark - RecentTabsPresentationDelegate
 
 - (void)showHistoryFromRecentTabs {
@@ -783,6 +815,24 @@
     (NSInteger)sectionIdentifier {
   return [self.baseViewController.remoteTabsViewController
       sessionForSectionIdentifier:sectionIdentifier];
+}
+
+#pragma mark - SceneStateObserver
+
+- (void)sceneState:(SceneState*)sceneState
+    transitionedToActivationLevel:(SceneActivationLevel)level {
+  // If the scene is going to background, it will trigger trait collection
+  // changes, presumably to take screenshots for the system. These changes will
+  // cause the thumb strip to be installed and uninstalled. And thumb strip
+  // doesn't support being installed in peeked state. Hidden state is set here
+  // so the screenshots match the interface when the user comes back.
+  ViewRevealingVerticalPanHandler* panHandler =
+      self.thumbStripCoordinator.panHandler;
+  BOOL isInPeekState = panHandler.currentState == ViewRevealState::Peeked;
+  if ([self isThumbStripEnabled] && isInPeekState &&
+      level <= SceneActivationLevelBackground) {
+    [panHandler setNextState:ViewRevealState::Hidden animated:NO];
+  }
 }
 
 #pragma mark - ViewControllerTraitCollectionObserver

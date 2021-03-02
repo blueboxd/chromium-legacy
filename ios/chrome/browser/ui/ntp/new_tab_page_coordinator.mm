@@ -232,6 +232,9 @@
         self.discoverFeedWrapperViewController;
     self.ntpViewController.overscrollDelegate = self;
     self.ntpViewController.ntpContentDelegate = self;
+    self.ntpViewController.identityDiscButton =
+        [self.contentSuggestionsCoordinator
+                .headerController identityDiscButton];
 
     self.ntpViewController.headerController =
         self.contentSuggestionsCoordinator.headerController;
@@ -386,10 +389,6 @@
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   self.viewPresented = visible;
   [self updateVisible];
-}
-
-- (void)handleDeviceRotation {
-  [self.ntpViewController handleDeviceRotation];
 }
 
 #pragma mark - NewTabPageCommands

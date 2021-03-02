@@ -6,10 +6,13 @@
 
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #import "components/signin/ios/browser/features.h"
 #import "components/sync/driver/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -87,6 +90,16 @@ class SettingsTableViewControllerMICETest
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get()));
 
+    password_store_mock_ =
+        base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
+            IOSChromePasswordStoreFactory::GetInstance()
+                ->SetTestingFactoryAndUse(
+                    chrome_browser_state_.get(),
+                    base::BindRepeating(&password_manager::BuildPasswordStore<
+                                        web::BrowserState,
+                                        password_manager::TestPasswordStore>))
+                .get()));
+
     fake_identity_ = [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
                                                     gaiaID:@"foo1ID"
                                                       name:@"Fake Foo 1"];
@@ -117,6 +130,8 @@ class SettingsTableViewControllerMICETest
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
     ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
         .WillByDefault(Return(true));
+    ON_CALL(*sync_service_mock_->GetMockUserSettings(), GetSelectedTypes())
+        .WillByDefault(Return(syncer::UserSelectableTypeSet::All()));
     ON_CALL(*sync_service_mock_, IsAuthenticatedAccountPrimary())
         .WillByDefault(Return(true));
   }
@@ -131,6 +146,9 @@ class SettingsTableViewControllerMICETest
   AuthenticationServiceFake* auth_service_ = nullptr;
   syncer::MockSyncService* sync_service_mock_ = nullptr;
   SyncSetupServiceMock* sync_setup_service_mock_ = nullptr;
+  scoped_refptr<password_manager::TestPasswordStore> password_store_mock_ =
+      nullptr;
+
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;
 
@@ -203,6 +221,35 @@ TEST_F(SettingsTableViewControllerMICETest, TurnsSyncOffAfterFirstSetup) {
       .WillByDefault(Return(true));
   ON_CALL(*sync_setup_service_mock_, IsSyncEnabled())
       .WillByDefault(Return(false));
+  auth_service_->SignIn(fake_identity_);
+
+  CreateController();
+  CheckController();
+
+  NSArray* account_items = [controller().tableViewModel
+      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
+                                       SettingsSectionIdentifierAccount];
+  ASSERT_EQ(3U, account_items.count);
+
+  TableViewDetailIconItem* sync_item =
+      static_cast<TableViewDetailIconItem*>(account_items[1]);
+  ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE),
+              sync_item.text);
+  ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_SETTING_OFF),
+              sync_item.detailText);
+}
+
+// Verifies that the Sync icon displays the off state when the user has
+// completed the sign-in and sync flow then explcitly turned off all data types
+// in the Sync settings.
+TEST_F(SettingsTableViewControllerMICETest,
+       DisablesAllSyncSettingsAfterFirstSetup) {
+  ON_CALL(*sync_service_mock_->GetMockUserSettings(), GetSelectedTypes())
+      .WillByDefault(Return(syncer::UserSelectableTypeSet()));
+  ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(true));
+  ON_CALL(*sync_setup_service_mock_, IsSyncEnabled())
+      .WillByDefault(Return(true));
   auth_service_->SignIn(fake_identity_);
 
   CreateController();

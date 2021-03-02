@@ -32,15 +32,9 @@
   OP(kColorId_ButtonUncheckedColor),                                           \
   OP(kColorId_ButtonEnabledColor),                                             \
   OP(kColorId_ButtonDisabledColor),                                            \
-  OP(kColorId_ButtonHoverColor),                                               \
-  OP(kColorId_ButtonInkDropFillColor),                                         \
-  OP(kColorId_ButtonInkDropShadowColor),                                       \
   OP(kColorId_ProminentButtonColor),                                           \
   OP(kColorId_ProminentButtonDisabledColor),                                   \
   OP(kColorId_ProminentButtonFocusedColor),                                    \
-  OP(kColorId_ProminentButtonHoverColor),                                      \
-  OP(kColorId_ProminentButtonInkDropShadowColor),                              \
-  OP(kColorId_ProminentButtonInkDropFillColor),                                \
   OP(kColorId_TextOnProminentButtonColor),                                     \
   OP(kColorId_PaddedButtonInkDropColor),                                       \
   /* ToggleButton */                                                           \
@@ -88,8 +82,11 @@
   OP(kColorId_LinkDisabled),                                                   \
   OP(kColorId_LinkEnabled),                                                    \
   OP(kColorId_LinkPressed),                                                    \
-  OP(kColorId_OverlayScrollbarThumbBackground),                                \
-  OP(kColorId_OverlayScrollbarThumbForeground),                                \
+  /* Overlay scrollbar */                                                      \
+  OP(kColorId_OverlayScrollbarThumbFill),                                      \
+  OP(kColorId_OverlayScrollbarThumbHoveredFill),                               \
+  OP(kColorId_OverlayScrollbarThumbHoveredStroke),                             \
+  OP(kColorId_OverlayScrollbarThumbStroke),                                    \
   /* Notification view */                                                      \
   OP(kColorId_NotificationDefaultBackground),                                  \
   OP(kColorId_NotificationActionsRowBackground),                               \

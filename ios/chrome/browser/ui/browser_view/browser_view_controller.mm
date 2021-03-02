@@ -1417,11 +1417,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-  // Clip the content to the bounds of the view. This prevents the WebView to
-  // overflow outside of the BVC, which is particularly visible during rotation.
-  // The WebView is overflowing its bounds to be displayed below the toolbars.
-  self.view.clipsToBounds = YES;
-
   self.contentArea.frame = initialViewsRect;
 
   // Create the typing shield.  It is initially hidden, and is made visible when
@@ -1690,13 +1685,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           if (strongSelf.tabStripView) {
             [strongSelf.legacyTabStripCoordinator tabStripSizeDidChange];
           }
-        }
-        // TODO(crbug.com/1177953): Detect device rotation in
-        // NewTabPageViewController.
-        if (strongSelf.currentWebState &&
-            strongSelf.isNTPActiveForCurrentWebState) {
-          [_ntpCoordinatorsForWebStates[strongSelf.currentWebState]
-              handleDeviceRotation];
         }
       }];
 
@@ -3046,9 +3034,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
-  if (!self.view.superview) {
-    return;
-  }
   CGFloat tabStripHeight = self.tabStripView.frame.size.height;
   CGFloat hideHeight = tabStripHeight + self.headerOffset;
   switch (nextViewRevealState) {

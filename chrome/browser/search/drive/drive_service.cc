@@ -176,11 +176,18 @@ void DriveService::OnJsonParsed(
           justification_text_segments->GetList().size() == 0) {
         continue;
       }
-      // TODO(crbug/1179370): Verify what textSegments will be from ItemSuggest.
-      auto* justification_text =
-          justification_text_segments->GetList()[0].FindStringPath("text");
+      std::string justification_text;
+      for (auto& text_segment : justification_text_segments->GetList()) {
+        auto* justification_text_path = text_segment.FindStringPath("text");
+        if (!justification_text_path) {
+          continue;
+        }
+        justification_text += *justification_text_path;
+      }
       auto* id = item.FindStringKey("itemId");
-      if (!title || !mime_type || !justification_text || !id) {
+      auto* url = item.FindStringKey("url");
+      if (!title || !mime_type || justification_text.empty() || !id || !url ||
+          !GURL(*url).is_valid()) {
         continue;
       }
       auto mojo_drive_doc = drive::mojom::File::New();
@@ -194,8 +201,9 @@ void DriveService::OnJsonParsed(
       } else {
         mojo_drive_doc->type = drive::mojom::FileType::kOther;
       }
-      mojo_drive_doc->justification_text = *justification_text;
+      mojo_drive_doc->justification_text = justification_text;
       mojo_drive_doc->id = *id;
+      mojo_drive_doc->url = GURL(*url);
       document_list.push_back(std::move(mojo_drive_doc));
     }
     std::move(callback).Run(std::move(document_list));

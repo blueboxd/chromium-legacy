@@ -705,24 +705,6 @@ BUILDERS = {
             'MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G'
         },
     },
-    'mac-arm_dtk_arm-perf': {
-        'tests': [
-            {
-                'isolate': 'performance_test_suite',
-                'extra_args': [
-                    '--assert-gpu-compositing',
-                ],
-            },
-        ],
-        'platform':
-        'mac',
-        'dimension': {
-            'cpu': 'arm',
-            'mac_model': 'ADP3,2',
-            'os': 'Mac',
-            'pool': 'chrome.tests.perf',
-        },
-    },
     'mac-m1_mini_2020-perf': {
         'tests': [
             {
@@ -955,7 +937,7 @@ GTEST_BENCHMARKS = {
     BenchmarkMetadata('xhwang@chromium.org, jrummell@chromium.org',
                       'Internals>Media>Encrypted'),
     'performance_browser_tests':
-    BenchmarkMetadata('miu@chromium.org', 'Internals>Media>ScreenCapture'),
+    BenchmarkMetadata('johnchen@chromium.org', 'Internals>Media>ScreenCapture'),
     'views_perftests':
     BenchmarkMetadata('tapted@chromium.org', 'Internals>Views'),
     'components_perftests':

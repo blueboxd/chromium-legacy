@@ -65,7 +65,6 @@ default_args = {
 no_check_targets = [
   # //chrome/*, https://crbug.com/949535
   "//chrome/browser/media/router/discovery:*",  # 7 errors
-  "//chrome/browser/media/router:*",  # 225 errors
   "//chrome/browser/safe_browsing/android:*",  # 3 errors
   "//chrome/browser/safety_check/android:*",  # 3 errors
   "//chrome/browser/storage_access_api:*",  # 2 errors
@@ -103,8 +102,8 @@ no_check_targets = [
   "//remoting/ios/persistence:*",  # 10 errors
   "//remoting/ios/session:*",  # 7 errors
   "//remoting/ios:*",  # 2 errors
-  "//remoting/protocol:*",  # 142 errors
-  "//remoting/test:*",  # 20 errors
+  "//remoting/protocol:*",  # 3 errors
+  "//remoting/test:*",  # 2 error
   "//sandbox/win:*",  # 7 errors
 
   "//third_party/ffmpeg:*",  # 1 error

@@ -2484,12 +2484,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-grid/abspos/grid-item-absolute-positioning-dynamic-001.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webcodecs/video-encoder.any.html [ Timeout ]
 crbug.com/626703 [ Linux ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
@@ -5271,7 +5266,6 @@ crbug.com/1105271 [ Mac ] scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.
 crbug.com/1105274 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout Failure ]
 crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Pass Failure ]
 
-crbug.com/1105276 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout Failure ]
 
 # Temporarily disable tests to allow fixing of devtools path escaping
@@ -5748,7 +5742,6 @@ crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-
 crbug.com/1182689 [ Mac10.14 ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
 crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html?touch [ Pass Failure ]
 crbug.com/1182691 [ Linux ] external/wpt/webcodecs/audio-encoder.any.html [ Pass Failure ]
-crbug.com/1182727 http/tests/inspector-protocol/page/page-setProduceCompilationCache.js [ Pass Failure ]
 crbug.com/1182749 [ Win7 ] virtual/synchronous_html_parser/http/tests/inspector-protocol/page/page-setProduceCompilationCache.js [ Pass Failure ]
 
 # Temporarily disabled to allow a WebRTC roll fixing the test.

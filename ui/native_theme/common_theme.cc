@@ -73,28 +73,17 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
   switch (color_id) {
     // Alert
     case NativeTheme::kColorId_AlertSeverityLow:
-      return gfx::kGoogleGreen300;
     case NativeTheme::kColorId_AlertSeverityHigh:
-      return gfx::kGoogleRed300;
     case NativeTheme::kColorId_AlertSeverityMedium:
-      return gfx::kGoogleYellow300;
+      return GetAlertSeverityColor(color_id, true);
 
     // Bubble
     case NativeTheme::kColorId_FootnoteContainerBorder:
       return gfx::kGoogleGrey900;
 
     // Button
-    case NativeTheme::kColorId_ButtonInkDropShadowColor:
-      return SkColorSetA(SK_ColorBLACK, 0x7F);
-    case NativeTheme::kColorId_ButtonHoverColor:
-      return SkColorSetA(SK_ColorBLACK, 0x0A);
-    case NativeTheme::kColorId_ButtonInkDropFillColor:
-    case NativeTheme::kColorId_ProminentButtonHoverColor:
-      return SkColorSetA(SK_ColorWHITE, 0x0A);
     case NativeTheme::kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue300;
-    case NativeTheme::kColorId_ProminentButtonInkDropShadowColor:
-      return SkColorSetA(gfx::kGoogleBlue300, 0x7F);
 
     // Custom tab bar
     case NativeTheme::kColorId_CustomTabBarBackgroundColor:
@@ -149,11 +138,9 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
   switch (color_id) {
     // Alert
     case NativeTheme::kColorId_AlertSeverityLow:
-      return gfx::kGoogleGreen700;
     case NativeTheme::kColorId_AlertSeverityHigh:
-      return gfx::kGoogleRed600;
     case NativeTheme::kColorId_AlertSeverityMedium:
-      return gfx::kGoogleYellow700;
+      return GetAlertSeverityColor(color_id, false);
 
     // Avatar
     case NativeTheme::kColorId_AvatarHeaderArt:
@@ -197,13 +184,6 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TextOnProminentButtonColor:
       return color_utils::GetColorWithMaxContrast(base_theme->GetSystemColor(
           NativeTheme::kColorId_ProminentButtonColor, color_scheme));
-    case NativeTheme::kColorId_ProminentButtonHoverColor:
-      return SkColorSetA(SK_ColorWHITE, 0x0D);
-    case NativeTheme::kColorId_ProminentButtonInkDropFillColor:
-      return base_theme->GetSystemColor(
-          NativeTheme::kColorId_ProminentButtonHoverColor, color_scheme);
-    case NativeTheme::kColorId_ButtonInkDropFillColor:
-      return SkColorSetA(SK_ColorWHITE, 0x05);
     case NativeTheme::kColorId_ProminentButtonDisabledColor:
     case NativeTheme::kColorId_DisabledButtonBorderColor: {
       const SkColor bg = base_theme->GetSystemColor(
@@ -223,12 +203,6 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_PaddedButtonInkDropColor:
       return color_utils::GetColorWithMaxContrast(base_theme->GetSystemColor(
           NativeTheme::kColorId_WindowBackground, color_scheme));
-    case NativeTheme::kColorId_ButtonHoverColor:
-      return SkColorSetA(SK_ColorBLACK, 0x05);
-    case NativeTheme::kColorId_ButtonInkDropShadowColor:
-      return SkColorSetA(SK_ColorBLACK, gfx::kGoogleGreyAlpha200);
-    case NativeTheme::kColorId_ProminentButtonInkDropShadowColor:
-      return SkColorSetA(SK_ColorBLACK, 0x3D);
     case NativeTheme::kColorId_ProminentButtonFocusedColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_ProminentButtonColor, color_scheme);
@@ -390,12 +364,24 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleBlue600;
 
     // Scrollbar
-    case NativeTheme::kColorId_OverlayScrollbarThumbForeground:
-      return SkColorSetA(SK_ColorWHITE, (kOverlayScrollbarStrokeNormalAlpha /
-                                         kOverlayScrollbarThumbNormalAlpha) *
-                                            SK_AlphaOPAQUE);
-    case NativeTheme::kColorId_OverlayScrollbarThumbBackground:
-      return SK_ColorBLACK;
+    case NativeTheme::kColorId_OverlayScrollbarThumbFill:
+    case NativeTheme::kColorId_OverlayScrollbarThumbHoveredFill: {
+      SkColor fill = base_theme->GetSystemColor(
+          NativeTheme::kColorId_CustomTabBarForegroundColor, color_scheme);
+      fill = color_utils::IsDark(fill) ? SK_ColorBLACK : SK_ColorWHITE;
+      const bool hovered =
+          color_id == NativeTheme::kColorId_OverlayScrollbarThumbHoveredFill;
+      return SkColorSetA(fill, (hovered ? 0.7 : 0.5) * SK_AlphaOPAQUE);
+    }
+    case NativeTheme::kColorId_OverlayScrollbarThumbStroke:
+    case NativeTheme::kColorId_OverlayScrollbarThumbHoveredStroke: {
+      SkColor stroke = base_theme->GetSystemColor(
+          NativeTheme::kColorId_CustomTabBarBackgroundColor, color_scheme);
+      stroke = color_utils::IsDark(stroke) ? SK_ColorBLACK : SK_ColorWHITE;
+      const bool hovered =
+          color_id == NativeTheme::kColorId_OverlayScrollbarThumbHoveredStroke;
+      return SkColorSetA(stroke, (hovered ? 0.5 : 0.3) * SK_AlphaOPAQUE);
+    }
 
     // Separator
     case NativeTheme::kColorId_SeparatorColor:
@@ -585,6 +571,19 @@ SkColor GetSecurityChipColor(NativeTheme::SecurityChipColorId chip_color_id,
       NOTREACHED();
       return gfx::kPlaceholderColor;
   }
+}
+
+SkColor GetAlertSeverityColor(NativeTheme::ColorId color_id, bool dark) {
+  constexpr auto kColorIdMap =
+      base::MakeFixedFlatMap<NativeTheme::ColorId, std::array<SkColor, 2>>({
+          {NativeTheme::kColorId_AlertSeverityHigh,
+           {{gfx::kGoogleRed600, gfx::kGoogleRed300}}},
+          {NativeTheme::kColorId_AlertSeverityLow,
+           {{gfx::kGoogleGreen700, gfx::kGoogleGreen300}}},
+          {NativeTheme::kColorId_AlertSeverityMedium,
+           {{gfx::kGoogleYellow700, gfx::kGoogleYellow300}}},
+      });
+  return kColorIdMap.at(color_id)[dark];
 }
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,

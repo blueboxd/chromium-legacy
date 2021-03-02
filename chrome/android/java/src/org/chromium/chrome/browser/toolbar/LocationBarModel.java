@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.paint_preview.TabbedPaintPreview;
-import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
@@ -257,11 +256,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             return buildUrlBarData(mUrlFormatter.format(originalUrl));
         }
 
-        // Strip the scheme from committed preview pages only.
-        if (isPreview()) {
-            return buildUrlBarData(url, UrlUtilities.stripScheme(url));
-        }
-
         if (isOfflinePage()) {
             GURL originalUrl = mTab.getOriginalUrl();
             formattedUrl = UrlUtilities.stripScheme(mUrlFormatter.format(originalUrl));
@@ -452,11 +446,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     }
 
     @Override
-    public boolean isPreview() {
-        return hasTab() && Previews.isPreview(mTab);
-    }
-
-    @Override
     public boolean isPaintPreview() {
         return hasTab() && TabbedPaintPreview.get(mTab).isShowing();
     }
@@ -483,7 +472,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     @Override
     public int getSecurityIconResource(boolean isTablet) {
         return getSecurityIconResource(
-                getSecurityLevel(), !isTablet, isOfflinePage(), isPreview(), isPaintPreview());
+                getSecurityLevel(), !isTablet, isOfflinePage(), isPaintPreview());
     }
 
     @Override
@@ -519,16 +508,14 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     @VisibleForTesting
     @DrawableRes
     int getSecurityIconResource(int securityLevel, boolean isSmallDevice, boolean isOfflinePage,
-            boolean isPreview, boolean isPaintPreview) {
+            boolean isPaintPreview) {
         // Paint Preview appears on top of WebContents and shows a visual representation of the page
         // that has been previously stored locally.
         if (isPaintPreview) return R.drawable.omnibox_info;
 
         // Checking for a preview first because one possible preview type is showing an offline page
         // on a slow connection. In this case, the previews UI takes precedence.
-        if (isPreview) {
-            return R.drawable.preview_pin_round;
-        } else if (isOfflinePage) {
+        if (isOfflinePage) {
             return R.drawable.ic_offline_pin_24dp;
         }
 
@@ -556,12 +543,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
             return ThemeUtils.getThemedToolbarIconTintRes(true);
-        }
-
-        if (isPreview()) {
-            // There will never be a preview in incognito. Always use the darker color rather than
-            // incorporating with the block above.
-            return R.color.locationbar_status_preview_color;
         }
 
         return ThemeUtils.getThemedToolbarIconTintRes(false);

@@ -96,6 +96,7 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/ipc_utils.h"
+#include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/modal_close_listener_host.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
@@ -5353,16 +5354,30 @@ void RenderFrameHostImpl::CreateNewWindow(
   } else {
     // The documents are cross origin, leave COOP of the popup to the default
     // unsafe-none.
-    // Then set the popup to noopener if the top level COOP is same origin.
-    if (top_level_opener->cross_origin_opener_policy().value ==
-        network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) {
-      DCHECK(base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicy));
-      params->opener_suppressed = true;
-      // The frame name should not be forwarded to a noopener popup.
-      // TODO(https://crbug.com/1060691) This should be applied to all
-      // popups opened with noopener.
-      params->frame_name.clear();
+    switch (top_level_opener->cross_origin_opener_policy().value) {
+      // Those values are explicitly listed here, to force creator of new
+      // values to make an explicit decision in the future.
+      // See regression: https://crbug.com/1181673
+      case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
+      case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
+        break;
+
+      // See https://html.spec.whatwg.org/#browsing-context-names (step 8)
+      // ```
+      // If current's top-level browsing context's active document's
+      // cross-origin opener policy's value is "same-origin" or
+      // "same-origin-plus-COEP", then [...] set noopener to true, name to
+      // "_blank", and windowType to "new with no opener".
+      // ```
+      case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
+      case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
+        DCHECK(base::FeatureList::IsEnabled(
+            network::features::kCrossOriginOpenerPolicy));
+        params->opener_suppressed = true;
+        // The frame name should not be forwarded to a noopener popup.
+        // TODO(https://crbug.com/1060691) This should be applied to all
+        // popups opened with noopener.
+        params->frame_name.clear();
     }
   }
 
@@ -10462,6 +10477,28 @@ RenderFrameHostImpl::CreateAuthAndCertObserver() {
   return static_cast<StoragePartitionImpl*>(GetStoragePartition())
       ->CreateAuthAndCertObserverForFrame(GetProcess()->GetID(),
                                           GetRoutingID());
+}
+
+PeerConnectionTrackerHost& RenderFrameHostImpl::GetPeerConnectionTrackerHost() {
+  if (!peer_connection_tracker_host_) {
+    peer_connection_tracker_host_ =
+        std::make_unique<PeerConnectionTrackerHost>(this);
+  }
+  return *peer_connection_tracker_host_.get();
+}
+
+void RenderFrameHostImpl::BindPeerConnectionTrackerHost(
+    mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver) {
+  GetPeerConnectionTrackerHost().BindReceiver(std::move(receiver));
+}
+
+void RenderFrameHostImpl::EnableWebRtcEventLogOutput(int lid,
+                                                     int output_period_ms) {
+  GetPeerConnectionTrackerHost().StartEventLog(lid, output_period_ms);
+}
+
+void RenderFrameHostImpl::DisableWebRtcEventLogOutput(int lid) {
+  GetPeerConnectionTrackerHost().StopEventLog(lid);
 }
 
 mojo::PendingRemote<network::mojom::CookieAccessObserver>

@@ -22,7 +22,8 @@ const char* predefined_symbol_markers[] = {
 CounterStyleMap* CreateUACounterStyleMap() {
   CounterStyleMap* map =
       MakeGarbageCollected<CounterStyleMap>(nullptr, nullptr);
-  map->AddCounterStyles(*CSSDefaultStyleSheets::Instance().DefaultStyle());
+  map->AddCounterStyles(
+      *CSSDefaultStyleSheets::Instance().DefaultCounterStyle());
   map->SetIsPredefined();
   for (const char* symbol_marker : predefined_symbol_markers) {
     map->FindCounterStyleAcrossScopes(symbol_marker)
@@ -87,8 +88,11 @@ void CounterStyleMap::AddCounterStyles(const RuleSet& rule_set) {
 
   for (StyleRuleCounterStyle* rule : rule_set.CounterStyleRules()) {
     CounterStyle* counter_style = CounterStyle::Create(*rule);
-    if (!counter_style)
+    if (!counter_style) {
+      DCHECK(owner_document_) << "Predefined counter style " << rule->GetName()
+                              << " has invalid symbols";
       continue;
+    }
     AtomicString name = rule->GetName();
     if (CounterStyle* replaced = counter_styles_.at(name))
       replaced->SetIsDirty();
@@ -191,11 +195,9 @@ void CounterStyleMap::ResolveFallbackFor(CounterStyle& counter_style) {
   } else {
     // UA counter styles shouldn't use inexistent fallback style names,
     // otherwise we'll enter an infinite recursion to look for 'decimal'.
-    // TODO(crbug.com/1180992): We currently fail the CHECK in some cases. Fix
-    // it and turn it into a DCHECK.
-    CHECK(owner_document_) << "Can't resolve fallback " << fallback_name
-                           << " for predefined counter style "
-                           << counter_style.GetName();
+    DCHECK(owner_document_)
+        << "Can't resolve fallback " << fallback_name
+        << " for predefined counter style " << counter_style.GetName();
     counter_style.ResolveFallback(CounterStyle::GetDecimal());
     counter_style.SetHasInexistentReferences();
   }

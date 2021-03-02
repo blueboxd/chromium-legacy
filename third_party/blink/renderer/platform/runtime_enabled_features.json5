@@ -311,10 +311,6 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dContextLostRestored",
-      status: "experimental",
-    },
-    {
       name: "Canvas2dImageChromium",
     },
     {
@@ -721,8 +717,7 @@
     },
     {
       name: "DeclarativeShadowDOM",
-      origin_trial_feature_name: "DeclarativeShadowDOM",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "DecodeJpeg420ImagesToYUV",

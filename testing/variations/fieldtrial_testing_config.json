@@ -1827,6 +1827,25 @@
             ]
         }
     ],
+    "ColorProviderRedirection": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ColorProviderRedirection"
+                    ]
+                }
+            ]
+        }
+    ],
     "CompositingOptimizations": [
         {
             "platforms": [
@@ -2013,27 +2032,6 @@
                         "ContextualSearchLiteralSearchTap",
                         "ContextualSearchTranslations",
                         "IPH_ContextualSearchTranslationEnable"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ConversionMeasurement": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "ConversionMeasurement",
-                    "enable_features": [
-                        "ConversionMeasurement"
                     ]
                 }
             ]
@@ -2806,6 +2804,7 @@
                     "name": "DnsHttpssvcStudy",
                     "params": {
                         "DnsHttpssvcControlDomainWildcard": "true",
+                        "DnsHttpssvcEnableQueryOverInsecure": "true",
                         "DnsHttpssvcExperimentDomains": "youtube.com.au",
                         "DnsHttpssvcExtraTimeMs": "50",
                         "DnsHttpssvcExtraTimePercent": "20",
@@ -6320,21 +6319,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafetyCheckChromeCleanerChild"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafetyCheckIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafetyCheckIOS"
                     ]
                 }
             ]

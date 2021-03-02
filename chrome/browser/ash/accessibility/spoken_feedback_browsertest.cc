@@ -159,6 +159,15 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
   sm_.Call([this]() { DisableEarcons(); });
 }
 
+void LoggedInSpokenFeedbackTest::StablizeChromeVoxState() {
+  sm_.Call([this]() {
+    ui_test_utils::NavigateToURL(browser(),
+                                 GURL("data:text/html;charset=utf-8,<button "
+                                      "autofocus>Click me</button>"));
+  });
+  sm_.ExpectSpeech("Click me");
+}
+
 // Flaky test, crbug.com/1081563
 IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
   EnableChromeVox();
@@ -247,9 +256,9 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
         "CommandHandler.onCommand('showKbExplorerPage');");
   });
   sm_.ExpectSpeech("ChromeVox Learn Mode");
-  sm_.ExpectSpeech(
+  sm_.ExpectSpeechPattern(
       "Press a qwerty key, refreshable braille key, or touch gesture to learn "
-      "its function. Press control with w or escape to exit.");
+      "*");
 
   // These are the default top row keys and their descriptions which live in
   // ChromeVox.
@@ -273,6 +282,29 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
   sm_.ExpectSpeech("volume down");
   sm_.Call([this]() { SendKeyPress(ui::VKEY_F10); });
   sm_.ExpectSpeech("volume up");
+
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
+  EnableChromeVox();
+  sm_.Call([this]() {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        browser()->profile(), extension_misc::kChromeVoxExtensionId,
+        "CommandHandler.onCommand('showKbExplorerPage');");
+  });
+  sm_.ExpectSpeech("ChromeVox Learn Mode");
+  sm_.ExpectSpeechPattern(
+      "Press a qwerty key, refreshable braille key, or touch gesture to learn "
+      "*");
+
+  sm_.Call([]() {
+    AccessibilityManager::Get()->HandleAccessibilityGesture(
+        ax::mojom::Gesture::kSwipeLeft2, gfx::PointF());
+  });
+  sm_.ExpectSpeech("Swipe two fingers left");
+  sm_.ExpectSpeech("Escape");
+  sm_.ExpectSpeech("Stopping Learn Mode");
 
   sm_.Replay();
 }
@@ -805,13 +837,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
 #endif
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxStickyModeRawKeys) {
   EnableChromeVox();
-
-  sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html;charset=utf-8,<button "
-                                      "autofocus>Click me</button>"));
-  });
-  sm_.ExpectSpeech("Click me");
+  StablizeChromeVoxState();
 
   sm_.Call([this]() {
     SendKeyPress(ui::VKEY_LWIN);
@@ -1186,6 +1212,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SmartStickyMode) {
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, HardwareKeysGetRewritten) {
   EnableChromeVox();
+  StablizeChromeVoxState();
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
   sm_.ExpectSpeech("Darken screen");
   sm_.Replay();

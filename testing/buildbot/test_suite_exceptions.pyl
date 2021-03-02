@@ -328,6 +328,9 @@
         'args': [
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
         ],
+        'swarming': {
+          'shards': 20,
+        },
       },
       'Win10 Tests x64': {
         'args': [
@@ -2533,6 +2536,10 @@
         'swarming': {
           'shards': 20,
         },
+        'experiment_percentage': 100,
+      },
+      'chromeos-kevin-rel': {
+        # TODO(crbug.com/1182948): Remove the experiment.
         'experiment_percentage': 100,
       },
       'linux-chromium-tests-staging-tests': {

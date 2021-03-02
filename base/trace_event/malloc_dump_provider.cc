@@ -11,6 +11,7 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
 #include "base/debug/profiler.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -67,28 +68,30 @@ void WinHeapMemoryDumpImpl(WinHeapInfo* crt_heap_info) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 void ReportPartitionAllocStats(ProcessMemoryDump* pmd, bool detailed) {
   SimplePartitionStatsDumper allocator_dumper;
-  internal::PartitionAllocMalloc::Allocator()->DumpStats(
-      "malloc", !detailed /* is_light_dump */, &allocator_dumper);
+  auto* allocator = internal::PartitionAllocMalloc::Allocator();
+  allocator->DumpStats("malloc", !detailed /* is_light_dump */,
+                       &allocator_dumper);
   // TODO(bartekn): Dump OriginalAllocator() into "malloc" as well.
 
   if (allocator_dumper.stats().has_thread_cache) {
     const auto& stats = allocator_dumper.stats().all_thread_caches_stats;
     auto* thread_cache_dump = pmd->CreateAllocatorDump("malloc/thread_cache");
-    ReportPartitionAllocThreadCacheStats(thread_cache_dump, stats);
+    ReportPartitionAllocThreadCacheStats(thread_cache_dump, stats, "");
     const auto& main_thread_stats =
         allocator_dumper.stats().current_thread_cache_stats;
     auto* main_thread_cache_dump =
         pmd->CreateAllocatorDump("malloc/thread_cache/main_thread");
     ReportPartitionAllocThreadCacheStats(main_thread_cache_dump,
-                                         main_thread_stats);
+                                         main_thread_stats, ".MainThread");
   }
 
   // Not reported in UMA, detailed dumps only.
-  if (detailed) {
+  auto* aligned_allocator = internal::PartitionAllocMalloc::AlignedAllocator();
+  if (detailed && (aligned_allocator != allocator)) {
     SimplePartitionStatsDumper aligned_allocator_dumper;
-    internal::PartitionAllocMalloc::AlignedAllocator()->DumpStats(
-        "malloc/aligned", !detailed /* is_light_dump */,
-        &aligned_allocator_dumper);
+    aligned_allocator->DumpStats("malloc/aligned",
+                                 !detailed /* is_light_dump */,
+                                 &aligned_allocator_dumper);
     // These should be included in the overall figure, so using a child dump.
     auto* aligned_allocator_dump = pmd->CreateAllocatorDump("malloc/aligned");
     // See
@@ -238,7 +241,8 @@ void MallocDumpProvider::DisableMetrics() {
 
 #if BUILDFLAG(USE_PARTITION_ALLOC)
 void ReportPartitionAllocThreadCacheStats(MemoryAllocatorDump* dump,
-                                          const ThreadCacheStats& stats) {
+                                          const ThreadCacheStats& stats,
+                                          const std::string& metrics_suffix) {
   dump->AddScalar("alloc_count", "scalar", stats.alloc_count);
   dump->AddScalar("alloc_hits", "scalar", stats.alloc_hits);
   dump->AddScalar("alloc_misses", "scalar", stats.alloc_misses);
@@ -254,6 +258,19 @@ void ReportPartitionAllocThreadCacheStats(MemoryAllocatorDump* dump,
 
   dump->AddScalar("size", "bytes", stats.bucket_total_memory);
   dump->AddScalar("metadata_overhead", "bytes", stats.metadata_overhead);
+
+  if (stats.alloc_count) {
+    int hit_rate_percent =
+        static_cast<int>((100 * stats.alloc_hits) / stats.alloc_count);
+    base::UmaHistogramPercentage(
+        "Memory.PartitionAlloc.ThreadCache.HitRate" + metrics_suffix,
+        hit_rate_percent);
+    int batch_fill_rate_percent =
+        static_cast<int>((100 * stats.batch_fill_count) / stats.alloc_count);
+    base::UmaHistogramPercentage(
+        "Memory.PartitionAlloc.ThreadCache.BatchFillRate" + metrics_suffix,
+        batch_fill_rate_percent);
+  }
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 

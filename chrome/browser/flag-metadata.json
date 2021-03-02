@@ -990,7 +990,7 @@
   {
     "name": "dice-web-signin-interception",
     "owners": [ "droger", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "direct-actions",
@@ -3435,11 +3435,6 @@
     "name": "media-history",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "media-notifications-counter",
-    "owners": [ "gzadina@google.com", "joelhockey", "tengs" ],
-    "expiry_milestone": 90
   },
   {
     "name": "media-router-cast-allow-all-ips",

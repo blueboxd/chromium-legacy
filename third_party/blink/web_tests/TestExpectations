@@ -1718,10 +1718,6 @@ crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
 
-# Migrating DevTools common module to localization V2, temporarily skipping these tests
-crbug.com/1136655 http/tests/devtools/network/network-filter-updated-requests.js [ Pass Failure ]
-crbug.com/1136655 http/tests/devtools/network/network-update-calculator-for-all-requests.js [ Pass Failure ]
-
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
 crbug.com/528062 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure Timeout ]
@@ -2482,6 +2478,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-grid/abspos/grid-item-absolute-positioning-dynamic-001.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
@@ -2491,10 +2488,8 @@ crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Cras
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/hsl-008.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-color/hsl-008.html [ Pass Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-color/hsl-008.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/rgba-004.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Crash ]
 crbug.com/626703 [ Mac11.0 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Crash ]
-crbug.com/626703 external/wpt/css/css-color/rgba-004.html [ Failure ]
 crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/hsl-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/focus-visible-007.html [ Timeout ]
 crbug.com/626703 external/wpt/uievents/keyboard/modifier-keys-combinations.html [ Timeout ]
@@ -5701,18 +5696,12 @@ crbug.com/1179219 external/wpt/html/semantics/embedded-content/media-elements/lo
 crbug.com/1179772 [ Win7 ] http/tests/devtools/console/console-preserve-log-x-process-navigation.js [ Pass Failure ]
 crbug.com/1179857 [ Linux ] http/tests/inspector-protocol/dom/dom-getFrameOwner.js [ Pass Failure ]
 crbug.com/1179905 [ Linux ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure ]
-crbug.com/1179969 [ Mac ] external/wpt/service-workers/service-worker/claim-fetch.https.html [ Failure ]
-crbug.com/1179969 [ Mac ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/claim-fetch.https.html [ Failure ]
 
 # Sheriff 2021-02-19
 crbug.com/1180227 [ Mac ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure Crash ]
 crbug.com/1180227 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure ]
 crbug.com/1180274 [ Mac ] http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]
 crbug.com/1180479 [ Mac ] virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/scrollIntoView-smooth.html [ Failure Timeout Pass ]
-
-# Temporarily disabled to enable frontend change (https://crrev.com/c/2716285) to go through
-crbug.com/1176691 http/tests/devtools/security/interstitial-sidebar.js [ Failure Pass ]
-crbug.com/1176691 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
 
 # Sheriff 2021-02-21
 crbug.com/1180491 [ Linux ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]

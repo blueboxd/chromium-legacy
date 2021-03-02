@@ -64,7 +64,7 @@ default_args = {
 # "gn check" or "gn gen --check".
 no_check_targets = [
   # //chrome/*, https://crbug.com/949535
-  "//chrome/browser/media/router/discovery:*",  # 7 errors
+  "//chrome/browser/media/router/discovery:*",  # 4 errors
   "//chrome/browser/safe_browsing/android:*",  # 3 errors
   "//chrome/browser/safety_check/android:*",  # 3 errors
   "//chrome/browser/storage_access_api:*",  # 2 errors
@@ -77,7 +77,6 @@ no_check_targets = [
   "//extensions/browser:*",  # 20 errors
   "//extensions:*",  # 75 errors
   "//headless:*",  # 167 errors
-  "//jingle:*",  # 4 errors
   "//native_client/src/trusted/service_runtime:*",  # 2 errors
   "//ppapi/cpp/private:*",  # 1 error
   "//ppapi/host:*",  # 1 error

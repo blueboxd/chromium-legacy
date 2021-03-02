@@ -57,7 +57,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -286,6 +285,8 @@
 #include "chrome/browser/ash/login/saml/saml_profile_prefs.h"
 #include "chrome/browser/ash/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
+#include "chrome/browser/ash/login/signin/signin_error_notifier_ash.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -297,8 +298,6 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/security_token_session_controller.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/signin/signin_error_notifier_ash.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
@@ -539,6 +538,8 @@ const char kStabilityBreakpadRegistrationFail[] =
 
 // Deprecated 02/2021
 const char kGamesInstallDirPref[] = "games.data_files_paths";
+const char kLiteModeUserNeedsNotification[] =
+    "previews.litepage.user-needs-notification";
 
 #if !defined(OS_ANDROID)
 // Deprecated 02/2021
@@ -642,6 +643,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterStringPref(kDataReductionProxyConfig, std::string());
 
   registry->RegisterFilePathPref(kGamesInstallDirPref, base::FilePath());
+  registry->RegisterBooleanPref(kLiteModeUserNeedsNotification, true);
 
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(kCartModuleRemoved, false);
@@ -909,7 +911,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefetchProxyOriginDecider::RegisterPrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
-  PreviewsHTTPSNotificationInfoBarDecider::RegisterProfilePrefs(registry);
   privacy_sandbox::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
@@ -1306,6 +1307,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 02/2021
   profile_prefs->ClearPref(kCartModuleRemoved);
 #endif
+
+  // Added 03/2021
+  profile_prefs->ClearPref(kLiteModeUserNeedsNotification);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

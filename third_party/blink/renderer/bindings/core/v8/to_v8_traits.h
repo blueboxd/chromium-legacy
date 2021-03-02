@@ -36,8 +36,22 @@ struct ToV8Traits<IDLAny> {
   static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
                                         const ScriptValue& script_value)
       WARN_UNUSED_RESULT {
-    DCHECK(!script_value.IsEmpty());
+    // It is not correct to take empty |script_value|.
+    // However, some call sites expect to get v8::Undefined
+    // when ToV8 takes empty |script_value|.
+    // TODO(crbug.com/1183637): Remove this if-branch.
+    if (script_value.IsEmpty())
+      return v8::Undefined(script_state->GetIsolate());
     return script_value.V8Value();
+  }
+
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const v8::Local<v8::Value>& value)
+      WARN_UNUSED_RESULT {
+    // TODO(crbug.com/1183637): Remove this if-branch.
+    if (value.IsEmpty())
+      return v8::Undefined(script_state->GetIsolate());
+    return value;
   }
 };
 
@@ -326,7 +340,25 @@ template <typename T>
 struct ToV8Traits<NotShared<T>> {
   static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
                                         NotShared<T> value) WARN_UNUSED_RESULT {
+    DCHECK(!value.IsNull());
     return ToV8Traits<T>::ToV8(script_state, value.Get());
+  }
+
+  // TODO(crbug.com/1183647): Remove this overload. It is used in generated
+  // code, but it might cause bugs because T* cannot tell whether it's NotShared
+  // or MaybeShared.
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        T* value) WARN_UNUSED_RESULT {
+    DCHECK(value);
+    return ToV8Traits<T>::ToV8(script_state, value);
+  }
+
+  // TODO(canonmukai): Remove this overload.
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const ScriptValue& script_value)
+      WARN_UNUSED_RESULT {
+    DCHECK(!script_value.IsEmpty());
+    return ToV8Traits<IDLAny>::ToV8(script_state, script_value);
   }
 };
 
@@ -497,6 +529,22 @@ struct ToV8Traits<
   }
 };
 
+// Nullable Object
+template <>
+struct ToV8Traits<IDLNullable<IDLObject>> {
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const ScriptValue& script_value)
+      WARN_UNUSED_RESULT {
+    // TODO(crbug.com/1183637): Remove this if-branch.
+    if (script_value.IsEmpty())
+      return v8::Null(script_state->GetIsolate());
+
+    v8::Local<v8::Value> v8_value = script_value.V8Value();
+    DCHECK(v8_value->IsNull() || v8_value->IsObject());
+    return v8_value;
+  }
+};
+
 // Nullable ScriptWrappable
 template <typename T>
 struct ToV8Traits<
@@ -588,6 +636,86 @@ struct ToV8Traits<IDLNullable<T>,
   }
 };
 
+// Nullable NotShared
+template <typename T>
+struct ToV8Traits<IDLNullable<NotShared<T>>> {
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        NotShared<T> value) WARN_UNUSED_RESULT {
+    if (value.IsNull())
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<NotShared<T>>::ToV8(script_state, value);
+  }
+
+  // TODO(crbug.com/1183647): Remove this overload.
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        T* value) WARN_UNUSED_RESULT {
+    if (!value)
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<NotShared<T>>::ToV8(script_state, value);
+  }
+
+  // TODO(canonmukai): Remove this overload.
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const ScriptValue& script_value)
+      WARN_UNUSED_RESULT {
+    if (script_value.IsEmpty())
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<NotShared<T>>::ToV8(script_state, script_value);
+  }
+};
+
+// Nullable MaybeShared
+template <typename T>
+struct ToV8Traits<IDLNullable<MaybeShared<T>>> {
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        MaybeShared<T> value)
+      WARN_UNUSED_RESULT {
+    if (value.IsNull())
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<MaybeShared<T>>::ToV8(script_state, value);
+  }
+};
+
+// Nullable Array
+template <typename T>
+struct ToV8Traits<IDLNullable<IDLSequence<T>>> {
+  static v8::MaybeLocal<v8::Value> ToV8(
+      ScriptState* script_state,
+      const base::Optional<typename IDLSequence<T>::ImplType>& value)
+      WARN_UNUSED_RESULT {
+    if (!value)
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<IDLSequence<T>>::ToV8(script_state, *value);
+  }
+
+  static v8::MaybeLocal<v8::Value> ToV8(
+      ScriptState* script_state,
+      const typename IDLSequence<T>::ImplType* value) WARN_UNUSED_RESULT {
+    if (!value)
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<IDLSequence<T>>::ToV8(script_state, *value);
+  }
+};
+
+template <typename K, typename V>
+struct ToV8Traits<IDLNullable<IDLRecord<K, V>>> {
+  static v8::MaybeLocal<v8::Value> ToV8(
+      ScriptState* script_state,
+      const base::Optional<typename IDLRecord<K, V>::ImplType>& value) {
+    if (!value)
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<IDLRecord<K, V>>::ToV8(script_state, *value);
+  }
+
+  static v8::MaybeLocal<v8::Value> ToV8(
+      ScriptState* script_state,
+      const typename IDLRecord<K, V>::ImplType* value) {
+    if (!value)
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<IDLRecord<K, V>>::ToV8(script_state, *value);
+  }
+};
+
 // Nullable Date
 // IDLDate must be used as IDLNullable<IDLDate>.
 template <>
@@ -617,11 +745,36 @@ inline v8::MaybeLocal<v8::Value> ToV8HelperUnion(ScriptState* script_state,
 
 }  // namespace bindings
 
+// IDLUnionINT
+template <typename T>
+struct ToV8Traits<IDLUnionINT<T>> {
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const T& value) WARN_UNUSED_RESULT {
+    return bindings::ToV8HelperUnion(script_state, value);
+  }
+};
+
+// IDLUnionNotINT
 template <typename T>
 struct ToV8Traits<IDLUnionNotINT<T>> {
   static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
                                         const T& value) WARN_UNUSED_RESULT {
     return bindings::ToV8HelperUnion(script_state, value);
+  }
+};
+
+// Nullable IDLUnionINT must not be used.
+template <typename T>
+struct ToV8Traits<IDLNullable<IDLUnionINT<T>>>;
+
+// Nullable IDLUnionNotINT
+template <typename T>
+struct ToV8Traits<IDLNullable<IDLUnionNotINT<T>>> {
+  static v8::MaybeLocal<v8::Value> ToV8(ScriptState* script_state,
+                                        const T& value) WARN_UNUSED_RESULT {
+    if (value.IsNull())
+      return v8::Null(script_state->GetIsolate());
+    return ToV8Traits<IDLUnionNotINT<T>>::ToV8(script_state, value);
   }
 };
 

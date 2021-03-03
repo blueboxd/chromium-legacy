@@ -205,8 +205,6 @@ crbug.com/826957 fast/peerconnection/RTCPeerConnection-manyCandidates.html [ Slo
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
 
-crbug.com/1047164 [ Mac ] fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Slow ]
-
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
 crbug.com/942951 media/controls/controls-layout-in-different-size.html [ Slow ]
@@ -734,3 +732,5 @@ crbug.com/1145424 [ Linux ] http/tests/devtools/sources/debugger-ui/reveal-execu
 crbug.com/1145424 [ Win ] http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Slow ]
 crbug.com/1145641 external/wpt/requestidlecallback/callback-invoked.html [ Slow ]
 crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Slow ]
+crbug.com/1182691 external/wpt/webcodecs/audio-encoder.any.html [ Slow ]
+crbug.com/1182691 external/wpt/webcodecs/video-encoder.any.html [ Slow ]

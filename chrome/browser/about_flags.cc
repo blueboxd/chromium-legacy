@@ -3216,10 +3216,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeviceDiscoveryNotificationsName,
      flag_descriptions::kDeviceDiscoveryNotificationsDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications)},
-    {"force-enable-privet-printing",
-     flag_descriptions::kForceEnablePrivetPrintingName,
-     flag_descriptions::kForceEnablePrivetPrintingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kForceEnablePrivetPrinting)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"enable-webgl-draft-extensions",
      flag_descriptions::kWebglDraftExtensionsName,
@@ -3457,10 +3453,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNavigationPredictorDescription,
      kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(blink::features::kNavigationPredictor)},
-    {"enable-navigation-predictor-renderer-warmup",
-     flag_descriptions::kEnableNavigationPredictorRendererWarmupName,
-     flag_descriptions::kEnableNavigationPredictorRendererWarmupDescription,
-     kOsAll, FEATURE_VALUE_TYPE(features::kNavigationPredictorRendererWarmup)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || OS_LINUX
     {"enable-preconnect-to-search",
      flag_descriptions::kEnablePreconnectToSearchName,
@@ -5692,12 +5684,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrintServerScalingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrintServerScaling)},
 
-    {"disable-peripheral-data-access-protection",
-     flag_descriptions::kDisablePeripheralDataAccessProtectionName,
-     flag_descriptions::kDisablePeripheralDataAccessProtectionDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kDisablePeripheralDataAccessProtection)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
@@ -7285,8 +7271,10 @@ bool ShouldSkipNonDeprecatedFeatureEntry(const FeatureEntry& entry) {
   return ~entry.supported_platforms & kDeprecated;
 }
 
-bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
-                                 const FeatureEntry& entry) {
+}  // namespace
+
+bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
+                                       const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // enable-ui-devtools is only available on for non Stable channels.
@@ -7366,8 +7354,6 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   return false;
 }
 
-}  // namespace
-
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
                             flags_ui::SentinelsMode sentinels) {
@@ -7410,7 +7396,7 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            base::ListValue* unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
-      base::BindRepeating(&SkipConditionalFeatureEntry,
+      base::BindRepeating(&ShouldSkipConditionalFeatureEntry,
                           // Unretained: this callback doesn't outlive this
                           // stack frame.
                           base::Unretained(flags_storage)));

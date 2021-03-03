@@ -377,6 +377,10 @@ void WebRuntimeFeatures::EnablePreciseMemoryInfo(bool enable) {
   RuntimeEnabledFeatures::SetPreciseMemoryInfoEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePrerender2(bool enable) {
+  RuntimeEnabledFeatures::SetPrerender2Enabled(enable);
+}
+
 void WebRuntimeFeatures::EnableV8IdleTasks(bool enable) {
   RuntimeEnabledFeatures::SetV8IdleTasksEnabled(enable);
 }
@@ -573,10 +577,6 @@ void WebRuntimeFeatures::EnableGetCurrentBrowsingContextMedia(bool enable) {
 
 void WebRuntimeFeatures::EnableAllowSyncXHRInPageDismissal(bool enable) {
   RuntimeEnabledFeatures::SetAllowSyncXHRInPageDismissalEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableHTMLImports(bool enable) {
-  RuntimeEnabledFeatures::SetHTMLImportsEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableSignedExchangePrefetchCacheForNavigations(

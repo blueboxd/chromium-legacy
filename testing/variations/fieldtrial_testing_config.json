@@ -3394,6 +3394,29 @@
             ]
         }
     ],
+    "FirstPartySetsOriginTrial": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "FirstPartySetsIsDogfooder": "false"
+                    },
+                    "enable_features": [
+                        "FirstPartySets"
+                    ]
+                }
+            ]
+        }
+    ],
     "ForceSynchronousHTMLParsing": [
         {
             "platforms": [
@@ -7459,6 +7482,13 @@
             ],
             "experiments": [
                 {
+                    "name": "EnabledOffThreadFinalizationAndSmallScripts",
+                    "enable_features": [
+                        "SmallScriptStreaming",
+                        "V8OffThreadFinalization"
+                    ]
+                },
+                {
                     "name": "EnabledOffThreadFinalization",
                     "enable_features": [
                         "V8OffThreadFinalization"
@@ -7477,8 +7507,8 @@
                     ]
                 },
                 {
-                    "name": "EnabledOffThreadFinalizationAndSmallScripts",
-                    "enable_features": [
+                    "name": "Disabled",
+                    "disable_features": [
                         "SmallScriptStreaming",
                         "V8OffThreadFinalization"
                     ]

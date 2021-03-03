@@ -315,9 +315,6 @@ const base::Feature kExoPointerLock{"ExoPointerLock",
 const base::Feature kExoLockNotification{"ExoLockNotification",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDisablePeripheralDataAccessProtection{
-    "DisablePeripheralDataAccessProtection", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables policy that controls feature to allow Family Link accounts on school
 // owned devices.
 const base::Feature kFamilyLinkOnSchoolDevice{"FamilyLinkOnSchoolDevice",
@@ -469,7 +466,7 @@ const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
 
 // Controls whether new OOBE layout is shown or not.
 const base::Feature kNewOobeLayout{"NewOobeLayout",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -766,10 +763,6 @@ bool IsDiagnosticsAppEnabled() {
 
 bool IsEcheSWAEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWA);
-}
-
-bool IsPeripheralDataAccessProtectionEnabled() {
-  return !base::FeatureList::IsEnabled(kDisablePeripheralDataAccessProtection);
 }
 
 bool IsHostnameSettingEnabled() {

@@ -8,24 +8,27 @@
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/screens/user_selection_screen.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/local_state_mixin.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -486,5 +489,67 @@ IN_PROC_BROWSER_TEST_F(LoginUIDiagnosticsDisabledTest,
 
   EXPECT_FALSE(IsDiagnosticsDialogVisible());
 }
+
+class SshWarningTest : public OobeBaseTest,
+                       public ::testing::WithParamInterface<bool> {
+ public:
+  class TestDebugDaemonClient : public FakeDebugDaemonClient {
+   public:
+    void QueryDebuggingFeatures(
+        DebugDaemonClient::QueryDevFeaturesCallback callback) override {
+      std::move(callback).Run(/*succeeded=*/true, flags_);
+    }
+
+    void set_flags(int flags) { flags_ = flags; }
+
+   private:
+    int flags_ = debugd::DevFeatureFlag::DEV_FEATURES_DISABLED;
+  };
+
+  void SetUpOnMainThread() override {
+    auto scoped_test_client = std::make_unique<TestDebugDaemonClient>();
+    test_client_ = scoped_test_client.get();
+    test_client_->set_flags(
+        GetParam() ? debugd::DevFeatureFlag::DEV_FEATURE_SSH_SERVER_CONFIGURED
+                   : debugd::DevFeatureFlag::DEV_FEATURES_DISABLED);
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
+        std::move(scoped_test_client));
+    OobeBaseTest::SetUpOnMainThread();
+  }
+
+ protected:
+  TestDebugDaemonClient* test_client_ = nullptr;
+};
+
+IN_PROC_BROWSER_TEST_P(SshWarningTest, VisibilityOnGaia) {
+  chromeos::WizardController::default_controller()->SkipToLoginForTesting();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  test::UIPath ssh_warning = {"gaia-signin", "signin-frame-dialog",
+                              "sshWarning"};
+  if (GetParam()) {
+    test::OobeJS().ExpectVisiblePath(ssh_warning);
+  } else {
+    test::OobeJS().ExpectHiddenPath(ssh_warning);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SshWarningTest, VisibilityOnEnrollment) {
+  chromeos::WizardController::default_controller()->SkipToLoginForTesting();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+
+  LoginDisplayHost::default_host()->HandleAccelerator(
+      ash::LoginAcceleratorAction::kStartEnrollment);
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+
+  test::UIPath ssh_warning = {"enterprise-enrollment", "step-signin",
+                              "sshWarning"};
+  if (GetParam()) {
+    test::OobeJS().ExpectVisiblePath(ssh_warning);
+  } else {
+    test::OobeJS().ExpectHiddenPath(ssh_warning);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All, SshWarningTest, ::testing::Bool());
 
 }  // namespace chromeos

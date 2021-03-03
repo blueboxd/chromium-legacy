@@ -330,6 +330,10 @@ CaptureModeController* CaptureModeController::Get() {
   return g_instance;
 }
 
+bool CaptureModeController::IsActive() const {
+  return capture_mode_session_ && !capture_mode_session_->is_shutting_down();
+}
+
 void CaptureModeController::SetSource(CaptureModeSource source) {
   if (source == source_)
     return;
@@ -395,11 +399,13 @@ void CaptureModeController::Start(CaptureModeEntryType entry_type) {
   delegate_->OnSessionStateChanged(/*started=*/true);
 
   capture_mode_session_ = std::make_unique<CaptureModeSession>(this);
+  capture_mode_session_->Initialize();
 }
 
 void CaptureModeController::Stop() {
   DCHECK(IsActive());
   capture_mode_session_->ReportSessionHistograms();
+  capture_mode_session_->Shutdown();
   capture_mode_session_.reset();
 
   delegate_->OnSessionStateChanged(/*started=*/false);
@@ -720,7 +726,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
   // We bind the audio stream factory only if audio recording is enabled. This
   // is ok since the |audio_stream_factory| parameter in the recording service
   // APIs is optional, and can be not bound.
-  mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory;
+  mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory;
   if (enable_audio_recording_) {
     delegate_->BindAudioStreamFactory(
         audio_stream_factory.InitWithNewPipeAndPassReceiver());

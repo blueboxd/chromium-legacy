@@ -400,9 +400,6 @@ extern const char kEnableSaveDataDescription[];
 extern const char kEnableNavigationPredictorName[];
 extern const char kEnableNavigationPredictorDescription[];
 
-extern const char kEnableNavigationPredictorRendererWarmupName[];
-extern const char kEnableNavigationPredictorRendererWarmupDescription[];
-
 extern const char kEnablePreconnectToSearchName[];
 extern const char kEnablePreconnectToSearchDescription[];
 
@@ -566,9 +563,6 @@ extern const char kMemlogStackModeMixed[];
 extern const char kMemlogStackModeNative[];
 extern const char kMemlogStackModeNativeWithThreadNames[];
 extern const char kMemlogStackModePseudo[];
-
-extern const char kDisablePeripheralDataAccessProtectionName[];
-extern const char kDisablePeripheralDataAccessProtectionDescription[];
 
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
@@ -1151,9 +1145,6 @@ extern const char kPrivacyReorderedAndroidDescription[];
 
 extern const char kPrivacySandboxSettingsName[];
 extern const char kPrivacySandboxSettingsDescription[];
-
-extern const char kForceEnablePrivetPrintingName[];
-extern const char kForceEnablePrivetPrintingDescription[];
 
 extern const char kSafetyCheckAndroidName[];
 extern const char kSafetyCheckAndroidDescription[];

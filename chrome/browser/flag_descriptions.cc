@@ -640,12 +640,6 @@ const char kEnableNavigationPredictorDescription[] =
     "Enables navigation predictor feature that predicts the next likely "
     "navigation using a set of heuristics.";
 
-const char kEnableNavigationPredictorRendererWarmupName[] =
-    "Enables navigation predictor";
-const char kEnableNavigationPredictorRendererWarmupDescription[] =
-    "Enables navigation predictor feature that predicts the next likely "
-    "navigation using a set of heuristics.";
-
 const char kEnablePreconnectToSearchName[] =
     "Enables preconnections to default search engine";
 const char kEnablePreconnectToSearchDescription[] =
@@ -1002,14 +996,6 @@ const char kMemlogStackModeMixed[] = "Mixed";
 const char kMemlogStackModeNative[] = "Native";
 const char kMemlogStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kMemlogStackModePseudo[] = "Trace events";
-
-const char kDisablePeripheralDataAccessProtectionName[] =
-    "Turn off peripheral data access protection";
-const char kDisablePeripheralDataAccessProtectionDescription[] =
-    "Disables data access protection for external PCI devices (including some "
-    "thunderbolt and SD Express devices that use PCI tunneling). By default "
-    "this feature is disabled, which blocks data access from external PCI "
-    "devices.";
 
 const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
@@ -1967,11 +1953,6 @@ const char kPrivacySandboxSettingsName[] = "Privacy Sandbox Settings";
 const char kPrivacySandboxSettingsDescription[] =
     "Enables privacy sandbox settings. Requires at least one of the Privacy "
     "Sandbox APIs to be enabled.";
-
-const char kForceEnablePrivetPrintingName[] = "Force enable Privet Printing";
-const char kForceEnablePrivetPrintingDescription[] =
-    "Override to force enabling printing to existing registered Privet "
-    "printers in Print Preview. Will be removed in M90.";
 
 const char kSafetyCheckAndroidName[] = "Safety Check on Android";
 const char kSafetyCheckAndroidDescription[] =

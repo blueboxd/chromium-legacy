@@ -1783,6 +1783,10 @@ AtomicString Document::visibilityState() const {
   return PageHiddenStateString(hidden());
 }
 
+bool Document::prerendering() const {
+  return IsPrerendering();
+}
+
 bool Document::hidden() const {
   return !IsPageVisible();
 }
@@ -7789,7 +7793,7 @@ void Document::FlushAutofocusCandidates() {
         "document already has a focused element."));
     return;
   }
-  if (HasNonEmptyFragment()) {
+  if (CssTarget()) {
     autofocus_candidates_.clear();
     autofocus_processed_flag_ = true;
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -7847,11 +7851,10 @@ void Document::FlushAutofocusCandidates() {
     // is not empty, then continue.
     if (doc != this) {
       for (HTMLFrameOwnerElement* frameOwner = doc->LocalOwner();
-           !doc->HasNonEmptyFragment() && frameOwner;
-           frameOwner = doc->LocalOwner()) {
+           !doc->CssTarget() && frameOwner; frameOwner = doc->LocalOwner()) {
         doc = &frameOwner->GetDocument();
       }
-      if (doc->HasNonEmptyFragment()) {
+      if (doc->CssTarget()) {
         AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kRendering,
             mojom::ConsoleMessageLevel::kInfo,
@@ -7889,10 +7892,6 @@ void Document::FlushAutofocusCandidates() {
 void Document::FinalizeAutofocus() {
   autofocus_candidates_.clear();
   autofocus_processed_flag_ = true;
-}
-
-bool Document::HasNonEmptyFragment() const {
-  return !Url().FragmentIdentifier().IsEmpty();
 }
 
 Element* Document::ActiveElement() const {
@@ -8422,6 +8421,17 @@ void Document::SetFindInPageActiveMatchNode(Node* node) {
 
 const Node* Document::GetFindInPageActiveMatchNode() const {
   return find_in_page_active_match_node_;
+}
+
+void Document::ActivateForPrerendering() {
+  DCHECK(RuntimeEnabledFeatures::Prerender2Enabled());
+
+  // TODO(bokan): Portals will change this assumption since they mean an active
+  // document can be "adopted" into a portal.
+  DCHECK(is_prerendering_);
+
+  is_prerendering_ = false;
+  DispatchEvent(*Event::Create(event_type_names::kPrerenderingchange));
 }
 
 bool Document::InStyleRecalc() const {

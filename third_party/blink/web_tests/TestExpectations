@@ -234,6 +234,11 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
+# This test currently fails since prerendering activation isn't fully plumbed
+# into the renderer yet.
+crbug.com/1183320 virtual/prerender/wpt_internal/prerender/state_and_event.html [ Timeout ]
+
+
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
 ########## Ref tests can't be rebaselined ##########
@@ -945,6 +950,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-002.html [ Pass 
 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-003.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-005.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/box-shadow.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-002.html [ Pass ]
@@ -2479,10 +2485,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac11.0 ] external/wpt/preload/download-resources.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-grid/abspos/grid-item-absolute-positioning-dynamic-001.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/webcodecs/video-encoder.any.html [ Timeout ]
 crbug.com/626703 [ Linux ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/hsl-008.html [ Failure ]
@@ -2665,7 +2669,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/x-frame-options/multiple.html [ Timeo
 crbug.com/626703 [ Mac10.13 ] external/wpt/FileAPI/idlharness.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/interaction/focus/document-level-focus-apis/document-has-system-focus.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-set-keyframes.https.html [ Failure ]
-crbug.com/626703 [ Win10 ] external/wpt/webcodecs/video-encoder.any.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection-no-sink.https.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-peerconnection.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
@@ -3237,6 +3240,7 @@ crbug.com/829028 external/wpt/css/css-break/borders-002.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-005.html [ Failure ]
+crbug.com/269061 external/wpt/css/css-break/box-shadow.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-002.html [ Failure ]
@@ -4449,8 +4453,6 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # Flaky devtools test for recalculating styles.
 crbug.com/1018177 http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure Pass ]
 
-crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure Pass ]
-
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
 # contradiction.
@@ -4853,11 +4855,7 @@ crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Fai
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Pass Failure ]
 
 # Enable scroll-snap tests on impl thread
-# These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
-crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout Failure ]
-
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
-crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure Pass ]
 
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
@@ -4946,7 +4944,6 @@ crbug.com/1046440 fast/loader/submit-form-while-parsing-2.html [ Pass Failure Ti
 crbug.com/995663 [ Linux ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Pass Failure Timeout ]
 
 # Sheriff 2020-01-30
-crbug.com/1047164 [ Mac ] fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Failure ]
 crbug.com/1047208 http/tests/serviceworker/update-served-from-cache.html [ Pass Failure ]
 crbug.com/1047293 [ Mac ] editing/pasteboard/pasteboard_with_unfocused_selection.html [ Pass Failure ]
 
@@ -5260,8 +5257,6 @@ crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-
 crbug.com/1105271 [ Mac ] scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
 crbug.com/1105274 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout Failure ]
 crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Pass Failure ]
-
-crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout Failure ]
 
 # Temporarily disable tests to allow fixing of devtools path escaping
 crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Pass Timeout Failure ]
@@ -5730,8 +5725,19 @@ crbug.com/1182680 [ Linux ] http/tests/devtools/console/console-format-collectio
 crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-view.js [ Pass Failure ]
 crbug.com/1182689 [ Mac10.14 ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
 crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html?touch [ Pass Failure ]
-crbug.com/1182691 [ Linux ] external/wpt/webcodecs/audio-encoder.any.html [ Pass Failure ]
-crbug.com/1182749 [ Win7 ] virtual/synchronous_html_parser/http/tests/inspector-protocol/page/page-setProduceCompilationCache.js [ Pass Failure ]
+
+# Test doesn't support small script streaming yet.
+crbug.com/1011762 http/tests/inspector-protocol/page/page-produceCompilationCache.js [ Pass Failure Timeout ]
+crbug.com/1011762 http/tests/inspector-protocol/page/page-setProduceCompilationCache.js [ Pass Failure Timeout ]
+
+# Something is wrong when interpreting UTF-8 as Windows-1252 when streaming.
+crbug.com/1183350 external/wpt/fetch/content-type/script.window.html [ Pass Failure ]
+crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-audio.https.html [ Pass Failure ]
+crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-errors.https.html [ Pass Failure ]
+crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-legacy.https.html [ Pass Failure ]
+crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-video-frames.https.html [ Pass Failure ]
+crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-video.https.html [ Pass Failure ]
+crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-worker.https.html [ Pass Failure ]
 
 # Temporarily disabled to allow a WebRTC roll fixing the test.
 crbug.com/614958 external/wpt/webrtc/RTCPeerConnection-addIceCandidate.html [ Pass Failure ]
@@ -5740,9 +5746,11 @@ crbug.com/614958 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection
 # Sheriff 2021-03-01
 crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Pass Failure ]
 
+# Sheriff 2021-03-01
+crbug.com/183974 [ Linux ] external/wpt/webrtc/RTCPeerConnection-restartIce.https.html [ Pass Failure ]
+
+# Webrtc-in-Chrome 2021-03-01
+crbug.com/webrtc/12507 external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+
 # Temporarily disabled for https://crrev.com/c/2713104
 crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Pass Failure ]
-
-# DevTools roll
-crbug.com/1134103 http/tests/devtools/editor/text-editor-accessibility.js [ Skip ]
-crbug.com/1134103 http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Skip ]

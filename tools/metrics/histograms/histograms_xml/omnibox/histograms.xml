@@ -64,7 +64,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency" units="ms"
-    expires_after="2021-06-30">
+    expires_after="2021-08-29">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -137,7 +137,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Omnibox.ClipboardSuggestionRemovedAge" units="ms"
-    expires_after="2021-03-01">
+    expires_after="2021-09-01">
   <owner>gangwu@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>
@@ -439,6 +439,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     windows open. In M-75 and later, it records all omnibox interactions
     regardless, in order to be consistent with how user actions and histograms
     are handled.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.Lens.LensSupportStatus" enum="LensSupportStatus"
+    expires_after="2021-11-18">
+  <owner>yusuyoutube@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>lens-chrome@google.com</owner>
+  <summary>
+    Whether the user supports the camera assisted search with Google Lens and if
+    not, the reason why. Recorded only if the feature is enabled when the
+    omnibox is loaded.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.Lens.TimeSpentInLens" units="ms" expires_after="M94">
+  <owner>yusuyoutube@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>lens-chrome@google.com</owner>
+  <summary>
+    Logged the elapsed time between the time when user enters the Google Lens
+    and the time when user returns to Chrome. Only logged on Android.
   </summary>
 </histogram>
 

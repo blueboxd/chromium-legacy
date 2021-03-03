@@ -859,7 +859,7 @@
     Set up this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> for a child
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_SUBTITLE" desc="Subtitle of the screen which allows users to choose signin method for child.">
-    To set up parental controls, a child must have a Google Account managed by a parent. <ph name="DEVICE_TYPE_PLURAL">$1<ex>Chromebooks</ex></ph> allow parents to set up screen limits, approve or block websites, and do more with the Family Link app. If the child needs to do schoolwork on sites like Google Classroom, a school account can be added later.
+    To use parental controls like app approval and screen time limits, a child must have a Google Account managed by a parent. A school account can be added later for use with sites and apps like Google Classroom.
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_LEARN_MORE" desc="Learn more link text in child account creation screen.">
     Learn more
@@ -2640,6 +2640,9 @@
   </message>
   <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
     Connecting and verifying
+  </message>
+  <message name="IDS_LOGIN_SSH_WARNING" desc="A message telling user that the device has SSH server configured. So they should be carefule with accounts they use to sign in.">
+    Device has SSH server configured. Do not sign in with sensitive accounts.
   </message>
   <message name="IDS_DEVICE_DISABLED_HEADING" desc="Heading of the message shown to the user when the device has been disabled by its owner.">
     Your device is locked

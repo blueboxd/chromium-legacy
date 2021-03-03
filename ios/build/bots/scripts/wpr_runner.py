@@ -402,6 +402,18 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
         test_config['test_filter'] = test_app.excluded_tests
     return test_config
 
+  def get_launch_test_app(self):
+    """Returns the proper test_app for the run.
+
+    Returns:
+      This runner disregards xcode, and returns an implementation of GTestsApp
+    """
+    return test_apps.GTestsApp(
+        self.app_path,
+        included_tests=self.test_cases,
+        env_vars=self.env_vars,
+        test_args=self.test_args)
+
   def proxy_start(self):
     """Starts tsproxy and routes the machine's traffic through tsproxy."""
 
@@ -427,6 +439,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
             'networksetup', '-setsocksfirewallproxy', service, '127.0.0.1',
             '1080'
         ])
+        LOGGER.info('Added SOCKS proxy for service: %s.', service)
 
     self.proxy_process = subprocess.Popen(
         [
@@ -456,6 +469,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
           service = service[1:]
         subprocess.check_call(
             ['networksetup', '-setsocksfirewallproxystate', service, 'off'])
+        LOGGER.info('Removed SOCKS proxy for service: %s.', service)
 
   def wprgo_start(self, replay_path):
     """Starts WprGo serving the specified replay file.

@@ -350,7 +350,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "autofill-off-no-server-data",
@@ -1090,12 +1090,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "disable-peripheral-data-access-protection",
-    "owners": [ "rajatja@google.com", "czajka@google.com",
-                "cros-peripherals@google.com" ],
-    "expiry_milestone": 94
-  },
-  {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
     // This flag is a useful debugging control when investigating scrolling
@@ -1412,7 +1406,7 @@
   {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-password-account-indicator-footer",
@@ -2063,11 +2057,6 @@
     "name": "enable-navigation-predictor",
     "owners": [ "tbansal", "ryansturm", "instant-nav" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enable-navigation-predictor-renderer-warmup",
-    "owners": [ "tbansal", "ryansturm", "instant-nav" ],
-    "expiry_milestone": 95
   },
   {
     "name": "enable-network-logging-to-file",
@@ -2893,7 +2882,7 @@
   {
     "name": "filling-passwords-from-any-origin",
     "owners": [ "fhorschig", "redatawfik" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "focus-mode",
@@ -4369,7 +4358,7 @@
   {
     "name": "recover-from-never-save-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "reduce-display-notifications",
@@ -4580,7 +4569,7 @@
   },
   {"name": "schemeful-same-site",
     "owners": [ "bingler", "chlily" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "screen-capture",

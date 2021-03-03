@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -548,6 +549,14 @@ bool QuicChromiumClientSession::Handle::WasEverUsed() const {
     return was_ever_used_;
 
   return session_->WasConnectionEverUsed();
+}
+
+const std::vector<std::string>&
+QuicChromiumClientSession::Handle::GetDnsAliasesForSessionKey(
+    const QuicSessionKey& key) const {
+  static const base::NoDestructor<std::vector<std::string>> emptyvector_result;
+  return session_ ? session_->GetDnsAliasesForSessionKey(key)
+                  : *emptyvector_result;
 }
 
 bool QuicChromiumClientSession::Handle::CheckVary(
@@ -2418,10 +2427,7 @@ void QuicChromiumClientSession::OnConnectionMigrationProbeSucceeded(
   LogMigrateToSocketStatus(true);
 
   // Notify the connection that migration succeeds after probing.
-  // TODO(b/159074035) Change is_port_change to false here once the
-  // QuicStreamFactoryTest migration tests have been fixed to account for the
-  // retransmitted STREAM frames.
-  connection()->OnSuccessfulMigration(/*is_port_change=*/true);
+  connection()->OnSuccessfulMigration(/*is_port_change=*/false);
 
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
@@ -3714,6 +3720,14 @@ quic::QuicClientPromisedInfo* QuicChromiumClientSession::GetPromised(
     return nullptr;
   }
   return push_promise_index_->GetPromised(url.spec());
+}
+
+const std::vector<std::string>&
+QuicChromiumClientSession::GetDnsAliasesForSessionKey(
+    const QuicSessionKey& key) const {
+  static const base::NoDestructor<std::vector<std::string>> emptyvector_result;
+  return stream_factory_ ? stream_factory_->GetDnsAliasesForSessionKey(key)
+                         : *emptyvector_result;
 }
 
 bool QuicChromiumClientSession::ValidateStatelessReset(

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -176,6 +176,15 @@ def WriteTestResults(results_path, test_completed, test_status, timestamp):
     json.dump(test_results, results_file)
 
 
+def WriteGerritPluginSizeData(output_path, package_sizes):
+  """Writes a package size dictionary in json format for the Gerrit binary
+  sizes plugin."""
+
+  with open(output_path, 'w') as sizes_file:
+    sizes_data = {name: size.compressed for name, size in package_sizes.items()}
+    json.dump(sizes_data, sizes_file)
+
+
 def GetCompressedSize(file_path):
   """Measures file size after blobfs compression."""
 
@@ -203,7 +212,10 @@ def GetCompressedSize(file_path):
     print(compressor_output, file=sys.stderr)
     raise Exception('Could not get compressed bytes for %s' % file_path)
 
-  return int(match.group('bytes'))
+  # Round the compressed file size up to an integer number of blobfs blocks.
+  BLOBFS_BLOCK_SIZE = 8192  # Fuchsia's blobfs file system uses 8KiB blocks.
+  blob_bytes = int(match.group('bytes'))
+  return math.ceil(blob_bytes / BLOBFS_BLOCK_SIZE) * BLOBFS_BLOCK_SIZE
 
 
 def ExtractFarFile(file_path, extract_dir):
@@ -215,8 +227,6 @@ def ExtractFarFile(file_path, extract_dir):
     raise Exception('Could not find FAR host tool "%s".' % far_tool)
   if not os.path.isfile(file_path):
     raise Exception('Could not find FAR file "%s".' % file_path)
-  if os.path.isdir(extract_dir):
-    raise Exception('Could not find extraction directory "%s".' % extract_dir)
 
   subprocess.check_call([
       far_tool, 'extract',
@@ -333,6 +343,8 @@ def GetPackageSizes(far_files, build_out_dir, extract_dir):
   package_blobs = {}
   for far_file in far_files:
     package_name = FarBaseName(far_file)
+    if package_name in package_blobs:
+      raise Exception('Duplicate FAR file base name "%s".' % package_name)
     package_blobs[package_name] = GetBlobs(far_file, build_out_dir, extract_dir)
 
   # Print package blob sizes (does not count sharing).
@@ -377,11 +389,10 @@ def GetBinarySizes(args, sizes_config):
   the aggregated sizes across all blobs."""
 
   # Calculate compressed and uncompressed package sizes.
-  extract_dir = args.extract_dir if args.extract_dir else tempfile.mkdtemp()
+  extract_dir = tempfile.mkdtemp()
   package_sizes = GetPackageSizes(sizes_config['far_files'], args.build_out_dir,
                                   extract_dir)
-  if not args.extract_dir:
-    shutil.rmtree(extract_dir)
+  shutil.rmtree(extract_dir)
 
   # Optionally calculate total compressed and uncompressed package sizes.
   if 'far_total_name' in sizes_config:
@@ -407,10 +418,6 @@ def main():
       help='Location of the build artifacts.',
   )
   parser.add_argument(
-      '--extract-dir',
-      help='Debugging option, specifies directory for extracted FAR files.'
-      'If present, extracted files will not be deleted after use.')
-  parser.add_argument(
       '--isolated-script-test-output',
       type=os.path.realpath,
       help='File to which simplified JSON results will be written.')
@@ -419,6 +426,10 @@ def main():
       help='Optional directory for histogram output file.  This argument is '
       'automatically supplied by the recipe infrastructure when this script '
       'is invoked by a recipe call to api.chromium.runtest().')
+  parser.add_argument(
+      '--size-plugin-json-path',
+      help='Optional path for json size data for the Gerrit binary size plugin',
+  )
   parser.add_argument(
       '--sizes-path',
       default=os.path.join('fuchsia', 'release', 'size_tests',
@@ -455,11 +466,6 @@ def main():
   if not os.path.isdir(args.build_out_dir):
     raise Exception('Could not find build output directory "%s".' %
                     args.build_out_dir)
-
-  if args.extract_dir and not os.path.isdir(args.extract_dir):
-    raise Exception(
-        'Could not find FAR file extraction output directory "%s".' %
-        args.extract_dir)
 
   with open(os.path.join(DIR_SOURCE_ROOT, args.sizes_path)) as sizes_file:
     sizes_config = json.load(sizes_file)
@@ -509,6 +515,9 @@ def main():
     if args.isolated_script_test_output:
       WriteTestResults(args.isolated_script_test_output, test_completed,
                        test_status, timestamp)
+
+    if args.size_plugin_json_path:
+      WriteGerritPluginSizeData(args.size_plugin_json_path, package_sizes)
 
     return 0 if all_tests_passed else 1
 

@@ -4306,6 +4306,7 @@ others/histograms.xml -->
   <int value="14" label="kCodecPCM_ALAW"/>
   <int value="15" label="kCodecALAC"/>
   <int value="16" label="kCodecAC3"/>
+  <int value="17" label="kCodecMpegHAudio"/>
 </enum>
 
 <enum name="AudioCodecProfile">
@@ -10394,6 +10395,13 @@ histogram as enum -->
   <int value="3" label="All CPUs have zero frequencies"/>
 </enum>
 
+<enum name="ChromeOSParsePSICPUStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to read file /proc/pressure/cpu"/>
+  <int value="2" label="Unexpected data format in PSI CPU file"/>
+  <int value="3" label="Fail to parse PSI CPU values"/>
+</enum>
+
 <enum name="ChromeOSPlatformVerificationExpiryStatus">
   <summary>
     Possible results of a platform verification expiry check. See
@@ -13118,6 +13126,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContextMenuLensSupportStatus">
+  <obsolete>
+    Deprecated. Switch to use LensSupportStatus to support all Lens entry
+    points.
+  </obsolete>
   <summary>Whether lens is supported and if not the reason why.</summary>
   <int value="0" label="Lens Search Supported"/>
   <int value="1" label="Not Google Search Engine"/>
@@ -13130,8 +13142,6 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Lens Search And Shop Supported"/>
   <int value="9" label="Camera Not Available"/>
   <int value="10" label="Low End Device"/>
-  <int value="11" label="Lens Camera Assisted Search Supported"/>
-  <int value="12" label="Lens Translate Supported"/>
 </enum>
 
 <enum name="ContextMenuOption">
@@ -28167,7 +28177,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="453"
       label="WebkitEditableContentChangedOnContentEditableObsolete"/>
   <int value="454" label="WebkitEditableContentChangedOnNotNodeObsolete"/>
-  <int value="455" label="HTMLImports"/>
+  <int value="455" label="OBSOLETE_HTMLImports"/>
   <int value="456" label="OBSOLETE_ElementCreateShadowRoot"/>
   <int value="457" label="DocumentRegisterElement"/>
   <int value="458" label="EditingAppleInterchangeNewline"/>
@@ -35034,6 +35044,8 @@ Called by update_feature_policy_enum.py.-->
   <int value="1774994865" label="day_date_time"/>
   <int value="1777827929" label="heart_rate_measurement"/>
   <int value="1778752264" label="magnetic_flux_density_2D"/>
+  <int value="1786548534"
+      label="Parrot Flypad; 9e35fa00-4344-44d4-a2e2-0c7f6046878b"/>
   <int value="1794935269"
       label="Sphero Robot; 22bb746f-2bb2-7554-2d6f-726568705327"/>
   <int value="1807818076" label="rainfall"/>
@@ -42368,6 +42380,24 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Classification error"/>
 </enum>
 
+<enum name="LensSupportStatus">
+  <summary>Whether lens is supported and if not the reason why.</summary>
+  <int value="0" label="Lens Search Supported"/>
+  <int value="1" label="Not Google Search Engine"/>
+  <int value="2" label="Activity Not Accessible"/>
+  <int value="3" label="Out of Date"/>
+  <int value="4" label="Search by Image Unavailable"/>
+  <int value="5" label="OS Below Android O"/>
+  <int value="6" label="Invalid Package"/>
+  <int value="7" label="Lens Shop Supported"/>
+  <int value="8" label="Lens Search And Shop Supported"/>
+  <int value="9" label="Camera Not Available"/>
+  <int value="10" label="Disabled on Low End Device"/>
+  <int value="11" label="Disabled by Feature Flag"/>
+  <int value="12" label="AGSA Version Not Supported"/>
+  <int value="13" label="Disabled on Incognito"/>
+</enum>
+
 <enum name="LevelDBCorruptionRestoreValue">
   <int value="0" label="Database Delete Success"/>
   <int value="1" label="Database Delete Failure"/>
@@ -44613,7 +44643,6 @@ from previous Chrome versions.
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-964620377" label="CSSOMViewScrollCoordinates:enabled"/>
   <int value="-963683462" label="EnablePalmSuppression:enabled"/>
-  <int value="-962956513" label="ForceEnablePrivetPrinting:enabled"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
@@ -45337,7 +45366,6 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
   <int value="-275619817"
       label="disable-proximity-auth-bluetooth-low-energy-discovery"/>
-  <int value="-275480964" label="ForceEnablePrivetPrinting:disabled"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-273821346"
       label="MaintainShelfStateWhenEnteringOverview:disabled"/>
@@ -65959,6 +65987,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="71" label="InternalHighPriorityLocalFrame"/>
   <int value="72" label="JavascriptTimerImmediate"/>
   <int value="73" label="JavascriptTimerDelayedLowNesting"/>
+  <int value="74" label="MainThreadTaskQueueIPCTracking"/>
+  <int value="75" label="NetworkingUnfreezable"/>
   <int value="76" label="WakeLock"/>
 </enum>
 
@@ -68652,6 +68682,16 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="7" label="Prefetch request failed"/>
   <int value="8" label="Another reason (unexpected)"/>
   <int value="9" label="POST, reload, link, or other non-cache loads."/>
+</enum>
+
+<enum name="SearchResultExtractorClientStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="No results"/>
+  <int value="2" label="Unexpected URL"/>
+  <int value="3" label="WebContents was gone"/>
+  <int value="4" label="Native was not initialized"/>
+  <int value="5" label="Already extracting"/>
+  <int value="6" label="WebContents had non-SRP URL"/>
 </enum>
 
 <enum name="SearchTemplateURLEvent">

@@ -1124,8 +1124,12 @@ std::unique_ptr<blink::WebPolicyContainer> ToWebPolicyContainer(
     return nullptr;
 
   return std::make_unique<blink::WebPolicyContainer>(
-      blink::WebPolicyContainerPolicies{in->policies->referrer_policy,
-                                        in->policies->ip_address_space},
+      blink::WebPolicyContainerPolicies{
+          in->policies->referrer_policy,
+          in->policies->ip_address_space,
+          ToWebContentSecurityPolicies(
+              std::move(in->policies->content_security_policies)),
+      },
       std::move(in->remote));
 }
 
@@ -3038,12 +3042,6 @@ void RenderFrameImpl::CommitNavigationWithParams(
         prefetch_loader_factory,
     std::unique_ptr<DocumentState> document_state,
     std::unique_ptr<WebNavigationParams> navigation_params) {
-  // TODO(738611): This is temporary switch to have chrome WebUI use the old
-  // HTML Imports API. After completion of the migration, we should remove this.
-  if (GetContentClient()->renderer()->RequiresHtmlImports(common_params->url)) {
-    blink::WebRuntimeFeatures::EnableHTMLImports(true);
-  }
-
   // Here, creator means either the parent frame or the window opener.
   bool inherit_loaders_from_creator =
       // Iframe with the about:srcdoc URL inherits subresource loaders from

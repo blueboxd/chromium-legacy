@@ -524,11 +524,11 @@ class ComputedStyle : public ComputedStyleBase,
   void SetBorderImageOutset(const BorderImageLengthBox&);
 
   // Border width properties.
-  float BorderTopWidth() const {
+  LayoutUnit BorderTopWidth() const {
     if (BorderTopStyle() == EBorderStyle::kNone ||
         BorderTopStyle() == EBorderStyle::kHidden)
-      return 0;
-    return BorderTopWidthInternal().ToFloat();
+      return LayoutUnit(0);
+    return BorderTopWidthInternal();
   }
   void SetBorderTopWidth(float v) { SetBorderTopWidthInternal(LayoutUnit(v)); }
   bool BorderTopNonZero() const {
@@ -536,11 +536,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // border-bottom-width
-  float BorderBottomWidth() const {
+  LayoutUnit BorderBottomWidth() const {
     if (BorderBottomStyle() == EBorderStyle::kNone ||
         BorderBottomStyle() == EBorderStyle::kHidden)
-      return 0;
-    return BorderBottomWidthInternal().ToFloat();
+      return LayoutUnit(0);
+    return BorderBottomWidthInternal();
   }
   void SetBorderBottomWidth(float v) {
     SetBorderBottomWidthInternal(LayoutUnit(v));
@@ -550,11 +550,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // border-left-width
-  float BorderLeftWidth() const {
+  LayoutUnit BorderLeftWidth() const {
     if (BorderLeftStyle() == EBorderStyle::kNone ||
         BorderLeftStyle() == EBorderStyle::kHidden)
-      return 0;
-    return BorderLeftWidthInternal().ToFloat();
+      return LayoutUnit(0);
+    return BorderLeftWidthInternal();
   }
   void SetBorderLeftWidth(float v) {
     SetBorderLeftWidthInternal(LayoutUnit(v));
@@ -564,11 +564,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // border-right-width
-  float BorderRightWidth() const {
+  LayoutUnit BorderRightWidth() const {
     if (BorderRightStyle() == EBorderStyle::kNone ||
         BorderRightStyle() == EBorderStyle::kHidden)
-      return 0;
-    return BorderRightWidthInternal().ToFloat();
+      return LayoutUnit(0);
+    return BorderRightWidthInternal();
   }
   void SetBorderRightWidth(float v) {
     SetBorderRightWidthInternal(LayoutUnit(v));
@@ -2479,6 +2479,10 @@ class ComputedStyle : public ComputedStyleBase,
     return Is(WhiteSpace(),
               EWhiteSpace::kPreWrap | EWhiteSpace::kBreakSpaces) ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
+  }
+
+  bool NeedsTrailingSpace() const {
+    return BreakOnlyAfterWhiteSpace() && AutoWrap();
   }
 
   bool BreakWords() const {

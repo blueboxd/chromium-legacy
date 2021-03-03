@@ -216,6 +216,9 @@ class Dispatcher : public content::RenderThreadObserver,
   void ActivateExtension(const std::string& extension_id) override;
   void SetActivityLoggingEnabled(bool enabled) override;
   void UnloadExtension(const std::string& extension_id) override;
+  void SuspendExtension(
+      const std::string& extension_id,
+      mojom::Renderer::SuspendExtensionCallback callback) override;
   void CancelSuspendExtension(const std::string& extension_id) override;
   void SetSessionInfo(version_info::Channel channel,
                       mojom::FeatureSessionType session_type,
@@ -225,6 +228,7 @@ class Dispatcher : public content::RenderThreadObserver,
   void SetWebViewPartitionID(const std::string& partition_id) override;
   void SetScriptingAllowlist(
       const std::vector<std::string>& extension_ids) override;
+  void ShouldSuspend(ShouldSuspendCallback callback) override;
   void UpdateDefaultPolicyHostRestrictions(
       const extensions::URLPatternSet& default_policy_blocked_hosts,
       const extensions::URLPatternSet& default_policy_allowed_hosts) override;
@@ -232,6 +236,10 @@ class Dispatcher : public content::RenderThreadObserver,
                                     const extensions::URLPatternSet& new_hosts,
                                     int tab_id,
                                     bool update_origin_whitelist) override;
+  void ClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids,
+      int tab_id,
+      bool update_origin_whitelist) override;
 
   void OnRendererAssociatedRequest(
       mojo::PendingAssociatedReceiver<mojom::Renderer> receiver);
@@ -250,14 +258,8 @@ class Dispatcher : public content::RenderThreadObserver,
       const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);
   void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
                        const base::ListValue& event_args);
-  void OnShouldSuspend(const std::string& extension_id, uint64_t sequence_id);
-  void OnSuspend(const std::string& extension_id);
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
   void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
-  void OnClearTabSpecificPermissions(
-      const std::vector<std::string>& extension_ids,
-      bool update_origin_whitelist,
-      int tab_id);
 
   // UserScriptSetManager::Observer implementation.
   void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts) override;

@@ -56,6 +56,7 @@ import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.GmsAvailabilityException;
 import org.chromium.components.signin.GmsJustUpdatedException;
+import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -63,7 +64,6 @@ import org.chromium.ui.text.SpanApplier;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -499,8 +499,8 @@ public abstract class SigninFragmentBase
 
             @Override
             public void onPostExecute(String accountId) {
-                mConsentTextTracker.recordConsent(
-                        accountId, ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
+                mConsentTextTracker.recordConsent(new CoreAccountId(accountId),
+                        ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
             }
         }
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -591,7 +591,6 @@ public abstract class SigninFragmentBase
     private void selectAccount(String accountName, boolean isDefaultAccount) {
         mSelectedAccountName = accountName;
         mIsDefaultAccountSelected = isDefaultAccount;
-        mProfileDataCache.update(Collections.singletonList(mSelectedAccountName));
         updateProfileData(mSelectedAccountName);
 
         AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();

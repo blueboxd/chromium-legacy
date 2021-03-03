@@ -60,6 +60,12 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
     unloaded_extensions_.push_back(extension_id);
   }
 
+  void SuspendExtension(
+      const std::string& extension_id,
+      mojom::Renderer::SuspendExtensionCallback callback) override {
+    std::move(callback).Run();
+  }
+
   void CancelSuspendExtension(const std::string& extension_id) override {}
 
   void SetSessionInfo(version_info::Channel channel,
@@ -73,6 +79,10 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void SetScriptingAllowlist(
       const std::vector<std::string>& extension_ids) override {}
 
+  void ShouldSuspend(ShouldSuspendCallback callback) override {
+    std::move(callback).Run();
+  }
+
   void UpdateDefaultPolicyHostRestrictions(
       const URLPatternSet& default_policy_blocked_hosts,
       const URLPatternSet& default_policy_allowed_hosts) override {
@@ -84,6 +94,10 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
                                     const URLPatternSet& new_hosts,
                                     int tab_id,
                                     bool update_origin_whitelist) override {}
+  void ClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids,
+      int tab_id,
+      bool update_origin_whitelist) override {}
 
   URLPatternSet default_blocked_hosts_;
   URLPatternSet default_allowed_hosts_;

@@ -740,7 +740,11 @@ crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-001.html [ Failure 
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-container-crash.html [ Crash Pass ]
+
+# Column flexboxes don't give tables the right height.
 crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-specified-height.html [ Failure ]
+crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
+crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
 
 # These require css-align-3 positional keywords that Blink doesn't yet support for flexbox.
 crbug.com/1011718 external/wpt/css/css-flexbox/flexbox-justify-content-horiz-001a.xhtml [ Failure ]
@@ -2485,8 +2489,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac11.0 ] external/wpt/preload/download-resources.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
 crbug.com/626703 [ Linux ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/hsl-008.html [ Failure ]
@@ -5013,7 +5015,6 @@ crbug.com/1025274 http/tests/security/mixedContent/insecure-audio-video-in-main-
 
 # DevTools roll
 crbug.com/1052111 http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Skip ]
-crbug.com/1149832 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Failure ]
 
 # Sheriff 2020-02-18
 crbug.com/1050893 [ Fuchsia ] virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html [ Skip ]
@@ -5038,7 +5039,6 @@ crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/respons
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
 
 ### sheriff 2020-03-03
-crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
 crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
 crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
 
@@ -5226,7 +5226,7 @@ crbug.com/1098067 [ Fuchsia ] virtual/text-antialias/bidi-isolate-nextlinebreak-
 crbug.com/1098136 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure ]
 
 # Sheriff 2020-06-24
-crbug.com/1098676 [ Win ] http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
+crbug.com/1098676 http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
 
 # Tests blocking WPT importer
 crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry.html [ Pass Crash Timeout ]
@@ -5395,6 +5395,8 @@ crbug.com/1042877 http/tests/security/mixedContent/strict-mode-image-blocked.htt
 crbug.com/1042877 http/tests/security/mixedContent/strict-mode-image-in-frame-blocked.https.html [ Failure ]
 crbug.com/1042877 http/tests/security/mixedContent/strict-mode-image-reportonly.https.php [ Failure ]
 crbug.com/1042877 http/tests/security/mixedContent/strict-mode-via-pref-image-blocked.https.html [ Failure ]
+
+crbug.com/1046784 http/tests/devtools/sources/debugger/anonymous-script-with-source-map-breakpoint.js [ Failure Pass ]
 
 # Mixed content autoupgrades cause test to fail because test relied on http subresources to test a different origin, needs to be changed to not rely on HTTP URLs.
 crbug.com/1042877 http/tests/security/img-crossorigin-redirect-credentials.https.html [ Failure ]
@@ -5695,8 +5697,9 @@ crbug.com/1179905 [ Linux ] fast/multicol/nested-very-tall-inside-short-crash.ht
 # Sheriff 2021-02-19
 crbug.com/1180227 [ Mac ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure Crash ]
 crbug.com/1180227 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure ]
-crbug.com/1180274 [ Mac ] http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]
 crbug.com/1180479 [ Mac ] virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/scrollIntoView-smooth.html [ Failure Timeout Pass ]
+
+crbug.com/1180274 crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Failure Pass ]
 
 # Sheriff 2021-02-21
 crbug.com/1180491 [ Linux ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]
@@ -5724,20 +5727,11 @@ crbug.com/1182678 [ Linux ] external/wpt/touch-events/multi-touch-interactions.h
 crbug.com/1182680 [ Linux ] http/tests/devtools/console/console-format-collections.js [ Pass Failure ]
 crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-view.js [ Pass Failure ]
 crbug.com/1182689 [ Mac10.14 ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
-crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html?touch [ Pass Failure ]
+crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html?touch [ Pass Failure Timeout ]
 
 # Test doesn't support small script streaming yet.
 crbug.com/1011762 http/tests/inspector-protocol/page/page-produceCompilationCache.js [ Pass Failure Timeout ]
 crbug.com/1011762 http/tests/inspector-protocol/page/page-setProduceCompilationCache.js [ Pass Failure Timeout ]
-
-# Something is wrong when interpreting UTF-8 as Windows-1252 when streaming.
-crbug.com/1183350 external/wpt/fetch/content-type/script.window.html [ Pass Failure ]
-crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-audio.https.html [ Pass Failure ]
-crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-errors.https.html [ Pass Failure ]
-crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-legacy.https.html [ Pass Failure ]
-crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-video-frames.https.html [ Pass Failure ]
-crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-video.https.html [ Pass Failure ]
-crbug.com/1183350 external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams-worker.https.html [ Pass Failure ]
 
 # Temporarily disabled to allow a WebRTC roll fixing the test.
 crbug.com/614958 external/wpt/webrtc/RTCPeerConnection-addIceCandidate.html [ Pass Failure ]
@@ -5746,11 +5740,18 @@ crbug.com/614958 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection
 # Sheriff 2021-03-01
 crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Pass Failure ]
 
-# Sheriff 2021-03-01
-crbug.com/183974 [ Linux ] external/wpt/webrtc/RTCPeerConnection-restartIce.https.html [ Pass Failure ]
-
-# Webrtc-in-Chrome 2021-03-01
-crbug.com/webrtc/12507 external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+# Temporarily disabled for https://crrev.com/c/2727709
+crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/edit/perform-undo-undo.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/elements-panel-structure.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/iframe-load-event.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/inline-style-title.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/shadow/shadow-host-display-modes.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-nesting.js [ Pass Failure ]
+crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-activate.js [ Pass Failure ]
+crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-nesting.js [ Pass Failure ]
 
 # Temporarily disabled for https://crrev.com/c/2713104
 crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Pass Failure ]

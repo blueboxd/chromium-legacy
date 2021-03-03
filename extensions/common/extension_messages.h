@@ -34,6 +34,7 @@
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/host_id.h"
 #include "extensions/common/message_bundle.h"
+#include "extensions/common/mojom/action_type.mojom-shared.h"
 #include "extensions/common/mojom/feature_session_type.mojom.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/socket_permission_data.h"
@@ -61,8 +62,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::InjectionType,
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::RunLocation,
                           extensions::UserScript::RUN_LOCATION_LAST - 1)
 
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::ActionType,
-                          extensions::UserScript::ACTION_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::ActionType,
+                          extensions::mojom::ActionType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::MessagingEndpoint::Type,
                           extensions::MessagingEndpoint::Type::kLast)
@@ -168,7 +169,7 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   IPC_STRUCT_MEMBER(HostID, host_id)
 
   // Whether the code is JavaScript or CSS.
-  IPC_STRUCT_MEMBER(extensions::UserScript::ActionType, action_type)
+  IPC_STRUCT_MEMBER(extensions::mojom::ActionType, action_type)
 
   // String of code to execute.
   IPC_STRUCT_MEMBER(std::string, code)
@@ -586,29 +587,10 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
                      ExtensionMsg_UpdatePermissions_Params)
 
-// Tell the render view to clear tab-specific permissions for some extensions.
-IPC_MESSAGE_CONTROL3(ExtensionMsg_ClearTabSpecificPermissions,
-                     std::vector<std::string> /* extension_ids */,
-                     bool /* update origin whitelist */,
-                     int /* tab_id */)
-
 // The browser's response to the ExtensionMsg_WakeEventPage IPC.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_WakeEventPageResponse,
                      int /* request_id */,
                      bool /* success */)
-
-// Ask the lazy background page if it is ready to be suspended. This is sent
-// when the page is considered idle. The renderer will reply with the same
-// sequence_id so that we can tell which message it is responding to.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldSuspend,
-                     std::string /* extension_id */,
-                     uint64_t /* sequence_id */)
-
-// If we complete a round of ShouldSuspend->ShouldSuspendAck messages without
-// the lazy background page becoming active again, we are ready to unload. This
-// message tells the page to dispatch the suspend event.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_Suspend,
-                     std::string /* extension_id */)
 
 // Response to the renderer for ExtensionHostMsg_GetAppInstallState.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
@@ -831,15 +813,6 @@ IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,
 // function has been processed.
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_ResponseAck,
                     int /* request_id */)
-
-// Response to ExtensionMsg_ShouldSuspend.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldSuspendAck,
-                     std::string /* extension_id */,
-                     uint64_t /* sequence_id */)
-
-// Response to ExtensionMsg_Suspend, after we dispatch the suspend event.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_SuspendAck,
-                     std::string /* extension_id */)
 
 // Informs the browser to increment the keepalive count for the lazy background
 // page, keeping it alive.

@@ -64,7 +64,7 @@ os = struct(
     MAC_10_13 = os_enum("Mac-10.13", os_category.MAC),
     MAC_10_14 = os_enum("Mac-10.14", os_category.MAC),
     MAC_10_15 = os_enum("Mac-10.15", os_category.MAC),
-    MAC_11 = os_enum("Mac-11|Mac-10.16", os_category.MAC),
+    MAC_11_0 = os_enum("Mac-11.0|Mac-10.16", os_category.MAC),
     MAC_DEFAULT = os_enum("Mac-10.15", os_category.MAC),
     MAC_ANY = os_enum("Mac", os_category.MAC),
     WINDOWS_7 = os_enum("Windows-7", os_category.WINDOWS),
@@ -134,8 +134,6 @@ def xcode_enum(version):
 xcode = struct(
     # in use by webrtc mac builders
     x11c29 = xcode_enum("11c29"),
-    # in use by ci/ios-simulator-cronet and try/ios-simulator-cronet
-    x11e146 = xcode_enum("11e146"),
     # in use by ios-webkit-tot
     x11e608cwk = xcode_enum("11e608cwk"),
     # (current default for other projects) xc12.0 gm seed

@@ -39146,6 +39146,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="SuspiciousModule"/>
 </enum>
 
+<enum name="IncognitoCCTCallerId">
+  <int value="0" label="Other Apps"/>
+  <int value="1" label="Google Apps"/>
+  <int value="2" label="Chrome - Other features"/>
+  <int value="3" label="Chrome - Reader mode"/>
+</enum>
+
 <enum name="Inconsistencies">
   <int value="1" label="RangeChecksum"/>
   <int value="2" label="BucketOrder"/>
@@ -40536,6 +40543,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Open URL"/>
   <int value="6" label="Search Text"/>
   <int value="7" label="Search Image"/>
+</enum>
+
+<enum name="IOSSessionMigration">
+  <int value="0" label="No Migration"/>
+  <int value="1" label="Migration Failed"/>
+  <int value="2" label="No Session To Migrate"/>
+  <int value="3" label="Migrated Pre-MW to Multi Scenes"/>
+  <int value="4" label="Migrated Pre-MW to Single Scene"/>
+  <int value="5" label="Migrated Single Scene to Multi Scenes"/>
+  <int value="6" label="Migrated Multi Scenes to Single Scene"/>
 </enum>
 
 <enum name="IOSShareAction">
@@ -62429,10 +62446,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrintManagementAppEntryPoint">
-<!-- This must be kept current with PrintManagementAppEntryPoint in
-     chrome/browser/chromeos/printing/print_management/print_management_uma.h.
--->
-
+  <obsolete>
+    Data no longer needed 2021-02.
+  </obsolete>
   <int value="0" label="Settings"/>
   <int value="1" label="Notification"/>
   <int value="2" label="Launcher"/>
@@ -68232,10 +68248,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ScanAppEntryPoint">
-<!-- This must be kept current with ScanAppEntryPoint in
-     chromeos/components/scanning/scanning_uma.h.
--->
-
+  <obsolete>
+    Data no longer needed 2021-02.
+  </obsolete>
   <int value="0" label="Settings"/>
   <int value="1" label="Launcher"/>
 </enum>
@@ -80684,7 +80699,7 @@ Called by update_scheduler_enums.py.-->
   <int value="13" label="Cookies deleted for site"/>
   <int value="14" label="Permission dialog opened"/>
   <int value="15" label="Permission deleted for site"/>
-  <int value="16" label="Permission changed for site"/>
+  <int value="16" label="(Deprecated) Permission changed for site"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">

@@ -871,12 +871,8 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect, OnDispatchOnDisconnect)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchEvent, OnDispatchEvent)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldSuspend, OnShouldSuspend)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_Suspend, OnSuspend)
   IPC_MESSAGE_HANDLER(ExtensionMsg_TransferBlobs, OnTransferBlobs)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
-                      OnClearTabSpecificPermissions)
   IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
                       content_watcher_.get(),
                       ContentWatcher::OnWatchPages)
@@ -997,6 +993,18 @@ void Dispatcher::UnloadExtension(const std::string& extension_id) {
   // extension's URL just won't match anything anymore.
 }
 
+void Dispatcher::SuspendExtension(
+    const std::string& extension_id,
+    mojom::Renderer::SuspendExtensionCallback callback) {
+  // Dispatch the suspend event. This doesn't go through the standard event
+  // dispatch machinery because it requires special handling. We need to let
+  // the browser know when we are starting and stopping the event dispatch, so
+  // that it still considers the extension idle despite any activity the suspend
+  // event creates.
+  DispatchEvent(extension_id, kOnSuspendEvent, base::ListValue(), nullptr);
+  std::move(callback).Run();
+}
+
 void Dispatcher::CancelSuspendExtension(const std::string& extension_id) {
   DispatchEvent(extension_id, kOnSuspendCanceledEvent, base::ListValue(),
                 nullptr);
@@ -1054,6 +1062,20 @@ void Dispatcher::UpdateTabSpecificPermissions(const std::string& extension_id,
 
   if (update_origin_whitelist)
     UpdateOriginPermissions(*extension);
+}
+
+void Dispatcher::ClearTabSpecificPermissions(
+    const std::vector<std::string>& extension_ids,
+    int tab_id,
+    bool update_origin_whitelist) {
+  for (const std::string& id : extension_ids) {
+    const Extension* extension = RendererExtensionRegistry::Get()->GetByID(id);
+    if (extension) {
+      extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
+      if (update_origin_whitelist)
+        UpdateOriginPermissions(*extension);
+    }
+  }
 }
 
 void Dispatcher::OnDeliverMessage(int worker_thread_id,
@@ -1209,20 +1231,8 @@ void Dispatcher::SetSessionInfo(version_info::Channel channel,
       blink::WebString::FromUTF8(extensions::kExtensionScheme));
 }
 
-void Dispatcher::OnShouldSuspend(const std::string& extension_id,
-                                 uint64_t sequence_id) {
-  RenderThread::Get()->Send(
-      new ExtensionHostMsg_ShouldSuspendAck(extension_id, sequence_id));
-}
-
-void Dispatcher::OnSuspend(const std::string& extension_id) {
-  // Dispatch the suspend event. This doesn't go through the standard event
-  // dispatch machinery because it requires special handling. We need to let
-  // the browser know when we are starting and stopping the event dispatch, so
-  // that it still considers the extension idle despite any activity the suspend
-  // event creates.
-  DispatchEvent(extension_id, kOnSuspendEvent, base::ListValue(), nullptr);
-  RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
+void Dispatcher::ShouldSuspend(ShouldSuspendCallback callback) {
+  std::move(callback).Run();
 }
 
 void Dispatcher::OnTransferBlobs(const std::vector<std::string>& blob_uuids) {
@@ -1254,20 +1264,6 @@ void Dispatcher::OnUpdatePermissions(
   UpdateOriginPermissions(*extension);
 
   UpdateBindingsForExtension(*extension);
-}
-
-void Dispatcher::OnClearTabSpecificPermissions(
-    const std::vector<std::string>& extension_ids,
-    bool update_origin_whitelist,
-    int tab_id) {
-  for (const std::string& id : extension_ids) {
-    const Extension* extension = RendererExtensionRegistry::Get()->GetByID(id);
-    if (extension) {
-      extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
-      if (update_origin_whitelist)
-        UpdateOriginPermissions(*extension);
-    }
-  }
 }
 
 void Dispatcher::SetActivityLoggingEnabled(bool enabled) {

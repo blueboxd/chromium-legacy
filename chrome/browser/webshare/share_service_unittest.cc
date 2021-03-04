@@ -155,7 +155,6 @@ class ShareServiceUnitTest : public ChromeRenderViewHostTestHarness {
       const std::vector<base::FilePath>& file_paths,
       const std::string& text,
       const std::string& title,
-      const GURL& url,
       blink::mojom::ShareService::ShareCallback close_callback) {
     std::move(close_callback).Run(blink::mojom::ShareError::OK);
   }
@@ -208,6 +207,9 @@ TEST_F(ShareServiceUnitTest, DangerousMimeType) {
 
   EXPECT_TRUE(ShareServiceImpl::IsDangerousMimeType("audio/Flac"));
   EXPECT_TRUE(ShareServiceImpl::IsDangerousMimeType("Video/webm"));
+
+  EXPECT_FALSE(ShareServiceImpl::IsDangerousMimeType("audio/mp3"));
+  EXPECT_FALSE(ShareServiceImpl::IsDangerousMimeType("audio/mpeg"));
 }
 
 TEST_F(ShareServiceUnitTest, Multimedia) {

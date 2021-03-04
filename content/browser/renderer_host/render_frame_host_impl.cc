@@ -3113,9 +3113,8 @@ void RenderFrameHostImpl::DidAddContentSecurityPolicies(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
 
   for (auto& policy : policies) {
-    AddContentSecurityPolicy(policy->Clone());
+    AddContentSecurityPolicy(std::move(policy));
   }
-  frame_tree_node()->AddContentSecurityPolicies(std::move(policies));
 }
 
 void RenderFrameHostImpl::CancelInitialHistoryLoad() {
@@ -5291,7 +5290,8 @@ void RenderFrameHostImpl::CreateNewWindow(
           &no_javascript_access);
 
   // Disallow window creation in prerendered pages.
-  if (blink::features::IsPrerender2Enabled() && IsPrerendering()) {
+  if (blink::features::IsPrerender2Enabled() &&
+      frame_tree()->is_prerendering()) {
     can_create_window = false;
   }
 
@@ -6332,7 +6332,7 @@ void RenderFrameHostImpl::CommitNavigation(
   DCHECK(navigation_request);
 
   if (blink::features::IsPrerender2Enabled()) {
-    if (IsPrerendering()) {
+    if (frame_tree()->is_prerendering()) {
       // TODO(https://crbug.com/1132752): Check the prerendering page is
       // same-origin to the prerender trigger page.
       broker_.ApplyMojoBinderPolicies(
@@ -6844,7 +6844,7 @@ void RenderFrameHostImpl::FailedNavigation(
   // TODO(lingqi): Set the MojoBinderPolicyApplier at DidCommitNavigation
   // instead to align with the prerendering LifecycleState.
   if (blink::features::IsPrerender2Enabled()) {
-    if (IsPrerendering()) {
+    if (frame_tree()->is_prerendering()) {
       // TODO(https://crbug.com/1132752): Check the prerendering page is
       // same-origin to the prerender trigger page.
       broker_.ApplyMojoBinderPolicies(
@@ -7885,7 +7885,7 @@ void RenderFrameHostImpl::CancelPrerendering() {
   // active during prerendering. It would be an error to call this while not
   // prerendering, as it could mean an interface request is never resolved for
   // an active page.
-  DCHECK(IsPrerendering());
+  DCHECK(frame_tree()->is_prerendering());
   auto* storage_partition_impl =
       static_cast<StoragePartitionImpl*>(GetStoragePartition());
   PrerenderHostRegistry* prerender_host_registry =
@@ -7895,9 +7895,6 @@ void RenderFrameHostImpl::CancelPrerendering() {
   prerender_host_registry->AbandonHost(frame_tree_node_id);
 }
 
-bool RenderFrameHostImpl::IsPrerendering() const {
-  return frame_tree()->is_prerendering();
-}
 
 void RenderFrameHostImpl::OnPrerenderedPageActivated() {
   // TODO(crbug.com/1174506): Temporary until we understand the cause of the
@@ -8850,7 +8847,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // This is a special case that does not go through CommitNavigation path.
     if (blink::features::IsPrerender2Enabled() && is_initial_empty_commit &&
         !is_main_frame()) {
-      if (IsPrerendering()) {
+      if (frame_tree()->is_prerendering()) {
         // TODO(https://crbug.com/1132752): Check the prerendering page is
         // same-origin to the prerender trigger page.
         broker_.ApplyMojoBinderPolicies(
@@ -8893,9 +8890,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   isolation_info_ = navigation_request->isolation_info_for_subresources();
 
+  // Navigations in the same document, or navigations that activate an existing
+  // bfcached or prerendered document, do not create a new document.
   bool created_new_document =
       !is_same_document_navigation &&
-      !navigation_request->IsServedFromBackForwardCache();
+      !navigation_request->IsServedFromBackForwardCache() &&
+      !navigation_request->IsPrerenderedPageActivation();
 
   // TODO(crbug.com/936696): Remove this after we have RenderDocument.
   // IsWaitingToCommit can be false inside DidCommitNavigationInternal only in
@@ -8918,13 +8918,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_committed_cross_document_navigation_id_ =
         navigation_request->GetNavigationId();
 
-    if (IsCurrent() && !committed_speculative_rfh_before_navigation_commit_) {
-      // Clear all the user data associated with the non speculative
-      // RenderFrameHost when the navigation is a cross-document navigation not
-      // served from the back-forward cache. Make sure the data doesn't get
-      // cleared for the cases when the RenderFrameHost commits before the
-      // navigation commits. This happens when the current RenderFrameHost
-      // crashes before navigating to a new URL.
+    if (lifecycle_state() != LifecycleState::kSpeculative &&
+        !committed_speculative_rfh_before_navigation_commit_) {
+      // Clear all the user data associated with the non-speculative
+      // RenderFrameHost because the navigation has created a new document.
+      // Make sure the data doesn't get cleared for the cases when the
+      // RenderFrameHost commits before the navigation commits. This happens
+      // when the current RenderFrameHost crashes before navigating to a new
+      // URL.
       document_associated_data_.ClearAllUserData();
     }
 
@@ -10379,7 +10380,7 @@ void RenderFrameHostImpl::SetLifecycleStateToPrerendering() {
   // Update the |lifecycle_state_| to kPrerendering on navigation commit when a
   // speculative RenderFrameHost is created for navigation inside prerendered
   // frame tree. This should happen before activation.
-  DCHECK(IsPrerendering());
+  DCHECK(frame_tree()->is_prerendering());
   DCHECK_EQ(lifecycle_state_, LifecycleState::kSpeculative);
   DCHECK(children_.empty());
   SetLifecycleState(LifecycleState::kPrerendering);

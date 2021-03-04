@@ -23799,6 +23799,8 @@ Called by update_document_policy_enum.py.-->
   <int value="827" label="FetchKeepaliveDurationOnShutdown"/>
   <int value="828" label="AllowSystemNotifications"/>
   <int value="829" label="SuppressDifferentOriginSubframeJSDialogs"/>
+  <int value="830" label="DeviceBorealisAllowed"/>
+  <int value="831" label="UserBorealisAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -33849,6 +33851,9 @@ Called by update_permissions_policy_enum.py.-->
   <int value="29" label="Not a ZIP">
     ZIP_ER_BASE from fuse-zip + ZIP_ER_NOZIP from libzip
   </int>
+  <int value="31" label="Inconsistent ZIP">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_INCONS from libzip
+  </int>
   <int value="36" label="Missing password">
     ZIP_ER_BASE from fuse-zip + ZIP_ER_NOPASSWD from libzip
   </int>
@@ -43703,6 +43708,7 @@ from previous Chrome versions.
   <int value="-1798337879" label="enable-md-downloads"/>
   <int value="-1797739460" label="brotli-encoding:disabled"/>
   <int value="-1794783272" label="PdfViewerDocumentProperties:disabled"/>
+  <int value="-1792162033" label="WebID:enabled"/>
   <int value="-1791226955" label="BreakingNewsPush:enabled"/>
   <int value="-1790227231" label="show-autofill-signatures"/>
   <int value="-1789139269" label="SmbFs:disabled"/>
@@ -47081,6 +47087,7 @@ from previous Chrome versions.
   <int value="1294131571" label="disable-winrt-midi-api"/>
   <int value="1296878388" label="PermissionPredictions:disabled"/>
   <int value="1296958520" label="hide-active-apps-from-shelf"/>
+  <int value="1298788828" label="WebID:disabled"/>
   <int value="1298927156" label="TouchpadOverscrollHistoryNavigation:enabled"/>
   <int value="1298981651" label="disable-new-task-manager"/>
   <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
@@ -52122,6 +52129,7 @@ Called by update_use_counter_css.py.-->
   <int value="11" label="I/O error"/>
   <int value="12" label="Too many opened"/>
   <int value="13" label="Invalid URL format with SSO authentication"/>
+  <int value="14" label="Invalid username"/>
 </enum>
 
 <enum name="NatTypeCounters">

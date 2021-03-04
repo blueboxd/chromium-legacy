@@ -27,6 +27,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_chromeos_version_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -35,6 +36,7 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/file_system_status.h"
@@ -1240,6 +1242,19 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DisableMediaStoreMaintenance) {
                      "androidboot.disable_media_store_maintenance=1"));
 }
 
+TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_ArcVmUreadaheadModeReadahead) {
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeParams params(GetPopulatedUpgradeParams());
+  UpgradeArcWithParams(true, std::move(params));
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=readahead"));
+}
+
 TEST_F(ArcVmClientAdapterTest, StartMiniArc_EnablePaiGeneration) {
   StartParams start_params(GetPopulatedStartParams());
   start_params.arc_generate_play_auto_install = true;
@@ -1670,6 +1685,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(kDalvikMemoryProfileTestCases));
 
 TEST_P(ArcVmClientAdapterDalvikMemoryProfileTest, Profile) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kUseHighMemoryDalvikProfile,
+                                    true /* use */);
+
   const auto& test_param = GetParam();
   StartParams start_params(GetPopulatedStartParams());
   start_params.dalvik_memory_profile = test_param.profile;

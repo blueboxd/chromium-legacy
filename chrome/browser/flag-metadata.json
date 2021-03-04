@@ -4904,7 +4904,7 @@
   {
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 96
   },
   {
     "name": "tab-hover-cards",
@@ -5253,6 +5253,11 @@
     "name": "web-view-native-context-menu",
     "owners": ["gambard","bling-flags@google.com"],
     "expiry_milestone": 92
+  },
+  {
+    "name": "webid",
+    "owners": [ "kenrb", "goto", "majidvp"],
+    "expiry_milestone": 96
   },
   {
     "name": "webpage-alternative-text-zoom",

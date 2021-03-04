@@ -1074,21 +1074,6 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name,
   }
 }
 
-void RenderFrameHostManager::OnDidAddContentSecurityPolicies(
-    std::vector<network::mojom::ContentSecurityPolicyPtr> csps) {
-  for (const auto& pair : proxy_hosts_) {
-    pair.second->GetAssociatedRemoteFrame()
-        ->AddReplicatedContentSecurityPolicies(mojo::Clone(csps));
-  }
-}
-
-void RenderFrameHostManager::OnDidResetContentSecurityPolicy() {
-  for (const auto& pair : proxy_hosts_) {
-    pair.second->GetAssociatedRemoteFrame()
-        ->ResetReplicatedContentSecurityPolicy();
-  }
-}
-
 void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
     blink::mojom::InsecureRequestPolicy policy) {
   for (const auto& pair : proxy_hosts_) {
@@ -3247,7 +3232,6 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   // user, unlike kActive state.
   if (render_frame_host_) {
     if (frame_tree->is_prerendering()) {
-      DCHECK(render_frame_host_->IsPrerendering());
       if (render_frame_host_->lifecycle_state() == LifecycleState::kSpeculative)
         render_frame_host_->SetLifecycleStateToPrerendering();
     } else {

@@ -79,7 +79,7 @@ class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
 class PseudoElement;
-class PseudoElementStyleRequest;
+class StyleRequest;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollIntoViewOptions;
@@ -101,6 +101,9 @@ enum class DocumentUpdateReason;
 struct FocusParams;
 
 using ScrollOffset = FloatSize;
+
+// TODO(andruud): Callers should use StyleRequest directly.
+using PseudoElementStyleRequest = StyleRequest;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -741,7 +744,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // situation.
   scoped_refptr<ComputedStyle> UncachedStyleForPseudoElement(
       const PseudoElementStyleRequest&,
-      const ComputedStyle* parent_style = nullptr);
+      const ComputedStyle* parent_style);
 
   // This is the same as UncachedStyleForPseudoElement, except that the caller
   // must provide an appropriate StyleRecalcContext such that e.g. @container
@@ -751,7 +754,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   scoped_refptr<ComputedStyle> StyleForPseudoElement(
       const StyleRecalcContext&,
       const PseudoElementStyleRequest&,
-      const ComputedStyle* parent_style = nullptr);
+      const ComputedStyle* parent_style);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 

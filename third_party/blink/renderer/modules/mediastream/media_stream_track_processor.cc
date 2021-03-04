@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track_processor.h"
 
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track_processor_init.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_audio_track_underlying_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_track_processor_init.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track_underlying_source.h"
@@ -142,7 +142,8 @@ void MediaStreamTrackProcessor::CreateVideoSourceStream(
       MakeGarbageCollected<MediaStreamVideoTrackUnderlyingSource>(
           script_state, input_track_->Component(), buffer_size_);
   source_stream_ = ReadableStream::CreateWithCountQueueingStrategy(
-      script_state, video_underlying_source_, /*high_water_mark=*/0);
+      script_state, video_underlying_source_, /*high_water_mark=*/0,
+      video_underlying_source_->GetStreamTransferOptimizer());
 
   source_closer_ = MakeGarbageCollected<UnderlyingSourceCloser>(
       input_track_, video_underlying_source_);

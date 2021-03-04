@@ -115,7 +115,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private TabViewManagerImpl mTabViewManager;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
-    private final ObserverList<TabObserver> mObservers = new ObserverList<>();
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected final ObserverList<TabObserver> mObservers = new ObserverList<>();
 
     // Content layer Delegates
     private TabWebContentsDelegateAndroidImpl mWebContentsDelegate;
@@ -1629,7 +1630,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 : getWebContents().getNavigationController().getUseDesktopUserAgent();
 
         if (!mUserForcedUserAgent && DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.REQUEST_DESKTOP_SITE_FOR_TABLETS)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.REQUEST_DESKTOP_SITE_FOR_TABLETS)
                 && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                         ChromeFeatureList.REQUEST_DESKTOP_SITE_FOR_TABLETS,
                         REQUEST_DESKTOP_ENABLED_PARAM, false)) {

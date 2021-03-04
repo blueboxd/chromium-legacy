@@ -99,13 +99,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // PdfViewPluginBase:
   void DidScroll(const gfx::Vector2d& offset) override;
-  void ScrollToPage(int page) override;
-  void NavigateTo(const std::string& url,
-                  WindowOpenDisposition disposition) override;
-  void NavigateToDestination(int page,
-                             const float* x,
-                             const float* y,
-                             const float* zoom) override;
   void UpdateCursor(PP_CursorType_Dev cursor) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
@@ -202,7 +195,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   bool CanSaveEdits() const;
   void SaveToFile(const std::string& token);
   void SaveToBuffer(const std::string& token);
-  void ConsumeSaveToken(const std::string& token);
 
   void FormDidOpen(int32_t result);
 
@@ -237,9 +229,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // Send attachments.
   void SendAttachments();
-
-  // Send bookmarks.
-  void SendBookmarks();
 
   // Send document metadata.
   void SendMetadata();

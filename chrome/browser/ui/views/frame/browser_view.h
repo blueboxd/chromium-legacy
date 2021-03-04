@@ -77,11 +77,12 @@ class TopControlsSlideControllerTest;
 class WebContentsCloseHandler;
 class WebUITabStripContainerView;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace ui {
+class NativeTheme;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class ThroughputTracker;
-}
 #endif
+}  // namespace ui
 
 namespace version_info {
 enum class Channel;
@@ -144,6 +145,8 @@ class BrowserView : public BrowserWindow,
   const TopControlsSlideController* top_controls_slide_controller() const {
     return top_controls_slide_controller_.get();
   }
+
+  void SetDownloadShelfForTest(DownloadShelf* download_shelf);
 
   // This suppresses the slide behaviors of top-controls and so the top controls
   // will stay showing under any situation. This is only for testing behaviors
@@ -346,6 +349,7 @@ class BrowserView : public BrowserWindow,
                                 float ratio) override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* contents) const override;
+  ui::NativeTheme* GetNativeTheme() override;
   int GetTopControlsHeight() const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
@@ -793,7 +797,7 @@ class BrowserView : public BrowserWindow,
   // |  |  contents_web_view_                                        |  |
   // |  --------------------------------------------------------------  |
   // |------------------------------------------------------------------|
-  // | Active downloads (download_shelf_view_)                          |
+  // | Active downloads (download_shelf_)                               |
   // --------------------------------------------------------------------
 
   // The view that manages the tab strip, toolbar, and sometimes the bookmark
@@ -839,9 +843,6 @@ class BrowserView : public BrowserWindow,
   // relative to views which paint into layers and views with an associated
   // NativeView.
   View* find_bar_host_view_ = nullptr;
-
-  // The download shelf view (view at the bottom of the page).
-  View* download_shelf_view_ = nullptr;
 
   // The download shelf.
   DownloadShelf* download_shelf_ = nullptr;

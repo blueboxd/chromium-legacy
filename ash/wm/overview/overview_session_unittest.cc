@@ -3554,7 +3554,8 @@ class OverviewSessionFlingTest : public AshTestBase {
   }
 };
 
-TEST_F(OverviewSessionFlingTest, BasicFling) {
+// TODO(crbug.com/1184114): Disabled for being flaky.
+TEST_F(OverviewSessionFlingTest, DISABLED_BasicFling) {
   std::vector<std::unique_ptr<aura::Window>> windows(16);
   for (int i = 15; i >= 0; --i)
     windows[i] = CreateTestWindow();
@@ -3568,7 +3569,8 @@ TEST_F(OverviewSessionFlingTest, BasicFling) {
       gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
 
   // Create a scroll sequence which results in a fling.
-  const gfx::Vector2d shift(-200, 0);
+  const gfx::Vector2d shift(-200 * OverviewGridEventHandler::kFlingScaleDown,
+                            0);
   GetEventGenerator()->GestureScrollSequence(
       item_center, item_center + shift, base::TimeDelta::FromMilliseconds(10),
       10);

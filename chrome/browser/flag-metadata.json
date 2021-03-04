@@ -314,8 +314,8 @@
   },
   {
     "name": "autofill-enable-offers-in-downstream",
-    "owners": [ "fiorito@google.com", "siyua" ],
-    "expiry_milestone": 90
+    "owners": [ "siyua" ],
+    "expiry_milestone": 95
   },
   {
     "name": "autofill-enable-toolbar-status-chip",
@@ -1568,7 +1568,7 @@
   {
     "name": "enable-cros-system-latin-physical-typing",
     "owners": [ "shend", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-cros-virtual-keyboard-bordered-key",
@@ -2768,11 +2768,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "extend-open-in-files-support",
-    "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "extension-apis",
     "owners": [ "rdevlin.cronin" ],
     "expiry_milestone": 76
@@ -3238,7 +3233,7 @@
   },
   {
     "name": "interest-feed-notice-card-auto-dismiss",
-    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org", "edchin@chromium.org" ],
     "expiry_milestone": 95
   },
   {
@@ -3989,6 +3984,11 @@
     "name": "omnibox-webui-omnibox-popup",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "optimization-guide-model-downloading",
+    "owners": [ "mcrouse", "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "os-settings-deep-linking",
@@ -4864,7 +4864,7 @@
   {
     "name": "sync-autofill-wallet-offer-data",
     "owners": ["siyua", "treib"],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "sync-compromised-credentials",

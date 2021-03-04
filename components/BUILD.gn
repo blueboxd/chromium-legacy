@@ -220,6 +220,7 @@ test("components_unittests") {
     deps += [
       "//components/autofill/ios/browser:unit_tests",
       "//components/autofill/ios/form_util:unit_tests",
+      "//components/feed/core/v2:feed_core_base_unit_tests",
       "//components/image_fetcher/ios:unit_tests",
       "//components/language/ios/browser:unit_tests",
       "//components/password_manager/core/common:unit_tests",
@@ -416,8 +417,6 @@ test("components_unittests") {
   # Desktop-only deps.
   if (!is_android && !is_ios) {
     deps += [
-      "//components/feedback:unit_tests",
-
       # See comment in components/guest_view/browser/BUILD.gn for why
       # guest_view is currently non-mobile.
       "//components/guest_view/browser:unit_tests",
@@ -425,6 +424,10 @@ test("components_unittests") {
       "//components/web_modal:unit_tests",
       "//components/zoom:unit_tests",
     ]
+  }
+
+  if (!is_android) {
+    deps += [ "//components/feedback:unit_tests" ]
   }
 
   if (enable_rlz_support) {

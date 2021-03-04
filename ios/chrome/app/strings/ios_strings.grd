@@ -945,9 +945,6 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_INCOGNITO_REAUTH_UNLOCK_BUTTON_VOICEOVER_LABEL" desc="Voiceover label on the button that starts biometric authentication on a screen that blocks incognito tabs until biometric authetication. [iOS only]">
        Unlock Incognito Tabs With <ph name="BIOMETRIC_AUTHENITCATION_TYPE">$1<ex>Face ID</ex></ph>
       </message>
-      <message name="IDS_IOS_INCOGNITO_REAUTH_SETTING_NAME" desc="Name of the Setting to protect incognito tabs with biometric authentication, e.g. Face ID or Touch ID. [iOS only]">
-       Lock Incognito Tabs When You Close Chrome
-      </message>
       <message name="IDS_IOS_INCOGNITO_REAUTH_SET_UP_PASSCODE_HINT" desc="Explanatory text for the setting to protect incognito tabs with biometric authentication, e.g. Face ID or Touch ID. Appears when the user has no Face ID, Touch ID, or passcode set up, and therefore the feature cannot be enabled. [iOS only]">
         To lock your Incognito tabs, set up Touch ID, Face ID, or a Passcode.
       </message>
@@ -2358,13 +2355,15 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         You'll find your Incognito tabs here
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_UNAVAILABLE_MESSAGE" desc="Message shown in the Incognito Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to disabled. [iOS only]">
-        Your organization turned off private browsing. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+        Your organization turned off private browsing.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Incognito Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to disabled. [iOS only]">
         Incognito Mode is Unavailable
       </message>
       <message name="IDS_IOS_TAB_GRID_RECENT_TABS_UNAVAILABLE_MESSAGE" desc="Message shown in the Recent Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to forced. [iOS only]">
-        Your organization requires you to browse privately. Tabs aren't saved in Incognito mode. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+        Your organization requires you to browse privately. Tabs aren't saved in Incognito mode.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_TAB_GRID_RECENT_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Recent Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to forced. [iOS only]">
         Recent Tabs are Unavailable
@@ -2385,7 +2384,8 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Open tabs to visit different pages at the same time
       </message>
       <message name="IDS_IOS_TAB_GRID_REGULAR_TABS_UNAVAILABLE_MESSAGE" desc="Message shown in the Regular Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to forced. [iOS only]">
-        Your organization requires you to browse privately. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+        Your organization requires you to browse privately.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_TAB_GRID_REGULAR_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Regular Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to forced. [iOS only]">
         Only Incognito Mode is Available

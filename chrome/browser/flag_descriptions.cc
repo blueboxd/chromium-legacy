@@ -1801,6 +1801,11 @@ const char kOopRasterizationDDLDescription[] =
     "process  "
     "Must also enable OOP rasterization";
 
+const char kOptimizationGuideModelDownloadingName[] =
+    "Allow optimization guide model downloads";
+const char kOptimizationGuideModelDownloadingDescription[] =
+    "Enables the optimization guide to download prediction models.";
+
 const char kEnableDeJellyName[] = "Experimental de-jelly effect";
 const char kEnableDeJellyDescription[] =
     "Enables an experimental effect which attempts to mitigate "
@@ -1953,11 +1958,6 @@ const char kPrivacySandboxSettingsName[] = "Privacy Sandbox Settings";
 const char kPrivacySandboxSettingsDescription[] =
     "Enables privacy sandbox settings. Requires at least one of the Privacy "
     "Sandbox APIs to be enabled.";
-
-const char kSafetyCheckAndroidName[] = "Safety Check on Android";
-const char kSafetyCheckAndroidDescription[] =
-    "A settings component for checking multiple areas of browser safety. "
-    "Requires #password-check to also be enabled.";
 
 const char kSafetyCheckWeakPasswordsName[] = "Safety check for weak passwords";
 const char kSafetyCheckWeakPasswordsDescription[] =

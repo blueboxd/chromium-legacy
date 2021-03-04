@@ -2488,6 +2488,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/one-element-transition-with-delay.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/one-element-transition-with-delay.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Linux ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
@@ -3476,6 +3478,11 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repea
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dynamic-001.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dynamic-003.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-auto-margin-and-replaced-item-001.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-001.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-002.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-003.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-overflow-padding-001.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-overflow-padding-002.html [ Pass ]
 
 ### Tests failing with LayoutNGGrid enabled:
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/absolute-positioning-definite-sizes-001.html [ Failure ]
@@ -4304,7 +4311,6 @@ crbug.com/736415 crbug.com/1066190 external/wpt/html/user-activation/navigation-
 crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 
 # Sheriff 2018-07-05
-crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
 crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.html [ Failure Pass ]
 
 # S13N Sheriff 2018-7-11
@@ -4856,9 +4862,6 @@ crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ 
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Pass Failure ]
 
-# Enable scroll-snap tests on impl thread
-crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
-
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
 crbug.com/1033852 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
@@ -4870,9 +4873,6 @@ crbug.com/1034513 [ Win7 ] virtual/stable/fast/dom/Window/window-resize-contents
 # Assertion errors need to be fixed
 crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Pass Failure ]
 crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Pass Failure ]
-
-# Sheriff 2019-12-17
-crbug.com/1034789 virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
@@ -5039,6 +5039,7 @@ crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/respons
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
 
 ### sheriff 2020-03-03
+crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
 crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
 crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
 
@@ -5337,7 +5338,6 @@ crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
 
 # Mac11.0 rebaseline
-crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-weight.html [ Failure ]
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-trak.html [ Failure ]
 crbug.com/1123002 [ Mac11.0 ] external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs.html [ Failure ]
 
@@ -5740,18 +5740,8 @@ crbug.com/614958 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection
 # Sheriff 2021-03-01
 crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Pass Failure ]
 
-# Temporarily disabled for https://crrev.com/c/2727709
-crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/edit/perform-undo-undo.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/elements-panel-structure.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/iframe-load-event.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/inline-style-title.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/shadow/shadow-host-display-modes.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-nesting.js [ Pass Failure ]
-crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-activate.js [ Pass Failure ]
-crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-nesting.js [ Pass Failure ]
-
 # Temporarily disabled for https://crrev.com/c/2713104
 crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Pass Failure ]
+
+# Sheriff 2021-03-03
+crbug.com/1181007 [ Linux ] http/tests/serviceworker/window-close-during-registration.html [ Pass Failure ]

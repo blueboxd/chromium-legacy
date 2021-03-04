@@ -132,6 +132,8 @@ void ArCoreGl::Initialize(
     ArCoreSessionUtils* session_utils,
     ArCoreFactory* arcore_factory,
     gfx::AcceleratedWidget drawing_widget,
+    gpu::SurfaceHandle surface_handle,
+    ui::WindowAndroid* root_window,
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation,
     const std::unordered_set<device::mojom::XRSessionFeature>&
@@ -226,7 +228,7 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRPresentationTransportOptions::New();
   transport_options->wait_for_gpu_fence = true;
 
-  if (ar_image_transport_->UseSharedBuffer()) {
+  if (ArImageTransport::UseSharedBuffer()) {
     DVLOG(2) << __func__
              << ": UseSharedBuffer()=true, DRAW_INTO_TEXTURE_MAILBOX";
     transport_options->transport_method =
@@ -511,7 +513,7 @@ void ArCoreGl::GetFrameData(
     display_info_changed_ = false;
   }
 
-  if (ar_image_transport_->UseSharedBuffer()) {
+  if (ArImageTransport::UseSharedBuffer()) {
     // Set up a shared buffer for the renderer to draw into, it'll be sent
     // alongside the frame pose.
     gpu::MailboxHolder buffer_holder = ar_image_transport_->TransferFrame(
@@ -835,7 +837,7 @@ void ArCoreGl::SubmitFrame(int16_t frame_index,
                            base::TimeDelta time_waited) {
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
-  DCHECK(!ar_image_transport_->UseSharedBuffer());
+  DCHECK(!ArImageTransport::UseSharedBuffer());
 
   if (!IsSubmitFrameExpected(frame_index))
     return;
@@ -850,7 +852,7 @@ void ArCoreGl::ProcessFrameFromMailbox(int16_t frame_index,
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
   DCHECK(webxr_->HaveProcessingFrame());
-  DCHECK(!ar_image_transport_->UseSharedBuffer());
+  DCHECK(!ArImageTransport::UseSharedBuffer());
 
   // Use only the active bounds of the viewport, converting the
   // bounds UV boundaries to a transform. See also OnWebXrTokenSignaled().
@@ -897,7 +899,7 @@ void ArCoreGl::TransitionProcessingFrameToRendering() {
 
 void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
   DVLOG(2) << __func__;
-  DCHECK(!ar_image_transport_->UseSharedBuffer());
+  DCHECK(!ArImageTransport::UseSharedBuffer());
   DCHECK(webxr_->HaveProcessingFrame());
   int16_t frame_index = webxr_->GetProcessingFrame()->index;
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
@@ -934,7 +936,7 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
                                            base::TimeDelta time_waited) {
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
-  DCHECK(ar_image_transport_->UseSharedBuffer());
+  DCHECK(ArImageTransport::UseSharedBuffer());
 
   if (!IsSubmitFrameExpected(frame_index))
     return;
@@ -951,7 +953,7 @@ void ArCoreGl::ProcessFrameDrawnIntoTexture(int16_t frame_index,
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
 
   DCHECK(webxr_->HaveProcessingFrame());
-  DCHECK(ar_image_transport_->UseSharedBuffer());
+  DCHECK(ArImageTransport::UseSharedBuffer());
   CopyCameraImageToFramebuffer();
 
   ar_image_transport_->CreateGpuFenceForSyncToken(
@@ -967,7 +969,7 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
   ar_image_transport_->ServerWaitForGpuFence(std::move(gpu_fence));
 
   DCHECK(webxr_->HaveProcessingFrame());
-  DCHECK(ar_image_transport_->UseSharedBuffer());
+  DCHECK(ArImageTransport::UseSharedBuffer());
 
   TransitionProcessingFrameToRendering();
 

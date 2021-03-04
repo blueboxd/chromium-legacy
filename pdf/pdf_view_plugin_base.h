@@ -55,6 +55,13 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void ScrollToX(int x_screen_coords) override;
   void ScrollToY(int y_screen_coords) override;
   void ScrollBy(const gfx::Vector2d& delta) override;
+  void ScrollToPage(int page) override;
+  void NavigateTo(const std::string& url,
+                  WindowOpenDisposition disposition) override;
+  void NavigateToDestination(int page,
+                             const float* x,
+                             const float* y,
+                             const float* zoom) override;
   void GetDocumentPassword(
       base::OnceCallback<void(const std::string&)> callback) override;
   SkColor GetBackgroundColor() override;
@@ -128,6 +135,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // guaranteed to be received in the order that they are sent. This method is
   // non-blocking.
   virtual void SendMessage(base::Value message) = 0;
+
+  // Consumes a token for saving the document.
+  void ConsumeSaveToken(const std::string& token);
+
+  // Sends the bookmarks data.
+  void SendBookmarks();
 
   // Sends the loading progress, where `percentage` represents the progress, or
   // -1 for loading error.

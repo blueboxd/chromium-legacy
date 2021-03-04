@@ -1688,17 +1688,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         }
       }];
 
-  if (self.thumbStripEnabled) {
-    DCHECK(self.thumbStripPanHandler);
-    CGFloat baseViewHeight = size.height;
-    self.thumbStripPanHandler.baseViewHeight = baseViewHeight;
-    // On rotation, reposition the BVC container if positioned at the bottom.
-    if (self.bottomPosition) {
-      self.view.superview.transform = CGAffineTransformMakeTranslation(
-          0, self.thumbStripPanHandler.revealedHeight);
-    }
-  }
-
   id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
   [webViewProxy surfaceSizeChanged];
 
@@ -2887,6 +2876,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   UIView* webStateView = [self viewForWebState:self.currentWebState];
   webStateView.frame = webStateViewFrame;
+
+  for (const auto& element : _ntpCoordinatorsForWebStates) {
+    [element.second.thumbStripSupporting
+        thumbStripEnabledWithPanHandler:panHandler];
+  }
 }
 
 - (void)thumbStripDisabled {
@@ -2918,6 +2912,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   UIView* webStateView = [self viewForWebState:self.currentWebState];
   webStateView.frame = webStateViewFrame;
+
+  for (const auto& element : _ntpCoordinatorsForWebStates) {
+    [element.second.thumbStripSupporting thumbStripDisabled];
+  }
 }
 
 #pragma mark - WebNavigationNTPDelegate

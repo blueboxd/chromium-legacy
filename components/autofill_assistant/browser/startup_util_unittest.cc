@@ -75,6 +75,14 @@ const std::map<std::string, std::string> kBase64TriggerScript = {
     {"START_IMMEDIATELY", "false"},
     {"TRIGGER_SCRIPTS_BASE64", "abc"}};
 
+const TriggerContext::Options kDefaultCCTOptions = {
+    std::string(), /* is_cct = */ true, false,        false,
+    std::string(), std::string(),       std::string()};
+
+const TriggerContext::Options kDefaultNonCCTOptions = {
+    std::string(), /* is_cct = */ false, false,        false,
+    std::string(), std::string(),        std::string()};
+
 // The set of feature combinations to test.
 const TestFeatureConfig kTestFeatureConfigs[] = {
     // All features are disabled.
@@ -125,9 +133,17 @@ MATCHER_P(MatchingStartupMode,
   return arg == expected_result;
 }
 
-class StartupUtilTest : public testing::TestWithParam<TestFeatureConfig> {
+// Regular test fixture for non-parametrized tests.
+class StartupUtilTest : public testing::Test {};
+
+// Parametrized test fixture for tests that should be run against a variety of
+// different feature configurations.
+class StartupUtilParametrizedTest
+    : public StartupUtilTest,
+      public testing::WithParamInterface<TestFeatureConfig> {
  public:
   void SetUp() override {
+    StartupUtilTest::SetUp();
     std::vector<base::Feature> disabled_features;
     for (const auto& feature : kFullFeatureSet) {
       if (!IsFeatureEnabled(feature)) {
@@ -163,14 +179,14 @@ class StartupUtilTest : public testing::TestWithParam<TestFeatureConfig> {
 
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-};  // namespace
+};
 
-TEST_P(StartupUtilTest, StartRegularScript) {
+TEST_P(StartupUtilParametrizedTest, StartRegularScript) {
   // CCT, DFM installation required.
   EXPECT_THAT(
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{std::make_unique<ScriptParameters>(kRegularScript),
-                         {.is_cct = true}},
+                         kDefaultCCTOptions},
           {.feature_module_installed = false}),
       MatchingStartupMode(IsFeatureEnabled(kAutofillAssistant)
                               ? StartupMode::START_REGULAR
@@ -180,7 +196,7 @@ TEST_P(StartupUtilTest, StartRegularScript) {
   EXPECT_THAT(
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{std::make_unique<ScriptParameters>(kRegularScript),
-                         {.is_cct = false}},
+                         kDefaultNonCCTOptions},
           {.feature_module_installed = false}),
       MatchingStartupMode(AreFeaturesEnabled({kAutofillAssistant,
                                               kAutofillAssistantChromeEntry})
@@ -191,7 +207,7 @@ TEST_P(StartupUtilTest, StartRegularScript) {
   EXPECT_THAT(
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{std::make_unique<ScriptParameters>(kRegularScript),
-                         {.is_cct = false}},
+                         kDefaultNonCCTOptions},
           {.feature_module_installed = true}),
       MatchingStartupMode(AreFeaturesEnabled({kAutofillAssistant,
                                               kAutofillAssistantChromeEntry})
@@ -199,13 +215,13 @@ TEST_P(StartupUtilTest, StartRegularScript) {
                               : StartupMode::FEATURE_DISABLED));
 }
 
-TEST_P(StartupUtilTest, StartRpcTriggerScript) {
+TEST_P(StartupUtilParametrizedTest, StartRpcTriggerScript) {
   // Everything true, DFM already installed.
   EXPECT_THAT(
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kRequestTriggerScript),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = true,
            .feature_module_installed = true}),
@@ -219,7 +235,7 @@ TEST_P(StartupUtilTest, StartRpcTriggerScript) {
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kRequestTriggerScript),
-              {.is_cct = false}},
+              kDefaultNonCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = true,
            .feature_module_installed = false}),
@@ -234,7 +250,7 @@ TEST_P(StartupUtilTest, StartRpcTriggerScript) {
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kRequestTriggerScript),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = false,
            .proactive_help_setting_enabled = true,
            .feature_module_installed = true}),
@@ -248,7 +264,7 @@ TEST_P(StartupUtilTest, StartRpcTriggerScript) {
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kRequestTriggerScript),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = false,
            .feature_module_installed = true}),
@@ -258,13 +274,13 @@ TEST_P(StartupUtilTest, StartRpcTriggerScript) {
                               : StartupMode::FEATURE_DISABLED));
 }
 
-TEST_P(StartupUtilTest, StartBase64TriggerScript) {
+TEST_P(StartupUtilParametrizedTest, StartBase64TriggerScript) {
   // Everything true, DFM already installed.
   EXPECT_THAT(
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kBase64TriggerScript),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = true,
            .feature_module_installed = true}),
@@ -277,7 +293,7 @@ TEST_P(StartupUtilTest, StartBase64TriggerScript) {
   EXPECT_THAT(StartupUtil().ChooseStartupModeForIntent(
                   TriggerContext{
                       std::make_unique<ScriptParameters>(kBase64TriggerScript),
-                      {.is_cct = true}},
+                      kDefaultCCTOptions},
                   {.msbb_setting_enabled = true,
                    .proactive_help_setting_enabled = true,
                    .feature_module_installed = false}),
@@ -293,7 +309,7 @@ TEST_P(StartupUtilTest, StartBase64TriggerScript) {
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kBase64TriggerScript),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = false,
            .proactive_help_setting_enabled = true,
            .feature_module_installed = true}),
@@ -307,7 +323,7 @@ TEST_P(StartupUtilTest, StartBase64TriggerScript) {
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
               std::make_unique<ScriptParameters>(kBase64TriggerScript),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = false,
            .feature_module_installed = true}),
@@ -317,7 +333,7 @@ TEST_P(StartupUtilTest, StartBase64TriggerScript) {
                               : StartupMode::FEATURE_DISABLED));
 }
 
-TEST_P(StartupUtilTest, InvalidParameterCombinationsShouldFail) {
+TEST_P(StartupUtilParametrizedTest, InvalidParameterCombinationsShouldFail) {
   // START_IMMEDIATELY=false requires either REQUEST_TRIGGER_SCRIPT or
   // TRIGGER_SCRIPTS_BASE64.
   EXPECT_THAT(
@@ -326,7 +342,7 @@ TEST_P(StartupUtilTest, InvalidParameterCombinationsShouldFail) {
               std::make_unique<ScriptParameters>(
                   std::map<std::string, std::string>{
                       {"ENABLED", "true"}, {"START_IMMEDIATELY", "false"}}),
-              {.is_cct = true}},
+              kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = false,
            .feature_module_installed = true}),
@@ -343,7 +359,7 @@ TEST_P(StartupUtilTest, InvalidParameterCombinationsShouldFail) {
                                  {"ENABLED", "true"},
                                  {"START_IMMEDIATELY", "false"},
                                  {"REQUEST_TRIGGER_SCRIPT", "false"}}),
-                         {.is_cct = true}},
+                         kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = false,
            .feature_module_installed = true}),
@@ -360,7 +376,7 @@ TEST_P(StartupUtilTest, InvalidParameterCombinationsShouldFail) {
                                  {"ENABLED", "true"},
                                  {"START_IMMEDIATELY", "false"},
                                  {"TRIGGER_SCRIPTS_BASE64", ""}}),
-                         {.is_cct = true}},
+                         kDefaultCCTOptions},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = false,
            .feature_module_installed = true}),
@@ -371,7 +387,40 @@ TEST_P(StartupUtilTest, InvalidParameterCombinationsShouldFail) {
 }
 
 INSTANTIATE_TEST_SUITE_P(StartupParamTestSuite,
-                         StartupUtilTest,
+                         StartupUtilParametrizedTest,
                          ValuesIn(kTestFeatureConfigs));
+
+TEST_F(StartupUtilTest, ChooseStartupUrlForIntentPrefersOriginalDeeplink) {
+  std::map<std::string, std::string> script_parameters = {
+      {"ORIGINAL_DEEPLINK", "https://www.original-deeplink.com"}};
+
+  EXPECT_THAT(StartupUtil().ChooseStartupUrlForIntent(
+                  {std::make_unique<ScriptParameters>(script_parameters),
+                   TriggerContext::Options{}}),
+              Eq(GURL("https://www.original-deeplink.com")));
+
+  TriggerContext::Options options;
+  options.initial_url = "https://www.initial-url.com";
+  EXPECT_THAT(
+      StartupUtil().ChooseStartupUrlForIntent(
+          {std::make_unique<ScriptParameters>(script_parameters), options}),
+      Eq(GURL("https://www.original-deeplink.com")));
+}
+
+TEST_F(StartupUtilTest, ChooseStartupUrlForIntentFallsBackToInitialUrl) {
+  TriggerContext::Options options;
+  options.initial_url = "https://www.initial-url.com";
+  EXPECT_THAT(StartupUtil().ChooseStartupUrlForIntent(
+                  {std::make_unique<ScriptParameters>(), options}),
+              Eq(GURL("https://www.initial-url.com")));
+}
+
+TEST_F(StartupUtilTest, ChooseStartupUrlForIntentFailsIfNotSpecified) {
+  EXPECT_THAT(
+      StartupUtil().ChooseStartupUrlForIntent(
+          {std::make_unique<ScriptParameters>(), TriggerContext::Options{}}),
+      Eq(base::nullopt));
+}
+
 }  // namespace
 }  // namespace autofill_assistant

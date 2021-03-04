@@ -309,7 +309,7 @@ public class LibraryLoader {
      *
      * @param useChromiumLinker Whether to use a chromium linker.
      * @param useModernLinker Given that one of the Chromium linkers is used, whether to use
-     *                        ModernLinker instea of the LegacyLinker.
+     *                        ModernLinker instead of the LegacyLinker.
      */
     public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
         assert !mInitialized;
@@ -326,7 +326,7 @@ public class LibraryLoader {
     private void setLinkerImplementationIfNeededAlreadyLocked() {
         if (mConfigurationSet) return;
 
-        // Cannot use initializers for the fields below, as this makes roboelectric tests fail,
+        // Cannot use initial values for the fields below, as this makes robolectric tests fail,
         // since they don't have a NativeLibraries class.
         mUseChromiumLinker = NativeLibraries.sUseLinker;
         mUseModernLinker = NativeLibraries.sUseModernLinker;
@@ -600,6 +600,17 @@ public class LibraryLoader {
         }
     }
 
+    // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
+    private void loadLibraryWithCustomLinker(Linker linker, String library) {
+        // Attempt shared RELROs, and if that fails then retry without.
+        try {
+            linker.loadLibrary(library, true /* isFixedAddressPermitted */);
+        } catch (UnsatisfiedLinkError e) {
+            Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
+            linker.loadLibrary(library, false /* isFixedAddressPermitted */);
+        }
+    }
+
     private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
         Linker linker = getLinker(appInfo);
 
@@ -612,7 +623,7 @@ public class LibraryLoader {
         }
 
         // Load the library using this Linker. May throw UnsatisfiedLinkError.
-        linker.loadLibrary(library);
+        loadLibraryWithCustomLinker(linker, library);
     }
 
     @GuardedBy("mLock")
@@ -757,7 +768,7 @@ public class LibraryLoader {
     }
 
     /**
-     * Assert that library process type in the LibraryLoarder is compatible with provided type.
+     * Assert that library process type in the LibraryLoader is compatible with provided type.
      *
      * @param libraryProcessType a library process type to assert.
      */

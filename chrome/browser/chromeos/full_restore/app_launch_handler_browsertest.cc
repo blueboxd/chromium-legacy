@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/autotest_desks_api.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -412,10 +413,12 @@ IN_PROC_BROWSER_TEST_F(AppLaunchHandlerBrowserTest, WindowProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppLaunchHandlerBrowserTest, RestoreChromeApp) {
-  // Have 4 desks total.
+  // Have 3 desks total.
   ash::AutotestDesksApi().CreateNewDesk();
+  base::RunLoop().RunUntilIdle();
+
   ash::AutotestDesksApi().CreateNewDesk();
-  ash::AutotestDesksApi().CreateNewDesk();
+  base::RunLoop().RunUntilIdle();
 
   ::full_restore::SetActiveProfilePath(profile()->GetPath());
 
@@ -575,7 +578,9 @@ class AppLaunchHandlerSystemWebAppsBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(AppLaunchHandlerSystemWebAppsBrowserTest, LaunchSWA) {
+// TODO(crbug.com/1184448): Diasbled for being flaky.
+IN_PROC_BROWSER_TEST_P(AppLaunchHandlerSystemWebAppsBrowserTest,
+                       DISABLED_LaunchSWA) {
   Browser* app_browser = LaunchSystemWebApp();
   ASSERT_TRUE(app_browser);
   ASSERT_NE(browser(), app_browser);

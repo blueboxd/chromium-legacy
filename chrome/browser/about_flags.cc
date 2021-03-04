@@ -5835,12 +5835,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kPrivacySandboxSettings)},
 
 #if defined(OS_ANDROID)
-    {"safety-check-android", flag_descriptions::kSafetyCheckAndroidName,
-     flag_descriptions::kSafetyCheckAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kSafetyCheckAndroid)},
-#endif
-
-#if defined(OS_ANDROID)
     {"metrics-settings-android", flag_descriptions::kMetricsSettingsAndroidName,
      flag_descriptions::kMetricsSettingsAndroidDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kMetricsSettingsAndroid,
@@ -7221,6 +7215,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionName,
      flag_descriptions::kTFLiteLanguageDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionEnabled)},
+
+    {"optimization-guide-model-downloading",
+     flag_descriptions::kOptimizationGuideModelDownloadingName,
+     flag_descriptions::kOptimizationGuideModelDownloadingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         optimization_guide::features::kOptimizationGuideModelDownloading)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

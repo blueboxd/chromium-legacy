@@ -362,6 +362,10 @@
   return self.suggestionsViewController;
 }
 
+- (id<ThumbStripSupporting>)thumbStripSupporting {
+  return self.suggestionsViewController;
+}
+
 - (void)constrainDiscoverHeaderMenuButtonNamedGuide {
   NamedGuide* menuButtonGuide =
       [NamedGuide guideWithName:kDiscoverFeedHeaderMenuGuide
@@ -621,11 +625,6 @@
   [self.ntpMediator locationBarDidResignFirstResponder];
 }
 
-- (BOOL)isDiscoverFeedVisible {
-  return self.contentSuggestionsEnabled &&
-         [self.contentSuggestionsExpanded value];
-}
-
 #pragma mark - ContentSuggestionsMenuProvider
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
@@ -757,6 +756,14 @@
   [self.contentSuggestionsMediator reloadAllData];
   [self.discoverFeedMetricsRecorder
       recordDiscoverFeedVisibilityChanged:visible];
+}
+
+// YES if the Discover feed is currently visible.
+// TODO(crbug.com/1173610): Move this to the NTPCoordinator so all of the
+// visibility logic lives in there.
+- (BOOL)isDiscoverFeedVisible {
+  return self.contentSuggestionsEnabled &&
+         [self.contentSuggestionsExpanded value];
 }
 
 @end

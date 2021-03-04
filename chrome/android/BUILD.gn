@@ -894,6 +894,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/video_tutorials/internal:junit",
     "//chrome/browser/webapps/android:java",
     "//chrome/browser/xsurface:java",
+    "//chrome/test:sync_integration_test_support_java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
@@ -2631,6 +2632,7 @@ template("monochrome_test_apk_tmpl") {
     add_unwind_tables_in_apk = false
 
     deps = _chrome_public_shared_deps + invoker.deps + [
+             "//android_webview:platform_service_bridge_upstream_implementation_java",
              ":monochrome_apk_pak_assets",
              ":chrome_public_base_module_java_for_test",
              "//third_party/android_support_test_runner:runner_java",
@@ -2638,6 +2640,10 @@ template("monochrome_test_apk_tmpl") {
              "//third_party/android_sdk:android_test_mock_java",
              "//third_party/android_sdk:android_test_runner_java",
            ]
+
+    if (webview_includes_weblayer) {
+      deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
+    }
 
     additional_apks = [ "//net/android:net_test_support_apk" ]
     if (defined(invoker.additional_apks)) {

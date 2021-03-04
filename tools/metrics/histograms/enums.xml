@@ -18779,7 +18779,7 @@ metrics consent we also won't be able to send UMA metrics. -->
 </enum>
 
 <enum name="DocumentPolicyFeature">
-<!-- Generated from third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.
+<!-- Generated from third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom.
 Called by update_document_policy_enum.py.-->
 
   <int value="0" label="Default"/>
@@ -31731,8 +31731,8 @@ Called by update_use_counter_feature_enum.py.-->
 </enum>
 
 <enum name="FeaturePolicyFeature">
-<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.
-Called by update_feature_policy_enum.py.-->
+<!-- Generated from third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.
+Called by update_permissions_policy_enum.py.-->
 
 <!-- Obsolete / deprecated features in this enum should be prefixed with
 "Deprecated: " -->
@@ -42045,7 +42045,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LanguageSettingsActionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Click on the 'Add Language' button">
-    Removed for Android in M89. Still in Desktop and iOS.
+    Removed from Android in M89 and Desktop in M90. Still on iOS.
   </int>
   <int value="2" label="Language added"/>
   <int value="3" label="Language removed"/>
@@ -42065,6 +42065,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Chrome Language">Windows and Android only</int>
   <int value="4" label="Advanced Language Settings"/>
   <int value="5" label="Target Language"/>
+  <int value="6" label="Language Overflow Menu Opened">Desktop only</int>
 </enum>
 
 <enum name="LanguageUsage.UI.Android.Availability">
@@ -43867,6 +43868,7 @@ from previous Chrome versions.
       label="AutofillUpstreamEditableCardholderName:disabled"/>
   <int value="-1624854957" label="enable-es3-apis"/>
   <int value="-1624593106" label="NewTabPageBackgrounds:enabled"/>
+  <int value="-1624412478" label="OptimizationGuideModelDownloading:disabled"/>
   <int value="-1623003151"
       label="SafeBrowsingkRealTimeUrlLookupEnterpriseGaEndpoint:disabled"/>
   <int value="-1621963267" label="EnableAssistantLauncherUI:enabled"/>
@@ -47090,6 +47092,7 @@ from previous Chrome versions.
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1310000273" label="ReleaseNotesNotificationAllChannels:disabled"/>
+  <int value="1310316934" label="OptimizationGuideModelDownloading:enabled"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
   <int value="1313476409" label="ReportFeedUserActions:disabled"/>
@@ -59233,6 +59236,10 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="8" label="Password is already filled">
     Password field is already filled in and it doesn't look like a placeholder.
+  </int>
+  <int value="9" label="Affiliated website">
+    A credential exists for an affiliated matched site but not for the current
+    security origin.
   </int>
 </enum>
 

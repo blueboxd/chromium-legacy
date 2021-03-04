@@ -30,6 +30,7 @@
 #include "components/enterprise/browser/enterprise_switches.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
@@ -59,7 +60,6 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
-#import "ios/chrome/browser/open_in/features.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -250,11 +250,42 @@ const FeatureEntry::FeatureParam kStartSurfaceReturnImmediately[] = {
     {kReturnToStartSurfaceInactiveDurationInSeconds, "0"}};
 const FeatureEntry::FeatureParam kStartSurfaceReturnInOneHour[] = {
     {kReturnToStartSurfaceInactiveDurationInSeconds, "3600"}};
+const FeatureEntry::FeatureParam kStartSurfaceShrinkLogo[] = {
+    {kStartSurfaceShrinkLogoParam, "true"},
+    {kReturnToStartSurfaceInactiveDurationInSeconds, "0"}};
+const FeatureEntry::FeatureParam kStartSurfaceHideShortcuts[] = {
+    {kStartSurfaceHideShortcutsParam, "true"},
+    {kReturnToStartSurfaceInactiveDurationInSeconds, "0"}};
+const FeatureEntry::FeatureParam kStartSurfaceReturnToRecentTab[] = {
+    {kStartSurfaceReturnToRecentTabParam, "true"},
+    {kReturnToStartSurfaceInactiveDurationInSeconds, "0"}};
+const FeatureEntry::FeatureParam kStartSurfaceShrinkLogoReturnToRecentTab[] = {
+    {kStartSurfaceShrinkLogoParam, "true"},
+    {kStartSurfaceReturnToRecentTabParam, "true"},
+    {kReturnToStartSurfaceInactiveDurationInSeconds, "0"}};
+const FeatureEntry::FeatureParam kStartSurfaceHideShortcutsReturnToRecentTab[] =
+    {{kStartSurfaceHideShortcutsParam, "true"},
+     {kStartSurfaceReturnToRecentTabParam, "true"},
+     {kReturnToStartSurfaceInactiveDurationInSeconds, "0"}};
+
 const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
     {"Return immediately", kStartSurfaceReturnImmediately,
      base::size(kStartSurfaceReturnImmediately), nullptr},
     {"Return in one hour", kStartSurfaceReturnInOneHour,
-     base::size(kStartSurfaceReturnInOneHour), nullptr}};
+     base::size(kStartSurfaceReturnInOneHour), nullptr},
+    {"Show Return to Recent Tab tile", kStartSurfaceReturnToRecentTab,
+     base::size(kStartSurfaceReturnToRecentTab), nullptr},
+    {"Shrink Logo", kStartSurfaceShrinkLogo,
+     base::size(kStartSurfaceShrinkLogo), nullptr},
+    {"Hide Shortcuts", kStartSurfaceHideShortcuts,
+     base::size(kStartSurfaceHideShortcuts), nullptr},
+    {"Shrink Logo and show Return to Recent Tab tile",
+     kStartSurfaceShrinkLogoReturnToRecentTab,
+     base::size(kStartSurfaceShrinkLogoReturnToRecentTab), nullptr},
+    {"Hide Shortcuts and show Return to Recent Tab tile",
+     kStartSurfaceHideShortcutsReturnToRecentTab,
+     base::size(kStartSurfaceHideShortcutsReturnToRecentTab), nullptr},
+};
 
 const FeatureEntry::FeatureParam kWebViewNativeContextMenuWeb[] = {
     {web::features::kWebViewNativeContextMenuName,
@@ -511,10 +542,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSLegacyTLSInterstitialsName,
      flag_descriptions::kIOSLegacyTLSInterstitialsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kIOSLegacyTLSInterstitial)},
-    {"extend-open-in-files-support",
-     flag_descriptions::kExtendOpenInFilesSupportName,
-     flag_descriptions::kExtendOpenInFilesSupportDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kExtendOpenInFilesSupport)},
     {"enable-close-all-tabs-confirmation",
      flag_descriptions::kEnableCloseAllTabsConfirmationName,
      flag_descriptions::kEnableCloseAllTabsConfirmationDescription,
@@ -655,6 +682,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableManualPasswordGeneration)},
+    {"interest-feed-notice-card-auto-dismiss",
+     flag_descriptions::kInterestFeedNoticeCardAutoDismissName,
+     flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

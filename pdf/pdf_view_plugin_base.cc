@@ -152,6 +152,41 @@ void PdfViewPluginBase::ScrollBy(const gfx::Vector2d& delta) {
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::ScrollToPage(int page) {
+  if (!engine_ || engine_->GetNumberOfPages() == 0)
+    return;
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "goToPage");
+  message.SetIntKey("page", page);
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::NavigateTo(const std::string& url,
+                                   WindowOpenDisposition disposition) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "navigate");
+  message.SetStringKey("url", url);
+  message.SetIntKey("disposition", static_cast<int>(disposition));
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::NavigateToDestination(int page,
+                                              const float* x,
+                                              const float* y,
+                                              const float* zoom) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "navigateToDestination");
+  message.SetIntKey("page", page);
+  if (x)
+    message.SetDoubleKey("x", *x);
+  if (y)
+    message.SetDoubleKey("y", *y);
+  if (zoom)
+    message.SetDoubleKey("zoom", *zoom);
+  SendMessage(std::move(message));
+}
+
 void PdfViewPluginBase::GetDocumentPassword(
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(password_callback_.is_null());
@@ -210,6 +245,24 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
 
   MessageHandler handler = it->second;
   (this->*handler)(message);
+}
+
+void PdfViewPluginBase::ConsumeSaveToken(const std::string& token) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "consumeSaveToken");
+  message.SetStringKey("token", token);
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::SendBookmarks() {
+  base::Value bookmarks = engine()->GetBookmarks();
+  if (bookmarks.GetList().empty())
+    return;
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "bookmarks");
+  message.SetKey("bookmarksData", std::move(bookmarks));
+  SendMessage(std::move(message));
 }
 
 void PdfViewPluginBase::SendLoadingProgress(double percentage) {

@@ -190,6 +190,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'swarming': {
           'dimension_sets': [
@@ -1726,7 +1727,7 @@
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
+          'isolated_scripts': 'monochrome_public_apk_checker_isolated_script_and_sizes',
         },
         'os_type': 'android',
       },
@@ -1755,6 +1756,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'test_suites': {
+          'isolated_scripts': 'chrome_sizes_android',
+        },
       },
       'ToTAndroidASan': {
         'test_suites': {
@@ -1779,18 +1783,14 @@
         ],
       },
       'ToTAndroidCFI': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-        },
+        'mixins': [
+          'bullhead',
+          'marshmallow',
+        ],
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
+          'isolated_scripts': 'chrome_sizes_android',
         },
         'additional_compile_targets': [
           'all',
@@ -1800,6 +1800,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'test_suites': {
+          'isolated_scripts': 'chrome_sizes_android',
+        },
       },
       'ToTLinux': {
         'mixins': [
@@ -3800,30 +3803,6 @@
           'gtest_tests': 'gpu_angle_gtests',
         },
       },
-      'ANGLE GPU Win10 x64 Release (Intel HD 630)': {
-        'os_type': 'win',
-        'browser_config': 'release_x64',
-        'mixins': [
-          'win10_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_win_gtests',
-          'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
-          'isolated_scripts': 'gpu_angle_isolated_scripts',
-        },
-      },
-      'ANGLE GPU Win10 x64 Release (NVIDIA)': {
-        'os_type': 'win',
-        'browser_config': 'release_x64',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_win_gtests',
-          'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
-          'isolated_scripts': 'gpu_angle_isolated_scripts',
-        },
-      },
       # END Fake builder used as mirror targets for ANGLE's GPU tryservers
       'Android FYI 32 Vk Release (Pixel 2)': {
         'os_type': 'android',
@@ -4094,7 +4073,6 @@
       'GPU FYI Win x64 Builder (dbg)' : {},
       'GPU FYI Win x64 DX12 Vulkan Builder': {},
       'GPU FYI Win x64 DX12 Vulkan Builder (dbg)': {},
-      'GPU FYI Win x64 dEQP Builder' : {},
       'Lacros FYI x64 Release (AMD)': {
         'os_type': 'linux',
         'browser_config': 'release',
@@ -4699,24 +4677,6 @@
           'gpu_telemetry_tests': 'gpu_skia_renderer_dawn_telemetry_tests',
         },
       },
-     'Win10 FYI x64 dEQP Release (Intel HD 630)': {
-        'os_type': 'win',
-        'mixins': [
-          'win10_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_d3d11_gtests',
-        },
-      },
-      'Win10 FYI x64 dEQP Release (NVIDIA)': {
-        'os_type': 'win',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_win_nvidia_gtests',
-        },
-      },
       'Win10 FYI x86 Release (NVIDIA)': {
         'browser_config': 'release',
         'os_type': 'win',
@@ -4811,25 +4771,6 @@
           },
         ],
       },
-      'Win7 FYI x64 dEQP Release (NVIDIA)': {
-        'os_type': 'win',
-        'browser_config': 'release_x64',
-        'mixins': [
-          'limited_capacity_bot',
-          'win7_nvidia_quadro_p400',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_win7_nvidia_gtests',
-        },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-23.21.14.1195',
-            'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chromium.tests.gpu',
-          },
-        ],
-      }
     },
   },
   {

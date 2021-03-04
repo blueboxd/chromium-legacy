@@ -46,6 +46,7 @@
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ppapi_migration/value_conversions.h"
 #include "pdf/thumbnail.h"
+#include "pdf/ui/format_page_size.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -96,9 +97,6 @@ constexpr char kJSPreviewLoadedType[] = "printPreviewLoaded";
 // Attachments (Plugin -> Page)
 constexpr char kJSAttachmentsType[] = "attachments";
 constexpr char kJSAttachmentsData[] = "attachmentsData";
-// Bookmarks (Plugin -> Page)
-constexpr char kJSBookmarksType[] = "bookmarks";
-constexpr char kJSBookmarksData[] = "bookmarksData";
 // Metadata (Plugin -> Page)
 constexpr char kJSMetadataType[] = "metadata";
 constexpr char kJSMetadataData[] = "metadataData";
@@ -113,6 +111,7 @@ constexpr char kJSCreator[] = "creator";
 constexpr char kJSProducer[] = "producer";
 constexpr char kJSCreationDate[] = "creationDate";
 constexpr char kJSModDate[] = "modDate";
+constexpr char kJSPageSize[] = "pageSize";
 constexpr char kJSCanSerializeDocument[] = "canSerializeDocument";
 // Print (Page -> Plugin)
 constexpr char kJSPrintType[] = "print";
@@ -130,13 +129,8 @@ constexpr char kJSSaveRequestType[] = "saveRequestType";
 constexpr char kJSSaveDataType[] = "saveData";
 constexpr char kJSFileName[] = "fileName";
 constexpr char kJSDataToSave[] = "dataToSave";
-// Consume save token (Plugin -> Page)
-constexpr char kJSConsumeSaveTokenType[] = "consumeSaveToken";
 // Notify when touch selection occurs (Plugin -> Page)
 constexpr char kJSTouchSelectionOccurredType[] = "touchSelectionOccurred";
-// Go to page (Plugin -> Page)
-constexpr char kJSGoToPageType[] = "goToPage";
-constexpr char kJSPageNumber[] = "page";
 // Reset print preview mode (Page -> Plugin)
 constexpr char kJSResetPrintPreviewModeType[] = "resetPrintPreviewMode";
 constexpr char kJSPrintPreviewUrl[] = "url";
@@ -146,16 +140,6 @@ constexpr char kJSPrintPreviewPageCount[] = "pageCount";
 constexpr char kJSLoadPreviewPageType[] = "loadPreviewPage";
 constexpr char kJSPreviewPageUrl[] = "url";
 constexpr char kJSPreviewPageIndex[] = "index";
-// Navigate to the given URL (Plugin -> Page)
-constexpr char kJSNavigateType[] = "navigate";
-constexpr char kJSNavigateUrl[] = "url";
-constexpr char kJSNavigateWindowOpenDisposition[] = "disposition";
-// Navigate to the given destination (Plugin -> Page)
-constexpr char kJSNavigateToDestinationType[] = "navigateToDestination";
-constexpr char kJSNavigateToDestinationPage[] = "page";
-constexpr char kJSNavigateToDestinationXOffset[] = "x";
-constexpr char kJSNavigateToDestinationYOffset[] = "y";
-constexpr char kJSNavigateToDestinationZoom[] = "zoom";
 // Open the email editor with the given parameters (Plugin -> Page)
 constexpr char kJSEmailType[] = "email";
 constexpr char kJSEmailTo[] = "to";
@@ -1042,42 +1026,6 @@ void OutOfProcessInstance::DidScroll(const gfx::Vector2d& offset) {
     paint_manager().ScrollRect(available_area(), offset);
 }
 
-void OutOfProcessInstance::ScrollToPage(int page) {
-  if (!engine() || engine()->GetNumberOfPages() == 0)
-    return;
-
-  pp::VarDictionary message;
-  message.Set(kType, kJSGoToPageType);
-  message.Set(kJSPageNumber, pp::Var(page));
-  PostMessage(message);
-}
-
-void OutOfProcessInstance::NavigateTo(const std::string& url,
-                                      WindowOpenDisposition disposition) {
-  pp::VarDictionary message;
-  message.Set(kType, kJSNavigateType);
-  message.Set(kJSNavigateUrl, url);
-  message.Set(kJSNavigateWindowOpenDisposition,
-              pp::Var(static_cast<int32_t>(disposition)));
-  PostMessage(message);
-}
-
-void OutOfProcessInstance::NavigateToDestination(int page,
-                                                 const float* x,
-                                                 const float* y,
-                                                 const float* zoom) {
-  pp::VarDictionary message;
-  message.Set(kType, kJSNavigateToDestinationType);
-  message.Set(kJSNavigateToDestinationPage, pp::Var(page));
-  if (x)
-    message.Set(kJSNavigateToDestinationXOffset, pp::Var(*x));
-  if (y)
-    message.Set(kJSNavigateToDestinationYOffset, pp::Var(*y));
-  if (zoom)
-    message.Set(kJSNavigateToDestinationZoom, pp::Var(*zoom));
-  PostMessage(message);
-}
-
 void OutOfProcessInstance::UpdateCursor(PP_CursorType_Dev cursor) {
   if (cursor == cursor_)
     return;
@@ -1182,13 +1130,6 @@ void OutOfProcessInstance::SaveToFile(const std::string& token) {
   engine()->KillFormFocus();
   ConsumeSaveToken(token);
   pp::PDF::SaveAs(this);
-}
-
-void OutOfProcessInstance::ConsumeSaveToken(const std::string& token) {
-  pp::VarDictionary message;
-  message.Set(kType, kJSConsumeSaveTokenType);
-  message.Set(kJSToken, pp::Var(token));
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::Beep() {
@@ -1820,19 +1761,6 @@ void OutOfProcessInstance::SendAttachments() {
   PostMessage(attachments_message);
 }
 
-void OutOfProcessInstance::SendBookmarks() {
-  base::Value bookmarks = engine()->GetBookmarks();
-  DCHECK(bookmarks.is_list());
-  if (bookmarks.GetList().empty())
-    return;
-
-  pp::VarDictionary bookmarks_message;
-  bookmarks_message.Set(pp::Var(kType), pp::Var(kJSBookmarksType));
-  bookmarks_message.Set(pp::Var(kJSBookmarksData), VarFromValue(bookmarks));
-
-  PostMessage(bookmarks_message);
-}
-
 void OutOfProcessInstance::SendMetadata() {
   pp::VarDictionary metadata_message;
   metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
@@ -1886,6 +1814,10 @@ void OutOfProcessInstance::SendMetadata() {
         pp::Var(base::UTF16ToUTF8(
             base::TimeFormatShortDateAndTime(document_metadata.mod_date))));
   }
+
+  metadata_data.Set(pp::Var(kJSPageSize),
+                    pp::Var(base::UTF16ToUTF8(
+                        FormatPageSize(engine()->GetUniformPageSizePoints()))));
 
   metadata_data.Set(
       pp::Var(kJSCanSerializeDocument),

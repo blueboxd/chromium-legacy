@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
-#include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -84,6 +83,7 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
+#include "third_party/blink/renderer/core/permissions_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -1888,7 +1888,16 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
       owner_document && owner_document->domWindow()) {
     // Since we're inheriting the owner document's origin, we should also use
     // its OriginAgentCluster (OAC) in determining which WindowAgent to use,
-    // overriding the OAC value sent in the commit params.
+    // overriding the OAC value sent in the commit params. For example, when
+    // about:blank is loaded, it has OAC = false, but if we have an owner, then
+    // we are using the owner's SecurityOrigin, we should match the OAC value
+    // also. JavaScript URLs also use their owner's SecurityOrigins, and don't
+    // set OAC as part of their commit params.
+    // TODO(wjmaclean,domenic): we're currently verifying that the OAC
+    // inheritance is correct for both XSLT documents and non-initial
+    // about:blank cases. Given the relationship between OAC, SecurityOrigin,
+    // and COOP/COEP, a single inheritance pathway would make sense; this work
+    // is being tracked in https://crbug.com/1183935.
     origin_agent_cluster =
         owner_document->domWindow()->GetAgent()->IsExplicitlyOriginKeyed();
   }

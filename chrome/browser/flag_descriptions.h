@@ -1053,6 +1053,9 @@ extern const char kOopRasterizationDescription[];
 extern const char kOopRasterizationDDLName[];
 extern const char kOopRasterizationDDLDescription[];
 
+extern const char kOptimizationGuideModelDownloadingName[];
+extern const char kOptimizationGuideModelDownloadingDescription[];
+
 extern const char kOsSettingsDeepLinkingName[];
 extern const char kOsSettingsDeepLinkingDescription[];
 
@@ -1145,9 +1148,6 @@ extern const char kPrivacyReorderedAndroidDescription[];
 
 extern const char kPrivacySandboxSettingsName[];
 extern const char kPrivacySandboxSettingsDescription[];
-
-extern const char kSafetyCheckAndroidName[];
-extern const char kSafetyCheckAndroidDescription[];
 
 extern const char kSafetyCheckWeakPasswordsName[];
 extern const char kSafetyCheckWeakPasswordsDescription[];

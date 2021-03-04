@@ -204,11 +204,6 @@ const char kExpandedTabStripDescription[] =
     "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
     " or the toolbar";
 
-const char kExtendOpenInFilesSupportName[] =
-    "Extend Open in toolbar files support";
-const char kExtendOpenInFilesSupportDescription[] =
-    "When enabled, the Open in toolbar is displayed on more file types";
-
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
@@ -237,6 +232,12 @@ const char kInfobarOverlayUIName[] = "Use OverlayPresenter for infobars";
 const char kInfobarOverlayUIDescription[] =
     "When enabled alongside the Infobar UI Reboot, infobars will be presented "
     "using OverlayPresenter.";
+
+const char kInterestFeedNoticeCardAutoDismissName[] =
+    "New Content Suggestions notice card auto-dismiss";
+const char kInterestFeedNoticeCardAutoDismissDescription[] =
+    "Auto-dismiss the notice card when there are enough clicks or views on the "
+    "notice card.";
 
 const char kSigninNotificationInfobarUsernameInTitleName[] =
     "Sign-in notification infobar title";

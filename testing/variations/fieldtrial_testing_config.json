@@ -3145,28 +3145,6 @@
             ]
         }
     ],
-    "EnablePasswordGenerationForClearTextFields": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnablePasswordGenerationForClearTextFields"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableSuggestedFiles": [
         {
             "platforms": [
@@ -3254,21 +3232,6 @@
                     },
                     "enable_features": [
                         "ExploreSites"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ExtendOpenInFilesSupport": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ExtendOpenInFilesSupport"
                     ]
                 }
             ]
@@ -6317,21 +6280,6 @@
             ]
         }
     ],
-    "SafetyAndPasswordCheckAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafetyCheckAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "SafetyCheckChromeCleanerChild": [
         {
             "platforms": [
@@ -7877,7 +7825,7 @@
             ]
         }
     ],
-    "WebProtectRealTimeURLCheck": [
+    "WebProtectRealTimeURLCheckGA": [
         {
             "platforms": [
                 "chromeos",
@@ -7890,7 +7838,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "SafeBrowsingRealTimeUrlLookupEnabledForEnterprise"
+                        "SafeBrowsingkRealTimeUrlLookupEnterpriseGaEndpoint"
                     ]
                 }
             ]

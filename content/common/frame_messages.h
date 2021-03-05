@@ -82,8 +82,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS(network::mojom::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
-                          blink::mojom::FeaturePolicyFeature::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionsPolicyFeature,
+                          blink::mojom::PermissionsPolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::DocumentPolicyFeature,
                           blink::mojom::DocumentPolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::UserActivationUpdateType,
@@ -128,7 +128,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(orientation_angle)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
+IPC_STRUCT_TRAITS_BEGIN(blink::ParsedPermissionsPolicyDeclaration)
   IPC_STRUCT_TRAITS_MEMBER(feature)
   IPC_STRUCT_TRAITS_MEMBER(allowed_origins)
   IPC_STRUCT_TRAITS_MEMBER(matches_all_origins)

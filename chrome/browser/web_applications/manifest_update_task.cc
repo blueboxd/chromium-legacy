@@ -21,7 +21,6 @@
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
-#include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/gfx/skia_util.h"
 
@@ -54,6 +53,7 @@ bool HaveIconContentsChanged(
 
 bool HaveIconBitmapsChanged(const IconBitmaps& disk_icon_bitmaps,
                             const IconBitmaps& downloaded_icon_bitmaps) {
+  // TODO (crbug.com/1114638): Check Monochrome icons if supported.
   return HaveIconContentsChanged(disk_icon_bitmaps.any,
                                  downloaded_icon_bitmaps.any) ||
          HaveIconContentsChanged(disk_icon_bitmaps.maskable,
@@ -180,9 +180,8 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
     return true;
   }
 
-  if (base::FeatureList::IsEnabled(features::kWebAppManifestDisplayOverride) &&
-      web_application_info_->display_override !=
-          registrar_.GetAppDisplayModeOverride(app_id_)) {
+  if (web_application_info_->display_override !=
+      registrar_.GetAppDisplayModeOverride(app_id_)) {
     return true;
   }
 

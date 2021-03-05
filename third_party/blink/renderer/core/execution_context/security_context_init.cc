@@ -129,7 +129,7 @@ void SecurityContextInit::ApplyFeaturePolicy(
   // inherited policies. https://crbug.com/898688.
   if (frame->InViewSourceMode()) {
     execution_context_->GetSecurityContext().SetFeaturePolicy(
-        FeaturePolicy::CreateFromParentPolicy(
+        PermissionsPolicy::CreateFromParentPolicy(
             nullptr, {},
             execution_context_->GetSecurityOrigin()->ToUrlOrigin()));
     return;
@@ -167,7 +167,7 @@ void SecurityContextInit::ApplyFeaturePolicy(
       execution_context_->GetSecurityOrigin(), feature_policy_logger,
       permissions_policy_logger, execution_context_);
 
-  ParsedFeaturePolicy report_only_feature_policy_header =
+  ParsedPermissionsPolicy report_only_feature_policy_header =
       FeaturePolicyParser::ParseHeader(
           response.HttpHeaderField(http_names::kFeaturePolicyReportOnly),
           report_only_permissions_policy_header,
@@ -193,7 +193,7 @@ void SecurityContextInit::ApplyFeaturePolicy(
         message.content));
   }
 
-  ParsedFeaturePolicy container_policy;
+  ParsedPermissionsPolicy container_policy;
   if (frame && frame->Owner())
     container_policy = frame_policy.container_policy;
 
@@ -208,16 +208,16 @@ void SecurityContextInit::ApplyFeaturePolicy(
     // Enforcing the policy for sandbox frames (for context see
     // https://crbug.com/954349).
     DisallowFeatureIfNotPresent(
-        mojom::blink::FeaturePolicyFeature::kFocusWithoutUserActivation,
+        mojom::blink::PermissionsPolicyFeature::kFocusWithoutUserActivation,
         container_policy);
   }
 
-  std::unique_ptr<FeaturePolicy> feature_policy;
+  std::unique_ptr<PermissionsPolicy> feature_policy;
   auto* parent_feature_policy =
       frame->Tree().Parent()
           ? frame->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy()
           : nullptr;
-  feature_policy = FeaturePolicy::CreateFromParentPolicy(
+  feature_policy = PermissionsPolicy::CreateFromParentPolicy(
       parent_feature_policy, container_policy,
       execution_context_->GetSecurityOrigin()->ToUrlOrigin());
   feature_policy->SetHeaderPolicy(feature_policy_header_);
@@ -233,8 +233,8 @@ void SecurityContextInit::ApplyFeaturePolicy(
   // feature policy. For inherited policies, the behavior is dominated by
   // enforced feature policy.
   if (!report_only_feature_policy_header.empty()) {
-    std::unique_ptr<FeaturePolicy> report_only_policy =
-        FeaturePolicy::CreateFromParentPolicy(
+    std::unique_ptr<PermissionsPolicy> report_only_policy =
+        PermissionsPolicy::CreateFromParentPolicy(
             nullptr /* parent_policy */, {} /* container_policy */,
             execution_context_->GetSecurityOrigin()->ToUrlOrigin());
     report_only_policy->SetHeaderPolicy(report_only_feature_policy_header);
@@ -246,9 +246,9 @@ void SecurityContextInit::ApplyFeaturePolicy(
 void SecurityContextInit::InitFeaturePolicyFrom(const SecurityContext& other) {
   auto& security_context = execution_context_->GetSecurityContext();
   security_context.SetFeaturePolicy(
-      FeaturePolicy::CopyStateFrom(other.GetFeaturePolicy()));
+      PermissionsPolicy::CopyStateFrom(other.GetFeaturePolicy()));
   security_context.SetReportOnlyFeaturePolicy(
-      FeaturePolicy::CopyStateFrom(other.GetReportOnlyFeaturePolicy()));
+      PermissionsPolicy::CopyStateFrom(other.GetReportOnlyFeaturePolicy()));
 }
 
 void SecurityContextInit::InitDocumentPolicyFrom(const SecurityContext& other) {

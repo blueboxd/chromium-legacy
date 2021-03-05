@@ -260,7 +260,7 @@ using DocumentClassFlags = unsigned char;
 // storage, but only store a single element vector which is DCHECKED at the
 // calling site.
 using ExplicitlySetAttrElementsMap =
-    HeapHashMap<QualifiedName, Member<HeapVector<Member<Element>>>>;
+    HeapHashMap<QualifiedName, Member<HeapLinkedHashSet<WeakMember<Element>>>>;
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
@@ -2168,7 +2168,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
-  // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
+  // The size of this vector is 0 until PermissionsPolicyFeatureObserved is
+  // called.
   Vector<bool> parsed_feature_policies_;
 
   Vector<bool> parsed_document_policies_;

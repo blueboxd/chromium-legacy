@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/base/escape.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/document_layout.h"
@@ -187,6 +188,12 @@ void PdfViewPluginBase::NavigateToDestination(int page,
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::NotifyTouchSelectionOccurred() {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "touchSelectionOccurred");
+  SendMessage(std::move(message));
+}
+
 void PdfViewPluginBase::GetDocumentPassword(
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(password_callback_.is_null());
@@ -194,6 +201,31 @@ void PdfViewPluginBase::GetDocumentPassword(
 
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "getPassword");
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::Beep() {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "beep");
+  SendMessage(std::move(message));
+}
+
+std::string PdfViewPluginBase::GetURL() {
+  return url_;
+}
+
+void PdfViewPluginBase::Email(const std::string& to,
+                              const std::string& cc,
+                              const std::string& bcc,
+                              const std::string& subject,
+                              const std::string& body) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "email");
+  message.SetStringKey("to", net::EscapeUrlEncodedData(to, false));
+  message.SetStringKey("cc", net::EscapeUrlEncodedData(cc, false));
+  message.SetStringKey("bcc", net::EscapeUrlEncodedData(bcc, false));
+  message.SetStringKey("subject", net::EscapeUrlEncodedData(subject, false));
+  message.SetStringKey("body", net::EscapeUrlEncodedData(body, false));
   SendMessage(std::move(message));
 }
 
@@ -205,6 +237,13 @@ void PdfViewPluginBase::SetIsSelecting(bool is_selecting) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "setIsSelecting");
   message.SetBoolKey("isSelecting", is_selecting);
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::DocumentFocusChanged(bool document_has_focus) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "documentFocusChanged");
+  message.SetBoolKey("hasFocus", document_has_focus);
   SendMessage(std::move(message));
 }
 
@@ -251,6 +290,33 @@ void PdfViewPluginBase::ConsumeSaveToken(const std::string& token) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "consumeSaveToken");
   message.SetStringKey("token", token);
+  SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::SendAttachments() {
+  const std::vector<DocumentAttachmentInfo>& attachment_infos =
+      engine()->GetDocumentAttachmentInfoList();
+  if (attachment_infos.empty())
+    return;
+
+  base::Value attachments(base::Value::Type::LIST);
+  for (const DocumentAttachmentInfo& attachment_info : attachment_infos) {
+    // Send `size` as -1 to indicate that the attachment is too large to be
+    // downloaded.
+    const int size = attachment_info.size_bytes <= kMaximumSavedFileSize
+                         ? static_cast<int>(attachment_info.size_bytes)
+                         : -1;
+
+    base::Value attachment(base::Value::Type::DICTIONARY);
+    attachment.SetStringKey("name", attachment_info.name);
+    attachment.SetIntKey("size", size);
+    attachment.SetBoolKey("readable", attachment_info.is_readable);
+    attachments.Append(std::move(attachment));
+  }
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "attachments");
+  message.SetKey("attachmentsData", std::move(attachments));
   SendMessage(std::move(message));
 }
 

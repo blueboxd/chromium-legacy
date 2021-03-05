@@ -210,10 +210,6 @@ void PdfViewWebPlugin::NotifyNumberOfFindResultsChanged(int total,
 void PdfViewWebPlugin::NotifySelectedFindResultChanged(int current_find_index) {
 }
 
-void PdfViewWebPlugin::NotifyTouchSelectionOccurred() {}
-
-void PdfViewWebPlugin::Beep() {}
-
 void PdfViewWebPlugin::Alert(const std::string& message) {}
 
 bool PdfViewWebPlugin::Confirm(const std::string& message) {
@@ -224,16 +220,6 @@ std::string PdfViewWebPlugin::Prompt(const std::string& question,
                                      const std::string& default_answer) {
   return "";
 }
-
-std::string PdfViewWebPlugin::GetURL() {
-  return "";
-}
-
-void PdfViewWebPlugin::Email(const std::string& to,
-                             const std::string& cc,
-                             const std::string& bcc,
-                             const std::string& subject,
-                             const std::string& body) {}
 
 void PdfViewWebPlugin::Print() {}
 
@@ -280,8 +266,6 @@ void PdfViewWebPlugin::SelectionChanged(const gfx::Rect& left,
                                         const gfx::Rect& right) {}
 
 void PdfViewWebPlugin::EnteredEditMode() {}
-
-void PdfViewWebPlugin::DocumentFocusChanged(bool document_has_focus) {}
 
 void PdfViewWebPlugin::SetSelectedText(const std::string& selected_text) {
   NOTIMPLEMENTED();

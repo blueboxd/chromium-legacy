@@ -14,11 +14,11 @@
 #include "chrome/browser/ash/login/test/local_state_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
+#include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -55,19 +55,15 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
   // Managed devices show an item in the menu.
   EXPECT_TRUE(test_api->IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE,
                                             true /* open_tray */));
-
-  if (ash::features::IsManagedDeviceUIRedesignEnabled()) {
-    // The text shows the domain.
-    EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
-                                         base::UTF8ToUTF16("example.com")),
-              test_api->GetBubbleViewText(ash::VIEW_ID_TRAY_ENTERPRISE_LABEL));
-  } else {
-    // The tooltip shows the domain.
-    EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                         ui::GetChromeOSDeviceName(),
-                                         base::UTF8ToUTF16("example.com")),
-              test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
-  }
+  base::string16 expected_text =
+      ash::features::IsManagedDeviceUIRedesignEnabled()
+          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
+                                       base::UTF8ToUTF16("example.com"))
+          : l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                       ui::GetChromeOSDeviceName(),
+                                       base::UTF8ToUTF16("example.com"));
+  EXPECT_EQ(expected_text,
+            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
 
   // Clicking the item opens the management page.
   test_api->ClickBubbleView(ash::VIEW_ID_TRAY_ENTERPRISE);
@@ -250,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseAccountTest,
                                             true /* open_tray */));
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
                                        base::UTF8ToUTF16(kManager)),
-            test_api->GetBubbleViewText(ash::VIEW_ID_TRAY_ENTERPRISE_LABEL));
+            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
 
   // Switch to unmanaged account should still show the managed string (since the
   // primary user is managed user). However, the string should not contain the
@@ -261,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseAccountTest,
                                             true /* open_tray */));
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED,
                                        ui::GetChromeOSDeviceName()),
-            test_api->GetBubbleViewText(ash::VIEW_ID_TRAY_ENTERPRISE_LABEL));
+            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
 
   // Switch back to managed account.
   UserManager::Get()->SwitchActiveUser(managed_user_.account_id);
@@ -269,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseAccountTest,
                                             true /* open_tray */));
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
                                        base::UTF8ToUTF16(kManager)),
-            test_api->GetBubbleViewText(ash::VIEW_ID_TRAY_ENTERPRISE_LABEL));
+            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
 }
 
 IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseAccountTest,
@@ -313,5 +309,5 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseSessionRestoreTest,
                                             true /* open_tray */));
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
                                        base::UTF8ToUTF16(kManager)),
-            test_api->GetBubbleViewText(ash::VIEW_ID_TRAY_ENTERPRISE_LABEL));
+            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
 }

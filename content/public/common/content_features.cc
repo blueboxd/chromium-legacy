@@ -35,6 +35,11 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
 const base::Feature kAndroidDownloadableFontsMatching{
     "AndroidDownloadableFontsMatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+const base::Feature kAudioProcessHighPriorityWin{
+    "AudioProcessHighPriorityWin", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Launches the audio service on the browser startup.
 const base::Feature kAudioServiceLaunchOnStartup{
     "AudioServiceLaunchOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -786,10 +791,6 @@ const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable display_override manifest entry for web applications.
-const base::Feature kWebAppManifestDisplayOverride{
-    "WebAppManifestDisplayOverride", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{

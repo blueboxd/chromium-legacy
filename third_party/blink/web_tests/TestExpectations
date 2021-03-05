@@ -1024,7 +1024,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 crbug.com/1113911 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-009.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
-crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
 crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Failure Pass ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-auto-002.xht [ Crash Failure ]
 crbug.com/1066616 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-overflow-clip-positioned.html [ Failure ]
@@ -1037,10 +1036,6 @@ crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mul
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-004.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-multiple-fragments-translated.html [ Failure Crash ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-multiple-fragments.html [ Failure Crash ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-nested.html [ Failure Crash ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-will-change.html [ Failure Crash ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-inner-multicol.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-opacity-2nd-and-3rd-column.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
@@ -1064,7 +1059,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-short-first-row-extra-tall-line.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-very-tall-inside-short-crash.html [ Skip ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/nested-with-composited-and-multicol-crash.html [ Crash ]
 crbug.com/1131125 virtual/layout_ng_block_frag/fast/multicol/nested-with-forced-breaks-in-eariler-rows.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-padding.html [ Failure ]
 crbug.com/1131125 virtual/layout_ng_block_frag/fast/multicol/newmulticol/breaks-3-columns-3.html [ Failure ]
@@ -1074,7 +1068,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/nested-multicol.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/overflowing-columns-large-gaps.html [ Failure ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/span/invalid-spanner-in-transform.html [ Failure Crash ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/preferred-widths-with-column-content.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/static-child-becomes-fixedpos.html [ Failure ]
@@ -3222,7 +3215,6 @@ crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-
 
 # Synthetic modules report the wrong location in errors
 crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
-crbug.com/994315 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
 
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Timeout Crash ]
@@ -3266,6 +3258,12 @@ crbug.com/829028 external/wpt/css/css-break/tall-line-in-short-fragmentainer-001
 crbug.com/829028 external/wpt/css/css-break/tall-line-in-short-fragmentainer-002.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/trailing-child-margin-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/trailing-child-margin-002.html [ Failure ]
+crbug.com/471333 external/wpt/css/css-break/transform-000.html [ Failure ]
+crbug.com/471333 external/wpt/css/css-break/transform-001.html [ Failure ]
+crbug.com/471333 external/wpt/css/css-break/transform-002.html [ Failure ]
+crbug.com/1058792 external/wpt/css/css-break/transform-003.html [ Failure ]
+crbug.com/1058792 external/wpt/css/css-break/transform-004.html [ Failure ]
+crbug.com/1058792 external/wpt/css/css-break/transform-005.html [ Failure ]
 crbug.com/1156312 external/wpt/css/css-break/widows-orphans-017.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/abspos-containing-block-outside-spanner.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
@@ -5015,7 +5013,6 @@ crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/respons
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
 
 ### sheriff 2020-03-03
-crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
 crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
 crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
 
@@ -5696,7 +5693,6 @@ crbug.com/1181886 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.h
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]
 crbug.com/1182675 [ Linux ] dom/attr/id-update-map-crash.html [ Pass Failure ]
 crbug.com/1182677 [ Linux ] external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-video.https.html [ Pass Failure ]
-crbug.com/1182678 [ Linux ] external/wpt/touch-events/multi-touch-interactions.html [ Pass Failure ]
 crbug.com/1182680 [ Linux ] http/tests/devtools/console/console-format-collections.js [ Pass Failure ]
 crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-view.js [ Pass Failure ]
 crbug.com/1182689 [ Mac10.14 ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
@@ -5705,8 +5701,25 @@ crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.h
 # Sheriff 2021-03-01
 crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Pass Failure ]
 
+# Temporarily disabled for https://crrev.com/c/2727709
+crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/edit/perform-undo-undo.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/elements-panel-structure.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/iframe-load-event.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/inline-style-title.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/elements/shadow/shadow-host-display-modes.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
+crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-nesting.js [ Pass Failure ]
+crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-activate.js [ Pass Failure ]
+crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-nesting.js [ Pass Failure ]
+
 # Temporarily disabled for https://crrev.com/c/2713104
 crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Pass Failure ]
 
 # Sheriff 2021-03-03
 crbug.com/1181007 [ Linux ] http/tests/serviceworker/window-close-during-registration.html [ Pass Failure ]
+
+# Sheriff 2021-03-04
+crbug.com/1184745 [ Mac ] external/wpt/media-source/mediasource-changetype-play.html [ Pass Failure ]
+crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ Pass Failure ]

@@ -62,18 +62,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
-  void NotifyTouchSelectionOccurred() override;
-  void Beep() override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  std::string GetURL() override;
-  void Email(const std::string& to,
-             const std::string& cc,
-             const std::string& bcc,
-             const std::string& subject,
-             const std::string& body) override;
   void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
@@ -91,7 +83,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool IsPrintPreview() override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void EnteredEditMode() override;
-  void DocumentFocusChanged(bool document_has_focus) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;

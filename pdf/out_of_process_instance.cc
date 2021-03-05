@@ -63,7 +63,6 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/size.h"
-#include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -90,13 +89,8 @@ constexpr char kType[] = "type";
 // Name of identifier field passed from JS to the plugin and back, to associate
 // Page->Plugin messages to Plugin->Page responses.
 constexpr char kJSMessageId[] = "messageId";
-// Beep message arguments. (Plugin -> Page).
-constexpr char kJSBeepType[] = "beep";
 // Document print preview loaded (Plugin -> Page)
 constexpr char kJSPreviewLoadedType[] = "printPreviewLoaded";
-// Attachments (Plugin -> Page)
-constexpr char kJSAttachmentsType[] = "attachments";
-constexpr char kJSAttachmentsData[] = "attachmentsData";
 // Metadata (Plugin -> Page)
 constexpr char kJSMetadataType[] = "metadata";
 constexpr char kJSMetadataData[] = "metadataData";
@@ -129,8 +123,6 @@ constexpr char kJSSaveRequestType[] = "saveRequestType";
 constexpr char kJSSaveDataType[] = "saveData";
 constexpr char kJSFileName[] = "fileName";
 constexpr char kJSDataToSave[] = "dataToSave";
-// Notify when touch selection occurs (Plugin -> Page)
-constexpr char kJSTouchSelectionOccurredType[] = "touchSelectionOccurred";
 // Reset print preview mode (Page -> Plugin)
 constexpr char kJSResetPrintPreviewModeType[] = "resetPrintPreviewMode";
 constexpr char kJSPrintPreviewUrl[] = "url";
@@ -140,13 +132,6 @@ constexpr char kJSPrintPreviewPageCount[] = "pageCount";
 constexpr char kJSLoadPreviewPageType[] = "loadPreviewPage";
 constexpr char kJSPreviewPageUrl[] = "url";
 constexpr char kJSPreviewPageIndex[] = "index";
-// Open the email editor with the given parameters (Plugin -> Page)
-constexpr char kJSEmailType[] = "email";
-constexpr char kJSEmailTo[] = "to";
-constexpr char kJSEmailCc[] = "cc";
-constexpr char kJSEmailBcc[] = "bcc";
-constexpr char kJSEmailSubject[] = "subject";
-constexpr char kJSEmailBody[] = "body";
 
 // Editing forms in document (Plugin -> Page)
 constexpr char kJSSetIsEditingType[] = "setIsEditing";
@@ -154,10 +139,6 @@ constexpr char kJSSetIsEditingType[] = "setIsEditing";
 // Notify when a form field is focused (Plugin -> Page)
 constexpr char kJSFieldFocusType[] = "formFocusChange";
 constexpr char kJSFieldFocus[] = "focused";
-
-// Notify when document is focused (Plugin -> Page)
-constexpr char kJSDocumentFocusChangedType[] = "documentFocusChanged";
-constexpr char kJSDocumentHasFocus[] = "hasFocus";
 
 // Request the thumbnail image for a particular page (Page -> Plugin)
 constexpr char kJSGetThumbnailType[] = "getThumbnail";
@@ -669,14 +650,14 @@ bool OutOfProcessInstance::Init(uint32_t argc,
     return true;
 
   LoadUrl(stream_url, /*is_print_preview=*/false);
-  url_ = original_url;
+  set_url(original_url);
 
   // Not all edits go through the PDF plugin's form filler. The plugin instance
   // can be restarted by exiting annotation mode on ChromeOS, which can set the
   // document to an edited state.
-  edit_mode_ = has_edits;
+  set_edit_mode(has_edits);
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  DCHECK(!edit_mode_);
+  DCHECK(!edit_mode());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   pp::PDF::SetCrashData(GetPluginInstance(), original_url, top_level_url);
@@ -991,28 +972,6 @@ void OutOfProcessInstance::InitImageData(const gfx::Size& size) {
       std::make_unique<pp::ImageData>(pepper_image_data_));
 }
 
-pp::VarArray OutOfProcessInstance::GetDocumentAttachments() {
-  const std::vector<DocumentAttachmentInfo>& list =
-      engine()->GetDocumentAttachmentInfoList();
-  pp::VarArray attachments;
-  attachments.SetLength(list.size());
-
-  for (size_t i = 0; i < list.size(); ++i) {
-    const DocumentAttachmentInfo& attachment_info = list[i];
-    pp::VarDictionary dict;
-    dict.Set(pp::Var("name"), pp::Var(base::UTF16ToUTF8(attachment_info.name)));
-    // Set |size| to -1 to indicate that the attachment is too big to be
-    // downloaded.
-    int32_t size = attachment_info.size_bytes <= kMaximumSavedFileSize
-                       ? static_cast<int32_t>(attachment_info.size_bytes)
-                       : -1;
-    dict.Set(pp::Var("size"), pp::Var(size));
-    dict.Set(pp::Var("readable"), pp::Var(attachment_info.is_readable));
-    attachments.Set(i, dict);
-  }
-  return attachments;
-}
-
 void OutOfProcessInstance::DidScroll(const gfx::Vector2d& offset) {
   if (!image_data().drawsNothing())
     paint_manager().ScrollRect(available_area(), offset);
@@ -1077,23 +1036,17 @@ void OutOfProcessInstance::NotifySelectedFindResultChanged(
   SelectedFindResultChanged(current_find_index);
 }
 
-void OutOfProcessInstance::NotifyTouchSelectionOccurred() {
-  pp::VarDictionary message;
-  message.Set(kType, kJSTouchSelectionOccurredType);
-  PostMessage(message);
-}
-
 void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
   engine()->KillFormFocus();
 
   pp::VarDictionary message;
   message.Set(kType, kJSSaveDataType);
   message.Set(kJSToken, pp::Var(token));
-  message.Set(kJSFileName, pp::Var(GetFileNameFromUrl(url_)));
+  message.Set(kJSFileName, pp::Var(GetFileNameFromUrl(GetURL())));
   // This will be overwritten if the save is successful.
   message.Set(kJSDataToSave, pp::Var(pp::Var::Null()));
 
-  if (edit_mode_) {
+  if (edit_mode()) {
     std::vector<uint8_t> data = engine()->GetSaveData();
     if (IsSaveDataSizeValid(data.size())) {
       pp::VarArrayBuffer buffer(data.size());
@@ -1124,12 +1077,6 @@ void OutOfProcessInstance::SaveToFile(const std::string& token) {
   pp::PDF::SaveAs(this);
 }
 
-void OutOfProcessInstance::Beep() {
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSBeepType));
-  PostMessage(message);
-}
-
 void OutOfProcessInstance::Alert(const std::string& message) {
   pp::PDF::ShowAlertDialog(this, message.c_str());
 }
@@ -1143,30 +1090,6 @@ std::string OutOfProcessInstance::Prompt(const std::string& question,
   pp::Var result =
       pp::PDF::ShowPromptDialog(this, question.c_str(), default_answer.c_str());
   return result.is_string() ? result.AsString() : std::string();
-}
-
-std::string OutOfProcessInstance::GetURL() {
-  return url_;
-}
-
-void OutOfProcessInstance::Email(const std::string& to,
-                                 const std::string& cc,
-                                 const std::string& bcc,
-                                 const std::string& subject,
-                                 const std::string& body) {
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSEmailType));
-  message.Set(pp::Var(kJSEmailTo),
-              pp::Var(net::EscapeUrlEncodedData(to, false)));
-  message.Set(pp::Var(kJSEmailCc),
-              pp::Var(net::EscapeUrlEncodedData(cc, false)));
-  message.Set(pp::Var(kJSEmailBcc),
-              pp::Var(net::EscapeUrlEncodedData(bcc, false)));
-  message.Set(pp::Var(kJSEmailSubject),
-              pp::Var(net::EscapeUrlEncodedData(subject, false)));
-  message.Set(pp::Var(kJSEmailBody),
-              pp::Var(net::EscapeUrlEncodedData(body, false)));
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::Print() {
@@ -1377,15 +1300,15 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
 
   print_preview_page_count_ = print_preview_page_count;
   print_preview_loaded_page_count_ = 0;
-  url_ = url;
+  set_url(url);
   preview_pages_info_ = base::queue<PreviewPageInfo>();
   preview_document_load_state_ = DocumentLoadState::kComplete;
   set_document_load_state(DocumentLoadState::kLoading);
-  LoadUrl(url_, /*is_print_preview=*/false);
+  LoadUrl(GetURL(), /*is_print_preview=*/false);
   preview_engine_.reset();
   InitializeEngine(PDFiumFormFiller::ScriptOption::kNoJavaScript);
   engine()->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
-  engine()->New(url_.c_str(), /*headers=*/nullptr);
+  engine()->New(GetURL().c_str(), /*headers=*/nullptr);
 
   paint_manager().InvalidateRect(gfx::Rect(plugin_size()));
 }
@@ -1446,7 +1369,7 @@ void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {
     case SaveRequestType::kOriginal:
       pp::PDF::SetPluginCanSave(this, false);
       SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
-      pp::PDF::SetPluginCanSave(this, edit_mode_);
+      pp::PDF::SetPluginCanSave(this, edit_mode());
       break;
     case SaveRequestType::kEdited:
       SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
@@ -1635,18 +1558,11 @@ bool OutOfProcessInstance::IsPrintPreview() {
 }
 
 void OutOfProcessInstance::EnteredEditMode() {
-  edit_mode_ = true;
+  set_edit_mode(true);
   pp::PDF::SetPluginCanSave(this, true);
 
   pp::VarDictionary message;
   message.Set(kType, kJSSetIsEditingType);
-  PostMessage(message);
-}
-
-void OutOfProcessInstance::DocumentFocusChanged(bool document_has_focus) {
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSDocumentFocusChangedType));
-  message.Set(pp::Var(kJSDocumentHasFocus), pp::Var(document_has_focus));
   PostMessage(message);
 }
 
@@ -1739,18 +1655,6 @@ void OutOfProcessInstance::SendPrintPreviewLoadedNotification() {
   pp::VarDictionary loaded_message;
   loaded_message.Set(pp::Var(kType), pp::Var(kJSPreviewLoadedType));
   PostMessage(loaded_message);
-}
-
-void OutOfProcessInstance::SendAttachments() {
-  pp::VarArray attachments = GetDocumentAttachments();
-  if (attachments.GetLength() == 0)
-    return;
-
-  pp::VarDictionary attachments_message;
-  attachments_message.Set(pp::Var(kType), pp::Var(kJSAttachmentsType));
-  attachments_message.Set(pp::Var(kJSAttachmentsData), attachments);
-
-  PostMessage(attachments_message);
 }
 
 void OutOfProcessInstance::SendMetadata() {

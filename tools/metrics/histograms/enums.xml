@@ -31002,7 +31002,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3155" label="LargeStickyAd"/>
   <int value="3156" label="ObsoleteOverlayInterstitialAd"/>
   <int value="3157" label="CSSComparisonFunctions"/>
-  <int value="3158" label="FeaturePolicyProposalWouldChangeBehaviour"/>
+  <int value="3158" label="OBSOLETE_FeaturePolicyProposalWouldChangeBehaviour"/>
   <int value="3159" label="RTCLocalSdpModificationSimulcast"/>
   <int value="3160" label="TrustedTypesEnabledEnforcing"/>
   <int value="3161" label="TrustedTypesEnabledReportOnly"/>
@@ -63555,6 +63555,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="PROXY_HAS_RULES"/>
 </enum>
 
+<enum name="PsmHashDanceDifferentResultsComparison">
+  <int value="0" label="Hash dance true and PSM false"/>
+  <int value="1" label="PSM true and Hash dance false"/>
+</enum>
+
 <enum name="PublicKeyPinFailedDomain">
   <int value="0" label="DOMAIN_NOT_PINNED"/>
   <int value="1" label="DOMAIN_GOOGLE_COM"/>
@@ -75329,6 +75334,12 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Native Speech"/>
 </enum>
 
+<enum name="TextToSpeechSource">
+  <int value="0" label="Other"/>
+  <int value="1" label="ChromeVox"/>
+  <int value="2" label="SelectToSpeak"/>
+</enum>
+
 <enum name="TextToSpeechVoiceIdHashes">
   <int value="-2140886774" label="patts: Chrome OS UK English"/>
   <int value="-1258442847" label="patts: Chrome OS Nederlands"/>
@@ -80715,6 +80726,9 @@ Called by update_scheduler_enums.py.-->
   <int value="14" label="Permission dialog opened"/>
   <int value="15" label="Permission deleted for site"/>
   <int value="16" label="(Deprecated) Permission changed for site"/>
+  <int value="17" label="Forget site dialog opened"/>
+  <int value="18" label="Forget site data cleared"/>
+  <int value="19" label="History page opened"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">

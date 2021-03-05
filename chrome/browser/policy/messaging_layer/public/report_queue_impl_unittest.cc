@@ -15,8 +15,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/proto/test.pb.h"
-#include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
-#include "components/policy/core/common/cloud/dm_token.h"
+#include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/proto/record_constants.pb.h"
 #include "components/reporting/storage/storage_module_interface.h"
 #include "components/reporting/storage/test_storage_module.h"
@@ -26,8 +25,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::policy::DMToken;
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -84,7 +81,7 @@ class ReportQueueImplTest : public testing::Test {
  protected:
   ReportQueueImplTest()
       : priority_(Priority::IMMEDIATE),
-        dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
+        dm_token_("FAKE_DM_TOKEN"),
         destination_(Destination::UPLOAD_EVENTS),
         storage_module_(base::MakeRefCounted<TestStorageModule>()),
         policy_check_callback_(
@@ -101,7 +98,7 @@ class ReportQueueImplTest : public testing::Test {
 
     ASSERT_TRUE(config_result.ok());
 
-    StatusOr<std::unique_ptr<ReportQueueImpl>> report_queue_result =
+    StatusOr<std::unique_ptr<ReportQueue>> report_queue_result =
         ReportQueueImpl::Create(std::move(config_result.ValueOrDie()),
                                 storage_module_);
 
@@ -123,11 +120,11 @@ class ReportQueueImplTest : public testing::Test {
 
   const Priority priority_;
 
-  std::unique_ptr<ReportQueueImpl> report_queue_;
+  std::unique_ptr<ReportQueue> report_queue_;
   base::OnceCallback<void(Status)> callback_;
 
  private:
-  const DMToken dm_token_;
+  const std::string dm_token_;
   const Destination destination_;
   scoped_refptr<StorageModuleInterface> storage_module_;
   ReportQueueConfiguration::PolicyCheckCallback policy_check_callback_;

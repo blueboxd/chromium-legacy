@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.toolbar.ButtonData;
+import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -192,6 +193,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     protected int mUnfocusedLocationBarLayoutLeft;
     protected int mUnfocusedLocationBarLayoutRight;
     private boolean mUnfocusedLocationBarUsesTransparentBg;
+    private boolean mCurrentUrlFocusState;
 
     private int mLocationBarBackgroundAlpha = 255;
     private float mNtpSearchBoxScrollFraction = UNINITIALIZED_FRACTION;
@@ -1872,14 +1874,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         // possible that this function is called before native initialization when Instant Start
         // is enabled. Keyboard shouldn't be shown here.
         if (isNativeLibraryReady()) {
-            boolean hasFocus = inTabSwitcherMode && !urlHasFocus();
-            boolean shouldShowKeyboard = false;
+            boolean hasFocus = urlHasFocus();
             // When switching out of the tab switcher and the url has got focused, we don't clear
             // the focus.
-            if (!inTabSwitcherMode && urlHasFocus()) {
-                hasFocus = true;
-                shouldShowKeyboard = true;
-            }
+            boolean shouldShowKeyboard = hasFocus && !inTabSwitcherMode;
             triggerUrlFocusAnimation(hasFocus, shouldShowKeyboard);
         } else {
             mPendingTriggerUrlFocusRequest = true;
@@ -2100,7 +2098,6 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         if (getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
             mUrlBar.setText("");
-            if (!hasFocus) return;
         }
 
         triggerUrlFocusAnimation(hasFocus, /* shouldShowKeyboard= */ hasFocus);
@@ -2112,6 +2109,14 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      *         as hasFocus by default.
      */
     private void triggerUrlFocusAnimation(final boolean hasFocus, boolean shouldShowKeyboard) {
+        // Check if we need to run animation. If not, jump directly to target desired state.
+        if (mCurrentUrlFocusState == hasFocus) {
+            mLocationBar.finishUrlFocusChange(hasFocus, shouldShowKeyboard,
+                    getToolbarDataProvider().shouldShowLocationBarInOverviewMode());
+            return;
+        }
+
+        mCurrentUrlFocusState = hasFocus;
         TraceEvent.begin("ToolbarPhone.triggerUrlFocusAnimation");
         if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
             mUrlFocusLayoutAnimator.cancel();
@@ -2516,13 +2521,14 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             mOptionalButtonAnimator.end();
         }
 
-        mOptionalButton.setOnClickListener(buttonData.onClickListener);
-        mOptionalButton.setImageDrawable(buttonData.drawable);
+        ButtonSpec buttonSpec = buttonData.getButtonSpec();
+        mOptionalButton.setOnClickListener(buttonSpec.getOnClickListener());
+        mOptionalButton.setImageDrawable(buttonSpec.getDrawable());
         mOptionalButton.setContentDescription(
-                getContext().getResources().getString(buttonData.contentDescriptionResId));
-        mOptionalButton.setEnabled(buttonData.isEnabled);
+                getContext().getResources().getString(buttonSpec.getContentDescriptionResId()));
+        mOptionalButton.setEnabled(buttonData.isEnabled());
 
-        mOptionalButtonUsesTint = buttonData.supportsTinting;
+        mOptionalButtonUsesTint = buttonSpec.getSupportsTinting();
         if (mOptionalButtonUsesTint) {
             ApiCompatibilityUtils.setImageTintList(mOptionalButton, getTint());
         } else {

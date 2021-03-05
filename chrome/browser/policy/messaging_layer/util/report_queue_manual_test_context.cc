@@ -12,10 +12,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/policy/messaging_layer/public/report_client.h"
-#include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/proto/record_constants.pb.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/task_runner_context.h"
@@ -93,7 +93,7 @@ void ReportQueueManualTestContext::BuildReportQueue() {
   ReportQueueConfiguration::PolicyCheckCallback policy_check_cb =
       base::BindRepeating([]() -> Status { return Status::StatusOK(); });
   auto config_result = reporting::ReportQueueConfiguration::Create(
-      dm_token_, destination_, std::move(policy_check_cb));
+      dm_token_.value(), destination_, std::move(policy_check_cb));
   if (!config_result.ok()) {
     Complete(config_result.status());
     return;

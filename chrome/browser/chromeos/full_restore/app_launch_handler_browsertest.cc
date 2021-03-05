@@ -4,11 +4,10 @@
 
 #include "chrome/browser/chromeos/full_restore/app_launch_handler.h"
 
+#include <cstdint>
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/autotest_desks_api.h"
-#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -49,7 +48,7 @@ constexpr int32_t kId = 100;
 
 // Test values for a test WindowInfo object.
 constexpr int kActivationIndex = 2;
-constexpr int kDeskId = 2;
+constexpr int kDeskId = 5;
 constexpr gfx::Rect kRestoreBounds(100, 100);
 constexpr gfx::Rect kCurrentBounds(200, 200);
 constexpr chromeos::WindowStateType kWindowStateType =
@@ -80,7 +79,6 @@ void SaveWindowInfo(aura::Window* window) {
   ::full_restore::WindowInfo window_info;
   window_info.window = window;
   window_info.activation_index = kActivationIndex;
-  window_info.desk_id = kDeskId;
   ::full_restore::SaveWindowInfo(window_info);
 }
 
@@ -88,10 +86,10 @@ void WaitForAppLaunchInfoSaved() {
   ::full_restore::FullRestoreSaveHandler* save_handler =
       ::full_restore::FullRestoreSaveHandler::GetInstance();
   base::OneShotTimer* timer = save_handler->GetTimerForTesting();
-  EXPECT_TRUE(timer->IsRunning());
-
-  // Simulate timeout, and the launch info is saved.
-  timer->FireNow();
+  if (timer->IsRunning()) {
+    // Simulate timeout, and the launch info is saved.
+    timer->FireNow();
+  }
   content::RunAllTasksUntilIdle();
 }
 
@@ -413,13 +411,6 @@ IN_PROC_BROWSER_TEST_F(AppLaunchHandlerBrowserTest, WindowProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppLaunchHandlerBrowserTest, RestoreChromeApp) {
-  // Have 3 desks total.
-  ash::AutotestDesksApi().CreateNewDesk();
-  base::RunLoop().RunUntilIdle();
-
-  ash::AutotestDesksApi().CreateNewDesk();
-  base::RunLoop().RunUntilIdle();
-
   ::full_restore::SetActiveProfilePath(profile()->GetPath());
 
   // Create the restore data.
@@ -454,8 +445,17 @@ IN_PROC_BROWSER_TEST_F(AppLaunchHandlerBrowserTest, RestoreChromeApp) {
   auto window_info = ::full_restore::GetWindowInfo(window);
   ASSERT_TRUE(window_info);
   EXPECT_TRUE(window_info->activation_index.has_value());
-  EXPECT_EQ(kActivationIndex, window_info->activation_index.value());
-  EXPECT_EQ(kDeskId, window->GetProperty(aura::client::kWindowWorkspaceKey));
+  int32_t* index = window->GetProperty(::full_restore::kActivationIndexKey);
+  ASSERT_TRUE(index);
+  EXPECT_EQ(kActivationIndex, *index);
+
+  // Windows created from full restore are not activated. They will become
+  // activatable after a post task is run.
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE(widget->CanActivate());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(widget->CanActivate());
 
   EXPECT_EQ(0, ::full_restore::FetchRestoreWindowId(extension->id()));
 
@@ -578,9 +578,7 @@ class AppLaunchHandlerSystemWebAppsBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1184448): Diasbled for being flaky.
-IN_PROC_BROWSER_TEST_P(AppLaunchHandlerSystemWebAppsBrowserTest,
-                       DISABLED_LaunchSWA) {
+IN_PROC_BROWSER_TEST_P(AppLaunchHandlerSystemWebAppsBrowserTest, LaunchSWA) {
   Browser* app_browser = LaunchSystemWebApp();
   ASSERT_TRUE(app_browser);
   ASSERT_NE(browser(), app_browser);

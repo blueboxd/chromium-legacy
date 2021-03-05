@@ -58,6 +58,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
 
  private:
   friend class CellularMetricsLoggerTest;
+  FRIEND_TEST_ALL_PREFIXES(CellularMetricsLoggerTest,
+                           CellularServiceAtLoginTest);
   FRIEND_TEST_ALL_PREFIXES(CellularMetricsLoggerTest, CellularUsageCountTest);
   FRIEND_TEST_ALL_PREFIXES(CellularMetricsLoggerTest,
                            CellularUsageCountDongleTest);
@@ -85,6 +87,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     base::Optional<bool> is_connected;
     base::Optional<base::TimeTicks> last_disconnect_request_time;
     base::Optional<base::TimeTicks> last_connect_start_time;
+  };
+
+  // Cellular network SIM types.
+  enum class SimType {
+    kPSim,
+    kESim,
   };
 
   // Usage type for cellular network. These values are persisted to logs.
@@ -146,12 +154,22 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
   // when usage state changes.
   void CheckForCellularUsageCountMetric();
 
+  // Tracks how many eSIM profiles are installed on the device and how many pSIM
+  // networks are available on the device if |is_service_count_logged_| is true.
+  void CheckForCellularServiceCountMetric();
+
   // Returns the ConnectionInfo for given |cellular_network_guid|.
   ConnectionInfo* GetConnectionInfoForCellularNetwork(
       const std::string& cellular_network_guid);
 
   // Tracks the last cellular network usage state.
   base::Optional<CellularUsage> last_cellular_usage_;
+
+  // Tracks the last PSim cellular network usage state.
+  base::Optional<CellularUsage> last_psim_cellular_usage_;
+
+  // Tracks the last ESim cellular network usage state.
+  base::Optional<CellularUsage> last_esim_cellular_usage_;
 
   // Tracks whether cellular device is available or not.
   bool is_cellular_available_ = false;
@@ -168,6 +186,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
   // Tracks whether activation state is already logged for this
   // session.
   bool is_activation_state_logged_ = false;
+
+  // Tracks whether service count is already logged for this session.
+  bool is_service_count_logged_ = false;
 
   // Stores connection information for all cellular networks.
   base::flat_map<std::string, std::unique_ptr<ConnectionInfo>>

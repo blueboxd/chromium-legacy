@@ -10,10 +10,9 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_impl.h"
-#include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/proto/record_constants.pb.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/status_macros.h"
@@ -24,7 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -32,7 +31,6 @@
 namespace reporting {
 namespace {
 
-using policy::DMToken;
 using reporting::Destination;
 
 // Usage (in tests only):
@@ -92,8 +90,7 @@ class ReportClientTest : public testing::Test {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     // Provide a mock cloud policy client.
     client_ = std::make_unique<policy::MockCloudPolicyClient>();
-    client_->SetDMToken(
-        policy::DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN").value());
+    client_->SetDMToken("FAKE_DM_TOKEN");
     test_reporting_ =
         std::make_unique<ReportingClient::TestEnvironment>(client_.get());
 
@@ -120,7 +117,7 @@ class ReportClientTest : public testing::Test {
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
-  const DMToken dm_token_ = DMToken::CreateValidTokenForTesting("TOKEN");
+  const std::string dm_token_ = "TOKEN";
   const Destination destination_ = Destination::UPLOAD_EVENTS;
   ReportQueueConfiguration::PolicyCheckCallback policy_checker_callback_ =
       base::BindRepeating([]() { return Status::StatusOK(); });

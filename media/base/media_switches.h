@@ -128,6 +128,7 @@ MEDIA_EXPORT extern const base::Feature kFFmpegDecodeOpaqueVP8;
 MEDIA_EXPORT extern const base::Feature kFailUrlProvisionFetcherForTesting;
 MEDIA_EXPORT extern const base::Feature kFallbackAfterDecodeError;
 MEDIA_EXPORT extern const base::Feature kGav1VideoDecoder;
+MEDIA_EXPORT extern const base::Feature kUseMediaPlayerMojoInterface;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControls;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsAutoDismiss;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsForCast;
@@ -240,7 +241,7 @@ MEDIA_EXPORT extern const base::Feature kAVFoundationCaptureV2;
 MEDIA_EXPORT extern const base::Feature kAVFoundationCaptureV2ZeroCopy;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kDeprecateLowUsageCodecs;
 #endif
 

@@ -37,7 +37,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
         browser_interface_broker,
     BeginFrameProviderParams begin_frame_provider_params,
-    const FeaturePolicy* parent_feature_policy,
+    const PermissionsPolicy* parent_feature_policy,
     base::UnguessableToken agent_cluster_id,
     ukm::SourceId ukm_source_id,
     const base::Optional<ExecutionContextToken>& parent_context_token,
@@ -66,10 +66,10 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       browser_interface_broker(std::move(browser_interface_broker)),
       begin_frame_provider_params(std::move(begin_frame_provider_params)),
       // At the moment, workers do not support their container policy being set,
-      // so it will just be an empty ParsedFeaturePolicy for now.
-      worker_feature_policy(FeaturePolicy::CreateFromParentPolicy(
+      // so it will just be an empty ParsedPermissionsPolicy for now.
+      worker_feature_policy(PermissionsPolicy::CreateFromParentPolicy(
           parent_feature_policy,
-          ParsedFeaturePolicy() /* container_policy */,
+          ParsedPermissionsPolicy() /* container_policy */,
           starter_origin->ToUrlOrigin())),
       agent_cluster_id(agent_cluster_id),
       ukm_source_id(ukm_source_id),

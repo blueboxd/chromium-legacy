@@ -55,6 +55,8 @@
 #include "chrome/browser/ash/login/signin/token_handle_fetcher.h"
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/supervised_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
@@ -74,8 +76,6 @@
 #include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -1373,18 +1373,7 @@ void UserSessionManager::InitProfilePreferences(
             ->SetUnconsentedPrimaryAccount(account_info->account_id);
       }
 
-      // TODO(https://crbug.com/1166265): Replace logs once issue is resolved.
-      if (!identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired)) {
-        if (account_info.has_value()) {
-          LOG(FATAL) << "IdentityManager missing primary account. "
-                     << "GAIA ID: " << gaia_id << ", "
-                     << "Account GAIA: " << account_info->gaia << ", "
-                     << "Account email: " << account_info->email;
-        } else {
-          LOG(FATAL) << "IdentityManager missing primary account. "
-                     << "GAIA ID: " << gaia_id << ", Account info missing";
-        }
-      }
+      CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
       CHECK_EQ(
           identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
               .gaia,
@@ -1396,18 +1385,7 @@ void UserSessionManager::InitProfilePreferences(
       identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
           account_info->account_id);
 
-      // TODO(https://crbug.com/1166265): Replace logs once issue is resolved.
-      if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
-        if (account_info.has_value()) {
-          LOG(FATAL) << "IdentityManager missing primary account. "
-                     << "GAIA ID: " << gaia_id << ", "
-                     << "Account GAIA: " << account_info->gaia << ", "
-                     << "Account email: " << account_info->email;
-        } else {
-          LOG(FATAL) << "IdentityManager missing primary account. "
-                     << "GAIA ID: " << gaia_id << ", Account info missing";
-        }
-      }
+      CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
       CHECK_EQ(
           identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSync).gaia,
           gaia_id);

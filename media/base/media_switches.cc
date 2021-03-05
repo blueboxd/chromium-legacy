@@ -372,6 +372,11 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 const base::Feature kGav1VideoDecoder{"Gav1VideoDecoder",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, a media player uses mojo interface that communicates with blink
+// instead of a legacy IPC messages.
+const base::Feature kUseMediaPlayerMojoInterface{
+    "UseMediaPlayerMojoInterface", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Show toolbar button that opens dialog for controlling media sessions.
 const base::Feature kGlobalMediaControls {
   "GlobalMediaControls",
@@ -506,12 +511,12 @@ const base::Feature kExternalClearKeyForTesting{
 
 // Enables the Live Caption feature.
 const base::Feature kLiveCaption{"LiveCaption",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the Speech On-Device API (SODA) to power the Live Caption feature instead
 // of the Cloud-based Open Speech API.
 const base::Feature kUseSodaForLiveCaption{"UseSodaForLiveCaption",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Live Caption can be used in multiple languages, as opposed to just English.
 const base::Feature kLiveCaptionMultiLanguage{
@@ -736,10 +741,10 @@ const base::Feature MEDIA_EXPORT kAVFoundationCaptureV2ZeroCopy{
     "AVFoundationCaptureV2ZeroCopy", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MAC)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 const base::Feature MEDIA_EXPORT kDeprecateLowUsageCodecs{
     "DeprecateLowUsageCodecs", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.

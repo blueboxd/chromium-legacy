@@ -48,8 +48,9 @@ class MediaDevicesPermissionCheckerTest : public RenderViewHostImplTestHarness {
  protected:
   // The header policy should only be set once on page load, so we refresh the
   // page to simulate that.
-  void RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature feature,
-                                     bool enabled) {
+  void RefreshPageAndSetHeaderPolicy(
+      blink::mojom::PermissionsPolicyFeature feature,
+      bool enabled) {
     auto navigation = NavigationSimulator::CreateBrowserInitiated(
         origin_.GetURL(), web_contents());
     std::vector<url::Origin> allowlist;
@@ -91,7 +92,7 @@ class MediaDevicesPermissionCheckerTest : public RenderViewHostImplTestHarness {
 
 // Basic tests for feature policy checks through the
 // MediaDevicesPermissionChecker.  These tests are not meant to cover every edge
-// case as the FeaturePolicy class itself is tested thoroughly in
+// case as the PermissionsPolicy class itself is tested thoroughly in
 // feature_policy_unittest.cc and in
 // render_frame_host_feature_policy_unittest.cc.
 TEST_F(MediaDevicesPermissionCheckerTest, CheckPermissionWithFeaturePolicy) {
@@ -100,12 +101,13 @@ TEST_F(MediaDevicesPermissionCheckerTest, CheckPermissionWithFeaturePolicy) {
   EXPECT_TRUE(CheckPermission(MediaDeviceType::MEDIA_AUDIO_INPUT));
   EXPECT_TRUE(CheckPermission(MediaDeviceType::MEDIA_VIDEO_INPUT));
 
-  RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kMicrophone,
-                                /*enabled=*/false);
+  RefreshPageAndSetHeaderPolicy(
+      blink::mojom::PermissionsPolicyFeature::kMicrophone,
+      /*enabled=*/false);
   EXPECT_FALSE(CheckPermission(MediaDeviceType::MEDIA_AUDIO_INPUT));
   EXPECT_TRUE(CheckPermission(MediaDeviceType::MEDIA_VIDEO_INPUT));
 
-  RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kCamera,
+  RefreshPageAndSetHeaderPolicy(blink::mojom::PermissionsPolicyFeature::kCamera,
                                 /*enabled=*/false);
   EXPECT_TRUE(CheckPermission(MediaDeviceType::MEDIA_AUDIO_INPUT));
   EXPECT_FALSE(CheckPermission(MediaDeviceType::MEDIA_VIDEO_INPUT));

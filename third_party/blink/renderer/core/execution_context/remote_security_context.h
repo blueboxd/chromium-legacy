@@ -22,17 +22,18 @@ class CORE_EXPORT RemoteSecurityContext final : public SecurityContext {
   void ResetAndEnforceSandboxFlags(
       network::mojom::blink::WebSandboxFlags flags);
 
-  // Constructs the enforcement FeaturePolicy struct for this security context.
-  // The resulting FeaturePolicy is a combination of:
-  //   * |parsed_header|: from the FeaturePolicy part of the response headers.
+  // Constructs the enforcement PermissionsPolicy struct for this security
+  // context. The resulting PermissionsPolicy is a combination of:
+  //   * |parsed_header|: from the PermissionsPolicy part of the response
+  //   headers.
   //   * |container_policy|: from <iframe>'s allow attribute.
   //   * |parent_feature_policy|: which is the current state of feature policies
   //     in a parent browsing context (frame).
   // Note that |parent_feature_policy| is null, and |container_policy| is empty
   // for a top-level security context.
-  void InitializeFeaturePolicy(const ParsedFeaturePolicy& parsed_header,
-                               const ParsedFeaturePolicy& container_policy,
-                               const FeaturePolicy* parent_feature_policy);
+  void InitializeFeaturePolicy(const ParsedPermissionsPolicy& parsed_header,
+                               const ParsedPermissionsPolicy& container_policy,
+                               const PermissionsPolicy* parent_feature_policy);
 };
 
 }  // namespace blink

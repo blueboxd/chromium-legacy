@@ -547,16 +547,9 @@ bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
 }
 
 bool ExecutionContext::IsFeatureEnabled(
-    mojom::blink::FeaturePolicyFeature feature,
+    mojom::blink::PermissionsPolicyFeature feature,
     ReportOptions report_on_failure,
     const String& message) const {
-  if (report_on_failure == ReportOptions::kReportOnFailure) {
-    // We are expecting a violation report in case the feature is disabled in
-    // the context. Therefore, this qualifies as a potential violation (i.e.,
-    // if the feature was disabled it would generate a report).
-    CountPotentialFeaturePolicyViolation(feature);
-  }
-
   bool should_report;
   bool enabled = security_context_.IsFeatureEnabled(feature, &should_report);
 
@@ -564,7 +557,7 @@ bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::PolicyDisposition disposition =
         enabled ? mojom::blink::PolicyDisposition::kReport
                 : mojom::blink::PolicyDisposition::kEnforce;
-    ReportFeaturePolicyViolation(feature, disposition, message);
+    ReportPermissionsPolicyViolation(feature, disposition, message);
   }
   return enabled;
 }

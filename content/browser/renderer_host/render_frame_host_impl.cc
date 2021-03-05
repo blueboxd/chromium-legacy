@@ -714,15 +714,15 @@ DetermineWhetherToForbidTrustTokenRedemption(
   if (!parent)
     return network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit;
 
-  const blink::FeaturePolicy* parent_policy = parent->feature_policy();
-  blink::ParsedFeaturePolicy container_policy =
+  const blink::PermissionsPolicy* parent_policy = parent->feature_policy();
+  blink::ParsedPermissionsPolicy container_policy =
       commit_params.frame_policy.container_policy;
 
-  auto subframe_policy = blink::FeaturePolicy::CreateFromParentPolicy(
+  auto subframe_policy = blink::PermissionsPolicy::CreateFromParentPolicy(
       parent_policy, container_policy, subframe_origin);
 
   if (subframe_policy->IsFeatureEnabled(
-          blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)) {
+          blink::mojom::PermissionsPolicyFeature::kTrustTokenRedemption)) {
     return network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit;
   }
   return network::mojom::TrustTokenRedemptionPolicy::kForbid;
@@ -739,7 +739,7 @@ network::mojom::TrustTokenRedemptionPolicy
 DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
     RenderFrameHostImpl* impl) {
   return impl->IsFeatureEnabled(
-             blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)
+             blink::mojom::PermissionsPolicyFeature::kTrustTokenRedemption)
              ? network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit
              : network::mojom::TrustTokenRedemptionPolicy::kForbid;
 }
@@ -2950,9 +2950,9 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
 
   // Construct the frame's feature policy only once we know its initial
   // committed origin. It's necessary to wait for the origin because the feature
-  // policy's state depends on the origin, so the FeaturePolicy object could be
-  // configured incorrectly if it were initialized before knowing the value of
-  // |last_committed_origin_|. More at crbug.com/1112959.
+  // policy's state depends on the origin, so the PermissionsPolicy object could
+  // be configured incorrectly if it were initialized before knowing the value
+  // of |last_committed_origin_|. More at crbug.com/1112959.
   ResetFeaturePolicy();
 }
 
@@ -4032,7 +4032,7 @@ void RenderFrameHostImpl::DetachForTesting() {
 }
 
 bool RenderFrameHostImpl::IsFeatureEnabled(
-    blink::mojom::FeaturePolicyFeature feature) {
+    blink::mojom::PermissionsPolicyFeature feature) {
   return feature_policy_ && feature_policy_->IsFeatureEnabledForOrigin(
                                 feature, GetLastCommittedOrigin());
 }
@@ -5646,7 +5646,7 @@ void RenderFrameHostImpl::BeginNavigation(
       ParentNeedsTrustTokenFeaturePolicy(*begin_params)) {
     RenderFrameHostImpl* parent = GetParent();
     if (!parent->IsFeatureEnabled(
-            blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)) {
+            blink::mojom::PermissionsPolicyFeature::kTrustTokenRedemption)) {
       mojo::ReportBadMessage(
           "RFHI: Mandatory Trust Tokens Feature Policy feature is absent");
       return;
@@ -7767,7 +7767,7 @@ void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
 
 void RenderFrameHostImpl::CreatePaymentManager(
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
-  if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kPayment)) {
+  if (!IsFeatureEnabled(blink::mojom::PermissionsPolicyFeature::kPayment)) {
     mojo::ReportBadMessage("Feature policy blocks Payment");
     return;
   }
@@ -7822,11 +7822,11 @@ void RenderFrameHostImpl::CreateWebUsbService(
 
 void RenderFrameHostImpl::ResetFeaturePolicy() {
   RenderFrameHostImpl* parent_frame_host = GetParent();
-  const blink::FeaturePolicy* parent_policy =
+  const blink::PermissionsPolicy* parent_policy =
       parent_frame_host ? parent_frame_host->feature_policy() : nullptr;
-  blink::ParsedFeaturePolicy container_policy =
+  blink::ParsedPermissionsPolicy container_policy =
       frame_tree_node()->effective_frame_policy().container_policy;
-  feature_policy_ = blink::FeaturePolicy::CreateFromParentPolicy(
+  feature_policy_ = blink::PermissionsPolicy::CreateFromParentPolicy(
       parent_policy, container_policy, last_committed_origin_);
 }
 
@@ -8039,7 +8039,7 @@ void RenderFrameHostImpl::BindNFCReceiver(
 #if !defined(OS_ANDROID)
 void RenderFrameHostImpl::BindSerialService(
     mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
-  if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kSerial)) {
+  if (!IsFeatureEnabled(blink::mojom::PermissionsPolicyFeature::kSerial)) {
     mojo::ReportBadMessage("Feature policy blocks access to Serial.");
     return;
   }
@@ -8067,7 +8067,8 @@ IdleManager* RenderFrameHostImpl::GetIdleManager() {
 
 void RenderFrameHostImpl::BindIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
-  if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
+  if (!IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::kIdleDetection)) {
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
     return;
   }

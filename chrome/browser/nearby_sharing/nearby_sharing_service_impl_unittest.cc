@@ -1065,8 +1065,8 @@ class TestObserver : public NearbySharingService::Observer {
 
   void OnNearbyProcessStopped() override { process_stopped_called_ = true; }
 
-  void OnStartAdvertisingResult(bool success) override {
-    start_advertising_result_ = success;
+  void OnStartAdvertisingFailure() override {
+    on_start_advertising_failure_called_ = true;
   }
 
   void OnShutdown() override {
@@ -1077,7 +1077,7 @@ class TestObserver : public NearbySharingService::Observer {
   bool in_high_visibility_ = false;
   bool shutdown_called_ = false;
   bool process_stopped_called_ = false;
-  base::Optional<bool> start_advertising_result_ = base::nullopt;
+  bool on_start_advertising_failure_called_ = false;
   NearbySharingService* service_;
 };
 
@@ -3173,6 +3173,22 @@ TEST_F(NearbySharingServiceImplTest, RegisterReceiveSurfaceWhileSending) {
   service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
 }
 
+TEST_F(NearbySharingServiceImplTest, RegisterReceiveSurfaceWhileDiscovering) {
+  MockTransferUpdateCallback transfer_callback;
+  MockShareTargetDiscoveredCallback discovery_callback;
+  EXPECT_EQ(
+      NearbySharingService::StatusCodes::kOk,
+      service_->RegisterSendSurface(&transfer_callback, &discovery_callback,
+                                    SendSurfaceState::kForeground));
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsDiscovering());
+
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &transfer_callback,
+      NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result,
+            NearbySharingService::StatusCodes::kTransferAlreadyInProgress);
+}
+
 TEST_F(NearbySharingServiceImplTest, SendAttachments_WithoutAttachments) {
   MockTransferUpdateCallback transfer_callback;
   MockShareTargetDiscoveredCallback discovery_callback;
@@ -3572,7 +3588,7 @@ TEST_F(NearbySharingServiceImplTest,
 
   // To start, we should not be in high visibility state.
   EXPECT_FALSE(service_->IsInHighVisibility());
-  EXPECT_FALSE(observer.start_advertising_result_.has_value());
+  EXPECT_FALSE(observer.on_start_advertising_failure_called_);
 
   // If we register a foreground surface we should end up in high visibility
   // state.
@@ -3582,8 +3598,7 @@ TEST_F(NearbySharingServiceImplTest,
   // should have been called as well.
   EXPECT_TRUE(service_->IsInHighVisibility());
   EXPECT_TRUE(observer.in_high_visibility_);
-  EXPECT_TRUE(observer.start_advertising_result_.has_value() &&
-              observer.start_advertising_result_.value());
+  EXPECT_FALSE(observer.on_start_advertising_failure_called_);
 
   // If we unregister the foreground receive surface we should no longer be in
   // high visibility and the observer should be notified.

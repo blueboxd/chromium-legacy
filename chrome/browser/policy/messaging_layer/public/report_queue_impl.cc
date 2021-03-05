@@ -20,8 +20,8 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/encryption/encryption_module.h"
 #include "components/reporting/proto/record.pb.h"
 #include "components/reporting/proto/record_constants.pb.h"
@@ -83,7 +83,7 @@ Record ReportQueueImpl::AugmentRecord(base::StringPiece record_data) const {
   Record record;
   record.set_data(std::string(record_data));
   record.set_destination(config_->destination());
-  record.set_dm_token(config_->dm_token().value());
+  record.set_dm_token(config_->dm_token());
   // Calculate timestamp in microseconds - to match Spanner expectations.
   const int64_t time_since_epoch_us =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();

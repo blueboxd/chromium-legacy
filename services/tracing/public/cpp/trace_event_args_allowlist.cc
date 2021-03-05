@@ -28,7 +28,6 @@ const char* const kScopedBlockingCallAllowedArgs[] = {
     "file_name", "function_name", "source_location", nullptr};
 const char* const kPeekMessageAllowedArgs[] = {"sent_messages_in_queue",
                                                "chrome_message_pump", nullptr};
-const char* const kGPUAllowedArgs[] = {nullptr};
 // TODO(ssid): Remove this if we no longer have this argument. All latencyInfo
 // events seem to be converted already.
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
@@ -58,6 +57,8 @@ const AllowlistEntry kEventArgsAllowlist[] = {
      kMemoryPressureEventsAllowedArgs},
     {"base", "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
      kPeekMessageAllowedArgs},
+    {"base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",
+     kMemoryPressureEventsAllowedArgs},
     {"base", "ScopedAllowBaseSyncPrimitivesOutsideBlockingScope",
      kScopedBlockingCallAllowedArgs},
     {"base", "ScopedAllowBlocking", kScopedBlockingCallAllowedArgs},
@@ -65,17 +66,24 @@ const AllowlistEntry kEventArgsAllowlist[] = {
     {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
     {"base", "ScopedMayLoadLibraryAtBackgroundPriority",
      kScopedBlockingCallAllowedArgs},
+    {"browser", "TabLoader::OnMemoryPressure",
+     kMemoryPressureEventsAllowedArgs},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
+    {"memory", "RenderThreadImpl::OnMemoryPressure",
+     kMemoryPressureEventsAllowedArgs},
+    {"shutdown", "*", nullptr},
     {"startup", "PrefProvider::PrefProvider", nullptr},
     {"startup", "TestAllowlist*", nullptr},
-    // Perfetto protos are missing "TaskGraphRunner::RunTask".
     {"toplevel", "*", nullptr},
+    {"toplevel.ipc", "TaskAnnotator::RunTask", kTopLevelIpcRunTaskAllowedArgs},
     {"ui", "HWNDMessageHandler::OnWndProc", kUIAllowedArgs},
     {"ui", "HWNDMessageHandler::OnDwmCompositionChanged", kUIAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "*", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("lifecycles"), "task_posted_to_disabled_queue",
+     kLifecyclesTaskPostedAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction", nullptr},
 
     // Needs conversion to perfetto protos:
@@ -84,25 +92,12 @@ const AllowlistEntry kEventArgsAllowlist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
-    {"base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",
-     kMemoryPressureEventsAllowedArgs},
-    {"blink", "MemoryPressureListenerRegistry::onMemoryPressure",
-     kMemoryPressureEventsAllowedArgs},
-    {"browser", "TabLoader::OnMemoryPressure",
-     kMemoryPressureEventsAllowedArgs},
-    {"GPU", "*", kGPUAllowedArgs},
-    {"memory", "RenderThreadImpl::OnMemoryPressure",
-     kMemoryPressureEventsAllowedArgs},
     {"renderer_host", "*", kRendererHostAllowedArgs},
-    {"shutdown", "*", nullptr},
-    {"toplevel.ipc", "TaskAnnotator::RunTask", kTopLevelIpcRunTaskAllowedArgs},
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("system_stats"), "*", nullptr},
     {TRACE_DISABLED_BY_DEFAULT("v8.gc"), "*", kV8GCAllowedArgs},
-    {TRACE_DISABLED_BY_DEFAULT("lifecycles"), "task_posted_to_disabled_queue",
-     kLifecyclesTaskPostedAllowedArgs},
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataAllowlist[] = {"chrome-bitness",

@@ -309,9 +309,9 @@ DocumentPolicyFeatureState HTMLIFrameElement::ConstructRequiredPolicy() const {
   return new_required_policy.feature_state;
 }
 
-ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
+ParsedPermissionsPolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   if (!GetExecutionContext())
-    return ParsedFeaturePolicy();
+    return ParsedPermissionsPolicy();
 
   scoped_refptr<const SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   scoped_refptr<const SecurityOrigin> self_origin =
@@ -320,8 +320,9 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   PolicyParserMessageBuffer logger;
 
   // Start with the allow attribute
-  ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
-      allow_, self_origin, src_origin, logger, GetExecutionContext());
+  ParsedPermissionsPolicy container_policy =
+      FeaturePolicyParser::ParseAttribute(allow_, self_origin, src_origin,
+                                          logger, GetExecutionContext());
 
   // Process the allow* attributes. These only take effect if the corresponding
   // feature is not present in the allow attribute's value.
@@ -330,7 +331,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   // enable the feature for all origins.
   if (AllowFullscreen()) {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
-        mojom::blink::FeaturePolicyFeature::kFullscreen, container_policy);
+        mojom::blink::PermissionsPolicyFeature::kFullscreen, container_policy);
     if (!policy_changed) {
       logger.Warn(
           "Allow attribute will take precedence over 'allowfullscreen'.");
@@ -340,7 +341,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   // set, enable the feature for all origins.
   if (AllowPaymentRequest()) {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
-        mojom::blink::FeaturePolicyFeature::kPayment, container_policy);
+        mojom::blink::PermissionsPolicyFeature::kPayment, container_policy);
     if (!policy_changed) {
       logger.Warn(
           "Allow attribute will take precedence over 'allowpaymentrequest'.");
@@ -439,7 +440,7 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
 
   if (operation_requires_feature_policy &&
       (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kTrustTokenRedemption))) {
+          mojom::blink::PermissionsPolicyFeature::kTrustTokenRedemption))) {
     GetExecutionContext()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
             mojom::blink::ConsoleMessageSource::kOther,

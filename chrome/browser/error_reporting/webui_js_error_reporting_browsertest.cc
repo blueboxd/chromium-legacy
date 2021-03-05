@@ -37,7 +37,10 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using ::testing::Contains;
+using ::testing::Field;
 using ::testing::HasSubstr;
+using ::testing::SizeIs;
 
 namespace {
 // Must match message in
@@ -168,11 +171,12 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest, ReportsErrors) {
 
   // Look for page load error report.
   MockCrashEndpoint::Report report = endpoint.WaitForReport();
-  EXPECT_EQ(endpoint.report_count(), 1);
-  EXPECT_THAT(report.query, HasSubstr(kPageLoadMessage));
+  EXPECT_THAT(endpoint.all_reports(), SizeIs(1));
+  EXPECT_THAT(report.query, HasSubstr(kPageLoadMessage)) << report;
   // Expect that we get a good stack trace as well
   EXPECT_THAT(report.content, AllOf(HasSubstr("logsErrorDuringPageLoadOuter"),
-                                    HasSubstr("logsErrorDuringPageLoadInner")));
+                                    HasSubstr("logsErrorDuringPageLoadInner")))
+      << report;
 
   endpoint.clear_last_report();
   content::WebContents* web_contents =
@@ -183,12 +187,13 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest, ReportsErrors) {
                             ui::VKEY_T, /*control=*/false, /*shift=*/false,
                             /*alt=*/true, /*command=*/false);
   report = endpoint.WaitForReport();
-  EXPECT_EQ(endpoint.report_count(), 2);
+  EXPECT_THAT(endpoint.all_reports(), SizeIs(2));
   constexpr char kExceptionButtonMessage[] =
       "WebUI%20JS%20Error%3A%20exception%20button%20clicked";
-  EXPECT_THAT(report.query, HasSubstr(kExceptionButtonMessage));
+  EXPECT_THAT(report.query, HasSubstr(kExceptionButtonMessage)) << report;
   EXPECT_THAT(report.content, AllOf(HasSubstr("throwExceptionHandler"),
-                                    HasSubstr("throwExceptionInner")));
+                                    HasSubstr("throwExceptionInner")))
+      << report;
 
   endpoint.clear_last_report();
   // Trigger console.error call.
@@ -196,13 +201,14 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest, ReportsErrors) {
                             ui::VKEY_L, /*control=*/false, /*shift=*/false,
                             /*alt=*/true, /*command=*/false);
   report = endpoint.WaitForReport();
-  EXPECT_EQ(endpoint.report_count(), 3);
+  EXPECT_THAT(endpoint.all_reports(), SizeIs(3));
   constexpr char kTriggeredErrorMessage[] =
       "WebUI%20JS%20Error%3A%20printing%20error%20on%20button%20click";
-  EXPECT_THAT(report.query, HasSubstr(kTriggeredErrorMessage));
+  EXPECT_THAT(report.query, HasSubstr(kTriggeredErrorMessage)) << report;
   EXPECT_THAT(report.content,
               AllOf(HasSubstr("logsErrorFromButtonClickHandler"),
-                    HasSubstr("logsErrorFromButtonClickInner")));
+                    HasSubstr("logsErrorFromButtonClickInner")))
+      << report;
 
   endpoint.clear_last_report();
   // Trigger unhandled promise rejection.
@@ -210,27 +216,19 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest, ReportsErrors) {
                             ui::VKEY_P, /*control=*/false, /*shift=*/false,
                             /*alt=*/true, /*command=*/false);
   report = endpoint.WaitForReport();
-  EXPECT_EQ(endpoint.report_count(), 4);
+  EXPECT_THAT(endpoint.all_reports(), SizeIs(4));
   constexpr char kUnhandledPromiseRejectionMessage[] =
       "WebUI%20JS%20Error%3A%20The%20rejector%20always%20rejects!";
-  EXPECT_THAT(report.query, HasSubstr(kUnhandledPromiseRejectionMessage));
+  EXPECT_THAT(report.query, HasSubstr(kUnhandledPromiseRejectionMessage))
+      << report;
   // V8 doesn't produce stacks for unhandle promise rejections.
 }
 
 // Set up a profile with "Continue where you left off". Navigate to the JS error
 // page. Ensure that when the browser is closed and reopened, on-page-load
 // errors are still reported.
-//
-// Flaky on linux: crbug.com/1183025
-#if defined(OS_LINUX)
-#define MAYBE_ReportsErrorsDuringContinueWhereYouLeftOff \
-  DISABLED_ReportsErrorsDuringContinueWhereYouLeftOff
-#else
-#define MAYBE_ReportsErrorsDuringContinueWhereYouLeftOff \
-  ReportsErrorsDuringContinueWhereYouLeftOff
-#endif
 IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest,
-                       MAYBE_ReportsErrorsDuringContinueWhereYouLeftOff) {
+                       ReportsErrorsDuringContinueWhereYouLeftOff) {
   MockCrashEndpoint endpoint(embedded_test_server());
   auto mock_processor =
       std::make_unique<ScopedMockChromeJsErrorReportProcessor>(endpoint);
@@ -268,8 +266,24 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest,
   }
 
   MockCrashEndpoint::Report report = endpoint.WaitForReport();
-  EXPECT_EQ(endpoint.report_count(), 2);
-  EXPECT_THAT(report.query, HasSubstr(kPageLoadMessage));
+
+  // Temporary workaround for https://crbug.com/1183025. The new tab page is
+  // spitting out errors which confuse this test. Skip the known error in the
+  // JS function onModulesLoadedAndVisibilityDeterminedChange().
+  // TODO(https://crbug.com/1183025) Remove workaround
+  if (endpoint.all_reports().size() == 3) {
+    // When we get an error from NTP, it happens during browser startup, so
+    // |report| is still the error we want. Make sure that the extra error was
+    // the NTP error we expect.
+    EXPECT_THAT(
+        endpoint.all_reports(),
+        Contains(
+            Field(&MockCrashEndpoint::Report::content,
+                  HasSubstr("onModulesLoadedAndVisibilityDeterminedChange"))));
+  } else {
+    EXPECT_THAT(endpoint.all_reports(), SizeIs(2));
+  }
+  EXPECT_THAT(report.query, HasSubstr(kPageLoadMessage)) << report;
 }
 
 // Show that navigating from a WebUI page to a http page that produces
@@ -283,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest, NoErrorsAfterNavigation) {
 
   // Wait for page load error report.
   MockCrashEndpoint::Report report = endpoint.WaitForReport();
-  EXPECT_EQ(endpoint.report_count(), 1);
+  EXPECT_THAT(endpoint.all_reports(), SizeIs(1));
   EXPECT_EQ(mock_processor.processor().send_count(), 1);
 
   {
@@ -306,6 +320,6 @@ IN_PROC_BROWSER_TEST_F(WebUIJSErrorReportingTest, NoErrorsAfterNavigation) {
   }
 
   // Count should not change.
-  EXPECT_EQ(endpoint.report_count(), 1);
+  EXPECT_THAT(endpoint.all_reports(), SizeIs(1));
   EXPECT_EQ(mock_processor.processor().send_count(), 1);
 }

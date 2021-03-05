@@ -169,12 +169,17 @@ class ASH_EXPORT DesksBarView : public views::View,
   // their final positions if |initializing_bar_view| is false.
   void UpdateNewMiniViews(bool initializing_bar_view, bool expanding_bar_view);
 
+  // If the focused |mini_view| is outside of the scroll view's visible bounds,
+  // scrolls the bar to make sure it can always be seen.
+  void ScrollToShowMiniViewIfNecessary(const DeskMiniView* mini_view);
+
   ScrollArrowButton* GetLeftScrollButtonForTesting() const {
     return left_scroll_button_;
   }
   ScrollArrowButton* GetRightScrollButtonForTesting() const {
     return right_scroll_button_;
   }
+  views::ScrollView* GetScrollViewForTesting() const { return scroll_view_; }
 
  private:
   friend class BentoDesksBarLayout;
@@ -213,13 +218,11 @@ class ASH_EXPORT DesksBarView : public views::View,
   // the corresponding scroll button is visible.
   void UpdateGradientZone();
 
-  // Performs on clicking the |left_scroll_button_|, scrolls to the start
-  // position of the scroll view.
-  void ClickOnLeftScrollButton();
-
-  // Performs on clicking the |right_scroll_button_|, scrolls to the end
-  // position of the scroll view.
-  void ClickOnRightScrollButton();
+  // Scrolls the desks bar to the previous or next page. The page size is the
+  // width of the scroll view, the contents that are outside of the scroll view
+  // will be clipped and can not be seen.
+  void ScrollToPreviousPage();
+  void ScrollToNextPage();
 
   // A view that shows a dark gary transparent background that can be animated
   // when the very first mini_views are created.

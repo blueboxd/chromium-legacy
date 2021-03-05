@@ -35,7 +35,7 @@ namespace blink {
 // Features
 // --------
 // Features which can be controlled by policy are defined by instances of enum
-// mojom::FeaturePolicyFeature, declared in |feature_policy.mojom|.
+// mojom::PermissionsPolicyFeature, declared in |feature_policy.mojom|.
 //
 // Allowlists
 // ----------
@@ -76,8 +76,8 @@ namespace blink {
 //
 // If the default policy is in effect for a frame, then it controls how the
 // feature is inherited by any cross-origin iframes embedded by the frame. (See
-// the comments in |FeaturePolicyFeatureDefault| in feature_policy_features.h
-// for specifics.)
+// the comments in |PermissionsPolicyFeatureDefault| in
+// feature_policy_features.h for specifics.)
 //
 // Policy Inheritance
 // ------------------
@@ -86,25 +86,27 @@ namespace blink {
 // receive the same set of enabled features as the parent frame. Whether or not
 // features are inherited by cross-origin iframes without an explicit policy is
 // determined by the feature's default policy. (Again, see the comments in
-// |FeaturePolicyFeatureDefault| in feature_policy_features.h for details)
+// |PermissionsPolicyFeatureDefault| in feature_policy_features.h for details)
 
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
-// these form a ParsedFeaturePolicy.
+// these form a ParsedPermissionsPolicy.
 // NOTE: These types are used for replication frame state between processes.
-struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
-  ParsedFeaturePolicyDeclaration();
-  explicit ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature);
-  ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
-                                 const std::vector<url::Origin>& values,
-                                 bool matches_all_origins,
-                                 bool matches_opaque_src);
-  ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
-  ParsedFeaturePolicyDeclaration& operator=(
-      const ParsedFeaturePolicyDeclaration& rhs);
-  ~ParsedFeaturePolicyDeclaration();
+struct BLINK_COMMON_EXPORT ParsedPermissionsPolicyDeclaration {
+  ParsedPermissionsPolicyDeclaration();
+  explicit ParsedPermissionsPolicyDeclaration(
+      mojom::PermissionsPolicyFeature feature);
+  ParsedPermissionsPolicyDeclaration(mojom::PermissionsPolicyFeature feature,
+                                     const std::vector<url::Origin>& values,
+                                     bool matches_all_origins,
+                                     bool matches_opaque_src);
+  ParsedPermissionsPolicyDeclaration(
+      const ParsedPermissionsPolicyDeclaration& rhs);
+  ParsedPermissionsPolicyDeclaration& operator=(
+      const ParsedPermissionsPolicyDeclaration& rhs);
+  ~ParsedPermissionsPolicyDeclaration();
 
-  mojom::FeaturePolicyFeature feature;
+  mojom::PermissionsPolicyFeature feature;
 
   // An alphabetically sorted list of all the origins allowed.
   std::vector<url::Origin> allowed_origins;
@@ -118,12 +120,13 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   bool matches_opaque_src{false};
 };
 
-using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
+using ParsedPermissionsPolicy = std::vector<ParsedPermissionsPolicyDeclaration>;
 
-bool BLINK_COMMON_EXPORT operator==(const ParsedFeaturePolicyDeclaration& lhs,
-                                    const ParsedFeaturePolicyDeclaration& rhs);
+bool BLINK_COMMON_EXPORT
+operator==(const ParsedPermissionsPolicyDeclaration& lhs,
+           const ParsedPermissionsPolicyDeclaration& rhs);
 
-class BLINK_COMMON_EXPORT FeaturePolicy {
+class BLINK_COMMON_EXPORT PermissionsPolicy {
  public:
   // Represents a collection of origins which make up an allowlist in a feature
   // policy. This collection may be set to match every origin (corresponding to
@@ -165,67 +168,68 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     bool matches_opaque_src_{false};
   };
 
-  ~FeaturePolicy();
+  ~PermissionsPolicy();
 
-  static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
-      const FeaturePolicy* parent_policy,
-      const ParsedFeaturePolicy& container_policy,
+  static std::unique_ptr<PermissionsPolicy> CreateFromParentPolicy(
+      const PermissionsPolicy* parent_policy,
+      const ParsedPermissionsPolicy& container_policy,
       const url::Origin& origin);
 
-  static std::unique_ptr<FeaturePolicy> CopyStateFrom(const FeaturePolicy*);
+  static std::unique_ptr<PermissionsPolicy> CopyStateFrom(
+      const PermissionsPolicy*);
 
-  bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const;
+  bool IsFeatureEnabled(mojom::PermissionsPolicyFeature feature) const;
 
   // Returns whether or not the given feature is enabled by this policy for a
   // specific origin.
-  bool IsFeatureEnabledForOrigin(mojom::FeaturePolicyFeature feature,
+  bool IsFeatureEnabledForOrigin(mojom::PermissionsPolicyFeature feature,
                                  const url::Origin& origin) const;
 
   const Allowlist GetAllowlistForDevTools(
-      mojom::FeaturePolicyFeature feature) const;
+      mojom::PermissionsPolicyFeature feature) const;
 
   // Returns the allowlist of a given feature by this policy.
-  // TODO(crbug.com/937131): Use |FeaturePolicy::GetAllowlistForDevTools|
+  // TODO(crbug.com/937131): Use |PermissionsPolicy::GetAllowlistForDevTools|
   // to replace this method. This method uses legacy |default_allowlist|
   // calculation method.
   const Allowlist GetAllowlistForFeature(
-      mojom::FeaturePolicyFeature feature) const;
+      mojom::PermissionsPolicyFeature feature) const;
 
   // Sets the declared policy from the parsed Feature-Policy HTTP header.
   // Unrecognized features will be ignored.
-  void SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header);
+  void SetHeaderPolicy(const ParsedPermissionsPolicy& parsed_header);
 
   // Returns the current state of feature policies for |origin_|. This includes
   // the |inherited_policies_| as well as the header policies.
-  FeaturePolicyFeatureState GetFeatureState() const;
+  PermissionsPolicyFeatureState GetFeatureState() const;
 
   const url::Origin& GetOriginForTest() const { return origin_; }
 
   // Returns the list of features which can be controlled by Feature Policy.
-  const FeaturePolicyFeatureList& GetFeatureList() const;
+  const PermissionsPolicyFeatureList& GetFeatureList() const;
 
   bool IsFeatureEnabledByInheritedPolicy(
-      mojom::FeaturePolicyFeature feature) const;
+      mojom::PermissionsPolicyFeature feature) const;
 
  private:
   friend class FeaturePolicyTest;
 
-  FeaturePolicy(url::Origin origin,
-                const FeaturePolicyFeatureList& feature_list);
-  static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
-      const FeaturePolicy* parent_policy,
-      const ParsedFeaturePolicy& container_policy,
+  PermissionsPolicy(url::Origin origin,
+                    const PermissionsPolicyFeatureList& feature_list);
+  static std::unique_ptr<PermissionsPolicy> CreateFromParentPolicy(
+      const PermissionsPolicy* parent_policy,
+      const ParsedPermissionsPolicy& container_policy,
       const url::Origin& origin,
-      const FeaturePolicyFeatureList& features);
+      const PermissionsPolicyFeatureList& features);
 
   bool InheritedValueForFeature(
-      const FeaturePolicy* parent_policy,
-      std::pair<mojom::FeaturePolicyFeature, FeaturePolicyFeatureDefault>
-          feature,
-      const ParsedFeaturePolicy& container_policy) const;
+      const PermissionsPolicy* parent_policy,
+      std::pair<mojom::PermissionsPolicyFeature,
+                PermissionsPolicyFeatureDefault> feature,
+      const ParsedPermissionsPolicy& container_policy) const;
 
   // Returns the value of the given feature on the given origin.
-  bool GetFeatureValueForOrigin(mojom::FeaturePolicyFeature feature,
+  bool GetFeatureValueForOrigin(mojom::PermissionsPolicyFeature feature,
                                 const url::Origin& origin) const;
 
   // The origin of the document with which this policy is associated.
@@ -233,15 +237,15 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // Map of feature names to declared allowlists. Any feature which is missing
   // from this map should use the inherited policy.
-  std::map<mojom::FeaturePolicyFeature, Allowlist> allowlists_;
+  std::map<mojom::PermissionsPolicyFeature, Allowlist> allowlists_;
 
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.
-  FeaturePolicyFeatureState inherited_policies_;
+  PermissionsPolicyFeatureState inherited_policies_;
 
-  const FeaturePolicyFeatureList& feature_list_;
+  const PermissionsPolicyFeatureList& feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(FeaturePolicy);
+  DISALLOW_COPY_AND_ASSIGN(PermissionsPolicy);
 };
 
 }  // namespace blink

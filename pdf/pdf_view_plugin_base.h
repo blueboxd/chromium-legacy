@@ -62,10 +62,19 @@ class PdfViewPluginBase : public PDFEngine::Client,
                              const float* x,
                              const float* y,
                              const float* zoom) override;
+  void NotifyTouchSelectionOccurred() override;
   void GetDocumentPassword(
       base::OnceCallback<void(const std::string&)> callback) override;
+  void Beep() override;
+  std::string GetURL() override;
+  void Email(const std::string& to,
+             const std::string& cc,
+             const std::string& bcc,
+             const std::string& subject,
+             const std::string& body) override;
   SkColor GetBackgroundColor() override;
   void SetIsSelecting(bool is_selecting) override;
+  void DocumentFocusChanged(bool document_has_focus) override;
 
   // PaintManager::Client
   void OnPaint(const std::vector<gfx::Rect>& paint_rects,
@@ -142,6 +151,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // Consumes a token for saving the document.
   void ConsumeSaveToken(const std::string& token);
+
+  // Sends the attachments data.
+  void SendAttachments();
 
   // Sends the bookmarks data.
   void SendBookmarks();
@@ -220,6 +232,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
     return size > 0 && size <= kMaximumSavedFileSize;
   }
 
+  void set_url(const std::string& url) { url_ = url; }
+
   const SkBitmap& image_data() const { return image_data_; }
   SkBitmap& mutable_image_data() { return image_data_; }
 
@@ -255,6 +269,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   AccessibilityState accessibility_state() { return accessibility_state_; }
 
+  bool edit_mode() const { return edit_mode_; }
+  void set_edit_mode(bool edit_mode) { edit_mode_ = edit_mode; }
+
  private:
   // Message handlers.
   void HandleDisplayAnnotationsMessage(const base::Value& message);
@@ -286,6 +303,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   std::unique_ptr<PDFiumEngine> engine_;
   PaintManager paint_manager_{this};
+
+  // The URL of the PDF document.
+  std::string url_;
 
   // Image data buffer for painting.
   SkBitmap image_data_;
@@ -364,6 +384,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // The next accessibility page index, used to track interprocess calls when
   // reconstructing the tree for new document layouts.
   int32_t next_accessibility_page_index_ = 0;
+
+  // Whether the document is in edit mode.
+  bool edit_mode_ = false;
 };
 
 }  // namespace chrome_pdf

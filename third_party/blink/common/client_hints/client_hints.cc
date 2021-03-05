@@ -38,25 +38,25 @@ const char* const kClientHintsHeaderMapping[] = {
 
 const unsigned kClientHintsNumberOfLegacyHints = 4;
 
-const mojom::FeaturePolicyFeature kClientHintsFeaturePolicyMapping[] = {
-    // Legacy Hints that are sent cross-origin regardless of FeaturePolicy when
-    // kAllowClientHintsToThirdParty is enabled
-    mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
-    mojom::FeaturePolicyFeature::kClientHintDPR,
-    mojom::FeaturePolicyFeature::kClientHintWidth,
-    mojom::FeaturePolicyFeature::kClientHintViewportWidth,
+const mojom::PermissionsPolicyFeature kClientHintsFeaturePolicyMapping[] = {
+    // Legacy Hints that are sent cross-origin regardless of Permissions Policy
+    // when kAllowClientHintsToThirdParty is enabled.
+    mojom::PermissionsPolicyFeature::kClientHintDeviceMemory,
+    mojom::PermissionsPolicyFeature::kClientHintDPR,
+    mojom::PermissionsPolicyFeature::kClientHintWidth,
+    mojom::PermissionsPolicyFeature::kClientHintViewportWidth,
     // End of legacy hints.
-    mojom::FeaturePolicyFeature::kClientHintRTT,
-    mojom::FeaturePolicyFeature::kClientHintDownlink,
-    mojom::FeaturePolicyFeature::kClientHintECT,
-    mojom::FeaturePolicyFeature::kClientHintLang,
-    mojom::FeaturePolicyFeature::kClientHintUA,
-    mojom::FeaturePolicyFeature::kClientHintUAArch,
-    mojom::FeaturePolicyFeature::kClientHintUAPlatform,
-    mojom::FeaturePolicyFeature::kClientHintUAModel,
-    mojom::FeaturePolicyFeature::kClientHintUAMobile,
-    mojom::FeaturePolicyFeature::kClientHintUAFullVersion,
-    mojom::FeaturePolicyFeature::kClientHintUAPlatformVersion,
+    mojom::PermissionsPolicyFeature::kClientHintRTT,
+    mojom::PermissionsPolicyFeature::kClientHintDownlink,
+    mojom::PermissionsPolicyFeature::kClientHintECT,
+    mojom::PermissionsPolicyFeature::kClientHintLang,
+    mojom::PermissionsPolicyFeature::kClientHintUA,
+    mojom::PermissionsPolicyFeature::kClientHintUAArch,
+    mojom::PermissionsPolicyFeature::kClientHintUAPlatform,
+    mojom::PermissionsPolicyFeature::kClientHintUAModel,
+    mojom::PermissionsPolicyFeature::kClientHintUAMobile,
+    mojom::PermissionsPolicyFeature::kClientHintUAFullVersion,
+    mojom::PermissionsPolicyFeature::kClientHintUAPlatformVersion,
 };
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsHeaderMapping);
@@ -132,8 +132,8 @@ bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
 }
 
 // Add a list of Client Hints headers to be removed to the output vector, based
-// on FeaturePolicy and the url's origin.
-void FindClientHintsToRemove(const FeaturePolicy* feature_policy,
+// on PermissionsPolicy and the url's origin.
+void FindClientHintsToRemove(const PermissionsPolicy* feature_policy,
                              const GURL& url,
                              std::vector<std::string>* removed_headers) {
   DCHECK(removed_headers);

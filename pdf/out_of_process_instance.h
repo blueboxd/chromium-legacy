@@ -36,7 +36,6 @@ class Vector2d;
 namespace pp {
 class Size;
 class TextInput_Dev;
-class VarArray;
 class VarDictionary;
 }  // namespace pp
 
@@ -103,18 +102,10 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
-  void NotifyTouchSelectionOccurred() override;
-  void Beep() override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  std::string GetURL() override;
-  void Email(const std::string& to,
-             const std::string& cc,
-             const std::string& bcc,
-             const std::string& subject,
-             const std::string& body) override;
   void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
@@ -132,7 +123,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   bool IsPrintPreview() override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void EnteredEditMode() override;
-  void DocumentFocusChanged(bool document_has_focus) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
@@ -184,14 +174,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   void ResetRecentlySentFindUpdate(int32_t);
 
-  // Returns a VarArray of Attachments. Each Attachment is a VarDictionary
-  // which contains the following key/values:
-  // - "name" - a string Var.
-  // - "size" - an int Var (-1 indicates the attachment file is too big to be
-  // downloaded).
-  // - "readable" a bool Var.
-  pp::VarArray GetDocumentAttachments();
-
   bool CanSaveEdits() const;
   void SaveToFile(const std::string& token);
   void SaveToBuffer(const std::string& token);
@@ -226,9 +208,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // Send a notification that the print preview has loaded.
   void SendPrintPreviewLoadedNotification();
-
-  // Send attachments.
-  void SendAttachments();
 
   // Send document metadata.
   void SendMetadata();
@@ -311,8 +290,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // interface which has very limited access to the pp::Instance.
   std::unique_ptr<PDFiumEngine> preview_engine_;
 
-  std::string url_;
-
   // Used for submitting forms.
   std::unique_ptr<UrlLoader> form_loader_;
 
@@ -365,8 +342,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // request so that it can start the throbber. We will tell it again once the
   // document finishes loading.
   bool did_call_start_loading_ = false;
-
-  bool edit_mode_ = false;
 
   base::WeakPtrFactory<OutOfProcessInstance> weak_factory_{this};
 };

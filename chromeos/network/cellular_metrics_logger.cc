@@ -151,6 +151,7 @@ void CellularMetricsLogger::NetworkListChanged() {
 void CellularMetricsLogger::OnInitializationTimeout() {
   CheckForActivationStateMetric();
   CheckForCellularUsageCountMetric();
+  CheckForCellularServiceCountMetric();
 }
 
 void CellularMetricsLogger::LoggedInStateChanged() {
@@ -161,6 +162,11 @@ void CellularMetricsLogger::LoggedInStateChanged() {
   // the user logs in.
   is_activation_state_logged_ = false;
   CheckForActivationStateMetric();
+
+  // This flag ensures that the service count is only logged once when
+  // the user logs in.
+  is_service_count_logged_ = false;
+  CheckForCellularServiceCountMetric();
 }
 
 void CellularMetricsLogger::NetworkConnectionStateChanged(
@@ -285,6 +291,33 @@ void CellularMetricsLogger::CheckForActivationStateMetric() {
   is_activation_state_logged_ = true;
 }
 
+void CellularMetricsLogger::CheckForCellularServiceCountMetric() {
+  if (!is_cellular_available_ || is_service_count_logged_ ||
+      !CellularMetricsLogger::IsLoggedInUserOwnerOrRegular()) {
+    return;
+  }
+
+  NetworkStateHandler::NetworkStateList network_list;
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Cellular(), &network_list);
+
+  size_t psim_networks = 0;
+  size_t esim_profiles = 0;
+
+  for (const auto* network : network_list) {
+    if (!network->eid().empty())
+      esim_profiles++;
+    else
+      psim_networks++;
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Network.Cellular.PSim.ServiceAtLogin.Count",
+                           psim_networks);
+  UMA_HISTOGRAM_COUNTS_100("Network.Cellular.ESim.ServiceAtLogin.Count",
+                           esim_profiles);
+  is_service_count_logged_ = true;
+}
+
 void CellularMetricsLogger::CheckForCellularUsageCountMetric() {
   if (!is_cellular_available_)
     return;
@@ -293,36 +326,49 @@ void CellularMetricsLogger::CheckForCellularUsageCountMetric() {
   network_state_handler_->GetVisibleNetworkListByType(
       NetworkTypePattern::NonVirtual(), &network_list);
 
-  bool is_cellular_connected = false;
+  base::Optional<const NetworkState*> connected_cellular_network;
   bool is_non_cellular_connected = false;
-  for (const auto* network : network_list) {
+  for (auto* network : network_list) {
     if (!network->IsConnectedState())
       continue;
 
+    // Note: Only one cellular network may be ever connected.
     if (network->Matches(NetworkTypePattern::Cellular()))
-      is_cellular_connected = true;
+      connected_cellular_network = network;
     else
       is_non_cellular_connected = true;
   }
 
   // Discard not-connected states received before the timer runs out.
-  if (!is_cellular_connected && initialization_timer_.IsRunning())
+  if (!connected_cellular_network.has_value() &&
+      initialization_timer_.IsRunning()) {
     return;
+  }
 
   CellularUsage usage;
-  if (is_cellular_connected) {
+  base::Optional<SimType> sim_type;
+  if (connected_cellular_network.has_value()) {
     usage = is_non_cellular_connected
                 ? CellularUsage::kConnectedWithOtherNetwork
                 : CellularUsage::kConnectedAndOnlyNetwork;
+    sim_type = connected_cellular_network.value()->eid().empty()
+                   ? SimType::kPSim
+                   : SimType::kESim;
   } else {
     usage = CellularUsage::kNotConnected;
   }
 
-  if (usage == last_cellular_usage_)
-    return;
-  last_cellular_usage_ = usage;
+  if (!sim_type.has_value() || *sim_type == SimType::kPSim) {
+    if (usage != last_psim_cellular_usage_)
+      UMA_HISTOGRAM_ENUMERATION("Network.Cellular.PSim.Usage.Count", usage);
+    last_psim_cellular_usage_ = usage;
+  }
 
-  UMA_HISTOGRAM_ENUMERATION("Network.Cellular.Usage.Count", usage);
+  if (!sim_type.has_value() || *sim_type == SimType::kESim) {
+    if (usage != last_esim_cellular_usage_)
+      UMA_HISTOGRAM_ENUMERATION("Network.Cellular.ESim.Usage.Count", usage);
+    last_esim_cellular_usage_ = usage;
+  }
 }
 
 CellularMetricsLogger::ConnectionInfo*

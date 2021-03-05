@@ -18,7 +18,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/secure_dns_policy_handler.h"
 #include "chrome/browser/policy/boolean_disabling_policy_handler.h"
@@ -1239,6 +1239,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSigninInterceptionEnabled,
     base::Value::Type::BOOLEAN },
 #endif // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+
+// TODO(crbug.com/1179280): Remove OS_LINUX once https://crbug.com/1169547 is
+// done.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  { key::kLacrosSecondaryProfilesAllowed,
+    prefs::kLacrosSecondaryProfilesAllowed,
+    base::Value::Type::BOOLEAN },
+#endif // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kBackgroundModeEnabled,

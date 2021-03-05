@@ -125,6 +125,9 @@ const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUINewTabIconHost[] = "ntpicon";
 const char kChromeUINewTabPageHost[] = "new-tab-page";
 const char kChromeUINewTabPageURL[] = "chrome://new-tab-page";
+const char kChromeUINewTabPageThirdPartyHost[] = "new-tab-page-third-party";
+const char kChromeUINewTabPageThirdPartyURL[] =
+    "chrome://new-tab-page-third-party/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
@@ -409,6 +412,8 @@ const char kChromeUITabStripURL[] = "chrome://tab-strip";
 #if !defined(OS_ANDROID)
 const char kChromeUICommanderHost[] = "commander";
 const char kChromeUICommanderURL[] = "chrome://commander";
+const char kChromeUIDownloadShelfHost[] = "download-shelf.top-chrome";
+const char kChromeUIDownloadShelfURL[] = "chrome://download-shelf.top-chrome/";
 const char kChromeUITabSearchHost[] = "tab-search.top-chrome";
 const char kChromeUITabSearchURL[] = "chrome://tab-search.top-chrome/";
 #endif
@@ -546,6 +551,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIHelpHost,
     kChromeUIInspectHost,
     kChromeUINewTabPageHost,
+    kChromeUINewTabPageThirdPartyHost,
     kChromeUISettingsHost,
     kChromeUISystemInfoHost,
 #endif

@@ -2949,6 +2949,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppListNonAppImpressionCategory">
+  <obsolete>
+    Deprecated March 2021.
+  </obsolete>
   <int value="0" label="APPS"/>
   <int value="1" label="SEARCH_RESULTS"/>
   <int value="2" label="START"/>
@@ -2956,6 +2959,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppListNonAppImpressionDeviceMode">
+  <obsolete>
+    Deprecated March 2021.
+  </obsolete>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="FILE"/>
   <int value="2" label="HISTORY"/>
@@ -2968,6 +2974,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppListNonAppImpressionFileExtension">
+  <obsolete>
+    Deprecated March 2021.
+  </obsolete>
   <int value="0" label=".3ga"/>
   <int value="1" label=".3gp"/>
   <int value="2" label=".aac"/>
@@ -10708,8 +10717,9 @@ histogram as enum -->
 <enum name="ChromeOSUserImageId">
   <summary>
     Indices of the default images as defined in
-    chrome/browser/chromeos/login/default_user_images.cc. The last three values
-    are for taken photo, downloaded file and the image previously used by user.
+    chrome/browser/ash/login/users/default_user_image/default_user_images.cc.
+    The last three values are for taken photo, downloaded file and the image
+    previously used by user.
   </summary>
   <int value="0" label="Default, Beaker"/>
   <int value="1" label="Default, Bee"/>
@@ -23801,6 +23811,7 @@ Called by update_document_policy_enum.py.-->
   <int value="829" label="SuppressDifferentOriginSubframeJSDialogs"/>
   <int value="830" label="DeviceBorealisAllowed"/>
   <int value="831" label="UserBorealisAllowed"/>
+  <int value="832" label="LacrosSecondaryProfilesAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -24050,7 +24061,7 @@ Called by update_document_policy_enum.py.-->
 <enum name="EnterpriseUserSessionLogins">
   <summary>
     Types of sign-in events as defined in
-    chrome/browser/chromeos/login/enterprise_user_session_metrics.h
+    chrome/browser/ash/login/enterprise_user_session_metrics.h
   </summary>
   <int value="0" label="Regular user"/>
   <int value="1" label="Manual public session"/>
@@ -31226,7 +31237,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3374" label="V8RTCRtpTransceiver_Stopped_AttributeGetter"/>
   <int value="3375" label="V8RTCRtpTransceiver_Stop_Method"/>
   <int value="3376" label="SecurePaymentConfirmation"/>
-  <int value="3377" label="CSSInvalidVariableUnset"/>
+  <int value="3377" label="OBSOLETE_CSSInvalidVariableUnset"/>
   <int value="3378" label="ElementInternalsShadowRoot"/>
   <int value="3379" label="AnyPiiFieldDetected_PredictedTypeMatch"/>
   <int value="3380" label="EmailFieldDetected_PredictedTypeMatch"/>
@@ -45020,6 +45031,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-631614101" label="CameraSystemWebApp:enabled"/>
+  <int value="-630336909" label="ArcResizeLock:enabled"/>
   <int value="-629041881" label="MuteNotificationsDuringScreenShare:disabled"/>
   <int value="-626329144" label="SyncSupportTrustedVaultPassphrase:enabled"/>
   <int value="-626211146" label="DesktopMinimalUI:disabled"/>
@@ -47712,6 +47724,7 @@ from previous Chrome versions.
   <int value="1874195462" label="ChromeHomeMenuItemsExpandSheet:disabled"/>
   <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
   <int value="1875156497" label="CaptureMode:enabled"/>
+  <int value="1875719680" label="ArcResizeLock:disabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1880955305" label="enable-preconnect-to-search"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>

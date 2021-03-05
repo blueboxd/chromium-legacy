@@ -162,6 +162,49 @@ dpsl.AvailableRoutinesList;
  */
 dpsl.RoutineStatus;
 
+/**
+ * Params object of dpsl.diagnostics.battery.runChargeRoutine()
+ * @typedef {{
+ *   lengthSeconds: !number,
+ *   minimumChargePercentRequired: !number
+ * }}
+ */
+dpsl.BatteryChargeRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.battery.runDischargeRoutine()
+ * @typedef {{
+ *   lengthSeconds: !number,
+ *   maximumDischargePercentAllowed: !number
+ * }}
+ */
+dpsl.BatteryDischargeRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.nvme.runWearLevelRoutine()
+ * @typedef {{wearLevelThreshold: !number}}
+ */
+dpsl.NvmeWearLevelRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.power.{runAcConnectedRoutine(),
+ * runAcDisconnectedRoutine()}
+ * @typedef {{expectedPowerType: !string}}
+ */
+dpsl.PowerAcRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.cpu.{runCacheRoutine(), runStressRoutine(),
+ * runFloatingPointAccuracyRoutine()}
+ * @typedef {{duration: !number}}
+ */
+dpsl.CpuRoutineDurationParams;
+
+/**
+ * Params object of dpsl.diagnostics.cpu.runPrimeSearchRoutine()
+ * @typedef {{lengthSeconds: !number, maximumNumber: !number}}
+ */
+dpsl.CpuPrimeSearchRoutineParams;
 //////////////////// dpsl.system_events.* type definitions /////////////////////
 
 /**

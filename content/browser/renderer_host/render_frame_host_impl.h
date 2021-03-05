@@ -263,7 +263,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public SiteInstanceImpl::Observer,
       public blink::mojom::BackForwardCacheControllerHost,
       public blink::mojom::LocalFrameHost,
-      public network::CSPContext,
       public blink::mojom::LocalMainFrameHost,
       public ui::AXActionHandlerBase,
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -482,15 +481,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstanceImpl::Observer
   void RenderProcessGone(SiteInstanceImpl* site_instance,
                          const ChildProcessTerminationInfo& info) override;
-
-  // network::CSPContext
-  void ReportContentSecurityPolicyViolation(
-      network::mojom::CSPViolationPtr violation_params) override;
-  void SanitizeDataForUseInCspViolation(
-      bool is_redirect,
-      network::mojom::CSPDirectiveName directive,
-      GURL* blocked_url,
-      network::mojom::SourceLocation* source_location) const override;
 
   // ui::AXActionHandlerBase:
   void PerformAction(const ui::AXActionData& data) override;
@@ -1722,8 +1712,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidFailLoadWithError(const GURL& url, int32_t error_code) override;
   void DidFocusFrame() override;
   void DidCallFocus() override;
-  void DidAddContentSecurityPolicies(
-      std::vector<network::mojom::ContentSecurityPolicyPtr> policies) override;
   void EnforceInsecureRequestPolicy(
       blink::mojom::InsecureRequestPolicy policy) override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
@@ -2855,9 +2843,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The POST ID of the last committed navigation.
   int64_t last_post_id_ = 0;
-
-  // The gesture of the last committed navigation.
-  NavigationGesture last_gesture_ = NavigationGesture::NavigationGestureAuto;
 
   // Whether the last committed navigation is to an error page.
   bool is_error_page_ = false;

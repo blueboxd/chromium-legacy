@@ -782,29 +782,7 @@ class TestDiagnosticsService {
   /** @override */
   getAvailableRoutines() {}
   /** @override */
-  runAcPowerRoutine() {}
-  /** @override */
-  runBatteryChargeRoutine() {}
-  /** @override */
-  runBatteryDischargeRoutine() {}
-  /** @override */
-  runBatteryHealthRoutine() {}
-  /** @override */
-  runCpuCacheRoutine() {}
-  /** @override */
-  runCpuStressRoutine() {}
-  /** @override */
   runDiskReadRoutine() {}
-  /** @override */
-  runFloatingPointAccuracyRoutine() {}
-  /** @override */
-  runNvmeSelfTestRoutine() {}
-  /** @override */
-  runNvmeWearLevelRoutine() {}
-  /** @override */
-  runPrimeSearchRoutine() {}
-  /** @override */
-  runSmartctlCheckRoutine() {}
 
   /**
    * @override
@@ -812,6 +790,53 @@ class TestDiagnosticsService {
    */
   runBatteryCapacityRoutine() {
     this.callHistory.push(['runBatteryCapacityRoutine']);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runBatteryHealthRoutine() {
+    this.callHistory.push(['runBatteryHealthRoutine']);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @param {!number} lengthSeconds
+   * @param {!number} maximumDischargePercentAllowed
+   * @override
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runBatteryDischargeRoutine(lengthSeconds, maximumDischargePercentAllowed) {
+    this.callHistory.push([
+      'runBatteryDischargeRoutine', {
+        lengthSeconds: lengthSeconds,
+        maximumDischargePercentAllowed: maximumDischargePercentAllowed
+      }
+    ]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @param {!number} lengthSeconds
+   * @param {!number} minimumChargePercentRequired
+   * @override
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runBatteryChargeRoutine(lengthSeconds, minimumChargePercentRequired) {
+    this.callHistory.push([
+      'runBatteryChargeRoutine', {
+        lengthSeconds: lengthSeconds,
+        minimumChargePercentRequired: minimumChargePercentRequired
+      }
+    ]);
 
     let response = this.routineResponse;
     return Promise.resolve({response});
@@ -833,6 +858,109 @@ class TestDiagnosticsService {
     let routineUpdate = /** @type {!chromeos.health.mojom.RoutineUpdate} */ (
         this.routineUpdateResponse);
     return Promise.resolve({routineUpdate});
+  }
+
+  /**
+   * @override
+   * @param {!chromeos.health.mojom.NvmeSelfTestTypeEnum} type
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runNvmeSelfTestRoutine(type) {
+    this.callHistory.push(['runNvmeSelfTestRoutine', {type: type}]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @param {!number} threshold
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runNvmeWearLevelRoutine(threshold) {
+    this.callHistory.push(['runNvmeWearLevelRoutine', {threshold: threshold}]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runSmartctlCheckRoutine() {
+    this.callHistory.push(['runSmartctlCheckRoutine']);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @param {!chromeos.health.mojom.AcPowerStatusEnum} expectedStatus
+   * @param {?string} expectedPowerType
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runAcPowerRoutine(expectedStatus, expectedPowerType) {
+    this.callHistory.push([
+      'runAcPowerRoutine',
+      {expectedStatus: expectedStatus, expectedPowerType: expectedPowerType}
+    ]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @param {!number} duration
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runCpuCacheRoutine(duration) {
+    this.callHistory.push(['runCpuCacheRoutine', {duration: duration}]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @param {!number} duration
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runCpuStressRoutine(duration) {
+    this.callHistory.push(['runCpuStressRoutine', {duration: duration}]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @param {!number} duration
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runFloatingPointAccuracyRoutine(duration) {
+    this.callHistory.push(
+        ['runFloatingPointAccuracyRoutine', {duration: duration}]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
+  }
+
+  /**
+   * @override
+   * @param {!number} lengthSeconds
+   * @param {!bigint} maxNum
+   * @return {!Promise<{response: !chromeos.health.mojom.RunRoutineResponse}>}
+   */
+  runPrimeSearchRoutine(lengthSeconds, maxNum) {
+    this.callHistory.push([
+      'runPrimeSearchRoutine', {lengthSeconds: lengthSeconds, maxNum: maxNum}
+    ]);
+
+    let response = this.routineResponse;
+    return Promise.resolve({response});
   }
 };
 
@@ -873,6 +1001,7 @@ TEST_F(
     'UntrustedDiagnosticsRoutineCommandWithInterceptor', async function() {
       await runTestInUntrusted(
           'UntrustedDiagnosticsRoutineCommandWithInterceptor');
+
       assertDeepEquals(
           [
             ['runBatteryCapacityRoutine'],
@@ -907,6 +1036,75 @@ TEST_F(
                     chromeos.health.mojom.DiagnosticRoutineCommandEnum.kRemove,
                 includeOutput: true
               }
+            ]
+          ],
+          this.diagnosticsService.callHistory);
+
+      testDone();
+    });
+
+// Tests that diagnostics routines are created and correct parameters are sent
+// to the fake Mojo service.
+TEST_F(
+    'TelemetryExtensionUIWithDiagnosticsInterceptorBrowserTest',
+    'UntrustedDiagnosticsRunRoutineWithInterceptor', async function() {
+      await runTestInUntrusted('UntrustedDiagnosticsRunRoutineWithInterceptor');
+
+      assertDeepEquals(
+          [
+            ['runBatteryCapacityRoutine'], ['runBatteryHealthRoutine'],
+            [
+              'runBatteryDischargeRoutine',
+              {lengthSeconds: 7, maximumDischargePercentAllowed: 50}
+            ],
+            [
+              'runBatteryChargeRoutine',
+              {lengthSeconds: 13, minimumChargePercentRequired: 87}
+            ],
+            ['runSmartctlCheckRoutine'],
+            ['runNvmeWearLevelRoutine', {threshold: 37}],
+            [
+              'runNvmeSelfTestRoutine',
+              {type: chromeos.health.mojom.NvmeSelfTestTypeEnum.kShortSelfTest}
+            ],
+            [
+              'runNvmeSelfTestRoutine',
+              {type: chromeos.health.mojom.NvmeSelfTestTypeEnum.kLongSelfTest}
+            ],
+            [
+              'runAcPowerRoutine', {
+                expectedStatus:
+                    chromeos.health.mojom.AcPowerStatusEnum.kConnected,
+                expectedPowerType: null
+              }
+            ],
+            [
+              'runAcPowerRoutine', {
+                expectedStatus:
+                    chromeos.health.mojom.AcPowerStatusEnum.kDisconnected,
+                expectedPowerType: null
+              }
+            ],
+            [
+              'runAcPowerRoutine', {
+                expectedStatus:
+                    chromeos.health.mojom.AcPowerStatusEnum.kConnected,
+                expectedPowerType: 'Mains'
+              }
+            ],
+            [
+              'runAcPowerRoutine', {
+                expectedStatus:
+                    chromeos.health.mojom.AcPowerStatusEnum.kDisconnected,
+                expectedPowerType: 'Battery'
+              }
+            ],
+            ['runCpuCacheRoutine', {duration: 30}],
+            ['runCpuStressRoutine', {duration: 17}],
+            ['runFloatingPointAccuracyRoutine', {duration: 94}],
+            [
+              'runPrimeSearchRoutine',
+              {lengthSeconds: 45, maxNum: BigInt(1110987654321)}
             ]
           ],
           this.diagnosticsService.callHistory);

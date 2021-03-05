@@ -141,17 +141,52 @@ UNTRUSTED_TEST(
       // The order must be kept.
       // See UntrustedDiagnosticsRoutineCommandWithInterceptor test in
       // telemetry_extension_ui_browsertests.js.
-      let routine = await dpsl.diagnostics.battery.runCapacityRoutine();
 
-      let routineGetStatus = await routine.getStatus();
+      const routine = await dpsl.diagnostics.battery.runCapacityRoutine();
+      const routineGetStatus = await routine.getStatus();
+      const routineResume = await routine.resume();
+      const routineStop = await routine.stop();
+
       assertDeepEquals(expectedRoutineStatus, routineGetStatus);
-
-      let routineResume = await routine.resume();
       assertDeepEquals(expectedRoutineStatus, routineResume);
-
-      let routineStop = await routine.stop();
       assertDeepEquals(expectedRoutineStatus, routineStop);
     });
+
+// Tests that diagnostics routines are successfully created and run.
+UNTRUSTED_TEST('UntrustedDiagnosticsRunRoutineWithInterceptor', async () => {
+  // The order must be kept.
+  // See UntrustedDiagnosticsRunRoutineWithInterceptor test in
+  // telemetry_extension_ui_browsertests.js.
+
+  // dpsl.diagnostics.battery.* routines
+  await dpsl.diagnostics.battery.runCapacityRoutine();
+  await dpsl.diagnostics.battery.runHealthRoutine();
+  await dpsl.diagnostics.battery.runDischargeRoutine(
+      {lengthSeconds: 7, maximumDischargePercentAllowed: 50});
+  await dpsl.diagnostics.battery.runChargeRoutine(
+      {lengthSeconds: 13, minimumChargePercentRequired: 87});
+
+  // dpsl.diangostics.nvme.* routines
+  await dpsl.diagnostics.nvme.runSmartctlCheckRoutine();
+  await dpsl.diagnostics.nvme.runWearLevelRoutine({wearLevelThreshold: 37});
+  await dpsl.diagnostics.nvme.runShortSelfTestRoutine();
+  await dpsl.diagnostics.nvme.runLongSelfTestRoutine();
+
+  // dpsl.diangostics.power.* routines
+  await dpsl.diagnostics.power.runAcConnectedRoutine();
+  await dpsl.diagnostics.power.runAcDisconnectedRoutine();
+  await dpsl.diagnostics.power.runAcConnectedRoutine(
+      {expectedPowerType: 'Mains'});
+  await dpsl.diagnostics.power.runAcDisconnectedRoutine(
+      {expectedPowerType: 'Battery'});
+
+  // dpsl.diangostics.cpu.* tests
+  await dpsl.diagnostics.cpu.runCacheRoutine({duration: 30});
+  await dpsl.diagnostics.cpu.runStressRoutine({duration: 17});
+  await dpsl.diagnostics.cpu.runFloatingPointAccuracyRoutine({duration: 94});
+  await dpsl.diagnostics.cpu.runPrimeSearchRoutine(
+      {lengthSeconds: 45, maximumNumber: 1110987654321});
+});
 
 // Tests that runBatteryHealthRoutine returns the correct Object.
 UNTRUSTED_TEST(

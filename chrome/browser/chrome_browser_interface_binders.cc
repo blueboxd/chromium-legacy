@@ -126,11 +126,14 @@
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
+#include "chrome/browser/ui/webui/download_shelf/download_shelf.mojom.h"
+#include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
 #include "chrome/browser/ui/webui/media/media_feeds_ui.h"
 #include "chrome/browser/ui/webui/memories/memories.mojom.h"
 #include "chrome/browser/ui/webui/memories/memories_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "chrome/browser/ui/webui/new_tab_page_third_party/new_tab_page_third_party_ui.h"
 #include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
 #include "chrome/browser/ui/webui/read_later/read_later_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
@@ -187,6 +190,8 @@
 #include "chromeos/components/diagnostics_ui/diagnostics_ui.h"
 #include "chromeos/components/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "chromeos/components/diagnostics_ui/mojom/system_routine_controller.mojom.h"
+#include "chromeos/components/eche_app_ui/eche_app_ui.h"
+#include "chromeos/components/eche_app_ui/mojom/eche_app.mojom.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
 #include "chromeos/components/local_search_service/public/mojom/index.mojom.h"
@@ -674,6 +679,10 @@ void PopulateChromeWebUIFrameBinders(
                                          DownloadsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
+      new_tab_page_third_party::mojom::PageHandlerFactory,
+      NewTabPageThirdPartyUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<memories::mojom::PageHandler,
@@ -727,6 +736,9 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       ::mojom::web_app_internals::WebAppInternalsPageHandler, InternalsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      download_shelf::mojom::PageHandlerFactory, DownloadShelfUI>(map);
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -796,6 +808,10 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::local_search_service::mojom::Index, chromeos::HelpAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::eche_app::mojom::SignalingMessageExchanger,
+      chromeos::eche_app::EcheAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       media_app_ui::mojom::PageHandlerFactory, chromeos::MediaAppUI>(map);

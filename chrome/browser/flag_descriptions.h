@@ -201,6 +201,9 @@ extern const char kAutoScreenBrightnessDescription[];
 extern const char kAvatarToolbarButtonName[];
 extern const char kAvatarToolbarButtonDescription[];
 
+extern const char kIncognitoBrandConsistencyForDesktopName[];
+extern const char kIncognitoBrandConsistencyForDesktopDescription[];
+
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
 
@@ -2719,6 +2722,9 @@ extern const char kReleaseNotesNotificationDescription[];
 
 extern const char kReleaseNotesNotificationAllChannelsName[];
 extern const char kReleaseNotesNotificationAllChannelsDescription[];
+
+extern const char kArcResizeLockName[];
+extern const char kArcResizeLockDescription[];
 
 extern const char kScalableStatusAreaName[];
 extern const char kScalableStatusAreaDescription[];

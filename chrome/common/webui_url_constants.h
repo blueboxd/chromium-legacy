@@ -126,6 +126,8 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUINewTabIconHost[];
 extern const char kChromeUINewTabPageHost[];
 extern const char kChromeUINewTabPageURL[];
+extern const char kChromeUINewTabPageThirdPartyHost[];
+extern const char kChromeUINewTabPageThirdPartyURL[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUIOfflineInternalsHost[];
 extern const char kChromeUIOmniboxHost[];
@@ -360,6 +362,8 @@ extern const char kChromeUITabStripURL[];
 #if !defined(OS_ANDROID)
 extern const char kChromeUICommanderHost[];
 extern const char kChromeUICommanderURL[];
+extern const char kChromeUIDownloadShelfHost[];
+extern const char kChromeUIDownloadShelfURL[];
 extern const char kChromeUITabSearchHost[];
 extern const char kChromeUITabSearchURL[];
 #endif

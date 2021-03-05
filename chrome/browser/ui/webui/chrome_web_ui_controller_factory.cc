@@ -123,6 +123,7 @@
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/commander/commander_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
@@ -132,6 +133,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_internals_ui.h"
 #include "chrome/browser/ui/webui/memories/memories_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "chrome/browser/ui/webui/new_tab_page_third_party/new_tab_page_third_party_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/page_not_available_for_guest/page_not_available_for_guest_ui.h"
 #include "chrome/browser/ui/webui/read_later/read_later_ui.h"
@@ -152,13 +154,14 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/chrome_help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/chrome_media_app_ui_delegate.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
+#include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 #include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
@@ -212,6 +215,7 @@
 #include "chromeos/components/connectivity_diagnostics/url_constants.h"
 #include "chromeos/components/diagnostics_ui/diagnostics_ui.h"
 #include "chromeos/components/diagnostics_ui/url_constants.h"
+#include "chromeos/components/eche_app_ui/eche_app_manager.h"
 #include "chromeos/components/eche_app_ui/eche_app_ui.h"
 #include "chromeos/components/eche_app_ui/url_constants.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
@@ -374,6 +378,25 @@ NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>(
   return new chromeos::printing::printing_manager::PrintManagementUI(
       web_ui,
       base::BindRepeating(&BindPrintManagement, Profile::FromWebUI(web_ui)));
+}
+
+void BindEcheSignalingMessageExchanger(
+    Profile* profile,
+    mojo::PendingReceiver<chromeos::eche_app::mojom::SignalingMessageExchanger>
+        receiver) {
+  chromeos::eche_app::EcheAppManager* manager =
+      chromeos::eche_app::EcheAppManagerFactory::GetForProfile(profile);
+  if (manager) {
+    manager->BindInterface(std::move(receiver));
+  }
+}
+
+template <>
+WebUIController* NewWebUI<chromeos::eche_app::EcheAppUI>(WebUI* web_ui,
+                                                         const GURL& url) {
+  return new chromeos::eche_app::EcheAppUI(
+      web_ui, base::BindRepeating(&BindEcheSignalingMessageExchanger,
+                                  Profile::FromWebUI(web_ui)));
 }
 
 void BindScanService(
@@ -604,13 +627,15 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
        url.host_piece() == chrome::kChromeUIBookmarksHost ||
        url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost ||
-       url.host_piece() == chrome::kChromeUINewTabPageHost)) {
+       url.host_piece() == chrome::kChromeUINewTabPageHost ||
+       url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)) {
     return &NewWebUI<PageNotAvailableForGuestUI>;
   }
   if (profile->IsEphemeralGuestProfile() &&
       (url.host_piece() == chrome::kChromeUIBookmarksHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost ||
-       url.host_piece() == chrome::kChromeUINewTabPageHost)) {
+       url.host_piece() == chrome::kChromeUINewTabPageHost ||
+       url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)) {
     return &NewWebUI<PageNotAvailableForGuestUI>;
   }
   // Bookmarks are part of NTP on Android.
@@ -618,6 +643,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<BookmarksUI>;
   if (url.host_piece() == chrome::kChromeUICommanderHost)
     return &NewWebUI<CommanderUI>;
+  if (url.host_piece() == chrome::kChromeUIDownloadShelfHost &&
+      base::FeatureList::IsEnabled(features::kWebUIDownloadShelf)) {
+    return &NewWebUI<DownloadShelfUI>;
+  }
   // Downloads list on Android uses the built-in download manager.
   if (url.host_piece() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
@@ -628,6 +657,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NewTabUI>;
   if (url.host_piece() == chrome::kChromeUINewTabPageHost)
     return &NewWebUI<NewTabPageUI>;
+  if (url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)
+    return &NewWebUI<NewTabPageThirdPartyUI>;
   if (base::FeatureList::IsEnabled(features::kWebUIFeedback)) {
     if (url.host_piece() == chrome::kChromeUIFeedbackHost)
       return &NewWebUI<FeedbackUI>;

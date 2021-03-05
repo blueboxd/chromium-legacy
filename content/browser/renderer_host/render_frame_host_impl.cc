@@ -2238,50 +2238,6 @@ void RenderFrameHostImpl::RenderProcessGone(
     OnAudibleStateChanged(false);
 }
 
-void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
-    network::mojom::CSPViolationPtr violation_params) {
-  GetAssociatedLocalFrame()->ReportContentSecurityPolicyViolation(
-      std::move(violation_params));
-}
-
-void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
-    bool is_redirect,
-    network::mojom::CSPDirectiveName directive,
-    GURL* blocked_url,
-    network::mojom::SourceLocation* source_location) const {
-  DCHECK(blocked_url);
-  DCHECK(source_location);
-  GURL source_location_url(source_location->url);
-
-  // The main goal of this is to avoid leaking information between potentially
-  // separate renderers, in the event of one of them being compromised.
-  // See https://crbug.com/633306.
-  bool sanitize_blocked_url = true;
-  bool sanitize_source_location = true;
-
-  // There is no need to sanitize data when it is same-origin with the current
-  // url of the renderer.
-  if (url::Origin::Create(*blocked_url)
-          .IsSameOriginWith(last_committed_origin_))
-    sanitize_blocked_url = false;
-  if (url::Origin::Create(source_location_url)
-          .IsSameOriginWith(last_committed_origin_))
-    sanitize_source_location = false;
-
-  // When a renderer tries to do a form submission, it already knows the url of
-  // the blocked url, except when it is redirected.
-  if (!is_redirect && directive == network::mojom::CSPDirectiveName::FormAction)
-    sanitize_blocked_url = false;
-
-  if (sanitize_blocked_url)
-    *blocked_url = blocked_url->GetOrigin();
-  if (sanitize_source_location) {
-    source_location->url = source_location_url.GetOrigin().spec();
-    source_location->line = 0u;
-    source_location->column = 0u;
-  }
-}
-
 void RenderFrameHostImpl::PerformAction(const ui::AXActionData& data) {
   AccessibilityPerformAction(data);
 }
@@ -2795,8 +2751,6 @@ void RenderFrameHostImpl::DidNavigate(
   // the renderer process.
   last_http_status_code_ = params.http_status_code;
 
-  last_gesture_ = params.gesture;
-
   if (did_create_new_document)
     DidCommitNewDocument(params, navigation_request);
 
@@ -3104,17 +3058,6 @@ void RenderFrameHostImpl::DidFocusFrame() {
 
 void RenderFrameHostImpl::DidCallFocus() {
   delegate_->DidCallFocus();
-}
-
-void RenderFrameHostImpl::DidAddContentSecurityPolicies(
-    std::vector<network::mojom::ContentSecurityPolicyPtr> policies) {
-  TRACE_EVENT1("navigation",
-               "RenderFrameHostImpl::OnDidAddContentSecurityPolicies",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-
-  for (auto& policy : policies) {
-    AddContentSecurityPolicy(std::move(policy));
-  }
 }
 
 void RenderFrameHostImpl::CancelInitialHistoryLoad() {
@@ -4249,7 +4192,7 @@ void RenderFrameHostImpl::DocumentAvailableInMainFrame(
         GetProcess(), bad_message::RFH_INVALID_CALL_FROM_NOT_MAIN_FRAME);
     return;
   }
-  delegate_->DocumentAvailableInMainFrame();
+  delegate_->DocumentAvailableInMainFrame(this);
 
   if (!uses_temporary_zoom_level)
     return;
@@ -4627,7 +4570,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     // TODO(carlscab): We should no longer get into this branch thanks to
     // https://crrev.com/c/2352815. Lets keep this old code for now just in case
     // and replace with a CHECK once we are confident that is the case.
-    base::debug::DumpWithoutCrashing();
+    // TODO(yuzus, 1163843): Call |DumpWithoutCrashing| when race condition bug
+    // is fixed.
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
             kByJavaScript);
@@ -9906,18 +9850,9 @@ void RenderFrameHostImpl::
   const bool browser_should_update_history =
       !browser_url_is_unreachable && browser_http_status_code != 404;
 
-  // On cross-document navigations, gesture will always be set to the
-  // CommonNavigationParams' has_user_gesture value.
-  // On same-document navigations, gesture will be set to the has_user_gesture
-  // value of the navigation that initially loaded the document (so, the last
-  // cross-document navigation).
-  // TODO(https://crbug.com/1172969): Make same-document navigations return the
-  // CommonNavigationParams' has_user_gesture value instead of the document's
-  // initial gesture value.
-  const bool browser_gesture =
-      is_same_document_navigation
-          ? (last_gesture_ == NavigationGesture::NavigationGestureUser)
-          : request->common_params().has_user_gesture;
+  // Gesture will always be set to the CommonNavigationParams'
+  // has_user_gesture value.
+  const bool browser_gesture = request->common_params().has_user_gesture;
   const bool renderer_gesture =
       (params.gesture == NavigationGesture::NavigationGestureUser);
 

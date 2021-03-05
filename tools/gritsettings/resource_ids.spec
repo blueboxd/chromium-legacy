@@ -117,6 +117,11 @@
     "META": {"sizes": {"includes": [20]}},
     "includes": [1365],
   },
+  "chrome/browser/resources/chromeos/login/oobe_resources.grd": {
+    "META": {"sizes": {"includes": [20], "structures": [100]}},
+    "includes": [1367],
+    "structures": [1368],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/multidevice_internals/resources.grd": {
     "META": {"sizes": {"includes": [35]}},
     "includes": [1370],
@@ -166,7 +171,11 @@
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page/resources.grd": {
     "META": {"sizes": {"includes": [200]}},
-    "includes": [1680],
+    "includes": [1670],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page_third_party/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1695],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/ntp4/apps_resources.grd": {
     "META": {"sizes": {"includes": [40]}},
@@ -216,6 +225,10 @@
   },
   "chrome/browser/test_dummy/internal/android/resources/resources.grd": {
     "includes": [1980],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/download_shelf/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1990],
   },
   # END chrome/browser section.
 

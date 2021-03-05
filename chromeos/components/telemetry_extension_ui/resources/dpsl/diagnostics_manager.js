@@ -131,6 +131,18 @@
   }
 
   /**
+   * @param {!string} messageName
+   * @param {(!Object|undefined)=} message
+   * @returns {!Promise<!Routine>}
+   */
+  async function genericRunRoutine(messageName, message) {
+    const response =
+        /** @type {{id: number, status: string}} */ (
+            await genericSendMessage(messageName, message));
+    return new Routine(response.id);
+  }
+
+  /**
    * Diagnostics Battery Manager for dpsl.diagnostics.battery.* APIs.
    */
   class BatteryManager {
@@ -140,10 +152,183 @@
      * @public
      */
     async runCapacityRoutine() {
-      const response =
-          /** @type {{id: number, status: string}} */ (await genericSendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_CAPACITY_ROUTINE));
-      return new Routine(response.id);
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_CAPACITY_ROUTINE);
+    }
+
+    /**
+     * Runs battery health test.
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runHealthRoutine() {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_HEALTH_ROUTINE);
+    }
+
+    /**
+     * Runs battery capacity test.
+     * @param {!dpsl.BatteryDischargeRoutineParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runDischargeRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_DISCHARGE_ROUTINE,
+          params);
+    }
+
+    /**
+     * Runs battery charge test.
+     * @param {!dpsl.BatteryChargeRoutineParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runChargeRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_CHARGE_ROUTINE, params);
+    }
+  }
+
+  /**
+   * Diagnostics NVME Manager for dpsl.diagnostics.nmve.* APIs.
+   */
+  class NvmeManager {
+    /**
+     * Runs NVMe smartctl test.
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runSmartctlCheckRoutine() {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_SMARTCTL_CHECK_ROUTINE);
+    }
+
+    /**
+     * Runs NVMe wear level test.
+     * @param {!dpsl.NvmeWearLevelRoutineParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runWearLevelRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_WEAR_LEVEL_ROUTINE,
+          params);
+    }
+
+    /**
+     * Runs NVMe short-self-test type test.
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runShortSelfTestRoutine() {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_SELF_TEST_ROUTINE,
+          {nvmeSelfTestType: 'short-self-test'});
+    }
+
+    /**
+     * Runs NVMe long-self-test type test.
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runLongSelfTestRoutine() {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_SELF_TEST_ROUTINE,
+          {nvmeSelfTestType: 'long-self-test'});
+    }
+  }
+
+  /**
+   * Diagnostics Power Manager for dpsl.diagnostics.power.* APIs.
+   */
+  class PowerManager {
+    /**
+     * @param {(!dpsl.PowerAcRoutineParams)=} params
+     * @returns {?string}
+     * @private
+     */
+    _getExpectedPowerType(params) {
+      if (!params || !params.expectedPowerType)
+        return null;
+      return params.expectedPowerType;
+    }
+
+    /**
+     * Runs power ac connected-type test.
+     * @param {(!dpsl.PowerAcRoutineParams)=} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runAcConnectedRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_AC_POWER_ROUTINE, {
+            expectedStatus: 'connected',
+            expectedPowerType: this._getExpectedPowerType(params)
+          });
+    }
+
+    /**
+     * Runs power ac disconnected-type test.
+     * @param {(!dpsl.PowerAcRoutineParams)=} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runAcDisconnectedRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_AC_POWER_ROUTINE, {
+            expectedStatus: 'disconnected',
+            expectedPowerType: this._getExpectedPowerType(params)
+          });
+    }
+  }
+
+  /**
+   * Diagnostics CPU Manager for dpsl.diagnostics.cpu.* APIs.
+   */
+  class CpuManager {
+    /**
+     * Runs CPU cache test.
+     * @param {!dpsl.CpuRoutineDurationParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runCacheRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_CPU_CACHE_ROUTINE, params);
+    }
+
+    /**
+     * Runs CPU stress test.
+     * @param {!dpsl.CpuRoutineDurationParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runStressRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_CPU_STRESS_ROUTINE, params);
+    }
+
+    /**
+     * Runs CPU floating point accuracy test.
+     * @param {!dpsl.CpuRoutineDurationParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runFloatingPointAccuracyRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_FP_ACCURACY_ROUTINE, params);
+    }
+
+    /**
+     * Runs CPU prime number search test.
+     * @param {!dpsl.CpuPrimeSearchRoutineParams} params
+     * @return { !Promise<!Routine> }
+     * @public
+     */
+    async runPrimeSearchRoutine(params) {
+      return genericRunRoutine(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_PRIME_SEARCH_ROUTINE, params);
     }
   }
 
@@ -157,6 +342,24 @@
        * @public
        */
       this.battery = new BatteryManager();
+
+      /**
+       * @type {!NvmeManager}
+       * @public
+       */
+      this.nvme = new NvmeManager();
+
+      /**
+       * @type {!PowerManager}
+       * @public
+       */
+      this.power = new PowerManager();
+
+      /**
+       * @type {!CpuManager}
+       * @public
+       */
+      this.cpu = new CpuManager();
     }
 
     /**
@@ -244,13 +447,13 @@
      * @public
      */
     async runBatteryHealthRoutine() {
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_HEALTH_ROUTINE));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      console.warn(
+          'chromeos.diagnostics.runBatteryHealthRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.battery.runHealthRoutine, instead');
+
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_HEALTH_ROUTINE));
     }
 
     /**
@@ -259,11 +462,13 @@
      * @public
      */
     async runSmartctlCheckRoutine() {
-      const response =
-          /** @type {!Object} */
-          (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_SMARTCTL_CHECK_ROUTINE));
-      return response;
+      console.warn(
+          'chromeos.diagnostics.runSmartctlCheckRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.nvme.runSmartctlCheckRoutine, instead');
+
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_SMARTCTL_CHECK_ROUTINE));
     }
 
     /**
@@ -274,6 +479,10 @@
      * @public
      */
     async runAcPowerRoutine(expectedStatus, expectedPowerType) {
+      console.warn(
+          'chromeos.diagnostics.runAcPowerRoutine API function is deprecated',
+          'and will be removed. Use dpsl.diagnostics.power.runAc*, instead');
+
       const message =
           /**
              @type {!dpsl_internal.DiagnosticsRunAcPowerRoutineRequest}
@@ -282,13 +491,8 @@
             expectedStatus: expectedStatus,
             expectedPowerType: expectedPowerType
           });
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_AC_POWER_ROUTINE, message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_AC_POWER_ROUTINE, message));
     }
 
     /**
@@ -298,17 +502,16 @@
      * @public
      */
     async runCpuCacheRoutine(duration) {
+      console.warn(
+          'chromeos.diagnostics.runCpuCacheRoutine API function is deprecated',
+          'and will be removed. Use dpsl.diagnostics.cpu.runCacheRoutine,',
+          'instead');
+
       const message =
           /** @type {!dpsl_internal.DiagnosticsRunCpuCacheRoutineRequest} */ (
               {duration: duration});
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_CPU_CACHE_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_CPU_CACHE_ROUTINE, message));
     }
 
     /**
@@ -318,17 +521,16 @@
      * @public
      */
     async runCpuStressRoutine(duration) {
+      console.warn(
+          'chromeos.diagnostics.runCpuStressRoutine API function is deprecated',
+          'and will be removed. Use dpsl.diagnostics.cpu.runStressRoutine,',
+          'instead');
+
       const message =
           /** @type {!dpsl_internal.DiagnosticsRunCpuStressRoutineRequest} */ (
               {duration: duration});
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_CPU_STRESS_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_CPU_STRESS_ROUTINE, message));
     }
 
     /**
@@ -338,17 +540,16 @@
      * @public
      */
     async runFloatingPointAccuracyRoutine(duration) {
+      console.warn(
+          'chromeos.diagnostics.runFloatingPointAccuracyRoutine API function',
+          'is deprecated and will be removed. Use',
+          'dpsl.diagnostics.cpu.runFloatingPointAccuracyRoutine, instead');
+
       const message =
           /** @type {!dpsl_internal.DiagnosticsRunFPAccuracyRoutineRequest} */
           ({duration: duration});
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_FP_ACCURACY_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_FP_ACCURACY_ROUTINE, message));
     }
 
     /**
@@ -358,19 +559,19 @@
      * @public
      */
     async runNvmeWearLevelRoutine(wearLevelThreshold) {
+      console.warn(
+          'chromeos.diagnostics.runNvmeWearLevelRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.nvme.runWearLevelRoutine, instead');
+
       const message =
           /**
              @type {!dpsl_internal.DiagnosticsRunNvmeWearLevelRoutineRequest}
            */
           ({wearLevelThreshold: wearLevelThreshold});
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_WEAR_LEVEL_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_WEAR_LEVEL_ROUTINE,
+          message));
     }
 
     /**
@@ -380,19 +581,19 @@
      * @public
      */
     async runNvmeSelfTestRoutine(nvmeSelfTestType) {
+      console.warn(
+          'chromeos.diagnostics.runNvmeSelfTestRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.nvme.run{Short/Long}SelfTestRoutine, instead');
+
       const message =
           /**
              @type {!dpsl_internal.DiagnosticsRunNvmeSelfTestRoutineRequest}
            */
           ({nvmeSelfTestType: nvmeSelfTestType});
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_SELF_TEST_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_NVME_SELF_TEST_ROUTINE,
+          message));
     }
 
     /**
@@ -427,19 +628,18 @@
      * @public
      */
     async runPrimeSearchRoutine(lengthSeconds, maximumNumber) {
+      console.warn(
+          'chromeos.diagnostics.runPrimeSearchRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.cpu.runPrimeSearchRoutine, instead');
+
       const message =
           /**
              @type {!dpsl_internal.DiagnosticsRunPrimeSearchRoutineRequest}
            */
           ({lengthSeconds: lengthSeconds, maximumNumber: maximumNumber});
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_PRIME_SEARCH_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_PRIME_SEARCH_ROUTINE, message));
     }
 
     /**
@@ -451,6 +651,11 @@
      */
     async runBatteryDischargeRoutine(
         lengthSeconds, maximumDischargePercentAllowed) {
+      console.warn(
+          'chromeos.diagnostics.runBatteryDischargeRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.battery.runDischargeRoutine, instead');
+
       const message =
           /**
              @type {!dpsl_internal.DiagnosticsRunBatteryDischargeRoutineRequest}
@@ -459,14 +664,9 @@
             lengthSeconds: lengthSeconds,
             maximumDischargePercentAllowed: maximumDischargePercentAllowed
           });
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_DISCHARGE_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_DISCHARGE_ROUTINE,
+          message));
     }
 
     /**
@@ -477,6 +677,11 @@
      * @public
      */
     async runBatteryChargeRoutine(lengthSeconds, minimumChargePercentRequired) {
+      console.warn(
+          'chromeos.diagnostics.runBatteryChargeRoutine API function is',
+          'deprecated and will be removed. Use',
+          'dpsl.diagnostics.battery.runChargeRoutine, instead');
+
       const message =
           /**
              @type {!dpsl_internal.DiagnosticsRunBatteryChargeRoutineRequest}
@@ -485,14 +690,9 @@
             lengthSeconds: lengthSeconds,
             minimumChargePercentRequired: minimumChargePercentRequired
           });
-      const response =
-          /** @type {!Object} */ (await messagePipe.sendMessage(
-              dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_CHARGE_ROUTINE,
-              message));
-      if (response instanceof Error) {
-        throw response;
-      }
-      return response;
+      return /** @type {!Object} */ (await genericSendMessage(
+          dpsl_internal.Message.DIAGNOSTICS_RUN_BATTERY_CHARGE_ROUTINE,
+          message));
     }
   };
 

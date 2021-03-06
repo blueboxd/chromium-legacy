@@ -2829,6 +2829,7 @@ Unknown properties are collapsed to zero. -->
   <int value="21" label="LAUNCH_SOURCE_CONTEXT_MENU"/>
   <int value="22" label="LAUNCH_SOURCE_ARC"/>
   <int value="23" label="LAUNCH_SOURCE_INTENT_URL"/>
+  <int value="24" label="LAUNCH_SOURCE_RUN_ON_OS_LOGIN"/>
 </enum>
 
 <enum name="AppleScriptCommandEvents">
@@ -11575,6 +11576,7 @@ histogram as enum -->
   <int value="-1986814580" label="om"/>
   <int value="-1920649864" label="an"/>
   <int value="-1898669966" label="zh-CN"/>
+  <int value="-1895779836" label="empty string"/>
   <int value="-1872667487" label="rm"/>
   <int value="-1855113037" label="vi"/>
   <int value="-1828586117" label="de"/>
@@ -21399,6 +21401,9 @@ Called by update_document_policy_enum.py.-->
   <int value="4" label="CHROME_NOT_GOOGLE_SIGNED"/>
   <int value="5" label="AGSA_NOT_GOOGLE_SIGNED"/>
   <int value="6" label="ACCOUNT_MISMATCH"/>
+  <int value="7" label="NON_GOOGLE_SEARCH_ENGINE"/>
+  <int value="8" label="NO_CHROME_ACCOUNT"/>
+  <int value="9" label="LOW_END_DEVICE"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase">
@@ -26664,6 +26669,8 @@ Called by update_extension_histograms.py.-->
   <int value="1541" label="ENTERPRISEREPORTINGPRIVATE_GETCONTEXTINFO"/>
   <int value="1542" label="SCRIPTING_REMOVECSS"/>
   <int value="1543" label="FILEMANAGERPRIVATEINTERNAL_GETVOLUMEROOT"/>
+  <int value="1544"
+      label="LANGUAGESETTINGSPRIVATE_GETALWAYSTRANSLATELANGUAGES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -33270,6 +33277,12 @@ Called by update_permissions_policy_enum.py.-->
   <int value="3" label="Service Worker"/>
 </enum>
 
+<enum name="FileStorageRequestType">
+  <int value="0" label="Save Request"/>
+  <int value="1" label="Restore Request"/>
+  <int value="2" label="Delete Request"/>
+</enum>
+
 <enum name="FileSystemDatabaseInitResult">
   <int value="0" label="OK"/>
   <int value="1" label="Corruption"/>
@@ -37947,6 +37960,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="USER_CUSTOMIZED_NTP"/>
   <int value="5" label="USER_CUSTOMIZED_OTHER"/>
   <int value="6" label="DEFAULT_NTP"/>
+</enum>
+
+<enum name="HostSafetyStatus">
+  <int value="0" label="OK"/>
+  <int value="1" label="Top level domain is numeric"/>
+  <int value="2" label="Two highest level domains are numeric"/>
 </enum>
 
 <enum name="HotseatInAppGesture">
@@ -44761,6 +44780,7 @@ from previous Chrome versions.
   <int value="-881447505" label="ash-disable-shelf-model-synchronization"/>
   <int value="-881054479" label="WebAssemblyStreaming:disabled"/>
   <int value="-880201293" label="OmniboxAssistantVoiceSearch:disabled"/>
+  <int value="-880087793" label="OmniboxPedalsBatch2:enabled"/>
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
   <int value="-876773120" label="TabbedAppOverflowMenuActionBar:enabled"/>
@@ -44802,6 +44822,7 @@ from previous Chrome versions.
       label="OmniboxDefaultTypedNavigationsToHttps:disabled"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
+  <int value="-847735582" label="NotificationsViaHelperApp:enabled"/>
   <int value="-847216521" label="ChromeDuplex:enabled"/>
   <int value="-844786349" label="ClipboardHistoryNudgeSessionReset:enabled"/>
   <int value="-844537521" label="HttpFormWarning:disabled"/>
@@ -45824,6 +45845,7 @@ from previous Chrome versions.
   <int value="114657517" label="SecurePaymentConfirmationDebug:disabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>
+  <int value="115999065" label="ContextualSearchForceCaption:disabled"/>
   <int value="116287989"
       label="ignore-litepage-redirect-optimization-blacklist"/>
   <int value="116697601" label="OmniboxSuggestionButtonRow:disabled"/>
@@ -46163,6 +46185,7 @@ from previous Chrome versions.
       label="HappinessTrackingSurveysForDesktopMigration:disabled"/>
   <int value="436249288" label="ImeMojoDecoder:disabled"/>
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
+  <int value="436980707" label="ContextualSearchForceCaption:enabled"/>
   <int value="438307192" label="FirstPartySets:disabled"/>
   <int value="439525862" label="GlobalMediaControlsForCast:disabled"/>
   <int value="444411390" label="enable-incognito-shortcut-on-desktop"/>
@@ -46515,6 +46538,7 @@ from previous Chrome versions.
   <int value="745541471" label="PaintHolding:disabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
+  <int value="746294842" label="NotificationsViaHelperApp:disabled"/>
   <int value="746765012" label="AutofillEnableToolbarStatusChip:disabled"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
   <int value="747076955" label="MobileIdentityConsistency:enabled"/>
@@ -47126,6 +47150,7 @@ from previous Chrome versions.
   <int value="1319024729" label="ServiceWorkerServicification:disabled"/>
   <int value="1319068611" label="SecondaryUiMd:disabled"/>
   <int value="1319498514" label="NewMacNotificationAPI:disabled"/>
+  <int value="1319632929" label="OmniboxPedalsBatch2:disabled"/>
   <int value="1319638975" label="UseWallpaperStagingUrl:disabled"/>
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
@@ -47247,6 +47272,7 @@ from previous Chrome versions.
       label="DesktopPWAsFlashAppNameInsteadOfOrigin:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1424775876" label="ToolbarIphAndroid:enabled"/>
+  <int value="1425103276" label="SharedHighlightingV2:enabled"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
   <int value="1428221397" label="QueryTilesInNTP:enabled"/>
@@ -47937,6 +47963,7 @@ from previous Chrome versions.
   <int value="2058439723" label="CalculateNativeWinOcclusion:disabled"/>
   <int value="2059322877" label="new-avatar-menu"/>
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
+  <int value="2063420769" label="SharedHighlightingV2:disabled"/>
   <int value="2066015302" label="QueryTiles:disabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>

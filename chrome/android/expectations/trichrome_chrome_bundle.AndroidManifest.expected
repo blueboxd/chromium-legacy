@@ -56,8 +56,6 @@
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-  <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS"/>
-  <uses-permission android:name="com.android.browser.permission.WRITE_HISTORY_BOOKMARKS"/>
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
   <uses-permission android:name="com.chrome.permission.DEVICE_EXTRAS"/>
   <uses-permission android:name="com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS"/>
@@ -379,15 +377,6 @@
         android:theme="@style/Theme.Chromium.TabbedMode"
         android:windowSoftInputMode="adjustResize">
     </activity>  # DIFF-ANCHOR: 9023f153
-    <activity  # DIFF-ANCHOR: e86e2b49
-        android:autoRemoveFromRecents="true"
-        android:documentLaunchMode="always"
-        android:excludeFromRecents="true"
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$TrampolineActivity"
-        android:noHistory="true"
-        android:theme="@android:style/Theme.NoDisplay">
-    </activity>  # DIFF-ANCHOR: e86e2b49
     <activity  # DIFF-ANCHOR: bec48e1f
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:enabled="false"

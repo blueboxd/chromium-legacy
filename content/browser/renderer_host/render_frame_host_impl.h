@@ -92,10 +92,10 @@
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_opener_policy.h"
-#include "services/network/public/mojom/auth_and_certificate_observer.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
@@ -1089,7 +1089,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in a non-loading state.
   void ResetLoadingState();
 
-  // Returns the feature policy which should be enforced on this RenderFrame.
+  // Returns the permissions policy which should be enforced on this
+  // RenderFrame.
   const blink::PermissionsPolicy* feature_policy() const {
     return feature_policy_.get();
   }
@@ -1918,8 +1919,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       RenderFrameHostImpl* old_frame_host,
       const UrlInfo& dest_url_info);
 
-  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-  CreateAuthAndCertObserver();
+  mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+  CreateURLLoaderNetworkObserver();
 
   mojo::PendingRemote<network::mojom::CookieAccessObserver>
   CreateCookieAccessObserver();
@@ -2491,10 +2492,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
 
-  // Set the |last_committed_origin_|, |isolation_info_|, and |feature_policy_|
-  // of |this| frame, inheriting the origin from |new_frame_creator| as
-  // appropriate (e.g. depending on whether |this| frame should be sandboxed /
-  // should have an opaque origin instead).
+  // Set the |last_committed_origin_|, |isolation_info_|, and
+  // |feature_policy_| of |this| frame, inheriting the origin from
+  // |new_frame_creator| as appropriate (e.g. depending on whether |this| frame
+  // should be sandboxed / should have an opaque origin instead).
   void SetOriginDependentStateOfNewFrame(const url::Origin& new_frame_creator);
 
   // Called when a navigation commits successfully to |url|. This will update
@@ -3175,12 +3176,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::mojom::WebSandboxFlags active_sandbox_flags_ =
       network::mojom::WebSandboxFlags::kNone;
 
-  // Parsed feature policy header. It is parsed from blink, received during
+  // Parsed permissions policy header. It is parsed from blink, received during
   // DidCommitProvisionalLoad. This is constant during the whole lifetime of
   // this document.
   blink::ParsedPermissionsPolicy feature_policy_header_;
 
-  // Tracks the feature policy which has been set on this frame.
+  // Tracks the permissions policy which has been set on this frame.
   std::unique_ptr<blink::PermissionsPolicy> feature_policy_;
 
   // Tracks the document policy which has been set on this frame.

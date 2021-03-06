@@ -33,7 +33,7 @@ class StyleResolverTest : public PageTestBase {
  public:
   scoped_refptr<ComputedStyle> StyleForId(AtomicString id) {
     Element* element = GetDocument().getElementById(id);
-    auto style = GetStyleEngine().GetStyleResolver().StyleForElement(
+    auto style = GetStyleEngine().GetStyleResolver().ResolveStyle(
         element, StyleRecalcContext());
     DCHECK(style);
     return style;
@@ -83,9 +83,8 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   animations.SetAnimationStyleChange(true);
 
   StyleResolver& resolver = GetStyleEngine().GetStyleResolver();
-  ASSERT_TRUE(resolver.StyleForElement(div, StyleRecalcContext()));
-  EXPECT_EQ(20,
-            resolver.StyleForElement(div, StyleRecalcContext())->FontSize());
+  ASSERT_TRUE(resolver.ResolveStyle(div, StyleRecalcContext()));
+  EXPECT_EQ(20, resolver.ResolveStyle(div, StyleRecalcContext())->FontSize());
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
 
@@ -93,14 +92,14 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   // animation base computed style.
   const ComputedStyle* parent_style =
       GetDocument().documentElement()->GetComputedStyle();
-  EXPECT_EQ(10, resolver
-                    .StyleForElement(div, StyleRecalcContext(), parent_style,
-                                     parent_style)
+  StyleRequest style_request;
+  style_request.parent_override = parent_style;
+  style_request.layout_parent_override = parent_style;
+  EXPECT_EQ(10, resolver.ResolveStyle(div, StyleRecalcContext(), style_request)
                     ->FontSize());
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
-  EXPECT_EQ(20,
-            resolver.StyleForElement(div, StyleRecalcContext())->FontSize());
+  EXPECT_EQ(20, resolver.ResolveStyle(div, StyleRecalcContext())->FontSize());
 }
 
 TEST_F(StyleResolverTest, HasEmUnits) {
@@ -324,9 +323,10 @@ TEST_F(StyleResolverTest, NonCachableStyleCheckDoesNotAffectBaseComputedStyle) {
 
   // Perform a non-cacheable style resolution, and ensure that the base computed
   // style is not updated.
-  GetStyleEngine().GetStyleResolver().StyleForElement(
-      target, StyleRecalcContext(), nullptr, nullptr,
-      kMatchAllRulesExcludingSMIL);
+  StyleRequest style_request;
+  style_request.matching_behavior = kMatchAllRulesExcludingSMIL;
+  GetStyleEngine().GetStyleResolver().ResolveStyle(target, StyleRecalcContext(),
+                                                   style_request);
   EXPECT_FALSE(element_animations->BaseComputedStyle());
 
   // Computing the style with default args updates the base computed style.
@@ -616,18 +616,26 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   const auto* element_style = body->GetComputedStyle();
   ASSERT_TRUE(element_style);
 
+  StyleRequest pseudo_style_request;
+  pseudo_style_request.parent_override = element_style;
+  pseudo_style_request.layout_parent_override = element_style;
+
+  StyleRequest target_text_style_request = pseudo_style_request;
+  target_text_style_request.pseudo_id = kPseudoIdTargetText;
+
   scoped_refptr<ComputedStyle> target_text_style =
-      GetDocument().GetStyleResolver().PseudoStyleForElement(
-          GetDocument().body(), StyleRecalcContext(),
-          PseudoElementStyleRequest(kPseudoIdTargetText), element_style,
-          element_style);
+      GetDocument().GetStyleResolver().ResolveStyle(GetDocument().body(),
+                                                    StyleRecalcContext(),
+                                                    target_text_style_request);
   ASSERT_TRUE(target_text_style);
 
+  StyleRequest selection_style_style_request = pseudo_style_request;
+  selection_style_style_request.pseudo_id = kPseudoIdSelection;
+
   scoped_refptr<ComputedStyle> selection_style =
-      GetDocument().GetStyleResolver().PseudoStyleForElement(
+      GetDocument().GetStyleResolver().ResolveStyle(
           GetDocument().body(), StyleRecalcContext(),
-          PseudoElementStyleRequest(kPseudoIdSelection), element_style,
-          element_style);
+          selection_style_style_request);
   ASSERT_TRUE(selection_style);
 
   // Check that we don't fetch the cursor url() for ::target-text.

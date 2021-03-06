@@ -5,7 +5,6 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//device/vr/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//weblayer/variables.gni")
 
@@ -107,15 +106,6 @@ android_library("base_module_java") {
     "//components/embedder_support/android:application_java",
     "//content/public/android:content_java",
   ]
-
-  # The arcore manifest needs to be merged into the base module because the Play
-  # Store verifies the com.google.ar.core.min_apk_version meta-data tag is in
-  # the base manifest.
-  if (enable_arcore) {
-    deps +=
-        [ "//third_party/arcore-android-sdk-client:com_google_ar_core_java" ]
-  }
-
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   # Needed for android.webkit.WebViewFactory
@@ -153,6 +143,7 @@ android_library("java") {
     "org/chromium/weblayer_private/HttpAuthHandlerImpl.java",
     "org/chromium/weblayer_private/InfoBarContainer.java",
     "org/chromium/weblayer_private/InfoBarContainerView.java",
+    "org/chromium/weblayer_private/InstalledAppProviderFactory.java",
     "org/chromium/weblayer_private/IntentUtils.java",
     "org/chromium/weblayer_private/InterceptNavigationDelegateClientImpl.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
@@ -244,6 +235,7 @@ android_library("java") {
     "//components/infobars/android:infobar_android_enums_java",
     "//components/infobars/android:java",
     "//components/infobars/core:infobar_enums_java",
+    "//components/installedapp/android:java",
     "//components/javascript_dialogs/android:java",
     "//components/location/android:settings_java",
     "//components/media_router/browser/android:cast_options_provider_java",
@@ -295,18 +287,6 @@ android_library("java") {
     "//url:gurl_java",
     "//url:origin_java",
   ]
-
-  if (enable_arcore) {
-    sources += [
-      "org/chromium/weblayer_private/ArCompositorDelegateProviderImpl.java",
-      "org/chromium/weblayer_private/ArCoreVersionUtils.java",
-    ]
-    deps += [
-      "//components/webxr/android:ar_java",
-      "//components/webxr/android:ar_java_interfaces",
-    ]
-  }
-
   srcjar_deps = [
     ":generated_enums",
     ":resource_id_javagen",
@@ -477,13 +457,6 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/permissions/PermissionRequestUtils.java",
     "org/chromium/weblayer_private/resources/ResourceMapper.java",
   ]
-
-  if (enable_arcore) {
-    sources += [
-      "org/chromium/weblayer_private/ArCompositorDelegateProviderImpl.java",
-      "org/chromium/weblayer_private/ArCoreVersionUtils.java",
-    ]
-  }
 }
 
 android_library("base_module_interfaces_java") {

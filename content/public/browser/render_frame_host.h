@@ -486,6 +486,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // boundary in general, e.g. when using WebContents::FromRenderFrameHost) to
   // check if the given RenderFrameHost is currently being displayed in a given
   // tab.
+  //
+  // TODO(https://crbug.com/1184622): Rename IsCurrent to a more suitable name
+  // and update this comment accordingly considering the new feature Prerender2,
+  // where it is possible to have current RenderFrameHosts in multiple frame
+  // trees.
   virtual bool IsCurrent() = 0;
 
   // Returns true iff the RenderFrameHost is inactive i.e., when the
@@ -566,7 +571,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       blink::mojom::SuddenTerminationDisablerType disabler_type) = 0;
 
   // Returns true if the queried PermissionsPolicyFeature is allowed by
-  // feature policy.
+  // permissions policy.
   virtual bool IsFeatureEnabled(
       blink::mojom::PermissionsPolicyFeature feature) = 0;
 

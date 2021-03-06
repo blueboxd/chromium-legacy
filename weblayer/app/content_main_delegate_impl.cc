@@ -21,7 +21,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -159,8 +158,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     ::features::kWebXrHitTest,
     // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
     ::features::kBackgroundFetch,
-    // TODO(crbug.com/1130989): Support GetInstalledRelatedApps on WebLayer.
-    ::features::kInstalledApp,
     // TODO(crbug.com/1091212): make Notification triggers work with
     // WebLayer.
     ::features::kNotificationTriggers,

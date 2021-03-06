@@ -28,7 +28,7 @@ namespace {
 
 // A helper method which is used to trigger a violation report for cases where
 // the |element.animate| API is used to animate a CSS property which is blocked
-// by the feature policy 'layout-animations'.
+// by the permissions policy 'layout-animations'.
 void ReportPermissionsPolicyViolationsIfNecessary(
     const ExecutionContext& context,
     const KeyframeEffectModelBase& effect) {
@@ -113,6 +113,11 @@ Animation* Animatable::animate(ScriptState* script_state,
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes, exception_state);
   if (exception_state.HadException())
+    return nullptr;
+
+  // Creation of the keyframe effect parses JavaScript, which could result
+  // in destruction of the execution context. Recheck that it is still valid.
+  if (!element->GetExecutionContext())
     return nullptr;
 
   ReportPermissionsPolicyViolationsIfNecessary(*element->GetExecutionContext(),

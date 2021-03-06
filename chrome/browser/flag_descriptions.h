@@ -485,6 +485,9 @@ extern const char kMacCoreLocationBackendDescription[];
 extern const char kNewMacNotificationAPIName[];
 extern const char kNewMacNotificationAPIDescription[];
 
+extern const char kNotificationsViaHelperAppName[];
+extern const char kNotificationsViaHelperAppDescription[];
+
 extern const char kWinrtGeolocationImplementationName[];
 extern const char kWinrtGeolocationImplementationDescription[];
 
@@ -1065,6 +1068,9 @@ extern const char kOsSettingsDeepLinkingDescription[];
 extern const char kEnableDeJellyName[];
 extern const char kEnableDeJellyDescription[];
 
+extern const char kOverlayScrollbarsName[];
+extern const char kOverlayScrollbarsDescription[];
+
 extern const char kOverlayStrategiesName[];
 extern const char kOverlayStrategiesDescription[];
 extern const char kOverlayStrategiesDefault[];
@@ -1378,9 +1384,6 @@ extern const char kTabGroupsFeedbackDescription[];
 extern const char kTabGroupsNewBadgePromoName[];
 extern const char kTabGroupsNewBadgePromoDescription[];
 
-extern const char kTabHoverCardsName[];
-extern const char kTabHoverCardsDescription[];
-
 extern const char kTabHoverCardImagesName[];
 extern const char kTabHoverCardImagesDescription[];
 
@@ -1543,6 +1546,9 @@ extern const char kEnableVulkanDescription[];
 extern const char kSharedHighlightingUseBlocklistName[];
 extern const char kSharedHighlightingUseBlocklistDescription[];
 
+extern const char kSharedHighlightingV2Name[];
+extern const char kSharedHighlightingV2Description[];
+
 extern const char kPreemptiveLinkToTextGenerationName[];
 extern const char kPreemptiveLinkToTextGenerationDescription[];
 
@@ -1657,8 +1663,8 @@ extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[];
 extern const char kContextualSearchDebugName[];
 extern const char kContextualSearchDebugDescription[];
 
-extern const char kContextualSearchDefinitionsName[];
-extern const char kContextualSearchDefinitionsDescription[];
+extern const char kContextualSearchForceCaptionName[];
+extern const char kContextualSearchForceCaptionDescription[];
 
 extern const char kContextualSearchLiteralSearchTapName[];
 extern const char kContextualSearchLiteralSearchTapDescription[];
@@ -2076,6 +2082,9 @@ extern const char kOmniboxSuggestionButtonRowDescription[];
 
 extern const char kOmniboxPedalSuggestionsName[];
 extern const char kOmniboxPedalSuggestionsDescription[];
+
+extern const char kOmniboxPedalsBatch2Name[];
+extern const char kOmniboxPedalsBatch2Description[];
 
 extern const char kOmniboxKeywordSearchButtonName[];
 extern const char kOmniboxKeywordSearchButtonDescription[];

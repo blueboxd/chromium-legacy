@@ -408,6 +408,8 @@
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/ash/login/signin/merge_session_navigation_throttle.h"
 #include "chrome/browser/ash/login/signin/merge_session_throttling_utils.h"
+#include "chrome/browser/ash/login/signin_partition_manager.h"
+#include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/browser_process.h"
@@ -422,8 +424,6 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_loader_factory.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
-#include "chrome/browser/chromeos/login/signin_partition_manager.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
@@ -490,7 +490,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
-#include "chrome/browser/ui/webui/chrome_content_browser_client_webui_part.h"
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/importer/profile_import.mojom.h"
@@ -642,6 +641,10 @@
 
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"  // nogncheck crbug.com/1125897
+#endif
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+#include "chrome/browser/ui/webui/tab_strip/chrome_content_browser_client_tab_strip_part.h"
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -1219,8 +1222,8 @@ ChromeContentBrowserClient::ChromeContentBrowserClient() {
   extra_parts_.push_back(new ChromeContentBrowserClientChromeOsPart);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !defined(OS_ANDROID)
-  extra_parts_.push_back(new ChromeContentBrowserClientWebUIPart);
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  extra_parts_.push_back(new ChromeContentBrowserClientTabStripPart);
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

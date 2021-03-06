@@ -246,10 +246,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          RenderWidgetHost* source_rwh);
 
   // Notification that the RenderViewHost's load state changed.
-  void LoadStateChanged(const std::string& host,
-                        const net::LoadStateWithParam& load_state,
-                        uint64_t upload_position,
-                        uint64_t upload_size);
+  void LoadStateChanged(network::mojom::LoadInfoPtr load_info);
 
   // Updates the visibility and notifies observers. Note that this is
   // distinct from UpdateWebContentsVisibility which may also update the
@@ -1242,6 +1239,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // the preference cache is empty.
   const blink::web_pref::WebPreferences ComputeWebPreferences();
 
+  void set_show_popup_menu_callback_for_testing(
+      base::OnceCallback<void(const gfx::Rect&)> callback) {
+    show_poup_menu_callback_ = std::move(callback);
+  }
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1793,6 +1795,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;
   base::string16 load_state_host_;
+  base::TimeTicks load_info_timestamp_;
 
   base::TimeTicks loading_last_progress_update_;
 
@@ -2129,6 +2132,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   int suppress_unresponsive_renderer_count_ = 0;
 
   std::unique_ptr<power_scheduler::PowerModeVoter> audible_power_mode_voter_;
+
+  base::OnceCallback<void(const gfx::Rect&)> show_poup_menu_callback_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

@@ -101,8 +101,6 @@ by a child template that "extends" this file.
     <uses-permission android:name="{{ manifest_package }}.TOS_ACKED" />
 
     <uses-permission android:name="com.chrome.permission.DEVICE_EXTRAS" />
-    <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS"/>
-    <uses-permission android:name="com.android.browser.permission.WRITE_HISTORY_BOOKMARKS"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
 
@@ -1053,15 +1051,6 @@ by a child template that "extends" this file.
 
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
             android:exported="false"/>
-
-        <activity
-            android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$TrampolineActivity"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:exported="false"
-            android:autoRemoveFromRecents="true"
-            android:excludeFromRecents="true"
-            android:documentLaunchMode="always"
-            android:noHistory="true"/>
 
         <receiver android:name="org.chromium.chrome.browser.notifications.scheduler.DisplayAgent$Receiver"
             android:exported="false"/>

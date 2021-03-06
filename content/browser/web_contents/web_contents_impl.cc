@@ -213,6 +213,10 @@ namespace content {
 
 namespace {
 
+// The window which we dobounce load info updates in.
+constexpr auto kUpdateLoadStatesInterval =
+    base::TimeDelta::FromMilliseconds(250);
+
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 
 using LifecycleState = RenderFrameHostImpl::LifecycleState;
@@ -3933,8 +3937,8 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int process_id,
 void WebContentsImpl::CreateMediaPlayerHostForRenderFrameHost(
     RenderFrameHostImpl* frame_host,
     mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost> receiver) {
-  media_web_contents_observer()->BindMediaPlayerHost(frame_host,
-                                                     std::move(receiver));
+  media_web_contents_observer()->BindMediaPlayerHost(
+      frame_host->GetGlobalFrameRoutingId(), std::move(receiver));
 }
 
 void WebContentsImpl::RequestMediaAccessPermission(
@@ -4728,24 +4732,33 @@ void WebContentsImpl::DragSourceEndedAt(float client_x,
   }
 }
 
-void WebContentsImpl::LoadStateChanged(
-    const std::string& host,
-    const net::LoadStateWithParam& load_state,
-    uint64_t upload_position,
-    uint64_t upload_size) {
+void WebContentsImpl::LoadStateChanged(network::mojom::LoadInfoPtr load_info) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::LoadStateChanged", "host",
-                        host, "load_state", static_cast<int>(load_state.state));
-  base::string16 host16 = url_formatter::IDNToUnicode(host);
-  // Drop no-op updates.
-  if (load_state_.state == load_state.state &&
-      load_state_.param == load_state.param &&
-      upload_position_ == upload_position && upload_size_ == upload_size &&
-      load_state_host_ == host16) {
+                        load_info->host, "load_state", load_info->load_state);
+
+  // If the new load state isn't progressed as far as the current loading state
+  // or both are sending an upload and the upload is smaller, return early
+  // discarding the new load state.
+  if (load_info_timestamp_ + kUpdateLoadStatesInterval > load_info->timestamp &&
+      (load_state_.state > load_info->load_state ||
+       (load_state_.state == load_info->load_state &&
+        load_state_.state == net::LOAD_STATE_SENDING_REQUEST &&
+        upload_size_ > load_info->upload_size))) {
     return;
   }
-  load_state_ = load_state;
-  upload_position_ = upload_position;
-  upload_size_ = upload_size;
+
+  load_info_timestamp_ = load_info->timestamp;
+  base::string16 host16 = url_formatter::IDNToUnicode(load_info->host);
+  // Drop no-op updates.
+  if (load_state_.state == load_info->load_state &&
+      load_state_.param == load_info->state_param &&
+      upload_position_ == load_info->upload_position &&
+      upload_size_ == load_info->upload_size && load_state_host_ == host16) {
+    return;
+  }
+  load_state_ = net::LoadStateWithParam(
+      static_cast<net::LoadState>(load_info->load_state),
+      load_info->state_param);
   load_state_host_ = host16;
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
@@ -8413,14 +8426,18 @@ bool WebContentsImpl::ShowPopupMenu(
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::ShowPopupMenu",
                         "render_frame_host",
                         base::trace_event::ToTracedValue(render_frame_host));
-  for (auto& observer : observers_.observer_list()) {
-    if (observer.ShowPopupMenu(render_frame_host, popup_client, bounds,
-                               item_height, font_size, selected_item,
-                               menu_items, right_aligned,
-                               allow_multiple_selection)) {
-      return true;
-    }
+  if (show_poup_menu_callback_) {
+    std::move(show_poup_menu_callback_).Run(bounds);
+    return true;
   }
+#if defined(OS_MAC)
+  if (browser_plugin_guest_) {
+    browser_plugin_guest_->ShowPopupMenu(
+        render_frame_host, popup_client, bounds, item_height, font_size,
+        selected_item, menu_items, right_aligned, allow_multiple_selection);
+    return true;
+  }
+#endif
   return false;
 }
 

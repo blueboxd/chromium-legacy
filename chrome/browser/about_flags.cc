@@ -1480,16 +1480,6 @@ const FeatureEntry::FeatureVariation kOmniboxBubbleUrlSuggestionsVariations[] =
          nullptr,
      }};
 
-// The "Enabled" state for this feature is "0" and representing setting A.
-const FeatureEntry::FeatureParam kTabHoverCardsSettingB[] = {
-    {features::kTabHoverCardsFeatureParameterName, "1"}};
-const FeatureEntry::FeatureParam kTabHoverCardsSettingC[] = {
-    {features::kTabHoverCardsFeatureParameterName, "2"}};
-
-const FeatureEntry::FeatureVariation kTabHoverCardsFeatureVariations[] = {
-    {"B", kTabHoverCardsSettingB, base::size(kTabHoverCardsSettingB), nullptr},
-    {"C", kTabHoverCardsSettingC, base::size(kTabHoverCardsSettingC), nullptr}};
-
 const FeatureEntry::FeatureParam kMinimumTabWidthSettingPinned[] = {
     {features::kMinimumTabWidthFeatureParameterName, "54"}};
 const FeatureEntry::FeatureParam kMinimumTabWidthSettingMedium[] = {
@@ -2579,6 +2569,15 @@ const FeatureEntry::FeatureVariation kPasswordsAccountStorageVariations[] = {
 constexpr char kWallpaperWebUIInternalName[] = "wallpaper-webui";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kPaintPreviewStartupWithAccessibility[] = {
+    {"has_accessibility_support", "true"}};
+
+const FeatureEntry::FeatureVariation kPaintPreviewStartupVariations[] = {
+    {"with accessibility support", kPaintPreviewStartupWithAccessibility,
+     base::size(kPaintPreviewStartupWithAccessibility), nullptr}};
+#endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2724,10 +2723,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
      flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDebug)},
-    {"contextual-search-definitions",
-     flag_descriptions::kContextualSearchDefinitionsName,
-     flag_descriptions::kContextualSearchDefinitionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDefinitions)},
+    {"contextual-search-force-caption",
+     flag_descriptions::kContextualSearchForceCaptionName,
+     flag_descriptions::kContextualSearchForceCaptionDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchForceCaption)},
     {"contextual-search-literal-search-tap",
      flag_descriptions::kContextualSearchLiteralSearchTapName,
      flag_descriptions::kContextualSearchLiteralSearchTapDescription,
@@ -2808,6 +2807,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFractionalScrollOffsetsName,
      flag_descriptions::kFractionalScrollOffsetsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFractionalScrollOffsets)},
+#if defined(USE_AURA)
+    {"overlay-scrollbars", flag_descriptions::kOverlayScrollbarsName,
+     flag_descriptions::kOverlayScrollbarsDescription,
+     // Uses the system preference on Mac (a different implementation).
+     // On Android, this is always enabled.
+     kOsAura, FEATURE_VALUE_TYPE(features::kOverlayScrollbar)},
+#endif  // USE_AURA
     {"enable-quic", flag_descriptions::kQuicName,
      flag_descriptions::kQuicDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableQuic, switches::kDisableQuic)},
@@ -4311,6 +4317,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPedalSuggestionsName,
      flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions)},
+    {"omnibox-pedals-batch2", flag_descriptions::kOmniboxPedalsBatch2Name,
+     flag_descriptions::kOmniboxPedalsBatch2Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch2)},
     {"omnibox-keyword-search-button",
      flag_descriptions::kOmniboxKeywordSearchButtonName,
      flag_descriptions::kOmniboxKeywordSearchButtonDescription, kOsDesktop,
@@ -4825,12 +4834,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeTipsInMainMenuDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeTipsInMainMenu)},
 #endif
-
-    {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
-     flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabHoverCards,
-                                    kTabHoverCardsFeatureVariations,
-                                    "TabHoverCards")},
 
     {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
@@ -6233,6 +6236,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewMacNotificationAPIName,
      flag_descriptions::kNewMacNotificationAPIDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kNewMacNotificationAPI)},
+    {"notifications-via-helper-app",
+     flag_descriptions::kNotificationsViaHelperAppName,
+     flag_descriptions::kNotificationsViaHelperAppDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kNotificationsViaHelperApp)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6362,7 +6369,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewDemo)},
     {"paint-preview-startup", flag_descriptions::kPaintPreviewStartupName,
      flag_descriptions::kPaintPreviewStartupDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup,
+                                    kPaintPreviewStartupVariations,
+                                    "PaintPreviewStartup")},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -6523,6 +6532,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharedHighlightingUseBlocklistName,
      flag_descriptions::kSharedHighlightingUseBlocklistDescription, kOsAll,
      FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingUseBlocklist)},
+    {"shared-highlighting-v2", flag_descriptions::kSharedHighlightingV2Name,
+     flag_descriptions::kSharedHighlightingV2Description, kOsAll,
+     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingV2)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"nearby-sharing", flag_descriptions::kNearbySharingName,

@@ -135,8 +135,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
           trust_token_helper_factory,
       const cors::OriginAccessList& origin_access_list,
       mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
-      mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
-          auth_cert_observer,
+      mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+          url_loader_network_observer,
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer);
   ~URLLoader() override;
 
@@ -179,7 +179,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const net::IPEndPoint& endpoint,
       base::Optional<GURL>* preserve_fragment_on_redirect_url);
 
-  mojom::AuthenticationAndCertificateObserver* GetAuthCertObserver();
+  mojom::URLLoaderNetworkServiceObserver* GetAuthCertObserver();
+
+  void OnBeforeURLRequest();
 
   // mojom::AuthChallengeResponder:
   void OnAuthCredentials(
@@ -348,6 +350,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       int error_code,
       bool should_report_corb_blocking,
       base::Optional<mojom::BlockedByResponseReason> reason = base::nullopt);
+
+  // Starts the timer to call
+  // URLLoaderNetworkServiceObserver::OnLoadingStateUpdate(), if timer
+  // isn't already running, |waiting_on_load_state_ack_| is false.
+  void MaybeStartUpdateLoadInfoTimer();
+
+  // Updates the load info if necessary.
+  void UpdateLoadInfo();
+
+  // Invoked once the browser has acknowledged receiving the previous LoadInfo.
+  // Starts timer call UpdateLoadInfo() again, if needed.
+  void AckUpdateLoadInfo();
 
   enum BlockResponseForCorbResult {
     // Returned when caller of BlockResponseForCorb doesn't need to continue,
@@ -531,7 +545,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Observer listening to all cookie reads and writes made by this request.
   mojo::Remote<mojom::CookieAccessObserver> cookie_observer_;
 
-  mojo::Remote<mojom::AuthenticationAndCertificateObserver> auth_cert_observer_;
+  mojo::Remote<mojom::URLLoaderNetworkServiceObserver>
+      url_loader_network_observer_;
 
   mojo::Remote<mojom::DevToolsObserver> devtools_observer_;
 
@@ -549,6 +564,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Indicates whether fetch upload streaming is allowed/rejected over H/1.
   // Even if this is false but there is a QUIC/H2 stream, the upload is allowed.
   const bool allow_http1_for_streaming_upload_;
+
+  base::OneShotTimer update_load_info_timer_;
+  bool waiting_on_load_state_ack_ = false;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

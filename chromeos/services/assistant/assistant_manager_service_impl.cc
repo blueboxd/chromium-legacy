@@ -235,6 +235,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 
   media_host_->Initialize(&assistant_proxy_->media_controller(),
                           assistant_proxy_->ExtractMediaDelegate());
+  timer_host_->Initialize(&assistant_proxy_->timer_controller(),
+                          assistant_proxy_->ExtractTimerDelegate());
 
   settings_delegate_ =
       std::make_unique<AssistantDeviceSettingsDelegate>(context);
@@ -268,7 +270,6 @@ void AssistantManagerServiceImpl::Stop() {
   SetStateAndInformObservers(State::STOPPED);
 
   media_host_->Stop();
-  timer_host_->Stop();
   scoped_app_list_event_subscriber_.Reset();
   scoped_action_observer_.Reset();
 
@@ -514,6 +515,11 @@ void AssistantManagerServiceImpl::OnTextResponse(const std::string& reponse) {
   receive_inline_response_ = true;
 }
 
+void AssistantManagerServiceImpl::OnOpenUrlResponse(const GURL& url,
+                                                    bool in_background) {
+  receive_url_response_ = url.spec();
+}
+
 void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnScheduleWait, id, time_ms);
   DCHECK(features::IsWaitSchedulingEnabled());
@@ -536,18 +542,6 @@ void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
   // Notify subscribers that a wait has been started.
   for (auto& it : interaction_subscribers_)
     it.OnWaitStarted();
-}
-
-void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
-                                            bool is_background) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenUrl, url,
-                     is_background);
-
-  receive_url_response_ = url;
-  const GURL gurl = GURL(url);
-
-  for (auto& it : interaction_subscribers_)
-    it.OnOpenUrlResponse(gurl, is_background);
 }
 
 void AssistantManagerServiceImpl::OnShowNotification(
@@ -750,8 +744,6 @@ void AssistantManagerServiceImpl::OnServiceRunning() {
 
   SetAssistantContextEnabled(assistant_state()->IsScreenContextAllowed());
 
-  timer_host_->Start();
-
   if (assistant_state()->arc_play_store_enabled().has_value())
     SetArcPlayStoreEnabled(assistant_state()->arc_play_store_enabled().value());
 }
@@ -803,7 +795,7 @@ void AssistantManagerServiceImpl::PauseTimer(const std::string& id) {
 }
 
 void AssistantManagerServiceImpl::RemoveAlarmOrTimer(const std::string& id) {
-  timer_host_->RemoveAlarmOrTimer(id);
+  timer_host_->RemoveTimer(id);
 }
 
 void AssistantManagerServiceImpl::ResumeTimer(const std::string& id) {

@@ -2819,7 +2819,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   DCHECK(GetDocument().InStyleRecalc());
 
   // FIXME: Instead of clearing updates that may have been added from calls to
-  // StyleForElement outside RecalcStyle, we should just never set them if we're
+  // ResolveStyle outside RecalcStyle, we should just never set them if we're
   // not inside RecalcStyle.
   if (ElementAnimations* element_animations = GetElementAnimations())
     element_animations->CssAnimations().ClearPendingUpdate();
@@ -2833,7 +2833,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
     return nullptr;
   }
 
-  // StyleForElement() might add active animations so we need to get it again.
+  // ResolveStyle() might add active animations so we need to get it again.
   if (ElementAnimations* element_animations = GetElementAnimations()) {
     element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
     element_animations->UpdateAnimationFlags(*style);
@@ -2848,8 +2848,8 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
 
 scoped_refptr<ComputedStyle> Element::OriginalStyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
-  return GetDocument().GetStyleResolver().StyleForElement(this,
-                                                          style_recalc_context);
+  return GetDocument().GetStyleResolver().ResolveStyle(this,
+                                                       style_recalc_context);
 }
 
 void Element::RecalcStyleForTraversalRootAncestor() {
@@ -4916,13 +4916,15 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
       layout_parent_style = parent_layout_object->Style();
   }
 
+  StyleRequest style_request;
+  style_request.pseudo_id = pseudo_element_specifier;
+  style_request.type = StyleRequest::kForComputedStyle;
+  style_request.parent_override = element_style;
+  style_request.layout_parent_override = layout_parent_style;
+
   scoped_refptr<ComputedStyle> result =
-      GetDocument().GetStyleResolver().PseudoStyleForElement(
-          this, style_recalc_context,
-          PseudoElementStyleRequest(
-              pseudo_element_specifier,
-              PseudoElementStyleRequest::kForComputedStyle),
-          element_style, layout_parent_style);
+      GetDocument().GetStyleResolver().ResolveStyle(this, style_recalc_context,
+                                                    style_request);
   DCHECK(result);
   result->SetIsEnsuredInDisplayNone();
   return element_style->AddCachedPseudoElementStyle(std::move(result));
@@ -5196,21 +5198,20 @@ bool Element::PseudoElementStylesDependOnFontMetrics() const {
   return false;
 }
 
-const ComputedStyle* Element::CachedStyleForPseudoElement(
-    const PseudoElementStyleRequest& request) {
+const ComputedStyle* Element::CachedStyleForPseudoElement(PseudoId pseudo_id) {
   const ComputedStyle* style = GetComputedStyle();
 
-  if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
-                 !style->HasPseudoElementStyle(request.pseudo_id))) {
+  if (!style || (pseudo_id < kFirstInternalPseudoId &&
+                 !style->HasPseudoElementStyle(pseudo_id))) {
     return nullptr;
   }
 
   if (const ComputedStyle* cached =
-          style->GetCachedPseudoElementStyle(request.pseudo_id))
+          style->GetCachedPseudoElementStyle(pseudo_id))
     return cached;
 
   scoped_refptr<ComputedStyle> result =
-      UncachedStyleForPseudoElement(request, style);
+      UncachedStyleForPseudoElement(StyleRequest(pseudo_id), style);
   if (result)
     return style->AddCachedPseudoElementStyle(std::move(result));
   return nullptr;
@@ -5233,6 +5234,10 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
 
   DCHECK(parent_style);
 
+  StyleRequest style_request = request;
+  style_request.parent_override = parent_style;
+  style_request.layout_parent_override = parent_style;
+
   if (is_before_or_after) {
     const ComputedStyle* layout_parent_style = parent_style;
     if (parent_style->Display() == EDisplay::kContents) {
@@ -5245,28 +5250,26 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
         layout_parent_style = layout_parent->GetComputedStyle();
       }
     }
-    return GetDocument().GetStyleResolver().PseudoStyleForElement(
-        this, style_recalc_context, request, parent_style, layout_parent_style);
+    style_request.layout_parent_override = layout_parent_style;
+    return GetDocument().GetStyleResolver().ResolveStyle(
+        this, style_recalc_context, style_request);
   }
 
   if (request.pseudo_id == kPseudoIdFirstLineInherited) {
-    scoped_refptr<ComputedStyle> result;
-    if (IsPseudoElement()) {
-      result = GetDocument().GetStyleResolver().PseudoStyleForElement(
-          parentElement(), style_recalc_context,
-          PseudoElementStyleRequest(To<PseudoElement>(this)->GetPseudoId()),
-          parent_style, parent_style);
-    } else {
-      result = GetDocument().GetStyleResolver().StyleForElement(
-          this, style_recalc_context, parent_style, parent_style);
-    }
+    style_request.pseudo_id = IsPseudoElement()
+                                  ? To<PseudoElement>(this)->GetPseudoId()
+                                  : kPseudoIdNone;
+    Element* target = IsPseudoElement() ? parentElement() : this;
+    scoped_refptr<ComputedStyle> result =
+        GetDocument().GetStyleResolver().ResolveStyle(
+            target, style_recalc_context, style_request);
     if (result)
       result->SetStyleType(kPseudoIdFirstLineInherited);
     return result;
   }
 
-  return GetDocument().GetStyleResolver().PseudoStyleForElement(
-      this, style_recalc_context, request, parent_style, parent_style);
+  return GetDocument().GetStyleResolver().ResolveStyle(
+      this, style_recalc_context, style_request);
 }
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {

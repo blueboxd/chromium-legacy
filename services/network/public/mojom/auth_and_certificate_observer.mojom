@@ -4,9 +4,21 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "url/mojom/url.mojom";
+
+// Contains progress information for a particular load.
+struct LoadInfo {
+  mojo_base.mojom.TimeTicks timestamp;
+  string host;
+  uint32 load_state;  // net::LoadState enum
+  mojo_base.mojom.String16 state_param;
+  uint64 upload_position;
+  uint64 upload_size;
+};
 
 // This interface enables the UI to send client certificate selections back to
 // the network service.
@@ -60,7 +72,7 @@ interface SSLPrivateKey {
 // needs to be called.
 interface AuthChallengeResponder {
    // Called in response to an authentication request. See
-   // AuthenticationAndCertificateObserver::OnAuthRequired.
+   // URLLoaderNetworkServiceObserver::OnAuthRequired.
    OnAuthCredentials(AuthCredentials? credentials);
 };
 
@@ -69,7 +81,7 @@ interface AuthChallengeResponder {
 // by a trusted process such as the browser process.
 // TODO(dtapuska): Rename this interface. It is used for more than
 // authentication and certificate now.
-interface AuthenticationAndCertificateObserver {
+interface URLLoaderNetworkServiceObserver {
   // Called when an SSL certificate is encountered.
   // The callback argument is a net::ERROR value. If it's net::OK, then the
   // request is resumed. Otherwise it's cancelled with the given error.
@@ -88,7 +100,7 @@ interface AuthenticationAndCertificateObserver {
   // network::ResourceRequest::fetch_window_id. This parameter is only set
   // when the request is from a service worker to identify the origin window.
   // The is not needed for frame based requests because they have their own
-  // URLLoaderFactory and a unique AuthenticationAndCertificateObserver for each
+  // URLLoaderFactory and a unique URLLoaderNetworkServiceObserver for each
   // frame.
   OnCertificateRequested(
       mojo_base.mojom.UnguessableToken? window_id,
@@ -104,7 +116,7 @@ interface AuthenticationAndCertificateObserver {
   // network::ResourceRequest::fetch_window_id. This parameter is only set
   // when the request is from a service worker to identify the origin window.
   // The is not needed for frame based requests because they have their own
-  // URLLoaderFactory and a unique AuthenticationAndCertificateObserver for each
+  // URLLoaderFactory and a unique URLLoaderNetworkServiceObserver for each
   // frame.
   OnAuthRequired(
       mojo_base.mojom.UnguessableToken? window_id,
@@ -124,9 +136,13 @@ interface AuthenticationAndCertificateObserver {
                   string header_value,
                   int32 load_flags) => ();
 
+  // Called periodically to update the client about progress of the current
+  // loads. To avoid flooding the client, it has to ack the update before it can
+  // receive the next update.
+  OnLoadingStateUpdate(LoadInfo info) => ();
 
   // Used by the NetworkService to create a copy of this observer.
   // (e.g. when creating an observer for URLLoader from URLLoaderFactory's
   // observer).
-  Clone(pending_receiver<AuthenticationAndCertificateObserver> listener);
+  Clone(pending_receiver<URLLoaderNetworkServiceObserver> listener);
 };

@@ -154,14 +154,17 @@ void MetricsWebContentsObserver::RenderFrameDeleted(
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     const content::MediaPlayerId& id) {
-  if (!id.render_frame_host->GetMainFrame()->IsCurrent()) {
+  auto* render_frame_host =
+      content::RenderFrameHost::FromID(id.frame_routing_id);
+
+  if (!render_frame_host || !render_frame_host->GetMainFrame()->IsCurrent()) {
     // Ignore media that starts playing in a page that was navigated away
     // from.
     return;
   }
 
   if (committed_load_)
-    committed_load_->MediaStartedPlaying(video_type, id.render_frame_host);
+    committed_load_->MediaStartedPlaying(video_type, render_frame_host);
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
@@ -563,6 +566,13 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
           ->SetUpSharedMemoryForSmoothness(render_frame_host,
                                            std::move(ukm_smoothness_data_));
     }
+  }
+
+  // Clear memory update queue, sending each queued update now that we have
+  // a `committed_load_`.
+  while (!queued_memory_updates_.empty()) {
+    committed_load_->OnV8MemoryChanged(queued_memory_updates_.front());
+    queued_memory_updates_.pop();
   }
 }
 
@@ -987,8 +997,17 @@ void MetricsWebContentsObserver::BroadcastEventToObservers(
 
 void MetricsWebContentsObserver::OnV8MemoryChanged(
     const std::vector<MemoryUpdate>& memory_updates) {
-  if (committed_load_)
+  if (committed_load_) {
     committed_load_->OnV8MemoryChanged(memory_updates);
+  } else {
+    // If the load hasn't committed yet, then memory updates can't be sent
+    // at this time, but will still need to be sent later. Queue the updates
+    // in case `committed_load_` is null due to the navigation having not yet
+    // completed, in which case the queued updates will be sent when
+    // HandleCommittedNavigationForTrackedLoad is called.  Otherwise, they will
+    // be ignored and destructed when the MWCO is destructed.
+    queued_memory_updates_.push(memory_updates);
+  }
 }
 
 PageLoadMetricsMemoryTracker* MetricsWebContentsObserver::GetMemoryTracker()

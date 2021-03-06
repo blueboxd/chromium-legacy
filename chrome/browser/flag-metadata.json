@@ -706,9 +706,9 @@
     "expiry_milestone": 99
   },
   {
-    "name": "contextual-search-definitions",
+    "name": "contextual-search-force-caption",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 93
   },
   {
     "name": "contextual-search-literal-search-tap",
@@ -778,7 +778,7 @@
   {
     "name": "copy-link-to-text",
     "owners": [ "johntlee" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "cpu-affinity-restrict-to-little-cores",
@@ -873,7 +873,7 @@
   {
     "name": "dark-light-mode",
     "owners": [ "minch", "tclaiborne" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "darken-websites-checkbox-in-themes-setting",
@@ -3646,6 +3646,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "notifications-via-helper-app",
+    "owners": [ "knollr", "peter" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "ntp-cache-one-google-bar",
     "owners": [ "aee", "mahmadi", "tiborg" ],
     "expiry_milestone": 92
@@ -3763,7 +3768,7 @@
   {
     "name": "omnibox-adaptive-suggestions-count",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-assistant-voice-search",
@@ -3891,6 +3896,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "omnibox-pedals-batch2",
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-refined-focus-state",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 90
@@ -4008,6 +4018,11 @@
   { "name": "os-settings-polymer3",
     "owners": [ "cros-customization@google.com", "tjohnsonkanu", "khorimoto" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "overlay-scrollbars",
+    "owners": [ "chaopeng", "bokan", "input-dev" ],
+    "expiry_milestone": 99
   },
   {
     "name": "overlay-strategies",
@@ -4689,6 +4704,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "shared-highlighting-v2",
+    "owners": ["kmilka"],
+    "expiry_milestone": 92
+  },
+  {
     "name": "sharing-device-expiration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 86
@@ -4915,11 +4935,6 @@
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "tab-hover-cards",
-    "owners": [ "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 90
   },
   {
     "name": "tab-outlines-in-low-contrast-themes",
@@ -5252,7 +5267,7 @@
   {
     "name": "web-otp-backend",
     "owners": [ "yigu", "majidvp" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "web-share",

@@ -88,13 +88,12 @@ int NetworkServiceNetworkDelegate::OnBeforeURLRequest(
 
   MaybeTruncateReferrer(request, *effective_url);
 
-  NetworkService* network_service = network_context_->network_service();
-  if (network_service)
-    network_service->OnBeforeURLRequest();
-
   if (!loader)
     return net::OK;
 
+  loader->OnBeforeURLRequest();
+
+  NetworkService* network_service = network_context_->network_service();
   if (network_service) {
     loader->SetAllowReportingRawHeaders(network_service->HasRawHeadersAccess(
         loader->GetProcessId(), *effective_url));
@@ -328,8 +327,8 @@ int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
   if (!url_loader)
     return net::OK;
 
-  auto* auth_cert_observer = url_loader->GetAuthCertObserver();
-  if (!auth_cert_observer)
+  auto* url_loader_network_observer = url_loader->GetAuthCertObserver();
+  if (!url_loader_network_observer)
     return net::OK;
 
   std::string header_value;
@@ -338,7 +337,7 @@ int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
     return net::OK;
   }
 
-  auth_cert_observer->OnClearSiteData(
+  url_loader_network_observer->OnClearSiteData(
       request->url(), header_value, request->load_flags(),
       base::BindOnce(&NetworkServiceNetworkDelegate::FinishedClearSiteData,
                      weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr(),

@@ -1913,9 +1913,9 @@ TEST_F(AppsGridViewTest, ControlShiftArrowFolderLastItemOnPage) {
   EXPECT_TRUE(folder_item->FindChildItem(second_item_id));
 }
 
-// Flaky: crbug.com/1156634
-TEST_P(AppsGridViewTest, DISABLED_MouseDragFlipPage) {
-  apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
+TEST_P(AppsGridViewTest, MouseDragFlipPage) {
+  apps_grid_view_->set_page_flip_delay_for_testing(
+      base::TimeDelta::FromMilliseconds(10));
   GetPaginationModel()->SetTransitionDurations(
       base::TimeDelta::FromMilliseconds(10),
       base::TimeDelta::FromMilliseconds(10));
@@ -1950,7 +1950,7 @@ TEST_P(AppsGridViewTest, DISABLED_MouseDragFlipPage) {
 
   // Cancel drag and put the dragged view back to its ideal position so that
   // the next drag would pick it up.
-  EndDrag(apps_grid_view_, false /*cancel*/);
+  EndDrag(apps_grid_view_, true /*cancel*/);
   test_api_->LayoutToIdealBounds();
 
   // Now drag to the top edge, and test the other direction.
@@ -1969,7 +1969,7 @@ TEST_P(AppsGridViewTest, DISABLED_MouseDragFlipPage) {
   EXPECT_EQ(0, GetPaginationModel()->selected_page());
   EXPECT_EQ(to, GetDragViewCenter());
 
-  EndDrag(apps_grid_view_, false /*cancel*/);
+  EndDrag(apps_grid_view_, true /*cancel*/);
 }
 
 TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
@@ -2134,7 +2134,8 @@ class AppsGridGapTest : public AppsGridViewTest {
   // testing::Test overrides:
   void SetUp() override {
     AppsGridViewTest::SetUp();
-    apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
+    apps_grid_view_->set_page_flip_delay_for_testing(
+        base::TimeDelta::FromMilliseconds(10));
     GetPaginationModel()->SetTransitionDurations(
         base::TimeDelta::FromMilliseconds(10),
         base::TimeDelta::FromMilliseconds(10));

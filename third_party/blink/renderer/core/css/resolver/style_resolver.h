@@ -64,17 +64,10 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   ~StyleResolver();
   void Dispose();
 
-  // TODO(andruud): Remove this function, use ResolveStyle directly.
-  scoped_refptr<ComputedStyle> StyleForElement(
+  scoped_refptr<ComputedStyle> ResolveStyle(
       Element*,
       const StyleRecalcContext&,
-      const ComputedStyle* parent_style = nullptr,
-      const ComputedStyle* layout_parent_style = nullptr,
-      RuleMatchingBehavior = kMatchAllRules);
-
-  scoped_refptr<ComputedStyle> ResolveStyle(Element*,
-                                            const StyleRecalcContext&,
-                                            const StyleRequest&);
+      const StyleRequest& = StyleRequest());
 
   static scoped_refptr<ComputedStyle> InitialStyleForElement(Document&);
 
@@ -85,14 +78,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       const PropertyHandle&,
       const CSSValue*,
       double offset);
-
-  // TODO(andruud): Remove this function, use ResolveStyle directly.
-  scoped_refptr<ComputedStyle> PseudoStyleForElement(
-      Element*,
-      const StyleRecalcContext&,
-      const PseudoElementStyleRequest&,
-      const ComputedStyle* parent_style,
-      const ComputedStyle* layout_parent_style);
 
   scoped_refptr<const ComputedStyle> StyleForPage(
       uint32_t page_index,

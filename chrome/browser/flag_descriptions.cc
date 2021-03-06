@@ -789,6 +789,11 @@ const char kNewMacNotificationAPIDescription[] =
     "Enables the usage of Apple's new notification API which will run on macOS "
     "10.14+";
 
+const char kNotificationsViaHelperAppName[] = "Notifications via helper app";
+const char kNotificationsViaHelperAppDescription[] =
+    "Enables the notification helper app to display alerts on macOS instead of "
+    "the XPC service";
+
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";
 const char kWinrtGeolocationImplementationDescription[] =
@@ -1818,6 +1823,11 @@ const char kOsSettingsDeepLinkingDescription[] =
     "Enables a unique URL for each path in CrOS settings. "
     "This allows deep linking to individual settings, i.e. in settings search.";
 
+const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
+const char kOverlayScrollbarsDescription[] =
+    "Enable the experimental overlay scrollbars implementation. You must also "
+    "enable threaded compositing to have the scrollbars animate.";
+
 const char kOverlayStrategiesName[] = "Select HW overlay strategies";
 const char kOverlayStrategiesDescription[] =
     "Select strategies used to promote quads to HW overlays.";
@@ -2356,11 +2366,6 @@ const char kTabGroupsNewBadgePromoDescription[] =
     "Causes a 'New' badge to appear on the entry point for creating a tab "
     "group in the tab context menu.";
 
-const char kTabHoverCardsName[] = "Tab Hover Cards";
-const char kTabHoverCardsDescription[] =
-    "Enables a popup containing tab information to be visible when hovering "
-    "over a tab. This will replace tooltips for tabs.";
-
 const char kTabHoverCardImagesName[] = "Tab Hover Card Images";
 const char kTabHoverCardImagesDescription[] =
     "Shows a preview image in tab hover cards, if tab hover cards are enabled.";
@@ -2644,6 +2649,11 @@ const char kSharedHighlightingUseBlocklistDescription[] =
     "restrictions make it unlikely that a URL can be generated and actually "
     "work when shared.";
 
+const char kSharedHighlightingV2Name[] = "Shared Highlighting 2.0";
+const char kSharedHighlightingV2Description[] =
+    "Improvements to Shared Highlighting. Including ability to reshare or "
+    "remove a highlight.";
+
 const char kPreemptiveLinkToTextGenerationName[] =
     "Preemptive generation of link to text";
 const char kPreemptiveLinkToTextGenerationDescription[] =
@@ -2828,10 +2838,10 @@ const char kContextualSearchDebugDescription[] =
     "Enables internal debugging of Contextual Search behavior on the client "
     "and server.";
 
-const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
-const char kContextualSearchDefinitionsDescription[] =
-    "Enables touch-activated contextual definitions of words on a page to be "
-    "presented in the caption of the Touch to Search Bar.";
+const char kContextualSearchForceCaptionName[] =
+    "Contextual Search force a caption";
+const char kContextualSearchForceCaptionDescription[] =
+    "Forces a caption to always be shown in the Touch to Search Bar.";
 
 const char kContextualSearchLiteralSearchTapName[] =
     "Contextual Search literal search with tap";
@@ -3583,6 +3593,12 @@ const char kOmniboxPedalSuggestionsDescription[] =
     "Enable omnibox Pedal suggestions to accelerate actions within Chrome by "
     "detecting user intent and offering direct access to the end goal. This "
     "flag has no effect unless \"Omnibox suggestion button row\" is also "
+    "enabled.";
+
+const char kOmniboxPedalsBatch2Name[] = "Omnibox Pedals batch 2";
+const char kOmniboxPedalsBatch2Description[] =
+    "Enable the second batch of Omnibox Pedals (Safety Check, etc.). "
+    "This flag has no effect unless \"Omnibox Pedal suggestions\" is also "
     "enabled.";
 
 const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";

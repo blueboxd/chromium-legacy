@@ -13,20 +13,20 @@ Chromium-legacy is the latest Chromium (almost equivalent to Chrome Canary witho
 
 This project is automatically built and uploaded twice a day (00:00 and 12:00 JST) if no issues occurred.
 And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
-It's recommended to find and use a stable build for daily use.
+It's recommended to find and use a stable build for daily use. (The same is true for the original Chrome Canary/Chromium)
 
 ## functionality
 
-Basically equivalent to the same version of original Chromium except for limitations by old OSes (see below).
+Basically equivalent to the [same version of original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see below).
 
-## limitation / glitches
+## limitations / glitches
 
 - overall
-  - ~~crashing on 10.9~~
+  - ~~[crashing on 10.9](../../issues/2)~~
     - [Skia is patched](../../../skia) for compatibilty (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 - UI
   - windows
-    - ~~close/minimize/resize buttons are invisible~~
+    - ~~[close/minimize/resize buttons are invisible](../../issues/4)~~
       - ~~but functional when clicking appropriate position~~
       - FIXED as classical title bar (thanks to [@Wowfunhappy](https://github.com/Wowfunhappy))
     - ~~can't move by dragging title bar region~~

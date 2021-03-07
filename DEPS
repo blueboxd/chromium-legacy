@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '00d6cf436884be59ed2479b315d004c0355c2b8d',
+  'skia_revision': '1314913ff5693cb6134e5921d30872c81d66f9c4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -375,7 +375,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '8869f42e7fc234f038cd78097e19e304773cc8f0',
+  'libunwind_revision':    'cc80b4ac985d1c05a3d24dc96e4ffa7e98dbc535',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1618,7 +1618,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8c63bf5fd235c82b64beb68b0de60fb2a307db88',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9102e5e1d8a182588536d0ed7b297c7bfb049c75',
     'condition': 'checkout_src_internal',
   },
 

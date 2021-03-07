@@ -52,11 +52,18 @@ class StyleRequest {
   ScrollbarPart scrollbar_part{kNoPart};
   CustomScrollbar* scrollbar{nullptr};
 
+  StyleRequest(PseudoId pseudo_id, const ComputedStyle* parent_override)
+      : parent_override(parent_override),
+        layout_parent_override(parent_override),
+        pseudo_id(pseudo_id) {}
+
   StyleRequest(PseudoId pseudo_id,
-               CustomScrollbar* scrollbar = nullptr,
-               ScrollbarPart scrollbar_part = kNoPart)
-      : pseudo_id(pseudo_id),
-        type(kForRenderer),
+               CustomScrollbar* scrollbar,
+               ScrollbarPart scrollbar_part,
+               const ComputedStyle* parent_override)
+      : parent_override(parent_override),
+        layout_parent_override(parent_override),
+        pseudo_id(pseudo_id),
         scrollbar_part(scrollbar_part),
         scrollbar(scrollbar) {}
 
@@ -66,9 +73,6 @@ class StyleRequest {
         scrollbar_part(kNoPart),
         scrollbar(nullptr) {}
 };
-
-// TODO(andruud): Callers should use StyleRequest directly.
-using PseudoElementStyleRequest = StyleRequest;
 
 }  // namespace blink
 

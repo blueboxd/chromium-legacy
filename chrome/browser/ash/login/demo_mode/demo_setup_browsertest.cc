@@ -34,7 +34,7 @@
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
@@ -115,7 +115,6 @@ class DemoSetupTestBase : public OobeBaseTest {
     OobeBaseTest::SetUpOnMainThread();
     update_engine_client()->set_update_check_result(
         UpdateEngineClient::UPDATE_RESULT_FAILED);
-    DisableConfirmationDialogAnimations();
     branded_build_override_ =
         WizardController::ForceBrandedBuildForTesting(true);
     DisconnectAllNetworks();
@@ -299,11 +298,6 @@ class DemoSetupTestBase : public OobeBaseTest {
   test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
 
  private:
-  void DisableConfirmationDialogAnimations() {
-    test::ExecuteOobeJS(
-        "cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION = 0;");
-  }
-
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;

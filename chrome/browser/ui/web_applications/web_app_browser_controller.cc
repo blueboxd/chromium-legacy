@@ -29,7 +29,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/apps/apk_web_app_service.h"
 
 namespace {
 constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
@@ -289,8 +289,8 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
   if (!HasAppId())
     return;
 
-  chromeos::ApkWebAppService* apk_web_app_service =
-      chromeos::ApkWebAppService::Get(browser->profile());
+  ash::ApkWebAppService* apk_web_app_service =
+      ash::ApkWebAppService::Get(browser->profile());
   if (!apk_web_app_service || !apk_web_app_service->IsWebOnlyTwa(GetAppId()))
     return;
 

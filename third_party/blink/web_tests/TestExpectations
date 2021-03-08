@@ -234,11 +234,6 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
-# This test currently fails since prerendering activation isn't fully plumbed
-# into the renderer yet.
-crbug.com/1183320 virtual/prerender/wpt_internal/prerender/state_and_event.html [ Timeout ]
-
-
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-iframe-root.html [ Pass Failure ]
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-root.html [ Pass Failure ]
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-transformed-root.html [ Pass Failure ]
@@ -991,6 +986,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragm
 virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragmentainer-002.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-002.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-006.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-monolithic-002.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/abspos-containing-block-outside-spanner.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/balance-break-avoidance-001.html [ Pass ]
@@ -1636,7 +1632,6 @@ crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pa
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002.html [ Pass Timeout ]
 crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Timeout ]
 crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Pass Timeout ]
-crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1018064 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1105957 [ Linux Debug ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
@@ -3280,6 +3275,8 @@ crbug.com/471333 external/wpt/css/css-break/transform-002.html [ Failure ]
 crbug.com/1058792 external/wpt/css/css-break/transform-003.html [ Failure ]
 crbug.com/1058792 external/wpt/css/css-break/transform-004.html [ Failure ]
 crbug.com/1058792 external/wpt/css/css-break/transform-005.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/transform-006.html [ Failure ]
+crbug.com/1058792 external/wpt/css/css-break/transform-007.html [ Failure ]
 crbug.com/1156312 external/wpt/css/css-break/widows-orphans-017.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/abspos-containing-block-outside-spanner.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
@@ -5029,6 +5026,7 @@ crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/respons
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
 
 ### sheriff 2020-03-03
+crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
 crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
 crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
 
@@ -5717,19 +5715,6 @@ crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.h
 # Sheriff 2021-03-01
 crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Pass Failure ]
 
-# Temporarily disabled for https://crrev.com/c/2727709
-crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/edit/perform-undo-undo.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/elements-panel-structure.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/iframe-load-event.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/inline-style-title.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/elements/shadow/shadow-host-display-modes.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
-crbug.com/1145610 http/tests/devtools/oopif/oopif-elements-nesting.js [ Pass Failure ]
-crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-activate.js [ Pass Failure ]
-crbug.com/1145610 virtual/portals/http/tests/devtools/portals/portals-elements-nesting.js [ Pass Failure ]
-
 # Temporarily disabled for https://crrev.com/c/2713104
 crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Pass Failure ]
 
@@ -5742,3 +5727,9 @@ crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SV
 
 # DevTools roll
 crbug.com/1163046 http/tests/devtools/network/async-xhr-json-mime-type.js [ Skip ]
+
+# Sheriff 2021-03-08
+crbug.com/1092462 [ Linux ] http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
+crbug.com/1092462 [ Linux ] virtual/synchronous_html_parser/media/video-seek-past-end-paused.html [ Pass Failure ]
+crbug.com/1185675 [ Mac ] virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
+crbug.com/1185676 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure ]

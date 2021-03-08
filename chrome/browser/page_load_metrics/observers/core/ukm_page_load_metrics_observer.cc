@@ -1216,8 +1216,7 @@ void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
     builder.SetAllowUserZoom(false);
 
   if (mf.small_text_ratio != -1) {
-    builder.SetSmallTextRatio(
-        ukm::GetExponentialBucketMin(mf.small_text_ratio, 1.2));
+    builder.SetSmallTextRatio(mf.small_text_ratio);
   }
 
   if (mf.viewport_initial_scale_x10 != -1) {
@@ -1230,6 +1229,12 @@ void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
     builder.SetViewportHardcodedWidth(
         BucketWithOffsetAndUnit(hardcoded_width, 500, 10));
   }
+
+  if (mf.text_content_outside_viewport_percentage != -1) {
+    builder.SetTextContentOutsideViewportPercentage(
+        mf.text_content_outside_viewport_percentage);
+  }
+
   builder.Record(ukm::UkmRecorder::Get());
 }
 

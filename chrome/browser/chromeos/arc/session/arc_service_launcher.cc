@@ -12,9 +12,9 @@
 #include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
+#include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/adbd/arc_adbd_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -252,7 +252,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   GpuArcVideoKeyedService::GetForBrowserContext(profile);
   CertStoreService::GetForBrowserContext(profile);
   apps::ArcAppsFactory::GetForProfile(profile);
-  chromeos::ApkWebAppService::Get(profile);
+  ash::ApkWebAppService::Get(profile);
   chromeos::full_restore::FullRestoreArcTaskHandler::GetForProfile(profile);
 
   // ARC Container-only services.

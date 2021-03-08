@@ -26,10 +26,10 @@
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
@@ -90,22 +90,6 @@ void CoreOobeHandler::DeclareLocalizedValues(
   builder->Add("title", IDS_SHORT_PRODUCT_NAME);
   builder->Add("productName", IDS_SHORT_PRODUCT_NAME);
   builder->Add("learnMore", IDS_LEARN_MORE);
-
-  // Strings for the device requisition prompt.
-  builder->Add("deviceRequisitionPromptCancel",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL);
-  builder->Add("deviceRequisitionPromptOk",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_OK);
-  builder->Add("deviceRequisitionPromptText",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT);
-  builder->Add("deviceRequisitionRemoraPromptCancel",
-               IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
-  builder->Add("deviceRequisitionRemoraPromptOk",
-               IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
-  builder->Add("deviceRequisitionRemoraPromptText",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT);
-  builder->Add("deviceRequisitionSharkPromptText",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
 
 
   // Strings for Asset Identifier shown in version string.

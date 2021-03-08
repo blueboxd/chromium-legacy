@@ -19,10 +19,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
-#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
-#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
@@ -532,8 +532,8 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   proxy->LaunchAppWithUrl(*app_id, event_flags, url,
                           apps::mojom::LaunchSource::kFromArc);
 
-  chromeos::ApkWebAppService* apk_web_app_service =
-      chromeos::ApkWebAppService::Get(profile);
+  ash::ApkWebAppService* apk_web_app_service =
+      ash::ApkWebAppService::Get(profile);
   if (!apk_web_app_service ||
       !apk_web_app_service->IsWebAppInstalledFromArc(app_id.value())) {
     return;

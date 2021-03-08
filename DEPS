@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1314913ff5693cb6134e5921d30872c81d66f9c4',
+  'skia_revision': '07ee548d5bcdbd4b1f0c431c3f130b5994e5d1b5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -255,7 +255,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '7227aabb3e45e46cf320f56503656c39f8b63b30',
+  'freetype_revision': 'e2229328104155dde3d843bee8024175ef53d4e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -705,7 +705,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'R3FfliZlkTFUfyqTJCWaxjUhO5_w85JrvEFLFZD_BdUC',
+          'version': 'CT5CJAnyNm5nIkVl4sUP7FbSRk6VgISkjoqJB0_5MVMC',
       },
     ],
     'condition': 'checkout_android',
@@ -1618,7 +1618,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9102e5e1d8a182588536d0ed7b297c7bfb049c75',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@860e9b094d054f6f3a7d7ca406a870cb9ae387c7',
     'condition': 'checkout_src_internal',
   },
 
@@ -1648,7 +1648,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'S7vIwGillRCIF7_MFQR4cswsXQiNw82N2aseDC4aIBQC',
+        'version': '3_-mFlb9Y-m321hfhxyekQ8OMRzJXSTYM1A9mGJ10CkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

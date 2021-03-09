@@ -5884,6 +5884,13 @@ others/histograms.xml -->
       label="Not migrated (Unexpected primary account id with email format)."/>
 </enum>
 
+<enum name="AutofillOfferNotificationBubbleResult">
+  <int value="0" label="User closed bubble via OK button"/>
+  <int value="1" label="User closed bubble via corner X"/>
+  <int value="2" label="User did not interact with the bubble"/>
+  <int value="3" label="Bubble lost focus and was deactivated"/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -32095,9 +32102,6 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="FetchFontName">
-  <obsolete>
-    Removed Jan 2021.
-  </obsolete>
   <int value="0" label="Other"/>
   <int value="1" label="Google Sans Regular"/>
   <int value="2" label="Google Sans Medium"/>
@@ -32105,9 +32109,6 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="FetchFontResult">
-  <obsolete>
-    Removed Jan 2021.
-  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Failed due to unexpected font name"/>
   <int value="2" label="Failed with non-OK status code on result"/>
@@ -52461,6 +52462,19 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Mojo pipe disconnection"/>
 </enum>
 
+<enum name="NearbyShareAttachmentType">
+  <int value="0" label="Unknown File Type"/>
+  <int value="1" label="Unknown Text Type"/>
+  <int value="2" label="Image"/>
+  <int value="3" label="Video"/>
+  <int value="4" label="App"/>
+  <int value="5" label="Audio"/>
+  <int value="6" label="Text"/>
+  <int value="7" label="URL"/>
+  <int value="8" label="Address"/>
+  <int value="9" label="Phone number"/>
+</enum>
+
 <enum name="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult">
   <int value="0" label="Success"/>
   <int value="1" label="No Match"/>
@@ -59950,6 +59964,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Zero"/>
   <int value="1" label="Micro"/>
   <int value="2" label="Regular"/>
+</enum>
+
+<enum name="PciePeripheralConnectivityResult">
+<!-- This must be kept current with PciePeripheralConnectivityResults
+        located in ash/components/pcie_peripheral/pcie_peripheral_manager.cc -->
+
+  <int value="0" label="TBT-supported peripheral connected and allowed"/>
+  <int value="1" label="TBT-only peripheral connected and blocked by Pciguard"/>
+  <int value="2"
+      label="TBT-only peripheral connected and blocked due to guest session"/>
+  <int value="3" label="Alt-mode fallback due to Pciguard"/>
+  <int value="4" label="Alt-mode fallback in guest session"/>
 </enum>
 
 <enum name="PdfCompositionStatus">
@@ -79206,6 +79232,14 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Discarded: too large"/>
   <int value="3" label="Discarded: have newer data"/>
   <int value="4" label="Evicted"/>
+</enum>
+
+<enum name="VoiceIntentTarget">
+<!-- This must be kept in sync with the VoiceIntentTarget variants in
+others/histograms.xml -->
+
+  <int value="0" label="System"/>
+  <int value="1" label="Assistant"/>
 </enum>
 
 <enum name="VoiceInteractionEventSource">

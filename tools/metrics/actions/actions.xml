@@ -7741,6 +7741,15 @@ should be able to be added at any place in this file.
   <description>The user opened incognito menu.</description>
 </action>
 
+<action name="IncognitoMode_Started">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <description>
+    An Incognito session is started. Recorded when an Incognito profile is
+    created.
+  </description>
+</action>
+
 <action name="IncompatibleApplicationsPage.ApplicationRemoved">
   <owner>pmonette@chromium.org</owner>
   <description>
@@ -14052,6 +14061,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuBackward">
+  <obsolete>Deprecated as of 3/2021</obsolete>
   <owner>gangwu@chromium.org</owner>
   <description>User pressed the back icon in the app menu.</description>
 </action>
@@ -15825,6 +15835,15 @@ should be able to be added at any place in this file.
   <owner>clank-app-team@google.com</owner>
   <description>
     The user tapped on the top toolbar's new tab button.
+  </description>
+</action>
+
+<action name="MobileTopToolbarOptionalButtonNewTab">
+  <owner>bttk@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <description>
+    The user tapped on the top toolbar's optional button acting as a new tab
+    button.
   </description>
 </action>
 
@@ -27797,6 +27816,8 @@ should be able to be added at any place in this file.
       label="For the quiet notification prompts feature."/>
   <suffix name="ReadingListDiscovery"
       label="For ReadingListDiscoveryFeature feature."/>
+  <suffix name="ReadingListEntryPoint"
+      label="For ReadingListEntryPoint feature."/>
   <suffix name="ReopenTab" label="For ReopenTab feature."/>
   <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>
   <suffix name="TabGroupsQuicklyComparePages"

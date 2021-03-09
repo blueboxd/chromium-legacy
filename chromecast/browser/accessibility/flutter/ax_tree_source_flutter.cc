@@ -8,7 +8,9 @@
 
 #include "base/check_op.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/accessibility/flutter/flutter_semantics_node_wrapper.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_utterance.h"
@@ -257,13 +259,11 @@ void AXTreeSourceFlutter::NotifyAccessibilityEvent(
     focused_id_ = root_id_;
   }
 
-  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
-  event_bundle.tree_id = ax_tree_id();
-
-  event_bundle.events.emplace_back();
-  ui::AXEvent& event = event_bundle.events.back();
+  std::vector<ui::AXEvent> events;
+  ui::AXEvent event;
   event.event_type = translated_event;
   event.id = event_data->source_id();
+  events.push_back(std::move(event));
 
   if (event_data->event_type() ==
       gallium::castos::OnAccessibilityEventRequest_EventType_CONTENT_CHANGED) {
@@ -271,6 +271,7 @@ void AXTreeSourceFlutter::NotifyAccessibilityEvent(
         GetFromId(event_data->source_id()));
   }
 
+  std::vector<ui::AXTreeUpdate> updates;
   if (event_data->event_type() !=
           gallium::castos::OnAccessibilityEventRequest_EventType_HOVER_ENTER &&
       event_data->event_type() !=
@@ -278,9 +279,9 @@ void AXTreeSourceFlutter::NotifyAccessibilityEvent(
     // For every parent whose child has been moved, serialize an update.
     // This update will filter all the children that have moved.
     for (int32_t nid : parents_with_deleted_children) {
-      event_bundle.updates.emplace_back();
-      current_tree_serializer_->SerializeChanges(GetFromId(nid),
-                                                 &event_bundle.updates.back());
+      ui::AXTreeUpdate update;
+      current_tree_serializer_->SerializeChanges(GetFromId(nid), &update);
+      updates.push_back(std::move(update));
     }
 
     // If there were any children that were reparented, invalidate the entire
@@ -293,31 +294,36 @@ void AXTreeSourceFlutter::NotifyAccessibilityEvent(
     reparented_children_.clear();
 
     // Handle routes added/removed from the tree.
-    HandleRoutes(&event_bundle.events);
+    HandleRoutes(&events);
 
-    event_bundle.updates.emplace_back();
+    ui::AXTreeUpdate update;
     current_tree_serializer_->SerializeChanges(
-        GetFromId(event_data->source_id()), &event_bundle.updates.back());
+        GetFromId(event_data->source_id()), &update);
+    updates.push_back(std::move(update));
 
-    HandleLiveRegions(&event_bundle.events);
+    HandleLiveRegions(&events);
 
     // b/162311902: For nodes that have scroll extents, rapidly changing the
     // value will result in queueing up the values and speak out one by one.
     // Here we handle the tts natively.
     HandleNativeTTS();
+
+    HandleVirtualKeyboardNodes();
   }
 
   // Need to refocus
   if (need_focus_clear) {
-    event_bundle.events.emplace_back();
-    ui::AXEvent& focus_event = event_bundle.events.back();
+    ui::AXEvent focus_event;
     focus_event.event_type = ax::mojom::Event::kFocus;
     focus_event.id = focused_id_;
     focus_event.event_from = ax::mojom::EventFrom::kNone;
+    events.push_back(std::move(focus_event));
   }
 
-  if (event_router_)
-    event_router_->DispatchAccessibilityEvents(event_bundle);
+  if (event_router_) {
+    event_router_->DispatchAccessibilityEvents(ax_tree_id(), std::move(updates),
+                                               gfx::Point(), std::move(events));
+  }
 }
 
 void AXTreeSourceFlutter::NotifyActionResult(const ui::AXActionData& data,
@@ -475,6 +481,21 @@ void AXTreeSourceFlutter::Reset() {
   if (!event_router_)
     return;
   event_router_->DispatchTreeDestroyedEvent(ax_tree_id(), browser_context_);
+}
+
+void AXTreeSourceFlutter::HandleVirtualKeyboardNodes() {
+  gfx::Rect bounds;
+  for (const auto& it : tree_map_) {
+    FlutterSemanticsNode* node_info = it.second.get();
+    if (!node_info->IsKeyboardNode())
+      continue;
+    bounds.Union(node_info->GetBounds());
+  }
+
+  if (bounds != keyboard_bounds_) {
+    keyboard_bounds_ = bounds;
+    delegate_->OnVirtualKeyboardBoundsChange(keyboard_bounds_);
+  }
 }
 
 void AXTreeSourceFlutter::HandleNativeTTS() {

@@ -398,6 +398,7 @@
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MAC)
 #include "chrome/browser/chrome_browser_main_mac.h"
+#include "chrome/browser/mac/auth_session_request.h"
 #include "components/soda/constants.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "sandbox/policy/mac/sandbox_mac.h"
@@ -4143,6 +4144,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       &throttles);
 #endif
 
+#if defined(OS_MAC)
+  if (__builtin_available(macOS 10.15, *)) {
+    MaybeAddThrottle(MaybeCreateAuthSessionThrottleFor(handle), &throttles);
+  }
+#endif
+
   auto* performance_manager_registry =
       performance_manager::PerformanceManagerRegistry::GetInstance();
   if (performance_manager_registry) {
@@ -5604,7 +5611,8 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
 void ChromeContentBrowserClient::FetchRemoteSms(
     content::BrowserContext* browser_context,
     const url::Origin& origin,
-    base::OnceCallback<void(base::Optional<std::string>)> callback) {
+    base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
+                            base::Optional<std::string>)> callback) {
   ::FetchRemoteSms(browser_context, origin, std::move(callback));
 }
 #endif

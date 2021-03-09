@@ -654,6 +654,7 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-003.htm
 crbug.com/1179497 external/wpt/css/css-tables/col-definite-max-size-001.html [ Failure ]
 crbug.com/1179497 external/wpt/css/css-tables/col-definite-min-size-001.html [ Failure ]
 crbug.com/1179497 external/wpt/css/css-tables/col-definite-size-001.html [ Failure ]
+crbug.com/910725 external/wpt/css/css-tables/tentative/paint/overflow-hidden-table.html [ Failure ]
 
 # [css-contain]
 
@@ -3950,9 +3951,6 @@ crbug.com/832447 media/controls/controls-page-zoom-in.html [ Failure Pass ]
 crbug.com/832447 media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
 
-# ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
-crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
-
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
 crbug.com/757165 [ Win ] css3/blending/mix-blend-mode-with-filters.html [ Skip ]
@@ -5733,3 +5731,8 @@ crbug.com/1092462 [ Linux ] http/tests/media/media-source/mediasource-duration.h
 crbug.com/1092462 [ Linux ] virtual/synchronous_html_parser/media/video-seek-past-end-paused.html [ Pass Failure ]
 crbug.com/1185675 [ Mac ] virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
 crbug.com/1185676 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure ]
+
+crbug.com/1185051 fast/canvas/OffscreenCanvas-Bitmaprenderer-toBlob-worker.html [ Pass Failure ]
+
+# Sheriff 2021-03-09
+crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Failure ]

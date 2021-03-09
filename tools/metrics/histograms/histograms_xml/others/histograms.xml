@@ -33,6 +33,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name=".Unknown" summary="unknown but not the default search engine"/>
 </variants>
 
+<variants name="VoiceIntentTargetVariant">
+  <variant name="Assistant" summary="Assistant voice transcription."/>
+  <variant name="System" summary="System voice transcription."/>
+</variants>
+
 <histogram name="AccountManager.AccountAdditionResultStatus"
     enum="AccountManagerAccountAdditionResultStatus" expires_after="2022-02-01">
   <owner>sinhak@chromium.org</owner>
@@ -1572,6 +1577,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
     This histogram records when a bookmark is added sliced on profile type.
+
+    This was not recorded for Android before M90. Reading list and partner
+    bookmarks aren't reported by it.
   </summary>
 </histogram>
 
@@ -1771,6 +1779,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     addition to their page URLs (e.g. http://www.google.com). OnFaviconChanged()
     is expected to be called less than 10 times per user per day with a
     non-empty |icon_url|.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.OpenBookmarkManager.PerProfileType"
+    enum="BrowserProfileType" expires_after="2022-03-01">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    This records the number of times the bookmark manager is opened from regular
+    or Incognito tab. This histogram only records the count from
+    ChromeTabbedActivity where we actually have the Bookmark manager UI.
+    Recorded when the bookmark menu item is clicked in Android.
   </summary>
 </histogram>
 
@@ -12210,7 +12230,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.ContextMenu" enum="ReadingListContextMenuActions"
-    expires_after="2021-04-15">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -12220,7 +12240,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.Download.Failures" units="count"
-    expires_after="2021-04-15">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -12229,14 +12249,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.Download.Status" enum="ReadingListDownloadStatus"
-    expires_after="2021-08-22">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Final status of the download of a reading list entry.</summary>
 </histogram>
 
 <histogram name="ReadingList.FirstReadAgeOnDeletion" units="hours"
-    expires_after="2021-04-15">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -12246,14 +12266,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.OfflineVersionDisplayed" enum="Boolean"
-    expires_after="2021-07-04">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Whether the displayed version is the offline one.</summary>
 </histogram>
 
 <histogram name="ReadingList.Read.AgeOnDeletion" units="hours"
-    expires_after="2021-07-18">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -12262,14 +12282,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.Read.Number" units="count"
-    expires_after="2021-08-22">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of read entries in reading list.</summary>
 </histogram>
 
 <histogram name="ReadingList.Unread.AgeOnDeletion" units="hours"
-    expires_after="2021-04-15">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -12278,7 +12298,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.Unread.Number" units="count"
-    expires_after="2021-08-22">
+    expires_after="2022-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of unread entries in reading list.</summary>
@@ -17046,7 +17066,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.AssistantActionPerformed{Source}"
-    enum="AssistantActionPerformed" expires_after="2021-04-04">
+    enum="AssistantActionPerformed" expires_after="2021-08-22">
   <owner>jds@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -17078,12 +17098,25 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.DismissedEventSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-08-01">
+    enum="VoiceInteractionEventSource" expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: The source of a dismissed voice search, such as omnibox or NTP.
+    This is recorded after the dismissed intent returns to Chrome.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.DismissedEventTarget"
+    enum="VoiceIntentTarget" expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: The target of a dismissed voice search, such as the system
+    transcription dialog or Assistant. This is recorded after the dismissed
+    intent returns to Chrome.
   </summary>
 </histogram>
 
@@ -17093,17 +17126,46 @@ regressions. -->
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
   <summary>
-    Android: The source of a failed voice search, such as omnibox or NTP.
+    Android: The source of a failed voice search, such as omnibox or NTP. This
+    is recorded after any intent failure, which could occur before an intent is
+    sent (if the send fails) or after the intent returns unsuccessfully. It will
+    only be recorded once.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.FailureEventTarget" enum="VoiceIntentTarget"
+    expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: The target of a failed voice search, such as the system
+    transcription dialog or Assistant. This is recorded after any intent
+    failure, which could occur before an intent is sent (if the send fails) or
+    after the intent returns unsuccessfully. It will only be recorded once.
   </summary>
 </histogram>
 
 <histogram name="VoiceInteraction.FinishEventSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-08-01">
+    enum="VoiceInteractionEventSource" expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: The source of a successful voice search, such as omnibox or NTP.
+    This is recorded immediately after the successful intent returns to Chrome.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.FinishEventTarget" enum="VoiceIntentTarget"
+    expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: The target of a successful voice search, such as the system
+    transcription dialog or Assistant. This is recorded immediately after the
+    successful intent returns to Chrome.
   </summary>
 </histogram>
 
@@ -17117,7 +17179,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.QueryDuration.Android" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>
@@ -17127,8 +17189,22 @@ regressions. -->
   </summary>
 </histogram>
 
+<histogram name="VoiceInteraction.QueryDuration.Android.Target.{Target}"
+    units="ms" expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <summary>
+    Records the time it takes between the user clicking the mic and chrome
+    receiving the transcribed voice query. This is recorded after an Assistant
+    intent has completed successfully. This histogram is limited to intents sent
+    to {Target}. See VoiceInteraction.QueryDuration.Android for the total count
+    across all targets.
+  </summary>
+  <token key="Target" variants="VoiceIntentTargetVariant"/>
+</histogram>
+
 <histogram name="VoiceInteraction.QueryDuration.Android{Action}" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>
@@ -17150,22 +17226,47 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.StartEventSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-08-01">
+    enum="VoiceInteractionEventSource" expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: The source of a voice search start event, such as omnibox or NTP.
+    This is recorded immediately before the voice transcription intent is sent.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.StartEventTarget" enum="VoiceIntentTarget"
+    expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: The target of a voice search start event, such as the system
+    transcription dialog or Assistant. This is recorded immediately before the
+    voice transcription intent is sent.
   </summary>
 </histogram>
 
 <histogram name="VoiceInteraction.UnexpectedResultSource"
-    enum="VoiceInteractionEventSource" expires_after="2021-05-30">
+    enum="VoiceInteractionEventSource" expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>
     Android: The source of an incoming result that doesn't align with an
-    outgoing request from Chrome.
+    outgoing request from Chrome. This is recorded when the extraneous intent
+    response is received.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.UnexpectedResultTarget"
+    enum="VoiceIntentTarget" expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <summary>
+    Android: The target of an intent result that doesn't align with an outgoing
+    request from Chrome. This is recorded when the extraneous intent response is
+    received.
   </summary>
 </histogram>
 
@@ -17178,22 +17279,51 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceResultConfidenceValue" units="%"
-    expires_after="2021-08-01">
+    expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: Records the confidence value of a successful voice search as a
-    percentage.
+    percentage. This is recorded when the voice intent returns successfully.
   </summary>
 </histogram>
 
-<histogram name="VoiceInteraction.VoiceSearchResult" enum="BooleanSuccess"
-    expires_after="2021-08-01">
+<histogram name="VoiceInteraction.VoiceResultConfidenceValue.{Target}"
+    units="%" expires_after="2021-08-22">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
-  <summary>Android: Records whether the voice search produced results.</summary>
+  <summary>
+    Android: Records the confidence value of a successful voice search as a
+    percentage, limited to intents sent to {Target}. This is recorded when the
+    voice intent returns successfully.
+  </summary>
+  <token key="Target" variants="VoiceIntentTargetVariant"/>
+</histogram>
+
+<histogram name="VoiceInteraction.VoiceSearchResult" enum="BooleanSuccess"
+    expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: Records whether the voice search produced results. This is recorded
+    when the voice intent returns successfully.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.VoiceSearchResult.{Target}"
+    enum="BooleanSuccess" expires_after="2021-08-22">
+  <owner>wylieb@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: Records whether the voice search produced results, limited to
+    intents sent to {Target}. This is recorded when the voice intent returns
+    successfully.
+  </summary>
+  <token key="Target" variants="VoiceIntentTargetVariant"/>
 </histogram>
 
 <histogram name="VRFreNotComplete" enum="BooleanHit" expires_after="M85">

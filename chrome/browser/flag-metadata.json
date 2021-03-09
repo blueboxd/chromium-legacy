@@ -2560,7 +2560,7 @@
   {
     "name": "enable-vulkan",
     "owners": [ "penghuang" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "enable-web-authentication-cable-v2-support",
@@ -4758,11 +4758,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "show-legacy-tls-warnings",
-    "owners": [ "cthomp" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "show-metered-toggle",
     "owners": [ "stevenjb" ],
     "expiry_milestone": 92
@@ -4940,16 +4935,6 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
-  },
-  {
-    "name": "tabbed-app-overflow-menu-icons",
-    "owners": [ "gangwu" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "tabbed-app-overflow-menu-regroup",
-    "owners": [ "gangwu" ],
-    "expiry_milestone": 90
   },
   {
     "name": "tabbed-app-overflow-menu-three-button-actionbar",

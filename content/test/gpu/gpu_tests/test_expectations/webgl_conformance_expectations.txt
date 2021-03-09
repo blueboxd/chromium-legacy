@@ -53,6 +53,8 @@
 #         mesa_lt_19.1 mesa_ge_20.1 ]
 # ASan
 # tags: [ asan no-asan ]
+# Display Server
+# tags: [ display-server-wayland display-server-x ]
 # results: [ Failure RetryOnFailure Skip ]
 # END TAG HEADER
 
@@ -423,9 +425,7 @@ crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-word
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
 # Mac Intel ANGLE and native OpenGL
-crbug.com/1144247 [ mac intel-0x3e9b angle-opengl ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
 crbug.com/1144247 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
-crbug.com/1144207 [ mac intel-0x3e9b angle-opengl ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 crbug.com/1144207 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 crbug.com/1018028 [ mac intel angle-disabled ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 crbug.com/886970 [ mac intel-0xa2e angle-disabled ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
@@ -758,6 +758,13 @@ crbug.com/1108368 [ chromeos chromeos-board-kevin ] conformance/misc/shader-prec
 
 # Flaky renderer hangs suspected due to some driver issue on Kevin devices.
 crbug.com/1091562 [ chromeos-board-kevin ] * [ RetryOnFailure ]
+
+###########################
+# Lacros/Wayland failures #
+###########################
+
+crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_sRGB [ Failure ]
+crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 
 ########################
 # SwiftShader failures #

@@ -683,7 +683,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="TabHoverCards.TabHoverCardsSeenBeforeTabSelection{TabCountMetrics}"
-    units="units" expires_after="2020-10-01">
+    units="units" expires_after="2021-10-01">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -712,7 +712,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabHoverCards.TimeSinceLastVisible" units="ms"
-    expires_after="2020-10-01">
+    expires_after="2021-10-01">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1254,7 +1254,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.DesktopTabOffsetFromLeftOfSwitch" units="units"
-    expires_after="2020-12-31">
+    expires_after="2021-06-30">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -1264,7 +1264,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.DesktopTabOffsetFromRightOfSwitch" units="units"
-    expires_after="2020-12-31">
+    expires_after="2021-06-30">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -1274,7 +1274,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.DesktopTabOffsetOfSwitch" units="units"
-    expires_after="2020-12-31">
+    expires_after="2021-06-30">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -1697,7 +1697,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.ScrubbedInInterval.KeyPress" units="tabs"
-    expires_after="2020-10-01">
+    expires_after="2021-10-01">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1709,7 +1709,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.ScrubbedInInterval.MousePress" units="tabs"
-    expires_after="2020-10-01">
+    expires_after="2021-10-01">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1927,7 +1927,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabCountPerDomainPerLoad.{TotalTabCountBucket}"
-    units="tabs" expires_after="2021-03-07">
+    units="tabs" expires_after="2021-06-30">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>

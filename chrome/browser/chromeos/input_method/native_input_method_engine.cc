@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/autocorrect_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -72,10 +73,13 @@ std::string NormalizeEngineId(const std::string engine_id) {
   return engine_id;
 }
 
-std::string NormalizeString(const std::string& str) {
+base::string16 ConvertToUtf16AndNormalize(const std::string& str) {
+  // TODO(https://crbug.com/1185629): Add a new helper in
+  // base/i18n/icu_string_conversions.h that does the conversion directly
+  // without a redundant UTF16->UTF8 conversion.
   std::string normalized_str;
   base::ConvertToUtf8AndNormalize(str, base::kCodepageUTF8, &normalized_str);
-  return normalized_str;
+  return base::UTF8ToUTF16(normalized_str);
 }
 
 ime::mojom::ModifierStatePtr ModifierStateFromEvent(const ui::KeyEvent& event) {
@@ -379,11 +383,16 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
   autocorrect_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
   if (ShouldRouteToFstMojoEngine(engine_id)) {
     if (remote_to_engine_.is_bound()) {
+      std::vector<size_t> selection_indices = {anchor_pos, cursor_pos};
+      std::string utf8_text =
+          base::UTF16ToUTF8AndAdjustOffsets(text, &selection_indices);
+
       auto selection = ime::mojom::SelectionRange::New();
-      selection->anchor = anchor_pos;
-      selection->focus = cursor_pos;
+      selection->anchor = selection_indices[0];
+      selection->focus = selection_indices[1];
+
       remote_to_engine_->OnSurroundingTextChanged(
-          base::UTF16ToUTF8(text), offset_pos, std::move(selection));
+          std::move(utf8_text), offset_pos, std::move(selection));
     }
   } else {
     ime_base_observer_->OnSurroundingTextChanged(engine_id, text, cursor_pos,
@@ -461,7 +470,7 @@ void NativeInputMethodEngine::ImeObserver::CommitText(
     const std::string& text,
     ime::mojom::CommitTextCursorBehavior cursor_behavior) {
   GetInputContext()->CommitText(
-      NormalizeString(text),
+      ConvertToUtf16AndNormalize(text),
       cursor_behavior ==
               ime::mojom::CommitTextCursorBehavior::kMoveCursorBeforeText
           ? ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorBeforeText
@@ -472,7 +481,7 @@ void NativeInputMethodEngine::ImeObserver::CommitText(
 void NativeInputMethodEngine::ImeObserver::SetComposition(
     const std::string& text) {
   ui::CompositionText composition;
-  composition.text = base::UTF8ToUTF16(NormalizeString(text));
+  composition.text = ConvertToUtf16AndNormalize(text);
   GetInputContext()->UpdateCompositionText(
       composition, /*cursor_pos=*/composition.text.length(), /*visible=*/true);
 }
@@ -546,13 +555,13 @@ void NativeInputMethodEngine::ImeObserver::OnRuleBasedKeyEventResponse(
     switch (op->method) {
       case ime::mojom::OperationMethodForRulebased::COMMIT_TEXT:
         GetInputContext()->CommitText(
-            NormalizeString(op->arguments),
+            ConvertToUtf16AndNormalize(op->arguments),
             ui::TextInputClient::InsertTextCursorBehavior::
                 kMoveCursorAfterText);
         break;
       case ime::mojom::OperationMethodForRulebased::SET_COMPOSITION:
         ui::CompositionText composition;
-        composition.text = base::UTF8ToUTF16(NormalizeString(op->arguments));
+        composition.text = ConvertToUtf16AndNormalize(op->arguments);
         GetInputContext()->UpdateCompositionText(
             composition, composition.text.length(), /*visible=*/true);
         break;

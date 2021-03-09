@@ -1680,8 +1680,6 @@ static_library("browser") {
     "speech/chrome_speech_recognition_manager_delegate.h",
     "speech/network_speech_recognizer.cc",
     "speech/network_speech_recognizer.h",
-    "speech/on_device_speech_recognizer.cc",
-    "speech/on_device_speech_recognizer.h",
     "speech/speech_recognizer.cc",
     "speech/speech_recognizer.h",
     "speech/speech_recognizer_delegate.cc",
@@ -1901,10 +1899,6 @@ static_library("browser") {
     "//components/payments/core",
     "//components/payments/core:error_strings",
     "//components/policy/proto",
-    "//components/reporting/storage:storage_uploader_interface",
-    "//components/reporting/util:shared_queue",
-    "//components/reporting/util:status_macros",
-    "//components/reporting/util:task_runner_context",
     "//components/safe_browsing:buildflags",
     "//components/services/storage/public/mojom",
     "//components/sync",
@@ -2153,14 +2147,19 @@ static_library("browser") {
     "//components/renderer_context_menu",
     "//components/reporting/client:report_queue",
     "//components/reporting/client:report_queue_configuration",
+    "//components/reporting/client:report_queue_provider",
     "//components/reporting/encryption:encryption_module",
     "//components/reporting/encryption:verification",
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/storage:storage_configuration",
     "//components/reporting/storage:storage_module",
+    "//components/reporting/storage:storage_uploader_interface",
+    "//components/reporting/util:shared_queue",
     "//components/reporting/util:status",
+    "//components/reporting/util:status_macros",
     "//components/reporting/util:status_proto",
+    "//components/reporting/util:task_runner_context",
     "//components/reputation/core",
     "//components/reputation/core:proto",
     "//components/resources",
@@ -2765,6 +2764,10 @@ static_library("browser") {
       "android/logo_bridge.cc",
       "android/logo_bridge.h",
       "android/media/media_capture_devices_dispatcher_android.cc",
+      "android/metrics/android_incognito_session_durations_service.cc",
+      "android/metrics/android_incognito_session_durations_service.h",
+      "android/metrics/android_incognito_session_durations_service_factory.cc",
+      "android/metrics/android_incognito_session_durations_service_factory.h",
       "android/metrics/android_profile_session_durations_service.cc",
       "android/metrics/android_profile_session_durations_service.h",
       "android/metrics/android_profile_session_durations_service_factory.cc",
@@ -4004,6 +4007,8 @@ static_library("browser") {
                                                               # to extensions
                                                               # section ?
       "speech/extension_api/tts_extension_api_constants.h",
+      "speech/on_device_speech_recognizer.cc",
+      "speech/on_device_speech_recognizer.h",
       "speech/speech_recognition_client_browser_interface.cc",
       "speech/speech_recognition_client_browser_interface.h",
       "speech/speech_recognition_client_browser_interface_factory.cc",
@@ -4975,6 +4980,8 @@ static_library("browser") {
       "hang_monitor/hang_crash_dump_mac.cc",
       "icon_loader_mac.mm",
       "lifetime/application_lifetime_mac.mm",
+      "mac/auth_session_request.h",
+      "mac/auth_session_request.mm",
       "mac/bluetooth_utility.h",
       "mac/bluetooth_utility.mm",
       "mac/dock.h",
@@ -5065,6 +5072,7 @@ static_library("browser") {
       "SecurityInterface.framework",
     ]
     weak_frameworks = [
+      "AuthenticationServices.framework",  # macOS 10.15
       "SafariServices.framework",  # macOS 10.12
       "UserNotifications.framework",  # macOS 10.14
     ]

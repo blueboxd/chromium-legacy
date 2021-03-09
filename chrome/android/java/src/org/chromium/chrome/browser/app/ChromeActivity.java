@@ -1772,6 +1772,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return mInsetObserverView;
     }
 
+    /**
+     * Gets the supplier of the {@link TabCreatorManager} instance.
+     */
+    public ObservableSupplier<TabCreatorManager> getTabCreatorManagerSupplier() {
+        return mTabCreatorManagerSupplier;
+    }
+
     @Override
     public TabCreator getTabCreator(boolean incognito) {
         if (!mTabModelOrchestrator.areTabModelsInitialized()) {
@@ -2207,15 +2214,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return false;
         }
 
-        if (id == R.id.backward_menu_id) {
-            if (currentTab.canGoBack()) {
-                currentTab.goBack();
-                RecordUserAction.record("MobileMenuBackward");
-                return true;
-            }
-            return false;
-        }
-
         if (id == R.id.forward_menu_id) {
             if (currentTab.canGoForward()) {
                 currentTab.goForward();
@@ -2259,7 +2257,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return true;
         }
 
-        if (id == R.id.info_menu_id || id == R.id.info_id) {
+        if (id == R.id.info_menu_id) {
             WebContents webContents = currentTab.getWebContents();
             PageInfoController.show(this, webContents, null,
                     PageInfoController.OpenedFromSource.MENU,

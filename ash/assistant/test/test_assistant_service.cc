@@ -65,10 +65,9 @@ class LibassistantContractChecker : public AssistantInteractionSubscriber {
     CheckResponse();
   }
 
-  bool OnOpenAppResponse(
+  void OnOpenAppResponse(
       const chromeos::assistant::AndroidAppInfo& app_info) override {
     CheckResponse();
-    return false;
   }
 
  private:
@@ -262,9 +261,6 @@ void TestAssistantService::OnAccessibilityStatusChanged(
 
 void TestAssistantService::SendAssistantFeedback(
     const chromeos::assistant::AssistantFeedback& feedback) {}
-
-void TestAssistantService::NotifyEntryIntoAssistantUi(
-    chromeos::assistant::AssistantEntryPoint entry_point) {}
 
 void TestAssistantService::AddTimeToTimer(const std::string& id,
                                           base::TimeDelta duration) {}

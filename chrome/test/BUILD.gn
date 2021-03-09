@@ -1651,6 +1651,7 @@ if (!is_android) {
         "../browser/apps/app_shim/app_shim_listener_browsertest_mac.mm",
         "../browser/apps/app_shim/test/app_shim_listener_test_api_mac.cc",
         "../browser/apps/app_shim/test/app_shim_listener_test_api_mac.h",
+        "../browser/mac/auth_session_request_browsertest.mm",
         "../browser/ui/find_bar/find_bar_platform_helper_mac_browsertest.mm",
         "../browser/ui/test/test_browser_dialog_mac.h",
         "../browser/ui/test/test_browser_dialog_mac.mm",
@@ -3451,6 +3452,16 @@ group("telemetry_perf_webview_tests") {
   deps = [ "//chrome/test:telemetry_perf_tests" ]
 }
 
+config("unit_tests_thinlto_flags") {
+  if (is_linux && use_thin_lto) {
+    # This build target has so many inputs the LLD will run into the default
+    # vm.max_map_count limit of 65530 memory mappings when using the ThinLTO
+    # cache.
+    # TODO (crbug.com/1183211): Re-enable once the linker has been fixed.
+    ldflags = [ "-Wl,--thinlto-cache-dir=" ]
+  }
+}
+
 test("unit_tests") {
   use_xvfb = use_xvfb_in_this_config
 
@@ -3643,7 +3654,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/previews_ukm_observer_unittest.cc",
     "../browser/page_load_metrics/observers/protocol_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/scheme_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/security_state_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/service_worker_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer_unittest.cc",
@@ -3752,6 +3762,7 @@ test("unit_tests") {
     "../browser/subresource_redirect/litepages_service_bypass_decider_unittest.cc",
     "../browser/subresource_redirect/origin_robots_rules_unittest.cc",
     "../browser/subresource_redirect/subresource_redirect_util_unit_test.cc",
+    "../browser/ui/autofill/payments/offer_notification_helper_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
     # //components:components_unittests, http://crbug.com/527882.
@@ -3816,12 +3827,7 @@ test("unit_tests") {
     "../browser/status_icons/status_tray_unittest.cc",
     "../browser/storage/durable_storage_permission_context_unittest.cc",
     "../browser/storage_access_api/storage_access_grant_permission_context_unittest.cc",
-    "../browser/subresource_filter/subresource_filter_abusive_unittest.cc",
-    "../browser/subresource_filter/subresource_filter_configuration_unittest.cc",
     "../browser/subresource_filter/subresource_filter_history_observer_unittest.cc",
-    "../browser/subresource_filter/subresource_filter_test_harness.cc",
-    "../browser/subresource_filter/subresource_filter_test_harness.h",
-    "../browser/subresource_filter/subresource_filter_unittest.cc",
     "../browser/sync/profile_sync_service_factory_unittest.cc",
     "../browser/sync/session_sync_service_factory_unittest.cc",
     "../browser/sync/sessions/sync_sessions_web_contents_router_unittest.cc",
@@ -3916,6 +3922,7 @@ test("unit_tests") {
       "../browser/android/history_report/delta_file_commons_unittest.cc",
       "../browser/android/history_report/usage_reports_buffer_backend_unittest.cc",
       "../browser/android/locale/locale_template_url_loader_unittest.cc",
+      "../browser/android/metrics/android_incognito_session_durations_service_unittest.cc",
       "../browser/android/metrics/background_task_memory_metrics_emitter_unittest.cc",
       "../browser/android/oom_intervention/near_oom_monitor_unittest.cc",
       "../browser/android/oom_intervention/oom_intervention_decider_unittest.cc",
@@ -4124,6 +4131,7 @@ test("unit_tests") {
   }
 
   configs += [ "//build/config:precompiled_headers" ]
+  configs += [ ":unit_tests_thinlto_flags" ]
 
   data_deps = [
     "//chrome/test/data/media/engagement/preload:generate_preload_list",

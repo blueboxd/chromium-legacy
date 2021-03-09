@@ -1384,12 +1384,6 @@ const char kLegacyTLSEnforcedDescription[] =
     "versions (TLS 1.0 and TLS 1.1), which are deprecated and will be removed "
     " in the future.";
 
-const char kLegacyTLSWarningsName[] =
-    "Show security warnings for sites using legacy TLS versions";
-const char kLegacyTLSWarningsDescription[] =
-    "Show security warnings for sites that use legacy TLS versions (TLS 1.0 "
-    "and TLS 1.1), which are deprecated and will be removed in the future.";
-
 const char kLensCameraAssistedSearchName[] =
     "Google Lens in Omnibox and New Tab Page";
 const char kLensCameraAssistedSearchDescription[] =
@@ -3408,16 +3402,6 @@ const char kSwipeToMoveCursorName[] = "Swipe to move cursor";
 const char kSwipeToMoveCursorDescription[] =
     "Allows user to use touch gestures to move the text cursor around. This "
     "flag will only take effect on Android 11 and above.";
-
-const char kTabbedAppOverflowMenuIconsName[] =
-    "Android tabbed app overflow menu icons";
-const char kTabbedAppOverflowMenuIconsDescription[] =
-    "If enabled, shows icon in front of each overflow menu item.";
-
-const char kTabbedAppOverflowMenuRegroupName[] =
-    "Android tabbed app overflow menu Regroup";
-const char kTabbedAppOverflowMenuRegroupDescription[] =
-    "If enabled, regroup overflow menu items.";
 
 const char kTabbedAppOverflowMenuThreeButtonActionbarName[] =
     "Android tabbed app overflow menu three buttons actionbar";

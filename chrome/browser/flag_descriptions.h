@@ -829,9 +829,6 @@ extern const char kKerberosSettingsSectionDescription[];
 extern const char kLegacyTLSEnforcedName[];
 extern const char kLegacyTLSEnforcedDescription[];
 
-extern const char kLegacyTLSWarningsName[];
-extern const char kLegacyTLSWarningsDescription[];
-
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
 
@@ -1972,12 +1969,6 @@ extern const char kAndroidDarkSearchDescription[];
 
 extern const char kSwipeToMoveCursorName[];
 extern const char kSwipeToMoveCursorDescription[];
-
-extern const char kTabbedAppOverflowMenuIconsName[];
-extern const char kTabbedAppOverflowMenuIconsDescription[];
-
-extern const char kTabbedAppOverflowMenuRegroupName[];
-extern const char kTabbedAppOverflowMenuRegroupDescription[];
 
 extern const char kTabbedAppOverflowMenuThreeButtonActionbarName[];
 extern const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[];

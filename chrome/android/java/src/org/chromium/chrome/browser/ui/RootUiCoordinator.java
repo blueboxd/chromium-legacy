@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -78,6 +79,7 @@ import org.chromium.chrome.browser.toolbar.VoiceToolbarButtonController;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonController;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
+import org.chromium.chrome.browser.toolbar.adaptive.OptionalNewTabButtonController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
@@ -439,13 +441,26 @@ public class RootUiCoordinator
     @Override
     @CallSuper
     public void onFinishNativeInitialization() {
+        // TODO(crbug.com/1185887): Move feature flag and parameters into a separate class in
+        // the Messages component.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.MESSAGES_FOR_ANDROID_INFRASTRUCTURE)) {
             MessageContainer container = mActivity.findViewById(R.id.message_container);
             mMessageContainerCoordinator =
                     new MessageContainerCoordinator(container, getBrowserControlsManager());
+            long autodismissDurationMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.MESSAGES_FOR_ANDROID_INFRASTRUCTURE,
+                    "autodismiss_duration_ms", 10 * (int) DateUtils.SECOND_IN_MILLIS);
+            long autodismissDurationWithA11yMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.MESSAGES_FOR_ANDROID_INFRASTRUCTURE,
+                    "autodismiss_duration_with_a11y_ms", 30 * (int) DateUtils.SECOND_IN_MILLIS);
+            Supplier<Long> autodismissDurationSupplier = () -> {
+                return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
+                        ? autodismissDurationWithA11yMs
+                        : autodismissDurationMs;
+            };
             mMessageDispatcher = MessagesFactory.createMessageDispatcher(container,
                     mMessageContainerCoordinator::getMessageMaxTranslation,
-                    ChromeAccessibilityUtil.get(),
+                    autodismissDurationSupplier,
                     mActivity.getWindowAndroid()::startAnimationOverContent);
             mMessageQueueMediator =
                     new ChromeMessageQueueMediator(mActivity.getBrowserControlsManager(),
@@ -514,8 +529,7 @@ public class RootUiCoordinator
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
             return true;
-        } else if (id == R.id.share_menu_button_id || id == R.id.share_menu_id
-                || id == R.id.direct_share_menu_id) {
+        } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
                     mTabModelSelectorSupplier.get().isIncognitoSelected());
         } else if (id == R.id.paint_preview_show_id) {
@@ -651,8 +665,15 @@ public class RootUiCoordinator
                             mActivityTabProvider, mActivity.getLifecycleDispatcher(),
                             mActivity.getModalDialogManager(), voiceSearchDelegate);
             if (AdaptiveToolbarFeatures.isEnabled()) {
+                OptionalNewTabButtonController newTabButtonController =
+                        new OptionalNewTabButtonController(mActivity,
+                                mActivity.getLifecycleDispatcher(),
+                                mActivity.getTabCreatorManagerSupplier(),
+                                mTabModelSelectorSupplier);
                 AdaptiveToolbarButtonController adaptiveToolbarButtonController =
                         new AdaptiveToolbarButtonController();
+                adaptiveToolbarButtonController.addButtonVariant(
+                        AdaptiveToolbarButtonVariant.NEW_TAB, newTabButtonController);
                 adaptiveToolbarButtonController.addButtonVariant(
                         AdaptiveToolbarButtonVariant.SHARE, shareButtonController);
                 adaptiveToolbarButtonController.addButtonVariant(

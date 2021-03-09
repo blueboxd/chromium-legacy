@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.view.View;
+
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -19,11 +21,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
+import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider.ButtonDataObserver;
@@ -32,6 +37,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /** Unit tests for the {@code MagicToolbarButtonController} */
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @RunWith(BaseRobolectricTestRunner.class)
 public class AdaptiveToolbarButtonControllerTest {
     @Rule
@@ -42,6 +48,8 @@ public class AdaptiveToolbarButtonControllerTest {
     @Mock
     private ButtonDataProvider mVoiceToolbarButtonController;
     @Mock
+    private ButtonDataProvider mNewTabButtonController;
+    @Mock
     private Tab mTab;
 
     private ButtonDataImpl mButtonData;
@@ -49,7 +57,12 @@ public class AdaptiveToolbarButtonControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mButtonData = new ButtonDataImpl(true, null, null, 0, false, null, true);
+        ShadowRecordHistogram.reset();
+        AdaptiveToolbarFeatures.clearParsedParamsForTesting();
+        mButtonData = new ButtonDataImpl(
+                /*canShow=*/true, /*drawable=*/null, Mockito.mock(View.OnClickListener.class),
+                /*contentDescriptionResId=*/0, /*supportsTinting=*/false,
+                /*iphCommandBuilder=*/null, /*isEnabled=*/true);
     }
 
     @Test
@@ -68,12 +81,28 @@ public class AdaptiveToolbarButtonControllerTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
+    public void testDestroy_alwaysNewTab() {
+        AdaptiveToolbarFeatures.MODE_PARAM.setForTesting(AdaptiveToolbarFeatures.ALWAYS_NEW_TAB);
+
+        AdaptiveToolbarButtonController adaptiveToolbarButtonController = buildController();
+        adaptiveToolbarButtonController.destroy();
+
+        verify(mNewTabButtonController).destroy();
+        verify(mNewTabButtonController).removeObserver(adaptiveToolbarButtonController);
+        verify(mShareButtonController).destroy();
+        verify(mVoiceToolbarButtonController).destroy();
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
     public void testDestroy_alwaysShare() {
         AdaptiveToolbarFeatures.MODE_PARAM.setForTesting(AdaptiveToolbarFeatures.ALWAYS_SHARE);
 
         AdaptiveToolbarButtonController adaptiveToolbarButtonController = buildController();
         adaptiveToolbarButtonController.destroy();
 
+        verify(mNewTabButtonController).destroy();
         verify(mShareButtonController).destroy();
         verify(mShareButtonController).removeObserver(adaptiveToolbarButtonController);
         verify(mVoiceToolbarButtonController).destroy();
@@ -88,6 +117,7 @@ public class AdaptiveToolbarButtonControllerTest {
         AdaptiveToolbarButtonController adaptiveToolbarButtonController = buildController();
         adaptiveToolbarButtonController.destroy();
 
+        verify(mNewTabButtonController).destroy();
         verify(mShareButtonController).destroy();
         verify(mVoiceToolbarButtonController).destroy();
         verify(mVoiceToolbarButtonController).removeObserver(adaptiveToolbarButtonController);
@@ -98,12 +128,14 @@ public class AdaptiveToolbarButtonControllerTest {
     @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
     public void testGet_alwaysShare() {
         AdaptiveToolbarFeatures.MODE_PARAM.setForTesting(AdaptiveToolbarFeatures.ALWAYS_SHARE);
+        mButtonData.setButtonSpec(makeButtonSpec(AdaptiveToolbarButtonVariant.SHARE));
+
         when(mShareButtonController.get(any())).thenReturn(mButtonData);
 
         AdaptiveToolbarButtonController adaptiveToolbarButtonController = buildController();
         ButtonData buttonData = adaptiveToolbarButtonController.get(mTab);
 
-        Assert.assertSame(mButtonData, buttonData);
+        Assert.assertEquals(101, buttonData.getButtonSpec().getContentDescriptionResId());
     }
 
     @Test
@@ -111,12 +143,48 @@ public class AdaptiveToolbarButtonControllerTest {
     @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
     public void testGet_alwaysVoice() {
         AdaptiveToolbarFeatures.MODE_PARAM.setForTesting(AdaptiveToolbarFeatures.ALWAYS_VOICE);
+        mButtonData.setButtonSpec(makeButtonSpec(AdaptiveToolbarButtonVariant.VOICE));
+
         when(mVoiceToolbarButtonController.get(any())).thenReturn(mButtonData);
 
         AdaptiveToolbarButtonController adaptiveToolbarButtonController = buildController();
         ButtonData buttonData = adaptiveToolbarButtonController.get(mTab);
 
-        Assert.assertSame(mButtonData, buttonData);
+        Assert.assertEquals(101, buttonData.getButtonSpec().getContentDescriptionResId());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
+    public void testMetrics() {
+        AdaptiveToolbarFeatures.MODE_PARAM.setForTesting(AdaptiveToolbarFeatures.ALWAYS_SHARE);
+        mButtonData.setCanShow(true);
+        mButtonData.setEnabled(true);
+        mButtonData.setButtonSpec(makeButtonSpec(AdaptiveToolbarButtonVariant.SHARE));
+        when(mShareButtonController.get(any())).thenReturn(mButtonData);
+
+        AdaptiveToolbarButtonController adaptiveToolbarButtonController = buildController();
+        ButtonData buttonData = adaptiveToolbarButtonController.get(mTab);
+
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        "Android.AdaptiveToolbarButton.SessionVariant",
+                        AdaptiveToolbarButtonVariant.SHARE));
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramTotalCountForTesting(
+                        "Android.AdaptiveToolbarButton.SessionVariant"));
+
+        View view = Mockito.mock(View.class);
+        buttonData.getButtonSpec().getOnClickListener().onClick(view);
+        buttonData.getButtonSpec().getOnClickListener().onClick(view);
+
+        Assert.assertEquals(2,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        "Android.AdaptiveToolbarButton.Clicked",
+                        AdaptiveToolbarButtonVariant.SHARE));
+        Assert.assertEquals(2,
+                ShadowRecordHistogram.getHistogramTotalCountForTesting(
+                        "Android.AdaptiveToolbarButton.Clicked"));
     }
 
     @Test
@@ -159,9 +227,17 @@ public class AdaptiveToolbarButtonControllerTest {
         AdaptiveToolbarButtonController adaptiveToolbarButtonController =
                 new AdaptiveToolbarButtonController();
         adaptiveToolbarButtonController.addButtonVariant(
+                AdaptiveToolbarButtonVariant.NEW_TAB, mNewTabButtonController);
+        adaptiveToolbarButtonController.addButtonVariant(
                 AdaptiveToolbarButtonVariant.SHARE, mShareButtonController);
         adaptiveToolbarButtonController.addButtonVariant(
                 AdaptiveToolbarButtonVariant.VOICE, mVoiceToolbarButtonController);
         return adaptiveToolbarButtonController;
+    }
+
+    private static ButtonSpec makeButtonSpec(@AdaptiveToolbarButtonVariant int variant) {
+        return new ButtonSpec(/*drawable=*/null, Mockito.mock(View.OnClickListener.class),
+                /*contentDescriptionResId=*/101, /*supportsTinting=*/false,
+                /*iphCommandBuilder=*/null, variant);
     }
 }

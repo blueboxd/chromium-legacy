@@ -9784,13 +9784,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE" desc="Text for the checkbox on the window picker dialog, when checked, audio will be shared, otherwise just video sharing">
         Share audio
       </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN" desc="Text for the button on the window picker dialog, clicking which takes one to full screen sharing">
+      <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN" desc="Text for the button on the window picker dialog, clicking which takes one to full screen sharing" meaning="Refers to the device's entire screen. Short for 'share the entire screen'.">
         Entire Screen
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW" desc="Text for the button on the window picker dialog, clicking which takes one to window sharing">
         Window
       </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there is only one monitor.">
+      <message name="IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there is only one monitor." meaning="Refers to the device's entire screen. Short for 'share the entire screen'.">
         Entire screen
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there are multiple monitors.">
@@ -10364,20 +10364,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <!-- Ad Blocking UI strings. -->
     <message name="IDS_BLOCKED_ADS_PROMPT_TOOLTIP" desc="Explanation that Chrome blocked ads on this site. To be shown as a tooltip on the Ads blocked desktop bubble">
       Ads blocked on this site
-    </message>
-
-    <!-- Heavy Ad Intervention strings. -->
-    <message name="IDS_HEAVY_AD_INTERVENTION_BUTTON_DETAILS" desc="Label for the button that expands the details on the heavy ad intervention page">
-      Details
-    </message>
-    <message name="IDS_HEAVY_AD_INTERVENTION_HEADING" desc="Heading of the heavy ad intervention page">
-      Ad removed.
-    </message>
-    <message name="IDS_HEAVY_AD_INTERVENTION_SUMMARY" desc="Summary in heavy ad intervention page when ad was removed for using too many system resources.">
-      This ad used too many resources for your device, so Chrome removed it.
-    </message>
-    <message name="IDS_HEAVY_AD_INTERVENTION_BUTTON_RELOAD" desc="Label for the button that reloads the page and disables the intervention">
-      Reload and show anyway
     </message>
 
     <if expr="is_win">

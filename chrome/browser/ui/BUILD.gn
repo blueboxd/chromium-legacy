@@ -56,6 +56,8 @@ static_library("ui") {
     "autofill/payments/credit_card_scanner_view.cc",
     "autofill/payments/credit_card_scanner_view.h",
     "autofill/payments/credit_card_scanner_view_delegate.h",
+    "autofill/payments/offer_notification_helper.cc",
+    "autofill/payments/offer_notification_helper.h",
     "autofill/payments/payments_ui_constants.h",
     "autofill/popup_constants.h",
     "autofill/popup_controller_common.cc",
@@ -618,6 +620,10 @@ static_library("ui") {
   }
 
   if (is_android) {
+    sources += [
+      "autofill/payments/offer_notification_infobar_controller_impl.cc",
+      "autofill/payments/offer_notification_infobar_controller_impl.h",
+    ]
     deps += [
       "//chrome/app:chromium_strings",
       "//chrome/browser/notifications/scheduler/public",
@@ -3804,8 +3810,6 @@ static_library("ui") {
       "views/javascript_tab_modal_dialog_view_views.h",
       "views/layout/interpolating_layout_manager.cc",
       "views/layout/interpolating_layout_manager.h",
-      "views/load_complete_listener.cc",
-      "views/load_complete_listener.h",
       "views/location_bar/content_setting_image_view.cc",
       "views/location_bar/content_setting_image_view.h",
       "views/location_bar/cookie_controls_bubble_view.cc",

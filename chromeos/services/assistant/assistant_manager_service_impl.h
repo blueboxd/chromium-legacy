@@ -63,6 +63,7 @@ class AssistantMediaSession;
 class AssistantProxy;
 class AudioInputHost;
 class AudioOutputDelegateImpl;
+class DeviceSettingsHost;
 class MediaHost;
 class PlatformDelegateImpl;
 class ServiceContext;
@@ -165,7 +166,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void DismissNotification(const AssistantNotification& notification) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(const AssistantFeedback& feedback) override;
-  void NotifyEntryIntoAssistantUi(AssistantEntryPoint entry_point) override;
   void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
   void PauseTimer(const std::string& id) override;
   void RemoveAlarmOrTimer(const std::string& id) override;
@@ -175,8 +175,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // AssistantActionObserver overrides:
   void OnScheduleWait(int id, int time_ms) override;
   void OnShowNotification(const action::Notification& notification) override;
-  void OnOpenAndroidApp(const AndroidAppInfo& app_info,
-                        const InteractionInfo& interaction) override;
   void OnVerifyAndroidApp(const std::vector<AndroidAppInfo>& apps_info,
                           const InteractionInfo& interaction) override;
   void OnModifyDeviceSetting(
@@ -278,6 +276,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   std::unique_ptr<AssistantManagerServiceDelegate> delegate_;
   std::unique_ptr<LibassistantServiceHost> libassistant_service_host_;
   std::unique_ptr<AssistantDeviceSettingsDelegate> settings_delegate_;
+  std::unique_ptr<DeviceSettingsHost> device_settings_host_;
   std::unique_ptr<MediaHost> media_host_;
   std::unique_ptr<TimerHost> timer_host_;
   std::unique_ptr<AudioOutputDelegateImpl> audio_output_delegate_;

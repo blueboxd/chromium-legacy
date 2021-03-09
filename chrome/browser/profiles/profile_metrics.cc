@@ -192,17 +192,10 @@ void ProfileMetrics::CountProfileInformation(ProfileAttributesStorage* storage,
       counts->unused++;
     } else {
       counts->active++;
-      if (!entry->IsUsingDefaultName())
-        counts->named++;
       if (entry->IsSupervised())
         counts->supervised++;
-      if (entry->IsAuthenticated()) {
+      if (entry->IsAuthenticated())
         counts->signedin++;
-        if (entry->IsUsingGAIAPicture())
-          counts->gaia_icon++;
-        if (entry->IsAuthError())
-          counts->auth_errors++;
-      }
     }
   }
   counts->colors_uniqueness = GetProfileColorsUniqueness(storage);

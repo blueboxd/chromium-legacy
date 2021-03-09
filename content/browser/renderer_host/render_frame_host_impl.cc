@@ -917,28 +917,23 @@ struct PendingNavigation {
   mojom::BeginNavigationParamsPtr begin_navigation_params;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
   mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client;
-  mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator;
 
   PendingNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_navigation_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-      mojo::PendingRemote<blink::mojom::NavigationInitiator>
-          navigation_initiator);
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client);
 };
 
 PendingNavigation::PendingNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_navigation_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-    mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator)
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client)
     : common_params(std::move(common_params)),
       begin_navigation_params(std::move(begin_navigation_params)),
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
-      navigation_client(std::move(navigation_client)),
-      navigation_initiator(std::move(navigation_initiator)) {}
+      navigation_client(std::move(navigation_client)) {}
 
 // static
 RenderFrameHost* RenderFrameHost::FromID(GlobalFrameRoutingId id) {
@@ -2532,7 +2527,6 @@ void RenderFrameHostImpl::Init() {
         std::move(pending_navigate_->begin_navigation_params),
         std::move(pending_navigate_->blob_url_loader_factory),
         std::move(pending_navigate_->navigation_client),
-        std::move(pending_navigate_->navigation_initiator),
         EnsurePrefetchedSignedExchangeCache(),
         MaybeCreateWebBundleHandleTracker());
     pending_navigate_.reset();
@@ -2651,11 +2645,20 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   DCHECK(devtools_frame_token);
 
   // The RenderFrame corresponding to this host sent an IPC message to create a
-  // child, but by the time we get here, it's possible for the RenderFrameHost
-  // to become pending deletion, or for its process to have disconnected (maybe
-  // due to browser shutdown). Ignore such messages.
-  if (IsInactiveAndDisallowReactivation() || !is_render_frame_created())
+  // child, but by the time we get here, it's possible for its process to have
+  // disconnected (maybe due to browser shutdown). Ignore such messages.
+  if (!is_render_frame_created())
     return;
+
+  // Only active and prerendered documents are allowed to create child
+  // frames.
+  if (lifecycle_state_ != LifecycleState::kPrerendering) {
+    // The RenderFrame corresponding to this host sent an IPC message to create
+    // a child, but by the time we get here, it's possible for the
+    // RenderFrameHost to become inactive. Ignore such messages.
+    if (IsInactiveAndDisallowReactivation())
+      return;
+  }
 
   // |new_routing_id|, |browser_interface_broker_receiver| and
   // |devtools_frame_token| were generated on the browser's IO thread and not
@@ -4346,12 +4349,16 @@ void RenderFrameHostImpl::DispatchLoad() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::DispatchLoad",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
 
-  // Don't forward the load event to the parent on behalf of inactive
-  // RenderFrameHost. This can happen in a race where this inactive
-  // RenderFrameHost finishes loading just after the frame navigates away.
-  // See https://crbug.com/626802.
-  if (IsInactiveAndDisallowReactivation())
-    return;
+  // Only active and prerendered documents are allowed to dispatch load events
+  // to the parent.
+  if (lifecycle_state() != LifecycleState::kPrerendering) {
+    // Don't forward the load event to the parent on behalf of inactive
+    // RenderFrameHost. This can happen in a race where this inactive
+    // RenderFrameHost finishes loading just after the frame navigates away.
+    // See https://crbug.com/626802.
+    if (IsInactiveAndDisallowReactivation())
+      return;
+  }
 
   DCHECK(lifecycle_state() == LifecycleState::kActive ||
          lifecycle_state() == LifecycleState::kPrerendering);
@@ -4445,12 +4452,16 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
 
 void RenderFrameHostImpl::ForwardResourceTimingToParent(
     blink::mojom::ResourceTimingInfoPtr timing) {
-  // Don't forward the resource timing of the parent on behalf of inactive
-  // RenderFrameHost. This can happen in a race where this RenderFrameHost
-  // finishes loading just after the frame navigates away. See
-  // https://crbug.com/626802.
-  if (IsInactiveAndDisallowReactivation())
-    return;
+  // Only active and prerendered documents are allowed to forward the resource
+  // timing information to the parent.
+  if (lifecycle_state() != LifecycleState::kPrerendering) {
+    // Don't forward the resource timing of the parent on behalf of inactive
+    // RenderFrameHost. This can happen in a race where this RenderFrameHost
+    // finishes loading just after the frame navigates away. See
+    // https://crbug.com/626802.
+    if (IsInactiveAndDisallowReactivation())
+      return;
+  }
 
   DCHECK(lifecycle_state() == LifecycleState::kActive ||
          lifecycle_state() == LifecycleState::kPrerendering);
@@ -4504,17 +4515,17 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 
 bool RenderFrameHostImpl::IsInactiveAndDisallowReactivation() {
   switch (lifecycle_state_) {
-    // TODO(https://crbug.com/1177729): Cancel prerendering when
-    // IsInactiveAndDisallowReactivation() is called in
-    // LifecycleState:kPrerendering state.
-    case LifecycleState::kPrerendering:
-      return false;
     case LifecycleState::kRunningUnloadHandlers:
     case LifecycleState::kReadyToBeDeleted:
       return true;
     case LifecycleState::kInBackForwardCache:
       EvictFromBackForwardCacheWithReason(
           BackForwardCacheMetrics::NotRestoredReason::kIgnoreEventAndEvict);
+      return true;
+    case LifecycleState::kPrerendering:
+      // TODO(https://crbug.com/1185738): Asynchronously delete PrerenderHost
+      // with CancelPrerendering.
+      CancelPrerendering();
       return true;
     case LifecycleState::kSpeculative:
       // We do not expect speculative RenderFrameHosts to generate events that
@@ -5557,7 +5568,6 @@ void RenderFrameHostImpl::BeginNavigation(
     mojom::BeginNavigationParamsPtr begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-    mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>
         initiator_policy_container_host_keep_alive_handle) {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
@@ -5566,8 +5576,14 @@ void RenderFrameHostImpl::BeginNavigation(
     return;
   }
 
-  if (IsInactiveAndDisallowReactivation())
-    return;
+  // Only active and prerendered documents are allowed to start navigation in
+  // their frame.
+  if (lifecycle_state_ != LifecycleState::kPrerendering) {
+    // If this is reached in case the RenderFrameHost is in BackForwardCache
+    // evict the document from BackForwardCache.
+    if (IsInactiveAndDisallowReactivation())
+      return;
+  }
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::BeginNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
@@ -5641,8 +5657,7 @@ void RenderFrameHostImpl::BeginNavigation(
   if (waiting_for_init_) {
     pending_navigate_ = std::make_unique<PendingNavigation>(
         std::move(validated_params), std::move(begin_params),
-        std::move(blob_url_loader_factory), std::move(navigation_client),
-        std::move(navigation_initiator));
+        std::move(blob_url_loader_factory), std::move(navigation_client));
     return;
   }
 
@@ -5657,7 +5672,7 @@ void RenderFrameHostImpl::BeginNavigation(
   frame_tree_node()->navigator().OnBeginNavigation(
       frame_tree_node(), std::move(validated_params), std::move(begin_params),
       std::move(blob_url_loader_factory), std::move(navigation_client),
-      std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache(),
+      EnsurePrefetchedSignedExchangeCache(),
       MaybeCreateWebBundleHandleTracker());
 }
 

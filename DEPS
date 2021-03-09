@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7a3f5506b65ca3a05eed8c07cf341bc334cab121',
+  'skia_revision': 'a850a4a6b2a54be93d4f18bb347c7196069205d0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -220,11 +220,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'bbda0c17c6ca186d829fa99e712875657d9a1155',
+  'swiftshader_revision': '023914a27b634063766fee96f2e6763513f5b059',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '1390d3a65c3bde077e54894b327f66702d200c9a',
+  'pdfium_revision': 'c0124d2167340e99c40de40d961d172d843648ec',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -283,7 +283,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a7969980623418590d5a088e219d878f301621ba',
+  'devtools_frontend_revision': '505edf3ec225fca4e485183e3886096b714dc675',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -385,14 +385,6 @@ vars = {
   # If you change this, also update the libc++ revision in
   # //buildtools/deps_revisions.gni.
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
-
-  # TODO(crbug.com/941824): The values below need to be kept in sync
-  # between //DEPS and //buildtools/DEPS, so if you're updating one,
-  # update the other. There is a presubmit check that checks that
-  # you've done so; if you are adding new tools to //buildtools and
-  # hence new revisions to this list, make sure you update the
-  # _CheckBuildtoolsRevsAreInSync in PRESUBMIT.py to include the additional
-  # revisions.
 
   # GN CIPD package version.
   'gn_version': 'git_revision:dfcbc6fed0a8352696f92d67ccad54048ad182b3',
@@ -570,7 +562,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '4f12b7da7121408e46a4ffbe09204e7a5575eabb',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '53db4ddb09ff76f80fa597382586b7990af8ff03',
       'condition': 'checkout_ios',
   },
 
@@ -705,7 +697,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'TTvPS4dxG2_KG982l0gT78NuF47J00z_POMPRGhBh7oC',
+          'version': '0cXqPd9UzaimlGKD6A5oVclporrOAC3RznyC7ICXQ9UC',
       },
     ],
     'condition': 'checkout_android',
@@ -933,12 +925,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'b7a35f105d3663759b304ad2573755b25e03379c',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '62e9bf6678fbf8167aca1f5303e9df8c536b9479',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '75c9832409cf3cc46fc1ed6783f9c294f77d2bb4',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd071f2a8a941d8f7e05eb43319c7b2ab81fc8fdd',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1310,7 +1302,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '23f73816bf3ccb0f05a3ff9d12cb244efafd6f56',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '37518c39e3db120322359090db3d54f6ac100078',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1388,7 +1380,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'dBlHF6-1NU-vr6DU068Y8_WQHCWdk_yovRmg225wIr0C'
+              'version': '54xTthw_IjFSMlG1PKSD2hx94yCiezWKZ3cybspeGlEC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1584,7 +1576,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': '9HVX7gfXJwM4rj1c1E63j7kZSsAv4Ite461gREV1c_IC',
+          'version': 'pVWUmcQ85_lx3kRUwR24iSVp_YTL6Oa3ZUVqn33pXqUC',
         },
       ],
       'dep_type': 'cipd',
@@ -1594,7 +1586,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'BkqZ-ujKv_877drgMcJKlCrj5mbqxZxS-_WcuV4EMO0C',
+          'version': 'MKEUDKNT8DcyLZqnGZ2-o5TvzpNJbgsYtzzVAxVi2v4C',
         },
       ],
       'dep_type': 'cipd',
@@ -1604,7 +1596,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'qnTLOfR5dtU9D4z4-GB6SZ88pf7frrwV3yFkPUxIHswC',
+          'version': 'P0qLgrCL8oP-jPdw9rs0tWhuvsx8cVqnV8C1DBI4TNAC',
         },
       ],
       'dep_type': 'cipd',
@@ -1618,7 +1610,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2b9d15c8d6d0a7e8c17bae574d5f4b92fff0a785',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fad3ef3d273a324cd3e09770be97563c3462b342',
     'condition': 'checkout_src_internal',
   },
 
@@ -1626,7 +1618,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'OVvP8dn42PvKHgtLP9FgrenJty8stfRDtSMMHEIFZ50C',
+        'version': 'qkzc3hXN67-WIO1xipWSuWVwI7C8CYeKqnaVo2env8QC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

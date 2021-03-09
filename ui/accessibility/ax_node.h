@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -40,11 +41,11 @@ class AX_EXPORT AXNode final {
   //
   // Note that we cannot use L"..." because it works correctly only on Windows.
   // TODO(nektar): Consider using UTF8 encoding instead, "\xEF\xBF\xBC".
-  static constexpr base::char16 kEmbeddedCharacter[] = {0xFFFC, 0x0000};
+  static constexpr char16_t kEmbeddedCharacter[] = {0xFFFC, 0x0000};
   // We compute the embedded character's length instead of manually typing it in
   // order to avoid the two variables getting out of sync in a future update.
   static constexpr int kEmbeddedCharacterLength =
-      int{sizeof(kEmbeddedCharacter) / sizeof(base::char16) - 1};
+      int{sizeof(kEmbeddedCharacter) / sizeof(char16_t) - 1};
 
   // Interface to the tree class that owns an AXNode. We use this instead
   // of letting AXNode have a pointer to its AXTree directly so that we're
@@ -124,12 +125,30 @@ class AX_EXPORT AXNode final {
   // Returns ownership of |data_| to the caller; effectively clearing |data_|.
   AXNodeData&& TakeData();
 
-  // Walking the tree skipping ignored nodes.
+  //
+  // Methods for walking the tree.
+  //
+
+  size_t GetChildCount() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  size_t GetChildCountCrossingTreeBoundary() const;
   size_t GetUnignoredChildCount() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  size_t GetUnignoredChildCountCrossingTreeBoundary() const;
+  AXNode* GetChildAt(size_t index) const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetChildAtCrossingTreeBoundary(size_t index) const;
   AXNode* GetUnignoredChildAtIndex(size_t index) const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetUnignoredChildAtIndexCrossingTreeBoundary(size_t index) const;
+  AXNode* GetParent() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetParentCrossingTreeBoundary() const;
   AXNode* GetUnignoredParent() const;
-  size_t GetUnignoredIndexInParent() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetUnignoredParentCrossingTreeBoundary() const;
   size_t GetIndexInParent() const;
+  size_t GetUnignoredIndexInParent() const;
   AXNode* GetFirstUnignoredChild() const;
   AXNode* GetLastUnignoredChild() const;
   AXNode* GetDeepestFirstUnignoredChild() const;
@@ -202,6 +221,13 @@ class AX_EXPORT AXNode final {
   // Gets the text offsets where new lines start either from the node's data or
   // by computing them and caching the result.
   std::vector<int> GetOrComputeLineStartOffsets();
+
+  // If the color is transparent, blends with the ancestor's color.
+  // Note that this is imperfect; it won't work if a node is absolute-
+  // positioned outside of its ancestor. However, it handles the most
+  // common cases.
+  SkColor ComputeColor() const;
+  SkColor ComputeBackgroundColor() const;
 
   // Accessing accessibility attributes.
   // See |AXNodeData| for more information.
@@ -557,6 +583,10 @@ class AX_EXPORT AXNode final {
   // minimize cross-process communication between the renderer and the browser
   // processes.
   std::string GetValueForTextField() const;
+
+  // Compute the actual value of a color attribute that needs to be
+  // blended with ancestor colors.
+  SkColor ComputeColorAttribute(ax::mojom::IntAttribute color_attr) const;
 
   OwnerTree* const tree_;  // Owns this.
   size_t index_in_parent_;

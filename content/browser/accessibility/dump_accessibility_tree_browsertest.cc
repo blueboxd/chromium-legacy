@@ -2043,7 +2043,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputColor) {
   RunHtmlTest(FILE_PATH_LITERAL("input-color.html"));
 }
 
-// TODO(https://crbug.com/1186378): Flaky.
+// https://crbug.com/1186138 - fails due to timing issues with focus
+// and aria-live announcement.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DISABLED_AccessibilityInputColorWithPopupOpen) {
   RunHtmlTest(FILE_PATH_LITERAL("input-color-with-popup-open.html"));
@@ -2161,6 +2162,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputReset) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputSearch) {
   RunHtmlTest(FILE_PATH_LITERAL("input-search.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInsertBefore) {
+  RunHtmlTest(FILE_PATH_LITERAL("insert-before.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

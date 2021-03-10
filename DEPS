@@ -208,7 +208,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '0ad3c03922a83ecbc413bf73ded37511642e75c8',
+  'v8_revision': '8a7806552684dbddc1265f43895a37f02a6f3fed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2b7fdb62837eb5de4fede39f62c2d554b16cdbd5',
+  'angle_revision': 'c054008f9efb2f86a0bd6b8031e8c635c69107e4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -283,7 +283,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b35764262e007801ed2009ee99cacc6ece53bcd6',
+  'devtools_frontend_revision': '0d7a437a3b30cefd11e2236c97553c1ef8d57848',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -930,7 +930,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '57af8c37898282bf099e43d3a19855bddcc42d24',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7e3ad9eeb839c06b5056ba6a800a7895b927be4f',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1576,7 +1576,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'pVWUmcQ85_lx3kRUwR24iSVp_YTL6Oa3ZUVqn33pXqUC',
+          'version': 'fRRnk-3C4PCCGCwZ4hZCeqm9_BnqznTyThRH4XqRVIIC',
         },
       ],
       'dep_type': 'cipd',

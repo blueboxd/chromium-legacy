@@ -38,7 +38,7 @@ component("native_theme") {
     frameworks = [
       "CoreGraphics.framework",
       "AppKit.framework",
-      "MediaAccessibility.framework",
+      "CoreText.framework",
     ]
     sources += [
       "caption_style_mac.mm",
@@ -79,13 +79,6 @@ component("native_theme") {
     "//ui/resources",
   ]
 
-  if (is_mac) {
-    frameworks = [
-      "CoreGraphics.framework",
-      "AppKit.framework",
-      "CoreText.framework",
-    ]
-  }
 }
 
 if (is_win) {

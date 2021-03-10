@@ -123,6 +123,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_params_helper.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
 #include "content/browser/web_package/web_bundle_handle.h"
 #include "content/browser/web_package/web_bundle_handle_tracker.h"
 #include "content/browser/web_package/web_bundle_navigation_info.h"
@@ -1078,6 +1079,17 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     set_nav_entry_id(parent_->nav_entry_id());
   }
 
+  if (blink::features::IsPrerender2Enabled()) {
+    if (frame_tree_->is_prerendering()) {
+      // TODO(https://crbug.com/1132752): Check the prerendering page is
+      // same-origin to the prerender trigger page.
+      broker_.ApplyMojoBinderPolicies(
+          MojoBinderPolicyApplier::CreateForSameOriginPrerendering(
+              base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,
+                             base::Unretained(this))));
+    }
+  }
+
   // The initial empty document inherits its policy container from its creator.
   // The creator is either its parent for iframes or its opener for new windows.
   //
@@ -1973,7 +1985,7 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
 void RenderFrameHostImpl::AccessibilityPerformAction(
     const ui::AXActionData& action_data) {
   // Don't perform any Accessibility action on an inactive frame.
-  if (IsInactiveAndDisallowReactivation() || !render_accessibility_)
+  if (IsInactiveAndDisallowActivation() || !render_accessibility_)
     return;
 
   if (action_data.action == ax::mojom::Action::kHitTest) {
@@ -2003,7 +2015,7 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
 
 void RenderFrameHostImpl::AccessibilityViewSetFocus() {
   // Don't update Accessibility for inactive frames.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
 
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -2073,7 +2085,7 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
   // If this method is called when the document is in BackForwardCache, evict
   // the document to avoid ignoring any accessibility related events which the
   // document might not expect.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return nullptr;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -2088,7 +2100,7 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
   // If this method is called when the frame is in BackForwardCache, evict
   // the frame to avoid ignoring any accessibility related events which are not
   // expected.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return nullptr;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -2102,7 +2114,7 @@ WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
   // If this method is called when the frame is in BackForwardCache, evict
   // the frame to avoid ignoring any accessibility related events which are not
   // expected.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return nullptr;
   return delegate()->GetAsWebContents();
 }
@@ -2116,7 +2128,7 @@ void RenderFrameHostImpl::AccessibilityHitTest(
   // This is called by BrowserAccessibilityManager. During teardown it's
   // possible that render_accessibility_ is null but the corresponding
   // BrowserAccessibilityManager still exists and could call this.
-  if (IsInactiveAndDisallowReactivation() || !render_accessibility_) {
+  if (IsInactiveAndDisallowActivation() || !render_accessibility_) {
     if (opt_callback)
       std::move(opt_callback).Run(nullptr, 0);
     return;
@@ -2663,7 +2675,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     // The RenderFrame corresponding to this host sent an IPC message to create
     // a child, but by the time we get here, it's possible for the
     // RenderFrameHost to become inactive. Ignore such messages.
-    if (IsInactiveAndDisallowReactivation())
+    if (IsInactiveAndDisallowActivation())
       return;
   }
 
@@ -3153,7 +3165,7 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
   // If this is called when the frame is in BackForwardCache, evict the frame
   // to avoid ignoring the renderer-initiated navigation, which the frame
   // might not expect.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
 
   TRACE_EVENT2("navigation",
@@ -4171,7 +4183,7 @@ void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
 void RenderFrameHostImpl::FullscreenStateChanged(
     bool is_fullscreen,
     blink::mojom::FullscreenOptionsPtr options) {
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
   delegate_->FullscreenStateChanged(this, is_fullscreen, std::move(options));
 }
@@ -4220,7 +4232,7 @@ void RenderFrameHostImpl::DocumentAvailableInMainFrame(
 void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
   // Do not update the parent on behalf of inactive RenderFrameHost. See also
   // https://crbug.com/972566.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
 
   RenderFrameProxyHost* proxy =
@@ -4363,7 +4375,7 @@ void RenderFrameHostImpl::DispatchLoad() {
     // RenderFrameHost. This can happen in a race where this inactive
     // RenderFrameHost finishes loading just after the frame navigates away.
     // See https://crbug.com/626802.
-    if (IsInactiveAndDisallowReactivation())
+    if (IsInactiveAndDisallowActivation())
       return;
   }
 
@@ -4466,7 +4478,7 @@ void RenderFrameHostImpl::ForwardResourceTimingToParent(
     // RenderFrameHost. This can happen in a race where this RenderFrameHost
     // finishes loading just after the frame navigates away. See
     // https://crbug.com/626802.
-    if (IsInactiveAndDisallowReactivation())
+    if (IsInactiveAndDisallowActivation())
       return;
   }
 
@@ -4520,7 +4532,7 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
   }
 }
 
-bool RenderFrameHostImpl::IsInactiveAndDisallowReactivation() {
+bool RenderFrameHostImpl::IsInactiveAndDisallowActivation() {
   switch (lifecycle_state_) {
     case LifecycleState::kRunningUnloadHandlers:
     case LifecycleState::kReadyToBeDeleted:
@@ -4863,7 +4875,7 @@ void RenderFrameHostImpl::BubbleLogicalScrollInParentFrame(
     blink::mojom::ScrollDirection direction,
     ui::ScrollGranularity granularity) {
   // Do not update the parent on behalf of inactive RenderFrameHost.
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
 
   RenderFrameProxyHost* proxy =
@@ -4944,7 +4956,7 @@ void RenderFrameHostImpl::ShowContextMenu(
     mojo::PendingAssociatedRemote<blink::mojom::ContextMenuClient>
         context_menu_client,
     const blink::UntrustworthyContextMenuParams& params) {
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
 
   // Validate the URLs in |params|.  If the renderer can't request the URLs
@@ -5062,7 +5074,7 @@ void RenderFrameHostImpl::DidChangeFramePolicy(
 void RenderFrameHostImpl::CapturePaintPreviewOfSubframe(
     const gfx::Rect& clip_rect,
     const base::UnguessableToken& guid) {
-  if (IsInactiveAndDisallowReactivation())
+  if (IsInactiveAndDisallowActivation())
     return;
   // This should only be called on a subframe.
   if (is_main_frame()) {
@@ -5083,6 +5095,21 @@ void RenderFrameHostImpl::SetModalCloseListener(
 void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
   DCHECK(receiver.is_valid());
+  if (blink::features::IsPrerender2Enabled()) {
+    if (frame_tree()->is_prerendering()) {
+      // RenderFrameHostImpl will rebind the receiver end of
+      // BrowserInterfaceBroker if it receives a new one sent from renderer
+      // processes. It happens when renderer processes navigate to a new
+      // document, see RenderFrameImpl::DidCommitNavigation() and
+      // RenderFrameHostImpl::DidCommitNavigation().
+      // So before binding a new receiver end of BrowserInterfaceBroker,
+      // RenderFrameHostImpl should drop all deferred binders to avoid
+      // connecting Mojo pipes with old documents.
+      auto* applier = broker_.GetMojoBinderPolicyApplier();
+      DCHECK(applier) << "prerendering pages should have a policy applier";
+      applier->DropDeferredBinders();
+    }
+  }
   broker_receiver_.Bind(std::move(receiver));
   broker_receiver_.SetFilter(std::make_unique<ActiveURLMessageFilter>(this));
 }
@@ -5588,7 +5615,7 @@ void RenderFrameHostImpl::BeginNavigation(
   if (lifecycle_state_ != LifecycleState::kPrerendering) {
     // If this is reached in case the RenderFrameHost is in BackForwardCache
     // evict the document from BackForwardCache.
-    if (IsInactiveAndDisallowReactivation())
+    if (IsInactiveAndDisallowActivation())
       return;
   }
 
@@ -5728,7 +5755,7 @@ void RenderFrameHostImpl::HandleAXEvents(
   accessibility_reset_token_ = 0;
 
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.is_mode_off() || IsInactiveAndDisallowReactivation()) {
+  if (accessibility_mode.is_mode_off() || IsInactiveAndDisallowActivation()) {
     std::move(callback).Run();
     return;
   }
@@ -5777,7 +5804,7 @@ void RenderFrameHostImpl::HandleAXEvents(
 
 void RenderFrameHostImpl::HandleAXLocationChanges(
     std::vector<mojom::LocationChangesPtr> changes) {
-  if (accessibility_reset_token_ || IsInactiveAndDisallowReactivation())
+  if (accessibility_reset_token_ || IsInactiveAndDisallowActivation())
     return;
 
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
@@ -6298,17 +6325,6 @@ void RenderFrameHostImpl::CommitNavigation(
   DCHECK(!IsRendererDebugURL(common_params->url));
   DCHECK(navigation_request);
 
-  if (blink::features::IsPrerender2Enabled()) {
-    if (frame_tree()->is_prerendering()) {
-      // TODO(https://crbug.com/1132752): Check the prerendering page is
-      // same-origin to the prerender trigger page.
-      broker_.ApplyMojoBinderPolicies(
-          MojoBinderPolicyApplier::CreateForSameOriginPrerendering(
-              base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,
-                             base::Unretained(this))));
-    }
-  }
-
   bool is_same_document =
       NavigationTypeUtils::IsSameDocument(common_params->navigation_type);
   bool is_mhtml_subframe = navigation_request->IsForMhtmlSubframe();
@@ -6383,12 +6399,20 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_first_navigation = !has_committed_any_navigation_;
   has_committed_any_navigation_ = true;
 
-  // If this is NOT for same-document navigation, existing |web_bundle_handle_|
-  // should be reset to the new one. Otherwise the existing one should be kept
-  // around so that the subresource requests keep being served from the
-  // WebBundleURLLoaderFactory held by the handle.
-  if (!is_same_document)
+  if (!is_same_document) {
+    // If this is NOT for same-document navigation, existing
+    // |web_bundle_handle_| should be reset to the new one. Otherwise the
+    // existing one should be kept around so that the subresource requests keep
+    // being served from the WebBundleURLLoaderFactory held by the handle.
     web_bundle_handle_ = std::move(web_bundle_handle);
+
+    // Similarly, reset |subresource_web_bundle_navigation_info_| to the new one
+    // if this is NOT for same-document navigation. For same-document
+    // navigation, |navigation_request| doesn't have bundle information so
+    // existing one should be kept around.
+    subresource_web_bundle_navigation_info_ =
+        navigation_request->GetSubresourceWebBundleNavigationInfo();
+  }
 
   UpdatePermissionsForNavigation(*common_params, *commit_params);
 
@@ -6804,22 +6828,6 @@ void RenderFrameHostImpl::FailedNavigation(
                "error", error_code);
 
   DCHECK(navigation_request);
-
-  // The failed navigation still results in a document that may make Mojo
-  // interface requests, so set the MojoBinderPolicyApplier for prerendering if
-  // needed.
-  // TODO(lingqi): Set the MojoBinderPolicyApplier at DidCommitNavigation
-  // instead to align with the prerendering LifecycleState.
-  if (blink::features::IsPrerender2Enabled()) {
-    if (frame_tree()->is_prerendering()) {
-      // TODO(https://crbug.com/1132752): Check the prerendering page is
-      // same-origin to the prerender trigger page.
-      broker_.ApplyMojoBinderPolicies(
-          MojoBinderPolicyApplier::CreateForSameOriginPrerendering(
-              base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,
-                             base::Unretained(this))));
-    }
-  }
 
   // Update renderer permissions even for failed commits, so that for example
   // the URL bar correctly displays privileged URLs instead of filtering them.
@@ -7245,7 +7253,7 @@ void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
 
 void RenderFrameHostImpl::UpdateAXTreeData() {
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.is_mode_off() || IsInactiveAndDisallowReactivation()) {
+  if (accessibility_mode.is_mode_off() || IsInactiveAndDisallowActivation()) {
     return;
   }
 
@@ -7686,7 +7694,7 @@ void RenderFrameHostImpl::AccessibilityHitTestCallback(
           ? frame_or_proxy.proxy->frame_tree_node()->current_frame_host()
           : frame_or_proxy.frame;
 
-  if (!hit_frame || hit_frame->IsInactiveAndDisallowReactivation()) {
+  if (!hit_frame || hit_frame->IsInactiveAndDisallowActivation()) {
     if (opt_callback)
       std::move(opt_callback).Run(nullptr, 0);
     return;
@@ -8362,6 +8370,17 @@ RenderFrameHostImpl::CreateNavigationRequestForCommit(
     web_bundle_navigation_info = web_bundle_handle_->navigation_info()->Clone();
   }
 
+  std::unique_ptr<SubresourceWebBundleNavigationInfo>
+      subresource_web_bundle_navigation_info;
+  if (is_same_document && subresource_web_bundle_navigation_info_) {
+    // Propagate |subresource_web_bundle_navigation_info_| to NavigationRequest
+    // for same-document navigation. This will be passed to
+    // FrameNavigationEntry, and will be used for subsequent history
+    // navigations.
+    subresource_web_bundle_navigation_info =
+        subresource_web_bundle_navigation_info_->Clone();
+  }
+
   std::string method = "GET";
   if (is_same_document && !is_same_document_history_api_navigation) {
     // Preserve the HTTP method used by the last navigation if this is a
@@ -8386,7 +8405,8 @@ RenderFrameHostImpl::CreateNavigationRequestForCommit(
       std::move(referrer), transition, should_replace_current_entry, method,
       gesture, is_overriding_user_agent, redirects, original_request_url,
       page_state, std::move(coep_reporter),
-      std::move(web_bundle_navigation_info), http_status_code);
+      std::move(web_bundle_navigation_info),
+      std::move(subresource_web_bundle_navigation_info), http_status_code);
 }
 
 void RenderFrameHostImpl::BeforeUnloadTimeout() {
@@ -8804,20 +8824,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // create one in order to properly issue DidFinishNavigation calls to
     // WebContentsObservers.
     DCHECK(is_initial_empty_commit || is_same_document_navigation);
-
-    // Handle src-less <iframe> for prerendering.
-    // This is a special case that does not go through CommitNavigation path.
-    if (blink::features::IsPrerender2Enabled() && is_initial_empty_commit &&
-        !is_main_frame()) {
-      if (frame_tree()->is_prerendering()) {
-        // TODO(https://crbug.com/1132752): Check the prerendering page is
-        // same-origin to the prerender trigger page.
-        broker_.ApplyMojoBinderPolicies(
-            MojoBinderPolicyApplier::CreateForSameOriginPrerendering(
-                base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,
-                               base::Unretained(this))));
-      }
-    }
 
     // TODO(https://crbug.com/1131832): Do not use |params| to get the values,
     // depend on values known at commit time instead.
@@ -9289,7 +9295,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // BackForwardCacheImpl::CanStoreRenderFrameHost prevents placing the pages
   // with in-flight navigation requests in the back-forward cache and it's not
   // possible to start/commit a new one after the RenderFrameHost is in the
-  // BackForwardCache (see the check IsInactiveAndDisallowReactivation in
+  // BackForwardCache (see the check IsInactiveAndDisallowActivation in
   // RFH::DidCommitSameDocumentNavigation() and RFH::BeginNavigation()) so it
   // isn't possible to get a DidCommitNavigation IPC from the renderer in
   // kInBackForwardCache state.
@@ -10622,7 +10628,7 @@ void RenderFrameHostImpl::OnDidRunContentWithCertificateErrors() {
   // gets marked as insecure and that applies to any navigation entry using the
   // same renderer process with that same top-level origin.
   if (lifecycle_state() != LifecycleState::kSpeculative &&
-      IsInactiveAndDisallowReactivation()) {
+      IsInactiveAndDisallowActivation()) {
     return;
   }
   frame_tree_->controller().ssl_manager()->DidRunContentWithCertErrors(

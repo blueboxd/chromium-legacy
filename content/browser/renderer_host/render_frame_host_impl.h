@@ -239,6 +239,7 @@ class TimeoutMonitor;
 class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
 class WebBundleHandle;
+class SubresourceWebBundleNavigationInfo;
 class WebBundleHandleTracker;
 struct PendingNavigation;
 struct RenderFrameHostOrProxy;
@@ -365,7 +366,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsRenderFrameCreated() override;
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
-  bool IsInactiveAndDisallowReactivation() override;
+  bool IsInactiveAndDisallowActivation() override;
   size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
@@ -3358,6 +3359,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The factory to load resources from the WebBundle source bound to
   // this file.
   std::unique_ptr<WebBundleHandle> web_bundle_handle_;
+  // Subresource Web Bundle information that are kept around across
+  // same-document navigations.
+  std::unique_ptr<SubresourceWebBundleNavigationInfo>
+      subresource_web_bundle_navigation_info_;
 
   // Tainted once MediaStream access was granted.
   bool was_granted_media_access_ = false;

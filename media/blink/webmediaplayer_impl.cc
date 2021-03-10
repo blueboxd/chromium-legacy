@@ -2513,6 +2513,11 @@ void WebMediaPlayerImpl::SetPersistentState(bool value) {
   MaybeSendOverlayInfoToDecoder();
 }
 
+void WebMediaPlayerImpl::SetPowerExperimentState(bool state) {
+  if (power_status_helper_)
+    power_status_helper_->UpdatePowerExperimentState(state);
+}
+
 void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
   SetVolumeMultiplier(multiplier);
 }
@@ -2523,8 +2528,7 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
 }
 
 void WebMediaPlayerImpl::OnPowerExperimentState(bool state) {
-  if (power_status_helper_)
-    power_status_helper_->UpdatePowerExperimentState(state);
+  SetPowerExperimentState(state);
 }
 
 void WebMediaPlayerImpl::ScheduleRestart() {
@@ -2975,6 +2979,11 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
       delegate_->PlayerGone(delegate_id_);
       break;
     case DelegateState::PLAYING: {
+      // When delegate get PlayerGone it removes all state, need to make sure
+      // it is up-to-date before calling DidPlay.
+      delegate_->DidMediaMetadataChange(
+          delegate_id_, delegate_has_audio_, HasVideo(),
+          DurationToMediaContentType(GetPipelineMediaDuration()));
       if (HasVideo())
         client_->DidPlayerSizeChange(NaturalSize());
       client_->DidPlayerStartPlaying();

@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -83,6 +84,7 @@
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
@@ -1059,11 +1061,14 @@ bool CanBookmarkAllTabs(const Browser* browser) {
 }
 
 bool CanMoveActiveTabToReadLater(Browser* browser) {
-  GURL url =
-      GetURLToBookmark(browser->tab_strip_model()->GetActiveWebContents());
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   ReadingListModel* model = GetReadingListModel(browser);
-  if (!model)
+  // |web_contents| can be nullptr if the last tab in the browser was closed
+  // but the browser wasn't closed yet. https://crbug.com/799668
+  if (!web_contents || !model)
     return false;
+  GURL url = GetURLToBookmark(web_contents);
   return model->IsUrlSupported(url);
 }
 
@@ -1128,6 +1133,8 @@ void MaybeShowBookmarkBarForReadLater(Browser* browser) {
         browser->bookmark_bar_state());
     if (browser->bookmark_bar_state() == BookmarkBar::HIDDEN)
       ToggleBookmarkBar(browser);
+    browser->window()->GetFeaturePromoController()->MaybeShowPromo(
+        feature_engagement::kIPHReadingListDiscoveryFeature);
   }
 #endif  // defined(OS_ANDROID)
 }

@@ -42,11 +42,6 @@ extern const char kAutofillSaveCardDismissOnNavigationDescription[];
 extern const char kAutofillSaveCardInfobarEditSupportName[];
 extern const char kAutofillSaveCardInfobarEditSupportDescription[];
 
-// Title and description for the flag to restrict extraction of formless forms
-// to checkout flows.
-extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
-extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
-
 // Title and description for the flag to enable rich autofill queries on
 // Canary/Dev.
 extern const char kAutofillRichMetadataQueriesName[];
@@ -153,6 +148,10 @@ extern const char kEditPasswordsInSettingsDescription[];
 // Title and description for the flag to block restore urls.
 extern const char kEmbedderBlockRestoreUrlName[];
 extern const char kEmbedderBlockRestoreUrlDescription[];
+
+// Title and description for the flag to enable autofill address save prompts.
+extern const char kEnableAutofillAddressSavePromptName[];
+extern const char kEnableAutofillAddressSavePromptDescription[];
 
 // Title and description for the flag to enable the confirmational action sheet
 // for the tab grid "Close All" action.

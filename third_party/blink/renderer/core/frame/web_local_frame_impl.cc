@@ -109,7 +109,6 @@
 #include "third_party/blink/public/platform/web_double_size.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -783,15 +782,16 @@ void WebLocalFrameImpl::CopyToFindPboard() {
     GetFrame()->GetSystemClipboard()->CopyToFindPboard(SelectionAsText());
 }
 
-WebSize WebLocalFrameImpl::GetScrollOffset() const {
-  if (ScrollableArea* scrollable_area = LayoutViewport())
-    return scrollable_area->ScrollOffsetInt();
-  return WebSize();
+gfx::ScrollOffset WebLocalFrameImpl::GetScrollOffset() const {
+  if (ScrollableArea* scrollable_area = LayoutViewport()) {
+    return gfx::ScrollOffset(scrollable_area->GetScrollOffset());
+  }
+  return gfx::ScrollOffset();
 }
 
-void WebLocalFrameImpl::SetScrollOffset(const WebSize& offset) {
+void WebLocalFrameImpl::SetScrollOffset(const gfx::ScrollOffset& offset) {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
-    scrollable_area->SetScrollOffset(ScrollOffset(offset.width, offset.height),
+    scrollable_area->SetScrollOffset(ScrollOffset(offset.x(), offset.y()),
                                      mojom::blink::ScrollType::kProgrammatic);
   }
 }
@@ -2449,6 +2449,10 @@ WebNode WebLocalFrameImpl::ContextMenuNode() const {
   return ContextMenuNodeInner();
 }
 
+WebNode WebLocalFrameImpl::ContextMenuImageNode() const {
+  return ContextMenuImageNodeInner();
+}
+
 void WebLocalFrameImpl::WillBeDetached() {
   if (frame_->IsMainFrame())
     ViewImpl()->DidDetachLocalMainFrame();
@@ -2772,6 +2776,15 @@ Node* WebLocalFrameImpl::ContextMenuNodeInner() const {
       ->GetPage()
       ->GetContextMenuController()
       .ContextMenuNodeForFrame(GetFrame());
+}
+
+Node* WebLocalFrameImpl::ContextMenuImageNodeInner() const {
+  if (!ViewImpl() || !ViewImpl()->GetPage())
+    return nullptr;
+  return ViewImpl()
+      ->GetPage()
+      ->GetContextMenuController()
+      .ContextMenuImageNodeForFrame(GetFrame());
 }
 
 void WebLocalFrameImpl::WaitForDebuggerWhenShown() {

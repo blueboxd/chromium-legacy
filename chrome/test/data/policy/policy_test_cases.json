@@ -5530,6 +5530,10 @@
     "note": "This policy is used directly through the policy service instead of through a pref."
   },
 
+  "AudioProcessHighPriorityEnabled": {
+    "note": "This policy is used directly through the policy service instead of through a pref."
+  },
+
   "LoginDisplayPasswordButtonEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_tests": [
@@ -5671,6 +5675,8 @@
   "ReportDeviceVpdInfo": {},
 
   "ReportDeviceSystemInfo": {},
+
+  "ReportDevicePrintJobs": {},
 
   "ReportUploadFrequency": {},
 

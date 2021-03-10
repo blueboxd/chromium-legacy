@@ -179,10 +179,10 @@ ConversationController::ConversationController(
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsWaitSchedulingEnabled())),
       mojom_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  // TODO(jeroendh): We no longer need to pass in service_controller as we
-  // already are a AssistantManagerObserver.
+  // TODO(jeroendh): We should not pass in the |ServiceController| into this
+  // constructor. Instead, we should access the |AssistantManager| through
+  // the methods offered by |AssistantManagerObserver|.
   DCHECK(service_controller_);
-
   action_module_->AddObserver(this);
 }
 
@@ -193,6 +193,11 @@ void ConversationController::Bind(
   // Cannot bind the receiver twice.
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
+}
+
+void ConversationController::AddActionObserver(
+    chromeos::assistant::action::AssistantActionObserver* observer) {
+  action_module_->AddObserver(observer);
 }
 
 void ConversationController::AddAuthenticationStateObserver(
@@ -370,6 +375,30 @@ void ConversationController::OnOpenAndroidApp(
   assistant_manager_internal()->SendVoicelessInteraction(
       interaction_proto, /*description=*/"open_provider_response", options,
       [](auto) {});
+}
+
+void ConversationController::OnScheduleWait(int id, int time_ms) {
+  ENSURE_MOJOM_THREAD(&ConversationController::OnScheduleWait, id, time_ms);
+
+  DCHECK(assistant::features::IsWaitSchedulingEnabled());
+
+  // Schedule a wait for |time_ms|, notifying the CrosActionModule when the wait
+  // has finished so that it can inform LibAssistant to resume execution.
+  mojom_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const base::WeakPtr<ConversationController>& weak_ptr, int id) {
+            if (weak_ptr) {
+              weak_ptr->action_module_->OnScheduledWaitDone(
+                  id, /*cancelled=*/false);
+            }
+          },
+          weak_factory_.GetWeakPtr(), id),
+      base::TimeDelta::FromMilliseconds(time_ms));
+
+  // Notify subscribers that a wait has been started.
+  for (auto& observer : observers_)
+    observer->OnWaitStarted();
 }
 
 void ConversationController::SendVoicelessInteraction(

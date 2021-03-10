@@ -31,7 +31,6 @@
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/services/assistant/assistant_device_settings_delegate.h"
 #include "chromeos/services/assistant/device_settings_host.h"
 #include "chromeos/services/assistant/libassistant_service_host_impl.h"
 #include "chromeos/services/assistant/media_host.h"
@@ -191,8 +190,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     base::Optional<std::string> s3_server_uri_override,
     base::Optional<std::string> device_id_override,
     std::unique_ptr<LibassistantServiceHost> libassistant_service_host)
-    : assistant_settings_(
-          std::make_unique<AssistantSettingsImpl>(context, this)),
+    : assistant_settings_(std::make_unique<AssistantSettingsImpl>(context)),
       assistant_proxy_(std::make_unique<AssistantProxy>()),
       platform_delegate_(std::make_unique<PlatformDelegateImpl>()),
       context_(context),
@@ -233,7 +231,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       assistant_proxy_->ExtractAudioInputController());
 
   assistant_settings_->Initialize(
-      assistant_proxy_->ExtractSpeakerIdEnrollmentController());
+      assistant_proxy_->ExtractSpeakerIdEnrollmentController(),
+      &assistant_proxy_->settings_controller());
 
   media_host_->Initialize(&assistant_proxy_->media_controller(),
                           assistant_proxy_->ExtractMediaDelegate());
@@ -242,8 +241,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 
   device_settings_host_->Bind(
       assistant_proxy_->ExtractDeviceSettingsDelegate());
-  settings_delegate_ = std::make_unique<AssistantDeviceSettingsDelegate>(
-      device_settings_host_.get());
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
@@ -497,10 +494,8 @@ void AssistantManagerServiceImpl::OnInteractionFinished(
       RecordQueryResponseTypeUMA();
       return;
     case AssistantInteractionResolution::kInterruption:
-      if (receive_inline_response_ || receive_modify_settings_proto_response_ ||
-          !receive_url_response_.empty()) {
+      if (HasReceivedQueryResponse())
         RecordQueryResponseTypeUMA();
-      }
       return;
     case AssistantInteractionResolution::kMicTimeout:
     case AssistantInteractionResolution::kError:
@@ -522,30 +517,6 @@ void AssistantManagerServiceImpl::OnTextResponse(const std::string& reponse) {
 void AssistantManagerServiceImpl::OnOpenUrlResponse(const GURL& url,
                                                     bool in_background) {
   receive_url_response_ = url.spec();
-}
-
-void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnScheduleWait, id, time_ms);
-  DCHECK(features::IsWaitSchedulingEnabled());
-
-  // Schedule a wait for |time_ms|, notifying the CrosActionModule when the wait
-  // has finished so that it can inform LibAssistant to resume execution.
-  main_task_runner()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](const base::WeakPtr<AssistantManagerServiceImpl>& weak_ptr,
-             int id) {
-            if (weak_ptr && weak_ptr->action_module()) {
-              weak_ptr->action_module()->OnScheduledWaitDone(
-                  id, /*cancelled=*/false);
-            }
-          },
-          weak_factory_.GetWeakPtr(), id),
-      base::TimeDelta::FromMilliseconds(time_ms));
-
-  // Notify subscribers that a wait has been started.
-  for (auto& it : interaction_subscribers_)
-    it.OnWaitStarted();
 }
 
 void AssistantManagerServiceImpl::OnShowNotification(
@@ -612,27 +583,6 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
   assistant_manager_internal()->SendVoicelessInteraction(
       interaction_proto, /*description=*/"verify_provider_response", options,
       [](auto) {});
-}
-
-void AssistantManagerServiceImpl::OnModifyDeviceSetting(
-    const api::client_op::ModifySettingArgs& modify_setting_args) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnModifyDeviceSetting,
-                     modify_setting_args);
-  receive_modify_settings_proto_response_ = true;
-
-  settings_delegate_->HandleModifyDeviceSetting(modify_setting_args);
-}
-
-void AssistantManagerServiceImpl::OnGetDeviceSettings(
-    int interaction_id,
-    const api::client_op::GetDeviceSettingsArgs& args) {
-  std::vector<DeviceSetting> result =
-      settings_delegate_->GetDeviceSettings(args);
-
-  SendVoicelessInteraction(
-      CreateGetDeviceSettingInteraction(interaction_id, result),
-      /*description=*/"get_settings_result",
-      /*is_user_initiated=*/true);
 }
 
 void AssistantManagerServiceImpl::OnNotificationRemoved(const std::string& id) {
@@ -814,27 +764,36 @@ void AssistantManagerServiceImpl::MaybeStopPreviousInteraction() {
 }
 
 void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {
-  auto response_type = AssistantQueryResponseType::kUnspecified;
-
-  if (receive_modify_settings_proto_response_) {
-    response_type = AssistantQueryResponseType::kDeviceAction;
-  } else if (!receive_url_response_.empty()) {
-    if (receive_url_response_.find("www.google.com/search?") !=
-        std::string::npos) {
-      response_type = AssistantQueryResponseType::kSearchFallback;
-    } else {
-      response_type = AssistantQueryResponseType::kTargetedAction;
-    }
-  } else if (receive_inline_response_) {
-    response_type = AssistantQueryResponseType::kInlineElement;
-  }
+  AssistantQueryResponseType response_type = GetQueryResponseType();
 
   UMA_HISTOGRAM_ENUMERATION("Assistant.QueryResponseType", response_type);
 
   // Reset the flags.
-  receive_inline_response_ = false;
-  receive_modify_settings_proto_response_ = false;
   receive_url_response_.clear();
+  receive_inline_response_ = false;
+  device_settings_host_->reset_has_setting_changed();
+}
+
+bool AssistantManagerServiceImpl::HasReceivedQueryResponse() const {
+  return GetQueryResponseType() != AssistantQueryResponseType::kUnspecified;
+}
+
+AssistantQueryResponseType AssistantManagerServiceImpl::GetQueryResponseType()
+    const {
+  if (device_settings_host_->has_setting_changed()) {
+    return AssistantQueryResponseType::kDeviceAction;
+  } else if (!receive_url_response_.empty()) {
+    if (receive_url_response_.find("www.google.com/search?") !=
+        std::string::npos) {
+      return AssistantQueryResponseType::kSearchFallback;
+    } else {
+      return AssistantQueryResponseType::kTargetedAction;
+    }
+  } else if (receive_inline_response_) {
+    return AssistantQueryResponseType::kInlineElement;
+  }
+
+  return AssistantQueryResponseType::kUnspecified;
 }
 
 void AssistantManagerServiceImpl::SendAssistantFeedback(

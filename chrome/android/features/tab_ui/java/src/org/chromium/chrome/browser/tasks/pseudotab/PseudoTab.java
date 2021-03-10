@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.pseudotab;
 
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -199,24 +200,23 @@ public class PseudoTab {
     }
 
     /**
+     * @return The timestamp of the {@link PseudoTab}.
+     */
+    public long getTimestampMillis() {
+        if (mTab != null && mTab.get() != null && mTab.get().isInitialized()) {
+            return CriticalPersistedTabData.from(mTab.get()).getTimestampMillis();
+        }
+        assert mTabId != null;
+        return TabAttributeCache.getTimestampMillis(mTabId);
+    }
+
+    /**
      * @return Whether the {@link PseudoTab} is in the Incognito mode.
      */
     public boolean isIncognito() {
         if (mTab != null && mTab.get() != null) return mTab.get().isIncognito();
         assert mTabId != null;
         return false;
-    }
-
-    /**
-     * @return {@link Tab#getTimestampMillis()} of the underlying real {@link Tab}
-     */
-    public long getTimestampMillis() {
-        assert mTab != null
-                && mTab.get() != null : "getTimestampMillis can only be used with real tabs";
-        if (!mTab.get().isInitialized()) {
-            return CriticalPersistedTabData.INVALID_TIMESTAMP;
-        }
-        return CriticalPersistedTabData.from(mTab.get()).getTimestampMillis();
     }
 
     /**
@@ -350,6 +350,9 @@ public class PseudoTab {
                         // Skip restoring of non-selected NTP to match the real restoration logic.
                         if (ReturnToChromeExperimentsUtil.isCanonicalizedNTPUrl(url)
                                 && !isStandardActiveIndex) {
+                            return;
+                        } else if (TextUtils.isEmpty(url)) {
+                            // Skip restoring of empty Tabs.
                             return;
                         }
                         PseudoTab tab = PseudoTab.fromTabId(id);

@@ -148,8 +148,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kIgnoreCrossOriginWindowWhenNamedAccessOnWindow;
 
-BLINK_COMMON_EXPORT extern const base::Feature kDisableForceDeferInChildFrames;
-
 BLINK_COMMON_EXPORT extern const base::Feature kTransformInterop;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
@@ -357,6 +355,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentColorChange;
 BLINK_COMMON_EXPORT extern const base::Feature kDisableDocumentDomainByDefault;
 
 BLINK_COMMON_EXPORT extern const base::Feature kScopeMemoryCachePerContext;
+
+BLINK_COMMON_EXPORT extern const base::Feature kEnablePenetratingImageSelection;
 
 }  // namespace features
 }  // namespace blink

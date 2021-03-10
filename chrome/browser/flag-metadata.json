@@ -1651,7 +1651,7 @@
   {
     "name": "enable-desktop-pwas-run-on-os-login",
     "owners": [ "mjackson@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 92
   },
   {
     "name": "enable-desktop-pwas-tab-strip",
@@ -4584,6 +4584,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "scan-app-media-link",
+    "owners": [ "gavinwill", "jschettler" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "scanning-ui",
     "owners": [ "jschettler", "bmgordon" ],
     "expiry_milestone": 90
@@ -4940,6 +4945,16 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "tabbed-app-overflow-menu-icons",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "tabbed-app-overflow-menu-regroup",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 90
   },
   {
     "name": "tabbed-app-overflow-menu-three-button-actionbar",

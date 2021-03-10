@@ -732,18 +732,10 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
 
   StyleResolverState state(GetDocument(), *element, style_request);
 
-  bool can_cache_animation_base_computed_style =
-      style_request.IsPseudoStyleRequest() ||
-      (!style_request.parent_override &&
-       !style_request.layout_parent_override &&
-       style_request.matching_behavior == kMatchAllRules);
-  state.SetCanCacheBaseStyle(can_cache_animation_base_computed_style);
-
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
   ApplyBaseStyle(element, style_recalc_context, style_request, state, cascade,
-                 cascade.MutableMatchResult(), style_request.matching_behavior,
-                 can_cache_animation_base_computed_style);
+                 cascade.MutableMatchResult(), style_request.matching_behavior);
 
   if (style_request.IsPseudoStyleRequest() && state.HadNoMatchedProperties())
     return state.TakeStyle();
@@ -882,12 +874,11 @@ void StyleResolver::ApplyBaseStyle(
     StyleResolverState& state,
     StyleCascade& cascade,
     MatchResult& match_result,
-    RuleMatchingBehavior matching_behavior,
-    bool can_cache_animation_base_computed_style) {
+    RuleMatchingBehavior matching_behavior) {
   DCHECK(style_request.pseudo_id != kPseudoIdFirstLineInherited);
 
-  bool base_is_usable = can_cache_animation_base_computed_style &&
-                        CanReuseBaseComputedStyle(state);
+  bool base_is_usable =
+      state.CanCacheBaseStyle() && CanReuseBaseComputedStyle(state);
   const ComputedStyle* animation_base_computed_style =
       base_is_usable ? CachedAnimationBaseComputedStyle(state) : nullptr;
   if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
@@ -988,8 +979,8 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
     double offset) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
-  StyleResolverState state(element.GetDocument(), element, parent_style,
-                           parent_style);
+  StyleResolverState state(element.GetDocument(), element,
+                           StyleRequest(parent_style));
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
     STACK_UNINITIALIZED StyleCascade cascade(state);
@@ -1016,7 +1007,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
     return initial_style;
 
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           initial_style.get(), initial_style.get());
+                           StyleRequest(initial_style.get()));
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   const ComputedStyle* root_element_style =
@@ -1496,7 +1487,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
   // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
   StyleRecalcContext style_recalc_context;
   ApplyBaseStyle(&element, style_recalc_context, style_request, state, cascade,
-                 cascade.MutableMatchResult(), kMatchAllRules, true);
+                 cascade.MutableMatchResult(), kMatchAllRules);
   ApplyInterpolations(state, cascade, interpolations);
 
   return state.TakeStyle();
@@ -1603,7 +1594,7 @@ void StyleResolver::ComputeFont(Element& element,
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
-  StyleResolverState state(GetDocument(), element, style, style);
+  StyleResolverState state(GetDocument(), element, StyleRequest(style));
   state.SetStyle(style);
 
   for (const CSSProperty* property : properties) {

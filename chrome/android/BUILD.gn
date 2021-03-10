@@ -198,6 +198,7 @@ android_resources("chrome_app_java_resources") {
     "//chrome/browser/password_check/android:java_resources",
     "//chrome/browser/signin/services/android:java_resources",
     "//chrome/browser/signin/ui/android:java_resources",
+    "//chrome/browser/tab:java_resources",
     "//chrome/browser/ui/android/appmenu:java_resources",
     "//chrome/browser/ui/android/favicon:java_resources",
     "//chrome/browser/ui/android/strings:ui_strings_grd",
@@ -576,6 +577,7 @@ android_library("chrome_java") {
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//components/autofill_assistant/browser:autofill_assistant_enums_java",
+    "//components/autofill_assistant/browser:autofill_assistant_intent_strings_java",
     "//components/browsing_data/core:browsing_data_utils_java",
     "//components/browsing_data/core:clear_browsing_data_tab_java",
     "//components/data_reduction_proxy/core/browser:data_reduction_proxy_savings_cleared_enum_java",
@@ -583,8 +585,6 @@ android_library("chrome_java") {
     "//components/feed/core/v2:feedv2_enums_java",
     "//components/ntp_tiles:ntp_tiles_enums_java",
     "//components/offline_pages/core:offline_page_model_enums_java",
-    "//components/search_engines:search_engine_type_java",
-    "//components/ui_metrics:ui_metrics_enums_java",
     "//net:effective_connection_type_java",
   ]
 
@@ -705,6 +705,7 @@ group("jni_headers") {
     "//chrome/browser/preferences:jni_headers",
     "//chrome/browser/privacy:jni_headers",
     "//chrome/browser/profiles/android:jni_headers",
+    "//chrome/browser/search_engines/android:jni_headers",
     "//chrome/browser/tab:jni_headers",
     "//chrome/browser/touch_to_fill/android:jni_headers",
     "//chrome/browser/ui/android/favicon:jni_headers",
@@ -3491,7 +3492,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingPasswordReuseDialogBridge.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingReferringAppBridge.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingSettingsLauncher.java",
-    "java/src/org/chromium/chrome/browser/search_engines/TemplateUrlServiceFactory.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingJNIBridge.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingServiceProxy.java",
     "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",
@@ -3525,6 +3525,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
     "java/src/org/chromium/chrome/browser/webauth/AuthenticatorImpl.java",
     "java/src/org/chromium/chrome/browser/webauth/Fido2Helper.java",
+    "java/src/org/chromium/chrome/browser/webauth/IsUvpaaHelper.java",
   ]
 
   # Used for testing only, should not be shipped to end users.

@@ -446,8 +446,6 @@ static_library("browser") {
     "download/download_target_determiner_delegate.h",
     "download/download_target_info.cc",
     "download/download_target_info.h",
-    "download/download_task_scheduler_impl.cc",
-    "download/download_task_scheduler_impl.h",
     "download/download_ui_controller.cc",
     "download/download_ui_controller.h",
     "download/download_ui_model.cc",
@@ -1680,6 +1678,8 @@ static_library("browser") {
     "speech/chrome_speech_recognition_manager_delegate.h",
     "speech/network_speech_recognizer.cc",
     "speech/network_speech_recognizer.h",
+    "speech/on_device_speech_recognizer.cc",
+    "speech/on_device_speech_recognizer.h",
     "speech/speech_recognizer.cc",
     "speech/speech_recognizer.h",
     "speech/speech_recognizer_delegate.cc",
@@ -3296,7 +3296,6 @@ static_library("browser") {
       "//components/payments/content/android",
       "//components/payments/content/android:jni_headers",
       "//components/permissions/android:native",
-      "//components/power_metrics",
       "//components/power_scheduler",
       "//components/query_tiles",
       "//components/reading_list/features:flags",
@@ -3452,8 +3451,6 @@ static_library("browser") {
       "cart/commerce_hint_service.cc",
       "cart/commerce_hint_service.h",
       "certificate_viewer.h",
-      "chrome_browser_field_trials_desktop.cc",
-      "chrome_browser_field_trials_desktop.h",
       "chrome_process_singleton.cc",
       "chrome_process_singleton.h",
       "component_updater/intervention_policy_database_component_installer.cc",
@@ -4007,8 +4004,6 @@ static_library("browser") {
                                                               # to extensions
                                                               # section ?
       "speech/extension_api/tts_extension_api_constants.h",
-      "speech/on_device_speech_recognizer.cc",
-      "speech/on_device_speech_recognizer.h",
       "speech/speech_recognition_client_browser_interface.cc",
       "speech/speech_recognition_client_browser_interface.h",
       "speech/speech_recognition_client_browser_interface_factory.cc",
@@ -6389,7 +6384,13 @@ static_library("browser") {
       "net/nss_context.h",
     ]
     if (is_chromeos_ash) {
-      sources += [ "net/nss_context_chromeos.cc" ]
+      sources += [
+        "net/nss_context_chromeos.cc",
+        "net/nss_service_chromeos.cc",
+        "net/nss_service_chromeos.h",
+        "net/nss_service_chromeos_factory.cc",
+        "net/nss_service_chromeos_factory.h",
+      ]
     }
     if (is_linux || is_chromeos_lacros) {
       sources += [ "net/nss_context_linux.cc" ]
@@ -6924,6 +6925,7 @@ static_library("test_support") {
       "//extensions:test_support",
       "//extensions/browser",
       "//extensions/browser:test_support",
+      "//extensions/common:mojom",
       "//google_apis:test_support",
       "//services/data_decoder/public/cpp:test_support",
     ]

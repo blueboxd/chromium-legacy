@@ -118,7 +118,6 @@ using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebMediaStreamTrack;
-using blink::WebSize;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -629,16 +628,6 @@ bool RendererBlinkPlatformImpl::IsWebRtcEncryptionEnabled() {
 bool RendererBlinkPlatformImpl::IsWebRtcStunOriginEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebRtcStunOrigin);
-}
-
-base::Optional<blink::WebString>
-RendererBlinkPlatformImpl::WebRtcStunProbeTrialParameter() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
-    return base::nullopt;
-
-  return blink::WebString::FromASCII(
-      cmd_line->GetSwitchValueASCII(switches::kWebRtcStunProbeTrialParameter));
 }
 
 media::MediaPermission* RendererBlinkPlatformImpl::GetWebRTCMediaPermission(

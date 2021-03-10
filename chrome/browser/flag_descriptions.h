@@ -183,8 +183,8 @@ extern const char kAutofillProfileServerValidationDescription[];
 extern const char kAutofillPruneSuggestionsName[];
 extern const char kAutofillPruneSuggestionsDescription[];
 
-extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
-extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
+extern const char kShelfAppScalingName[];
+extern const char kShelfAppScalingDescription[];
 
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
@@ -1970,6 +1970,12 @@ extern const char kAndroidDarkSearchDescription[];
 extern const char kSwipeToMoveCursorName[];
 extern const char kSwipeToMoveCursorDescription[];
 
+extern const char kTabbedAppOverflowMenuIconsName[];
+extern const char kTabbedAppOverflowMenuIconsDescription[];
+
+extern const char kTabbedAppOverflowMenuRegroupName[];
+extern const char kTabbedAppOverflowMenuRegroupDescription[];
+
 extern const char kTabbedAppOverflowMenuThreeButtonActionbarName[];
 extern const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[];
 
@@ -2731,6 +2737,9 @@ extern const char kArcResizeLockDescription[];
 
 extern const char kScalableStatusAreaName[];
 extern const char kScalableStatusAreaDescription[];
+
+extern const char kScanAppMediaLinkName[];
+extern const char kScanAppMediaLinkDescription[];
 
 extern const char kScanningUIName[];
 extern const char kScanningUIDescription[];

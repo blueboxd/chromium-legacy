@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -237,7 +238,7 @@ void OsIntegrationManager::UpdateOsHooks(
   UpdateShortcuts(app_id, old_name);
   UpdateShortcutsMenu(app_id, web_app_info);
 
-  UpdateUrlHandlers(app_id);
+  UpdateUrlHandlers(app_id, base::DoNothing());
 }
 
 void OsIntegrationManager::GetShortcutInfoForApp(
@@ -289,6 +290,11 @@ void OsIntegrationManager::DisableForceEnabledFileHandlingOriginTrial(
 FileHandlerManager& OsIntegrationManager::file_handler_manager_for_testing() {
   DCHECK(file_handler_manager_);
   return *file_handler_manager_;
+}
+
+UrlHandlerManager& OsIntegrationManager::url_handler_manager_for_testing() {
+  DCHECK(url_handler_manager_);
+  return *url_handler_manager_;
 }
 
 ScopedOsHooksSuppress OsIntegrationManager::ScopedSuppressOsHooksForTesting() {
@@ -503,11 +509,13 @@ void OsIntegrationManager::UpdateShortcutsMenu(
   }
 }
 
-void OsIntegrationManager::UpdateUrlHandlers(const AppId& app_id) {
+void OsIntegrationManager::UpdateUrlHandlers(
+    const AppId& app_id,
+    base::OnceCallback<void(bool success)> callback) {
   if (!url_handler_manager_)
     return;
 
-  url_handler_manager_->UpdateUrlHandlers(app_id);
+  url_handler_manager_->UpdateUrlHandlers(app_id, std::move(callback));
 }
 
 std::unique_ptr<ShortcutInfo> OsIntegrationManager::BuildShortcutInfo(

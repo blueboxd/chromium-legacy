@@ -50,11 +50,6 @@ const char kAutofillSaveCardInfobarEditSupportDescription[] =
     "When enabled and saving a credit card to Google Payments, a dialog is "
     "displayed that allows editing the card info before confirming save.";
 
-const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
-    "Restrict formless form extraction";
-const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
-    "Restrict extraction of formless forms to checkout flows";
-
 const char kAutofillRichMetadataQueriesName[] =
     "Autofill - Rich metadata queries (Canary/Dev only)";
 const char kAutofillRichMetadataQueriesDescription[] =
@@ -170,6 +165,11 @@ const char kEmbedderBlockRestoreUrlName[] =
     "Allow embedders to prevent certain URLs from restoring.";
 const char kEmbedderBlockRestoreUrlDescription[] =
     "Embedders can prevent URLs from restoring.";
+
+const char kEnableAutofillAddressSavePromptName[] =
+    "Autofill Address Save Prompts";
+const char kEnableAutofillAddressSavePromptDescription[] =
+    "Enable the Autofill address save prompts.";
 
 const char kEnableCloseAllTabsConfirmationName[] =
     "Enable Close All Tabs confirmation";

@@ -37,7 +37,6 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -53,6 +52,7 @@
 
 namespace gfx {
 class Point;
+class ScrollOffset;
 }  // namespace gfx
 
 namespace ui {
@@ -603,6 +603,7 @@ class WebLocalFrame : public WebFrame {
   // Context menu -----------------------------------------------------------
 
   // Returns the node that the context menu opened over.
+  virtual WebNode ContextMenuImageNode() const = 0;
   virtual WebNode ContextMenuNode() const = 0;
 
   // Copy to the clipboard the image located at a particular point in visual
@@ -677,8 +678,8 @@ class WebLocalFrame : public WebFrame {
   // not be accurate if the page layout is out-of-date.
 
   // The scroll offset from the top-left corner of the frame in pixels.
-  virtual WebSize GetScrollOffset() const = 0;
-  virtual void SetScrollOffset(const WebSize&) = 0;
+  virtual gfx::ScrollOffset GetScrollOffset() const = 0;
+  virtual void SetScrollOffset(const gfx::ScrollOffset&) = 0;
 
   // The size of the document in this frame.
   virtual gfx::Size DocumentSize() const = 0;

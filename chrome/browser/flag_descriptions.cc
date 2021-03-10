@@ -288,11 +288,6 @@ const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";
 
-const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
-    "Restrict formless form extraction";
-const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
-    "Restrict extraction of formless forms to checkout flows";
-
 const char kAutofillRichMetadataQueriesName[] =
     "Autofill - Rich metadata queries (Canary/Dev only)";
 const char kAutofillRichMetadataQueriesDescription[] =
@@ -3403,6 +3398,16 @@ const char kSwipeToMoveCursorDescription[] =
     "Allows user to use touch gestures to move the text cursor around. This "
     "flag will only take effect on Android 11 and above.";
 
+const char kTabbedAppOverflowMenuIconsName[] =
+    "Android tabbed app overflow menu icons";
+const char kTabbedAppOverflowMenuIconsDescription[] =
+    "If enabled, shows icon in front of each overflow menu item.";
+
+const char kTabbedAppOverflowMenuRegroupName[] =
+    "Android tabbed app overflow menu Regroup";
+const char kTabbedAppOverflowMenuRegroupDescription[] =
+    "If enabled, regroup overflow menu items.";
+
 const char kTabbedAppOverflowMenuThreeButtonActionbarName[] =
     "Android tabbed app overflow menu three buttons actionbar";
 const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[] =
@@ -4647,6 +4652,11 @@ const char kScalableStatusAreaName[] = "Enable Scalable Status Area";
 const char kScalableStatusAreaDescription[] =
     "Showing important notification icons in status area when the screen is "
     "sufficiently large.";
+
+const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
+const char kScanAppMediaLinkDescription[] =
+    "Enables showing a link in the Scan app to open scanned images in the Media"
+    " app.";
 
 const char kScanningUIName[] = "Scanning UI";
 const char kScanningUIDescription[] =

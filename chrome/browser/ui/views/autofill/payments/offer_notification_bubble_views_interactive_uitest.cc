@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/payments/offer_notification_bubble_views_test_base.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -122,8 +123,14 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsInteractiveUiTest,
       1);
 }
 
+#if defined(OS_MAC)
+// OS_MAC: Flaky: https://crbug.com/1186169.
+#define MAYBE_Logging_Acknowledged DISABLED_Logging_Acknowledged
+#else
+#define MAYBE_Logging_Acknowledged Logging_Acknowledged
+#endif
 IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsInteractiveUiTest,
-                       Logging_Acknowledged) {
+                       MAYBE_Logging_Acknowledged) {
   base::HistogramTester histogram_tester;
   ShowBubbleAndVerify();
 
@@ -153,8 +160,14 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsInteractiveUiTest,
       1);
 }
 
+#if defined(OS_MAC)
+// OS_MAC: Flaky: https://crbug.com/1186164.
+#define MAYBE_Logging_Closed DISABLED_Logging_Closed
+#else
+#define MAYBE_Logging_Closed Logging_Closed
+#endif
 IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsInteractiveUiTest,
-                       Logging_Closed) {
+                       MAYBE_Logging_Closed) {
   base::HistogramTester histogram_tester;
   ShowBubbleAndVerify();
 

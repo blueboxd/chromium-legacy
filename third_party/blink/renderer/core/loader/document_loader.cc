@@ -2065,14 +2065,15 @@ void DocumentLoader::CommitNavigation() {
     DCHECK(response_.HttpHeaderField(http_names::kFeaturePolicy).IsEmpty());
     DCHECK(response_.HttpHeaderField(http_names::kPermissionsPolicy).IsEmpty());
     DCHECK(response_.HttpHeaderField(http_names::kDocumentPolicy).IsEmpty());
-    security_init.InitFeaturePolicyFrom(previous_window->GetSecurityContext());
+    security_init.InitPermissionsPolicyFrom(
+        previous_window->GetSecurityContext());
     security_init.InitDocumentPolicyFrom(previous_window->GetSecurityContext());
   } else {
     // PermissionsPolicy and DocumentPolicy require SecurityOrigin and origin
     // trials to be initialized.
     // TODO(iclelland): Add Permissions-Policy-Report-Only to Origin Policy.
-    security_init.ApplyFeaturePolicy(frame_.Get(), response_, origin_policy_,
-                                     frame_policy_);
+    security_init.ApplyPermissionsPolicy(frame_.Get(), response_,
+                                         origin_policy_, frame_policy_);
     // |document_policy_| is parsed in document loader because it is
     // compared with |frame_policy.required_document_policy| to decide
     // whether to block the document load or not.
@@ -2212,7 +2213,8 @@ void DocumentLoader::CommitNavigation() {
           history_item_.Get(), LoadTypeToCommitType(load_type_),
           previous_window != frame_->DomWindow(),
           frame_->DomWindow()->GetSandboxFlags(),
-          security_init.FeaturePolicyHeader(), document_policy_.feature_state);
+          security_init.PermissionsPolicyHeader(),
+          document_policy_.feature_state);
     }
     // TODO(dgozman): make DidCreateScriptContext notification call currently
     // triggered by installing new document happen here, after commit.
@@ -2316,7 +2318,6 @@ void DocumentLoader::CreateParserPostCommit() {
   document->MaybeHandleHttpRefresh(
       response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
-  ReportPreviewsIntervention();
 }
 
 const AtomicString& DocumentLoader::MimeType() const {
@@ -2407,34 +2408,6 @@ void DocumentLoader::RecordConsoleMessagesForCommit() {
   // console messages will be properly displayed.
   frame_->Console().ReportResourceResponseReceived(
       this, main_resource_identifier_, response_);
-}
-
-void DocumentLoader::ReportPreviewsIntervention() const {
-  // Only send reports for main frames.
-  if (!frame_->IsMainFrame())
-    return;
-
-  // Verify that certain types are not on main frame requests.
-  DCHECK_NE(PreviewsTypes::kSubresourceRedirectOn, previews_state_);
-
-  static_assert(PreviewsTypes::kPreviewsStateLast ==
-                    PreviewsTypes::kSubresourceRedirectOn,
-                "If a new Preview type is added, verify that the Intervention "
-                "Report should be sent (or not sent) for that type.");
-
-  // If the preview type is not unspecified, off, or no transform, it is a
-  // preview that needs to be reported.
-  if (previews_state_ == PreviewsTypes::kPreviewsUnspecified ||
-      previews_state_ & PreviewsTypes::kPreviewsOff ||
-      previews_state_ & PreviewsTypes::kPreviewsNoTransform) {
-    return;
-  }
-
-  Intervention::GenerateReport(
-      frame_, "LitePageServed",
-      "Modified page load behavior on the page because the page was expected "
-      "to take a long amount of time to load. "
-      "https://www.chromestatus.com/feature/5148050062311424");
 }
 
 void DocumentLoader::ApplyClientHintsConfig(

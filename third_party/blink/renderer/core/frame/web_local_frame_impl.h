@@ -267,6 +267,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                       bool async) override;
   void SetTickmarks(const WebElement& target,
                     const WebVector<gfx::Rect>& tickmarks) override;
+  WebNode ContextMenuImageNode() const override;
   WebNode ContextMenuNode() const override;
   void CopyImageAtForTesting(const gfx::Point&) override;
   void ShowContextMenuFromExternal(
@@ -283,8 +284,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   std::unique_ptr<WebAssociatedURLLoader> CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
   void DeprecatedStopLoading() override;
-  WebSize GetScrollOffset() const override;
-  void SetScrollOffset(const WebSize&) override;
+  gfx::ScrollOffset GetScrollOffset() const override;
+  void SetScrollOffset(const gfx::ScrollOffset&) override;
   gfx::Size DocumentSize() const override;
   bool HasVisibleContent() const override;
   gfx::Rect VisibleContentRect() const override;
@@ -538,6 +539,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebPluginContainerImpl* GetPluginToPrintHelper(
       const WebNode& constrain_to_node);
 
+  Node* ContextMenuImageNodeInner() const;
   Node* ContextMenuNodeInner() const;
 
   void InitializeCoreFrameInternal(

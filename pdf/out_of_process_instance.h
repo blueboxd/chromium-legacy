@@ -111,8 +111,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
                   const void* data,
                   int length) override;
   std::unique_ptr<UrlLoader> CreateUrlLoader() override;
-  std::vector<SearchStringResult> SearchString(const base::char16* string,
-                                               const base::char16* term,
+  std::vector<SearchStringResult> SearchString(const char16_t* string,
+                                               const char16_t* term,
                                                bool case_sensitive) override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
@@ -172,7 +172,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   bool CanSaveEdits() const;
   void SaveToFile(const std::string& token);
-  void SaveToBuffer(const std::string& token);
 
   void FormDidOpen(int32_t result);
 

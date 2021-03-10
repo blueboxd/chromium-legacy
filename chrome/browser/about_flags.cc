@@ -496,9 +496,15 @@ const FeatureEntry::FeatureVariation kAdaptiveButtonInTopToolbarVariations[] = {
 const FeatureEntry::FeatureParam kHideDismissButton[] = {
     {"dismiss_button", "hide"}};
 
+const FeatureEntry::FeatureParam kSuppressBottomSheet[] = {
+    {"consecutive_active_dismissal_limit", "3"}};
+
 const FeatureEntry::FeatureVariation kMobileIdentityConsistencyVariations[] = {
     {"Hide Dismiss Button", kHideDismissButton, base::size(kHideDismissButton),
-     nullptr}};
+     nullptr},
+    {"Suppress Bottom Sheet", kSuppressBottomSheet,
+     base::size(kSuppressBottomSheet), nullptr},
+};
 #endif  // OS_ANDROID
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1788,6 +1794,13 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"exclude_mv_tiles", "true"},
     {"open_ntp_instead_of_start", "true"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
+    {{"start_surface_variation", "single"},
+     {"show_last_active_tab_only", "true"},
+     {"omnibox_focused_on_new_tab", "true"},
+     {"home_button_on_grid_tab_switcher", "true"},
+     {"new_home_surface_from_home_button", "hide_tab_switcher_only"}};
+
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
         {"start_surface_variation", "single"},
@@ -1840,6 +1853,8 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_SingleSurfaceFinale), nullptr},
     {"Single Surface V2", kStartSurfaceAndroid_SingleSurface_V2,
      base::size(kStartSurfaceAndroid_SingleSurface_V2), nullptr},
+    {"Single Surface V2 Finale", kStartSurfaceAndroid_SingleSurface_V2Finale,
+     base::size(kStartSurfaceAndroid_SingleSurface_V2Finale), nullptr},
     {"Single Surface without MV Tiles",
      kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles,
      base::size(kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles), nullptr},
@@ -2009,6 +2024,15 @@ const FeatureEntry::FeatureVariation
          base::size(kPhotoPickerVideoSupportEnabledWithAnimatedThumbnails),
          nullptr}};
 
+const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupBackward[] = {
+    {"action_bar", "backward_button"}};
+const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupShare[] = {
+    {"action_bar", "share_button"}};
+const FeatureEntry::FeatureVariation kTabbedAppOverflowMenuRegroupVariations[] =
+    {{"(backward button)", kTabbedAppOverflowMenuRegroupBackward,
+      base::size(kTabbedAppOverflowMenuRegroupBackward), nullptr},
+     {"(share button)", kTabbedAppOverflowMenuRegroupShare,
+      base::size(kTabbedAppOverflowMenuRegroupShare), nullptr}};
 const FeatureEntry::FeatureParam
     kTabbedAppOverflowMenuThreeButtonActionbarAction[] = {
         {"three_button_action_bar", "action_chip_view"}};
@@ -4403,6 +4427,17 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+    {"tabbed-app-overflow-menu-icons",
+     flag_descriptions::kTabbedAppOverflowMenuIconsName,
+     flag_descriptions::kTabbedAppOverflowMenuIconsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabbedAppOverflowMenuIcons)},
+    {"tabbed-app-overflow-menu-regroup",
+     flag_descriptions::kTabbedAppOverflowMenuRegroupName,
+     flag_descriptions::kTabbedAppOverflowMenuRegroupDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kTabbedAppOverflowMenuRegroup,
+         kTabbedAppOverflowMenuRegroupVariations,
+         "AndroidAppMenuUiRework")},
     {"tabbed-app-overflow-menu-three-button-actionbar",
      flag_descriptions::kTabbedAppOverflowMenuThreeButtonActionbarName,
      flag_descriptions::kTabbedAppOverflowMenuThreeButtonActionbarDescription,
@@ -4900,14 +4935,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillProfileServerValidationName,
      flag_descriptions::kAutofillProfileServerValidationDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileServerValidation)},
-
-    {"autofill-restrict-formless-form-extraction",
-     flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
-     flag_descriptions::
-         kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
 #if defined(OS_WIN)
     {"enable-windows-gaming-input-data-fetcher",
@@ -6469,6 +6496,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"scan-app-media-link", flag_descriptions::kScanAppMediaLinkName,
+     flag_descriptions::kScanAppMediaLinkDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kScanAppMediaLink)},
     {"scanning-ui", flag_descriptions::kScanningUIName,
      flag_descriptions::kScanningUIDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanningUI)},

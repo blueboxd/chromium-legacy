@@ -7,7 +7,6 @@
 #include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "content/web_test/renderer/web_frame_test_proxy.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -20,7 +19,6 @@ namespace content {
 using blink::TestWebFrameContentDumper;
 using blink::WebFrame;
 using blink::WebLocalFrame;
-using blink::WebSize;
 
 namespace {
 
@@ -40,15 +38,16 @@ std::string DumpFrameHeaderIfNeeded(WebLocalFrame* frame) {
 
 std::string DumpFrameScrollPosition(WebLocalFrame* frame) {
   std::string result;
-  WebSize offset = frame->GetScrollOffset();
-  if (offset.width > 0 || offset.height > 0) {
+  gfx::ScrollOffset offset = frame->GetScrollOffset();
+  if (offset.x() > 0 || offset.y() > 0) {
     if (frame->Parent()) {
       auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame->Client());
       result = std::string("frame '") + frame_proxy->GetFrameNameForWebTests() +
                "' ";
     }
-    base::StringAppendF(&result, "scrolled to %d,%d\n", offset.width,
-                        offset.height);
+    base::StringAppendF(&result, "scrolled to %d,%d\n",
+                        base::ClampFloor(offset.x()),
+                        base::ClampFloor(offset.y()));
   }
 
   return result;

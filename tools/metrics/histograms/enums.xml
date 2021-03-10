@@ -1029,6 +1029,10 @@ Unknown properties are collapsed to zero. -->
     User has completed the account addition flow triggered from the bottom
     sheet.
   </int>
+  <int value="16" label="SuppressedConsecutiveDismissals">
+    The bottom sheet was suppressed as the user hit consecutive active dismissal
+    limit.
+  </int>
 </enum>
 
 <enum name="AccountConsistencyPromoAfterDismissal">
@@ -23818,14 +23822,16 @@ Called by update_document_policy_enum.py.-->
   <int value="824" label="WebAppSettings"/>
   <int value="825" label="DevicePciPeripheralDataAccessEnabled"/>
   <int value="826" label="ContextAwareAccessSignalsAllowlist"/>
-  <int value="827" label="FetchKeepaliveDurationOnShutdown"/>
+  <int value="827" label="FetchKeepaliveDurationSecondsOnShutdown"/>
   <int value="828" label="AllowSystemNotifications"/>
-  <int value="829" label="SuppressDifferentOriginSubframeJSDialogs"/>
+  <int value="829" label="SuppressDifferentOriginSubframeDialogs"/>
   <int value="830" label="DeviceBorealisAllowed"/>
   <int value="831" label="UserBorealisAllowed"/>
   <int value="832" label="LacrosSecondaryProfilesAllowed"/>
   <int value="833" label="GaiaLockScreenOfflineSigninTimeLimitDays"/>
   <int value="834" label="SamlLockScreenOfflineSigninTimeLimitDays"/>
+  <int value="835" label="ReportDevicePrintJobs"/>
+  <int value="836" label="AudioProcessHighPriorityEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31746,6 +31752,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3847" label="V8ScreenAdvanced_Id_AttributeGetter"/>
   <int value="3848" label="V8ScreenAdvanced_PointerTypes_AttributeGetter"/>
   <int value="3849" label="V8ScreenAdvanced_Label_AttributeGetter"/>
+  <int value="3850" label="PermissionsPolicyHeader"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33792,6 +33799,14 @@ Called by update_permissions_policy_enum.py.-->
   <int value="1" label="Rendered in current viewport"/>
   <int value="2"
       label="Not visible, no layout object created (e.g., display: none)"/>
+</enum>
+
+<enum name="FreezingAttemptOutcome">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure - Content doesn't exist"/>
+  <int value="2" label="Failure - Page has notification permission"/>
+  <int value="3"
+      label="Failure - Page has the 'Cache-control: no-store' header"/>
 </enum>
 
 <enum name="FtpDataConnectionError">
@@ -38965,6 +38980,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="11"
       label="Image queued for transcoding was stored back to cache."/>
   <int value="12" label="Load image metadata"/>
+</enum>
+
+<enum name="ImageSelectionOutcome">
+  <int value="0" label="Image node was the topmost node."/>
+  <int value="1" label="Image node was below topmost node"/>
+  <int value="2" label="Blocking opaque node was found"/>
+  <int value="3" label="Context menu listener was found"/>
+  <int value="4" label="Blocking cross frame node was found"/>
 </enum>
 
 <enum name="ImageSmoothingQuality">
@@ -44977,6 +45000,7 @@ from previous Chrome versions.
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-711422585" label="kSignInProfileCreationEnterprise:disabled"/>
   <int value="-709058455" label="ui-slow-animations"/>
+  <int value="-707407907" label="ScanAppMediaLink:enabled"/>
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
   <int value="-706159808" label="QuickAnswersOnEditableText:disabled"/>
   <int value="-705746939" label="ChromeDuet:enabled"/>
@@ -45723,6 +45747,7 @@ from previous Chrome versions.
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
   <int value="-10709540"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
+  <int value="-9701088" label="ScanAppMediaLink:disabled"/>
   <int value="-9599490" label="KernelnextVMs:disabled"/>
   <int value="-9322265" label="ShowBluetoothDebugLogToggle:enabled"/>
   <int value="-5492723" label="CCTIncognito:enabled"/>
@@ -63419,6 +63444,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="localProfileCustomization"/>
   <int value="3" label="loadSignIn"/>
   <int value="4" label="loadForceSignIn"/>
+  <int value="5" label="profileSwitch"/>
 </enum>
 
 <enum name="ProfileResetRequestOriginEnum">
@@ -79916,6 +79942,8 @@ others/histograms.xml -->
   <int value="10" label="Icon download failed"/>
   <int value="11" label="Icon read from disk failed"/>
   <int value="12" label="App ID mismatch"/>
+  <int value="13" label="Web app origin associations update failed"/>
+  <int value="14" label="Web app origin associations updated"/>
 </enum>
 
 <enum name="WebAppMoverResult">

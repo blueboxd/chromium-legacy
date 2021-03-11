@@ -3122,6 +3122,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "help-app-launcher-search",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "help-app-search-service-integration",
     "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
     "expiry_milestone": 90
@@ -4204,7 +4209,7 @@
     "expiry_milestone": 100
   },
   {
-    "name": "preemptive-link-to-text-generation",
+    "name": "preemtive-link-to-text-generation",
     "owners": [ "cheickcisse@google.com" ],
     "expiry_milestone": 92
   },
@@ -4945,16 +4950,6 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
-  },
-  {
-    "name": "tabbed-app-overflow-menu-icons",
-    "owners": [ "gangwu" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "tabbed-app-overflow-menu-regroup",
-    "owners": [ "gangwu" ],
-    "expiry_milestone": 90
   },
   {
     "name": "tabbed-app-overflow-menu-three-button-actionbar",

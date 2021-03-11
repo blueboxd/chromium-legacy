@@ -81,8 +81,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
                 ChromeFeatureList.TAB_TO_GTS_ANIMATION,
-                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS,
-                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP,
                 ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR,
                 ChromeFeatureList.THEME_REFACTOR_ANDROID,
                 ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW,
@@ -96,13 +94,13 @@ public class ChromeCachedFlags {
         // clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
                 AdaptiveToolbarFeatures.MODE_PARAM,
-                AppMenuPropertiesDelegateImpl.ACTION_BAR_VARIATION,
                 AppMenuPropertiesDelegateImpl.THREE_BUTTON_ACTION_BAR_VARIATION,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS,
                 LensFeature.DISABLE_LENS_CAMERA_ASSISTED_SEARCH_ON_INCOGNITO,
                 LensFeature.ENABLE_LENS_CAMERA_ASSISTED_SEARCH_ON_LOW_END_DEVICE,
+                LensFeature.SEARCH_BOX_START_VARIANT_LENS_CAMERA_ASSISTED_SEARCH,
                 LensFeature.MIN_AGSA_VERSION_LENS_CAMERA_ASSISTED_SEARCH,
                 PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL,
                 ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS,

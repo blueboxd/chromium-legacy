@@ -68,7 +68,6 @@ class OriginPolicyManager;
 constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 
 class NetToMojoPendingBuffer;
-class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
 class ScopedThrottlingToken;
 struct OriginPolicy;
@@ -114,7 +113,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   URLLoader(
       net::URLRequestContext* url_request_context,
       URLLoaderFactory* url_loader_factory,
-      mojom::NetworkServiceClient* network_service_client,
       mojom::NetworkContextClient* network_context_client,
       DeleteCallback delete_callback,
       mojo::PendingReceiver<mojom::URLLoader> url_loader_receiver,
@@ -129,7 +127,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       bool require_network_isolation_key,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
-      base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
       mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
       mojom::OriginPolicyManager* origin_policy_manager,
       std::unique_ptr<TrustTokenRequestHelperFactory>
@@ -154,7 +151,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // net::URLRequest::Delegate implementation:
   int OnConnected(net::URLRequest* url_request,
-                  const net::TransportInfo& info) override;
+                  const net::TransportInfo& info,
+                  net::CompletionOnceCallback callback) override;
   void OnReceivedRedirect(net::URLRequest* url_request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
@@ -395,8 +393,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojom::CookieAccessObserver* GetCookieAccessObserver() const;
 
   net::URLRequestContext* url_request_context_;
+
+  // |url_loader_factory_| is guaranteed to outlive URLLoader, so it is safe to
+  // store a raw pointer here. It can also be null in tests.
   URLLoaderFactory* const url_loader_factory_;
-  mojom::NetworkServiceClient* network_service_client_;
+
   mojom::NetworkContextClient* network_context_client_;
   DeleteCallback delete_callback_;
 
@@ -502,8 +503,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;
-
-  base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator_;
 
   bool first_auth_attempt_;
 

@@ -203,6 +203,8 @@ static_library("test_support") {
     sources += [
       "../browser/banners/test_app_banner_manager_desktop.cc",
       "../browser/banners/test_app_banner_manager_desktop.h",
+      "../browser/themes/test/theme_service_changed_waiter.cc",
+      "../browser/themes/test/theme_service_changed_waiter.h",
     ]
   }
 
@@ -3641,8 +3643,6 @@ test("unit_tests") {
     "../browser/optimization_guide/prediction/prediction_model_download_manager_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/ad_metrics/page_ad_density_tracker_unittest.cc",
     "../browser/page_load_metrics/observers/core/amp_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/core/ukm_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.cc",
@@ -4254,6 +4254,7 @@ test("unit_tests") {
     "//components/reporting/client:test_support",
     "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/storage:test_support",
+    "//components/reporting/util:test_callbacks_support",
     "//components/resources",
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/content/password_protection:mock_password_protection",
@@ -6192,6 +6193,7 @@ test("unit_tests") {
       "../browser/ui/views/user_education/feature_promo_bubble_view_unittest.cc",
       "../browser/ui/views/user_education/feature_promo_controller_views_unittest.cc",
       "../browser/ui/views/user_education/tip_marquee_view_unittest.cc",
+      "../browser/ui/views/webid/webid_dialog_views_unittest.cc",
       "../browser/ui/views/window_name_prompt_unittest.cc",
     ]
     if (is_linux || is_chromeos_lacros) {
@@ -7159,6 +7161,7 @@ if (!is_fuchsia) {
       "//components/sync:test_support_model",
       "//components/sync:test_support_nigori",
       "//components/sync/test/fake_server",
+      "//components/sync/trusted_vault:test_support",
       "//content/public/browser",
       "//content/test:test_support",
       "//net",

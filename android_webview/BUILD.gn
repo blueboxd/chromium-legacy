@@ -530,6 +530,7 @@ android_library("browser_java") {
     "//components/autofill/android:autofill_java",
     "//components/autofill/android/provider:java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
+    "//components/component_updater/android:embedded_component_loader_java",
     "//components/content_capture/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
@@ -897,7 +898,7 @@ grit("generate_aw_resources") {
 grit("generate_aw_strings") {
   source = "ui/aw_strings.grd"
   outputs = [ "grit/aw_strings.h" ]
-  foreach(_locale, locales_with_fake_bidi) {
+  foreach(_locale, locales_with_pseudolocales) {
     outputs += [ "aw_strings_${_locale}.pak" ]
   }
 }
@@ -1064,7 +1065,7 @@ grit("generate_components_strings") {
       process_file_template(
           android_bundle_locales_as_resources,
           [ "java/res/values-{{source_name_part}}/components_strings.xml" ]) +
-      process_file_template(locales_with_fake_bidi,
+      process_file_template(locales_with_pseudolocales,
                             [ "components_strings_{{source_name_part}}.pak" ])
 }
 

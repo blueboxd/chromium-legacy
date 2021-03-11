@@ -78,8 +78,6 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true);
             put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
             put(ChromeFeatureList.INTEREST_FEED_V2, true);
-            put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS, false);
-            put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP, false);
             put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR, false);
             put(ChromeFeatureList.THEME_REFACTOR_ANDROID, false);
             put(ChromeFeatureList.USE_CHIME_ANDROID_SDK, false);
@@ -383,11 +381,11 @@ public class CachedFeatureFlags {
     }
 
     private static String getPrefForFeatureFlag(String featureName) {
-        String grandfatheredPrefKey = sNonDynamicPrefKeys.get(featureName);
-        if (grandfatheredPrefKey == null) {
+        String legacyPrefKey = sNonDynamicPrefKeys.get(featureName);
+        if (legacyPrefKey == null) {
             return ChromePreferenceKeys.FLAGS_CACHED.createKey(featureName);
         } else {
-            return grandfatheredPrefKey;
+            return legacyPrefKey;
         }
     }
 

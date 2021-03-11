@@ -16,25 +16,26 @@ class LocalFrameView;
 class LayoutObject;
 struct ViewportDescription;
 
+CORE_EXPORT extern const base::Feature kBadTapTargetsRatio;
+
 // Calculates the mobile usability of current page, especially friendliness on
 // smart phone devices are checked. The calculated value will be sent as a part
 // of UKM.
 class CORE_EXPORT MobileFriendlinessChecker
     : public GarbageCollected<MobileFriendlinessChecker> {
-  static constexpr int kSmallFontThreshold = 12;
-
  public:
   explicit MobileFriendlinessChecker(LocalFrameView& frame_view);
   virtual ~MobileFriendlinessChecker();
 
+  void NotifyFirstContentfulPaint();
   void NotifyViewportUpdated(const ViewportDescription&);
   void NotifyInvalidatePaint(const LayoutObject& object);
-  void NotifyPrePaintFinished();
   const blink::MobileFriendliness& GetMobileFriendliness() const {
     return mobile_friendliness_;
   }
-  void Trace(Visitor* visitor) const;
+  void NotifyDocumentUnload();
 
+  void Trace(Visitor* visitor) const;
   struct TextAreaWithFontSize {
     double small_font_area = 0;
     double total_text_area = 0;
@@ -42,14 +43,18 @@ class CORE_EXPORT MobileFriendlinessChecker
   };
 
  private:
+  void ComputeSmallTextRatio(const LayoutObject& object);
   void ComputeTextContentOutsideViewport(const LayoutObject& object);
+  void ComputeBadTapTargetsRatio();
 
+ private:
   TextAreaWithFontSize text_area_sizes_;
   Member<LocalFrameView> frame_view_;
   blink::MobileFriendliness mobile_friendliness_;
   bool font_size_check_enabled_;
-  bool needs_report_mf_;
+  bool tap_target_check_enabled_;
   float viewport_scalar_;
+  bool fcp_detected_;
 };
 
 }  // namespace blink

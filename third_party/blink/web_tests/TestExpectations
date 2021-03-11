@@ -234,6 +234,11 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
+# This test currently fails since prerendering activation isn't fully plumbed
+# into the renderer yet.
+crbug.com/1183320 virtual/prerender/wpt_internal/prerender/state_and_event.html [ Timeout ]
+
+
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-iframe-root.html [ Pass Failure ]
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-root.html [ Pass Failure ]
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-transformed-root.html [ Pass Failure ]
@@ -548,6 +553,14 @@ crbug.com/664246 external/wpt/css/css-position/sticky/position-sticky-scrollInto
 #### external/wpt/css/css-sizing
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-001.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-002.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-003.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-004.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-005.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-006.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-007.html [ Failure ]
+crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-008.html [ Failure ]
 
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-002.html [ Failure ]
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-003.html [ Failure ]
@@ -1506,6 +1519,8 @@ crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
 
 crbug.com/1170052 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Pass Timeout ]
+crbug.com/1174937 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Crash ]
+crbug.com/1174937 external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Crash ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
@@ -2516,8 +2531,6 @@ crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Cras
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/hsl-008.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-color/hsl-008.html [ Pass Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-color/hsl-008.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Crash ]
-crbug.com/626703 [ Mac11.0 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-clone.https.html [ Crash ]
 crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/hsl-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/focus-visible-007.html [ Timeout ]
 crbug.com/626703 external/wpt/uievents/keyboard/modifier-keys-combinations.html [ Timeout ]
@@ -5748,3 +5761,6 @@ crbug.com/1185051 fast/canvas/OffscreenCanvas-Bitmaprenderer-toBlob-worker.html 
 # Sheriff 2021-03-09
 crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Failure ]
 crbug.com/1184157 http/tests/serviceworker/window-close-during-registration.html [ Pass Failure ]
+
+# Sheriff 2021-03-11
+crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-intercept-prop.html [ Pass Failure ]

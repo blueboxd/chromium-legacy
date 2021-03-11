@@ -44,7 +44,6 @@
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_state/core/features.h"
-#include "components/shared_highlighting/core/common/features.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -104,7 +103,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
-    &features::kPreemptiveLinkToTextGeneration,
+    &features::kPreemtiveLinkToTextGeneration,
     &features::kPrivacyReorderedAndroid,
     &features::kPrivacySandboxSettings,
     &features::kPrioritizeBootstrapTasks,
@@ -230,8 +229,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabReparenting,
     &kTabSwitcherOnReturn,
     &kTabToGTSAnimation,
-    &kTabbedAppOverflowMenuIcons,
-    &kTabbedAppOverflowMenuRegroup,
     &kTabbedAppOverflowMenuThreeButtonActionbar,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
@@ -646,12 +643,6 @@ const base::Feature kTabSwitcherOnReturn{"TabSwitcherOnReturn",
 
 const base::Feature kTabToGTSAnimation{"TabToGTSAnimation",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTabbedAppOverflowMenuIcons{
-    "TabbedAppOverflowMenuIcons", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTabbedAppOverflowMenuRegroup{
-    "TabbedAppOverflowMenuRegroup", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabbedAppOverflowMenuThreeButtonActionbar{
     "TabbedAppOverflowMenuThreeButtonActionbar",

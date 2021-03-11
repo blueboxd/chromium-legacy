@@ -5882,14 +5882,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FirstRun.Sentinel.Created" enum="FirstRunSentinelResult"
-    expires_after="2021-08-22">
+    expires_after="2022-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>Result of sentinel file has been written.</summary>
 </histogram>
 
 <histogram name="FirstRun.Sentinel.CreatedFileError" enum="PlatformFileError"
-    expires_after="2021-04-20">
+    expires_after="2022-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>File error when the sentinel file was not written.</summary>
@@ -11879,8 +11879,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="ProximityAuth.BleWeaveConnectionResult"
     enum="ProximityAuth_BleWeaveConnectionResult" expires_after="2021-08-15">
   <owner>hansberry@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
   <summary>
-    Provides a breakdown of how often each BLE weave connection result occurs.
+    Provides a breakdown of how often each BLE Weave connection result occurs.
+    Emitted to when a Weave connection attempt finishes.
   </summary>
 </histogram>
 
@@ -11888,9 +11890,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="ProximityAuth_BluetoothGattConnectionResult"
     expires_after="2021-08-15">
   <owner>hansberry@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
-    connection result occurs.
+    connection result occurs. Emitted to when a GATT connection attempt
+    finishes.
 
     The bucket &quot;Unknown result&quot; indicates that the Bluetooth platform
     returned an unknown error code; if it has any counts, the client code should
@@ -11902,9 +11906,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="ProximityAuth_BluetoothGattServiceOperationResult"
     expires_after="2021-08-01">
   <owner>hansberry@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
-    &quot;notify session&quot; attempt result occurs.
+    &quot;notify session&quot; attempt result occurs. Emitted to when a
+    &quot;notify session&quot; attempt attempt finishes.
 
     The bucket &quot;Unknown result&quot; indicates that the Bluetooth platform
     returned an unknown error code; if it has any counts, the client code should
@@ -11914,11 +11920,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ProximityAuth.BluetoothGattWriteCharacteristicResult"
     enum="ProximityAuth_BluetoothGattServiceOperationResult"
-    expires_after="2021-03-21">
+    expires_after="2022-03-21">
   <owner>hansberry@chromium.org</owner>
+  <owner>better-together-dev@google.com</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
-    &quot;write characteristic&quot; attempt result occurs.
+    &quot;write characteristic&quot; attempt result occurs. Emitted to when a
+    &quot;write characteristic&quot; attempt attempt finishes.
   </summary>
 </histogram>
 

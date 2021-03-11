@@ -32,6 +32,9 @@ String AccessibilityMediaElement::TextAlternative(
     ax::mojom::NameFrom& name_from,
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
+  if (IsDetached())
+    return String();
+
   if (IsUnplayable()) {
     HTMLMediaElement* element =
         static_cast<HTMLMediaElement*>(layout_object_->GetNode());
@@ -48,7 +51,7 @@ bool AccessibilityMediaElement::CanHaveChildren() const {
 
 bool AccessibilityMediaElement::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
-  return !HasControls() && HasEmptySource();
+  return false;
 }
 
 AXRestriction AccessibilityMediaElement::Restriction() const {

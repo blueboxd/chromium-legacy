@@ -78,11 +78,10 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
 
         Runnable forceModelViewReconciliationRunnable = () -> {
             final View securityIconView = getSecurityIconView();
-            mStatusView.setStatusIconAlpha(mModel.get(StatusProperties.STATUS_ICON_ALPHA));
-            securityIconView.setVisibility(mModel.get(StatusProperties.STATUS_ICON_ALPHA) > 0
-                                    && mModel.get(StatusProperties.SHOW_STATUS_ICON)
-                            ? View.VISIBLE
-                            : View.GONE);
+            mStatusView.setAlpha(1f);
+            securityIconView.setAlpha(mModel.get(StatusProperties.STATUS_ICON_ALPHA));
+            securityIconView.setVisibility(
+                    mModel.get(StatusProperties.SHOW_STATUS_ICON) ? View.VISIBLE : View.GONE);
         };
 
         PageInfoIPHController pageInfoIPHController = new PageInfoIPHController(

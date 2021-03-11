@@ -242,6 +242,14 @@ const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 const char kDisableOOBEChromeVoxHintTimerForTesting[] =
     "disable-oobe-chromevox-hint-timer-for-testing";
 
+// Enables the ChromeVox hint in OOBE for dev mode. This flag is used
+// to override the default dev mode behavior of disabling the feature.
+// If both kEnableOOBEChromeVoxHintForDevMode and
+// kDisableOOBEChromeVoxHintTimerForTesting are present, the ChromeVox hint
+// will be disabled, since the latter flag takes precedence over the former.
+const char kEnableOOBEChromeVoxHintForDevMode[] =
+    "enable-oobe-chromevox-hint-timer-for-dev-mode";
+
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 
@@ -620,6 +628,9 @@ const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
 // only be used for lacros_chrome_browsertests that requires ml service.
 const char kUseFakeMLServiceForTest[] = "use-fake-ml-service-for-test";
 
+// Enables configuring the OEM Device Requsition in the OOBE.
+const char kEnableRequisitionEdits[] = "enable-requisition-edits";
+
 bool MemoryPressureHandlingEnabled() {
   if (base::FieldTrialList::FindFullName(kMemoryPressureExperimentName) ==
       kMemoryPressureHandlingOff) {
@@ -697,6 +708,16 @@ bool IsAueReachedForUpdateRequiredForTest() {
 bool IsOOBEChromeVoxHintTimerDisabledForTesting() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableOOBEChromeVoxHintTimerForTesting);
+}
+
+bool IsOOBEChromeVoxHintEnabledForDevMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableOOBEChromeVoxHintForDevMode);
+}
+
+bool IsDeviceRequisitionConfigurable() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableRequisitionEdits);
 }
 
 }  // namespace switches

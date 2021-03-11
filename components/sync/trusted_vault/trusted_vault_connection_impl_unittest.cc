@@ -117,12 +117,14 @@ class TrustedVaultConnectionImplTest : public testing::Test {
         /*content=*/std::string(), response_http_code);
   }
 
-  bool RespondToListSecurityDomainsRequest(
+  bool RespondToGetSecurityDomainMemberRequest(
       net::HttpStatusCode response_http_code) {
     // Allow request to reach |test_url_loader_factory_|.
     base::RunLoop().RunUntilIdle();
     return test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFullListSecurityDomainsURLForTesting(kTestURL).spec(),
+        GetFullGetSecurityDomainMemberURLForTesting(
+            kTestURL, MakeTestKeyPair()->public_key().ExportToBytes())
+            .spec(),
         /*content=*/std::string(), response_http_code);
   }
 
@@ -297,7 +299,7 @@ TEST_F(TrustedVaultConnectionImplTest,
 }
 
 TEST_F(TrustedVaultConnectionImplTest,
-       ShouldHandleFailedJoinSecurityDomainsRequestWithBadRequestStatus) {
+       ShouldHandleFailedJoinSecurityDomainsRequestWithNotFoundStatus) {
   std::unique_ptr<SecureBoxKeyPair> key_pair = MakeTestKeyPair();
   ASSERT_THAT(key_pair, NotNull());
 
@@ -313,11 +315,35 @@ TEST_F(TrustedVaultConnectionImplTest,
           callback.Get());
   ASSERT_THAT(request, NotNull());
 
-  // In particular, HTTP_BAD_REQUEST indicates that
+  // In particular, HTTP_NOT_FOUND indicates that security domain was removed.
+  EXPECT_CALL(callback, Run(Eq(TrustedVaultRequestStatus::kLocalDataObsolete)));
+  EXPECT_TRUE(RespondToJoinSecurityDomainsRequest(net::HTTP_NOT_FOUND));
+}
+
+TEST_F(
+    TrustedVaultConnectionImplTest,
+    ShouldHandleFailedJoinSecurityDomainsRequestWithPreconditionFailedStatus) {
+  std::unique_ptr<SecureBoxKeyPair> key_pair = MakeTestKeyPair();
+  ASSERT_THAT(key_pair, NotNull());
+
+  base::MockCallback<
+      TrustedVaultConnection::RegisterAuthenticationFactorCallback>
+      callback;
+
+  std::unique_ptr<TrustedVaultConnection::Request> request =
+      connection()->RegisterAuthenticationFactor(
+          /*account_info=*/CoreAccountInfo(),
+          TrustedVaultKeyAndVersion(kTrustedVaultKey, /*version=*/1),
+          key_pair->public_key(), AuthenticationFactorType::kPhysicalDevice,
+          callback.Get());
+  ASSERT_THAT(request, NotNull());
+
+  // In particular, HTTP_PRECONDITION_FAILED indicates that
   // |last_trusted_vault_key_and_version| is not actually the last on the server
   // side.
   EXPECT_CALL(callback, Run(Eq(TrustedVaultRequestStatus::kLocalDataObsolete)));
-  EXPECT_TRUE(RespondToJoinSecurityDomainsRequest(net::HTTP_BAD_REQUEST));
+  EXPECT_TRUE(
+      RespondToJoinSecurityDomainsRequest(net::HTTP_PRECONDITION_FAILED));
 }
 
 TEST_F(
@@ -389,7 +415,8 @@ TEST_F(TrustedVaultConnectionImplTest, ShouldSendListSecurityDomainsRequest) {
       pending_http_request->request;
   EXPECT_THAT(resource_request.method, Eq("GET"));
   EXPECT_THAT(resource_request.url,
-              Eq(GetFullListSecurityDomainsURLForTesting(kTestURL)));
+              Eq(GetFullGetSecurityDomainMemberURLForTesting(
+                  kTestURL, MakeTestKeyPair()->public_key().ExportToBytes())));
 }
 
 // TODO(crbug.com/1113598): add coverage for at least one successful case
@@ -409,7 +436,7 @@ TEST_F(TrustedVaultConnectionImplTest,
 
   EXPECT_CALL(callback, Run(Eq(TrustedVaultRequestStatus::kOtherError), _, _));
   EXPECT_TRUE(
-      RespondToListSecurityDomainsRequest(net::HTTP_INTERNAL_SERVER_ERROR));
+      RespondToGetSecurityDomainMemberRequest(net::HTTP_INTERNAL_SERVER_ERROR));
 }
 
 TEST_F(TrustedVaultConnectionImplTest,
@@ -452,7 +479,7 @@ TEST_F(TrustedVaultConnectionImplTest, ShouldCancelListSecurityDomainsRequest) {
   request.reset();
   // Returned value isn't checked here, because the request can be cancelled
   // before reaching TestURLLoaderFactory.
-  RespondToListSecurityDomainsRequest(net::HTTP_OK);
+  RespondToGetSecurityDomainMemberRequest(net::HTTP_OK);
 }
 
 }  // namespace

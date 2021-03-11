@@ -1546,8 +1546,8 @@ extern const char kSharedHighlightingUseBlocklistDescription[];
 extern const char kSharedHighlightingV2Name[];
 extern const char kSharedHighlightingV2Description[];
 
-extern const char kPreemptiveLinkToTextGenerationName[];
-extern const char kPreemptiveLinkToTextGenerationDescription[];
+extern const char kPreemtiveLinkToTextGenerationName[];
+extern const char kPreemtiveLinkToTextGenerationDescription[];
 
 extern const char kDraw1PredictedPoint12Ms[];
 extern const char kDraw2PredictedPoints6Ms[];
@@ -1969,12 +1969,6 @@ extern const char kAndroidDarkSearchDescription[];
 
 extern const char kSwipeToMoveCursorName[];
 extern const char kSwipeToMoveCursorDescription[];
-
-extern const char kTabbedAppOverflowMenuIconsName[];
-extern const char kTabbedAppOverflowMenuIconsDescription[];
-
-extern const char kTabbedAppOverflowMenuRegroupName[];
-extern const char kTabbedAppOverflowMenuRegroupDescription[];
 
 extern const char kTabbedAppOverflowMenuThreeButtonActionbarName[];
 extern const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[];
@@ -2615,6 +2609,9 @@ extern const char kFsNosymfollowDescription[];
 
 extern const char kFullRestoreName[];
 extern const char kFullRestoreDescription[];
+
+extern const char kHelpAppLauncherSearchName[];
+extern const char kHelpAppLauncherSearchDescription[];
 
 extern const char kHelpAppSearchServiceIntegrationName[];
 extern const char kHelpAppSearchServiceIntegrationDescription[];

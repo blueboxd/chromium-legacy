@@ -31,6 +31,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "earcons/null_selection.ogg",
     "input_handler.js",
     "metrics_utils.js",
+    "node_navigation_utils.js",
     "node_utils.js",
     "options.css",
     "options.html",
@@ -42,6 +43,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "select_to_speak_main.js",
     "select_to_speak_options.js",
     "sentence_utils.js",
+    "ui_manager.js",
     "unchecked.png",
     "word_utils.js",
   ]
@@ -88,10 +90,12 @@ js2gtest("select_to_speak_extjs_tests") {
 
   # These are unit tests run under an extension environment to get ES6 module support.
   sources += [
+    "node_navigation_utils_unittest.js",
     "node_utils_unittest.js",
     "paragraph_utils_unittest.js",
     "select_to_speak_unittest.js",
     "sentence_utils_unittest.js",
+    "ui_manager_unittest.js",
     "word_utils_unittest.js",
   ]
   gen_include_files = [
@@ -122,6 +126,7 @@ js_type_check("closure_compile") {
   deps = [
     ":input_handler",
     ":metrics_utils",
+    ":node_navigation_utils",
     ":node_utils",
     ":paragraph_utils",
     ":prefs_manager",
@@ -129,6 +134,7 @@ js_type_check("closure_compile") {
     ":select_to_speak_constants",
     ":select_to_speak_options",
     ":sentence_utils",
+    ":ui_manager",
     ":word_utils",
     "../common:automation_predicate",
     "../common:automation_util",
@@ -144,10 +150,12 @@ js_library("select_to_speak") {
   deps = [
     ":input_handler",
     ":metrics_utils",
+    ":node_navigation_utils",
     ":node_utils",
     ":paragraph_utils",
     ":prefs_manager",
     ":sentence_utils",
+    ":ui_manager",
     ":word_utils",
     "../common:automation_util",
     "../common:constants",
@@ -171,6 +179,14 @@ js_library("select_to_speak_options") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/metrics_private.js",
   ]
+}
+
+js_library("node_navigation_utils") {
+  deps = [
+    ":node_utils",
+    ":paragraph_utils",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("node_utils") {
@@ -213,4 +229,12 @@ js_library("metrics_utils") {
 }
 
 js_library("select_to_speak_constants") {
+}
+
+js_library("ui_manager") {
+  deps = [
+    ":paragraph_utils",
+    ":prefs_manager",
+  ]
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }

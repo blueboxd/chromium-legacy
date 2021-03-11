@@ -2643,9 +2643,9 @@ const char kSharedHighlightingV2Description[] =
     "Improvements to Shared Highlighting. Including ability to reshare or "
     "remove a highlight.";
 
-const char kPreemptiveLinkToTextGenerationName[] =
+const char kPreemtiveLinkToTextGenerationName[] =
     "Preemptive generation of link to text";
-const char kPreemptiveLinkToTextGenerationDescription[] =
+const char kPreemtiveLinkToTextGenerationDescription[] =
     "Enables link to text to be generated in advance.";
 
 const char kDraw1PredictedPoint12Ms[] = "1 point 12ms ahead.";
@@ -3397,16 +3397,6 @@ const char kSwipeToMoveCursorName[] = "Swipe to move cursor";
 const char kSwipeToMoveCursorDescription[] =
     "Allows user to use touch gestures to move the text cursor around. This "
     "flag will only take effect on Android 11 and above.";
-
-const char kTabbedAppOverflowMenuIconsName[] =
-    "Android tabbed app overflow menu icons";
-const char kTabbedAppOverflowMenuIconsDescription[] =
-    "If enabled, shows icon in front of each overflow menu item.";
-
-const char kTabbedAppOverflowMenuRegroupName[] =
-    "Android tabbed app overflow menu Regroup";
-const char kTabbedAppOverflowMenuRegroupDescription[] =
-    "If enabled, regroup overflow menu items.";
 
 const char kTabbedAppOverflowMenuThreeButtonActionbarName[] =
     "Android tabbed app overflow menu three buttons actionbar";
@@ -4457,6 +4447,10 @@ const char kFsNosymfollowDescription[] =
 const char kFullRestoreName[] = "Full restore";
 const char kFullRestoreDescription[] = "Chrome OS full restore";
 
+const char kHelpAppLauncherSearchName[] = "Help App launcher search";
+const char kHelpAppLauncherSearchDescription[] =
+    "Enables showing search results from the help app in the launcher.";
+
 const char kHelpAppSearchServiceIntegrationName[] =
     "Help App search service integration";
 const char kHelpAppSearchServiceIntegrationDescription[] =
@@ -4547,7 +4541,9 @@ const char kLacrosStabilityMoreStableDescription[] =
 
 const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =
-    "Support for the experimental lacros-chrome browser.";
+    "Support for the experimental lacros-chrome browser. This disables "
+    "the existing Chrome OS multiple sign-in. Please use Lacros multi-profile "
+    "instead.";
 
 const char kLacrosWebAppsName[] = " Lacros web apps";
 const char kLacrosWebAppsDescription[] = "Support web apps in Lacros browser.";

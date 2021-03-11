@@ -30,6 +30,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Notifications.Android.Build" enum="BooleanSuccess"
+    expires_after="M96">
+  <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
+  <summary>
+    Records whether we could successfully build a notification using Android's
+    Notification Builder. If unsuccessful, we will silently drop the
+    notification display request. Note that delivering the notification may
+    still fail which is logged in Mobile.SystemNotification.NotifyFailure.
+    Logged when we try to build a notification using an instance of
+    NotificationWrapperBuilder.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.Android.JobStartDelay" units="ms"
     expires_after="M96">
   <owner>peter@chromium.org</owner>
@@ -392,6 +406,35 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Notifications.macOS.ActionReceived.{Style}"
+    enum="BooleanValid" expires_after="M96">
+  <owner>knollr@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Whether the received notification action data is valid or not. If it is, we
+    will continue to pass along the event. Logged on every action received by
+    the system (click or close) on any {Style} style notification.
+  </summary>
+  <token key="Style">
+    <variant name="Alert"/>
+    <variant name="Banner"/>
+  </token>
+</histogram>
+
+<histogram name="Notifications.macOS.Delivered.{Style}" enum="BooleanSuccess"
+    expires_after="M96">
+  <owner>knollr@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Whether delivering a notification to the system was successful or not.
+    Logged every time we pass a notification with {Style} style to the system.
+  </summary>
+  <token key="Style">
+    <variant name="Alert"/>
+    <variant name="Banner"/>
+  </token>
+</histogram>
+
 <histogram name="Notifications.macOS.ServiceProcessKilled" units="ms"
     expires_after="M96">
   <owner>knollr@chromium.org</owner>
@@ -534,6 +577,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Notifications.PersistentWebNotificationClickEventResult"
+    enum="ServiceWorkerStatusCode" expires_after="2021-08-22">
+  <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
+  <summary>
+    Recorded delivery status for persistent notification clicks to a Service
+    Worker when handling a click on a persistent WebNotification has finished.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.PersistentWebNotificationClickResult"
     enum="PlatformNotificationStatus" expires_after="2021-08-22">
   <owner>peter@chromium.org</owner>
@@ -541,6 +594,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Recorded delivery status for persistent notification clicks to a Service
     Worker when handling a click on a persistent WebNotification has finished.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.PersistentWebNotificationCloseEventResult"
+    enum="ServiceWorkerStatusCode" expires_after="2021-08-22">
+  <owner>peter@chromium.org</owner>
+  <owner>knollr@chromium.org</owner>
+  <summary>
+    Records delivery status for persistent notification close events sent to a
+    Service Worker when the event has been handled.
   </summary>
 </histogram>
 

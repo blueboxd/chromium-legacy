@@ -100,6 +100,20 @@
       },
     },
   },
+  'angle_gles1_conformance_tests': {
+    'replacements': {
+      'Win10 FYI x64 Debug (NVIDIA)': {
+        'args': {
+          '--test-timeout': '60',
+        },
+      },
+      'Win7 FYI Debug (AMD)': {
+        'args': {
+          '--test-timeout': '60',
+        },
+      },
+    },
+  },
   'angle_perftests': {
     'remove_from': [
       'Android FYI Release (Nexus 5)',  # crbug.com/915429
@@ -867,6 +881,7 @@
       'Lollipop Phone Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      'android-11-x86-fyi-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-x86-rel-non-cq',
       'android-pie-x86-rel',
@@ -943,6 +958,15 @@
       # Timeout happens sometimes (crbug.com/951799).
       'Win10 Tests x64 (dbg)',
     ],
+  },
+  'components_browsertests': {
+    'modifications': {
+      'android-11-x86-fyi-rel': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
   },
   'components_unittests': {
     'remove_from': [
@@ -1076,6 +1100,11 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
+      },
+      'android-11-x86-fyi-rel': {
+        'swarming': {
+          'shards': 20,
+        },
       },
       'android-arm64-proguard-rel': {
         'swarming': {
@@ -2192,6 +2221,7 @@
       'android-nougat-arm64-rel',
       'android-pie-arm64-rel',
       'android-pie-x86-rel',
+      'android-11-x86-fyi-rel',
       'Android CFI',
       'Lollipop Phone Tester',
       'Lollipop Tablet Tester',
@@ -2484,6 +2514,11 @@
         ],
       },
     },
+  },
+  'system_webview_shell_layout_test_apk': {
+    'remove_from': [
+      'android-11-x86-fyi-rel', # crbug.com/1165280
+    ],
   },
   'tab_capture_end2end_tests': {
     # Run these only on Release bots.
@@ -2787,6 +2822,7 @@
       'android-lollipop-arm-rel',
       'android-marshmallow-x86-rel-non-cq',
       'android-pie-x86-rel',
+      'android-11-x86-fyi-rel',
     ],
   },
   'vr_common_unittests': {
@@ -2936,11 +2972,13 @@
   'weblayer_bundle_test': {
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1088013
+      'android-11-x86-fyi-rel', # crbug.com/1165280
     ],
   },
   'weblayer_instrumentation_test_apk': {
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1088013
+      'android-11-x86-fyi-rel', # crbug.com/1165280
     ],
     'modifications': {
       'android-pie-arm64-rel': {
@@ -2986,6 +3024,9 @@
     },
   },
   'webview_cts_tests': {
+    'remove_from': [
+      'android-11-x86-fyi-rel', # crbug.com/1165280
+    ],
     'modifications': {
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
@@ -3035,6 +3076,11 @@
         ],
       },
     },
+  },
+  'webview_ui_test_app_test_apk': {
+    'remove_from': [
+      'android-11-x86-fyi-rel', # crbug.com/1165280
+    ],
   },
   'xr_browser_tests': {
     'remove_from': [

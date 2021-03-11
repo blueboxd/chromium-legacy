@@ -11,6 +11,7 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -35,6 +36,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,6 +45,7 @@
 namespace chromeos {
 namespace {
 
+constexpr const char kRemoraRequisitionIdentifier[] = "remora";
 constexpr char kUserActionContinueButtonClicked[] = "continue";
 constexpr const char kUserActionEnableSpokenFeedback[] =
     "accessibility-spoken-feedback-enable";
@@ -140,6 +144,18 @@ void RecordA11yUserAction(const std::string& action_id) {
     }
   }
   NOTREACHED() << "Unexpected action id: " << action_id;
+}
+
+// Returns true if is a Meet Device or the remora requisition bit has been set
+// for testing. Note: Can be overridden with the command line switch
+// --enable-requisition-edits.
+bool IsRemoraRequisitionConfigurable() {
+#if BUILDFLAG(PLATFORM_CFM)
+  return true;
+#else
+  return policy::EnrollmentRequisitionManager::IsRemoraRequisition() ||
+         chromeos::switches::IsDeviceRequisitionConfigurable();
+#endif
 }
 
 }  // namespace
@@ -281,6 +297,14 @@ std::string WelcomeScreen::GetTimezone() const {
 }
 
 void WelcomeScreen::SetDeviceRequisition(const std::string& requisition) {
+  if (requisition == kRemoraRequisitionIdentifier) {
+    if (!IsRemoraRequisitionConfigurable())
+      return;
+  } else {
+    if (!switches::IsDeviceRequisitionConfigurable())
+      return;
+  }
+
   std::string initial_requisition =
       policy::EnrollmentRequisitionManager::GetDeviceRequisition();
   policy::EnrollmentRequisitionManager::SetDeviceRequisition(requisition);
@@ -454,12 +478,14 @@ bool WelcomeScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
   } else if (action == ash::LoginAcceleratorAction::kEnableDebugging) {
     OnEnableDebugging();
     return true;
-  } else if (action == ash::LoginAcceleratorAction::kEditDeviceRequisition) {
+  } else if (action == ash::LoginAcceleratorAction::kEditDeviceRequisition &&
+             switches::IsDeviceRequisitionConfigurable()) {
     if (view_)
       view_->ShowEditRequisitionDialog(
           policy::EnrollmentRequisitionManager::GetDeviceRequisition());
     return true;
-  } else if (action == ash::LoginAcceleratorAction::kDeviceRequisitionRemora) {
+  } else if (action == ash::LoginAcceleratorAction::kDeviceRequisitionRemora &&
+             IsRemoraRequisitionConfigurable()) {
     if (view_)
       view_->ShowRemoraRequisitionDialog();
     return true;
@@ -559,6 +585,14 @@ void WelcomeScreen::NotifyLocaleChange() {
 void WelcomeScreen::StartChromeVoxHintTimer() {
   if (!features::IsOobeChromeVoxHintEnabled() ||
       chromeos::switches::IsOOBEChromeVoxHintTimerDisabledForTesting()) {
+    return;
+  }
+
+  // This is done so that developers and testers don't repeatedly receive
+  // the hint when flashing.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSystemDevMode) &&
+      !chromeos::switches::IsOOBEChromeVoxHintEnabledForDevMode()) {
     return;
   }
 

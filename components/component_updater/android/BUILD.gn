@@ -48,12 +48,31 @@ android_library("component_provider_service_aidl_java") {
   srcjar_deps = [ ":component_provider_service_aidl" ]
 }
 
-static_library("embedded_component_loader") {
+android_library("embedded_component_loader_java") {
   sources = [
-    "embedded_component_loader.cc",
-    "embedded_component_loader.h",
+    "java/src/org/chromium/components/component_updater/ComponentLoaderPolicyBridge.java",
+    "java/src/org/chromium/components/component_updater/EmbeddedComponentLoader.java",
   ]
   deps = [
+    ":component_provider_service_aidl_java",
+    ":embedded_component_loader_jni_headers",
+    "//base:base_java",
+    "//base:jni_java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("embedded_component_loader_jni_headers") {
+  sources = [ "java/src/org/chromium/components/component_updater/ComponentLoaderPolicyBridge.java" ]
+}
+
+static_library("embedded_component_loader") {
+  sources = [
+    "component_loader_policy.cc",
+    "component_loader_policy.h",
+  ]
+  deps = [
+    ":embedded_component_loader_jni_headers",
     "//base",
     "//components/component_updater",
     "//components/update_client",
@@ -62,12 +81,26 @@ static_library("embedded_component_loader") {
 
 source_set("embedded_component_loader_unittests") {
   testonly = true
-  sources = [ "embedded_component_loader_unittests.cc" ]
+  sources = [ "component_loader_policy_unittests.cc" ]
   deps = [
     ":embedded_component_loader",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+static_library("loader_policies") {
+  sources = [
+    "loader_policies/trust_token_key_commitments_component_loader_policy.cc",
+    "loader_policies/trust_token_key_commitments_component_loader_policy.h",
+  ]
+
+  deps = [
+    ":embedded_component_loader",
+    "//base",
+    "//components/component_updater",
+    "//components/component_updater/installer_policies",
   ]
 }

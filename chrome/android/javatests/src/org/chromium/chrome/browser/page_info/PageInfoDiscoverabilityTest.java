@@ -56,6 +56,8 @@ public class PageInfoDiscoverabilityTest {
     @Mock
     UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
     @Mock
+    Runnable mMockForceModelViewReconciliationRunnable;
+    @Mock
     SearchEngineLogoUtils mSearchEngineLogoUtils;
     @Mock
     Profile mProfile;
@@ -77,14 +79,13 @@ public class PageInfoDiscoverabilityTest {
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
         mPermissionDialogController = PermissionDialogController.getInstance();
 
-        // clang-format off
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mMediator = new StatusMediator(mModel, mResources, mContext,
-                    mUrlBarEditingTextStateProvider, /* isTablet */ false,
-                    () -> {}, mLocationBarDataProvider, mPermissionDialogController,
-                    mSearchEngineLogoUtils, () -> mTemplateUrlService, () -> mProfile, null);
+                    mUrlBarEditingTextStateProvider,
+                    /* isTablet */ false, mMockForceModelViewReconciliationRunnable,
+                    mLocationBarDataProvider, mPermissionDialogController, mSearchEngineLogoUtils,
+                    () -> mTemplateUrlService, () -> mProfile, null);
         });
-        // clang-format on
     }
 
     @Test

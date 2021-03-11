@@ -83,7 +83,6 @@ public class StatusMediator implements PermissionDialogController.Observer {
 
     private final PermissionDialogController mPermissionDialogController;
     private final Handler mPermissionTaskHandler = new Handler();
-    private final Runnable mForceModelViewReconciliationRunnable;
     @ContentSettingsType
     private int mLastPermission = ContentSettingsType.DEFAULT;
     private final PageInfoIPHController mPageInfoIPHController;
@@ -92,6 +91,8 @@ public class StatusMediator implements PermissionDialogController.Observer {
 
     private float mUrlFocusPercent;
     private String mSearchEngineLogoUrl;
+
+    private Runnable mForceModelViewReconciliationRunnable;
 
     // Factors used to offset the animation of the status icon's alpha adjustment. The full formula
     // used: alpha = (focusAnimationProgress - mTextOffsetThreshold) / (1 - mTextOffsetThreshold)
@@ -637,22 +638,25 @@ public class StatusMediator implements PermissionDialogController.Observer {
 
     /**
      * Temporary workaround for the divergent logic for status icon visibility changes for the dse
-     * icon experiment.
+     * icon experiment. Should be removed when the dse icon launches (crbug.com/1019488).
      *
-     * The logic below resets the visual state for the StatusView widget when transitioning back
-     * and forth between incognito and non-incognito states.
-     * When the UrlBar is the first visible view when focused, the StatusView's alpha
+     * When transitioning to incognito, the first visible view when focused will be assigned to
+     * UrlBar. When the UrlBar is the first visible view when focused, the StatusView's alpha
      * will be set to 0 in LocationBarPhone#populateFadeAnimations. When transitioning back from
      * incognito, StatusView's state needs to be reset to match the current state of the status view
      * {@link org.chromium.chrome.browser.omnibox.LocationBarPhone#updateVisualsForState}.
      * property model.
-     *
-     * TODO(http://crbug.com/1185985): Delete this when all the code altering StatusView properties
-     * is consolidated and it is safe to do so.
      **/
     private void reconcileVisualState() {
         // No reconciliation is needed on tablet because the status icon is always shown.
         if (mIsTablet) return;
+
+        if (!mShowStatusIconWhenUrlFocused || mLocationBarDataProvider.isIncognito()
+                || !mSearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                        mLocationBarDataProvider.isIncognito())) {
+            return;
+        }
+
         assert mForceModelViewReconciliationRunnable != null;
         mForceModelViewReconciliationRunnable.run();
     }

@@ -4,11 +4,12 @@
 
 import {InputHandler} from './input_handler.js';
 import {MetricsUtils} from './metrics_utils.js';
+import {NodeNavigationUtils} from './node_navigation_utils.js';
 import {NodeUtils} from './node_utils.js';
 import {ParagraphUtils} from './paragraph_utils.js';
 import {PrefsManager} from './prefs_manager.js';
 import {SelectToSpeakConstants} from './select_to_speak_constants.js';
-import {SentenceUtils} from './sentence_utils.js';
+import {SelectToSpeakUiListener, UiManager} from './ui_manager.js';
 import {WordUtils} from './word_utils.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
@@ -16,10 +17,6 @@ const AutomationEvent = chrome.automation.AutomationEvent;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const AccessibilityFeature = chrome.accessibilityPrivate.AccessibilityFeature;
-const SelectToSpeakPanelAction =
-    chrome.accessibilityPrivate.SelectToSpeakPanelAction;
-const FocusRingStackingOrder =
-    chrome.accessibilityPrivate.FocusRingStackingOrder;
 const SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 
 // This must be the same as in ash/system/accessibility/select_to_speak_tray.cc:
@@ -27,32 +24,10 @@ const SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 export const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
     'tray/TrayBackgroundView/SelectToSpeakTray';
 
-// This must match the name of view class that implements the menu view:
-// ash/system/accessibility/select_to_speak_menu_view.h
-const SELECT_TO_SPEAK_MENU_CLASS_NAME = 'SelectToSpeakMenuView';
-
-// This must match the name of view class that implements the speed view:
-// ash/system/accessibility/select_to_speak_speed_view.h
-const SELECT_TO_SPEAK_SPEED_CLASS_NAME = 'SelectToSpeakSpeedView';
-
-// This must match the name of view class that implements the bubble views:
-// ash/system/tray/tray_bubble_view.h
-const TRAY_BUBBLE_VIEW_CLASS_NAME = 'TrayBubbleView';
-
-// This must match the name of view class that implements the buttons used in
-// the floating panel:
-// ash/system/accessibility/floating_menu_button.h
-const FLOATING_MENU_BUTTON_CLASS_NAME = 'FloatingMenuButton';
-
 // Matches one of the known GSuite apps which need the clipboard to find and
 // read selected text. Includes sandbox and non-sandbox versions.
 const GSUITE_APP_REGEXP =
     /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
-
-// A RGBA hex string for the default background shading color, which is black at
-// 40% opacity (hex 66). This should be equivalent to using
-// AshColorProvider::ShieldLayerType kShield40.
-const DEFAULT_BACKGROUND_SHADING_COLOR = '#0006';
 
 // Settings key for system speech rate setting.
 const SPEECH_RATE_KEY = 'settings.tts.speech_rate';
@@ -77,6 +52,10 @@ export function getGSuiteAppRoot(node) {
   return null;
 }
 
+/**
+ * Select-to-speak component extension controller.
+ * @implements {SelectToSpeakUiListener}
+ */
 export class SelectToSpeak {
   constructor() {
     /**
@@ -107,12 +86,6 @@ export class SelectToSpeak {
     /** @private {chrome.automation.AutomationNode} */
     this.desktop_;
 
-    /**
-     * Button in the floating panel, useful for restoring focus to the panel.
-     * @private {?chrome.automation.AutomationNode}
-     */
-    this.panelButton_ = null;
-
     /** @private {number|undefined} */
     this.intervalRef_;
 
@@ -131,12 +104,6 @@ export class SelectToSpeak {
       desktop.addEventListener(
           EventType.HOVER, this.onHitTestCheckCurrentNodeMatches_.bind(this),
           true);
-
-      // Listen to focus changes so we can grab the floating panel when it
-      // goes into focus, so it can be used later without having to search
-      // through the entire tree.
-      desktop.addEventListener(
-          EventType.FOCUS, this.onFocusChange_.bind(this), true);
     }.bind(this));
 
     /** @private {boolean} */
@@ -207,14 +174,6 @@ export class SelectToSpeak {
      */
     this.supportsNavigationPanel_ = true;
 
-    /**
-     * The position of the current focus ring, which usually highlights the
-     * entire paragraph. Keep this as a member variable so that the control
-     * panel can be updated easily.
-     * @private {!Array<!chrome.accessibilityPrivate.ScreenRect>}
-     */
-    this.currentFocusRing_ = [];
-
     /** @private {boolean} */
     this.visible_ = true;
 
@@ -234,6 +193,9 @@ export class SelectToSpeak {
     /** @private {PrefsManager} */
     this.prefsManager_ = new PrefsManager();
     this.prefsManager_.initPreferences();
+
+    /** @private {!UiManager} */
+    this.uiManager_ = new UiManager(this.prefsManager_, this /* listener */);
 
     this.runContentScripts_();
     this.setUpEventListeners_();
@@ -371,31 +333,6 @@ export class SelectToSpeak {
       MetricsUtils.recordStartEvent(
           MetricsUtils.StartSpeechMethod.MOUSE, this.prefsManager_);
     }.bind(this));
-  }
-
-  /**
-   * Handles desktop-wide focus changes.
-   * @param {!AutomationEvent} evt
-   * @private
-   */
-  onFocusChange_(evt) {
-    const focusedNode = evt.target;
-
-    // As an optimization, look for the STS floating panel and store in case
-    // we need to access that node at a later point (such as focusing panel).
-    if (focusedNode.className !== FLOATING_MENU_BUTTON_CLASS_NAME) {
-      // When panel is focused, initial focus is always on one of the buttons.
-      return;
-    }
-    const windowParent =
-        AutomationUtil.getFirstAncestorWithRole(focusedNode, RoleType.WINDOW);
-    if (windowParent &&
-        windowParent.className === TRAY_BUBBLE_VIEW_CLASS_NAME &&
-        windowParent.children.length === 1 &&
-        windowParent.children[0].className ===
-            SELECT_TO_SPEAK_MENU_CLASS_NAME) {
-      this.panelButton_ = focusedNode;
-    }
   }
 
   /**
@@ -626,33 +563,7 @@ export class SelectToSpeak {
       return;
     }
 
-    this.focusPanel_();
-  }
-
-  /**
-   * Sets focus to the floating control panel, if present.
-   * @private
-   */
-  focusPanel_() {
-    // Used cached panel node if possible to avoid expensive desktop.find().
-    // Note: Checking role attribute to see if node is still valid.
-    if (this.panelButton_ && this.panelButton_.role) {
-      // The panel itself isn't focusable, so set focus to most recently
-      // focused panel button.
-      this.panelButton_.focus();
-      return;
-    }
-    this.panelButton_ = null;
-
-    // Fallback to more expensive method of finding panel.
-    const menuView = this.desktop_.find(
-        {attributes: {className: SELECT_TO_SPEAK_MENU_CLASS_NAME}});
-    if (menuView !== null && menuView.parent &&
-        menuView.parent.className === TRAY_BUBBLE_VIEW_CLASS_NAME) {
-      // The menu view's parent is the TrayBubbleView can can be assigned focus.
-      this.panelButton_ = menuView.find({role: RoleType.TOGGLE_BUTTON});
-      this.panelButton_.focus();
-    }
+    this.uiManager_.setFocusToPanel();
   }
 
   /**
@@ -778,7 +689,7 @@ export class SelectToSpeak {
    */
   stopAll_() {
     chrome.tts.stop();
-    this.clearFocusRing_();
+    this.uiManager_.clear();
     this.onStateChanged_(SelectToSpeakState.INACTIVE);
   }
 
@@ -788,7 +699,7 @@ export class SelectToSpeak {
    * @private
    */
   clearFocusRingAndNode_() {
-    this.clearFocusRing_();
+    this.uiManager_.clear();
     // Clear the node and also stop the interval testing.
     this.resetNodes_();
     this.supportsNavigationPanel_ = true;
@@ -809,65 +720,6 @@ export class SelectToSpeak {
     this.currentNodeGroupItemIndex_ = -1;
     this.currentNodeWord_ = null;
     this.currentCharIndex_ = -1;
-  }
-
-  /**
-   * Update the navigation floating panel.
-   * @private
-   */
-  updateNavigationPanel_() {
-    if (this.shouldShowNavigationControls_() && this.currentFocusRing_.length) {
-      // If the feature is enabled and we have a valid focus ring, flip the
-      // pause and resume button according to the current STS and TTS state.
-      // Also, update the location of the panel according to the focus ring.
-      chrome.accessibilityPrivate.updateSelectToSpeakPanel(
-          /* show= */ true, /* anchor= */ this.currentFocusRing_[0],
-          /* isPaused= */ this.isPaused_(),
-          /* speed= */ this.speechRateMultiplier_);
-    } else {
-      // Dismiss the panel if either the feature is disabled or the focus ring
-      // is not valid.
-      chrome.accessibilityPrivate.updateSelectToSpeakPanel(/* show= */ false);
-    }
-  }
-
-  /**
-   * Clears the focus ring, but does not clear the current
-   * node.
-   * @private
-   */
-  clearFocusRing_() {
-    this.setFocusRings_([], false /* do not draw background */);
-    chrome.accessibilityPrivate.setHighlights(
-        [], this.prefsManager_.highlightColor());
-    this.updateNavigationPanel_();
-  }
-
-  /**
-   * Sets the focus ring to |rects|. If |drawBackground|, draws the grey focus
-   * background with the alpha set in prefs.
-   * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects
-   * @param {boolean} drawBackground
-   * @private
-   */
-  setFocusRings_(rects, drawBackground) {
-    this.currentFocusRing_ = rects;
-    let color = '#0000';  // Fully transparent.
-    if (drawBackground && this.prefsManager_.backgroundShadingEnabled()) {
-      color = DEFAULT_BACKGROUND_SHADING_COLOR;
-    }
-    // If we're also showing a navigation panel, ensure the focus ring appears
-    // below the panel UI.
-    const stackingOrder = this.shouldShowNavigationControls_() ?
-        FocusRingStackingOrder.BELOW_ACCESSIBILITY_BUBBLES :
-        FocusRingStackingOrder.ABOVE_ACCESSIBILITY_BUBBLES;
-    chrome.accessibilityPrivate.setFocusRings([{
-      rects,
-      type: chrome.accessibilityPrivate.FocusType.GLOW,
-      stackingOrder,
-      color: this.prefsManager_.focusRingColor(),
-      backgroundColor: color,
-    }]);
   }
 
   /**
@@ -934,7 +786,7 @@ export class SelectToSpeak {
       },
       // onSelectionChanged: Mouse selection rect changed.
       onSelectionChanged: rect => {
-        this.setFocusRings_([rect], false /* don't draw background */);
+        this.uiManager_.setSelectionRect(rect);
       },
       // onKeystrokeSelection: Keys pressed for reading highlighted text.
       onKeystrokeSelection: () => {
@@ -950,10 +802,7 @@ export class SelectToSpeak {
       onTextReceived: this.startSpeech_.bind(this)
     });
     this.inputHandler_.setUpEventListeners();
-    chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested.addListener(
-        this.onStateChangeRequested_.bind(this));
-    chrome.accessibilityPrivate.onSelectToSpeakPanelAction.addListener(
-        this.onSelectToSpeakPanelAction_.bind(this));
+
     chrome.settingsPrivate.onPrefsChanged.addListener(
         this.onPrefsChanged_.bind(this));
     // Initialize the state to SelectToSpeakState.INACTIVE.
@@ -963,7 +812,7 @@ export class SelectToSpeak {
   /**
    * Called when Chrome OS is requesting Select-to-Speak to switch states.
    */
-  onStateChangeRequested_() {
+  onStateChangeRequested() {
     // Switch Select-to-Speak states on request.
     // We will need to track the current state and toggle from one state to
     // the next when this function is called, and then call
@@ -994,56 +843,60 @@ export class SelectToSpeak {
         this.onStateChangeRequestedCallbackForTest_();
   }
 
+  /** Handles user request to navigate to next paragraph. */
+  onNextParagraphRequested() {
+    this.navigateToNextParagraph_(constants.Dir.FORWARD);
+  }
+
+  /** Handles user request to navigate to previous paragraph. */
+  onPreviousParagraphRequested() {
+    this.navigateToNextParagraph_(constants.Dir.BACKWARD);
+  }
+
+  /** Handles user request to navigate to next sentence. */
+  onNextSentenceRequested() {
+    this.navigateToNextSentence_(constants.Dir.FORWARD);
+  }
+
+  /** Handles user request to navigate to previous sentence. */
+  onPreviousSentenceRequested() {
+    this.navigateToNextSentence_(constants.Dir.BACKWARD);
+  }
+
+  /** Handles user request to navigate to exit STS. */
+  onExitRequested() {
+    // User manually requested, so log cancel metric.
+    MetricsUtils.recordCancelIfSpeaking();
+    this.stopAll_();
+  }
+
+  /** Handles user request to pause TTS. */
+  onPauseRequested() {
+    MetricsUtils.recordPauseEvent();
+    this.pause_();
+  }
+
+  /** Handles user request to resume TTS. */
+  onResumeRequested() {
+    if (this.isPaused_()) {
+      MetricsUtils.recordResumeEvent();
+      this.resume_();
+    }
+  }
+
   /**
-   * Handles Select-to-speak panel action.
-   * @param {!SelectToSpeakPanelAction} panelAction Action to perform.
-   * @param {number=} value Optional value associated with action.
+   * Handles user request to adjust reading speed.
+   * @param {number} rateMultiplier
    * @private
    */
-  onSelectToSpeakPanelAction_(panelAction, value) {
-    if (!this.shouldShowNavigationControls_()) {
-      // Ignore if this feature is not enabled.
-      return;
-    }
-    switch (panelAction) {
-      case SelectToSpeakPanelAction.NEXT_PARAGRAPH:
-        this.navigateToNextParagraph_(constants.Dir.FORWARD);
-        break;
-      case SelectToSpeakPanelAction.PREVIOUS_PARAGRAPH:
-        this.navigateToNextParagraph_(constants.Dir.BACKWARD);
-        break;
-      case SelectToSpeakPanelAction.NEXT_SENTENCE:
-        this.navigateToNextSentence_(constants.Dir.FORWARD);
-        break;
-      case SelectToSpeakPanelAction.PREVIOUS_SENTENCE:
-        this.navigateToNextSentence_(
-            constants.Dir.BACKWARD, true /* skipCurrentSentence */);
-        break;
-      case SelectToSpeakPanelAction.EXIT:
-        // User manually requested, so log cancel metric.
-        MetricsUtils.recordCancelIfSpeaking();
-        this.stopAll_();
-        break;
-      case SelectToSpeakPanelAction.PAUSE:
-        MetricsUtils.recordPauseEvent();
-        this.pause_();
-        break;
-      case SelectToSpeakPanelAction.RESUME:
-        if (this.isPaused_()) {
-          MetricsUtils.recordResumeEvent();
-          this.resume_();
-        }
-        break;
-      case SelectToSpeakPanelAction.CHANGE_SPEED:
-        if (!value) {
-          console.warn(
-              'Change speed request receieved with invalid value', value);
-          return;
-        }
-        this.changeSpeed_(value);
-        break;
-      default:
-        // TODO(crbug.com/1140216): Implement other actions.
+  onChangeSpeedRequested(rateMultiplier) {
+    this.speechRateMultiplier_ = rateMultiplier;
+
+    // If currently playing, stop TTS, then resume from current spot.
+    if (!this.isPaused_()) {
+      this.pause_().then(() => {
+        this.resume_();
+      });
     }
   }
 
@@ -1060,222 +913,27 @@ export class SelectToSpeak {
   }
 
   /**
-   * Navigates to the next sentence. First, we search the next sentence in the
-   * current node group. If we do not find one, we will search within the
-   * remaining content in the current paragraph (i.e., text block). If this
-   * still fails, we will search the next paragraph.
-   * TODO(leileilei@google.com): Handle the edge case where the user navigates
-   * to next sentence from the end of a document, see http://crbug.com/1160962.
+   * Navigates to the next sentence.
    * @param {constants.Dir} direction Direction to search for the next sentence.
    *     If set to forward, we look for the sentence start after the current
    *     position. Otherwise, we look for the sentence start before the current
    *     position.
-   * @param {boolean} skipCurrentSentence Whether to skip the current sentence.
-   *     This only affects backward navigation. When set to false, navigating
-   *     backward will find the closest sentence start. When set to true,
-   *     navigating backward will ignore the sentence start in the current
-   *     sentence. For example, when navigating backward from the middle of a
-   *     sentence. A true |skipCurrentSentence| will take us to the start of the
-   *     previous sentence while a false one will take us to the start of the
-   *     current sentence. Regardless of this parameter, navigating backward
-   *     from a sentence start will take us to the start of the previous
-   *     sentence.
    * @private
    */
-  async navigateToNextSentence_(direction, skipCurrentSentence = false) {
-    const currentNodeGroup = this.getCurrentNodeGroup_();
-
-    // An empty node group is not expected and means that the user has not
-    // enqueued any text.
-    if (!currentNodeGroup) {
-      return;
-    }
-
+  async navigateToNextSentence_(direction) {
     if (!this.isPaused_()) {
       await this.pause_();
     }
-
-    // Checks the next sentence within this node group. If we have enqueued the
-    // next sentence that fulfilled the requirements, return.
-    if (this.enqueueNextSentenceWithinNodeGroup_(
-            currentNodeGroup, this.currentCharIndex_, direction,
-            skipCurrentSentence)) {
-      return;
-    }
-
-    // If there is no next sentence at the current node group, look for the
-    // content within this paragraph. First, we get the remaining content in
-    // the paragraph. The returned offset marks the char index of the current
-    // position in the paragraph. When searching forward, the offset is the
-    // char index pointing to the beginning of the remaining content. When
-    // searching backward, the offset is the char index pointing to the char
-    // after the remaining content.
-    const {nodes, offset} = NodeUtils.getNextNodesInParagraphFromNodeGroup(
-        currentNodeGroup, this.currentCharIndex_, direction);
-    // If we have reached to the end of a paragraph, enqueue the sentence from
-    // the next paragraph.
+    const {nodes, offset} = NodeNavigationUtils.getNodesForNextSentence(
+        this.getCurrentNodeGroup_(), this.currentCharIndex_, direction,
+        (nodes) => this.skipPanel_(nodes));
     if (nodes.length === 0) {
-      this.enqueueNextSentenceInNextParagraph_(direction);
-      return;
-    }
-    // Get the node group for the remaining content in the paragraph. If we are
-    // looking for the content after the current position, set startIndex as
-    // offset. Otherwise, set endIndex as offset.
-    const startIndex = direction === constants.Dir.FORWARD ? offset : undefined;
-    const endIndex = direction === constants.Dir.FORWARD ? undefined : offset;
-    const {nodeGroup, startIndexInGroup, endIndexInGroup} =
-        ParagraphUtils.buildSingleNodeGroupWithOffset(
-            nodes, startIndex, endIndex);
-    // Search in the remaining content.
-    const charIndex = direction === constants.Dir.FORWARD ? startIndexInGroup :
-                                                            endIndexInGroup;
-    // The charIndex is guaranteed to be valid at this point, although the
-    // closure compiler is not able to detect it as a valid number.
-    if (charIndex === undefined) {
-      console.warn('Navigate sentence with an invalid char index', charIndex);
-      return;
-    }
-    // When searching backward, we need to adjust |skipCurrentSentence| if it
-    // is true. The remaining content we get excludes the char at
-    // |this.currentCharIndex_|. If this char is a sentence
-    // start, we have already skipped the current sentence so we need to change
-    // |skipCurrentSentence| to false for the next search.
-    if (direction === constants.Dir.BACKWARD && skipCurrentSentence) {
-      const currentPositionIsSentenceStart = SentenceUtils.isSentenceStart(
-          currentNodeGroup, this.currentCharIndex_);
-      if (currentPositionIsSentenceStart) {
-        skipCurrentSentence = false;
-      }
-    }
-    if (this.enqueueNextSentenceWithinNodeGroup_(
-            nodeGroup, charIndex, direction, skipCurrentSentence)) {
-      return;
-    }
-
-    // If there is no next sentence within this paragraph, enqueue the sentence
-    // from the next paragraph.
-    this.enqueueNextSentenceInNextParagraph_(direction);
-  }
-
-  /**
-   * Enqueues the next sentence within the |nodeGroup|. If the |direction|
-   * is set to forward, it will navigate to the sentence start after the
-   * |startCharIndex|. Otherwise, it will look for the sentence start before the
-   * |startCharIndex|.
-   * @param {ParagraphUtils.NodeGroup} nodeGroup
-   * @param {number} startCharIndex The char index that we start from. This
-   *     index is relative to the text content of this node group and is
-   *     exclusive: if a sentence start at 0 and we search with a 0
-   *     |startCharIndex|, this function will return the next sentence start
-   *     after 0 if we search forward.
-   * @param {constants.Dir} direction
-   * @param {boolean} skipCurrentSentence Whether to skip the current sentence
-   *     when navigating backward. See navigateToNextSentence_.
-   * @return {boolean} Whether we have enqueued content to the speech queue.
-   *     When |skipCurrentSentence| is true, we will not enqueue content to
-   *     speech queue if we only find a sentence start in the current sentence.
-   * @private
-   */
-  enqueueNextSentenceWithinNodeGroup_(
-      nodeGroup, startCharIndex, direction, skipCurrentSentence) {
-    if (!nodeGroup) {
-      return false;
-    }
-    let nextSentenceStart =
-        SentenceUtils.getSentenceStart(nodeGroup, startCharIndex, direction);
-    if (nextSentenceStart === null) {
-      return false;
-    }
-    // When we search backward, if we want to skip the current sentence, we
-    // need to search the sentence start in the previous sentence. If the
-    // position of |startCharIndex| is a sentence start, the current
-    // |nextSentenceStart| is already in the previous sentence because
-    // getSentenceStart excludes the search index. Otherwise, the
-    // |nextSentenceStart| we found is the start of current sentence, and we
-    // need to search backward again.
-    if (direction === constants.Dir.BACKWARD && skipCurrentSentence &&
-        !SentenceUtils.isSentenceStart(nodeGroup, startCharIndex)) {
-      nextSentenceStart = SentenceUtils.getSentenceStart(
-          nodeGroup, nextSentenceStart, direction);
-    }
-    // If the second sentence start is not valid, we do not enqueue text,
-    if (nextSentenceStart === null) {
-      return false;
-    }
-
-    // Get the content between the sentence start and the end of the paragraph.
-    const {nodes, offset} = NodeUtils.getNextNodesInParagraphFromNodeGroup(
-        nodeGroup, nextSentenceStart, constants.Dir.FORWARD);
-    if (nodes.length === 0) {
-      // There is no remaining content. Move to the next paragraph. This is
-      // unexpected since we already found a sentence start, which indicates
-      // there should be some content to read.
-      this.enqueueNextSentenceInNextParagraph_(direction);
-    } else {
-      this.startSpeechQueue_(
-          nodes, {clearFocusRing: false, startCharIndex: offset});
-    }
-    return true;
-  }
-
-  /**
-   * Enqueues the next sentence in the next text block in the given
-   * direction. If the |direction| is set to forward, it will navigate to the
-   * start of the following text block. Otherwise, it will look for the last
-   * sentence in the previous text block. This function will enqueue content to
-   * the speech queue regardless of whether we have found a sentence start in
-   * the text block.
-   * @param {constants.Dir} direction
-   * @private
-   */
-  enqueueNextSentenceInNextParagraph_(direction) {
-    const paragraphNodes = this.locateNodesForNextParagraph_(direction);
-    if (paragraphNodes.length === 0) {
       return;
     }
     // Ensure the first node in the paragraph is visible.
-    paragraphNodes[0].makeVisible();
+    nodes[0].makeVisible();
 
-    if (direction === constants.Dir.FORWARD) {
-      // If we are looking for the sentence start in the following text block,
-      // start reading the nodes.
-      this.startSpeechQueue_(paragraphNodes);
-      return;
-    }
-
-    // If we are looking for the previous sentence start, search the last
-    // sentence in the previous text block. Get the node group for the previous
-    // text block. The returned startIndexInGroup and endIndexInGroup are
-    // unused.
-    const {nodeGroup, startIndexInGroup, endIndexInGroup} =
-        ParagraphUtils.buildSingleNodeGroupWithOffset(paragraphNodes);
-    // We search backward for the sentence start before the end of the text
-    // block.
-    const searchOffset = nodeGroup.text.length;
-    const sentenceStartIndex = SentenceUtils.getSentenceStart(
-        nodeGroup, searchOffset, constants.Dir.BACKWARD);
-    // If there is no sentence start in the previous text block, start reading
-    // the block.
-    if (sentenceStartIndex === null) {
-      this.startSpeechQueue_(paragraphNodes);
-      return;
-    }
-    // Gets the remaining content between the sentence start until the end of
-    // the text block. The offset is the start char index for the first node in
-    // the remaining content.
-    const {nodes, offset} = NodeUtils.getNextNodesInParagraphFromNodeGroup(
-        nodeGroup, sentenceStartIndex, constants.Dir.FORWARD);
-    if (nodes.length === 0) {
-      // If there is no remaining content, start reading the block. This is
-      // unexpected since we already found a sentence start, which indicates
-      // there should be some content to read.
-      this.startSpeechQueue_(paragraphNodes);
-      return;
-    }
-    // Reads the remaining content from the sentence start until the end of the
-    // block.
-    this.startSpeechQueue_(
-        nodes, {clearFocusRing: false, startCharIndex: offset});
+    this.startSpeechQueue_(nodes, {startCharIndex: offset});
   }
 
   /**
@@ -1289,10 +947,14 @@ export class SelectToSpeak {
       await this.pause_();
     }
 
-    const nodes = this.locateNodesForNextParagraph_(direction);
+    const nodes = NodeNavigationUtils.getNodesForNextParagraph(
+        this.getCurrentNodeGroup_(), direction,
+        (nodes) => this.skipPanel_(nodes));
+    // Return early if the nodes are empty.
     if (nodes.length === 0) {
       return;
     }
+
     // Ensure the first node in the paragraph is visible.
     nodes[0].makeVisible();
 
@@ -1300,59 +962,15 @@ export class SelectToSpeak {
   }
 
   /**
-   * Finds the nodes for the next text block in the given direction. This
-   * function is based on |NodeUtils.getNextParagraph| but provides additional
-   * checks on the anchor node used for searchiong.
-   * @param {constants.Dir} direction
-   * @return {Array<!AutomationNode>} A list of nodes for the next block in the
-   *     given direction.
+   * A predicate for paragraph selection and navigation. The current
+   * implementation filters out paragraph that belongs to the panel.
+   * @param {Array<!AutomationNode>} nodes
+   * @return {boolean} Whether the paragraph made of the |nodes| is valid
    * @private
    */
-  locateNodesForNextParagraph_(direction) {
-    // Use current block parent as starting point to navigate from. If it is not
-    // a valid block, then use one of the nodes that are currently activated.
-    const currentNodeGroup = this.getCurrentNodeGroup_();
-    if (!currentNodeGroup) {
-      return [];
-    }
-    let node = currentNodeGroup.blockParent;
-    if ((node === null || node.isRootNode || node.role === undefined) &&
-        currentNodeGroup.nodes.length > 0) {
-      node = currentNodeGroup.nodes[0].node;
-    }
-    if (node === null || node.role === undefined) {
-      // Could not find any nodes to navigate from.
-      return [];
-    }
-
-    // Retrieve the nodes that make up the next/prev paragraph.
-    const nextParagraphNodes = NodeUtils.getNextParagraph(node, direction);
-    if (nextParagraphNodes.length === 0) {
-      // Cannot find any valid nodes in given direction.
-      return [];
-    }
-    if (AutomationUtil.getAncestors(nextParagraphNodes[0])
-            .find((n) => this.isPanel_(n))) {
-      // Do not navigate to Select-to-speak panel.
-      return [];
-    }
-
-    return nextParagraphNodes;
-  }
-
-  /**
-   * Updates current reading speed given a multiplier.
-   * @param {number} rateMultiplier
-   * @private
-   */
-  async changeSpeed_(rateMultiplier) {
-    this.speechRateMultiplier_ = rateMultiplier;
-
-    // If currently playing, stop TTS, then resume from current spot.
-    if (!this.isPaused_()) {
-      await this.pause_();
-      this.resume_();
-    }
+  skipPanel_(nodes) {
+    return !AutomationUtil.getAncestors(nodes[0]).find(
+        (n) => UiManager.isPanel(n));
   }
 
   /**
@@ -1712,6 +1330,8 @@ export class SelectToSpeak {
     if (this.intervalRef_ !== undefined) {
       clearInterval(this.intervalRef_);
     }
+
+    // TODO(crbug.com/1179812): Move polling into UiManager.
     this.intervalRef_ = setInterval(
         this.testCurrentNode_.bind(this),
         SelectToSpeakConstants.NODE_STATE_TEST_INTERVAL_MS);
@@ -1768,9 +1388,6 @@ export class SelectToSpeak {
       }
     } else {
       this.currentNodeWord_ = null;
-      // There are many cases where we won't update the node highlight or test
-      // the node. Thus, we need to update the panel independently.
-      this.updateNavigationPanel_();
     }
   }
 
@@ -1842,7 +1459,7 @@ export class SelectToSpeak {
         // If the node is invalid, continue speech unless readAfterClose_
         // is set to true. See https://crbug.com/818835 for more.
         if (this.readAfterClose_) {
-          this.clearFocusRing_();
+          this.uiManager_.clear();
           this.visible_ = false;
         } else {
           this.stopAll_();
@@ -1851,8 +1468,8 @@ export class SelectToSpeak {
       case NodeUtils.NodeState.NODE_STATE_INVISIBLE:
         // If it is invisible but still valid, just clear the focus ring.
         // Don't clear the current node because we may still use it
-        // if it becomes visibile later.
-        this.clearFocusRing_();
+        // if it becomes visible later.
+        this.uiManager_.clear();
         this.visible_ = false;
         break;
       case NodeUtils.NodeState.NODE_STATE_NORMAL:
@@ -1862,7 +1479,7 @@ export class SelectToSpeak {
           // Just came to the foreground.
           this.updateHighlightAndFocus_(nodeGroupItem);
         } else if (!inForeground) {
-          this.clearFocusRing_();
+          this.uiManager_.clear();
           this.visible_ = false;
         }
     }
@@ -1906,6 +1523,7 @@ export class SelectToSpeak {
       if (node.role === RoleType.INLINE_TEXT_BOX) {
         charIndexInParent = ParagraphUtils.getStartCharIndexInParent(node);
       }
+      // TODO(crbug.com/1179812): Move highlighting to UiManager.
       node.boundsForRange(
           this.currentNodeWord_.start - charIndexInParent,
           this.currentNodeWord_.end - charIndexInParent, (bounds) => {
@@ -1918,25 +1536,16 @@ export class SelectToSpeak {
             }
           });
     }
-    // Show the parent element of the currently verbalized node with the
-    // focus ring. This is a nicer user-facing behavior than jumping from
-    // node to node, as nodes may not correspond well to paragraphs or
-    // blocks.
-    // TODO: Better test: has no siblings in the group, highlight just
-    // the one node. if it has siblings, highlight the parent.
-    let focusRingRect;
+
     const currentNodeGroup = this.getCurrentNodeGroup_();
-    if (!currentNodeGroup) {
-      return;
+    if (currentNodeGroup) {
+      this.uiManager_.update(
+          currentNodeGroup, /** @type {!AutomationNode} */ (node), {
+            showPanel: this.shouldShowNavigationControls_(),
+            paused: this.isPaused_(),
+            speechRateMultiplier: this.speechRateMultiplier_,
+          });
     }
-    const currentBlockParent = currentNodeGroup.blockParent;
-    if (currentBlockParent !== null && node.role === RoleType.INLINE_TEXT_BOX) {
-      focusRingRect = currentBlockParent.location;
-    } else {
-      focusRingRect = node.location;
-    }
-    this.setFocusRings_([focusRingRect], true /* draw background */);
-    this.updateNavigationPanel_();
   }
 
   /**
@@ -1944,6 +1553,8 @@ export class SelectToSpeak {
    * @private
    */
   testCurrentNode_() {
+    // TODO(crbug.com/1179812): Consider moving to UiManager.
+
     if (this.currentNodeGroupItem_ == null) {
       return;
     }
@@ -1979,8 +1590,9 @@ export class SelectToSpeak {
       var inForeground =
           currentWindow != null && window != null && currentWindow === window;
       if (!inForeground &&
-          (this.isPanel_(window) ||
-           this.isPanel_(NodeUtils.getNearestContainingWindow(focusedNode)))) {
+          (UiManager.isPanel(window) ||
+           UiManager.isPanel(
+               NodeUtils.getNearestContainingWindow(focusedNode)))) {
         // If the focus is on the Select-to-speak panel or the hit test landed
         // on the panel, treat the current node as if it is in the foreground.
         inForeground = true;
@@ -1999,24 +1611,7 @@ export class SelectToSpeak {
     }.bind(this));
   }
 
-  /**
-   * @param {?AutomationNode|undefined} node
-   * @return {boolean} Whether given node is the Select-to-speak floating panel.
-   * @private
-   */
-  isPanel_(node) {
-    if (!node) {
-      return false;
-    }
 
-    // Determine if the node is part of the floating panel or the reading speed
-    // selection bubble.
-    return (
-        node.className === TRAY_BUBBLE_VIEW_CLASS_NAME &&
-        node.children.length === 1 &&
-        (node.children[0].className === SELECT_TO_SPEAK_MENU_CLASS_NAME ||
-         node.children[0].className === SELECT_TO_SPEAK_SPEED_CLASS_NAME));
-  }
 
   /**
    * Updates the currently highlighted node word based on the current text
@@ -2093,8 +1688,8 @@ export class SelectToSpeak {
     }
     // Do not show panel on system UI. System UI can be problematic due to
     // auto-dismissing behavior (see http://crbug.com/1157148), but also
-    // navigation controls do not work well control-rich interfaces that are
-    // light on text (and therefore sentence and paragraph structures).
+    // navigation controls do not work well for control-rich interfaces that are
+    // light on text (and therefore no sentence and paragraph structures).
     return !nodes.some((n) => n.root && n.root.role === RoleType.DESKTOP);
   }
 

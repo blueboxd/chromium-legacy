@@ -90,8 +90,6 @@ void ProcessRegisterAuthenticationFactorRequest(
     TrustedVaultConnection::RegisterAuthenticationFactorCallback callback,
     TrustedVaultRequest::HttpStatus http_status,
     const std::string& response_body) {
-  // TODO(crbug.com/1113598): update |http_status| handling: BAD_REQUEST isn't
-  // relevant anymore, NOT_FOUND and PRECONDITION_FAILED require handling.
   switch (http_status) {
     case TrustedVaultRequest::HttpStatus::kSuccess:
       std::move(callback).Run(TrustedVaultRequestStatus::kSuccess);
@@ -99,7 +97,9 @@ void ProcessRegisterAuthenticationFactorRequest(
     case TrustedVaultRequest::HttpStatus::kOtherError:
       std::move(callback).Run(TrustedVaultRequestStatus::kOtherError);
       return;
-    case TrustedVaultRequest::HttpStatus::kBadRequest:
+    case TrustedVaultRequest::HttpStatus::kNotFound:
+    case TrustedVaultRequest::HttpStatus::kFailedPrecondition:
+      // Local trusted vault keys are outdated.
       std::move(callback).Run(TrustedVaultRequestStatus::kLocalDataObsolete);
       return;
   }
@@ -167,7 +167,8 @@ TrustedVaultConnectionImpl::DownloadNewKeys(
   auto request = std::make_unique<TrustedVaultRequest>(
       TrustedVaultRequest::HttpMethod::kGet,
       GURL(trusted_vault_service_url_.spec() +
-           kListSecurityDomainsURLPathAndQuery),
+           GetGetSecurityDomainMemberURLPathAndQuery(
+               device_key_pair->public_key().ExportToBytes())),
       /*serialized_request_proto=*/base::nullopt);
 
   request->FetchAccessTokenAndSendRequest(

@@ -920,28 +920,6 @@
             ]
         }
     ],
-    "AutofillEnableCardLinkedOffer": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncAutofillWalletOfferData",
-                        "kAutofillEnableOffersInDownstream"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillEnableSupportForMoreStructureInAddresses": [
         {
             "platforms": [
@@ -1878,6 +1856,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CompositingOptimizations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ContentCapture": [
+        {
+            "platforms": [
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ContentCapture"
                     ]
                 }
             ]
@@ -5741,6 +5734,26 @@
                     },
                     "enable_features": [
                         "IsolatePrerenders"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PrivacySandboxSettings": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrivacySandboxSettings"
                     ]
                 }
             ]

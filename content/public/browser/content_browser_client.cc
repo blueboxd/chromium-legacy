@@ -534,7 +534,7 @@ StoragePartitionConfig ContentBrowserClient::GetStoragePartitionConfigForSite(
     const GURL& site) {
   DCHECK(browser_context);
 
-  return StoragePartitionConfig::CreateDefault();
+  return StoragePartitionConfig::CreateDefault(browser_context);
 }
 
 MediaObserver* ContentBrowserClient::GetMediaObserver() {
@@ -987,6 +987,8 @@ bool ContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
 }
 
 void ContentBrowserClient::OnNetworkServiceDataUseUpdate(
+    int process_id,
+    int route_id,
     int32_t network_traffic_annotation_id_hash,
     int64_t recv_bytes,
     int64_t sent_bytes) {}
@@ -1186,7 +1188,7 @@ bool ContentBrowserClient::HasErrorPage(int http_status_code) {
 
 std::unique_ptr<IdentityRequestDialogController>
 ContentBrowserClient::CreateIdentityRequestDialogController() {
-  return nullptr;
+  return std::make_unique<IdentityRequestDialogController>();
 }
 
 bool ContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(

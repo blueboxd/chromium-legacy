@@ -22674,6 +22674,19 @@ Called by update_document_policy_enum.py.-->
   <int value="902" label="SERVICE_POLICY_NOT_FOUND"/>
 </enum>
 
+<enum name="EnterpriseDlpPolicyRestriction">
+  <summary>
+    Type of restriction enforced by Data Leak Prevention policy.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Clipboard"/>
+  <int value="2" label="Screenshot"/>
+  <int value="3" label="Printing"/>
+  <int value="4" label="Privacy Screen"/>
+  <int value="5" label="Screenshare"/>
+  <int value="6" label="Files"/>
+</enum>
+
 <enum name="EnterpriseDMServerRequestSuccess">
   <summary>
     Number of DeviceManagementServer request retries as defined in
@@ -24012,6 +24025,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="EnterpriseRetrievePolicyResponseType">
+  <obsolete>
+    Removed in M91 since the data is no longer monitored.
+  </obsolete>
   <summary>
     Status codes produced by SessionManagerClient for policy retrieval requests.
     Corresponds to RetrievePolicyResponseType in
@@ -43316,6 +43332,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LockToSingleUserResult">
+  <obsolete>
+    Removed in M91, enough data has been gathered.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="No response"/>
   <int value="2" label="Failed to lock"/>
@@ -45151,6 +45170,7 @@ from previous Chrome versions.
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
+  <int value="-558488712" label="PreemtiveLinkToTextGeneration:disabled"/>
   <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
@@ -46565,6 +46585,7 @@ from previous Chrome versions.
   <int value="740619684" label="ExtensionsToolbarMenu:enabled"/>
   <int value="741219332" label="ShareByDefaultInCCT:enabled"/>
   <int value="742083923" label="MimeHandlerViewInCrossProcessFrame:disabled"/>
+  <int value="743714331" label="HelpAppLauncherSearch:enabled"/>
   <int value="744342941" label="SafetyCheckChromeCleanerChild:enabled"/>
   <int value="745541471" label="PaintHolding:disabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
@@ -47018,7 +47039,6 @@ from previous Chrome versions.
   <int value="1177628103" label="GaiaActionButtons:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
-  <int value="1179407596" label="PreemptiveLinkToTextGeneration:enabled"/>
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
@@ -47418,6 +47438,7 @@ from previous Chrome versions.
   <int value="1530182188" label="PdfHonorJsContentSettings:enabled"/>
   <int value="1531164533" label="SyncPseudoUSSFavicons:disabled"/>
   <int value="1531741496" label="DragFromShelfToHomeOrOverview:disabled"/>
+  <int value="1532505461" label="HelpAppLauncherSearch:disabled"/>
   <int value="1533004890" label="CrostiniEnableDlc:enabled"/>
   <int value="1534222388" label="EnableEphemeralFlashPermission:enabled"/>
   <int value="1534386287" label="SendTabToSelfWhenSignedIn:enabled"/>
@@ -47484,6 +47505,7 @@ from previous Chrome versions.
   <int value="1601231448" label="VirtualKeyboardMultipaste:disabled"/>
   <int value="1601582484" label="enable-crash-reporter-for-testing"/>
   <int value="1602627012" label="OverrideSitePrefsForHrefTranslate:enabled"/>
+  <int value="1602791752" label="PreemtiveLinkToTextGeneration:enabled"/>
   <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
   <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1604893983" label="VizForWebView:disabled"/>
@@ -47690,7 +47712,6 @@ from previous Chrome versions.
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
-  <int value="1799526742" label="PreemptiveLinkToTextGeneration:disabled"/>
   <int value="1801585504" label="ContextMenuShopWithGoogleLens:enabled"/>
   <int value="1802874714" label="QueryTilesEnableQueryEditing:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
@@ -83685,6 +83706,15 @@ Called by update_scheduler_enums.py.-->
 <enum name="WorkerType">
   <int value="0" label="SharedWorker"/>
   <int value="1" label="ServiceWorker"/>
+</enum>
+
+<enum name="WrappingKeyDerivation">
+  <int value="0" label="Backed by scrypt"/>
+  <int value="1" label="Backed by LECredential"/>
+  <int value="2" label="Backed by Signature Challenge"/>
+  <int value="3" label="Backed by TPM/GSC bound to PCR"/>
+  <int value="4" label="Backed by TPM/GSC not bound to PCR"/>
+  <int value="5" label="(Deprecated) Backed by scrypt and TPM/GSC"/>
 </enum>
 
 <enum name="WrenchMenuAction">

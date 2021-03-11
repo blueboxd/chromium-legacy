@@ -58,7 +58,6 @@
 #include "services/network/net_log_exporter.h"
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
-#include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/crash_keys.h"
 #include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
@@ -83,7 +82,7 @@
 #endif
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
-#include "services/network/sct_auditing_cache.h"
+#include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif
 
 namespace network {
@@ -329,8 +328,6 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
       net::NetworkChangeNotifier::GetSystemDnsConfigNotifier(), net_log_);
   host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
-  network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
-
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
@@ -338,6 +335,11 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
   trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
+
+  if (params->default_observer) {
+    default_url_loader_network_service_observer_.Bind(
+        std::move(params->default_observer));
+  }
 
   first_party_sets_ = std::make_unique<FirstPartySets>();
   if (net::cookie_util::IsFirstPartySetsEnabled() &&
@@ -436,10 +438,7 @@ void NetworkService::CreateNetLogEntriesForActiveObjects(
   return net::CreateNetLogEntriesForActiveObjects(contexts, observer);
 }
 
-void NetworkService::SetClient(
-    mojo::PendingRemote<mojom::NetworkServiceClient> client,
-    mojom::NetworkServiceParamsPtr params) {
-  client_.Bind(std::move(client));
+void NetworkService::SetParams(mojom::NetworkServiceParamsPtr params) {
   Initialize(std::move(params));
 }
 
@@ -597,11 +596,6 @@ void NetworkService::GetNetworkQualityEstimatorManager(
 void NetworkService::GetDnsConfigChangeManager(
     mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver) {
   dns_config_change_manager_->AddReceiver(std::move(receiver));
-}
-
-void NetworkService::GetTotalNetworkUsages(
-    mojom::NetworkService::GetTotalNetworkUsagesCallback callback) {
-  std::move(callback).Run(network_usage_accumulator_->GetTotalNetworkUsages());
 }
 
 void NetworkService::GetNetworkList(
@@ -792,6 +786,13 @@ void NetworkService::Bind(
     mojo::PendingReceiver<mojom::NetworkService> receiver) {
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
+}
+
+mojom::URLLoaderNetworkServiceObserver*
+NetworkService::GetDefaultURLLoaderNetworkServiceObserver() {
+  if (default_url_loader_network_service_observer_)
+    return default_url_loader_network_service_observer_.get();
+  return nullptr;
 }
 
 // static

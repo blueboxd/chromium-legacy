@@ -122,7 +122,6 @@
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
-#include "components/shared_highlighting/core/common/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -1506,6 +1505,22 @@ const FeatureEntry::FeatureVariation kTabScrollingVariations[] = {
     {" - tabs do not shrink", kMinimumTabWidthSettingFull,
      base::size(kMinimumTabWidthSettingFull), nullptr}};
 
+const FeatureEntry::FeatureParam kTabHoverCardImagesOptimizationCaptureSpeed[] =
+    {{features::kTabHoverCardImagesNotReadyDelayParameterName, "0"},
+     {features::kTabHoverCardImagesLoadingDelayParameterName, "0"},
+     {features::kTabHoverCardImagesLoadedDelayParameterName, "0"}};
+const FeatureEntry::FeatureParam
+    kTabHoverCardImagesOptimizationResourceUsage[] = {
+        {features::kTabHoverCardImagesNotReadyDelayParameterName, "800"},
+        {features::kTabHoverCardImagesLoadingDelayParameterName, "300"},
+        {features::kTabHoverCardImagesLoadedDelayParameterName, "300"}};
+
+const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
+    {" capture speed", kTabHoverCardImagesOptimizationCaptureSpeed,
+     base::size(kTabHoverCardImagesOptimizationCaptureSpeed), nullptr},
+    {" resource usage", kTabHoverCardImagesOptimizationResourceUsage,
+     base::size(kTabHoverCardImagesOptimizationResourceUsage), nullptr}};
+
 const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
     {features::kPromoBrowserCommandIdParam, "0"}};
 const FeatureEntry::FeatureParam
@@ -2024,15 +2039,6 @@ const FeatureEntry::FeatureVariation
          base::size(kPhotoPickerVideoSupportEnabledWithAnimatedThumbnails),
          nullptr}};
 
-const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupBackward[] = {
-    {"action_bar", "backward_button"}};
-const FeatureEntry::FeatureParam kTabbedAppOverflowMenuRegroupShare[] = {
-    {"action_bar", "share_button"}};
-const FeatureEntry::FeatureVariation kTabbedAppOverflowMenuRegroupVariations[] =
-    {{"(backward button)", kTabbedAppOverflowMenuRegroupBackward,
-      base::size(kTabbedAppOverflowMenuRegroupBackward), nullptr},
-     {"(share button)", kTabbedAppOverflowMenuRegroupShare,
-      base::size(kTabbedAppOverflowMenuRegroupShare), nullptr}};
 const FeatureEntry::FeatureParam
     kTabbedAppOverflowMenuThreeButtonActionbarAction[] = {
         {"three_button_action_bar", "action_chip_view"}};
@@ -3092,7 +3098,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kDeprecateLowUsageCodecs)},
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
     {
         "enable-accelerated-video-decode",
         flag_descriptions::kAcceleratedVideoDecodeName,
@@ -3110,7 +3116,7 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid | kOsLinux,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
-#endif  // defined(OS_LINUX) && !defined(OS_ANDROID)
+#endif  // defined(OS_LINUX)
     {
         "disable-accelerated-video-encode",
         flag_descriptions::kAcceleratedVideoEncodeName,
@@ -3361,10 +3367,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-    {"preemptive-link-to-text-generation",
-     flag_descriptions::kPreemptiveLinkToTextGenerationName,
-     flag_descriptions::kPreemptiveLinkToTextGenerationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPreemptiveLinkToTextGeneration)},
+    {"preemtive-link-to-text-generation",
+     flag_descriptions::kPreemtiveLinkToTextGenerationName,
+     flag_descriptions::kPreemtiveLinkToTextGenerationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPreemtiveLinkToTextGeneration)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"keyboard-based-display-arrangement-in-settings",
      flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
@@ -4423,17 +4429,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-    {"tabbed-app-overflow-menu-icons",
-     flag_descriptions::kTabbedAppOverflowMenuIconsName,
-     flag_descriptions::kTabbedAppOverflowMenuIconsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabbedAppOverflowMenuIcons)},
-    {"tabbed-app-overflow-menu-regroup",
-     flag_descriptions::kTabbedAppOverflowMenuRegroupName,
-     flag_descriptions::kTabbedAppOverflowMenuRegroupDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kTabbedAppOverflowMenuRegroup,
-         kTabbedAppOverflowMenuRegroupVariations,
-         "AndroidAppMenuUiRework")},
     {"tabbed-app-overflow-menu-three-button-actionbar",
      flag_descriptions::kTabbedAppOverflowMenuThreeButtonActionbarName,
      flag_descriptions::kTabbedAppOverflowMenuThreeButtonActionbarDescription,
@@ -4849,7 +4844,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabHoverCardImages)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabHoverCardImages,
+                                    kTabHoverCardImagesVariations,
+                                    "TabHoverCardImages")},
 
     {"stop-in-background", flag_descriptions::kStopInBackgroundName,
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
@@ -6317,6 +6314,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
+    {"help-app-launcher-search", flag_descriptions::kHelpAppLauncherSearchName,
+     flag_descriptions::kHelpAppLauncherSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kHelpAppLauncherSearch)},
     {"help-app-search-service-integration",
      flag_descriptions::kHelpAppSearchServiceIntegrationName,
      flag_descriptions::kHelpAppSearchServiceIntegrationDescription, kOsCrOS,

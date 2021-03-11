@@ -7,6 +7,7 @@
   <template>
     <style>
       :host {
+        --cr-icon-button-fill-color: var(--google-grey-refresh-700);
         --cr-icon-button-icon-start-offset: 0;
         --cr-icon-button-icon-size: 20px;
         --cr-icon-button-size: 36px;
@@ -44,7 +45,7 @@
 
       :host(:active) {
         background-color: var(--cr-icon-button-active-background-color,
-            var(--cr-focus-outline-color));
+            var(--cr-active-background-color));
       }
 
       :host([disabled]) {

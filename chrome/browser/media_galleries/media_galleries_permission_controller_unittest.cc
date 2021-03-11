@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -151,7 +153,7 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
   scoped_refptr<extensions::Extension> extension_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 

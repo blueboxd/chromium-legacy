@@ -397,6 +397,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="Enterprise.DevicePolicyDeviceIdValidity"
     enum="EnterprisePolicyDeviceIdValidity" expires_after="M85">
+  <obsolete>
+    Removed in M91 since the data is no longer required.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="EnterpriseDevicePolicyDeviceIdValidity" -->
 
   <owner>emaxx@chromium.org</owner>
@@ -996,6 +999,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.HeartbeatSignalSuccess" enum="BooleanSuccess"
     expires_after="2020-08-01">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>igorcov@chromium.org</owner>
   <owner>poromov@chromium.org</owner>
   <summary>
@@ -1167,6 +1173,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.PolicyHasVerifiedCachedKey"
     enum="BooleanValidKeyExists" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>
     Boolean tracking whether there is a valid policy signing key on disk.
@@ -1207,6 +1216,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.PolicyKeyVerification"
     enum="EnterprisePolicyKeyVerification" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>Tracking the results of policy key verification.</summary>
 </histogram>

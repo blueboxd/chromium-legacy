@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALL_STAGE_TRACKER_H_
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/observer_list.h"
@@ -280,11 +281,15 @@ class InstallStageTracker : public KeyedService {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Contains information about the current user.
   struct UserInfo {
+    UserInfo();
     UserInfo(const UserInfo&);
-    UserInfo(user_manager::UserType user_type, bool is_new_user);
+    UserInfo(user_manager::UserType user_type,
+             bool is_new_user,
+             bool is_user_present);
 
     user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR;
-    bool is_new_user = false;
+    const bool is_new_user = false;
+    const bool is_user_present = false;
   };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -403,8 +408,7 @@ class InstallStageTracker : public KeyedService {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Returns user type of the user associated with the |profile| and whether the
-  // user is new or not. This method should be used only if there is a user
-  // associated with the profile.
+  // user is new or not if there is an active user.
   static UserInfo GetUserInfo(Profile* profile);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

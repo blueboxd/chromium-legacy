@@ -11,13 +11,13 @@
 #include "base/callback_helpers.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "media/capture/video/chromeos/request_builder.h"
-#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -82,16 +82,8 @@ StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
   DCHECK_EQ(format->pixel_format, PIXEL_FORMAT_NV12);
 
   int rotation = device_context_->GetCameraFrameRotation();
-  if (base::FeatureList::IsEnabled(
-          features::kDisableCameraFrameRotationAtSource)) {
-    // For a device that don't have the camera sensor installed to match the
-    // device's natural orientation, we have to fix the sensor orientation here.
-    // Otherwise the recorded video in Chrome camera app would have wrong
-    // orientation because we no longer rotate the frames for the video encoder.
-    rotation = device_context_->GetRotationFromSensorOrientation();
-  }
-
-  if (rotation == 0) {
+  if (rotation == 0 ||
+      !device_context_->IsCameraFrameRotationEnabledAtSource()) {
     return std::move(buffer_pair.vcd_buffer);
   }
 
@@ -301,10 +293,22 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
          ++j) {
       ReserveBuffer(stream_type);
     }
-    CHECK_EQ(stream_context_[stream_type]->free_buffers.size(),
-             stream_context_[stream_type]->stream->max_buffers);
     DVLOG(2) << "Allocated "
              << stream_context_[stream_type]->stream->max_buffers << " buffers";
+
+    if (stream_context_[stream_type]->free_buffers.size() !=
+        stream_context_[stream_type]->stream->max_buffers) {
+      device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerFailedToReserveBuffers,
+          FROM_HERE,
+          StreamTypeToString(stream_type) +
+              base::StringPrintf(
+                  " needs %d buffers but only allocated %zd",
+                  stream_context_[stream_type]->stream->max_buffers,
+                  stream_context_[stream_type]->free_buffers.size()));
+      return;
+    }
   }
 }
 

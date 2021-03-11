@@ -1561,7 +1561,7 @@ void NavigationRequest::BeginNavigation() {
       base::debug::DumpWithoutCrashing();
     }
 
-    ComputeSandboxFlagsToCommit(/*response_head=*/nullptr, required_csp_.get());
+    ComputePoliciesToCommit();
 
     // Same-document navigations occur in the currently loaded document. See
     // also RenderFrameHostManager::DidCreateNavigationRequest() which will
@@ -1685,8 +1685,15 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   // Finally, add the current URL to the vector of redirects.
   // Note: for NavigationRequests created at commit time, the current URL has
   // been added to |commit_params_->redirects|, so don't add it a second time.
-  if (!is_for_commit)
-    redirect_chain_.push_back(common_params_->url);
+  if (!is_for_commit) {
+    if (!common_params_->base_url_for_data_url.is_empty()) {
+      // If this is a loadDataWithBaseURL/loadDataAsStringWithBaseUrl
+      // navigation, use the base URL instead of the data: URL used for commit.
+      redirect_chain_.push_back(common_params_->base_url_for_data_url);
+    } else {
+      redirect_chain_.push_back(common_params_->url);
+    }
+  }
 
   // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
   if (common_params_->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
@@ -2307,13 +2314,17 @@ UrlInfo NavigationRequest::GetUrlInfo() {
 }
 
 const GURL& NavigationRequest::GetOriginalRequestURL() {
-  // If the navigation resulted in an error we should return the URL used to
-  // commit, even if the navigation went through redirects. This is to preserve
-  // the previous behavior where we use the redirect chain from the renderer to
-  // get the original request URL. When we commit an error page, the redirect
-  // chain in the renderer only contains the commit URL.
-  if (net_error_ != net::OK)
+  // If the navigation resulted in an error or this is a loadData navigation we
+  // should return the URL used to commit, even if the navigation went through
+  // redirects. This is to preserve the previous behavior where we use the
+  // edirect chain from the renderer to get the original request URL. When we
+  // commit an error page or a loadDataWithBaseURL/loadDataAsStringWithBaseUrl
+  // navigation, the redirect chain in the renderer only contains the commit
+  // URL.
+  if (net_error_ != net::OK ||
+      NavigationRequest::IsLoadDataWithBaseURL(*common_params_)) {
     return GetURL();
+  }
 
   // Otherwise, return the first URL in the redirect chain. If the navigation
   // is started by a client redirect, this will be the URL of the document that
@@ -2396,7 +2407,7 @@ void NavigationRequest::OnResponseStarted(
     return;
   }
 
-  ComputeSandboxFlagsToCommit(response_head_.get(), required_csp_.get());
+  ComputePoliciesToCommit();
 
   // The navigation may have encountered a header that requests isolation for
   // the url's origin. Before we pick the renderer, make sure we update the
@@ -3422,8 +3433,11 @@ void NavigationRequest::CommitErrorPage(
   // flags from their parent/opener. Document loaded from the network
   // shouldn't have any influence over Chrome's internal error page. We should
   // define our own flags, preferably the strictest ones instead.
-  ComputeSandboxFlagsToCommit(/*response_head=*/nullptr,
-                              /*required_csp=*/nullptr);
+  ComputePoliciesToCommitForError();
+
+  // On failed navigations, the redirect chain should only contain the last URL.
+  redirect_chain_.clear();
+  redirect_chain_.push_back(GetURL());
 
   ReadyToCommitNavigation(true);
   // Use a separate cache shard, and no cookies, for error pages.
@@ -4822,22 +4836,6 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
     UpdatePrivateNetworkRequestPolicy();
   }
 
-  policy_container_navigation_bundle_->SetIPAddressSpace(
-      CalculateIPAddressSpace(common_params_->url, response_head_.get()));
-
-  // Use the unchecked / non-sandboxed origin to calculate potential
-  // trustworthiness. Indeed, the potential trustworthiness check should apply
-  // to the origin of the creation URL, prior to opaquification.
-  policy_container_navigation_bundle_->SetIsOriginPotentiallyTrustworthy(
-      network::IsOriginPotentiallyTrustworthy(
-          GetOriginForURLLoaderFactoryUnchecked(this)));
-
-  if (is_error) {
-    policy_container_navigation_bundle_->FinalizePoliciesForError();
-  } else {
-    policy_container_navigation_bundle_->FinalizePolicies(common_params_->url);
-  }
-
   if (appcache_handle_) {
     DCHECK(appcache_handle_->host());
     appcache_handle_->host()->SetProcessId(
@@ -5667,17 +5665,46 @@ NavigationRequest::TakeCookieObservers() {
   return cookie_observers_.TakeReceivers();
 }
 
+void NavigationRequest::ComputePoliciesToCommit() {
+  policy_container_navigation_bundle_->SetIPAddressSpace(
+      CalculateIPAddressSpace(common_params_->url, response_head_.get()));
+
+  // Use the unchecked / non-sandboxed origin to calculate potential
+  // trustworthiness. Indeed, the potential trustworthiness check should apply
+  // to the origin of the creation URL, prior to opaquification.
+  policy_container_navigation_bundle_->SetIsOriginPotentiallyTrustworthy(
+      network::IsOriginPotentiallyTrustworthy(
+          GetOriginForURLLoaderFactoryUnchecked(this)));
+  policy_container_navigation_bundle_->ComputePolicies(common_params_->url);
+
+  ComputeSandboxFlagsToCommit(response_head_.get(), required_csp_.get());
+}
+
+void NavigationRequest::ComputePoliciesToCommitForError() {
+  policy_container_navigation_bundle_->ComputePoliciesForError();
+  ComputeSandboxFlagsToCommit(/*response_head=*/nullptr,
+                              /*required_csp=*/nullptr);
+}
+
 void NavigationRequest::ComputeSandboxFlagsToCommit(
     const network::mojom::URLResponseHead* response_head,
-    network::mojom::ContentSecurityPolicy* required_csp) {
+    const network::mojom::ContentSecurityPolicy* required_csp) {
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());
   DCHECK(!IsErrorPage());
   DCHECK(!sandbox_flags_to_commit_);
 
+  // Inherit sandbox from the frame.
   sandbox_flags_to_commit_ = commit_params_->frame_policy.sandbox_flags;
 
-  // The response can also restrict the policy further.
+  // The document can also restrict sandbox further, via its CSP.
+  const PolicyContainerPolicies& policies_to_commit =
+      policy_container_navigation_bundle_->FinalPolicies();
+  for (const auto& csp : policies_to_commit.content_security_policies)
+    *sandbox_flags_to_commit_ |= csp->sandbox;
+
+  // TODO(antoniosartori): Remove this block. The response_head CSP should
+  // already be part of the policy container.
   if (response_head) {
     for (const auto& csp :
          response_head->parsed_headers->content_security_policy) {
@@ -5687,6 +5714,8 @@ void NavigationRequest::ComputeSandboxFlagsToCommit(
 
   // If the embedee opts in, the embedder can force its HTMLIframeElement.csp
   // attribute to be used by the embedee.
+  // TODO(antoniosartori): Remove this block. Include required_csp into
+  // policy container directly.
   if (required_csp)
     *sandbox_flags_to_commit_ |= required_csp->sandbox;
 

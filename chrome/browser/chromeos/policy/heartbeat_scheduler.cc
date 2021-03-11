@@ -73,9 +73,6 @@ namespace policy {
 const base::TimeDelta HeartbeatScheduler::kDefaultHeartbeatInterval =
     base::TimeDelta::FromMinutes(2);
 
-const char* const HeartbeatScheduler::kHeartbeatSignalHistogram =
-    "Enterprise.HeartbeatSignalSuccess";
-
 // Helper class used to manage GCM registration (handles retrying after
 // errors, etc).
 class HeartbeatRegistrationHelper {
@@ -191,13 +188,13 @@ HeartbeatScheduler::HeartbeatScheduler(
     return;
 
   heartbeat_frequency_subscription_ =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
+      ash::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kHeartbeatFrequency,
           base::BindRepeating(&HeartbeatScheduler::RefreshHeartbeatSettings,
                               base::Unretained(this)));
 
   heartbeat_enabled_subscription_ =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
+      ash::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kHeartbeatEnabled,
           base::BindRepeating(&HeartbeatScheduler::RefreshHeartbeatSettings,
                               base::Unretained(this)));
@@ -215,7 +212,7 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called
   // back when they are available.
-  chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
+  ash::CrosSettings* settings = ash::CrosSettings::Get();
   if (chromeos::CrosSettingsProvider::TRUSTED !=
       settings->PrepareTrustedValues(
           base::BindOnce(&HeartbeatScheduler::RefreshHeartbeatSettings,
@@ -396,9 +393,6 @@ void HeartbeatScheduler::OnHeartbeatSent(const std::string& message_id,
   // heartbeat.
   DLOG_IF(ERROR, result != gcm::GCMClient::SUCCESS) <<
       "Error sending monitoring heartbeat: " << result;
-
-  UMA_HISTOGRAM_BOOLEAN(kHeartbeatSignalHistogram,
-                        result == gcm::GCMClient::SUCCESS);
 
   last_heartbeat_ = base::Time::NowFromSystemTime();
   ScheduleNextHeartbeat();

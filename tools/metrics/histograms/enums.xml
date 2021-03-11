@@ -9237,6 +9237,9 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BooleanValidKeyExists">
+  <obsolete>
+    Removed in M91 since the data is not monitored
+  </obsolete>
   <int value="0" label="No Valid Cached Key Found"/>
   <int value="1" label="Valid Cached Key Found"/>
 </enum>
@@ -23870,6 +23873,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="EnterprisePolicyKeyVerification">
+  <obsolete>
+    Removed in M91 since the data is not monitored
+  </obsolete>
   <summary>
     Defined as MetricPolicyKeyVerification in
     components/policy/core/common/cloud/cloud_policy_validator.cc.
@@ -31879,6 +31885,16 @@ Called by update_permissions_policy_enum.py.-->
   <int value="1" label="LossyFormat"/>
   <int value="2" label="LosslessFormat"/>
   <int value="3" label="WebPAnimationFormat"/>
+</enum>
+
+<enum name="FeatureUsageEvent">
+  <int value="0"
+      label="Device is eligible for this feature. Recorded once per day."/>
+  <int value="1" label="Feature is enabled by user. Recorded once per day."/>
+  <int value="2"
+      label="Successful attempt to use the feature. Recorded on each event."/>
+  <int value="3"
+      label="Failed attempt to use the feature. Recorded on each event."/>
 </enum>
 
 <enum name="FeedbackSource">
@@ -43147,6 +43163,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Load failed - Checksum not found in prefs"/>
 </enum>
 
+<enum name="LoadSodaResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Binary invalid"/>
+  <int value="3"
+      label="Binary successfully loaded but one or more function pointers are
+             null."/>
+</enum>
+
 <enum name="LoadType">
   <int value="0" label="UNDEFINED_LOAD">Not yet initialized</int>
   <int value="1" label="RELOAD">User pressed reload</int>
@@ -43545,6 +43570,7 @@ from previous Chrome versions.
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1989134646" label="PhoneHubUseBle:disabled"/>
   <int value="-1988840552" label="WebViewExtraHeadersSameOriginOnly:disabled"/>
+  <int value="-1988127107" label="UseNotificationCompatBuilder:enabled"/>
   <int value="-1987939098"
       label="AutofillEnablePasswordInfoBarAccountIndicationFooter:enabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
@@ -46508,6 +46534,7 @@ from previous Chrome versions.
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
   <int value="683013217" label="AllowPopupsDuringPageUnload:disabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
+  <int value="685406951" label="UseNotificationCompatBuilder:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="687838135" label="ThirdPartyDoodles:disabled"/>
   <int value="688254068" label="AppCache:enabled"/>
@@ -80044,6 +80071,13 @@ others/histograms.xml -->
   <int value="4" label="Failure during uninstall"/>
   <int value="5" label="Failure during install"/>
   <int value="6" label="Success"/>
+</enum>
+
+<enum name="WebAppOriginAssociationFetchResult">
+  <summary>Result of web app origin association file fetch.</summary>
+  <int value="0" label="FetchSucceed"/>
+  <int value="1" label="FailedNoResponseBody"/>
+  <int value="2" label="FetchFailedInvalidUrl"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

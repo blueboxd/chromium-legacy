@@ -5311,6 +5311,9 @@
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_BUTTON" desc="Label for the button to view accounts on the Chrome OS Account Manager Welcome screen.">
     View accounts
   </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_TITLE" desc="Title for the Chrome OS 'Add account' dialog.">
+    Sign in to add a Google account
+  </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_TITLE" desc="Title for the Welcome screen in Chrome OS 'Add account' dialog.">
     Add another Google Account for <ph name="USER_NAME">$1<ex>John</ex></ph>
   </message>
@@ -5705,6 +5708,11 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN" desc="String announced by screenreader when a button to undo an autocorrect is shown. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
     Autocorrect undo dialog is shown for <ph name="TYPED_WORD">$1<ex>hllo</ex></ph> corrected to <ph name="CORRECTED_WORD">$2<ex>hello</ex></ph>.  Press up arrow to access, escape to ignore.
+  </message>
+
+  <!-- Strings for emoji picker-->
+  <message name="IDS_ACCNAME_EMOJI_PICKER" desc="The accessible name for the emoji picker.">
+    Emoji Picker
   </message>
 
   <!-- Strings for Custom Tab UI -->

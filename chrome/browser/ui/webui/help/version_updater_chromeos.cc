@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 
 #include <cmath>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -67,7 +68,7 @@ NetworkStatus GetNetworkStatus(bool interactive,
 // Returns true if auto-update is disabled by the system administrator.
 bool IsAutoUpdateDisabled() {
   bool update_disabled = kDefaultAutoUpdateDisabled;
-  chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
+  ash::CrosSettings* settings = ash::CrosSettings::Get();
   if (!settings)
     return update_disabled;
   const base::Value* update_disabled_value =

@@ -24,6 +24,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.app.NotificationCompat;
 import androidx.core.graphics.drawable.IconCompat;
 
+import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.NotificationWrapper;
@@ -503,7 +504,7 @@ public abstract class NotificationBuilderBase {
             // The Icon class was added in Android M.
             Bitmap publicIcon = mSmallIconBitmapForStatusBar.copy(
                     mSmallIconBitmapForStatusBar.getConfig(), true);
-            builder.setSmallIcon(Icon.createWithBitmap(publicIcon));
+            builder.setSmallIcon(ApiHelperForM.createIconWithBitmap(publicIcon));
         } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && mOrigin != null) {
             // Only set the large icon for L & M because on N(+?) it would add an extra icon on
             // the right hand side, which looks odd without a notification title.
@@ -525,8 +526,7 @@ public abstract class NotificationBuilderBase {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     static boolean shouldUseCompat() {
-        // TODO(crbug.com/697104): Enable this via a flag.
-        return false;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.USE_NOTIFICATION_COMPAT_BUILDER);
     }
 
     /**
@@ -539,7 +539,7 @@ public abstract class NotificationBuilderBase {
             NotificationWrapperBuilder builder, int iconId, @Nullable Bitmap iconBitmap) {
         if (iconBitmap != null) {
             assert deviceSupportsBitmapStatusBarIcons();
-            builder.setSmallIcon(Icon.createWithBitmap(iconBitmap));
+            builder.setSmallIcon(ApiHelperForM.createIconWithBitmap(iconBitmap));
         } else {
             builder.setSmallIcon(iconId);
         }
@@ -639,8 +639,8 @@ public abstract class NotificationBuilderBase {
     private static Notification.Action.Builder getActionBuilderStandard(Action action) {
         PendingIntent intent = action.intent.getPendingIntent();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && action.iconBitmap != null) {
-            Icon icon = Icon.createWithBitmap(action.iconBitmap);
-            return new Notification.Action.Builder(icon, action.title, intent);
+            Icon icon = ApiHelperForM.createIconWithBitmap(action.iconBitmap);
+            return ApiHelperForM.newNotificationActionBuilder(icon, action.title, intent);
         }
         return new Notification.Action.Builder(action.iconId, action.title, intent);
     }

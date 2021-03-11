@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -586,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   confirm_payment_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ("Authenticator returned AuthenticatorStatus::NOT_ALLOWED_ERROR.",
+  EXPECT_EQ("Authenticator returned NOT_ALLOWED_ERROR.",
             content::EvalJs(GetActiveWebContents(),
                             content::JsReplace("getChallenge($1, $2);",
                                                credentialIdentifier, "0.01")));

@@ -46,6 +46,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/base_tracing.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -1132,6 +1133,25 @@ std::string GetUniqueNameOfWebFrame(WebFrame* web_frame) {
     return RenderFrameImpl::FromWebFrame(web_frame)->unique_name();
   return RenderFrameProxy::FromWebFrame(web_frame->ToWebRemoteFrame())
       ->unique_name();
+}
+
+perfetto::protos::pbzero::FrameDeleteIntention FrameDeleteIntentionToProto(
+    mojom::FrameDeleteIntention intent) {
+  using ProtoLevel = perfetto::protos::pbzero::FrameDeleteIntention;
+  switch (intent) {
+    case mojom::FrameDeleteIntention::kNotMainFrame:
+      return ProtoLevel::FRAME_DELETE_INTENTION_NOT_MAIN_FRAME;
+    case mojom::FrameDeleteIntention::kSpeculativeMainFrameForShutdown:
+      return ProtoLevel::
+          FRAME_DELETE_INTENTION_SPECULATIVE_MAIN_FRAME_FOR_SHUTDOWN;
+    case mojom::FrameDeleteIntention::
+        kSpeculativeMainFrameForNavigationCancelled:
+      return ProtoLevel::
+          FRAME_DELETE_INTENTION_SPECULATIVE_MAIN_FRAME_FOR_NAVIGATION_CANCELLED;
+  }
+  // All cases should've been handled by the switch case above.
+  NOTREACHED();
+  return ProtoLevel::FRAME_DELETE_INTENTION_NOT_MAIN_FRAME;
 }
 
 }  // namespace
@@ -2330,6 +2350,12 @@ void RenderFrameImpl::Unload(
 }
 
 void RenderFrameImpl::Delete(mojom::FrameDeleteIntention intent) {
+  TRACE_EVENT(
+      "navigation", "RenderFrameImpl::Delete", [&](perfetto::EventContext ctx) {
+        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+        auto* data = event->set_render_frame_impl_deletion();
+        data->set_intent(FrameDeleteIntentionToProto(intent));
+      });
   // The main frame (when not provisional) is owned by the renderer's frame tree
   // via WebViewImpl. When a provisional main frame is swapped in, the ownership
   // moves from the browser to the renderer, but this happens in the renderer
@@ -4234,7 +4260,8 @@ void RenderFrameImpl::DidFinishLoad() {
 void RenderFrameImpl::DidFinishSameDocumentNavigation(
     blink::WebHistoryCommitType commit_type,
     bool content_initiated,
-    bool is_history_api_navigation) {
+    bool is_history_api_navigation,
+    bool is_client_redirect) {
   TRACE_EVENT1("navigation,rail",
                "RenderFrameImpl::didFinishSameDocumentNavigation", "id",
                routing_id_);
@@ -4250,6 +4277,7 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   auto same_document_params =
       mojom::DidCommitSameDocumentNavigationParams::New();
   same_document_params->is_history_api_navigation = is_history_api_navigation;
+  same_document_params->is_client_redirect = is_client_redirect;
   DidCommitNavigationInternal(
       commit_type, transition, network::mojom::WebSandboxFlags(),
       blink::ParsedPermissionsPolicy(),     // permissions_policy_header
@@ -4786,8 +4814,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   if (GURL(frame_document.BaseURL()) != params->url)
     params->base_url = frame_document.BaseURL();
 
-  GetRedirectChain(document_loader, &params->redirects);
-
   // TODO(https://crbug.com/1158101): Reconsider how we calculate
   // should_update_history.
   params->should_update_history =
@@ -4814,8 +4840,13 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // If the page contained a client redirect (meta refresh, document.loc...),
   // set the referrer appropriately.
   if (document_loader->IsClientRedirect()) {
+    // TODO(https://crbug.com/1131832): Remove referrer from
+    // DidCommitProvisionalLoadParams, which also removes the need to save the
+    // redirect chain in the renderer.
+    std::vector<GURL> redirects;
+    GetRedirectChain(document_loader, &redirects);
     params->referrer = blink::mojom::Referrer::New(
-        params->redirects[0], document_loader->GetReferrerPolicy());
+        redirects[0], document_loader->GetReferrerPolicy());
   } else {
     params->referrer = blink::mojom::Referrer::New(
         blink::WebStringToGURL(document_loader->Referrer()),

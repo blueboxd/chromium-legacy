@@ -5,6 +5,7 @@
 #include "chromeos/components/diagnostics_ui/backend/session_log_handler.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -240,7 +241,7 @@ TEST_F(SessionLogHandlerTest, SaveSessionLog) {
       GetLogLineContents(log_lines[11]);
   ASSERT_EQ(3u, first_routine_log_line_contents.size());
   // first_routine_log_line_contents[0] is ignored because it's a timestamp.
-  EXPECT_EQ("RoutineType::kCpuStress", first_routine_log_line_contents[1]);
+  EXPECT_EQ("kCpuStress", first_routine_log_line_contents[1]);
   EXPECT_EQ("Started", first_routine_log_line_contents[2]);
 }
 

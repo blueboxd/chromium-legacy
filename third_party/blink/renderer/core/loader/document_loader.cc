@@ -755,7 +755,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, is_content_initiated,
-      is_history_api_navigation);
+      is_history_api_navigation, is_client_redirect_);
   probe::DidNavigateWithinDocument(frame_);
   if (!was_loading) {
     GetLocalFrameClient().DidStopLoading();
@@ -2466,6 +2466,12 @@ bool DocumentLoader::ConsumeTextFragmentToken() {
   bool token_value = has_text_fragment_token_;
   has_text_fragment_token_ = false;
   return token_value;
+}
+
+void DocumentLoader::NotifyPrerenderingDocumentActivated() {
+  DCHECK(!frame_->GetDocument()->IsPrerendering());
+  DCHECK(is_prerendering_);
+  is_prerendering_ = false;
 }
 
 ContentSecurityPolicy* DocumentLoader::CreateCSP() {

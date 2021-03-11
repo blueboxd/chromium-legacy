@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -236,7 +237,7 @@ void GetUserAffiliationStatus(base::DictionaryValue* dict, Profile* profile) {
 
 void GetOffHoursStatus(base::DictionaryValue* dict) {
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
-      chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
+      ash::DeviceSettingsService::Get()->device_off_hours_controller();
   if (off_hours_controller) {
     dict->SetBoolean("isOffHoursActive",
                      off_hours_controller->is_off_hours_mode());

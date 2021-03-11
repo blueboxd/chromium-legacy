@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/extension_apps.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -116,6 +117,7 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromSharesheet:
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
+    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -437,6 +439,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromSharesheet:
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
+    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
       break;
   }
 

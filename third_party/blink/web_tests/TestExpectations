@@ -234,11 +234,6 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
-# This test currently fails since prerendering activation isn't fully plumbed
-# into the renderer yet.
-crbug.com/1183320 virtual/prerender/wpt_internal/prerender/state_and_event.html [ Timeout ]
-
-
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-iframe-root.html [ Pass Failure ]
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-root.html [ Pass Failure ]
 crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-transformed-root.html [ Pass Failure ]
@@ -5764,3 +5759,4 @@ crbug.com/1184157 http/tests/serviceworker/window-close-during-registration.html
 
 # Sheriff 2021-03-11
 crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-intercept-prop.html [ Pass Failure ]
+crbug.com/1186901 [ Linux ] http/tests/devtools/elements/styles-3/style-autocomplete.js [ Pass Failure ]

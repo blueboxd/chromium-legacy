@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -2376,6 +2377,15 @@ void WebContentsImpl::DidActivatePortal(
   observers_.NotifyObservers(&WebContentsObserver::DidActivatePortal,
                              predecessor_web_contents, activation_time);
   GetDelegate()->WebContentsBecamePortal(predecessor_web_contents);
+}
+
+void WebContentsImpl::NotifyPrerenderingPageActivated() {
+  OPTIONAL_TRACE_EVENT0("content",
+                        "WebContentsImpl::NotifyPrerenderingPageActivated");
+  ExecutePageBroadcastMethod(base::BindRepeating([](RenderViewHostImpl* rvh) {
+    if (auto& broadcast = rvh->GetAssociatedPageBroadcast())
+      broadcast->ActivatePrerender();
+  }));
 }
 
 void WebContentsImpl::NotifyInsidePortal(bool inside_portal) {

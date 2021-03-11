@@ -2540,6 +2540,12 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:reading_list_item_added;comparator:==0;window:365;storage:365",
+                        "event_used": "name:reading_list_menu_opened;comparator:==0;window:365;storage:365",
+                        "session_rate": "<3"
+                    },
                     "enable_features": [
                         "ReadLater"
                     ]
@@ -2793,26 +2799,6 @@
             ]
         }
     ],
-    "DisableOffSequenceTaskCancelation": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DisableOffSequenceTaskCancelation",
-                    "disable_features": [
-                        "AllowOffSequenceTaskCancelation"
-                    ]
-                }
-            ]
-        }
-    ],
     "DiscardableMemoryExperiments": [
         {
             "platforms": [
@@ -2917,25 +2903,6 @@
                     },
                     "enable_features": [
                         "DownloadProgressInfoBar"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DownloadResumptionWithoutStrongValidators": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "download_validation_length": "1024"
-                    },
-                    "enable_features": [
-                        "AllowDownloadResumptionWithoutStrongValidators"
                     ]
                 }
             ]
@@ -3373,27 +3340,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FillingPasswordsFromAnyOrigin"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FindInPageBestEffortPriority": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200601",
-                    "enable_features": [
-                        "BlinkSchedulerBestEffortPriorityForFindInPage"
                     ]
                 }
             ]
@@ -7159,29 +7105,6 @@
             ]
         }
     ],
-    "ThrottleInstallingServiceWorker": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled3_v1",
-                    "params": {
-                        "limit": "3"
-                    },
-                    "enable_features": [
-                        "ThrottleInstallingServiceWorker"
-                    ]
-                }
-            ]
-        }
-    ],
     "TopCat": [
         {
             "platforms": [
@@ -7751,8 +7674,9 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "base_url": "https://staging-gsaprototype-pa.sandbox.googleapis.com",
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
                         "default_locale": "en",
+                        "enable_share": "true",
                         "experiment_tag": "",
                         "fetch_frequency": "15",
                         "use_animated_gif_url": "true"
@@ -7860,25 +7784,6 @@
                     "name": "WKHTTPSystemCookieStore",
                     "enable_features": [
                         "WKHTTPSystemCookieStore"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebApkGooglePlay": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledLaunch",
-                    "params": {
-                        "webapk_extra_installation_space_mb": "100"
-                    },
-                    "enable_features": [
-                        "AdjustWebApkInstallationSpace"
                     ]
                 }
             ]

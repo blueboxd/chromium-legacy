@@ -44,7 +44,7 @@ Basically equivalent to the [same version of original Chromium](https://chromest
 - Sandboxing
   - ~~on 10.7/10.8, sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies~~
     - ~~*TODO: rewrite policies for old OSes*~~
-      - policies have been rewritten for old OSes, now enabled on every OSes.
+      - policies have been rewritten for old OSes, now enabled on every OS.
 - WebAuthn/FIDO2
   - on 10.7, you need patch for `IOHIDFamily.kext` to use USB keys (TBW)
 

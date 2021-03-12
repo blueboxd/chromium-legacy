@@ -19,7 +19,7 @@ import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './languages.m.js';
+import './languages.js';
 import './languages_subpage.js';
 import '../controls/controlled_radio_button.js';
 import '../controls/settings_radio_group.js';
@@ -42,7 +42,7 @@ import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {loadTimeData} from '../i18n_setup.js';
 import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
 import {Route, Router} from '../router.m.js';
 

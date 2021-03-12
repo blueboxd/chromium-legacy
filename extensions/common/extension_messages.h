@@ -95,7 +95,7 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
   IPC_STRUCT_MEMBER(GURL, url)
 
   // Title of the page.
-  IPC_STRUCT_MEMBER(base::string16, url_title)
+  IPC_STRUCT_MEMBER(std::u16string, url_title)
 
   // API name.
   IPC_STRUCT_MEMBER(std::string, api_call)
@@ -623,13 +623,6 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_DispatchOnDisconnect,
                     extensions::PortId /* port_id */,
                     std::string /* error_message */)
 
-// Notify the renderer that an extension wants notifications when certain
-// searches match the active page.  This message replaces the old set of
-// searches, and triggers ExtensionHostMsg_OnWatchedPageChange messages from
-// each tab to keep the browser updated about changes.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_WatchPages,
-                     std::vector<std::string> /* CSS selectors */)
-
 // Messages sent from the renderer to the browser:
 
 // A renderer sends this message when an extension process starts an API
@@ -834,8 +827,8 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddDOMActionToActivityLog,
 // Notifies the browser process that a tab has started or stopped matching
 // certain conditions.  This message is sent in response to several events:
 //
-// * ExtensionMsg_WatchPages was received, updating the set of conditions.
-// * A new page is loaded.  This will be sent after
+// * The WatchPages Mojo method was called, updating the set of
+// * conditions. A new page is loaded.  This will be sent after
 //   mojom::FrameHost::DidCommitProvisionalLoad. Currently this only fires for
 //   the main frame.
 // * Something changed on an existing frame causing the set of matching searches
@@ -852,8 +845,8 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_WakeEventPage,
 // Tells listeners that a detailed message was reported to the console by
 // WebKit.
 IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
-                    base::string16 /* message */,
-                    base::string16 /* source */,
+                    std::u16string /* message */,
+                    std::u16string /* source */,
                     extensions::StackTrace /* stack trace */,
                     int32_t /* severity level */)
 
@@ -862,7 +855,7 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
 IPC_MESSAGE_ROUTED3(ExtensionMsg_AutomationQuerySelector,
                     int /* request_id */,
                     int /* acc_obj_id */,
-                    base::string16 /* selector */)
+                    std::u16string /* selector */)
 
 // Result of a query selector request.
 // result_acc_obj_id is the accessibility tree ID of the result element; 0

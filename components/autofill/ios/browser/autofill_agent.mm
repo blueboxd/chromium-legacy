@@ -75,7 +75,6 @@ using autofill::FormRendererId;
 using autofill::FieldDataManager;
 using autofill::FieldRendererId;
 using autofill::FieldPropertiesFlags::kAutofilledOnUserTrigger;
-using autofill::kNotSetRendererID;
 
 namespace {
 
@@ -89,7 +88,7 @@ typedef void (^FetchFormsCompletionHandler)(BOOL, const FormDataVector&);
 // modifies the field's value for the select elements.
 void GetFormField(autofill::FormFieldData* field,
                   const autofill::FormData& form,
-                  const base::string16& fieldIdentifier) {
+                  const std::u16string& fieldIdentifier) {
   for (const auto& currentField : form.fields) {
     if (currentField.unique_id == fieldIdentifier &&
         currentField.is_focusable) {
@@ -105,7 +104,7 @@ void GetFormField(autofill::FormFieldData* field,
     // Any value set will cause the AutofillManager to filter suggestions (only
     // show suggestions that begin the same as the current value) with the
     // effect that one only suggestion would be returned; the value itself.
-    field->value = base::string16();
+    field->value = std::u16string();
   }
 }
 
@@ -130,7 +129,7 @@ void GetFormField(autofill::FormFieldData* field,
   // The name and the unique renderer ID of the most recent autocomplete field;
   // tracks the currently-focused form element in order to force filling of
   // the currently selected form element, even if it's non-empty.
-  base::string16 _pendingAutocompleteField;
+  std::u16string _pendingAutocompleteField;
   FieldRendererId _pendingAutocompleteFieldID;
 
   // Suggestions state:
@@ -272,14 +271,14 @@ autofillManagerFromWebState:(web::WebState*)webState
 // Calls |completionHandler| with NO if the forms could not be extracted.
 // |completionHandler| cannot be nil.
 - (void)fetchFormsFiltered:(BOOL)filtered
-                      withName:(const base::string16&)formName
+                      withName:(const std::u16string&)formName
     minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                        inFrame:(web::WebFrame*)frame
              completionHandler:(FetchFormsCompletionHandler)completionHandler {
   DCHECK(completionHandler);
 
   // Necessary so the values can be used inside a block.
-  base::string16 formNameCopy = formName;
+  std::u16string formNameCopy = formName;
   GURL pageURL = _webState->GetLastCommittedURL();
   GURL frameOrigin = frame ? frame->GetSecurityOrigin() : pageURL.GetOrigin();
   [_jsAutofillManager
@@ -404,7 +403,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (autofill::ExtractIDs(jsonString, &clearingResults)) {
     for (auto uniqueID : clearingResults) {
       _fieldDataManager->UpdateFieldDataMap(FieldRendererId(uniqueID),
-                                            base::string16(),
+                                            std::u16string(),
                                             kAutofilledOnUserTrigger);
     }
   }
@@ -482,11 +481,9 @@ autofillManagerFromWebState:(web::WebState*)webState
   auto autofillData =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   autofillData->SetKey("formName", base::Value(base::UTF16ToUTF8(form.name)));
-  uint32_t formRendererID = form.unique_renderer_id
-                                ? form.unique_renderer_id.value()
-                                : autofill::kNotSetRendererID;
-  autofillData->SetKey("formRendererID",
-                       base::Value(static_cast<int>(formRendererID)));
+  autofillData->SetKey(
+      "formRendererID",
+      base::Value(static_cast<int>(form.unique_renderer_id.value())));
 
   bool useRendererIDs = base::FeatureList::IsEnabled(
       autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
@@ -499,11 +496,9 @@ autofillManagerFromWebState:(web::WebState*)webState
     base::Value fieldData(base::Value::Type::DICTIONARY);
     fieldData.SetKey("value", base::Value(field.value));
     fieldData.SetKey("section", base::Value(field.section));
-    uint32_t fieldRendererID = field.unique_renderer_id
-                                   ? field.unique_renderer_id.value()
-                                   : autofill::kNotSetRendererID;
     if (useRendererIDs) {
-      fieldsData.SetKey(NumberToString(fieldRendererID), std::move(fieldData));
+      fieldsData.SetKey(NumberToString(field.unique_renderer_id.value()),
+                        std::move(fieldData));
     } else {
       fieldsData.SetKey(base::UTF16ToUTF8(field.unique_id),
                         std::move(fieldData));
@@ -752,7 +747,7 @@ autofillManagerFromWebState:(web::WebState*)webState
           MIN(autofill::kMinRequiredFieldsForHeuristics,
               autofill::kMinRequiredFieldsForQuery));
   [self fetchFormsFiltered:NO
-                        withName:base::string16()
+                        withName:std::u16string()
       minimumRequiredFieldsCount:min_required_fields
                          inFrame:webFrame
                completionHandler:completionHandler];
@@ -896,11 +891,10 @@ autofillManagerFromWebState:(web::WebState*)webState
 - (void)fillField:(const std::string&)fieldIdentifier
     uniqueFieldID:(FieldRendererId)uniqueFieldID
          formName:(const std::string&)formName
-            value:(const base::string16)value
+            value:(const std::u16string)value
           inFrame:(web::WebFrame*)frame {
   auto data = std::make_unique<base::DictionaryValue>();
-  data->SetInteger("unique_renderer_id",
-                   uniqueFieldID ? uniqueFieldID.value() : kNotSetRendererID);
+  data->SetInteger("unique_renderer_id", uniqueFieldID.value());
   data->SetString("identifier", fieldIdentifier);
   data->SetString("form", formName);
   data->SetString("value", value);
@@ -926,7 +920,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)updateFieldManagerWithFillingResults:(NSString*)jsonString {
-  std::map<uint32_t, base::string16> fillingResults;
+  std::map<uint32_t, std::u16string> fillingResults;
   if (autofill::ExtractFillingResults(jsonString, &fillingResults)) {
     for (auto& fillData : fillingResults) {
       _fieldDataManager->UpdateFieldDataMap(FieldRendererId(fillData.first),

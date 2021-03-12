@@ -103,7 +103,7 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
   return SET_DEFAULT_UNATTENDED;
 }
 
-base::string16 GetApplicationNameForProtocol(const GURL& url) {
+std::u16string GetApplicationNameForProtocol(const GURL& url) {
   typedef CFURLRef (*LSCopyDefaultApplicationURLForURLPtr)(CFURLRef, LSRolesMask, CFErrorRef  _Nullable *);
   static const LSCopyDefaultApplicationURLForURLPtr LSCopyDefaultApplicationURLForURLFuncPtr =
       reinterpret_cast<LSCopyDefaultApplicationURLForURLPtr>(dlsym(((void *) -2), "LSCopyDefaultApplicationURLForURL"));
@@ -115,14 +115,14 @@ base::string16 GetApplicationNameForProtocol(const GURL& url) {
         (CFURLRef)ns_url, kLSRolesAll, out_err.InitializeInto()));
     if (out_err) {
       // likely kLSApplicationNotFoundErr
-      return base::string16();
+      return std::u16string();
     }
     NSString* appPath = [base::mac::CFToNSCast(openingApp.get()) path];
     NSString* appDisplayName =
         [[NSFileManager defaultManager] displayNameAtPath:appPath];
     return base::SysNSStringToUTF16(appDisplayName);
   } else {
-    return base::string16();
+    return std::u16string();
   }
 }
 

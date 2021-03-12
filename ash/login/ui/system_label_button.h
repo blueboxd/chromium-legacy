@@ -18,7 +18,7 @@ class ASH_EXPORT SystemLabelButton : public views::LabelButton {
   enum class DisplayType { DEFAULT, ALERT_NO_ICON, ALERT_WITH_ICON };
 
   SystemLabelButton(PressedCallback callback,
-                    const base::string16& text,
+                    const std::u16string& text,
                     DisplayType display_type,
                     bool multiline = false);
   SystemLabelButton(const SystemLabelButton&) = delete;
@@ -33,6 +33,9 @@ class ASH_EXPORT SystemLabelButton : public views::LabelButton {
   // {DEFAULT, ALERT_NO_ICON}. We can't change display type from or to
   // ALERT_WITH_ICON once it has been set (no UX interest to do so right now).
   void SetDisplayType(DisplayType display_type);
+
+  // views::View:
+  void OnThemeChanged() override;
 
  private:
   // Mode could be either default or alert. This methods set the background and

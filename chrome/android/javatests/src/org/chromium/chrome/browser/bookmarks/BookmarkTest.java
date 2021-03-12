@@ -88,7 +88,6 @@ import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
@@ -1780,41 +1779,6 @@ public class BookmarkTest {
     }
 
     @Test
-    @MediumTest
-    @EnableFeatures({ChromeFeatureList.READ_LATER,
-            ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR + "<Study"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:three_button_action_bar/add_to_option"})
-    public void
-    testAddReadingListItemFromAddToOption() throws Exception {
-        mActivityTestRule.loadUrl(mTestPage);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting());
-        BookmarkTestUtil.waitForBookmarkModelLoaded();
-
-        mActionTester = new UserActionTester();
-        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), R.id.add_to_reading_list_menu_id);
-        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getReadingListItem(mTestPage) != null);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Check reading list item states.
-            BookmarkItem readingListItem = mBookmarkModel.getReadingListItem(mTestPage);
-            Assert.assertEquals(mTestPage, readingListItem.getUrl());
-            Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE, readingListItem.getTitle());
-            Assert.assertFalse(readingListItem.isRead());
-
-            // Reading list snackbar has shown.
-            SnackbarManager snackbarManager = mActivityTestRule.getActivity().getSnackbarManager();
-            Snackbar currentSnackbar = snackbarManager.getCurrentSnackbarForTesting();
-            Assert.assertEquals("Add to reading list snackbar not shown.",
-                    Snackbar.UMA_READING_LIST_BOOKMARK_ADDED,
-                    currentSnackbar.getIdentifierForTesting());
-        });
-        Assert.assertThat(
-                mActionTester.getActions(), Matchers.hasItem("MobileMenuAddToReadingList"));
-    }
-
-    @Test
     @SmallTest
     @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testShowBookmarkManagerReadingListPage() {
@@ -1865,6 +1829,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1187193")
     public void testRecordsHistogramWhenBookmarkManagerOpened_InRegular() throws Throwable {
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -1886,6 +1851,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1187193")
     public void testRecordsHistogramWhenBookmarkManagerOpened_InIncognito() throws Throwable {
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(

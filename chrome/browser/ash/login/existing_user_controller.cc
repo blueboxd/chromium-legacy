@@ -406,7 +406,6 @@ ExistingUserController* ExistingUserController::current_controller() {
 
 ExistingUserController::ExistingUserController()
     : cros_settings_(CrosSettings::Get()),
-      screen_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       network_state_helper_(new login::NetworkStateHelper) {
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
@@ -497,7 +496,6 @@ void ExistingUserController::UpdateLoginDisplay(
   }
 
   auto login_users = ExtractLoginUsers(users);
-  ForceOnlineFlagChanged(login_users);
 
   // ExistingUserController owns PasswordSyncTokenLoginCheckers only if user
   // pods are hidden.
@@ -519,57 +517,6 @@ void ExistingUserController::UpdateLoginDisplay(
   GetLoginDisplay()->Init(login_users, show_guest, show_users_on_signin,
                           allow_new_user);
   GetLoginDisplayHost()->OnPreferencesChanged();
-}
-
-// Check GAIA with/without SAML offline time limits for `users` and
-// schedules next check if needed and returns true if any of user's force
-// online sign-in flag is changed.
-bool ExistingUserController::ForceOnlineFlagChanged(
-    const user_manager::UserList& users) {
-  bool force_online_flag_changed = false;
-  base::TimeDelta min_delta = base::TimeDelta::Max();
-  for (auto* user : users) {
-    const base::Optional<base::TimeDelta> offline_signin_limit =
-        user_manager::known_user::GetOfflineSigninLimit(user->GetAccountId());
-    if (!offline_signin_limit) {
-      continue;
-    }
-
-    const base::Time last_online_signin =
-        user_manager::known_user::GetLastOnlineSignin(user->GetAccountId());
-    base::TimeDelta time_to_next_online_signin = login::TimeToOnlineSignIn(
-        last_online_signin, offline_signin_limit.value());
-    if (time_to_next_online_signin > base::TimeDelta() &&
-        time_to_next_online_signin < min_delta) {
-      min_delta = time_to_next_online_signin;
-    }
-    if (time_to_next_online_signin < base::TimeDelta() &&
-        !user->force_online_signin()) {
-      user_manager::UserManager::Get()->SaveForceOnlineSignin(
-          user->GetAccountId(), true);
-      force_online_flag_changed = true;
-    }
-  }
-  if (min_delta < base::TimeDelta::Max()) {
-    // Schedule update task. If the timer was already running (which is possible
-    // when device settings get updated and we are re-running
-    // UpdateLoginDisplay) we will restart screen_refresh_timer_ with a new
-    // timeout value.
-    screen_refresh_timer_->Start(
-        FROM_HERE, min_delta,
-        base::BindOnce(&ExistingUserController::
-                           CheckSamlOfflineTimeLimitAndUpdateLoginDisplay,
-                       weak_factory_.GetWeakPtr(), users));
-  }
-  return force_online_flag_changed;
-}
-
-// Calls ForceOnlineFlagChanged and schedules the next call.
-void ExistingUserController::CheckSamlOfflineTimeLimitAndUpdateLoginDisplay(
-    const user_manager::UserList& users) {
-  if (ForceOnlineFlagChanged(users)) {
-    ash::LoginScreen::Get()->ShowLoginScreen();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,7 +576,7 @@ void ExistingUserController::CompleteLogin(const UserContext& user_context) {
                      weak_factory_.GetWeakPtr(), user_context));
 }
 
-base::string16 ExistingUserController::GetConnectedNetworkName() {
+std::u16string ExistingUserController::GetConnectedNetworkName() {
   return network_state_helper_->GetCurrentNetworkName();
 }
 
@@ -705,7 +652,7 @@ void ExistingUserController::PerformLogin(
   // profile is ready.
   UserContext new_user_context = user_context;
   if (user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
-    base::string16 password(
+    std::u16string password(
         base::UTF8ToUTF16(new_user_context.GetKey()->GetSecret()));
     new_user_context.SetSyncPasswordData(password_manager::PasswordHashData(
         user_context.GetAccountId().GetUserEmail(), password,
@@ -736,8 +683,6 @@ void ExistingUserController::PerformLogin(
                                   timer_init_->Elapsed());
     timer_init_.reset();
   }
-  // Stop screen refresh timer - will be restarted on login screen again
-  screen_refresh_timer_->Stop();
 }
 
 void ExistingUserController::ContinuePerformLogin(
@@ -1076,9 +1021,9 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
-  const base::string16 title =
+  const std::u16string title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
-  const base::string16 message = l10n_util::GetStringFUTF16(
+  const std::u16string message = l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING,
       base::UTF8ToUTF16(connector->GetEnterpriseDomainManager()));
   auto delegate =
@@ -1090,7 +1035,7 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kAutoLaunchNotificationId,
-          title, message, base::string16(), GURL(),
+          title, message, std::u16string(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kAutoLaunchNotifierId),
@@ -1719,7 +1664,6 @@ void ExistingUserController::DoCompleteLogin(
 void ExistingUserController::DoLogin(const UserContext& user_context,
                                      const SigninSpecifics& specifics) {
   last_login_attempt_was_auto_login_ = specifics.is_auto_login;
-  screen_refresh_timer_->Stop();
   VLOG(2) << "DoLogin with a user type: " << user_context.GetUserType();
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {

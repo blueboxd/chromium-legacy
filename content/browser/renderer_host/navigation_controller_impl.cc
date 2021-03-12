@@ -561,7 +561,7 @@ NavigationControllerImpl::CreateNavigationEntry(
   auto entry = std::make_unique<NavigationEntryImpl>(
       nullptr,  // The site instance for tabs is sent on navigation
                 // (WebContents::GetSiteInstance).
-      url_to_load, referrer, initiator_origin, base::string16(), transition,
+      url_to_load, referrer, initiator_origin, std::u16string(), transition,
       is_renderer_initiated, blob_url_loader_factory);
   entry->SetVirtualURL(virtual_url);
   entry->set_user_typed_url(virtual_url);
@@ -1549,7 +1549,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
     new_entry = std::make_unique<NavigationEntryImpl>(
         rfh->GetSiteInstance(), params.url, Referrer(*params.referrer),
         initiator_origin,
-        base::string16(),  // title
+        std::u16string(),  // title
         params.transition, request->IsRendererInitiated(),
         nullptr);  // blob_url_loader_factory
 
@@ -2485,7 +2485,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
 }
 
 void NavigationControllerImpl::SetSessionStorageNamespace(
-    const std::string& partition_id,
+    const StoragePartitionId& partition_id,
     SessionStorageNamespace* session_storage_namespace) {
   if (!session_storage_namespace)
     return;
@@ -2495,9 +2495,9 @@ void NavigationControllerImpl::SetSessionStorageNamespace(
   // so die hard on an error.
   bool successful_insert =
       session_storage_namespace_map_
-          .insert(
-              make_pair(partition_id, static_cast<SessionStorageNamespaceImpl*>(
-                                          session_storage_namespace)))
+          .insert(std::make_pair(partition_id,
+                                 static_cast<SessionStorageNamespaceImpl*>(
+                                     session_storage_namespace)))
           .second;
   CHECK(successful_insert) << "Cannot replace existing SessionStorageNamespace";
 }
@@ -2509,7 +2509,7 @@ bool NavigationControllerImpl::IsUnmodifiedBlankTab() {
 
 SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
     SiteInstance* instance) {
-  std::string partition_id;
+  StoragePartitionId partition_id;
   if (instance) {
     // TODO(ajwong): When GetDefaultSessionStorageNamespace() goes away, remove
     // this if statement so |instance| must not be null.
@@ -3445,8 +3445,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
-          frame_entry->committed_origin(), override_user_agent,
-          params.redirect_chain,
+          frame_entry->committed_origin(), network::mojom::WebSandboxFlags(),
+          override_user_agent, params.redirect_chain,
           std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(),
           std::string() /* post_content_type */, common_params->url,

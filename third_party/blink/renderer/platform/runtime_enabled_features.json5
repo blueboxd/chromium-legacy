@@ -1022,6 +1022,10 @@
       status: "experimental",
     },
     {
+      name: "HighlightAPI",
+      status: "experimental",
+    },
+    {
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
@@ -1323,7 +1327,7 @@
     },
     {
       name: "ModuleServiceWorker",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "MojoJS",
@@ -1906,6 +1910,9 @@
     {
       name: "SkipTouchEventFilter",
       settable_from_internals: true,
+    },
+    {
+      name: "SpeculationRules",
     },
     {
       name: "SrcsetMaxDensity",

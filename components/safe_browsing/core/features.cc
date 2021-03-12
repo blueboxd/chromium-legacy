@@ -71,7 +71,7 @@ const base::Feature kPasswordProtectionForSavedPasswords{
 
 const base::Feature kPasswordProtectionReferringAppEnabledAndroid{
     "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
     "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
@@ -85,9 +85,6 @@ const base::Feature kPasswordProtectionForSignedInUsers{
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-const base::Feature kPromptAppForDeepScanning{
-    "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingEnterpriseCsd{
     "SafeBrowsingEnterpriseCsd", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -162,7 +159,6 @@ constexpr struct {
     {&kPasswordProtectionReferringAppEnabledAndroid, true},
     {&kPasswordProtectionShowDomainsForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
-    {&kPromptAppForDeepScanning, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupEnabledForEnterprise, true},
     {&kRealTimeUrlLookupEnterpriseGaEndpoint, true},

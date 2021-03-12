@@ -132,7 +132,7 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
-      const std::string& partition_id,
+      const content::StoragePartitionId& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
   // BackgroundContentsServiceObserver:
@@ -254,7 +254,7 @@ content::WebContents* DriveWebContentsManager::CreateCustomWebContents(
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
-    const std::string& partition_id,
+    const content::StoragePartitionId& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
   // The background contents creation is normally done in Browser, but
   // because we're using a detached WebContents, we need to do it ourselves.
@@ -433,7 +433,7 @@ void DriveFirstRunController::ShowNotification() {
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kDriveOfflineNotificationId,
-      base::string16(),  // title
+      std::u16string(),  // title
       l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE),
       resource_bundle.GetImageNamed(IDR_NOTIFICATION_DRIVE),
       base::UTF8ToUTF16(extension->name()), GURL(),

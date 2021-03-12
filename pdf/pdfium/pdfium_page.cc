@@ -27,7 +27,7 @@
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
-#include "pdf/thumbnail.h"
+#include "pdf/ui/thumbnail.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -1008,10 +1008,10 @@ void PDFiumPage::PopulateWebLinks() {
   for (int i = 0; i < count; ++i) {
     // WARNING: FPDFLink_GetURL() is not compatible with
     // CallPDFiumWideStringBufferApi().
-    base::string16 url;
+    std::u16string url;
     int url_length = FPDFLink_GetURL(links.get(), i, nullptr, 0);
     if (url_length > 0) {
-      PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
+      PDFiumAPIStringBufferAdapter<std::u16string> api_string_adapter(
           &url, url_length, true);
       unsigned short* data =
           reinterpret_cast<unsigned short*>(api_string_adapter.GetData());

@@ -71,7 +71,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
       content::WebContents* web_contents,
       int request_id,
       int acc_obj_id,
-      const base::string16& query,
+      const std::u16string& query,
       extensions::AutomationInternalQuerySelectorFunction::Callback callback)
       : content::WebContentsObserver(web_contents),
         request_id_(request_id),
@@ -152,16 +152,15 @@ class AutomationWebContentsObserver
   // content::WebContentsObserver overrides.
   void AccessibilityEventReceived(const content::AXEventNotificationDetails&
                                       content_event_bundle) override {
-    ExtensionMsg_AccessibilityEventBundleParams extension_event_bundle;
-    extension_event_bundle.updates = content_event_bundle.updates;
-    extension_event_bundle.events = content_event_bundle.events;
-    extension_event_bundle.tree_id = content_event_bundle.ax_tree_id;
+    gfx::Point mouse_location;
 #if defined(USE_AURA)
-    extension_event_bundle.mouse_location =
-        aura::Env::GetInstance()->last_mouse_location();
+    mouse_location = aura::Env::GetInstance()->last_mouse_location();
 #endif
     AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-    router->DispatchAccessibilityEvents(extension_event_bundle);
+    router->DispatchAccessibilityEvents(
+        std::move(content_event_bundle.ax_tree_id),
+        std::move(content_event_bundle.updates), mouse_location,
+        std::move(content_event_bundle.events));
   }
 
   void DidStartNavigation(content::NavigationHandle* navigation) override {
@@ -689,7 +688,7 @@ AutomationInternalQuerySelectorFunction::Run() {
       content::WebContents::FromRenderFrameHost(rfh);
 
   int request_id = query_request_id_counter_++;
-  base::string16 selector = base::UTF8ToUTF16(params->args.selector);
+  std::u16string selector = base::UTF8ToUTF16(params->args.selector);
 
   // QuerySelectorHandler handles IPCs and deletes itself on completion.
   new QuerySelectorHandler(

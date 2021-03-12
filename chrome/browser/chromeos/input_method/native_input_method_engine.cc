@@ -73,7 +73,7 @@ std::string NormalizeEngineId(const std::string engine_id) {
   return engine_id;
 }
 
-base::string16 ConvertToUtf16AndNormalize(const std::string& str) {
+std::u16string ConvertToUtf16AndNormalize(const std::string& str) {
   // TODO(https://crbug.com/1185629): Add a new helper in
   // base/i18n/icu_string_conversions.h that does the conversion directly
   // without a redundant UTF16->UTF8 conversion.
@@ -159,11 +159,14 @@ void NativeInputMethodEngine::Initialize(
   chrome_keyboard_controller_client_observer_.Observe(
       ChromeKeyboardControllerClient::Get());
 
-  pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kLanguageInputMethodSpecificSettings,
-      base::BindRepeating(&NativeInputMethodEngine::OnInputMethodPrefsChanged,
-                          base::Unretained(this)));
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kSystemLatinPhysicalTyping)) {
+    pref_change_registrar_.Init(profile->GetPrefs());
+    pref_change_registrar_.Add(
+        prefs::kLanguageInputMethodSpecificSettings,
+        base::BindRepeating(&NativeInputMethodEngine::OnInputMethodPrefsChanged,
+                            base::Unretained(this)));
+  }
 
   // Wrap the given observer in our observer that will decide whether to call
   // Mojo directly or forward to the extension.
@@ -370,7 +373,7 @@ void NativeInputMethodEngine::ImeObserver::OnCompositionBoundsChanged(
 
 void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     const std::string& engine_id,
-    const base::string16& text,
+    const std::u16string& text,
     int cursor_pos,
     int anchor_pos,
     int offset_pos) {

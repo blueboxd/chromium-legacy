@@ -57,6 +57,11 @@ MediaControlsProgressView::MediaControlsProgressView(
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCollapseMargins(true);
 
+  // TODO(1157582): |progress_time_| and |duration_| should use
+  // AshColorProvider. There is no reason to keep this code in components/
+  // so it can be moved to ash/login/ui, which would allow the usage of Ash
+  // colors.
+
   auto progress_time = std::make_unique<views::Label>();
   progress_time->SetFontList(font_list);
   progress_time->SetEnabledColor(kTimeColor);
@@ -73,7 +78,7 @@ MediaControlsProgressView::MediaControlsProgressView(
 
   auto duration = std::make_unique<views::Label>();
   duration->SetFontList(font_list);
-  duration->SetEnabledColor(SK_ColorWHITE);
+  duration->SetEnabledColor(kTimeColor);
   duration->SetAutoColorReadabilityEnabled(false);
   duration_ = time_view->AddChildView(std::move(duration));
 
@@ -99,11 +104,11 @@ void MediaControlsProgressView::UpdateProgress(
       duration >= base::TimeDelta::FromDays(1) ? base::DURATION_WIDTH_NARROW
                                                : base::DURATION_WIDTH_NUMERIC;
 
-  base::string16 elapsed_time;
+  std::u16string elapsed_time;
   bool elapsed_time_received = base::TimeDurationFormatWithSeconds(
       current_position, time_format, &elapsed_time);
 
-  base::string16 total_time;
+  std::u16string total_time;
   bool total_time_received =
       base::TimeDurationFormatWithSeconds(duration, time_format, &total_time);
 
@@ -164,12 +169,12 @@ const views::ProgressBar* MediaControlsProgressView::progress_bar_for_testing()
   return progress_bar_;
 }
 
-const base::string16& MediaControlsProgressView::progress_time_for_testing()
+const std::u16string& MediaControlsProgressView::progress_time_for_testing()
     const {
   return progress_time_->GetText();
 }
 
-const base::string16& MediaControlsProgressView::duration_for_testing() const {
+const std::u16string& MediaControlsProgressView::duration_for_testing() const {
   return duration_->GetText();
 }
 
@@ -177,11 +182,11 @@ void MediaControlsProgressView::SetBarProgress(double progress) {
   progress_bar_->SetValue(progress);
 }
 
-void MediaControlsProgressView::SetProgressTime(const base::string16& time) {
+void MediaControlsProgressView::SetProgressTime(const std::u16string& time) {
   progress_time_->SetText(time);
 }
 
-void MediaControlsProgressView::SetDuration(const base::string16& duration) {
+void MediaControlsProgressView::SetDuration(const std::u16string& duration) {
   duration_->SetText(duration);
 }
 

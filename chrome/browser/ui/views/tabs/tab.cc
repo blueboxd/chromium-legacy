@@ -582,11 +582,13 @@ void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
   if (mouse_hovered_ || !GetWidget()->IsMouseEventsEnabled())
     return;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
   // Move the hit test area for hovering up so that it is not overlapped by tab
   // hover cards when they are shown.
-  // TODO(crbug/978134): Once Linux/CrOS widget transparency is solved, remove
-  // this case.
+  // TODO(crbug.com/978134): Once Linux/CrOS widget transparency is solved,
+  // remove that case.
+  // TODO(crbug.com/1187189): Once Mac widget transparency is solved, remove
+  // that case.
   constexpr int kHoverCardOverlap = 6;
   if (event.location().y() >= height() - kHoverCardOverlap)
     return;
@@ -642,9 +644,9 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-base::string16 Tab::GetTooltipText(const gfx::Point& p) const {
+std::u16string Tab::GetTooltipText(const gfx::Point& p) const {
   // Tab hover cards replace tooltips for tabs.
-  return base::string16();
+  return std::u16string();
 }
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -653,7 +655,7 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
 
-  base::string16 name = controller_->GetAccessibleTabName(this);
+  std::u16string name = controller_->GetAccessibleTabName(this);
   if (!name.empty()) {
     node_data->SetName(name);
   } else {
@@ -818,7 +820,7 @@ void Tab::SetData(TabRendererData data) {
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
   UpdateTabIconNeedsAttentionBlocked();
 
-  base::string16 title = data_.title;
+  std::u16string title = data_.title;
   if (title.empty() && !data_.should_render_empty_title) {
     title = icon_->GetShowingLoadingAnimation()
                 ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
@@ -872,12 +874,12 @@ void Tab::ReleaseFreezingVoteToken() {
 }
 
 // static
-base::string16 Tab::GetTooltipText(const base::string16& title,
+std::u16string Tab::GetTooltipText(const std::u16string& title,
                                    base::Optional<TabAlertState> alert_state) {
   if (!alert_state)
     return title;
 
-  base::string16 result = title;
+  std::u16string result = title;
   if (!result.empty())
     result.append(1, '\n');
   result.append(chrome::GetTabAlertStateText(alert_state.value()));

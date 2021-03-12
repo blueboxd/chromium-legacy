@@ -1,19 +1,4 @@
 {
-    "AVFoundationCaptureV2": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AVFoundationCaptureV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "AbusiveOriginNotificationPermissionRevocation": [
         {
             "platforms": [
@@ -1324,35 +1309,6 @@
             ]
         }
     ],
-    "CastMediaRouteProviderAndGlobalMediaControlsForCast": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "CMRP_and_GMCFC_enabled",
-                    "enable_features": [
-                        "CastMediaRouteProvider",
-                        "GlobalMediaControlsForCast"
-                    ]
-                },
-                {
-                    "name": "CMRP_enabled_GMCFC_disabled",
-                    "enable_features": [
-                        "CastMediaRouteProvider"
-                    ],
-                    "disable_features": [
-                        "GlobalMediaControlsForCast"
-                    ]
-                }
-            ]
-        }
-    ],
     "CctClientDataHeader": [
         {
             "platforms": [
@@ -1441,30 +1397,6 @@
                     "enable_features": [
                         "ChangePasswordAffiliationInfo",
                         "UseOfHashAffiliationFetcher"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CheckOfflineCapability": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "check_mode": "enforce",
-                        "timeout_second": "10"
-                    },
-                    "enable_features": [
-                        "CheckOfflineCapability"
                     ]
                 }
             ]
@@ -2003,27 +1935,6 @@
             ]
         }
     ],
-    "ContextualSearch": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "SuppressionExperiment",
-                    "params": {
-                        "contextual-search-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/contextual_search/test_ranker_model_20171109_short_words_v2.pb.bin",
-                        "enable_bar_overlap_suppression": "true"
-                    },
-                    "enable_features": [
-                        "ContextualSearchMlTapSuppression",
-                        "ContextualSearchRankerQuery",
-                        "ContextualSearchSecondTap"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextualSearchLongpressResolve": [
         {
             "platforms": [
@@ -2314,38 +2225,6 @@
                     "name": "Enabled_20201130",
                     "enable_features": [
                         "DecoupleSyncFromAndroidMasterSync"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DeepScanningForAppUsers": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Prompt for scanning",
-                    "enable_features": [
-                        "SafeBrowsingPromptAppForDeepScanning"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DefaultEnableOopRasterization": [
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "DefaultEnableOopRasterization",
-                    "enable_features": [
-                        "DefaultEnableOopRasterization"
                     ]
                 }
             ]
@@ -2973,37 +2852,6 @@
             ]
         }
     ],
-    "DownloadsAutoResumptionNative": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DownloadsAutoResumptionNative"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DownloadsLocationChange": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DownloadsLocationChange"
-                    ]
-                }
-            ]
-        }
-    ],
     "DriveFsBidirectionalNativeMessaging": [
         {
             "platforms": [
@@ -3241,23 +3089,6 @@
                     },
                     "enable_features": [
                         "ExploreSites"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ExtensionSettingsOverriddenDialogs": [
-        {
-            "platforms": [
-                "chromeos",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ExtensionSettingsOverriddenDialogs"
                     ]
                 }
             ]
@@ -4602,21 +4433,6 @@
             ]
         }
     ],
-    "NewUsbBackend": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NewUsbBackend"
-                    ]
-                }
-            ]
-        }
-    ],
     "NotificationTimeouts": [
         {
             "platforms": [
@@ -5262,28 +5078,6 @@
                     "name": "EnableQuic",
                     "enable_features": [
                         "UseParallelRequestsForQUIC"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ParallelDownloading": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "ThreeRequests_Enabled",
-                    "params": {
-                        "min_slice_size": "1365333",
-                        "parallel_request_delay": "0",
-                        "parallel_request_remaining_time": "2",
-                        "request_count": "3"
-                    },
-                    "enable_features": [
-                        "ParallelDownloading"
                     ]
                 }
             ]
@@ -7088,23 +6882,6 @@
             ]
         }
     ],
-    "TextfieldFocusOnTapUp": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TextfieldFocusOnTapUp"
-                    ]
-                }
-            ]
-        }
-    ],
     "TopCat": [
         {
             "platforms": [
@@ -7973,26 +7750,6 @@
             ]
         }
     ],
-    "WebRTC-Video-MinVideoBitrate": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled,vp8_br:10kbps,vp9_br:29kbps"
-                }
-            ]
-        }
-    ],
     "WebRTC-Vp9DependencyDescriptor": [
         {
             "platforms": [
@@ -8235,21 +7992,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WifiSyncAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WindowsNativeSpellChecker": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WinUseBrowserSpellChecker"
                     ]
                 }
             ]

@@ -109,7 +109,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
           NULL, web_contents(), ContentSettingsType::COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
-  base::string16 title = bubble_content.title;
+  std::u16string title = bubble_content.title;
   EXPECT_FALSE(title.empty());
   ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
@@ -716,9 +716,20 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(2U, new_bubble_content.media_menus.size());
 }
 
-TEST_F(ContentSettingBubbleModelTest, Geolocation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
+class GeolocationContentSettingBubbleModelTest
+    : public ContentSettingBubbleModelTest {
+ public:
+  GeolocationContentSettingBubbleModelTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kMacCoreLocationImplementation);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(GeolocationContentSettingBubbleModelTest, Geolocation) {
+  ASSERT_TRUE(profile()->CreateHistoryService());
 
 #if defined(OS_MAC)
   auto fake_geolocation_permission_manager =
@@ -1008,9 +1019,9 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           nullptr, web_contents(), ContentSettingsType::IMAGES));
-  base::string16 title =
+  std::u16string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
-  ASSERT_NE(base::string16::npos, title.find(base::UTF8ToUTF16(file_url)));
+  ASSERT_NE(std::u16string::npos, title.find(base::UTF8ToUTF16(file_url)));
 }
 
 TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {

@@ -33,7 +33,7 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   // ProjectorController:
   void SetClient(ash::ProjectorClient* client) override;
   void OnSpeechRecognitionAvailable(bool available) override;
-  void OnTranscription(const base::string16& text,
+  void OnTranscription(const std::u16string& text,
                        base::TimeDelta audio_start_time,
                        base::TimeDelta audio_end_time,
                        const std::vector<base::TimeDelta>& word_offsets,
@@ -56,6 +56,8 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
 
   // Saves the screencast including metadata.
   void SaveScreencast(const base::FilePath& saved_video_path);
+
+  void OnLaserPointerPressed();
 
   void SetProjectorUiControllerForTest(
       std::unique_ptr<ProjectorUiController> ui_controller);

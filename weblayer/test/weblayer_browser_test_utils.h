@@ -61,7 +61,7 @@ void ExecuteScriptWithUserGesture(Shell* shell, const std::string& script);
 void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script);
 
 /// Gets the title of the current webpage in |shell|.
-const base::string16& GetTitle(Shell* shell);
+const std::u16string& GetTitle(Shell* shell);
 
 // Sets up the autofill system to be one that simply forwards detected forms to
 // the passed-in callback.
@@ -74,11 +74,6 @@ void InitializeAutofillWithEventForwarding(
 void ActivateSubresourceFilterInWebContentsForURL(
     content::WebContents* web_contents,
     const GURL& url);
-
-// Waits for the subresource filter ruleset data to be published as part of
-// WebLayer startup. Returns immediately if ruleset data has already been
-// published.
-void WaitForSubresourceFilterRulesetDataToBePublished();
 
 class OneShotNavigationObserver : public NavigationObserver {
  public:

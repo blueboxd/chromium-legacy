@@ -9,7 +9,6 @@
 #include "base/test/bind.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
-#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "url/gurl.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/subresource_filter_client_impl.h"
@@ -85,7 +84,7 @@ void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script) {
   tab_impl->ExecuteScriptWithUserGestureForTests(base::ASCIIToUTF16(script));
 }
 
-const base::string16& GetTitle(Shell* shell) {
+const std::u16string& GetTitle(Shell* shell) {
   TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
 
   return tab_impl->web_contents()->GetTitle();
@@ -114,19 +113,6 @@ void ActivateSubresourceFilterInWebContentsForURL(
           FromWebContents(web_contents)
               ->client());
   client_impl->set_database_manager_for_testing(std::move(database_manager));
-}
-
-void WaitForSubresourceFilterRulesetDataToBePublished() {
-  auto* ruleset_service =
-      BrowserProcess::GetInstance()->subresource_filter_ruleset_service();
-
-  if (!ruleset_service->GetMostRecentlyIndexedVersion().IsValid()) {
-    base::RunLoop run_loop;
-    ruleset_service->SetRulesetPublishedCallbackForTesting(
-        run_loop.QuitClosure());
-
-    run_loop.Run();
-  }
 }
 
 OneShotNavigationObserver::OneShotNavigationObserver(Shell* shell)

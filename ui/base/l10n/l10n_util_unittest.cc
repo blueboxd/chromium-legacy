@@ -4,8 +4,10 @@
 
 #include <stddef.h>
 
+#include <cstring>
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -39,11 +41,11 @@ namespace {
 
 class StringWrapper {
  public:
-  explicit StringWrapper(const base::string16& string) : string_(string) {}
-  const base::string16& string() const { return string_; }
+  explicit StringWrapper(const std::u16string& string) : string_(string) {}
+  const std::u16string& string() const { return string_; }
 
  private:
-  base::string16 string_;
+  std::u16string string_;
 
   DISALLOW_COPY_AND_ASSIGN(StringWrapper);
 };
@@ -62,7 +64,7 @@ TEST_F(L10nUtilTest, GetString) {
                                 UTF8ToUTF16("10"));
   EXPECT_EQ(std::string("Hello, chrome. Your number is 10."), s);
 
-  base::string16 s16 = l10n_util::GetStringFUTF16Int(IDS_PLACEHOLDERS_2, 20);
+  std::u16string s16 = l10n_util::GetStringFUTF16Int(IDS_PLACEHOLDERS_2, 20);
 
   // Consecutive '$' characters override any placeholder functionality.
   // See //base/strings/string_util.h ReplaceStringPlaceholders().
@@ -406,9 +408,9 @@ void CheckUiDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale,
                                  bool is_rtl) {
   EXPECT_EQ(true, base::i18n::IsRTL());
-  base::string16 result = l10n_util::GetDisplayNameForLocale(locale,
-                                                       display_locale,
-                                                       /* is_for_ui */ true);
+  std::u16string result =
+      l10n_util::GetDisplayNameForLocale(locale, display_locale,
+                                         /* is_for_ui */ true);
 
   bool rtl_direction = true;
   for (size_t i = 0; i < result.length() - 1; i++) {
@@ -434,7 +436,7 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
   // Displays as "Chinese, Simplified" on iOS 13+ and as "Chinese (Simplified)"
   // on other platforms.
-  base::string16 result =
+  std::u16string result =
       l10n_util::GetDisplayNameForLocale("zh-CN", "en", false);
   EXPECT_TRUE(
       base::MatchPattern(base::UTF16ToUTF8(result), "Chinese*Simplified*"));
@@ -487,21 +489,21 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   // ToUpper and ToLower should work with embedded NULLs.
   const size_t length_with_null = 4;
   char16_t buf_with_null[length_with_null] = {0, 'a', 0, 'b'};
-  base::string16 string16_with_null(buf_with_null, length_with_null);
+  std::u16string string16_with_null(buf_with_null, length_with_null);
 
-  base::string16 upper_with_null = base::i18n::ToUpper(string16_with_null);
+  std::u16string upper_with_null = base::i18n::ToUpper(string16_with_null);
   ASSERT_EQ(length_with_null, upper_with_null.size());
   EXPECT_TRUE(upper_with_null[0] == 0 && upper_with_null[1] == 'A' &&
               upper_with_null[2] == 0 && upper_with_null[3] == 'B');
 
-  base::string16 lower_with_null = base::i18n::ToLower(upper_with_null);
+  std::u16string lower_with_null = base::i18n::ToLower(upper_with_null);
   ASSERT_EQ(length_with_null, upper_with_null.size());
   EXPECT_TRUE(lower_with_null[0] == 0 && lower_with_null[1] == 'a' &&
               lower_with_null[2] == 0 && lower_with_null[3] == 'b');
 }
 
 TEST_F(L10nUtilTest, GetDisplayNameForCountry) {
-  base::string16 result = l10n_util::GetDisplayNameForCountry("BR", "en");
+  std::u16string result = l10n_util::GetDisplayNameForCountry("BR", "en");
   EXPECT_EQ(ASCIIToUTF16("Brazil"), result);
 
   result = l10n_util::GetDisplayNameForCountry("419", "en");
@@ -583,13 +585,60 @@ TEST_F(L10nUtilTest, TimeDurationFormatAllLocales) {
   // Verify that base::TimeDurationFormat() works for all available locales:
   // http://crbug.com/707515
   base::TimeDelta kDelta = base::TimeDelta::FromMinutes(15 * 60 + 42);
-  for (const std::string& locale : l10n_util::GetAvailableLocales()) {
+  for (const std::string& locale : l10n_util::GetAvailableICULocales()) {
     base::i18n::SetICUDefaultLocale(locale);
-    base::string16 str;
+    std::u16string str;
     const bool result =
         base::TimeDurationFormat(kDelta, base::DURATION_WIDTH_NUMERIC, &str);
     EXPECT_TRUE(result) << "Failed to format duration for " << locale;
     if (result)
       EXPECT_FALSE(str.empty()) << "Got empty string for " << locale;
+  }
+}
+
+TEST_F(L10nUtilTest, GetLocalesWithStrings) {
+  // Convert the vector to a set for easy lookup.
+  const base::flat_set<std::string> locales =
+      l10n_util::GetLocalesWithStrings();
+
+  // Common locales which should be available on all platforms.
+  EXPECT_TRUE(locales.contains("en") || locales.contains("en-US"));
+  EXPECT_TRUE(locales.contains("en-GB"));
+  EXPECT_TRUE(locales.contains("es") || locales.contains("es-ES"));
+  EXPECT_TRUE(locales.contains("fr") || locales.contains("fr-FR"));
+
+  // Locales that we should have valid fallbacks for.
+  EXPECT_TRUE(locales.contains("en-CA"));
+  EXPECT_TRUE(locales.contains("es-AR"));
+  EXPECT_TRUE(locales.contains("fr-CA"));
+
+  // Locales that should not be included:
+  // English (Germany). A valid locale and in ICU's list of locales, but not in
+  // our list of Accept-Language locales.
+  EXPECT_FALSE(locales.contains("en-DE"));
+  // Esperanto. Unlikely to be localised and historically included in
+  // GetAvailableICULocales.
+  EXPECT_FALSE(locales.contains("eo"));
+}
+
+TEST_F(L10nUtilTest, PlatformLocalesIsSorted) {
+  const char* const* locales = l10n_util::GetPlatformLocalesForTesting();
+  const size_t locales_size = l10n_util::GetPlatformLocalesSizeForTesting();
+
+  // Check adjacent pairs and ensure they are in sorted order without
+  // duplicates.
+
+  // All 0-length and 1-length lists are sorted.
+  if (locales_size <= 1) {
+    return;
+  }
+
+  const char* last_locale = locales[0];
+  for (size_t i = 1; i < locales_size; i++) {
+    const char* cur_locale = locales[i];
+    EXPECT_LT(strcmp(last_locale, cur_locale), 0)
+        << "Incorrect ordering in kPlatformLocales: " << last_locale
+        << " >= " << cur_locale;
+    last_locale = cur_locale;
   }
 }

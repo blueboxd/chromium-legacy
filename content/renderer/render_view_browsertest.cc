@@ -267,6 +267,12 @@ class MockedLocalFrameHostInterceptorTestRenderFrame : public TestRenderFrame {
   std::unique_ptr<MockedLocalFrameHostInterceptor> local_frame_host_;
 };
 
+mojom::CommitNavigationParamsPtr DummyCommitNavigationParams() {
+  mojom::CommitNavigationParamsPtr params = CreateCommitNavigationParams();
+  params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
+  return params;
+}
+
 }  // namespace
 
 class RenderViewImplTest : public RenderViewTest {
@@ -360,7 +366,7 @@ class RenderViewImplTest : public RenderViewTest {
   int SendKeyEventX11(MockKeyboard::Layout layout,
                       int key_code,
                       MockKeyboard::Modifiers modifiers,
-                      base::string16* output) {
+                      std::u16string* output) {
     // We ignore |layout|, which means we are only testing the layout of the
     // current locale. TODO(mazda): fix this to respect |layout|.
     CHECK(output);
@@ -403,7 +409,7 @@ class RenderViewImplTest : public RenderViewTest {
   int SendKeyEventOzone(MockKeyboard::Layout layout,
                         int key_code,
                         MockKeyboard::Modifiers modifiers,
-                        base::string16* output) {
+                        std::u16string* output) {
     int flags = ConvertMockKeyboardModifier(modifiers);
 
     ui::KeyEvent keydown_event(ui::ET_KEY_PRESSED,
@@ -434,7 +440,7 @@ class RenderViewImplTest : public RenderViewTest {
   int SendKeyEvent(MockKeyboard::Layout layout,
                    int key_code,
                    MockKeyboard::Modifiers modifiers,
-                   base::string16* output) {
+                   std::u16string* output) {
 #if defined(OS_WIN)
     // Retrieve the Unicode character for the given tuple (keyboard-layout,
     // key-code, and modifiers).
@@ -566,11 +572,11 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void TestEmulatedSizeDprDsf(int width, int height, float dpr, float dsf) {
-    static base::string16 get_width =
+    static std::u16string get_width =
         base::ASCIIToUTF16("Number(window.innerWidth)");
-    static base::string16 get_height =
+    static std::u16string get_height =
         base::ASCIIToUTF16("Number(window.innerHeight)");
-    static base::string16 get_dpr =
+    static std::u16string get_dpr =
         base::ASCIIToUTF16("Number(window.devicePixelRatio * 10)");
 
     int emulated_width, emulated_height;
@@ -821,7 +827,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   post_data->AppendBytes(raw_data, length);
   common_params->post_data = post_data;
 
-  frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
+  frame()->Navigate(std::move(common_params), DummyCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
 
   auto last_commit_params = frame()->TakeLastCommitParams();
@@ -859,7 +865,7 @@ class UpdateTitleLocalFrameHost : public LocalFrameHostInterceptor {
       : LocalFrameHostInterceptor(provider) {}
 
   MOCK_METHOD2(UpdateTitle,
-               void(const base::Optional<::base::string16>& title,
+               void(const base::Optional<::std::u16string>& title,
                     base::i18n::TextDirection title_direction));
 };
 }  // namespace
@@ -892,7 +898,7 @@ TEST_F(RenderViewImplUpdateTitleTest, MAYBE_OnNavigationLoadDataWithBaseURL) {
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
   common_params->base_url_for_data_url = GURL("about:blank");
   common_params->history_url_for_data_url = GURL("about:blank");
-  auto commit_params = CreateCommitNavigationParams();
+  auto commit_params = DummyCommitNavigationParams();
   commit_params->data_url_as_string =
       "data:text/html,<html><head><title>Data page</title></head></html>";
   FrameLoadWaiter waiter(frame());
@@ -900,11 +906,11 @@ TEST_F(RenderViewImplUpdateTitleTest, MAYBE_OnNavigationLoadDataWithBaseURL) {
   waiter.Wait();
 
   // While LocalFrame is initialized, it's called with an empty title.
-  const base::Optional<::base::string16> null_title;
+  const base::Optional<::std::u16string> null_title;
   EXPECT_CALL(*title_mock_frame_host(), UpdateTitle(null_title, testing::_))
       .Times(1);
 
-  const base::Optional<::base::string16>& title =
+  const base::Optional<::std::u16string>& title =
       base::make_optional(base::ASCIIToUTF16("Data page"));
   EXPECT_CALL(*title_mock_frame_host(), UpdateTitle(title, testing::_))
       .Times(1);
@@ -1280,7 +1286,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
 
   provisional_frame->Navigate(std::move(common_params),
-                              CreateCommitNavigationParams());
+                              DummyCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
@@ -1288,14 +1294,14 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
             view()->GetWebView()->ZoomFactorForDeviceScaleFactor());
 
   double device_pixel_ratio;
-  base::string16 get_dpr =
+  std::u16string get_dpr =
       base::ASCIIToUTF16("Number(window.devicePixelRatio)");
   EXPECT_TRUE(
       ExecuteJavaScriptAndReturnNumberValue(get_dpr, &device_pixel_ratio));
   EXPECT_EQ(device_scale, device_pixel_ratio);
 
   int width;
-  base::string16 get_width =
+  std::u16string get_width =
       base::ASCIIToUTF16("Number(document.documentElement.clientWidth)");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
   EXPECT_EQ(view()->GetWebView()->MainFrameWidget()->Size().width(),
@@ -2055,7 +2061,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_CANCELCOMPOSITION:
         GetWidgetInputHandler()->ImeSetComposition(
-            base::string16(), std::vector<ui::ImeTextSpan>(),
+            std::u16string(), std::vector<ui::ImeTextSpan>(),
             gfx::Range::InvalidRange(), 0, 0);
         break;
     }
@@ -2070,7 +2076,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       // Retrieve the content of this page and compare it with the expected
       // result.
       const int kMaxOutputCharacters = 128;
-      base::string16 output = TestWebFrameContentDumper::DumpWebViewAsText(
+      std::u16string output = TestWebFrameContentDumper::DumpWebViewAsText(
                                   view()->GetWebView(), kMaxOutputCharacters)
                                   .Utf16();
       EXPECT_EQ(base::WideToUTF16(ime_message->result), output);
@@ -2121,7 +2127,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     // Copy the document content to std::wstring and compare with the
     // expected result.
     const int kMaxOutputCharacters = 16;
-    base::string16 output = TestWebFrameContentDumper::DumpWebViewAsText(
+    std::u16string output = TestWebFrameContentDumper::DumpWebViewAsText(
                                 view()->GetWebView(), kMaxOutputCharacters)
                                 .Utf16();
     EXPECT_EQ(base::WideToUTF16(test_case.expected_result), output);
@@ -2138,7 +2144,7 @@ TEST_F(RenderViewImplTest, DroppedNavigationStaysInViewSourceMode) {
   auto common_params = CreateCommonNavigationParams();
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->url = GURL("data:text/html,test data");
-  frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
+  frame()->Navigate(std::move(common_params), DummyCommitNavigationParams());
 
   // A cancellation occurred.
   view()->GetMainRenderFrame()->OnDroppedNavigation();
@@ -2245,7 +2251,7 @@ TEST_F(RenderViewImplContextMenuTest, AndroidContextMenuSelectionOrdering) {
   message_loop_runner->Run();
 
   int did_select = -1;
-  base::string16 check_did_select = base::ASCIIToUTF16(
+  std::u16string check_did_select = base::ASCIIToUTF16(
       "Number(document.getElementById('result').innerHTML == 'Selected')");
   EXPECT_TRUE(
       ExecuteJavaScriptAndReturnIntValue(check_did_select, &did_select));
@@ -2257,14 +2263,14 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page A</div>");
   blink::PageState page_a_state = GetCurrentPageState();
   int was_page_a = -1;
-  base::string16 check_page_a = base::ASCIIToUTF16(
+  std::u16string check_page_a = base::ASCIIToUTF16(
       "Number(document.getElementById('pagename').innerHTML == 'Page A')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
   EXPECT_EQ(1, was_page_a);
 
   LoadHTML("<div id=pagename>Page B</div>");
   int was_page_b = -1;
-  base::string16 check_page_b = base::ASCIIToUTF16(
+  std::u16string check_page_b = base::ASCIIToUTF16(
       "Number(document.getElementById('pagename').innerHTML == 'Page B')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
@@ -2273,7 +2279,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
 
   LoadHTML("<div id=pagename>Page C</div>");
   int was_page_c = -1;
-  base::string16 check_page_c = base::ASCIIToUTF16(
+  std::u16string check_page_c = base::ASCIIToUTF16(
       "Number(document.getElementById('pagename').innerHTML == 'Page C')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_c);
@@ -2321,13 +2327,13 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   auto* widget_input_handler = GetWidgetInputHandler();
-  const base::string16 empty_string;
+  const std::u16string empty_string;
   const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds;
   widget_input_handler->SetFocus(true);
 
   // ASCII composition
-  const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
+  const std::u16string ascii_composition = base::UTF8ToUTF16("aiueo");
   widget_input_handler->ImeSetComposition(
       ascii_composition, empty_ime_text_span, gfx::Range::InvalidRange(), 0, 0);
   bounds = LastCompositionBounds();
@@ -2340,7 +2346,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       0, base::DoNothing());
 
   // Non surrogate pair unicode character.
-  const base::string16 unicode_composition = base::UTF8ToUTF16(
+  const std::u16string unicode_composition = base::UTF8ToUTF16(
       "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   widget_input_handler->ImeSetComposition(unicode_composition,
                                           empty_ime_text_span,
@@ -2354,7 +2360,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
                                       base::DoNothing());
 
   // Surrogate pair character.
-  const base::string16 surrogate_pair_char =
+  const std::u16string surrogate_pair_char =
       base::UTF8ToUTF16("\xF0\xA0\xAE\x9F");
   widget_input_handler->ImeSetComposition(surrogate_pair_char,
                                           empty_ime_text_span,
@@ -2368,7 +2374,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
                                       base::DoNothing());
 
   // Mixed string.
-  const base::string16 surrogate_pair_mixed_composition =
+  const std::u16string surrogate_pair_mixed_composition =
       surrogate_pair_char + base::UTF8ToUTF16("\xE3\x81\x82") +
       surrogate_pair_char + base::UTF8ToUTF16("b") + surrogate_pair_char;
   const size_t utf16_length = 8UL;
@@ -2555,7 +2561,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
   common_params->navigation_start = base::TimeTicks::FromInternalValue(1);
-  auto commit_params = CreateCommitNavigationParams();
+  auto commit_params = DummyCommitNavigationParams();
   commit_params->current_history_list_length = 1;
   commit_params->current_history_list_offset = 0;
   commit_params->pending_history_list_offset = 1;
@@ -2594,7 +2600,7 @@ class TextSelectionChangedLocalFrameHost : public LocalFrameHostInterceptor {
       blink::AssociatedInterfaceProvider* provider)
       : LocalFrameHostInterceptor(provider) {}
   MOCK_METHOD3(TextSelectionChanged,
-               void(const base::string16& text,
+               void(const std::u16string& text,
                     uint32_t offset,
                     const gfx::Range& range));
 };
@@ -2680,7 +2686,7 @@ TEST_F(RendererErrorPageTest, RegularError) {
   common_params->url = GURL("http://example.com/error-page");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->NavigateWithError(
-      std::move(common_params), CreateCommitNavigationParams(),
+      std::move(common_params), DummyCommitNavigationParams(),
       net::ERR_FILE_NOT_FOUND, net::ResolveErrorInfo(net::OK),
       "A suffusion of yellow.");
 
@@ -2755,7 +2761,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params.Clone(), CreateCommitNavigationParams());
+  frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
@@ -2773,7 +2779,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartSanitized) {
   auto late_common_params = MakeCommonNavigationParams(TimeDelta::FromDays(42));
   late_common_params->method = "POST";
 
-  frame()->Navigate(late_common_params.Clone(), CreateCommitNavigationParams());
+  frame()->Navigate(late_common_params.Clone(), DummyCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   base::Time after_navigation =
       base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -2793,7 +2799,7 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
 
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params.Clone(), CreateCommitNavigationParams());
+  frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
@@ -2817,7 +2823,7 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   // The browser navigation_start should not be used because beforeunload will
   // be fired during Navigate.
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params.Clone(), CreateCommitNavigationParams());
+  frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
 
   // The browser navigation_start is always used.
@@ -2844,7 +2850,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_back->navigation_type =
       mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(-1, back_state, common_params_back.Clone(),
-                       CreateCommitNavigationParams());
+                       DummyCommitNavigationParams());
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
 
@@ -2860,7 +2866,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_forward->navigation_type =
       mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(1, forward_state, common_params_forward.Clone(),
-                       CreateCommitNavigationParams());
+                       DummyCommitNavigationParams());
   navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params_forward->navigation_start,
@@ -2873,7 +2879,7 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   common_params->navigation_type =
       mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
 
-  auto commit_params = CreateCommitNavigationParams();
+  auto commit_params = DummyCommitNavigationParams();
   commit_params->page_state = blink::PageState::CreateForTesting(
       common_params->url, false, nullptr, nullptr);
   commit_params->nav_entry_id = 42;
@@ -2941,7 +2947,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
                    view()->HistoryForwardListCount() + 1);
 
   // Receive a CommitNavigation message with history parameters.
-  auto commit_params = CreateCommitNavigationParams();
+  auto commit_params = DummyCommitNavigationParams();
   commit_params->current_history_list_offset = 1;
   commit_params->current_history_list_length = 2;
   frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
@@ -2960,7 +2966,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnHistoryNavigation) {
                    view()->HistoryForwardListCount() + 1);
 
   // Receive a CommitNavigation message with history parameters.
-  auto commit_params = CreateCommitNavigationParams();
+  auto commit_params = DummyCommitNavigationParams();
   commit_params->current_history_list_offset = 1;
   commit_params->current_history_list_length = 25;
   commit_params->pending_history_list_offset = 12;
@@ -2981,7 +2987,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
                    view()->HistoryForwardListCount() + 1);
 
   // Receive a CommitNavigation message with history parameters.
-  auto commit_params = CreateCommitNavigationParams();
+  auto commit_params = DummyCommitNavigationParams();
   commit_params->current_history_list_offset = 12;
   commit_params->current_history_list_length = 25;
   commit_params->should_clear_history_list = true;
@@ -3002,22 +3008,22 @@ class AddMessageToConsoleMockLocalFrameHost : public LocalFrameHostInterceptor {
 
   void DidAddMessageToConsole(
       blink::mojom::ConsoleMessageLevel log_level,
-      const base::string16& msg,
+      const std::u16string& msg,
       int32_t line_number,
-      const base::Optional<base::string16>& source_id,
-      const base::Optional<base::string16>& untrusted_stack_trace) override {
+      const base::Optional<std::u16string>& source_id,
+      const base::Optional<std::u16string>& untrusted_stack_trace) override {
     if (did_add_message_to_console_callback_) {
       std::move(did_add_message_to_console_callback_).Run(msg);
     }
   }
 
   void SetDidAddMessageToConsoleCallback(
-      base::OnceCallback<void(const base::string16& msg)> callback) {
+      base::OnceCallback<void(const std::u16string& msg)> callback) {
     did_add_message_to_console_callback_ = std::move(callback);
   }
 
  private:
-  base::OnceCallback<void(const base::string16& msg)>
+  base::OnceCallback<void(const std::u16string& msg)>
       did_add_message_to_console_callback_;
 };
 }  // namespace
@@ -3049,7 +3055,7 @@ TEST_F(RenderViewImplAddMessageToConsoleTest,
   base::RunLoop run_loop;
   bool was_callback_run = false;
   message_mock_frame_host()->SetDidAddMessageToConsoleCallback(
-      base::BindOnce(base::BindLambdaForTesting([&](const base::string16& msg) {
+      base::BindOnce(base::BindLambdaForTesting([&](const std::u16string& msg) {
         // Makes sure this happens during the beforeunload handler.
         EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
 
@@ -3077,7 +3083,7 @@ class AlertDialogMockLocalFrameHost : public LocalFrameHostInterceptor {
       : LocalFrameHostInterceptor(provider) {}
 
   MOCK_METHOD2(RunModalAlertDialog,
-               void(const base::string16& alert_message,
+               void(const std::u16string& alert_message,
                     RunModalAlertDialogCallback callback));
 };
 }  // namespace
@@ -3099,7 +3105,7 @@ class RenderViewImplModalDialogTest : public RenderViewImplTest {
 // Test that invoking one of the modal dialogs doesn't crash.
 TEST_F(RenderViewImplModalDialogTest, ModalDialogs) {
   LoadHTML("<body></body>");
-  base::string16 alert_message = base::UTF8ToUTF16("Please don't crash");
+  std::u16string alert_message = base::UTF8ToUTF16("Please don't crash");
   EXPECT_CALL(*alert_mock_frame_host(),
               RunModalAlertDialog(alert_message, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
@@ -3247,13 +3253,13 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   auto* widget_input_handler = GetWidgetInputHandler();
-  const base::string16 empty_string;
+  const std::u16string empty_string;
   const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds_at_1x;
   widget_input_handler->SetFocus(true);
 
   // ASCII composition
-  const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
+  const std::u16string ascii_composition = base::UTF8ToUTF16("aiueo");
   widget_input_handler->ImeSetComposition(
       ascii_composition, empty_ime_text_span, gfx::Range::InvalidRange(), 0, 0);
   bounds_at_1x = LastCompositionBounds();

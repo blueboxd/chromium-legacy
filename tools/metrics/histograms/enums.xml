@@ -24231,6 +24231,17 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="NON_ERROR_PAGE_URL_AND_NO_ERROR_INFO"/>
 </enum>
 
+<enum name="ESimSetupFlowResult">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="INSTALL_FAIL"/>
+  <int value="2" label="CANCELLED_NEEDS_CONFIRMATION_CODE"/>
+  <int value="3" label="CANCELLED_INVALID_ACTIVATION_CODE"/>
+  <int value="4" label="ERROR_FETCHING_PROFILES"/>
+  <int value="5" label="CANCELLED_WITHOUT_ERROR"/>
+  <int value="6" label="CANCELLED_NO_PROFILES"/>
+  <int value="7" label="NO_NETWORK"/>
+</enum>
+
 <enum name="EulaScreenUserAction">
   <summary>Actions which happen on the screen.</summary>
   <int value="0" label="Accept button clicked"/>
@@ -31776,6 +31787,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3849" label="V8ScreenAdvanced_Label_AttributeGetter"/>
   <int value="3850" label="PermissionsPolicyHeader"/>
   <int value="3851" label="WebAppManifestUrlHandlers"/>
+  <int value="3852" label="LaxAllowingUnsafeCookies"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36318,11 +36330,23 @@ Called by update_permissions_policy_enum.py.-->
   <int value="9" label="kGLImplementationEGLANGLE"/>
 </enum>
 
+<enum name="GlobalMediaControlsCastActionAndEntryPoint">
+  <int value="0" label="Casting started via toolbar icon"/>
+  <int value="1" label="Casting started via Presentation API"/>
+  <int value="2" label="Casting stopped via toolbar icon"/>
+  <int value="3" label="Casting stopped via Presentation API"/>
+</enum>
+
 <enum name="GlobalMediaControlsDismissReason">
   <int value="0" label="User dismissed notification"/>
   <int value="1" label="Inactive timeout"/>
   <int value="2" label="Tab closed"/>
   <int value="3" label="Media session stopped"/>
+</enum>
+
+<enum name="GlobalMediaControlsEntryPoint">
+  <int value="0" label="Toolbar icon"/>
+  <int value="1" label="Presentation API"/>
 </enum>
 
 <enum name="GoogleCaptchaEvent">
@@ -44137,6 +44161,7 @@ from previous Chrome versions.
   <int value="-1487243228" label="NewUsbBackend:disabled"/>
   <int value="-1486521264" label="UseMediaHistoryStore:disabled"/>
   <int value="-1486198877" label="VrIconInDaydreamHome:disabled"/>
+  <int value="-1485497839" label="OmniboxDoubleSpaceKeywordTriggering:enabled"/>
   <int value="-1485461805" label="EnterpriseReportingInBrowser:enabled"/>
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
@@ -44299,6 +44324,8 @@ from previous Chrome versions.
   <int value="-1365795470"
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
+  <int value="-1364892365"
+      label="OmniboxDoubleSpaceKeywordTriggering:disabled"/>
   <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
   <int value="-1362431915" label="RelatedSearches:disabled"/>
   <int value="-1361493814" label="FCMInvalidations:disabled"/>
@@ -45085,6 +45112,7 @@ from previous Chrome versions.
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
   <int value="-670188266" label="enable-zip-archiver-unpacker"/>
   <int value="-669761849" label="SplitSettings:disabled"/>
+  <int value="-668114930" label="WindowsFollowCursor:disabled"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-667018797"
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:disabled"/>
@@ -45196,7 +45224,6 @@ from previous Chrome versions.
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
-  <int value="-558488712" label="PreemtiveLinkToTextGeneration:disabled"/>
   <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
@@ -45750,6 +45777,7 @@ from previous Chrome versions.
   <int value="-45487487" label="NewTabPageCustomLinks:disabled"/>
   <int value="-45074716" label="SystemDownloadManager:disabled"/>
   <int value="-45067971" label="NewPrintPreview:disabled"/>
+  <int value="-43650386" label="WindowsFollowCursor:enabled"/>
   <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-37966026" label="PermissionPredictions:enabled"/>
@@ -47066,6 +47094,7 @@ from previous Chrome versions.
   <int value="1177628103" label="GaiaActionButtons:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
+  <int value="1179407596" label="PreemptiveLinkToTextGeneration:enabled"/>
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
@@ -47532,7 +47561,6 @@ from previous Chrome versions.
   <int value="1601231448" label="VirtualKeyboardMultipaste:disabled"/>
   <int value="1601582484" label="enable-crash-reporter-for-testing"/>
   <int value="1602627012" label="OverrideSitePrefsForHrefTranslate:enabled"/>
-  <int value="1602791752" label="PreemtiveLinkToTextGeneration:enabled"/>
   <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
   <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1604893983" label="VizForWebView:disabled"/>
@@ -47739,6 +47767,7 @@ from previous Chrome versions.
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
+  <int value="1799526742" label="PreemptiveLinkToTextGeneration:disabled"/>
   <int value="1801585504" label="ContextMenuShopWithGoogleLens:enabled"/>
   <int value="1802874714" label="QueryTilesEnableQueryEditing:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
@@ -50474,6 +50503,7 @@ Called by update_use_counter_css.py.-->
   <int value="9" label="Scrub To"/>
   <int value="10" label="Enter picture in picture"/>
   <int value="11" label="Exit picture in picture"/>
+  <int value="12" label="Switch audio device"/>
 </enum>
 
 <enum name="MediaSessionActionSource">
@@ -51323,11 +51353,11 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MixedContentType">
-  <int value="0" label="Display Mixed Content"/>
-  <int value="1" label="Display Content with Certificate Errors"/>
+  <int value="0" label="Optionally Blockable Mixed Content"/>
+  <int value="1" label="Optionally Blockable Content with Certificate Errors"/>
   <int value="2" label="Mixed Content Form"/>
-  <int value="3" label="Scripting Mixed Content"/>
-  <int value="4" label="Scripting Content with Certificate Errors"/>
+  <int value="3" label="Blockable Mixed Content"/>
+  <int value="4" label="Blockable Content with Certificate Errors"/>
 </enum>
 
 <enum name="MixedFormInterstitialTriggeredState">
@@ -55870,6 +55900,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Pending another download completion"/>
 </enum>
 
+<enum name="OfflineMeasurementsHttpProbeResult">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="No internet"/>
+  <int value="2" label="Server error"/>
+  <int value="3" label="Not validated"/>
+  <int value="4" label="Validated with no content"/>
+  <int value="5" label="Validated with OK, but zero content length"/>
+  <int value="6" label="Validated with OK, but no content length"/>
+  <int value="7" label="Cancelled"/>
+</enum>
+
 <enum name="OfflinePagePrefetchNotificationAction">
   <int value="0" label="Attempt to show pending content check"/>
   <int value="1" label="Showed notification"/>
@@ -57573,6 +57614,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="503" label="Ambient Mode Google Photos Album"/>
   <int value="504" label="Ambient Mode Art Gallery Album"/>
   <int value="505" label="Wallpaper"/>
+  <int value="506" label="Wallpaper Images"/>
   <int value="600" label="Assistant"/>
   <int value="700" label="App Management"/>
   <int value="701" label="App Details"/>
@@ -63703,6 +63745,18 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="PROXY_HAS_RULES"/>
 </enum>
 
+<enum name="PSimSetupFlowResult">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="CANCELLED"/>
+  <int value="2" label="CANCELLED_NO_SIM"/>
+  <int value="3" label="CANCELLED_COLD_SIM_DEFER"/>
+  <int value="4" label="CANCELLED_CARRIER_PORTAL"/>
+  <int value="5" label="CANCELLED_PORTAL_ERROR"/>
+  <int value="6" label="CARRIER_PORTAL_TIMEOUT"/>
+  <int value="7" label="TIMEOUT_FINISH_ACTIVATION"/>
+  <int value="8" label="NETWORK_ERROR"/>
+</enum>
+
 <enum name="PsmHashDanceDifferentResultsComparison">
   <int value="0" label="Hash dance true and PSM false"/>
   <int value="1" label="PSM true and Hash dance false"/>
@@ -68963,6 +69017,22 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Canceled"/>
   <int value="1" label="Accepted"/>
   <int value="2" label="Closed"/>
+</enum>
+
+<enum name="SecurePaymentConfirmationEnrollDialogResult">
+  <int value="0" label="Closed"/>
+  <int value="1" label="Canceled"/>
+  <int value="2" label="Accepted"/>
+</enum>
+
+<enum name="SecurePaymentConfirmationEnrollDialogShown">
+  <int value="0" label="CouldNotShow"/>
+  <int value="1" label="Shown"/>
+</enum>
+
+<enum name="SecurePaymentConfirmationEnrollSystemPromptResult">
+  <int value="0" label="Canceled"/>
+  <int value="1" label="Accepted"/>
 </enum>
 
 <enum name="SecurePaymentConfirmationSystemPromptResult">
@@ -76764,6 +76834,8 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Application UI"/>
   <int value="3" label="Accept languages"/>
   <int value="4" label="Default English"/>
+  <int value="5" label="Changed by user"/>
+  <int value="6" label="Uninitialized"/>
 </enum>
 
 <enum name="TranslateTriggerDecision">
@@ -80078,6 +80150,13 @@ others/histograms.xml -->
   <int value="0" label="FetchSucceed"/>
   <int value="1" label="FailedNoResponseBody"/>
   <int value="2" label="FetchFailedInvalidUrl"/>
+</enum>
+
+<enum name="WebAppOriginAssociationParseResult">
+  <summary>Result of web app origin association file fetch.</summary>
+  <int value="0" label="ParseSucceed"/>
+  <int value="1" label="ParseFailedNotADictionary"/>
+  <int value="2" label="ParseFailedInvalidJson"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

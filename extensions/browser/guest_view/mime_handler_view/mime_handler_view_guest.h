@@ -83,7 +83,7 @@ class MimeHandlerViewGuest
   content::SiteInstance* GetOwnerSiteInstance() override;
 
   content::RenderFrameHost* GetEmbedderFrame();
-  void SetEmbedderFrame(int process_id, int routing_id);
+  void SetEmbedderFrame(content::GlobalFrameRoutingId frame_id);
 
   void SetBeforeUnloadController(
       mojo::PendingRemote<mime_handler::BeforeUnloadControl>
@@ -166,7 +166,7 @@ class MimeHandlerViewGuest
       const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
-      const std::string& partition_id,
+      const content::StoragePartitionId& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
   // Updates the fullscreen state for the guest. Returns whether the change
@@ -183,9 +183,9 @@ class MimeHandlerViewGuest
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;
 
-  int embedder_frame_process_id_;
-  int embedder_frame_routing_id_;
-  int embedder_widget_routing_id_;
+  content::GlobalFrameRoutingId embedder_frame_id_{
+      content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE};
+  int embedder_widget_routing_id_ = MSG_ROUTING_NONE;
 
   bool is_guest_fullscreen_ = false;
   bool is_embedder_fullscreen_ = false;

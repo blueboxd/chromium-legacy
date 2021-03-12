@@ -6,7 +6,7 @@
 // #import 'chrome://os-settings/strings.m.js';
 // #import 'chrome://resources/cr_components/chromeos/cellular_setup/psim_flow_ui.m.js';
 
-// #import {PSimUIState, PSimPageName} from 'chrome://resources/cr_components/chromeos/cellular_setup/psim_flow_ui.m.js';
+// #import {PSimUIState, PSimPageName, PSimSetupFlowResult} from 'chrome://resources/cr_components/chromeos/cellular_setup/psim_flow_ui.m.js';
 // #import {setCellularSetupRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js';
 // #import {flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {assertTrue} from '../../../chai_assert.js';
@@ -16,6 +16,28 @@
 // clang-format on
 
 suite('CrComponentsPsimFlowUiTest', function() {
+  class MockMetricsPrivate {
+    constructor() {
+      this.cellularSetupResultDict = {};
+    }
+
+    recordEnumerationValue(histogramName, pSimSetupFlowResult, enumSize) {
+      assertEquals(histogramName, 'Network.Cellular.PSim.CellularSetupResult');
+      if (pSimSetupFlowResult in this.cellularSetupResultDict) {
+        this.cellularSetupResultDict[pSimSetupFlowResult]++;
+        return;
+      }
+      this.cellularSetupResultDict[pSimSetupFlowResult] = 1;
+    }
+
+    getSetupResultMetricCount(metricEnum) {
+      if (metricEnum in this.cellularSetupResultDict) {
+        return this.cellularSetupResultDict[metricEnum];
+      }
+      return 0;
+    }
+  }
+
   let pSimPage;
 
   /** @type {?chromeos.cellularSetup.mojom.CellularSetupRemote} */
@@ -33,12 +55,24 @@ suite('CrComponentsPsimFlowUiTest', function() {
     return new Promise(resolve => setTimeout(resolve));
   }
 
+  /** @param {PSimSetupFlowResult} pSimSetupFlowResult */
+  function endFlowAndVerifyResult(pSimSetupFlowResult) {
+    const resultCount =
+        chrome.metricsPrivate.getSetupResultMetricCount(pSimSetupFlowResult);
+    pSimPage.remove();
+    Polymer.dom.flush();
+    assertEquals(
+        chrome.metricsPrivate.getSetupResultMetricCount(pSimSetupFlowResult),
+        resultCount + 1);
+  }
+
   setup(function() {
     cellularCarrierHandler =
         new cellular_setup.FakeCarrierPortalHandlerRemote();
     cellularSetupRemote =
         new cellular_setup.FakeCellularSetupRemote(cellularCarrierHandler);
     cellular_setup.setCellularSetupRemoteForTesting(cellularSetupRemote);
+    chrome.metricsPrivate = new MockMetricsPrivate();
 
     pSimPage = document.createElement('psim-flow-ui');
     pSimPage.delegate = new cellular_setup.FakeCellularSetupDelegate();
@@ -66,6 +100,58 @@ suite('CrComponentsPsimFlowUiTest', function() {
     assertTrue(
         pSimPage.selectedPSimPageName_ ===
         cellularSetup.PSimPageName.PROVISIONING);
+
+    endFlowAndVerifyResult(PSimSetupFlowResult.SUCCESS);
+  });
+
+  test('Sim detection failure with retries', async function() {
+    assertTrue(
+        pSimPage.state_ === cellularSetup.PSimUIState.STARTING_ACTIVATION);
+    assertTrue(!!pSimPage.currentTimeoutId_);
+
+    await flushAsync();
+
+    // Simulate timeout.
+    pSimPage.clearTimer_();
+    pSimPage.onTimeout_();
+
+    assertTrue(
+        pSimPage.state_ === cellularSetup.PSimUIState.TIMEOUT_START_ACTIVATION);
+    assertTrue(pSimPage.forwardButtonLabel === 'Try again');
+
+    // Simulate clicking 'Try Again'.
+    pSimPage.navigateForward();
+
+    assertTrue(
+        pSimPage.state_ === cellularSetup.PSimUIState.STARTING_ACTIVATION);
+    assertTrue(!!pSimPage.currentTimeoutId_);
+
+    await flushAsync();
+
+    // Timeout again.
+    pSimPage.clearTimer_();
+    pSimPage.onTimeout_();
+
+    assertTrue(
+        pSimPage.state_ === cellularSetup.PSimUIState.TIMEOUT_START_ACTIVATION);
+    assertTrue(pSimPage.forwardButtonLabel === 'Try again');
+
+    // Click 'Try Again' again.
+    pSimPage.navigateForward();
+
+    assertTrue(
+        pSimPage.state_ === cellularSetup.PSimUIState.STARTING_ACTIVATION);
+    assertTrue(!!pSimPage.currentTimeoutId_);
+
+    await flushAsync();
+
+    // Timeout again.
+    pSimPage.clearTimer_();
+    pSimPage.onTimeout_();
+
+    // Should now be at the failure state.
+    assertTrue(
+        pSimPage.state_ === cellularSetup.PSimUIState.ACTIVATION_FAILURE);
   });
 
   test('Carrier title on provisioning page', async () => {
@@ -86,8 +172,9 @@ suite('CrComponentsPsimFlowUiTest', function() {
             .kPortalLoadedWithoutPaidUser);
 
     await flushAsync();
-
     assertTrue(pSimPage.nameOfCarrierPendingSetup === 'Verizon wireless');
+
+    endFlowAndVerifyResult(PSimSetupFlowResult.CANCELLED);
   });
 
   test('forward navigation and finish cellular setup test', async function() {
@@ -109,5 +196,31 @@ suite('CrComponentsPsimFlowUiTest', function() {
 
     await flushAsync();
     assertTrue(exitCellularSetupEventFired);
+
+    endFlowAndVerifyResult(PSimSetupFlowResult.SUCCESS);
+  });
+
+  test('Activation failure metric logged', async () => {
+    cellularActivationDelegate =
+        cellularSetupRemote.getLastActivationDelegate();
+
+    let provisioningPage = pSimPage.$$('#provisioningPage');
+    assertTrue(!!provisioningPage);
+    assertFalse(
+        pSimPage.selectedPSimPageName_ ===
+        cellularSetup.PSimPageName.provisioningPage);
+
+    cellularActivationDelegate.onActivationFinished(
+        chromeos.cellularSetup.mojom.ActivationResult.kFailedToActivate);
+
+    await flushAsync();
+    endFlowAndVerifyResult(PSimSetupFlowResult.NETWORK_ERROR);
+  });
+
+  test('Portal error metric logged', () => {
+    let provisioningPage = pSimPage.$$('#provisioningPage');
+    provisioningPage.fire('carrier-portal-result', false);
+
+    endFlowAndVerifyResult(PSimSetupFlowResult.CANCELLED_PORTAL_ERROR);
   });
 });

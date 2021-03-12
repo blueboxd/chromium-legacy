@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/payments/content/payment_credential_enrollment_controller.h"
+#include "components/payments/core/secure_payment_confirmation_metrics.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/global_routing_id.h"
@@ -105,7 +106,7 @@ class PaymentCredential : public mojom::PaymentCredential,
 
   bool IsCurrentStateValid() const;
 
-  void DidDownloadIcon(const base::string16 instrument_name,
+  void DidDownloadIcon(const std::u16string instrument_name,
                        int request_id,
                        int unused_http_status_code,
                        const GURL& unused_image_url,
@@ -113,6 +114,10 @@ class PaymentCredential : public mojom::PaymentCredential,
                        const std::vector<gfx::Size>& unused_sizes);
 
   void OnUserResponseFromUI(bool user_confirm_from_ui);
+
+  void RecordFirstDialogShown(SecurePaymentConfirmationEnrollDialogShown shown);
+  void RecordFirstSystemPromptResult(
+      SecurePaymentConfirmationEnrollSystemPromptResult result);
 
   void Reset();
 
@@ -128,6 +133,8 @@ class PaymentCredential : public mojom::PaymentCredential,
   std::unique_ptr<PaymentCredentialEnrollmentController::ScopedToken>
       ui_controller_token_;
   base::WeakPtr<PaymentCredentialEnrollmentController> ui_controller_;
+  bool is_dialog_shown_recorded_ = false;
+  bool is_system_prompt_result_recorded_ = false;
 
   base::WeakPtrFactory<PaymentCredential> weak_ptr_factory_{this};
 };

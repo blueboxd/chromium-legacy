@@ -288,7 +288,7 @@ base::Value MakeSecurityTokenPinDialogParameters(
       "formattedError",
       GenerateErrorMessage(error_label, attempts_left, enable_user_input));
   if (attempts_left == -1) {
-    params.SetStringKey("formattedAttemptsLeft", base::string16());
+    params.SetStringKey("formattedAttemptsLeft", std::u16string());
   } else {
     params.SetStringKey(
         "formattedAttemptsLeft",
@@ -454,7 +454,9 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetString("clientVersion", version_info::GetVersionNumber());
   if (!platform_version->empty())
     params.SetString("platformVersion", *platform_version);
-  params.SetString("releaseChannel", chrome::GetChannelName());
+  // Extended stable channel is not supported on Chrome OS Ash.
+  params.SetString("releaseChannel",
+                   chrome::GetChannelName(chrome::WithExtendedStable(false)));
   params.SetString("endpointGen", kEndpointGen);
 
   std::string email_domain;

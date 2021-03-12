@@ -162,11 +162,10 @@ void SetCurrentDiceTurnSyncOnHelper(Profile* profile,
 
 // static
 void DiceTurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(
-    const base::string16& email,
-    const base::string16& error_message,
+    const SigninUIError& error,
     Browser* browser) {
   LoginUIServiceFactory::GetForProfile(browser->profile())
-      ->DisplayLoginResult(browser, error_message, email);
+      ->DisplayLoginResult(browser, error);
 }
 
 // static
@@ -442,7 +441,7 @@ void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
   dice_signed_in_profile_creator_ =
       std::make_unique<DiceSignedInProfileCreator>(
           profile_, account_info_.account_id,
-          /*local_profile_name=*/base::string16(), /*icon_index=*/base::nullopt,
+          /*local_profile_name=*/std::u16string(), /*icon_index=*/base::nullopt,
           /*use_guest=*/false,
           base::BindOnce(&DiceTurnSyncOnHelper::OnNewSignedInProfileCreated,
                          base::Unretained(this)));

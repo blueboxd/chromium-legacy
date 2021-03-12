@@ -241,8 +241,28 @@ const CGFloat kOffsetToPinOmnibox = 100;
 
   __weak NewTabPageViewController* weakSelf = self;
 
+  CGFloat yOffsetBeforeRotation =
+      self.discoverFeedWrapperViewController.feedCollectionView.contentOffset.y;
+  BOOL isScrolledToTop =
+      [self adjustedContentSuggestionsHeight] <= (-yOffsetBeforeRotation) + 1;
+
   void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        // Rotating the device to landscape removes the fake omnibox, reducing
+        // the height of the content suggestions. Since the NTP's top scroll
+        // position is dependent on the content suggestions height, rotating
+        // from landscape->portrait would mess up the top scroll position. This
+        // ensures that it is adjusted if necessary.
+        // TODO(crbug.com/1170995): Remove once the Feed supports a custom
+        // header.
+        if (isScrolledToTop &&
+            -yOffsetBeforeRotation <
+                [weakSelf adjustedContentSuggestionsHeight]) {
+          weakSelf.discoverFeedWrapperViewController.feedCollectionView
+              .contentOffset =
+              CGPointMake(0, -[weakSelf adjustedContentSuggestionsHeight]);
+          [weakSelf updateFeedInsetsForContentSuggestions];
+        }
         [weakSelf.headerSynchronizer unfocusOmnibox];
         [weakSelf.contentSuggestionsViewController.collectionView
                 .collectionViewLayout invalidateLayout];
@@ -426,11 +446,15 @@ const CGFloat kOffsetToPinOmnibox = 100;
 // ContentSuggestions.
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
        shouldReceiveTouch:(UITouch*)touch {
-  CGRect discBoundsInView =
-      [self.identityDiscButton convertRect:self.identityDiscButton.bounds
-                                    toView:self.view];
-  return (
-      CGRectContainsPoint(discBoundsInView, [touch locationInView:self.view]));
+  // Ignore all touches inside the Feed CollectionView, which includes
+  // ContentSuggestions.
+  UIView* viewToIgnoreTouches =
+      self.discoverFeedWrapperViewController.feedCollectionView;
+  CGRect ignoreBoundsInView =
+      [viewToIgnoreTouches convertRect:viewToIgnoreTouches.bounds
+                                toView:self.view];
+  return !(CGRectContainsPoint(ignoreBoundsInView,
+                               [touch locationInView:self.view]));
 }
 
 #pragma mark - Private
@@ -549,6 +573,8 @@ const CGFloat kOffsetToPinOmnibox = 100;
   if (CGRectContainsPoint(discBoundsInView, location)) {
     [self.identityDiscButton
         sendActionsForControlEvents:UIControlEventTouchUpInside];
+  } else {
+    [self.headerSynchronizer unfocusOmnibox];
   }
 }
 

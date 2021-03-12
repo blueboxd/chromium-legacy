@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
 #include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
@@ -315,7 +316,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
     owner_->ShowBannerMessage(
         needs_migration ? l10n_util::GetStringUTF16(
                               IDS_LOGIN_NEEDS_DIRCRYPTO_MIGRATION_BANNER)
-                        : base::string16(),
+                        : std::u16string(),
         needs_migration);
   }
 
@@ -579,6 +580,11 @@ void UserSelectionScreen::Init(const user_manager::UserList& users) {
     ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 
   if (users.size() > 0) {
+    // Resets observed object in case of re-Init, no-op otherwise.
+    scoped_observation_.Reset();
+    online_signin_notifier_ = std::make_unique<UserOnlineSigninNotifier>(users);
+    scoped_observation_.Observe(online_signin_notifier_.get());
+    online_signin_notifier_->CheckForPolicyEnforcedOnlineSignin();
     sync_token_checkers_ =
         std::make_unique<PasswordSyncTokenCheckersCollection>();
     sync_token_checkers_->StartPasswordSyncCheckers(users, this);
@@ -721,7 +727,7 @@ void UserSelectionScreen::OnUserStatusChecked(
   if (status == TokenHandleUtil::INVALID) {
     RecordReauthReason(account_id, ReauthReason::INVALID_TOKEN_HANDLE);
     SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
-                base::string16());
+                std::u16string());
   }
 }
 
@@ -729,7 +735,7 @@ void UserSelectionScreen::OnUserStatusChecked(
 
 void UserSelectionScreen::SetAuthType(const AccountId& account_id,
                                       proximity_auth::mojom::AuthType auth_type,
-                                      const base::string16& initial_value) {
+                                      const std::u16string& initial_value) {
   if (GetAuthType(account_id) ==
       proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD) {
     return;
@@ -763,7 +769,7 @@ UserSelectionScreen::GetScreenType() const {
   }
 }
 
-void UserSelectionScreen::ShowBannerMessage(const base::string16& message,
+void UserSelectionScreen::ShowBannerMessage(const std::u16string& message,
                                             bool is_warning) {
   view_->ShowBannerMessage(message, is_warning);
 }
@@ -830,6 +836,11 @@ void UserSelectionScreen::OnInvalidSyncToken(const AccountId& account_id) {
   RecordReauthReason(account_id,
                      ReauthReason::SAML_PASSWORD_SYNC_TOKEN_VALIDATION_FAILED);
   SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
+              std::u16string());
+}
+
+void UserSelectionScreen::OnOnlineSigninEnforced(const AccountId& account_id) {
+  SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
               base::string16());
 }
 
@@ -840,7 +851,7 @@ void UserSelectionScreen::HideImpl() {}
 void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
   view_->SetAuthType(account_id,
                      proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
-                     base::string16());
+                     std::u16string());
   EasyUnlockService* service = GetEasyUnlockServiceForUser(account_id);
   if (!service)
     return;

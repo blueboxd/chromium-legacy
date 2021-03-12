@@ -132,12 +132,15 @@ class SecurePaymentConfirmationAppTest : public testing::Test,
     on_instrument_details_error_called_ = true;
   }
 
-  base::string16 label_;
+  std::u16string label_;
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::string network_data_bytes_;
   std::string credential_id_bytes_;
   bool on_instrument_details_ready_called_ = false;
   bool on_instrument_details_error_called_ = false;
+
+  base::WeakPtrFactory<SecurePaymentConfirmationAppTest> weak_ptr_factory_{
+      this};
 };
 
 TEST_F(SecurePaymentConfirmationAppTest, Smoke) {
@@ -170,7 +173,7 @@ TEST_F(SecurePaymentConfirmationAppTest, Smoke) {
       85,  229, 152, 242, 133, 88,  44,  222, 133, 49,  97,
       146, 20,  207, 119, 43,  142, 171, 239, 125, 250};
   EXPECT_CALL(*mock_authenticator, VerifyChallenge(Eq(expected_bytes)));
-  app.InvokePaymentApp(/*delegate=*/this);
+  app.InvokePaymentApp(/*delegate=*/weak_ptr_factory_.GetWeakPtr());
   EXPECT_TRUE(on_instrument_details_ready_called_);
   EXPECT_FALSE(on_instrument_details_error_called_);
 }
@@ -191,7 +194,7 @@ TEST_F(SecurePaymentConfirmationAppTest, OnInstrumentDetailsError) {
       url::Origin::Create(GURL("https://merchant.example")), spec_->AsWeakPtr(),
       MakeRequest(), std::move(authenticator));
 
-  app.InvokePaymentApp(/*delegate=*/this);
+  app.InvokePaymentApp(/*delegate=*/weak_ptr_factory_.GetWeakPtr());
   EXPECT_FALSE(on_instrument_details_ready_called_);
   EXPECT_TRUE(on_instrument_details_error_called_);
 }

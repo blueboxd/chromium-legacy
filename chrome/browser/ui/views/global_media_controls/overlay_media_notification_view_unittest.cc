@@ -41,7 +41,8 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
     manager_ = std::make_unique<MockOverlayMediaNotificationsManager>();
 
     auto notification = std::make_unique<MediaNotificationContainerImplView>(
-        kTestNotificationId, nullptr, nullptr);
+        kTestNotificationId, nullptr, nullptr,
+        GlobalMediaControlsEntryPoint::kToolbarIcon);
     notification->PopOut();
 
     overlay_ = std::make_unique<OverlayMediaNotificationView>(
@@ -58,7 +59,7 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void SimulateTitleChange(const base::string16 title) {
+  void SimulateTitleChange(const std::u16string title) {
     media_session::MediaMetadata metadata;
     metadata.source_title = base::ASCIIToUTF16("source_title");
     metadata.title = title;
@@ -82,7 +83,7 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   }
 
-  base::string16 GetWindowTitle() {
+  std::u16string GetWindowTitle() {
     return overlay_->widget_delegate()->GetWindowTitle();
   }
 
@@ -109,11 +110,11 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
 };
 
 TEST_F(OverlayMediaNotificationViewTest, TaskBarTitle) {
-  base::string16 title1 = base::ASCIIToUTF16("test");
+  std::u16string title1 = base::ASCIIToUTF16("test");
   SimulateTitleChange(title1);
   EXPECT_EQ(GetWindowTitle(), title1);
 
-  base::string16 title2 = base::ASCIIToUTF16("title");
+  std::u16string title2 = base::ASCIIToUTF16("title");
   SimulateTitleChange(title2);
   EXPECT_EQ(GetWindowTitle(), title2);
 }

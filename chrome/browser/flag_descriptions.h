@@ -491,9 +491,6 @@ extern const char kNotificationsViaHelperAppDescription[];
 extern const char kWinrtGeolocationImplementationName[];
 extern const char kWinrtGeolocationImplementationDescription[];
 
-extern const char kWinrtSensorsImplementationName[];
-extern const char kWinrtSensorsImplementationDescription[];
-
 extern const char kEnableGenericSensorExtraClassesName[];
 extern const char kEnableGenericSensorExtraClassesDescription[];
 
@@ -952,6 +949,9 @@ extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
 extern const char kOmniboxDefaultTypedNavigationsToHttpsName[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsDescription[];
+
+extern const char kOmniboxDoubleSpaceKeywordTriggeringName[];
+extern const char kOmniboxDoubleSpaceKeywordTriggeringDescription[];
 
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
@@ -1531,6 +1531,9 @@ extern const char kWebXrRuntimeChoiceOpenXR[];
 extern const char kWebXrIncubationsName[];
 extern const char kWebXrIncubationsDescription[];
 
+extern const char kWindowsFollowCursorName[];
+extern const char kWindowsFollowCursorDescription[];
+
 extern const char kWindowNamingName[];
 extern const char kWindowNamingDescription[];
 
@@ -1546,8 +1549,8 @@ extern const char kSharedHighlightingUseBlocklistDescription[];
 extern const char kSharedHighlightingV2Name[];
 extern const char kSharedHighlightingV2Description[];
 
-extern const char kPreemtiveLinkToTextGenerationName[];
-extern const char kPreemtiveLinkToTextGenerationDescription[];
+extern const char kPreemptiveLinkToTextGenerationName[];
+extern const char kPreemptiveLinkToTextGenerationDescription[];
 
 extern const char kDraw1PredictedPoint12Ms[];
 extern const char kDraw2PredictedPoints6Ms[];

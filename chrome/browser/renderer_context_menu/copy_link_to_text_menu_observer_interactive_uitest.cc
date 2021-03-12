@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,13 +33,13 @@ class CopyLinkToTextMenuObserverTest
     base::test::ScopedFeatureList scoped_feature_list;
     if (GetParam()) {
       scoped_feature_list.InitWithFeatures(
-          {features::kPreemtiveLinkToTextGeneration,
+          {shared_highlighting::kPreemptiveLinkToTextGeneration,
            shared_highlighting::kSharedHighlightingUseBlocklist},
           {});
     } else {
       scoped_feature_list.InitWithFeatures(
           {shared_highlighting::kSharedHighlightingUseBlocklist},
-          {features::kPreemtiveLinkToTextGeneration});
+          {shared_highlighting::kPreemptiveLinkToTextGeneration});
     }
     InProcessBrowserTest::SetUp();
   }
@@ -122,7 +121,7 @@ IN_PROC_BROWSER_TEST_P(CopyLinkToTextMenuObserverTest, CopiesLinkToText) {
   menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  base::string16 text;
+  std::u16string text;
   clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
   EXPECT_EQ(base::UTF8ToUTF16("http://foo.com/#:~:text=hello%20world"), text);
 }
@@ -142,7 +141,7 @@ IN_PROC_BROWSER_TEST_P(CopyLinkToTextMenuObserverTest,
   } else {
     menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
     ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-    base::string16 text;
+    std::u16string text;
     clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
     EXPECT_EQ(base::UTF8ToUTF16("http://foo.com/"), text);
   }
@@ -158,7 +157,7 @@ IN_PROC_BROWSER_TEST_P(CopyLinkToTextMenuObserverTest, ReplacesRefInURL) {
   menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  base::string16 text;
+  std::u16string text;
   clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
   EXPECT_EQ(base::UTF8ToUTF16("http://foo.com/#:~:text=hello"), text);
 }
@@ -192,7 +191,7 @@ IN_PROC_BROWSER_TEST_P(CopyLinkToTextMenuObserverTest,
   } else {
     menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
     ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-    base::string16 text;
+    std::u16string text;
     clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
     EXPECT_EQ(base::UTF8ToUTF16(main_url.spec()), text);
   }
@@ -225,7 +224,7 @@ IN_PROC_BROWSER_TEST_P(CopyLinkToTextMenuObserverTest, Blocklist) {
   } else {
     menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
     ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-    base::string16 text;
+    std::u16string text;
     clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
     EXPECT_EQ(base::UTF8ToUTF16("http://facebook.com/my-profile"), text);
   }

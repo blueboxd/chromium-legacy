@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
+import {FEEDBACK_LANDING_PAGE, FEEDBACK_LANDING_PAGE_TECHSTOP, FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERM_OF_SERVICE_URL, openUrlInAppWindow} from './feedback_util.js';
+import {takeScreenshot} from './take_screenshot.js';
+
 /**
  * The object will be manipulated by feedbackHelper
  *
@@ -40,23 +47,26 @@ class FeedbackHelper {
     // handler will not be available. In this case, we should still allow the
     // user submit a feedback.
     return new Promise(
-        resolve => cr.sendWithPromise('getFeedbackInfo')
-                       .then(resolve, resolve({
-                               assistantDebugInfoAllowed: false,
-                               attachedFile: undefined,
-                               attachedFileBlobUuid: undefined,
-                               categoryTag: undefined,
-                               description: undefined,
-                               descriptionPlaceholder: undefined,
-                               email: undefined,
-                               flow: 'regular',
-                               fromAssistant: false,
-                               includeBluetoothLogs: false,
-                               pageUrl: undefined,
-                               screenshot: {},
-                               systemInformation: [],
-                               useSystemWindowFrame: false,
-                             })));
+        resolve => sendWithPromise('getFeedbackInfo')
+                       .then(info => resolve(info))
+                       .catch(() => {
+                         resolve({
+                           assistantDebugInfoAllowed: false,
+                           attachedFile: undefined,
+                           attachedFileBlobUuid: undefined,
+                           categoryTag: undefined,
+                           description: undefined,
+                           descriptionPlaceholder: undefined,
+                           email: undefined,
+                           flow: 'regular',
+                           fromAssistant: false,
+                           includeBluetoothLogs: false,
+                           pageUrl: undefined,
+                           screenshot: {},
+                           systemInformation: [],
+                           useSystemWindowFrame: false,
+                         });
+                       }));
   }
 
   getSystemInformation() {

@@ -121,6 +121,7 @@ MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderAV1;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderSkipMultithreaded;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderAlwaysCopy;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderAllowOverlay;
+MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderForceEnableHDR;
 MEDIA_EXPORT extern const base::Feature kEnableMediaInternals;
 MEDIA_EXPORT extern const base::Feature kExposeSwDecodersToWebRTC;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
@@ -185,6 +186,7 @@ MEDIA_EXPORT extern const base::Feature kUseR16Texture;
 MEDIA_EXPORT extern const base::Feature kUseSodaForLiveCaption;
 #if defined(OS_LINUX)
 MEDIA_EXPORT extern const base::Feature kVaapiVideoDecodeLinux;
+MEDIA_EXPORT extern const base::Feature kVaapiVideoEncodeLinux;
 #endif  // defined(OS_LINUX)
 MEDIA_EXPORT extern const base::Feature kVaapiAV1Decoder;
 MEDIA_EXPORT extern const base::Feature kVaapiLowPowerEncoderGen9x;

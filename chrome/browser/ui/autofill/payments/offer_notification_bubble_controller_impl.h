@@ -37,8 +37,8 @@ class OfferNotificationBubbleControllerImpl
       const OfferNotificationBubbleControllerImpl&) = delete;
 
   // OfferBubbleController:
-  base::string16 GetWindowTitle() const override;
-  base::string16 GetOkButtonLabel() const override;
+  std::u16string GetWindowTitle() const override;
+  std::u16string GetOkButtonLabel() const override;
   AutofillBubbleBase* GetOfferNotificationBubbleView() const override;
   const CreditCard* GetLinkedCard() const override;
   bool IsIconVisible() const override;
@@ -70,8 +70,8 @@ class OfferNotificationBubbleControllerImpl
       OfferNotificationBubbleControllerImpl>;
   friend class OfferNotificationBubbleViewsTestBase;
 
-  // Updates the visibility of the icon as per IsIconVisible().
-  void UpdateOfferIcon();
+  // Returns whether the web content associated with this controller is active.
+  bool IsWebContentsActive();
 
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {

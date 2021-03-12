@@ -58,6 +58,12 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kWindowsFollowCursorName[] =
+    "Windows open on the display with the cursor";
+const char kWindowsFollowCursorDescription[] =
+    "When there are multiple displays, windows open on the display where "
+    "cursor is located.";
+
 const char kAnimatedImageResumeName[] = "Use animated image resume behavior";
 const char kAnimatedImageResumeDescription[] =
     "Resumes animated images from the last frame drawn rather than attempt "
@@ -794,11 +800,6 @@ const char kWinrtGeolocationImplementationName[] =
 const char kWinrtGeolocationImplementationDescription[] =
     "Enables usage of the Windows.Devices.Geolocation WinRT APIs on Windows "
     "for geolocation";
-
-const char kWinrtSensorsImplementationName[] = "WinRT Sensor Implementation";
-const char kWinrtSensorsImplementationDescription[] =
-    "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "
-    "sensors";
 
 const char kEnableGenericSensorExtraClassesName[] =
     "Generic Sensor Extra Classes";
@@ -1600,6 +1601,11 @@ const char kOmniboxExperimentalSuggestScoringName[] =
 const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
+
+const char kOmniboxDoubleSpaceKeywordTriggeringName[] =
+    "Omnibox Double-Space Keyword Triggering";
+const char kOmniboxDoubleSpaceKeywordTriggeringDescription[] =
+    "When enabled, two spaces after a keyword triggers keyword mode.";
 
 const char kOmniboxLocalZeroSuggestFrecencyRankingName[] =
     "Frecency ranking for local history zero-prefix suggestions";
@@ -2643,9 +2649,9 @@ const char kSharedHighlightingV2Description[] =
     "Improvements to Shared Highlighting. Including ability to reshare or "
     "remove a highlight.";
 
-const char kPreemtiveLinkToTextGenerationName[] =
+const char kPreemptiveLinkToTextGenerationName[] =
     "Preemptive generation of link to text";
-const char kPreemtiveLinkToTextGenerationDescription[] =
+const char kPreemptiveLinkToTextGenerationDescription[] =
     "Enables link to text to be generated in advance.";
 
 const char kDraw1PredictedPoint12Ms[] = "1 point 12ms ahead.";
@@ -4628,7 +4634,7 @@ const char kOsSettingsPolymer3Description[] =
 
 const char kPhoneHubName[] = "Enable Phone Hub";
 const char kPhoneHubDescription[] =
-    "Provides a UI for users to view information about their Android phone"
+    "Provides a UI for users to view information about their Android phone "
     "and perform phone-side actions within Chrome OS.";
 
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";

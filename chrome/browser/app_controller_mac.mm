@@ -336,7 +336,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   void OnProfileAdded(const base::FilePath& profile_path) override {}
 
   void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const base::string16& profile_name) override {
+                           const std::u16string& profile_name) override {
     // When a profile is deleted we need to notify the AppController,
     // so it can correctly update its pointer to the last used profile.
     [app_controller_ profileWasRemoved:profile_path];
@@ -345,7 +345,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override {}
 
   void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override {}
+                            const std::u16string& old_profile_name) override {}
 
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override {}
 
@@ -1904,7 +1904,7 @@ bool IsOpeningNewWindow() {
 void CreateGuestProfileIfNeeded() {
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileManager::GetGuestProfilePath(),
-      base::BindRepeating(&UpdateProfileInUse), base::string16(),
+      base::BindRepeating(&UpdateProfileInUse), std::u16string(),
       std::string());
 }
 

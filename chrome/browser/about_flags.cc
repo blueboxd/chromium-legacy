@@ -1962,6 +1962,19 @@ const FeatureEntry::FeatureVariation
          base::size(kContextMenuShopImageWithGoogleLens), nullptr},
         {"SearchSimilarProducts", kContextMenuSearchSimilarProducts,
          base::size(kContextMenuSearchSimilarProducts), nullptr}};
+
+const FeatureEntry::FeatureParam kLensCameraAssistedSearchLensButtonStart[] = {
+    {"searchBoxStartVariantForLensCameraAssistedSearch", "true"}};
+
+const FeatureEntry::FeatureParam kLensCameraAssistedSearchLensButtonEnd[] = {
+    {"searchBoxStartVariantForLensCameraAssistedSearch", "false"}};
+
+const FeatureEntry::FeatureVariation kLensCameraAssistedSearchVariations[] = {
+    {"(Lens then Mic)", kLensCameraAssistedSearchLensButtonStart,
+     base::size(kLensCameraAssistedSearchLensButtonStart), nullptr},
+    {"(Mic then Lens)", kLensCameraAssistedSearchLensButtonEnd,
+     base::size(kLensCameraAssistedSearchLensButtonEnd), nullptr}};
+
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
@@ -2045,9 +2058,6 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureParam
     kTabbedAppOverflowMenuThreeButtonActionbarDestination[] = {
         {"three_button_action_bar", "destination_chip_view"}};
-const FeatureEntry::FeatureParam
-    kTabbedAppOverflowMenuThreeButtonAddToOption[] = {
-        {"three_button_action_bar", "add_to_option"}};
 const FeatureEntry::FeatureVariation
     kTabbedAppOverflowMenuThreeButtonActionbarVariations[] = {
         {"(three button with action chip view)",
@@ -2056,10 +2066,7 @@ const FeatureEntry::FeatureVariation
         {"(three button with destination chip view)",
          kTabbedAppOverflowMenuThreeButtonActionbarDestination,
          base::size(kTabbedAppOverflowMenuThreeButtonActionbarDestination),
-         nullptr},
-        {"(three button with add to option)",
-         kTabbedAppOverflowMenuThreeButtonAddToOption,
-         base::size(kTabbedAppOverflowMenuThreeButtonAddToOption), nullptr}};
+         nullptr}};
 
 // Request Desktop Site on Tablet by default variations.
 const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets768[] = {
@@ -2934,6 +2941,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"screen-capture", flag_descriptions::kScreenCaptureTestName,
      flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
+    {"ash-window-follow-cursor-multi-display",
+     flag_descriptions::kWindowsFollowCursorName,
+     flag_descriptions::kWindowsFollowCursorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kWindowsFollowCursor)},
     {"ash-limit-alt-tab-to-active-desk",
      flag_descriptions::kLimitAltTabToActiveDeskName,
      flag_descriptions::kLimitAltTabToActiveDeskDescription, kOsCrOS,
@@ -3367,10 +3378,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-    {"preemtive-link-to-text-generation",
-     flag_descriptions::kPreemtiveLinkToTextGenerationName,
-     flag_descriptions::kPreemtiveLinkToTextGenerationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPreemtiveLinkToTextGeneration)},
+    {"preemptive-link-to-text-generation",
+     flag_descriptions::kPreemptiveLinkToTextGenerationName,
+     flag_descriptions::kPreemptiveLinkToTextGenerationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(shared_highlighting::kPreemptiveLinkToTextGeneration)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"keyboard-based-display-arrangement-in-settings",
      flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
@@ -4080,12 +4091,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcUsbHostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kUsbHostFeature)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if defined(OS_WIN)
-    {"enable-winrt-sensor-implementation",
-     flag_descriptions::kWinrtSensorsImplementationName,
-     flag_descriptions::kWinrtSensorsImplementationDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kWinrtSensorsImplementation)},
-#endif
     {"enable-generic-sensor-extra-classes",
      flag_descriptions::kEnableGenericSensorExtraClassesName,
      flag_descriptions::kEnableGenericSensorExtraClassesDescription, kOsAll,
@@ -4406,6 +4411,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisableCGIParamMatchingName,
      flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kDisableCGIParamMatching)},
+    {"omnibox-double-space-keyword-triggering",
+     flag_descriptions::kOmniboxDoubleSpaceKeywordTriggeringName,
+     flag_descriptions::kOmniboxDoubleSpaceKeywordTriggeringDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kDoubleSpaceKeywordTriggering)},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -6147,7 +6156,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"lens-camera-assisted-search",
      flag_descriptions::kLensCameraAssistedSearchName,
      flag_descriptions::kLensCameraAssistedSearchDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kLensCameraAssistedSearch)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kLensCameraAssistedSearch,
+                                    kLensCameraAssistedSearchVariations,
+                                    "LensCameraAssistedSearch")},
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

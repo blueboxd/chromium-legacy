@@ -195,7 +195,7 @@ void FocusFirstOrLastFocusableChild(views::View* root, bool reverse) {
 // |bold_start|:  The position in |text| to start bolding.
 // |bold_length|: The length of bold text.
 void MakeSectionBold(views::StyledLabel* label,
-                     const base::string16& text,
+                     const std::u16string& text,
                      const base::Optional<int>& bold_start,
                      int bold_length) {
   auto create_style = [&](bool is_bold) {
@@ -323,27 +323,17 @@ class UserAddingScreenIndicator : public views::View {
     layout_manager->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
 
-    views::ImageView* info_icon = new views::ImageView();
-    info_icon->SetPreferredSize(gfx::Size(kInfoIconSizeDp, kInfoIconSizeDp));
-    info_icon->SetImage(gfx::CreateVectorIcon(
-        views::kInfoIcon,
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorPrimary)));
-    AddChildView(info_icon);
+    info_icon_ = AddChildView(new views::ImageView());
+    info_icon_->SetPreferredSize(gfx::Size(kInfoIconSizeDp, kInfoIconSizeDp));
 
-    base::string16 message =
+    std::u16string message =
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_USER_ADDING_BANNER);
-    views::Label* label_ = login_views_utils::CreateBubbleLabel(message, this);
+    label_ = AddChildView(login_views_utils::CreateBubbleLabel(message, this));
     label_->SetText(message);
-    AddChildView(label_);
 
     SetPaintToLayer();
-    SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent80);
     layer()->SetBackgroundBlur(
         static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));
-    SetBackground(views::CreateRoundedRectBackground(background_color,
-                                                     kBubbleBorderRadius));
     layer()->SetFillsBoundsOpaquely(false);
   }
 
@@ -357,6 +347,27 @@ class UserAddingScreenIndicator : public views::View {
     return gfx::Size(kUserAddingScreenIndicatorWidth,
                      GetHeightForWidth(kUserAddingScreenIndicatorWidth));
   }
+
+  // views::View:
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+    info_icon_->SetImage(gfx::CreateVectorIcon(
+        views::kInfoIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary)));
+
+    label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
+
+    SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparent80);
+    SetBackground(views::CreateRoundedRectBackground(background_color,
+                                                     kBubbleBorderRadius));
+  }
+
+ private:
+  views::ImageView* info_icon_ = nullptr;
+  views::Label* label_ = nullptr;
 };
 
 }  // namespace
@@ -372,7 +383,7 @@ class LockContentsView::AuthErrorBubble : public LoginErrorBubble {
 
 class LockContentsView::ManagementBubble : public LoginTooltipView {
  public:
-  ManagementBubble(const base::string16& message, views::View* anchor_view)
+  ManagementBubble(const std::u16string& message, views::View* anchor_view)
       : LoginTooltipView(message, anchor_view) {
     views::BoxLayout* layout_manager =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -487,7 +498,7 @@ views::View* LockContentsView::TestApi::bottom_status_indicator() const {
 
 LockContentsView::BottomIndicatorState
 LockContentsView::TestApi::bottom_status_indicator_status() const {
-  return view_->bottom_status_indicator_status_;
+  return view_->bottom_status_indicator_state_;
 }
 
 LoginExpandedPublicAccountView* LockContentsView::TestApi::expanded_view()
@@ -765,34 +776,23 @@ void LockContentsView::ShowEnterpriseDomainManager(
     const std::string& entreprise_domain_manager) {
   if (!chromeos::features::IsLoginDeviceManagementDisclosureEnabled())
     return;
-  bottom_status_indicator_->SetIcon(
-      chromeos::kEnterpriseIcon,
-      AshColorProvider::ContentLayerType::kIconColorPrimary);
   bottom_status_indicator_->SetText(l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR, ui::GetChromeOSDeviceName(),
       base::UTF8ToUTF16(entreprise_domain_manager)));
-  bottom_status_indicator_->SetEnabledTextColors(
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorPrimary));
   bottom_status_indicator_->set_role_for_accessibility(
       ax::mojom::Role::kButton);
-  bottom_status_indicator_status_ = BottomIndicatorState::kManagedDevice;
+  bottom_status_indicator_state_ = BottomIndicatorState::kManagedDevice;
+  UpdateBottomStatusIndicatorColors();
   UpdateBottomStatusIndicatorVisibility();
 }
 
 void LockContentsView::ShowAdbEnabled() {
-  bottom_status_indicator_->SetIcon(
-      kLockScreenAlertIcon,
-      AshColorProvider::ContentLayerType::kIconColorAlert);
   bottom_status_indicator_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING));
-  bottom_status_indicator_->SetEnabledTextColors(
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorAlert));
   bottom_status_indicator_->set_role_for_accessibility(
       ax::mojom::Role::kStaticText);
-  bottom_status_indicator_status_ =
-      BottomIndicatorState::kAdbSideLoadingEnabled;
+  bottom_status_indicator_state_ = BottomIndicatorState::kAdbSideLoadingEnabled;
+  UpdateBottomStatusIndicatorColors();
   UpdateBottomStatusIndicatorVisibility();
 }
 
@@ -881,6 +881,12 @@ bool LockContentsView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
   PerformAction(entry->second);
   return true;
+}
+
+void LockContentsView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  UpdateBottomStatusIndicatorColors();
+  UpdateSystemInfoColors();
 }
 
 void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
@@ -1173,13 +1179,13 @@ void LockContentsView::OnShowEasyUnlockIcon(const AccountId& user,
 
   if (icon.autoshow_tooltip) {
     tooltip_bubble_->SetAnchorView(big_user->auth_user()->GetActiveInputView());
-    tooltip_bubble_->SetText(icon.tooltip);
+    tooltip_bubble_->set_text(icon.tooltip);
     tooltip_bubble_->Show();
     tooltip_bubble_->SetVisible(true);
   }
 }
 
-void LockContentsView::OnWarningMessageUpdated(const base::string16& message) {
+void LockContentsView::OnWarningMessageUpdated(const std::u16string& message) {
   if (message.empty()) {
     if (warning_banner_bubble_->GetVisible())
       warning_banner_bubble_->Hide();
@@ -1230,8 +1236,6 @@ void LockContentsView::OnSystemInfoChanged(
   auto create_info_label = []() {
     auto label = std::make_unique<views::Label>();
     label->SetAutoColorReadabilityEnabled(false);
-    label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
     label->SetFontList(views::Label::GetDefaultFontList().Derive(
         -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
     label->SetSubpixelRenderingEnabled(false);
@@ -1242,6 +1246,7 @@ void LockContentsView::OnSystemInfoChanged(
   if (system_info_->children().empty()) {
     for (int i = 0; i < 3; ++i)
       system_info_->AddChildView(create_info_label());
+    UpdateSystemInfoColors();
   }
 
   if (enforced) {
@@ -1352,7 +1357,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   if (auth_error_bubble_->GetVisible())
     auth_error_bubble_->Hide();
 
-  base::string16 error_text =
+  std::u16string error_text =
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED);
 
   detachable_base_error_bubble_->SetTextContent(error_text);
@@ -1580,16 +1585,13 @@ void LockContentsView::CreateLowDensityLayout(
   media_controls_callbacks.show_media_controls = base::BindRepeating(
       &LockContentsView::CreateMediaControlsLayout, base::Unretained(this));
 
-  auto media_controls_view =
-      std::make_unique<LockScreenMediaControlsView>(media_controls_callbacks);
-
   // Space between primary user and media controls.
   middle_spacing_view_ =
       main_view_->AddChildView(std::make_unique<NonAccessibleView>());
 
   // Media controls view.
-  media_controls_view_ =
-      main_view_->AddChildView(std::move(media_controls_view));
+  media_controls_view_ = main_view_->AddChildView(
+      std::make_unique<LockScreenMediaControlsView>(media_controls_callbacks));
 
   media_controls_view_->SetVisible(false);
   middle_spacing_view_->SetVisible(false);
@@ -2008,13 +2010,13 @@ void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
   // Hide easy unlock icon if there is no data is available.
   if (!state->easy_unlock_state) {
     big_view->auth_user()->SetEasyUnlockIcon(EasyUnlockIconId::NONE,
-                                             base::string16());
+                                             std::u16string());
     return;
   }
 
   // TODO(jdufault): Make easy unlock backend always send aria_label, right now
   // it is only sent if there is no tooltip.
-  base::string16 accessibility_label = state->easy_unlock_state->aria_label;
+  std::u16string accessibility_label = state->easy_unlock_state->aria_label;
   if (accessibility_label.empty())
     accessibility_label = state->easy_unlock_state->tooltip;
 
@@ -2048,7 +2050,7 @@ void LockContentsView::ShowAuthErrorMessage() {
     return;
   }
 
-  base::string16 error_text = l10n_util::GetStringUTF16(
+  std::u16string error_text = l10n_util::GetStringUTF16(
       unlock_attempt_ > 1 ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
                           : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
   ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
@@ -2064,7 +2066,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   if (ime_controller->available_imes().size() > 1 && !IsTabletMode()) {
     error_text += base::ASCIIToUTF16(" ");
     bold_start = error_text.length();
-    base::string16 shortcut =
+    std::u16string shortcut =
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_KEYBOARD_SWITCH_SHORTCUT);
     bold_length = shortcut.length();
 
@@ -2099,7 +2101,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   auth_error_bubble_->SetAnchorView(
       big_view->auth_user()->GetActiveInputView());
   auth_error_bubble_->SetContent(container.release());
-  auth_error_bubble_->SetAccessibleName(error_text);
+  auth_error_bubble_->set_accessible_name(error_text);
   auth_error_bubble_->Show();
 }
 
@@ -2115,7 +2117,7 @@ void LockContentsView::OnEasyUnlockIconHovered() {
 
   if (!state->easy_unlock_state->tooltip.empty()) {
     tooltip_bubble_->SetAnchorView(big_view->auth_user()->GetActiveInputView());
-    tooltip_bubble_->SetText(state->easy_unlock_state->tooltip);
+    tooltip_bubble_->set_text(state->easy_unlock_state->tooltip);
     tooltip_bubble_->Show();
   }
 }
@@ -2338,17 +2340,50 @@ bool LockContentsView::GetSystemInfoVisibility() const {
   }
 }
 
+void LockContentsView::UpdateSystemInfoColors() {
+  for (auto* child : system_info_->children()) {
+    views::Label* label = static_cast<views::Label*>(child);
+    label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
+  }
+}
+
+void LockContentsView::UpdateBottomStatusIndicatorColors() {
+  switch (bottom_status_indicator_state_) {
+    case BottomIndicatorState::kNone:
+      return;
+    case BottomIndicatorState::kManagedDevice: {
+      bottom_status_indicator_->SetIcon(
+          chromeos::kEnterpriseIcon,
+          AshColorProvider::ContentLayerType::kIconColorPrimary);
+      bottom_status_indicator_->SetEnabledTextColors(
+          AshColorProvider::Get()->GetContentLayerColor(
+              AshColorProvider::ContentLayerType::kTextColorPrimary));
+      break;
+    }
+    case BottomIndicatorState::kAdbSideLoadingEnabled: {
+      bottom_status_indicator_->SetIcon(
+          kLockScreenAlertIcon,
+          AshColorProvider::ContentLayerType::kIconColorAlert);
+      bottom_status_indicator_->SetEnabledTextColors(
+          AshColorProvider::Get()->GetContentLayerColor(
+              AshColorProvider::ContentLayerType::kTextColorAlert));
+      break;
+    }
+  }
+}
+
 void LockContentsView::UpdateBottomStatusIndicatorVisibility() {
-  bool visible = bottom_status_indicator_status_ ==
-                     BottomIndicatorState::kAdbSideLoadingEnabled ||
-                 (bottom_status_indicator_status_ ==
-                      BottomIndicatorState::kManagedDevice &&
-                  !extension_ui_visible_);
+  bool visible =
+      bottom_status_indicator_state_ ==
+          BottomIndicatorState::kAdbSideLoadingEnabled ||
+      (bottom_status_indicator_state_ == BottomIndicatorState::kManagedDevice &&
+       !extension_ui_visible_);
   bottom_status_indicator_->SetVisible(visible);
 }
 
 void LockContentsView::OnBottomStatusIndicatorTapped() {
-  if (bottom_status_indicator_status_ != BottomIndicatorState::kManagedDevice)
+  if (bottom_status_indicator_state_ != BottomIndicatorState::kManagedDevice)
     return;
   management_bubble_->Show();
 }

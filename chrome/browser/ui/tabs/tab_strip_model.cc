@@ -1489,7 +1489,7 @@ void TabStripModel::ExecuteAddToExistingWindowCommand(int context_index,
                                    browser_index);
 }
 
-std::vector<base::string16> TabStripModel::GetExistingWindowsForMoveMenu() {
+std::vector<std::u16string> TabStripModel::GetExistingWindowsForMoveMenu() {
   return delegate()->GetExistingWindowsForMoveMenu();
 }
 
@@ -2290,7 +2290,9 @@ void TabStripModel::SetSitesMuted(const std::vector<int>& indices,
           HostContentSettingsMapFactory::GetForProfile(profile);
       ContentSetting setting =
           mute ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW;
-      if (setting == settings->GetDefaultContentSetting(
+
+      if (!profile->IsIncognitoProfile() &&
+          setting == settings->GetDefaultContentSetting(
                          ContentSettingsType::SOUND, nullptr)) {
         setting = CONTENT_SETTING_DEFAULT;
       }

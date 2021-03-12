@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 
 namespace blink {
@@ -184,9 +185,23 @@ scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
 
     container_builder_.SetInflowBounds(inflow_bounds);
   }
+  container_builder_.SetMayHaveDescendantAboveBlockStart(false);
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
+
+  // Store layout data for use in computed style and devtools.
+  auto grid_data = std::make_unique<NGGridData>();
+  grid_data->row_start = grid_placement.StartOffset(kForRows);
+  grid_data->column_start = grid_placement.StartOffset(kForColumns);
+  grid_data->row_auto_repeat_count = grid_placement.AutoRepetitions(kForRows);
+  grid_data->column_auto_repeat_count =
+      grid_placement.AutoRepetitions(kForColumns);
+  grid_data->row_geometry =
+      ConvertSetGeometry(grid_geometry.row_geometry, row_track_collection);
+  grid_data->column_geometry = ConvertSetGeometry(grid_geometry.column_geometry,
+                                                  column_track_collection);
+  container_builder_.TransferGridData(std::move(grid_data));
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
   return container_builder_.ToBoxFragment();
@@ -2367,8 +2382,9 @@ void NGGridLayoutAlgorithm::PlaceGridItems(const GridItems& grid_items,
     const auto& physical_fragment =
         To<NGPhysicalBoxFragment>(result->PhysicalFragment());
 
+    const auto& item_style = grid_item.node.Style();
     const auto margins =
-        ComputeMarginsFor(space, grid_item.node.Style(), ConstraintSpace());
+        ComputeMarginsFor(space, item_style, ConstraintSpace());
 
     // Apply the grid-item's alignment (if any).
     NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
@@ -2381,7 +2397,18 @@ void NGGridLayoutAlgorithm::PlaceGridItems(const GridItems& grid_items,
                         fragment.BlockSize(), margins.block_start,
                         margins.block_end, grid_item.block_axis_alignment));
 
-    container_builder_.AddChild(physical_fragment, containing_grid_area.offset);
+    // Grid is special in that %-based offsets resolve against the grid-area.
+    // Adjust the offset here (instead of in the builder). This is safe as grid
+    // *also* has special inflow-bounds logic (otherwise this wouldn't work).
+    LogicalOffset adjusted_offset = containing_grid_area.offset;
+    if (item_style.GetPosition() == EPosition::kRelative) {
+      adjusted_offset += ComputeRelativeOffsetForBoxFragment(
+          physical_fragment, ConstraintSpace().GetWritingDirection(),
+          containing_grid_area.size);
+    }
+
+    container_builder_.AddResult(*result, adjusted_offset,
+                                 /* offset_includes_relative_position */ true);
     NGBlockNode(grid_item.node).StoreMargins(ConstraintSpace(), margins);
 
     // Compares GridArea objects in row-major grid order for baseline
@@ -2555,5 +2582,35 @@ void NGGridLayoutAlgorithm::ComputeOffsetAndSize(
     DCHECK_EQ(item.item_type, ItemType::kOutOfFlow);
   }
 #endif
+}
+
+NGGridData::TrackCollectionGeometry NGGridLayoutAlgorithm::ConvertSetGeometry(
+    const SetGeometry& set_geometry,
+    const NGGridLayoutAlgorithmTrackCollection& track_collection) const {
+  NGGridData::TrackCollectionGeometry set_data;
+  set_data.gutter_size = set_geometry.gutter_size;
+  DCHECK(set_geometry.sets.size());
+  set_data.sets.ReserveInitialCapacity(set_geometry.sets.size());
+  // Account for the offset inserted into the beginning of the geometry. See
+  // |ComputeSetGeometry|.
+  set_data.sets.emplace_back(set_geometry.sets[0].offset, 1);
+  // Don't consider this first offset as a track.
+  set_data.total_track_count = 0;
+  for (wtf_size_t set_index = 1; set_index < set_geometry.sets.size();
+       ++set_index) {
+    // Subtract 1 from the set index to account for the set offset inserted to
+    // the beginning of the row_geometry.
+    wtf_size_t tracks_in_set =
+        track_collection.SetAt(set_index - 1).TrackCount();
+    set_data.sets.emplace_back(set_geometry.sets[set_index].offset,
+                               tracks_in_set);
+    set_data.total_track_count += tracks_in_set;
+  }
+  // Add range data
+  for (auto& range : track_collection.Ranges()) {
+    set_data.ranges.emplace_back(range.track_count, range.starting_set_index,
+                                 range.set_count);
+  }
+  return set_data;
 }
 }  // namespace blink

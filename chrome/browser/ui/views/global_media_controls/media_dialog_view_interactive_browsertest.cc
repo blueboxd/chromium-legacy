@@ -100,7 +100,7 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
     Wait();
   }
 
-  void WaitForDialogToContainText(const base::string16& text) {
+  void WaitForDialogToContainText(const std::u16string& text) {
     if (DialogContainsText(text))
       return;
 
@@ -187,7 +187,7 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
 
   // Checks the title and artist of each notification in the dialog to see if
   // |text| is contained anywhere in the dialog.
-  bool DialogContainsText(const base::string16& text) {
+  bool DialogContainsText(const std::u16string& text) {
     for (const auto& notification_pair :
          MediaDialogView::GetDialogViewForTesting()
              ->GetNotificationsForTesting()) {
@@ -231,7 +231,7 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
 
   MediaDialogView* observed_dialog_ = nullptr;
   bool waiting_for_dialog_to_contain_text_ = false;
-  base::string16 expected_text_;
+  std::u16string expected_text_;
   int expected_notification_count_ = 0;
   bool expected_pip_visibility_ = false;
 
@@ -259,6 +259,7 @@ class TestWebContentsPresentationManager
   MOCK_CONST_METHOD0(HasDefaultPresentationRequest, bool());
   MOCK_CONST_METHOD0(GetDefaultPresentationRequest,
                      const content::PresentationRequest&());
+  MOCK_METHOD0(GetMediaRoutes, std::vector<media_router::MediaRoute>());
 
   void OnPresentationResponse(
       const content::PresentationRequest& presentation_request,
@@ -446,7 +447,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
 
   bool IsDialogVisible() { return MediaDialogView::IsShowing(); }
 
-  void WaitForDialogToContainText(const base::string16& text) {
+  void WaitForDialogToContainText(const std::u16string& text) {
     MediaToolbarButtonWatcher(GetToolbarIcon())
         .WaitForDialogToContainText(text);
   }
@@ -492,7 +493,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
     ClickButton(live_caption_button);
   }
 
-  void ClickNotificationByTitle(const base::string16& title) {
+  void ClickNotificationByTitle(const std::u16string& title) {
     ASSERT_TRUE(MediaDialogView::IsShowing());
     MediaNotificationContainerImplView* notification =
         GetNotificationByTitle(title);
@@ -590,7 +591,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
 
   // Finds a MediaNotificationContainerImplView by title.
   MediaNotificationContainerImplView* GetNotificationByTitle(
-      const base::string16& title) {
+      const std::u16string& title) {
     for (const auto& notification_pair :
          MediaDialogView::GetDialogViewForTesting()
              ->GetNotificationsForTesting()) {

@@ -97,7 +97,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
     void set_immediately_hover_easy_unlock_icon();
 
     bool is_capslock_highlight_for_testing() {
-      return view_->is_capslock_higlight_for_testing_;
+      return view_->is_capslock_higlight_;
     }
 
    private:
@@ -105,7 +105,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   };
 
   using OnPasswordSubmit =
-      base::RepeatingCallback<void(const base::string16& password)>;
+      base::RepeatingCallback<void(const std::u16string& password)>;
   using OnPasswordTextChanged = base::RepeatingCallback<void(bool is_empty)>;
   using OnEasyUnlockIconHovered = base::RepeatingClosure;
 
@@ -127,10 +127,10 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // Change the active icon for easy unlock.
   void SetEasyUnlockIcon(EasyUnlockIconId id,
-                         const base::string16& accessibility_label);
+                         const std::u16string& accessibility_label);
 
   // Set the textfield name used for accessibility.
-  void SetAccessibleName(const base::string16& name);
+  void SetAccessibleName(const std::u16string& name);
 
   // Enable or disable focus on the child elements (i.e.: password field and
   // submit button, or display password button if it is shown).
@@ -154,7 +154,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // Set password field placeholder. The password view cannot set the text by
   // itself because it doesn't know which auth methods are enabled.
-  void SetPlaceholderText(const base::string16& placeholder_text);
+  void SetPlaceholderText(const std::u16string& placeholder_text);
 
   // Makes the textfield read-only and enables/disables submitting.
   void SetReadOnly(bool read_only);
@@ -174,7 +174,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
-                       const base::string16& new_contents) override;
+                       const std::u16string& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
@@ -187,6 +187,10 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // Submits the current password field text to mojo call and resets the text
   // field.
   void SubmitPassword();
+
+  // When theme changes, palette should be updated and some subviews
+  // recalculated.
+  void UpdatePalette(const LoginPalette& palette);
 
  private:
   class EasyUnlockIcon;
@@ -245,7 +249,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   EasyUnlockIcon* easy_unlock_icon_ = nullptr;
   bool should_show_easy_unlock_ = false;
 
-  bool is_capslock_higlight_for_testing_ = false;
+  bool is_capslock_higlight_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPasswordView);
 };

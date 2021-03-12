@@ -219,7 +219,7 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   int GetUserCount() const { return debug_users_.size(); }
 
-  base::string16 GetDisplayNameForUserIndex(size_t user_index) {
+  std::u16string GetDisplayNameForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     return base::UTF8ToUTF16(debug_users_[user_index].display_name);
   }
@@ -431,7 +431,7 @@ class LockDebugView::DebugDataDispatcherTransformer
                                     adb_sideloading_enabled);
   }
 
-  void UpdateWarningMessage(const base::string16& message) {
+  void UpdateWarningMessage(const std::u16string& message) {
     debug_dispatcher_.UpdateWarningMessage(message);
   }
 
@@ -831,6 +831,11 @@ void LockDebugView::Layout() {
     child->Layout();
 }
 
+void LockDebugView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  UpdatePerUserActionContainerAndLayout();
+}
+
 void LockDebugView::AddOrRemoveUsersButtonPressed(int delta) {
   debug_data_dispatcher_->SetUserCount(
       std::max(0, debug_data_dispatcher_->GetUserCount() + delta));
@@ -929,7 +934,7 @@ void LockDebugView::CycleDetachableBaseIdButtonPressed() {
 void LockDebugView::ToggleWarningBannerButtonPressed() {
   debug_data_dispatcher_->UpdateWarningMessage(
       is_warning_banner_shown_
-          ? base::string16()
+          ? std::u16string()
           : base::ASCIIToUTF16("A critical update is ready to install. Sign "
                                "in to get started."));
   is_warning_banner_shown_ = !is_warning_banner_shown_;

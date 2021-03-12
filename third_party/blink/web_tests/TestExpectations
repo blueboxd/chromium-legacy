@@ -234,17 +234,9 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
-crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-iframe-root.html [ Pass Failure ]
-crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-root.html [ Pass Failure ]
-crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-transformed-root.html [ Pass Failure ]
-crbug.com/1185506 external/wpt/css/css-backgrounds/background-margin-will-change-root.html [ Pass Failure ]
-crbug.com/1185506 external/wpt/css/css-backgrounds/border-image-image-type-003.htm [ Pass Failure ]
+# Ref test with very minor differences. We need fuzzy matching for our ref tests,
+# or upstream this to WPT.
 crbug.com/1185506 svg/text/textpath-pattern.svg [ Pass Failure ]
-crbug.com/1185506 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/background-margin-iframe-root.html [ Pass Failure ]
-crbug.com/1185506 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/background-margin-root.html [ Pass Failure ]
-crbug.com/1185506 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/background-margin-transformed-root.html [ Pass Failure ]
-crbug.com/1185506 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/background-margin-will-change-root.html [ Pass Failure ]
-crbug.com/1185506 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-image-image-type-003.htm [ Pass Failure ]
 
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
@@ -4847,6 +4839,7 @@ crbug.com/834302 external/wpt/permissions-policy/permissions-policy-opaque-origi
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Pass Failure ]
+crbug.com/1186049 http/tests/devtools/cache-storage/cache-data.js [ Pass Failure ]
 
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
@@ -5743,10 +5736,7 @@ crbug.com/1186901 [ Linux ] http/tests/devtools/elements/styles-3/style-autocomp
 # Updating virtual suite from virtual/threaded/fast/scroll-snap to
 # virtual/threaded-prefer-compositing/fast/scroll-snap exposes additional
 # tests that fail on the composited code path.
-crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-arrow.html [ Timeout ]
-crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-thumb.html [ Pass Failure Timeout ]
-crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-track.html [ Pass Timeout ]
-crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-tap.html [ Pass Failure Timeout ]
+crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-thumb.html [ Pass Failure ]
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-wheel-scrolling.html [ Pass Failure ]
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Pass Failure ]
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/animate-fling-to-snap-points-2.html [ Pass Timeout ]

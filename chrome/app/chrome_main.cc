@@ -113,8 +113,11 @@ int ChromeMain(int argc, const char** argv) {
 
 #if defined(OS_MAC)
   if(!__builtin_available(macOS 10.10,*)) {
-    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
+  }
+
+  if(!__builtin_available(macOS 10.9,*)) {
+    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
   }
 #endif
   ALLOW_UNUSED_LOCAL(command_line);

@@ -40,13 +40,17 @@
   ))
 
 ; sysctls.
-(allow sysctl-read
-  (sysctl-name "hw.optional.avx1_0")
-  (sysctl-name "hw.optional.avx2_0")
-  (sysctl-name "hw.optional.sse2")
-  (sysctl-name "hw.optional.sse3")
-  (sysctl-name "hw.optional.sse4_1")
-  (sysctl-name "hw.optional.sse4_2")
+(if (= os-version 1009)
+  (allow sysctl-read)
+  ; else
+  (allow sysctl-read
+    (sysctl-name "hw.optional.avx1_0")
+    (sysctl-name "hw.optional.avx2_0")
+    (sysctl-name "hw.optional.sse2")
+    (sysctl-name "hw.optional.sse3")
+    (sysctl-name "hw.optional.sse4_1")
+    (sysctl-name "hw.optional.sse4_2")
+  )
 )
 
 ; This is available in 10.15+, and rolled out as a Finch experiment.

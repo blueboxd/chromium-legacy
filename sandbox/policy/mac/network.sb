@@ -104,9 +104,12 @@
   (global-name "com.apple.SystemConfiguration.DNSConfiguration")
   (global-name "com.apple.SystemConfiguration.configd")
 )
-
-(allow sysctl-read
-  (sysctl-name-regex #"^net.routetable")
+(if (= os-version 1009)
+  (allow sysctl-read)
+  ; else
+  (allow sysctl-read
+    (sysctl-name-regex #"^net.routetable")
+  )
 )
 
 ; Kerberos support. This should be removed after GSS is moved out of the

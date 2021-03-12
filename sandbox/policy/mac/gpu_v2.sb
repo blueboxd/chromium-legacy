@@ -127,13 +127,17 @@
     (xpc-service-name-regex #"\.apple-extension-service$")
 ))
 
-(allow sysctl-read
-  (sysctl-name "hw.busfrequency_max")
-  (sysctl-name "hw.cachelinesize")
-  (sysctl-name "hw.logicalcpu_max")
-  (sysctl-name "hw.memsize")
-  (sysctl-name "hw.model")
-  (sysctl-name "kern.osvariant_status")
+(if (= os-version 1009)
+  (allow sysctl-read)
+  ; else
+  (allow sysctl-read
+    (sysctl-name "hw.busfrequency_max")
+    (sysctl-name "hw.cachelinesize")
+    (sysctl-name "hw.logicalcpu_max")
+    (sysctl-name "hw.memsize")
+    (sysctl-name "hw.model")
+    (sysctl-name "kern.osvariant_status")
+  )
 )
 
 (allow file-read-data

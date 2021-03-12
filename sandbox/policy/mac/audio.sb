@@ -22,8 +22,10 @@
   (iokit-user-client-class "IOAudioEngineUserClient")
 )
 
-(allow ipc-posix-shm-read* ipc-posix-shm-write-data
-  (ipc-posix-name-regex #"^AudioIO"))
+(if (>= os-version 1009)
+  (allow ipc-posix-shm-read* ipc-posix-shm-write-data
+    (ipc-posix-name-regex #"^AudioIO"))
+)
 
 ; Mach IPC.
 (allow mach-lookup
@@ -40,7 +42,7 @@
   ))
 
 ; sysctls.
-(if (= os-version 1009)
+(if (<= os-version 1009)
   (allow sysctl-read)
   ; else
   (allow sysctl-read

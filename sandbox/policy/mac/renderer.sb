@@ -13,7 +13,9 @@
 ))
 
 ; Allow cf prefs to work.
-(allow user-preference-read)
+(if (>= os-version 1009)
+  (allow user-preference-read)
+)
 
 ; process-info
 (if (>= os-version 1013)
@@ -70,10 +72,12 @@
 )
 
 ; POSIX IPC
-(allow ipc-posix-shm-read-data
-  (ipc-posix-name "apple.cfprefs.317580v1")
-  (ipc-posix-name "apple.cfprefs.daemonv1")
-  (ipc-posix-name "apple.shm.notification_center")  ; https://crbug.com/792217
+(if (>= os-version 1009)
+  (allow ipc-posix-shm-read-data
+    (ipc-posix-name "apple.cfprefs.317580v1")
+    (ipc-posix-name "apple.cfprefs.daemonv1")
+    (ipc-posix-name "apple.shm.notification_center")  ; https://crbug.com/792217
+  )
 )
 
 ; mach IPC

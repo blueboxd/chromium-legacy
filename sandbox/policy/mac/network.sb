@@ -74,8 +74,10 @@
 )
 
 ; Distributed notifications memory.
-(allow ipc-posix-shm-read-data
-  (ipc-posix-name "apple.shm.notification_center")
+(if (>= os-version 1009)
+  (allow ipc-posix-shm-read-data
+    (ipc-posix-name "apple.shm.notification_center")
+  )
 )
 
 ; Notification data from the security server database.
@@ -104,7 +106,7 @@
   (global-name "com.apple.SystemConfiguration.DNSConfiguration")
   (global-name "com.apple.SystemConfiguration.configd")
 )
-(if (= os-version 1009)
+(if (<= os-version 1009)
   (allow sysctl-read)
   ; else
   (allow sysctl-read

@@ -188,7 +188,7 @@
 )
 
 ; sysctls permitted.
-(if (= os-version 1009)
+(if (<= os-version 1009)
   (allow sysctl-read)
   ; else
   (allow sysctl-read

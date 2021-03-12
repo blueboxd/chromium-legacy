@@ -8,7 +8,9 @@
 (debug deny)
 
 ; Allow cf prefs to work.
-(allow user-preference-read)
+(if (>= os-version 1009)
+  (allow user-preference-read)
+)
 
 (allow-cvms-blobs)
 
@@ -105,19 +107,24 @@
   (iokit-user-client-class "RootDomainUserClient")
 )
 
-(allow iokit-set-properties
-  (require-all (iokit-connection "IODisplay")
-    (require-any (iokit-property "brightness")
-      (iokit-property "linear-brightness")
-      (iokit-property "commit")
-      (iokit-property "rgcs")
-      (iokit-property "ggcs")
-      (iokit-property "bgcs")
-)))
+(if (<= os-version 1008)
+	(allow iokit-set-properties)
+  ;else
+  (allow iokit-set-properties
+    (require-all (iokit-connection "IODisplay")
+      (require-any (iokit-property "brightness")
+        (iokit-property "linear-brightness")
+        (iokit-property "commit")
+        (iokit-property "rgcs")
+        (iokit-property "ggcs")
+        (iokit-property "bgcs")
+  )))
+)
 
-(allow ipc-posix-shm-read-data
-  (ipc-posix-name "apple.shm.notification_center"))
-
+(if (>= os-version 1009)
+  (allow ipc-posix-shm-read-data
+    (ipc-posix-name "apple.shm.notification_center"))
+)
 
 ; Needed for VideoToolbox usage - https://crbug.com/767037
 (if (>= os-version 1013)
@@ -127,7 +134,7 @@
     (xpc-service-name-regex #"\.apple-extension-service$")
 ))
 
-(if (= os-version 1009)
+(if (<= os-version 1009)
   (allow sysctl-read)
   ; else
   (allow sysctl-read

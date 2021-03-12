@@ -42,8 +42,9 @@ Basically equivalent to the [same version of original Chromium](https://chromest
   - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
   - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
 - Sandboxing
-  - on 10.7/10.8, sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies
-    - *TODO: rewrite policies for old OSes*
+  - ~~on 10.7/10.8, sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies~~
+    - ~~*TODO: rewrite policies for old OSes*~~
+      - policies were rewritten for old OSes, now enabled on every OSes.
 - WebAuthn/FIDO2
   - on 10.7, you need patch for `IOHIDFamily.kext` to use USB keys (TBW)
 

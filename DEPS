@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4bf1ca5fa9889e8da314f645e90d4844f1787482',
+  'skia_revision': 'e9b6e2f2a995b49d6c531be4916844f0db28a64f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cb5441ed17ae58ccec9562a1ffe4eed2351c5c60',
+  'angle_revision': '225e1952d49477a114942c86328cb294e52781c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -275,7 +275,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7a3a7363a7c321684eb327d1b8aa536986a12ff8',
+  'catapult_revision': 'cf138ce6bf90f8ad2c79f38f6ed919182c5a3132',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -283,7 +283,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a5cad5dbdc634112d01c2ce66495cde284d34979',
+  'devtools_frontend_revision': '4773d6b482d3f1699ce420326a11fccb94809b9c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -323,7 +323,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '0702b704697ca0c9d4b41faeb1d3f80e10f07278',
+  'dawn_revision': '2f72aeda4fa52c3e7eb6276b0a59b1d568983517',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -387,7 +387,7 @@ vars = {
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:dfcbc6fed0a8352696f92d67ccad54048ad182b3',
+  'gn_version': 'git_revision:e0358b49272c8b354eda0a595e1d7887343fab27',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -542,7 +542,7 @@ deps = {
   },
 
     'src/ios/third_party/edo/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + '5ddded8c62d217b037bf37713a848ba141b66e18',
+      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + '1c59aa78db883a1d81c0b0defea31f645d075f0f',
       'condition': 'checkout_ios',
   },
 
@@ -930,7 +930,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e8b56fbf3ce5ea4a32b592a6b1f9132b4ea3c250',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'bd1729d959b350e8417e68afb20a3ae4e60b26cb',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1141,7 +1141,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '390dfc08e3806a2125d08d4d8d034a24d587d77a',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  'fb9f22ce8c54e277e5162d8643a1a254dcc5173a',
+    Var('aomedia_git') + '/aom.git' + '@' +  'f4064dd1c74659bbaf020da6512d9987c0340065',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
@@ -1596,7 +1596,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'Gk9jedrVex5g8hKzciT9sjI0JGf2jFh9LxXok8JHw2wC',
+          'version': 'RY1cs6o9Gi3j3iBE9XxPDZcR1n4Xvo27QvF_F3wL2r4C',
         },
       ],
       'dep_type': 'cipd',

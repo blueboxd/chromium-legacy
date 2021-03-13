@@ -194,6 +194,16 @@
     "expiry_milestone": 95
   },
   {
+    "name": "arc-rt-vcpu-dual-core",
+    "owners": [ "kansho" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "arc-rt-vcpu-quad-core",
+    "owners": [ "kansho" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "arc-usb-host",
     "owners": [ "lgcheng" ],
     "expiry_milestone": 76
@@ -461,6 +471,11 @@
     "name": "bluetooth-fix-a2dp-packet-size",
     "owners": [ "michaelfsun", "chromeos-bluetooth@google.com" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "bluetooth-sessionized-metrics",
+    "owners": [ "yudiliu", "chromeos-bluetooth@google.com" ],
+    "expiry_milestone": 93
   },
   {
     "name": "bluetooth-wbs-dogfood",
@@ -1159,6 +1174,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "document-transition",
+    "owners": [ "vmpstr", "chrishtr" ],
+    "expiry_milestone" : 94
+  },
+  {
     "name": "double-buffer-compositing",
     "owners": [ "chromeos-gfx@google.com" ],
     "expiry_milestone": 88
@@ -1697,6 +1717,11 @@
     "name": "enable-experimental-accessibility-dictation-extension",
     "owners": [ "akihiroota" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "enable-experimental-accessibility-dictation-listening",
+    "owners": [ "akihiroota", "katie" ],
+    "expiry_milestone": 93
   },
   {
     "name": "enable-experimental-accessibility-dictation-offline",
@@ -4999,6 +5024,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "toolbar-mic-iph-android",
+    "owners": [ "basiaz", "chrome-voice" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "top-chrome-touch-ui",
     "owners": [ "pbos", "chrome-desktop-ui-sea@google.com" ],
     // This flag is used to easily swap into touch-mode for UI development where
@@ -5316,12 +5346,12 @@
   },
   {
     "name": "webui-tab-strip",
-    "owners": [ "dfried", "collinbaker", "johntlee" ],
+    "owners": [ "tluk", "collinbaker", "johntlee" ],
     "expiry_milestone": 99
   },
   {
     "name": "webui-tab-strip-tab-drag-integration",
-    "owners": [ "dfried", "collinbaker", "johntlee" ],
+    "owners": [ "tluk", "collinbaker", "johntlee" ],
     "expiry_milestone": 99
   },
   {

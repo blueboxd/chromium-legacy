@@ -243,6 +243,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kToolbarIphAndroidCohort6,
     &kToolbarIphAndroidCohort7,
     &kToolbarIphAndroidCohort8,
+    &kToolbarMicIphAndroid,
     &kTrustedWebActivityLocationDelegation,
     &kTrustedWebActivityNewDisclosure,
     &kTrustedWebActivityPostMessage,
@@ -567,7 +568,7 @@ const base::Feature kOfflineMeasurementsBackgroundTask{
     "OfflineMeasurementsBackgroundTask", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPageAnnotationsService{"PageAnnotationsService",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -673,6 +674,9 @@ const base::Feature kToolbarIphAndroidCohort7{
     "ToolbarIphAndroidCohort7", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kToolbarIphAndroidCohort8{
     "ToolbarIphAndroidCohort8", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kToolbarMicIphAndroid{"ToolbarMicIphAndroid",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityLocationDelegation{
     "TrustedWebActivityLocationDelegation", base::FEATURE_ENABLED_BY_DEFAULT};

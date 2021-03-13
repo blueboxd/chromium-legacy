@@ -29,6 +29,7 @@
 #include "net/spdy/spdy_session.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -391,6 +392,20 @@ void SpdyHttpStream::OnHeadersSent() {
   }
 }
 
+void SpdyHttpStream::OnEarlyHintsReceived(
+    const spdy::Http2HeaderBlock& headers) {
+  DCHECK(!response_headers_complete_);
+  DCHECK(response_info_);
+  DCHECK_EQ(stream_->type(), SPDY_REQUEST_RESPONSE_STREAM);
+
+  const bool headers_valid = SpdyHeadersToHttpResponse(headers, response_info_);
+  CHECK(headers_valid);
+
+  if (!response_callback_.is_null()) {
+    DoResponseCallback(OK);
+  }
+}
+
 void SpdyHttpStream::OnHeadersReceived(
     const spdy::Http2HeaderBlock& response_headers,
     const spdy::Http2HeaderBlock* pushed_request_headers) {
@@ -716,6 +731,15 @@ void SpdyHttpStream::SetPriority(RequestPriority priority) {
 
 const std::vector<std::string>& SpdyHttpStream::GetDnsAliases() const {
   return dns_aliases_;
+}
+
+base::StringPiece SpdyHttpStream::GetAcceptChViaAlps() const {
+  if (!request_info_) {
+    return {};
+  }
+
+  const url::Origin origin = url::Origin::Create(request_info_->url);
+  return session()->GetAcceptChViaAlpsForOrigin(origin);
 }
 
 }  // namespace net

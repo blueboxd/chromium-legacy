@@ -33,15 +33,13 @@
 #include "chromeos/services/assistant/device_settings_host.h"
 #include "chromeos/services/assistant/libassistant_service_host_impl.h"
 #include "chromeos/services/assistant/media_host.h"
+#include "chromeos/services/assistant/platform/audio_input_host_impl.h"
 #include "chromeos/services/assistant/platform/audio_output_delegate_impl.h"
 #include "chromeos/services/assistant/platform/platform_delegate_impl.h"
-#include "chromeos/services/assistant/proxy/service_controller_proxy.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/cpp/migration/assistant_manager_service_delegate.h"
-#include "chromeos/services/assistant/public/cpp/migration/audio_input_host.h"
 #include "chromeos/services/assistant/public/cpp/migration/libassistant_v1_api.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/assistant/service_context.h"
@@ -182,7 +180,6 @@ void AssistantManagerServiceImpl::ResetIsFirstInitFlagForTesting() {
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     ServiceContext* context,
-    std::unique_ptr<AssistantManagerServiceDelegate> delegate,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
     base::Optional<std::string> s3_server_uri_override,
@@ -192,7 +189,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       assistant_proxy_(std::make_unique<AssistantProxy>()),
       platform_delegate_(std::make_unique<PlatformDelegateImpl>()),
       context_(context),
-      delegate_(std::move(delegate)),
       device_settings_host_(std::make_unique<DeviceSettingsHost>(context)),
       media_host_(std::make_unique<MediaHost>(AssistantClient::Get(),
                                               &interaction_subscribers_)),
@@ -204,6 +200,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
               &interaction_subscribers_)),
       bootup_config_(
           CreateBootupConfig(s3_server_uri_override, device_id_override)),
+      url_loader_factory_(network::SharedURLLoaderFactory::Create(
+          std::move(pending_url_loader_factory))),
       weak_factory_(this) {
   if (libassistant_service_host) {
     // During unittests a custom host is passed in, so we'll use that one.
@@ -211,13 +209,12 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   } else {
     // Use the default service host if none was provided.
     libassistant_service_host_ =
-        std::make_unique<LibassistantServiceHostImpl>(delegate_.get());
+        std::make_unique<LibassistantServiceHostImpl>();
   }
 
-  assistant_proxy_->Initialize(libassistant_service_host_.get(),
-                               std::move(pending_url_loader_factory));
+  assistant_proxy_->Initialize(libassistant_service_host_.get());
 
-  assistant_proxy_->service_controller().AddAndFireStateObserver(
+  service_controller().AddAndFireStateObserver(
       state_observer_receiver_.BindNewPipeAndPassRemote());
   assistant_proxy_->AddSpeechRecognitionObserver(
       speech_recognition_observer_->BindNewPipeAndPassRemote());
@@ -225,8 +222,10 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 
   audio_output_delegate_->Bind(assistant_proxy_->ExtractAudioOutputDelegate());
   platform_delegate_->Bind(assistant_proxy_->ExtractPlatformDelegate());
-  audio_input_host_ = delegate_->CreateAudioInputHost(
-      assistant_proxy_->ExtractAudioInputController());
+  audio_input_host_ = std::make_unique<AudioInputHostImpl>(
+      assistant_proxy_->ExtractAudioInputController(),
+      context_->cras_audio_handler(), context_->power_manager_client(),
+      context_->assistant_state()->locale().value());
 
   assistant_settings_->Initialize(
       assistant_proxy_->ExtractSpeakerIdEnrollmentController(),
@@ -619,7 +618,9 @@ void AssistantManagerServiceImpl::InitAssistant(
   bootup_config->locale = assistant_state()->locale().value();
   bootup_config->spoken_feedback_enabled = spoken_feedback_enabled_;
 
-  service_controller().Start(std::move(bootup_config));
+  service_controller().Initialize(std::move(bootup_config),
+                                  BindURLLoaderFactory());
+  service_controller().Start();
 }
 
 base::Thread& AssistantManagerServiceImpl::GetBackgroundThreadForTesting() {
@@ -650,6 +651,13 @@ bool AssistantManagerServiceImpl::IsServiceStarted() const {
     case State::RUNNING:
       return true;
   }
+}
+
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+AssistantManagerServiceImpl::BindURLLoaderFactory() {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
+  url_loader_factory_->Clone(pending_remote.InitWithNewPipeAndPassReceiver());
+  return pending_remote;
 }
 
 void AssistantManagerServiceImpl::OnServiceRunning() {
@@ -826,6 +834,11 @@ AssistantManagerServiceImpl::display_controller() {
   return assistant_proxy_->display_controller();
 }
 
+chromeos::libassistant::mojom::ServiceController&
+AssistantManagerServiceImpl::service_controller() {
+  return assistant_proxy_->service_controller();
+}
+
 assistant_client::AssistantManager*
 AssistantManagerServiceImpl::assistant_manager() {
   auto* api = LibassistantV1Api::Get();
@@ -854,18 +867,9 @@ AssistantManagerServiceImpl::conversation_controller() {
   return assistant_proxy_->conversation_controller();
 }
 
-ServiceControllerProxy& AssistantManagerServiceImpl::service_controller() {
-  return assistant_proxy_->service_controller();
-}
-
 chromeos::libassistant::mojom::SettingsController&
 AssistantManagerServiceImpl::settings_controller() {
   return assistant_proxy_->settings_controller();
-}
-
-const ServiceControllerProxy& AssistantManagerServiceImpl::service_controller()
-    const {
-  return assistant_proxy_->service_controller();
 }
 
 base::Thread& AssistantManagerServiceImpl::background_thread() {

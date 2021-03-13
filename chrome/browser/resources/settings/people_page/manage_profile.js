@@ -13,7 +13,7 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_components/customize_themes/customize_themes.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/shadow.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 
 import {AvatarIcon} from 'chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -76,18 +76,6 @@ Polymer({
      * True if the profile shortcuts feature is enabled.
      */
     isProfileShortcutSettingVisible_: Boolean,
-
-    /**
-     * TODO(dpapad): Move this back to the HTML file when the Polymer2 version
-     * of the code is deleted. Because of "\" being a special character in a JS
-     * string, can't satisfy both Polymer2 and Polymer3 at the same time from
-     * the HTML file.
-     * @private
-     */
-    pattern_: {
-      type: String,
-      value: '.*\\S.*',
-    },
   },
 
   /** @private {?ManageProfileBrowserProxy} */

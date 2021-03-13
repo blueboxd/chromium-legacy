@@ -87,11 +87,11 @@ import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedV2;
-import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.fonts.FontPreloader;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
@@ -1555,6 +1555,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
 
+        FontPreloader.getInstance().onPostInflationStartupTabbedActivity();
+
         TabModelSelector tabModelSelector = getTabModelSelector();
         IncognitoProfileDestroyer.observeTabModelSelector(tabModelSelector);
         IncognitoNotificationPresenceController.observeTabModelSelector(tabModelSelector);
@@ -1706,7 +1708,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), this, mOverviewModeBehaviorSupplier,
-                mBookmarkBridgeSupplier, new WebFeedBridge());
+                mBookmarkBridgeSupplier);
     }
 
     private TabDelegateFactory getTabDelegateFactory() {
@@ -1747,12 +1749,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 }
             };
         }
-        return Pair.create(new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
-                                   this::getTabDelegateFactory, false, overviewNTPCreator,
-                                   AsyncTabParamsManagerSingleton.getInstance()),
+        return Pair.create(
+                new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
+                        this::getTabDelegateFactory, false, overviewNTPCreator,
+                        AsyncTabParamsManagerSingleton.getInstance(), getTabModelSelectorSupplier(),
+                        getCompositorViewHolderSupplier()),
                 new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
                         this::getTabDelegateFactory, true, overviewNTPCreator,
-                        AsyncTabParamsManagerSingleton.getInstance()));
+                        AsyncTabParamsManagerSingleton.getInstance(), getTabModelSelectorSupplier(),
+                        getCompositorViewHolderSupplier()));
     }
 
     @Override

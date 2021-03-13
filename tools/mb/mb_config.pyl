@@ -123,7 +123,7 @@
       'android-nougat-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
-      'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_google_expectations_native_coverage',
+      'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_google_expectations_native_coverage_v8_arm64',
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
@@ -293,6 +293,7 @@
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
       'Linux Builder (goma cache silo)': 'gpu_tests_release_bot',
       'Linux Builder (reclient)': 'gpu_tests_release_bot_reclient',
+      'Linux Builder (runsc-exp) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux TSan Builder (goma cache silo)': 'tsan_disable_nacl_release_bot',
       'Linux TSan Builder (reclient)': 'tsan_disable_nacl_release_bot_reclient',
       
@@ -467,7 +468,6 @@
       'GPU FYI Linux dEQP Builder': 'angle_deqp_release_trybot',
       'GPU FYI Mac Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Mac Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
-      'GPU FYI Mac dEQP Builder': 'angle_deqp_release_trybot',
       'GPU FYI Perf Android 64 Builder': 'gpu_fyi_tests_android_vulkan_ndk_release_trybot_dcheck_off_arm64',
       'GPU FYI Win Builder': 'gpu_fyi_tests_release_trybot_x86',
       'GPU FYI Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
@@ -791,7 +791,7 @@
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
       'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_google_native_coverage',
-      'android-pie-arm64-coverage-experimental-rel': 'android_release_trybot_arm64_webview_google_expectations_native_coverage',
+      'android-pie-arm64-coverage-experimental-rel': 'android_release_trybot_arm64_webview_google_expectations_native_coverage_v8_arm64',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google_expectations',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_trybot_x86_fastbuild_webview_google',
@@ -857,7 +857,6 @@
       'linux_angle_ozone_rel_ng': 'angle_ozone_linux_system_gbm_libdrm_release_trybot',
       'linux_angle_deqp_rel_ng': 'angle_deqp_release_trybot',
       'mac-angle-chromium-try': 'gpu_tests_release_trybot_deterministic_mac',
-      'mac-angle-rel': 'gpu_fyi_tests_release_trybot',
       'mac-angle-try': 'angle_specific_release_trybot',
       'win-angle-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'win-angle-deqp-rel-32': 'angle_deqp_release_trybot_x86',
@@ -1041,7 +1040,6 @@
     },
 
     'tryserver.chromium.mac': {
-      'gpu-fyi-try-mac-amd-dqp': 'angle_deqp_release_trybot',
       'gpu-fyi-try-mac-amd-pro-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-amd-retina-dbg': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-mac-amd-retina-exp': 'gpu_fyi_tests_release_trybot',
@@ -1049,7 +1047,6 @@
       'gpu-fyi-try-mac-arm64-apple-dtk-rel': 'gpu_fyi_tests_release_trybot_arm64',
       'gpu-fyi-try-mac-asan': 'gpu_fyi_tests_release_trybot_asan',
       'gpu-fyi-try-mac-intel-dbg': 'gpu_fyi_tests_debug_trybot',
-      'gpu-fyi-try-mac-intel-dqp': 'angle_deqp_release_trybot',
       'gpu-fyi-try-mac-intel-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-intel-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-intel-uhd-630-rel': 'gpu_fyi_tests_release_trybot',
@@ -1434,18 +1431,20 @@
 
     # TODO(crbug/1182468) Remove these android coverage expectations after
     # existing CQ bot is running them.
-    'android_release_bot_arm64_webview_google_expectations_native_coverage': [
+    'android_release_bot_arm64_webview_google_expectations_native_coverage_v8_arm64': [
       'android', 'release_bot', 'arm64', 'strip_debug_info',
       'webview_google', 'fail_on_android_expectations',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
+      'v8_arm64',
     ],
 
     # TODO(crbug/1182468) Remove these android coverage expectations after
     # existing CQ bot is running them.
-    'android_release_trybot_arm64_webview_google_expectations_native_coverage': [
+    'android_release_trybot_arm64_webview_google_expectations_native_coverage_v8_arm64': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'webview_google', 'fail_on_android_expectations',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
+      'v8_arm64',
     ],
 
     'android_release_trybot_arm64_webview_google_native_coverage': [
@@ -3507,6 +3506,10 @@
 
     'use_javascript_coverage': {
       'gn_args': 'use_javascript_coverage=true',
+    },
+
+    'v8_arm64': {
+      'gn_args': 'v8_target_cpu="arm64"',
     },
 
     'v8_simulate_arm': {

@@ -24,17 +24,18 @@
 #include "chromeos/services/assistant/assistant_settings_impl.h"
 #include "chromeos/services/assistant/proxy/assistant_proxy.h"
 #include "chromeos/services/assistant/proxy/libassistant_service_host.h"
-#include "chromeos/services/assistant/proxy/service_controller_proxy.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/conversation_observer.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
+#include "chromeos/services/libassistant/public/mojom/service_controller.mojom-forward.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
@@ -48,14 +49,9 @@ class AssistantManager;
 class AssistantManagerInternal;
 }  // namespace assistant_client
 
-namespace network {
-class PendingSharedURLLoaderFactory;
-}  // namespace network
-
 namespace chromeos {
 namespace assistant {
 
-class AssistantManagerServiceDelegate;
 class AssistantMediaSession;
 class AssistantProxy;
 class AudioInputHost;
@@ -64,7 +60,6 @@ class DeviceSettingsHost;
 class MediaHost;
 class PlatformDelegateImpl;
 class ServiceContext;
-class ServiceControllerProxy;
 class SpeechRecognitionObserverWrapper;
 class TimerHost;
 
@@ -112,7 +107,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
       ServiceContext* context,
-      std::unique_ptr<AssistantManagerServiceDelegate> delegate,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_url_loader_factory,
       base::Optional<std::string> s3_server_uri_override,
@@ -206,6 +200,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnServiceRunning();
   bool IsServiceStarted() const;
 
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> BindURLLoaderFactory();
+
   assistant_client::AssistantManager* assistant_manager();
   assistant_client::AssistantManagerInternal* assistant_manager_internal();
 
@@ -245,8 +241,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   chromeos::libassistant::mojom::ConversationController&
   conversation_controller();
   chromeos::libassistant::mojom::DisplayController& display_controller();
-  ServiceControllerProxy& service_controller();
-  const ServiceControllerProxy& service_controller() const;
+  chromeos::libassistant::mojom::ServiceController& service_controller();
   chromeos::libassistant::mojom::SettingsController& settings_controller();
   base::Thread& background_thread();
   void set_stop_interaction_delay_for_testing(base::TimeDelta delay) {
@@ -267,7 +262,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // Owned by the parent |Service| which will destroy |this| before |context_|.
   ServiceContext* const context_;
 
-  std::unique_ptr<AssistantManagerServiceDelegate> delegate_;
   std::unique_ptr<LibassistantServiceHost> libassistant_service_host_;
   std::unique_ptr<DeviceSettingsHost> device_settings_host_;
   std::unique_ptr<MediaHost> media_host_;
@@ -287,6 +281,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   // Configuration passed to libassistant.
   chromeos::libassistant::mojom::BootupConfigPtr bootup_config_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   base::TimeDelta stop_interaction_delay_ =
       base::TimeDelta::FromMilliseconds(500);

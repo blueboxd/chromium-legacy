@@ -15,8 +15,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/i18n/number_formatting.h"
-#include "base/i18n/time_formatting.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -26,7 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -43,7 +40,6 @@
 #include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ppapi_migration/value_conversions.h"
-#include "pdf/ui/format_page_size.h"
 #include "pdf/ui/thumbnail.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -65,7 +61,6 @@
 #include "ppapi/cpp/var_dictionary.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/text/bytes_formatting.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -88,22 +83,6 @@ constexpr char kType[] = "type";
 constexpr char kJSMessageId[] = "messageId";
 // Document print preview loaded (Plugin -> Page)
 constexpr char kJSPreviewLoadedType[] = "printPreviewLoaded";
-// Metadata (Plugin -> Page)
-constexpr char kJSMetadataType[] = "metadata";
-constexpr char kJSMetadataData[] = "metadataData";
-constexpr char kJSVersion[] = "version";
-constexpr char kJSFileSize[] = "fileSize";
-constexpr char kJSLinearized[] = "linearized";
-constexpr char kJSTitle[] = "title";
-constexpr char kJSAuthor[] = "author";
-constexpr char kJSSubject[] = "subject";
-constexpr char kJSKeywords[] = "keywords";
-constexpr char kJSCreator[] = "creator";
-constexpr char kJSProducer[] = "producer";
-constexpr char kJSCreationDate[] = "creationDate";
-constexpr char kJSModDate[] = "modDate";
-constexpr char kJSPageSize[] = "pageSize";
-constexpr char kJSCanSerializeDocument[] = "canSerializeDocument";
 // Print (Page -> Plugin)
 constexpr char kJSPrintType[] = "print";
 // Save attachment (Page -> Plugin)
@@ -500,48 +479,6 @@ pp::PDF::PrivateAccessibilityPageObjects ToPrivateAccessibilityPageObjects(
   }
 
   return pp_page_objects;
-}
-
-// Converts |version| to a formatted string.
-std::u16string GetFormattedVersion(PdfVersion version) {
-  double value = 0;
-  switch (version) {
-    case PdfVersion::k1_0:
-      value = 1.0;
-      break;
-    case PdfVersion::k1_1:
-      value = 1.1;
-      break;
-    case PdfVersion::k1_2:
-      value = 1.2;
-      break;
-    case PdfVersion::k1_3:
-      value = 1.3;
-      break;
-    case PdfVersion::k1_4:
-      value = 1.4;
-      break;
-    case PdfVersion::k1_5:
-      value = 1.5;
-      break;
-    case PdfVersion::k1_6:
-      value = 1.6;
-      break;
-    case PdfVersion::k1_7:
-      value = 1.7;
-      break;
-    case PdfVersion::k2_0:
-      value = 2.0;
-      break;
-    case PdfVersion::kUnknown:
-    case PdfVersion::k1_8:  // Not an actual version
-      return std::u16string();
-  }
-  // The default case is excluded from the above switch statement to ensure that
-  // all supported versions are determinantly handled.
-
-  DCHECK_NE(0, value);
-  return base::FormatDouble(value, 1);
 }
 
 }  // namespace
@@ -1574,72 +1511,6 @@ void OutOfProcessInstance::SendPrintPreviewLoadedNotification() {
   pp::VarDictionary loaded_message;
   loaded_message.Set(pp::Var(kType), pp::Var(kJSPreviewLoadedType));
   PostMessage(loaded_message);
-}
-
-void OutOfProcessInstance::SendMetadata() {
-  pp::VarDictionary metadata_message;
-  metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
-
-  const DocumentMetadata& document_metadata = engine()->GetDocumentMetadata();
-  pp::VarDictionary metadata_data;
-
-  std::u16string version = GetFormattedVersion(document_metadata.version);
-  if (!version.empty())
-    metadata_data.Set(pp::Var(kJSVersion), pp::Var(base::UTF16ToUTF8(version)));
-
-  metadata_data.Set(
-      pp::Var(kJSFileSize),
-      base::UTF16ToUTF8(ui::FormatBytes(document_metadata.size_bytes)));
-
-  metadata_data.Set(pp::Var(kJSLinearized),
-                    pp::Var(document_metadata.linearized));
-
-  if (!document_metadata.title.empty())
-    metadata_data.Set(pp::Var(kJSTitle), pp::Var(document_metadata.title));
-
-  if (!document_metadata.author.empty())
-    metadata_data.Set(pp::Var(kJSAuthor), pp::Var(document_metadata.author));
-
-  if (!document_metadata.subject.empty())
-    metadata_data.Set(pp::Var(kJSSubject), pp::Var(document_metadata.subject));
-
-  if (!document_metadata.keywords.empty()) {
-    metadata_data.Set(pp::Var(kJSKeywords),
-                      pp::Var(document_metadata.keywords));
-  }
-
-  if (!document_metadata.creator.empty())
-    metadata_data.Set(pp::Var(kJSCreator), pp::Var(document_metadata.creator));
-
-  if (!document_metadata.producer.empty()) {
-    metadata_data.Set(pp::Var(kJSProducer),
-                      pp::Var(document_metadata.producer));
-  }
-
-  if (!document_metadata.creation_date.is_null()) {
-    metadata_data.Set(
-        pp::Var(kJSCreationDate),
-        pp::Var(base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(
-            document_metadata.creation_date))));
-  }
-
-  if (!document_metadata.mod_date.is_null()) {
-    metadata_data.Set(
-        pp::Var(kJSModDate),
-        pp::Var(base::UTF16ToUTF8(
-            base::TimeFormatShortDateAndTime(document_metadata.mod_date))));
-  }
-
-  metadata_data.Set(pp::Var(kJSPageSize),
-                    pp::Var(base::UTF16ToUTF8(
-                        FormatPageSize(engine()->GetUniformPageSizePoints()))));
-
-  metadata_data.Set(
-      pp::Var(kJSCanSerializeDocument),
-      pp::Var(IsSaveDataSizeValid(engine()->GetLoadedByteSize())));
-
-  metadata_message.Set(pp::Var(kJSMetadataData), metadata_data);
-  PostMessage(metadata_message);
 }
 
 void OutOfProcessInstance::SendThumbnail(const std::string& message_id,

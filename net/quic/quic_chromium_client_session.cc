@@ -292,22 +292,6 @@ void LogProbeResultToHistogram(MigrationCause cause, bool success) {
           histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
-class HpackEncoderDebugVisitor : public quic::QuicHpackDebugVisitor {
-  void OnUseEntry(quic::QuicTime::Delta elapsed) override {
-    UMA_HISTOGRAM_TIMES(
-        "Net.QuicHpackEncoder.IndexedEntryAge",
-        base::TimeDelta::FromMicroseconds(elapsed.ToMicroseconds()));
-  }
-};
-
-class HpackDecoderDebugVisitor : public quic::QuicHpackDebugVisitor {
-  void OnUseEntry(quic::QuicTime::Delta elapsed) override {
-    UMA_HISTOGRAM_TIMES(
-        "Net.QuicHpackDecoder.IndexedEntryAge",
-        base::TimeDelta::FromMicroseconds(elapsed.ToMicroseconds()));
-  }
-};
-
 class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
  public:
   explicit QuicServerPushHelper(
@@ -1147,8 +1131,6 @@ void QuicChromiumClientSession::Initialize() {
     connection()->EnableLegacyVersionEncapsulation(session_key_.host());
   }
   quic::QuicSpdyClientSessionBase::Initialize();
-  SetHpackEncoderDebugVisitor(std::make_unique<HpackEncoderDebugVisitor>());
-  SetHpackDecoderDebugVisitor(std::make_unique<HpackDecoderDebugVisitor>());
 }
 
 size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
@@ -1469,6 +1451,12 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   }
 
   return true;
+}
+
+base::StringPiece QuicChromiumClientSession::GetAcceptChViaAlpsForOrigin(
+    const url::Origin& origin) const {
+  // TODO(https://crbug.com/1184252): Implement.
+  return {};
 }
 
 int QuicChromiumClientSession::CryptoConnect(CompletionOnceCallback callback) {

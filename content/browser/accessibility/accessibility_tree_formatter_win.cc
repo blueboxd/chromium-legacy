@@ -227,7 +227,27 @@ base::Value AccessibilityTreeFormatterWin::BuildTreeForWindow(
 
 base::Value AccessibilityTreeFormatterWin::BuildTreeForSelector(
     const AXTreeSelector& selector) const {
-  return BuildTreeForWindow(GetHWNDBySelector(selector));
+  base::Value dict(base::Value::Type::DICTIONARY);
+
+  HWND hwnd = GetHWNDBySelector(selector);
+  if (!hwnd)
+    return dict;
+
+  Microsoft::WRL::ComPtr<IAccessible> root;
+  HRESULT hr =
+      ::AccessibleObjectFromWindow(hwnd, OBJID_CLIENT, IID_PPV_ARGS(&root));
+  if (FAILED(hr))
+    return dict;
+
+  if (selector.types & AXTreeSelector::ActiveTab) {
+    root = FindActiveDocument(root.Get());
+    if (!root) {
+      return dict;
+    }
+  }
+
+  RecursiveBuildTree(root, &dict, 0, 0);
+  return dict;
 }
 
 void AccessibilityTreeFormatterWin::RecursiveBuildTree(
@@ -238,31 +258,18 @@ void AccessibilityTreeFormatterWin::RecursiveBuildTree(
   AddProperties(node, dict, root_x, root_y);
 
   base::Value child_list(base::Value::Type::LIST);
-
-  LONG child_count;
-  if (S_OK != node->get_accChildCount(&child_count))
-    return;
-
-  std::unique_ptr<VARIANT[]> children_array(new VARIANT[child_count]);
-  LONG obtained_count = 0;
-  HRESULT hr = AccessibleChildren(node.Get(), 0, child_count,
-                                  children_array.get(), &obtained_count);
-  if (hr != S_OK)
-    return;
-
-  for (LONG index = 0; index < obtained_count; index++) {
-    base::win::ScopedVariant child_variant;
-    child_variant.Reset(
-        children_array[index]);  // Sets without adding another reference.
+  for (const ui::MSAAChild& msaa_child : ui::MSAAChildren(node)) {
     base::Value child_dict(base::Value::Type::DICTIONARY);
-    Microsoft::WRL::ComPtr<IDispatch> dispatch;
-    if (child_variant.type() == VT_DISPATCH) {
-      dispatch = V_DISPATCH(child_variant.ptr());
-    } else if (child_variant.type() == VT_I4) {
-      hr = node->get_accChild(child_variant, &dispatch);
-      if (FAILED(hr)) {
+
+    Microsoft::WRL::ComPtr<IAccessible> child = msaa_child.AsIAccessible();
+    if (child) {
+      RecursiveBuildTree(child, &child_dict, root_x, root_y);
+    } else {
+      const base::win::ScopedVariant& child_variant = msaa_child.AsVariant();
+      if (child_variant.type() == VT_EMPTY ||
+          child_variant.type() == VT_DISPATCH) {
         child_dict.SetStringPath("error", "[Error retrieving child]");
-      } else if (!dispatch) {
+      } else if (child_variant.type() == VT_I4) {
         // Partial child does not have its own object.
         // Add minimal info -- role and name.
         base::win::ScopedVariant role_variant;
@@ -272,20 +279,13 @@ void AccessibilityTreeFormatterWin::RecursiveBuildTree(
             child_dict.SetStringPath("role", " [partial child]");
           }
         }
-        base::win::ScopedBstr temp_bstr;
-        if (S_OK == node->get_accName(child_variant, temp_bstr.Receive())) {
-          std::wstring name(temp_bstr.Get(), temp_bstr.Length());
-          child_dict.SetStringPath("name", base::WideToUTF16(name));
+        base::win::ScopedBstr name;
+        if (S_OK == node->get_accName(child_variant, name.Receive())) {
+          child_dict.SetStringPath("name", base::WideToUTF8(name.Get()));
         }
+      } else {
+        child_dict.SetStringPath("error", "[Unknown child type]");
       }
-    } else {
-      child_dict.SetStringPath("error",
-                               base::ASCIIToUTF16("[Unknown child type]"));
-    }
-    if (dispatch) {
-      Microsoft::WRL::ComPtr<IAccessible> accessible;
-      if (SUCCEEDED(dispatch.As(&accessible)))
-        RecursiveBuildTree(accessible, &child_dict, root_x, root_y);
     }
     child_list.Append(std::move(child_dict));
   }
@@ -350,12 +350,10 @@ void AccessibilityTreeFormatterWin::AddProperties(
 }
 
 std::u16string RoleVariantToString(const base::win::ScopedVariant& role) {
-  if (role.type() == VT_I4) {
+  if (role.type() == VT_I4)
     return base::WideToUTF16(IAccessible2RoleToString(V_I4(role.ptr())));
-  } else if (role.type() == VT_BSTR) {
-    BSTR bstr_role = V_BSTR(role.ptr());
-    return base::WideToUTF16({bstr_role, SysStringLen(bstr_role)});
-  }
+  if (role.type() == VT_BSTR)
+    return base::WideToUTF16(V_BSTR(role.ptr()));
   return std::u16string();
 }
 
@@ -365,7 +363,7 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
     LONG root_x,
     LONG root_y) const {
   base::win::ScopedVariant variant_self(CHILDID_SELF);
-  base::win::ScopedBstr temp_bstr;
+  base::win::ScopedBstr bstr;
   base::win::ScopedVariant ia_role_variant;
   LONG ia_role = 0;
   if (SUCCEEDED(node->get_accRole(variant_self, ia_role_variant.Receive()))) {
@@ -374,11 +372,10 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
   }
 
   // If S_FALSE it means there is no name
-  if (S_OK == node->get_accName(variant_self, temp_bstr.Receive())) {
-    std::wstring name(temp_bstr.Get(), temp_bstr.Length());
-    dict->SetStringPath("name", base::WideToUTF16(name));
+  if (S_OK == node->get_accName(variant_self, bstr.Receive())) {
+    dict->SetStringPath("name", base::WideToUTF8(bstr.Get()));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 
   Microsoft::WRL::ComPtr<IDispatch> parent_dispatch;
   if (SUCCEEDED(node->get_accParent(&parent_dispatch))) {
@@ -410,10 +407,9 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
     dict->SetStringPath("window_class", "[Error]");
   }
 
-  if (SUCCEEDED(node->get_accValue(variant_self, temp_bstr.Receive())))
-    dict->SetStringPath(
-        "value", base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}));
-  temp_bstr.Reset();
+  if (SUCCEEDED(node->get_accValue(variant_self, bstr.Receive())))
+    dict->SetStringPath("value", base::WideToUTF8(bstr.Get()));
+  bstr.Reset();
 
   int32_t ia_state = 0;
   base::win::ScopedVariant ia_state_variant;
@@ -430,34 +426,26 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
     dict->SetPath("states", base::Value(std::move(states)));
   }
 
-  if (SUCCEEDED(node->get_accDescription(variant_self, temp_bstr.Receive()))) {
-    dict->SetStringPath("description", base::WideToUTF16({temp_bstr.Get(),
-                                                          temp_bstr.Length()}));
+  if (SUCCEEDED(node->get_accDescription(variant_self, bstr.Receive()))) {
+    dict->SetStringPath("description", base::WideToUTF8(bstr.Get()));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 
   // |get_accDefaultAction| returns a localized string.
-  if (SUCCEEDED(
-          node->get_accDefaultAction(variant_self, temp_bstr.Receive()))) {
-    dict->SetStringPath(
-        "default_action",
-        base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}));
+  if (SUCCEEDED(node->get_accDefaultAction(variant_self, bstr.Receive()))) {
+    dict->SetStringPath("default_action", base::WideToUTF8(bstr.Get()));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 
-  if (SUCCEEDED(
-          node->get_accKeyboardShortcut(variant_self, temp_bstr.Receive()))) {
-    dict->SetStringPath(
-        "keyboard_shortcut",
-        base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}));
+  if (SUCCEEDED(node->get_accKeyboardShortcut(variant_self, bstr.Receive()))) {
+    dict->SetStringPath("keyboard_shortcut", base::WideToUTF8(bstr.Get()));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 
-  if (SUCCEEDED(node->get_accHelp(variant_self, temp_bstr.Receive())))
-    dict->SetStringPath(
-        "help", base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}));
+  if (SUCCEEDED(node->get_accHelp(variant_self, bstr.Receive())))
+    dict->SetStringPath("help", base::WideToUTF8(bstr.Get()));
 
-  temp_bstr.Reset();
+  bstr.Reset();
 
   LONG x, y, width, height;
   if (SUCCEEDED(node->accLocation(&x, &y, &width, &height, variant_self))) {
@@ -481,13 +469,11 @@ void AccessibilityTreeFormatterWin::AddSimpleDOMNodeProperties(
   if (S_OK != QuerySimpleDOMNode(node.Get(), &simple_dom_node))
     return;  // No IA2Value, we are finished with this node.
 
-  base::win::ScopedBstr temp_bstr;
-
-  if (SUCCEEDED(simple_dom_node->get_innerHTML(temp_bstr.Receive()))) {
-    dict->SetStringPath(
-        "inner_html", base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}));
+  base::win::ScopedBstr bstr;
+  if (SUCCEEDED(simple_dom_node->get_innerHTML(bstr.Receive()))) {
+    dict->SetStringPath("inner_html", base::WideToUTF8(bstr.Get()));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 }
 
 bool AccessibilityTreeFormatterWin::AddIA2Properties(
@@ -519,14 +505,14 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
     }
   }
 
-  base::win::ScopedBstr temp_bstr;
+  base::win::ScopedBstr bstr;
 
-  if (ia2->get_attributes(temp_bstr.Receive()) == S_OK) {
+  if (ia2->get_attributes(bstr.Receive()) == S_OK) {
     // get_attributes() returns a semicolon delimited string. Turn it into a
     // ListValue
-    std::vector<std::u16string> ia2_attributes = base::SplitString(
-        base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}),
-        std::u16string(1, ';'), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::u16string> ia2_attributes =
+        base::SplitString(base::WideToUTF16(bstr.Get()), std::u16string(1, ';'),
+                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 
     base::Value::ListStorage attributes;
     attributes.reserve(ia2_attributes.size());
@@ -534,7 +520,7 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
       attributes.push_back(base::Value(str));
     dict->SetPath("attributes", base::Value(std::move(attributes)));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 
   LONG index_in_parent;
   if (SUCCEEDED(ia2->get_indexInParent(&index_in_parent)))
@@ -554,12 +540,11 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
     dict->SetIntPath("position_in_group", position_in_group);
   }
 
-  if (SUCCEEDED(ia2->get_localizedExtendedRole(temp_bstr.Receive()))) {
-    dict->SetStringPath(
-        "localized_extended_role",
-        base::WideToUTF16({temp_bstr.Get(), temp_bstr.Length()}));
+  if (SUCCEEDED(ia2->get_localizedExtendedRole(bstr.Receive()))) {
+    dict->SetStringPath("localized_extended_role",
+                        base::WideToUTF8(bstr.Get()));
   }
-  temp_bstr.Reset();
+  bstr.Reset();
 
   return true;
 }
@@ -571,13 +556,10 @@ void AccessibilityTreeFormatterWin::AddIA2ActionProperties(
   if (S_OK != QueryIAccessibleAction(node.Get(), &ia2action))
     return;  // No IA2Value, we are finished with this node.
 
-  base::win::ScopedBstr temp_bstr;
-
   // |IAccessibleAction::get_name| returns a localized string.
-  if (SUCCEEDED(
-          ia2action->get_name(0 /* action_index */, temp_bstr.Receive()))) {
-    dict->SetStringPath("action_name", base::WideToUTF16({temp_bstr.Get(),
-                                                          temp_bstr.Length()}));
+  base::win::ScopedBstr name;
+  if (SUCCEEDED(ia2action->get_name(0 /* action_index */, name.Receive()))) {
+    dict->SetStringPath("action_name", base::WideToUTF8(name.Get()));
   }
 }
 
@@ -677,9 +659,9 @@ static std::u16string ProcessAccessiblesArray(IUnknown** accessibles,
     Microsoft::WRL::ComPtr<IUnknown> unknown = accessibles[index];
     Microsoft::WRL::ComPtr<IAccessible> accessible;
     if (SUCCEEDED(unknown.As(&accessible))) {
-      base::win::ScopedBstr temp_bstr;
-      if (S_OK == accessible->get_accName(variant_self, temp_bstr.Receive()))
-        related_accessibles_string += base::WideToUTF16(temp_bstr.Get());
+      base::win::ScopedBstr name;
+      if (S_OK == accessible->get_accName(variant_self, name.Receive()))
+        related_accessibles_string += base::WideToUTF16(name.Get());
       else
         related_accessibles_string += u"no name";
     }
@@ -900,6 +882,48 @@ std::string AccessibilityTreeFormatterWin::ProcessTreeForOutput(
   }
 
   return line;
+}
+
+Microsoft::WRL::ComPtr<IAccessible>
+AccessibilityTreeFormatterWin::FindActiveDocument(IAccessible* root) const {
+  for (const ui::MSAAChild& child : ui::MSAAChildren(root)) {
+    IAccessible* ia = child.AsIAccessible();
+    if (!ia)
+      continue;
+
+    Microsoft::WRL::ComPtr<IAccessible2> ia2;
+    if (FAILED(QueryIAccessible2(ia, &ia2)))
+      continue;  // No IA2, we are finished with this node.
+
+    LONG role = 0;
+    if (FAILED(ia2->role(&role)))
+      continue;
+
+    // Firefox browser exposes documents for all tabs, grab one that doesn't
+    // have OFFSCREEN state.
+    if (role == IA2_ROLE_INTERNAL_FRAME) {
+      base::win::ScopedVariant state_variant;
+      if (SUCCEEDED(ia->get_accState(base::win::ScopedVariant(CHILDID_SELF),
+                                     state_variant.Receive())) &&
+          state_variant.type() == VT_I4) {
+        int32_t state = V_I4(state_variant.ptr());
+        if (!(state & STATE_SYSTEM_OFFSCREEN))
+          return ia;
+      }
+      continue;
+    }
+
+    // Chrome-based browsers expose active tab document only.
+    if (role == ROLE_SYSTEM_DOCUMENT)
+      return ia;
+
+    Microsoft::WRL::ComPtr<IAccessible> active_document =
+        FindActiveDocument(ia);
+    if (active_document)
+      return active_document;
+  }
+
+  return nullptr;
 }
 
 }  // namespace content

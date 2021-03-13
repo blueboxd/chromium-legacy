@@ -56,6 +56,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
  public:
   InterceptedRequest(
       int process_id,
+      int frame_tree_node_id,
       uint64_t request_id,
       int32_t routing_id,
       uint32_t options,
@@ -72,6 +73,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void Restart();
 
   // network::mojom::URLLoaderClient
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override;
@@ -130,6 +132,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void SendErrorCallback(int error_code, bool safebrowsing_hit);
 
   const int process_id_;
+  const int frame_tree_node_id_;
   const uint64_t request_id_;
   const int32_t routing_id_;
   const uint32_t options_;
@@ -248,6 +251,7 @@ class ProtocolResponseDelegate
 
 InterceptedRequest::InterceptedRequest(
     int process_id,
+    int frame_tree_node_id,
     uint64_t request_id,
     int32_t routing_id,
     uint32_t options,
@@ -260,6 +264,7 @@ InterceptedRequest::InterceptedRequest(
     base::Optional<AwProxyingURLLoaderFactory::SecurityOptions>
         security_options)
     : process_id_(process_id),
+      frame_tree_node_id_(frame_tree_node_id),
       request_id_(request_id),
       routing_id_(routing_id),
       options_(options),
@@ -492,6 +497,11 @@ void OnNewLoginRequestOnUiThread(int process_id,
 
 // URLLoaderClient methods.
 
+void InterceptedRequest::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {
+  target_client_->OnReceiveEarlyHints(std::move(early_hints));
+}
+
 void InterceptedRequest::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head) {
   // intercept response headers here
@@ -615,13 +625,8 @@ InterceptedRequest::GetIoThreadClient() {
   if (request_.originated_from_service_worker) {
     return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
   }
-
-  // |process_id_| == 0 indicates this is a navigation, and so we should use the
-  // frame_tree_node_id API (with request_.render_frame_id).
-  return process_id_
-             ? AwContentsIoThreadClient::FromID(process_id_,
-                                                request_.render_frame_id)
-             : AwContentsIoThreadClient::FromID(request_.render_frame_id);
+  DCHECK_NE(frame_tree_node_id_, content::RenderFrameHost::kNoFrameTreeNodeId);
+  return AwContentsIoThreadClient::FromID(frame_tree_node_id_);
 }
 
 void InterceptedRequest::OnURLLoaderClientError() {
@@ -720,11 +725,13 @@ void InterceptedRequest::SendErrorCallback(int error_code,
 
 AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     int process_id,
+    int frame_tree_node_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     bool intercept_only,
     base::Optional<SecurityOptions> security_options)
     : process_id_(process_id),
+      frame_tree_node_id_(frame_tree_node_id),
       intercept_only_(intercept_only),
       security_options_(security_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -746,15 +753,16 @@ AwProxyingURLLoaderFactory::~AwProxyingURLLoaderFactory() {}
 // static
 void AwProxyingURLLoaderFactory::CreateProxy(
     int process_id,
+    int frame_tree_node_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     base::Optional<SecurityOptions> security_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // will manage its own lifetime
-  new AwProxyingURLLoaderFactory(process_id, std::move(loader_receiver),
-                                 std::move(target_factory_remote), false,
-                                 security_options);
+  new AwProxyingURLLoaderFactory(
+      process_id, frame_tree_node_id, std::move(loader_receiver),
+      std::move(target_factory_remote), false, security_options);
 }
 
 void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
@@ -796,9 +804,9 @@ void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
   // manages its own lifecycle
   // TODO(timvolodine): consider keeping track of requests.
   InterceptedRequest* req = new InterceptedRequest(
-      process_id_, request_id, routing_id, options, request, traffic_annotation,
-      std::move(loader), std::move(client), std::move(target_factory_clone),
-      intercept_only_, security_options_);
+      process_id_, frame_tree_node_id_, request_id, routing_id, options,
+      request, traffic_annotation, std::move(loader), std::move(client),
+      std::move(target_factory_clone), intercept_only_, security_options_);
   req->Restart();
 }
 

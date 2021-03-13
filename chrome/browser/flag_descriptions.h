@@ -345,6 +345,9 @@ extern const char kDeviceDiscoveryNotificationsDescription[];
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 
+extern const char kDocumentTransitionName[];
+extern const char kDocumentTransitionDescription[];
+
 extern const char kEnableAccessibilityObjectModelName[];
 extern const char kEnableAccessibilityObjectModelDescription[];
 
@@ -1925,6 +1928,9 @@ extern const char kThemeRefactorAndroidDescription[];
 extern const char kToolbarIphAndroidName[];
 extern const char kToolbarIphAndroidDescription[];
 
+extern const char kToolbarMicIphAndroidName[];
+extern const char kToolbarMicIphAndroidDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -2021,9 +2027,6 @@ extern const char kNtpOneGoogleBarModalOverlaysDescription[];
 
 extern const char kNtpRepeatableQueriesName[];
 extern const char kNtpRepeatableQueriesDescription[];
-
-extern const char kNtpWebUIName[];
-extern const char kNtpWebUIDescription[];
 
 extern const char kNtpModulesName[];
 extern const char kNtpModulesDescription[];
@@ -2233,6 +2236,12 @@ extern const char kArcNativeBridgeToggleDescription[];
 
 extern const char kArcNativeBridge64BitSupportExperimentName[];
 extern const char kArcNativeBridge64BitSupportExperimentDescription[];
+
+extern const char kArcRtVcpuDualCoreName[];
+extern const char kArcRtVcpuDualCoreDesc[];
+
+extern const char kArcRtVcpuQuadCoreName[];
+extern const char kArcRtVcpuQuadCoreDesc[];
 
 extern const char kArcUseHighMemoryDalvikProfileName[];
 extern const char kArcUseHighMemoryDalvikProfileDesc[];
@@ -2549,6 +2558,9 @@ extern const char kExperimentalAccessibilityChromeVoxTutorialDescription[];
 extern const char kExperimentalAccessibilityDictationExtensionName[];
 extern const char kExperimentalAccessibilityDictationExtensionDescription[];
 
+extern const char kExperimentalAccessibilityDictationListeningName[];
+extern const char kExperimentalAccessibilityDictationListeningDescription[];
+
 extern const char kExperimentalAccessibilityDictationOfflineName[];
 extern const char kExperimentalAccessibilityDictationOfflineDescription[];
 
@@ -2772,6 +2784,9 @@ extern const char kShowBluetoothDebugLogToggleDescription[];
 
 extern const char kEnableBluetoothVerboseLogsForGooglersName[];
 extern const char kEnableBluetoothVerboseLogsForGooglersDescription[];
+
+extern const char kBluetoothSessionizedMetricsName[];
+extern const char kBluetoothSessionizedMetricsDescription[];
 
 extern const char kShowDateInTrayName[];
 extern const char kShowDateInTrayDescription[];

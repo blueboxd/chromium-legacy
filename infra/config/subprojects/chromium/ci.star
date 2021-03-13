@@ -959,7 +959,7 @@ ci.android_fyi_builder(
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 5 * time.hour,
     main_console_view = main_console_if_on_branch(),
-    reclient_instance = "goma-rbe-chromium",
+    reclient_instance = "rbe-chromium-trusted",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
@@ -974,7 +974,7 @@ ci.android_fyi_builder(
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
     execution_timeout = 4 * time.hour,
-    reclient_instance = "goma-rbe-chromium",
+    reclient_instance = "rbe-chromium-trusted",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
@@ -3501,6 +3501,19 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = "Linux Builder (runsc-exp) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "re",
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-gvisor-shadow",
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
     name = "Linux TSan Builder (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -4318,14 +4331,6 @@ ci.gpu_fyi_mac_builder(
     ),
 )
 
-ci.gpu_fyi_mac_builder(
-    name = "GPU FYI Mac dEQP Builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Builder",
-        short_name = "dqp",
-    ),
-)
-
 ci.gpu_fyi_thin_tester(
     name = "Lacros FYI x64 Release (AMD)",
     console_view_entry = consoles.console_view_entry(
@@ -4547,24 +4552,6 @@ ci.gpu_fyi_thin_tester(
         short_name = "rel",
     ),
     triggered_by = ["GPU FYI Mac Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Mac FYI dEQP Release AMD",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|AMD",
-        short_name = "dqp",
-    ),
-    triggered_by = ["GPU FYI Mac dEQP Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Mac FYI dEQP Release Intel",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Intel",
-        short_name = "dqp",
-    ),
-    triggered_by = ["GPU FYI Mac dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(

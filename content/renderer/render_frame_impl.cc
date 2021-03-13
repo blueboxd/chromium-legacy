@@ -4432,6 +4432,7 @@ void RenderFrameImpl::WillSendRequestInternal(
   url_request_extra_data->set_frame_request_blocker(frame_request_blocker_);
   url_request_extra_data->set_allow_cross_origin_auth_prompt(
       render_view_->GetRendererPreferences().allow_cross_origin_auth_prompt);
+  url_request_extra_data->set_top_frame_origin(GetSecurityOriginOfTopFrame());
 
   request.SetDownloadToNetworkCacheOnly(is_for_no_state_prefetch &&
                                         !for_main_frame);
@@ -4538,6 +4539,12 @@ void RenderFrameImpl::DidObserveLayoutShift(double score,
                                             bool after_input_or_scroll) {
   for (auto& observer : observers_)
     observer.DidObserveLayoutShift(score, after_input_or_scroll);
+}
+
+void RenderFrameImpl::DidObserveInputForLayoutShiftTracking(
+    base::TimeTicks timestamp) {
+  for (auto& observer : observers_)
+    observer.DidObserveInputForLayoutShiftTracking(timestamp);
 }
 
 void RenderFrameImpl::DidObserveLayoutNg(uint32_t all_block_count,

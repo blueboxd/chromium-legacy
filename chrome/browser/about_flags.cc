@@ -218,6 +218,7 @@
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
+#include "components/metrics/structured/structured_metrics_features.h"
 #include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/events/ozone/features.h"
@@ -3756,6 +3757,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"toolbar-iph-android", flag_descriptions::kToolbarIphAndroidName,
      flag_descriptions::kToolbarIphAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kToolbarIphAndroid)},
+    {"toolbar-mic-iph-android", flag_descriptions::kToolbarMicIphAndroidName,
+     flag_descriptions::kToolbarMicIphAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kToolbarMicIphAndroid)},
     {"theme-refactor-android", flag_descriptions::kThemeRefactorAndroidName,
      flag_descriptions::kThemeRefactorAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kThemeRefactorAndroid)},
@@ -3771,6 +3775,9 @@ const FeatureEntry kFeatureEntries[] = {
          "disallowFetchForDocWrittenScriptsInMainFrame=true",
          blink::switches::kBlinkSettings,
          "disallowFetchForDocWrittenScriptsInMainFrame=false")},
+    {"document-transition", flag_descriptions::kDocumentTransitionName,
+     flag_descriptions::kDocumentTransitionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kDocumentTransition)},
 #if defined(OS_WIN)
     {"use-winrt-midi-api", flag_descriptions::kUseWinrtMidiApiName,
      flag_descriptions::kUseWinrtMidiApiDescription, kOsWin,
@@ -3984,6 +3991,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityDictationExtension)},
+    {"enable-experimental-accessibility-dictation-listening",
+     flag_descriptions::kExperimentalAccessibilityDictationListeningName,
+     flag_descriptions::kExperimentalAccessibilityDictationListeningDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilityDictationListening)},
     {"enable-experimental-accessibility-dictation-offline",
      flag_descriptions::kExperimentalAccessibilityDictationOfflineName,
      flag_descriptions::kExperimentalAccessibilityDictationOfflineDescription,
@@ -4083,6 +4096,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcNativeBridge64BitSupportExperimentDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridge64BitSupportExperimentFeature)},
+    {"arc-rt-vcpu-dual-core", flag_descriptions::kArcRtVcpuDualCoreName,
+     flag_descriptions::kArcRtVcpuDualCoreDesc, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kRtVcpuDualCore)},
+    {"arc-rt-vcpu-quad-core", flag_descriptions::kArcRtVcpuQuadCoreName,
+     flag_descriptions::kArcRtVcpuQuadCoreDesc, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kRtVcpuQuadCore)},
     {kArcUseHighMemoryDalvikProfileInternalName,
      flag_descriptions::kArcUseHighMemoryDalvikProfileName,
      flag_descriptions::kArcUseHighMemoryDalvikProfileDesc, kOsCrOS,
@@ -4750,10 +4769,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpRepeatableQueries,
                                     kNtpRepeatableQueriesVariations,
                                     "NtpRepeatableQueries")},
-
-    {"ntp-webui", flag_descriptions::kNtpWebUIName,
-     flag_descriptions::kNtpWebUIDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kWebUI)},
 
     {"ntp-modules", flag_descriptions::kNtpModulesName,
      flag_descriptions::kNtpModulesDescription, kOsDesktop,
@@ -7270,6 +7285,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"webid", flag_descriptions::kWebIdName,
      flag_descriptions::kWebIdDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebID)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"bluetooth-sessionized-metrics",
+     flag_descriptions::kBluetoothSessionizedMetricsName,
+     flag_descriptions::kBluetoothSessionizedMetricsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(metrics::structured::kBluetoothSessionizedMetrics)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

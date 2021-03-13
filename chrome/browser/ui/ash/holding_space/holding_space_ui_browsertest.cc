@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/holding_space/holding_space_browsertest_base.h"
 
+#include <unordered_map>
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
@@ -23,10 +24,12 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
@@ -82,9 +85,13 @@ void DoubleClick(const views::View* view) {
   event_generator.DoubleClickLeftButton();
 }
 
+using DragUpdateCallback =
+    base::RepeatingCallback<void(const gfx::Point& screen_location)>;
+
 // Performs a gesture drag between `from` and `to`.
 void GestureDrag(const views::View* from,
                  const views::View* to,
+                 DragUpdateCallback drag_update_callback = base::DoNothing(),
                  base::OnceClosure before_release_callback = base::DoNothing(),
                  base::OnceClosure after_release_callback = base::DoNothing()) {
   auto* root_window = HoldingSpaceBrowserTestBase::GetRootWindowForNewWindows();
@@ -99,11 +106,21 @@ void GestureDrag(const views::View* from,
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   event_generator.Dispatch(&long_press);
 
+  // Generate multiple interpolated touch move events.
   // NOTE: The `ash::DragDropController` applies a vertical offset when
   // determining the target view for touch initiated dragging so that needs to
   // be compensated for here.
-  event_generator.MoveTouch(
-      gfx::Point(to->GetBoundsInScreen().CenterPoint() + gfx::Vector2d(0, 25)));
+  constexpr int kNumberOfTouchMoveEvents = 25;
+  constexpr gfx::Vector2d offset(0, 25);
+  const gfx::Point endpoint = to->GetBoundsInScreen().CenterPoint() + offset;
+  const gfx::Point origin = event_generator.current_screen_location();
+  const gfx::Vector2dF diff(endpoint - origin);
+  for (int i = 1; i <= kNumberOfTouchMoveEvents; ++i) {
+    gfx::Vector2dF step(diff);
+    step.Scale(i / static_cast<float>(kNumberOfTouchMoveEvents));
+    event_generator.MoveTouch(origin + gfx::ToRoundedVector2d(step));
+    drag_update_callback.Run(event_generator.current_screen_location());
+  }
 
   std::move(before_release_callback).Run();
   event_generator.ReleaseTouch();
@@ -120,6 +137,7 @@ void GestureTap(const views::View* view) {
 // Performs a mouse drag between `from` and `to`.
 void MouseDrag(const views::View* from,
                const views::View* to,
+               DragUpdateCallback drag_update_callback = base::DoNothing(),
                base::OnceClosure before_release_callback = base::DoNothing(),
                base::OnceClosure after_release_callback = base::DoNothing()) {
   auto* root_window = HoldingSpaceBrowserTestBase::GetRootWindowForNewWindows();
@@ -129,8 +147,15 @@ void MouseDrag(const views::View* from,
 
   // Generate multiple interpolated mouse move events so that views are notified
   // of mouse enter/exit as they would be in production.
-  event_generator.MoveMouseTo(to->GetBoundsInScreen().CenterPoint(),
-                              /*count=*/10);
+  constexpr int kNumberOfMouseMoveEvents = 25;
+  const gfx::Point origin = event_generator.current_screen_location();
+  const gfx::Vector2dF diff(to->GetBoundsInScreen().CenterPoint() - origin);
+  for (int i = 1; i <= kNumberOfMouseMoveEvents; ++i) {
+    gfx::Vector2dF step(diff);
+    step.Scale(i / static_cast<float>(kNumberOfMouseMoveEvents));
+    event_generator.MoveMouseTo(origin + gfx::ToRoundedVector2d(step));
+    drag_update_callback.Run(event_generator.current_screen_location());
+  }
 
   std::move(before_release_callback).Run();
   event_generator.ReleaseLeftButton();
@@ -217,6 +242,10 @@ class MockHoldingSpaceClient : public HoldingSpaceClient {
               CopyImageToClipboard,
               (const HoldingSpaceItem& item, SuccessCallback callback),
               (override));
+  MOCK_METHOD(base::FilePath,
+              CrackFileSystemUrl,
+              (const GURL& file_system_url),
+              (const, override));
   MOCK_METHOD(void, OpenDownloads, (SuccessCallback callback), (override));
   MOCK_METHOD(void, OpenMyFiles, (SuccessCallback callback), (override));
   MOCK_METHOD(void,
@@ -271,24 +300,38 @@ class DropSenderView : public views::WidgetDelegateView,
     return new DropSenderView(context);
   }
 
-  void SetData(const std::vector<base::FilePath> file_paths) {
+  void ClearFilenamesData() { filenames_data_.reset(); }
+
+  void SetFilenamesData(const std::vector<base::FilePath> file_paths) {
     std::vector<ui::FileInfo> filenames;
     for (const base::FilePath& file_path : file_paths)
       filenames.emplace_back(file_path, /*display_name=*/base::FilePath());
-    data_provider_->SetFilenames(filenames);
+    filenames_data_.emplace(std::move(filenames));
+  }
+
+  void ClearFileSystemSourcesData() { file_system_sources_data_.reset(); }
+
+  void SetFileSystemSourcesData(const std::vector<GURL>& file_system_urls) {
+    constexpr char kFileSystemSourcesType[] = "fs/sources";
+
+    std::stringstream file_system_sources;
+    for (const GURL& file_system_url : file_system_urls)
+      file_system_sources << file_system_url.spec() << "\n";
+
+    base::Pickle pickle;
+    ui::WriteCustomDataToPickle(
+        std::unordered_map<std::u16string, std::u16string>(
+            {{base::UTF8ToUTF16(kFileSystemSourcesType),
+              base::UTF8ToUTF16(file_system_sources.str())}}),
+        &pickle);
+
+    file_system_sources_data_.emplace(std::move(pickle));
   }
 
  private:
   explicit DropSenderView(aura::Window* context) {
     InitWidget(context);
-
     set_drag_controller(this);
-    data_provider_ = ui::OSExchangeDataProviderFactory::CreateProvider();
-
-    // NOTE: Gesture drag is only enabled if a drag image is specified.
-    data_provider_->SetDragImage(
-        /*image=*/gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10),
-        /*cursor_offset=*/gfx::Vector2d());
   }
 
   // views::DragController:
@@ -309,13 +352,19 @@ class DropSenderView : public views::WidgetDelegateView,
                             const gfx::Point& press_pt,
                             ui::OSExchangeData* data) override {
     // Drag image.
-    data->provider().SetDragImage(data_provider_->GetDragImage(),
-                                  data_provider_->GetDragImageOffset());
+    // NOTE: Gesture drag is only enabled if a drag image is specified.
+    data->provider().SetDragImage(
+        /*image=*/gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10),
+        /*cursor_offset=*/gfx::Vector2d());
 
     // Payload.
-    std::vector<ui::FileInfo> filenames;
-    ASSERT_TRUE(data_provider_->GetFilenames(&filenames));
-    data->provider().SetFilenames(filenames);
+    if (filenames_data_)
+      data->provider().SetFilenames(filenames_data_.value());
+    if (file_system_sources_data_) {
+      data->provider().SetPickledData(
+          ui::ClipboardFormatType::GetWebCustomDataType(),
+          file_system_sources_data_.value());
+    }
   }
 
   void InitWidget(aura::Window* context) {
@@ -331,7 +380,8 @@ class DropSenderView : public views::WidgetDelegateView,
     widget->Init(std::move(params));
   }
 
-  std::unique_ptr<ui::OSExchangeDataProvider> data_provider_;
+  base::Optional<std::vector<ui::FileInfo>> filenames_data_;
+  base::Optional<base::Pickle> file_system_sources_data_;
 };
 
 // DropTargetView --------------------------------------------------------------
@@ -464,15 +514,28 @@ class HoldingSpaceUiBrowserTest : public HoldingSpaceBrowserTestBase {
 
 // Tests -----------------------------------------------------------------------
 
+using PerformDragAndDropCallback =
+    base::RepeatingCallback<void(const views::View* from,
+                                 const views::View* to,
+                                 DragUpdateCallback drag_update_callback,
+                                 base::OnceClosure before_release_callback,
+                                 base::OnceClosure after_release_callback)>;
+
+enum StorageLocationFlag : uint32_t {
+  kFilenames = 1 << 0,
+  kFileSystemSources = 1 << 1,
+};
+
+using StorageLocationFlags = uint32_t;
+
 // Base class for holding space UI browser tests that test drag-and-drop.
-// Parameterized by a callback to invoke to perform a drag-and-drop.
+// Parameterized by:
+//   [0] - callback to invoke to perform a drag-and-drop.
+//   [1] - storage location(s) on `ui::OSExchangeData` at which to store files.
 class HoldingSpaceUiDragAndDropBrowserTest
     : public HoldingSpaceUiBrowserTest,
-      public testing::WithParamInterface<base::RepeatingCallback<void(
-          const views::View* from,
-          const views::View* to,
-          base::OnceClosure before_release_callback,
-          base::OnceClosure after_release_callback)>> {
+      public testing::WithParamInterface<
+          std::tuple<PerformDragAndDropCallback, StorageLocationFlags>> {
  public:
   // Asserts expectations that the holding space tray is or isn't a drop target.
   void ExpectTrayIsDropTarget(bool is_drop_target) {
@@ -484,14 +547,46 @@ class HoldingSpaceUiDragAndDropBrowserTest
               is_drop_target ? 0.f : 1.f);
   }
 
+  // Returns true if `screen_location` is within sufficient range of the holding
+  // space tray so as to make it present itself as a drop target.
+  bool IsWithinTrayDropTargetRange(const gfx::Point& screen_location) {
+    constexpr int kProximityThreshold = 20;
+    gfx::Rect screen_bounds(GetTray()->GetBoundsInScreen());
+    screen_bounds.Inset(gfx::Insets(-kProximityThreshold));
+    return screen_bounds.Contains(screen_location);
+  }
+
   // Performs a drag-and-drop between `from` and `to`.
   void PerformDragAndDrop(
       const views::View* from,
       const views::View* to,
+      DragUpdateCallback drag_update_callback = base::DoNothing(),
       base::OnceClosure before_release_callback = base::DoNothing(),
       base::OnceClosure after_release_callback = base::DoNothing()) {
-    GetParam().Run(from, to, std::move(before_release_callback),
-                   std::move(after_release_callback));
+    GetPerformDragAndDropCallback().Run(
+        from, to, std::move(drag_update_callback),
+        std::move(before_release_callback), std::move(after_release_callback));
+  }
+
+  // Sets data on `sender()` at the storage location specified by test params.
+  void SetSenderData(const std::vector<base::FilePath>& file_paths) {
+    if (ShouldStoreDataIn(StorageLocationFlag::kFilenames))
+      sender()->SetFilenamesData(file_paths);
+    else
+      sender()->ClearFilenamesData();
+
+    if (!ShouldStoreDataIn(StorageLocationFlag::kFileSystemSources)) {
+      sender()->ClearFileSystemSourcesData();
+      return;
+    }
+
+    std::vector<GURL> file_system_urls;
+    for (const base::FilePath& file_path : file_paths) {
+      file_system_urls.push_back(
+          holding_space_util::ResolveFileSystemUrl(GetProfile(), file_path));
+    }
+
+    sender()->SetFileSystemSourcesData(file_system_urls);
   }
 
   // Returns the view serving as the drop sender for tests.
@@ -520,6 +615,18 @@ class HoldingSpaceUiDragAndDropBrowserTest
     drop_sender_view_->GetWidget()->Close();
     drop_target_view_->GetWidget()->Close();
     HoldingSpaceUiBrowserTest::TearDownOnMainThread();
+  }
+
+  PerformDragAndDropCallback GetPerformDragAndDropCallback() {
+    return std::get<0>(GetParam());
+  }
+
+  StorageLocationFlags GetStorageLocationFlags() const {
+    return std::get<1>(GetParam());
+  }
+
+  bool ShouldStoreDataIn(StorageLocationFlag flag) const {
+    return GetStorageLocationFlags() & flag;
   }
 
   DropSenderView* drop_sender_view_ = nullptr;
@@ -603,7 +710,7 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
   // Create a file to be dragged into the holding space.
   std::vector<base::FilePath> file_paths;
   file_paths.push_back(CreateFile());
-  sender()->SetData(file_paths);
+  SetSenderData(file_paths);
 
   // Expect no events have been recorded to histograms.
   base::HistogramTester histogram_tester;
@@ -625,6 +732,13 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
     ExpectTrayIsDropTarget(false);
     PerformDragAndDrop(
         /*from=*/sender(), /*to=*/GetTray(),
+        /*drag_update_callback=*/
+        base::BindRepeating(
+            &HoldingSpaceUiDragAndDropBrowserTest::IsWithinTrayDropTargetRange,
+            base::Unretained(this))
+            .Then(base::BindRepeating(
+                &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
+                base::Unretained(this))),
         /*before_release_callback=*/
         base::BindOnce(
             &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
@@ -644,7 +758,7 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
   // Create a few more files to be dragged into the holding space.
   file_paths.push_back(CreateFile());
   file_paths.push_back(CreateFile());
-  sender()->SetData(file_paths);
+  SetSenderData(file_paths);
 
   {
     base::RunLoop run_loop;
@@ -663,6 +777,13 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
     ExpectTrayIsDropTarget(false);
     PerformDragAndDrop(
         /*from=*/sender(), /*to=*/GetTray(),
+        /*drag_update_callback=*/
+        base::BindRepeating(
+            &HoldingSpaceUiDragAndDropBrowserTest::IsWithinTrayDropTargetRange,
+            base::Unretained(this))
+            .Then(base::BindRepeating(
+                &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
+                base::Unretained(this))),
         /*before_release_callback=*/
         base::BindOnce(
             &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
@@ -693,6 +814,16 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
     ExpectTrayIsDropTarget(false);
     PerformDragAndDrop(
         /*from=*/sender(), /*to=*/GetTray(),
+        /*drag_update_callback=*/
+        base::BindRepeating(
+            [](HoldingSpaceUiDragAndDropBrowserTest* test,
+               const gfx::Point& screen_location) {
+              // The drag payload cannot be handled by holding space so the tray
+              // should never indicate it is a drop target regardless of drag
+              // update `screen_location`.
+              test->ExpectTrayIsDropTarget(false);
+            },
+            base::Unretained(this)),
         /*before_release_callback=*/
         base::BindOnce(
             &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
@@ -710,12 +841,19 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         HoldingSpaceUiDragAndDropBrowserTest,
-                         testing::ValuesIn({
-                             base::BindRepeating(&MouseDrag),
-                             base::BindRepeating(&GestureDrag),
-                         }));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HoldingSpaceUiDragAndDropBrowserTest,
+    testing::Combine(testing::ValuesIn({
+                         base::BindRepeating(&MouseDrag),
+                         base::BindRepeating(&GestureDrag),
+                     }),
+                     testing::ValuesIn(std::vector<StorageLocationFlags>({
+                         StorageLocationFlag::kFilenames,
+                         StorageLocationFlag::kFileSystemSources,
+                         StorageLocationFlag::kFilenames |
+                             StorageLocationFlag::kFileSystemSources,
+                     }))));
 
 // Verifies that the holding space tray does not appear on the lock screen.
 IN_PROC_BROWSER_TEST_F(HoldingSpaceUiBrowserTest, LockScreen) {

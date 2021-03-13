@@ -18,13 +18,18 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_observer.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
 #include "ash/system/holding_space/holding_space_tray_icon.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "base/containers/adapters.h"
+#include "base/pickle.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_client_observer.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,6 +41,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/vector_icons.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -62,9 +68,10 @@ void AnimateToTargetOpacity(views::View* view, float target_opacity) {
   view->layer()->SetOpacity(target_opacity);
 }
 
-// Returns the file paths extracted from the specified `data` which are *not*
-// pinned to the attached holding space model.
-std::vector<base::FilePath> ExtractUnpinnedFilePaths(
+// Returns the file paths extracted from the specified `data` at the filenames
+// storage location. The Files app stores file paths but *not* directory paths
+// at this location.
+std::vector<base::FilePath> ExtractFilePathsFromFilenames(
     const ui::OSExchangeData& data) {
   if (!data.HasFile())
     return {};
@@ -73,14 +80,64 @@ std::vector<base::FilePath> ExtractUnpinnedFilePaths(
   if (!data.GetFilenames(&filenames))
     return {};
 
-  HoldingSpaceModel* const model = HoldingSpaceController::Get()->model();
+  std::vector<base::FilePath> result;
+  for (const ui::FileInfo& filename : filenames)
+    result.push_back(base::FilePath(filename.path));
 
-  std::vector<base::FilePath> unpinned_file_paths;
-  for (const ui::FileInfo& filename : filenames) {
-    const base::FilePath& file_path = filename.path;
-    if (!model->ContainsItem(HoldingSpaceItem::Type::kPinnedFile, file_path))
-      unpinned_file_paths.push_back(file_path);
+  return result;
+}
+
+// Returns the file paths extracted from the specified `data` at the file system
+// sources storage location. The Files app stores both file paths *and*
+// directory paths at this location.
+std::vector<base::FilePath> ExtractFilePathsFromFileSystemSources(
+    const ui::OSExchangeData& data) {
+  base::Pickle pickle;
+  if (!data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+                           &pickle)) {
+    return {};
   }
+
+  constexpr char kFileSystemSourcesType[] = "fs/sources";
+
+  std::u16string file_system_sources;
+  ui::ReadCustomDataForType(pickle.data(), pickle.size(),
+                            base::UTF8ToUTF16(kFileSystemSourcesType),
+                            &file_system_sources);
+  if (file_system_sources.empty())
+    return {};
+
+  HoldingSpaceClient* const client = HoldingSpaceController::Get()->client();
+
+  std::vector<base::FilePath> result;
+  for (const base::StringPiece16& file_system_source : base::SplitStringPiece(
+           file_system_sources, base::UTF8ToUTF16("\n"), base::TRIM_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
+    base::FilePath file_path =
+        client->CrackFileSystemUrl(GURL(file_system_source));
+    if (!file_path.empty())
+      result.push_back(file_path);
+  }
+
+  return result;
+}
+
+// Returns the file paths extracted from the specified `data` which are *not*
+// already pinned to the attached holding space model.
+std::vector<base::FilePath> ExtractUnpinnedFilePaths(
+    const ui::OSExchangeData& data) {
+  // Prefer extracting file paths from file system sources when possible. The
+  // Files app populates both file system sources and filenames storage
+  // locations, but only the former contains directory paths.
+  std::vector<base::FilePath> unpinned_file_paths =
+      ExtractFilePathsFromFileSystemSources(data);
+  if (unpinned_file_paths.empty())
+    unpinned_file_paths = ExtractFilePathsFromFilenames(data);
+
+  HoldingSpaceModel* const model = HoldingSpaceController::Get()->model();
+  base::EraseIf(unpinned_file_paths, [model](const base::FilePath& file_path) {
+    return model->ContainsItem(HoldingSpaceItem::Type::kPinnedFile, file_path);
+  });
 
   return unpinned_file_paths;
 }
@@ -141,6 +198,47 @@ std::unique_ptr<views::View> CreateDropTargetOverlay() {
 
   return drop_target_overlay;
 }
+
+// ScopedDragDropObserver ------------------------------------------------------
+
+// A class which observes an `aura::client::DragDropClient` for the scope of its
+// existence. Drag events are passed to a callback supplied in the constructor.
+class ScopedDragDropObserver : public aura::client::DragDropClientObserver,
+                               public ShellObserver {
+ public:
+  ScopedDragDropObserver(
+      aura::client::DragDropClient* client,
+      base::RepeatingCallback<void(const ui::DropTargetEvent*)> event_callback)
+      : event_callback_(std::move(event_callback)) {
+    drag_drop_client_observer_.Observe(client);
+    shell_observer_.Observe(Shell::Get());
+  }
+
+  ScopedDragDropObserver(const ScopedDragDropObserver&) = delete;
+  ScopedDragDropObserver& operator=(const ScopedDragDropObserver&) = delete;
+  ~ScopedDragDropObserver() override = default;
+
+ private:
+  // aura::client::DragDropClientObserver:
+  void OnDragUpdated(const ui::DropTargetEvent& event) override {
+    event_callback_.Run(&event);
+  }
+
+  void OnDragEnded() override { event_callback_.Run(/*event=*/nullptr); }
+
+  // ShellObserver:
+  void OnShellDestroying() override { drag_drop_client_observer_.Reset(); }
+
+  base::RepeatingCallback<void(const ui::DropTargetEvent*)> event_callback_;
+  base::ScopedObservation<aura::client::DragDropClient,
+                          aura::client::DragDropClientObserver>
+      drag_drop_client_observer_{this};
+  base::ScopedObservation<Shell,
+                          ShellObserver,
+                          &Shell::AddShellObserver,
+                          &Shell::RemoveShellObserver>
+      shell_observer_{this};
+};
 
 }  // namespace
 
@@ -290,6 +388,11 @@ bool HoldingSpaceTray::GetDropFormats(
     int* formats,
     std::set<ui::ClipboardFormatType>* format_types) {
   *formats = ui::OSExchangeData::FILE_NAME;
+
+  // Support custom web data so that file system sources can be retrieved from
+  // pickled data. That is the storage location at which the Files app stores
+  // both file paths *and* directory paths.
+  format_types->insert(ui::ClipboardFormatType::GetWebCustomDataType());
   return true;
 }
 
@@ -301,34 +404,14 @@ bool HoldingSpaceTray::CanDrop(const ui::OSExchangeData& data) {
   return !ExtractUnpinnedFilePaths(data).empty();
 }
 
-// TODO(crbug.com/1171059): Instead of handling `OnDragEntered()`, show the
-// `drop_target_overlay_` if the cursor is within range of this view.
-void HoldingSpaceTray::OnDragEntered(const ui::DropTargetEvent& event) {
-  if (ExtractUnpinnedFilePaths(event.data()).empty())
-    UpdateDropTargetState(/*is_drop_target=*/false, &event);
-  else
-    UpdateDropTargetState(/*is_drop_target=*/true, &event);
-}
-
 int HoldingSpaceTray::OnDragUpdated(const ui::DropTargetEvent& event) {
-  if (ExtractUnpinnedFilePaths(event.data()).empty()) {
-    UpdateDropTargetState(/*is_drop_target=*/false, &event);
-    return ui::DragDropTypes::DRAG_NONE;
-  }
-  UpdateDropTargetState(/*is_drop_target=*/true, &event);
-  return ui::DragDropTypes::DRAG_COPY;
-}
-
-// TODO(crbug.com/1171059): Instead of handling `OnDragExited()`, hide the
-// `drop_target_overlay_` if the cursor is outside range of this view.
-void HoldingSpaceTray::OnDragExited() {
-  UpdateDropTargetState(/*is_drop_target=*/false, /*event=*/nullptr);
+  return ExtractUnpinnedFilePaths(event.data()).empty()
+             ? ui::DragDropTypes::DRAG_NONE
+             : ui::DragDropTypes::DRAG_COPY;
 }
 
 DragOperation HoldingSpaceTray::OnPerformDrop(
     const ui::DropTargetEvent& event) {
-  UpdateDropTargetState(/*is_drop_target=*/false, /*event=*/nullptr);
-
   std::vector<base::FilePath> unpinned_file_paths(
       ExtractUnpinnedFilePaths(event.data()));
   if (unpinned_file_paths.empty())
@@ -348,6 +431,24 @@ void HoldingSpaceTray::Layout() {
   // are perceived by the user. Note that the user perceives the bounds of this
   // view to be its background bounds, not its local bounds.
   drop_target_overlay_->SetBoundsRect(GetBackgroundBounds());
+}
+
+void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
+                                         bool is_visible) {
+  TrayBackgroundView::VisibilityChanged(starting_from, is_visible);
+
+  if (!is_visible) {
+    drag_drop_observer_.reset();
+    return;
+  }
+
+  // Observe drag/drop events only when visible. Since the observer is owned by
+  // `this` view, it's safe to bind to a raw pointer.
+  drag_drop_observer_ = std::make_unique<ScopedDragDropObserver>(
+      /*client=*/aura::client::GetDragDropClient(
+          GetWidget()->GetNativeWindow()->GetRootWindow()),
+      /*event_callback=*/base::BindRepeating(
+          &HoldingSpaceTray::UpdateDropTargetState, base::Unretained(this)));
 }
 
 void HoldingSpaceTray::FirePreviewsUpdateTimerIfRunningForTesting() {
@@ -591,8 +692,25 @@ bool HoldingSpaceTray::PreviewsShown() const {
 }
 
 // TODO(crbug.com/1171059): Animate translation of tray icons.
-void HoldingSpaceTray::UpdateDropTargetState(bool is_drop_target,
-                                             const ui::LocatedEvent* event) {
+void HoldingSpaceTray::UpdateDropTargetState(const ui::DropTargetEvent* event) {
+  bool is_drop_target = false;
+
+  if (event && !ExtractUnpinnedFilePaths(event->data()).empty()) {
+    // If the `event` contains pinnable files and is within range of this view,
+    // indicate this view is a drop target to increase discoverability.
+    constexpr int kProximityThreshold = 20;
+    gfx::Rect drop_target_bounds_in_screen(GetBoundsInScreen());
+    drop_target_bounds_in_screen.Inset(gfx::Insets(-kProximityThreshold));
+
+    gfx::Point event_location_in_screen(event->root_location());
+    ::wm::ConvertPointToScreen(
+        static_cast<aura::Window*>(event->target())->GetRootWindow(),
+        &event_location_in_screen);
+
+    is_drop_target =
+        drop_target_bounds_in_screen.Contains(event_location_in_screen);
+  }
+
   AnimateToTargetOpacity(drop_target_overlay_, is_drop_target ? 1.f : 0.f);
   AnimateToTargetOpacity(default_tray_icon_, is_drop_target ? 0.f : 1.f);
   AnimateToTargetOpacity(previews_tray_icon_, is_drop_target ? 0.f : 1.f);
@@ -603,20 +721,10 @@ void HoldingSpaceTray::UpdateDropTargetState(bool is_drop_target,
   if (GetInkDrop()->GetTargetInkDropState() == target_ink_drop_state)
     return;
 
-  // Even though `event` is a `ui::LocatedEvent`, it may *not* return `true` for
-  // `IsLocatedEvent()` which is checked downstream when animating the ink drop.
-  // Since the only data that needs to propagate is `event` location, create a
-  // synthetic event that *will* return `true` for `IsLocatedEvent()` if needed.
-  std::unique_ptr<ui::MouseEvent> mouse_moved_event;
-  if (event && !event->IsLocatedEvent()) {
-    mouse_moved_event = std::make_unique<ui::MouseEvent>(
-        ui::ET_MOUSE_MOVED, event->location_f(), event->root_location_f(),
-        event->time_stamp(), /*flags=*/ui::EF_NONE,
-        /*changed_button_flags=*/ui::EF_NONE);
-    event = mouse_moved_event.get();
-  }
-
-  AnimateInkDrop(target_ink_drop_state, event);
+  // Do *not* pass in an event as the origin for the ink drop. Since the user is
+  // not directly over this view, it would look strange to give the ink drop an
+  // out-of-bounds origin.
+  AnimateInkDrop(target_ink_drop_state, /*event=*/nullptr);
 }
 
 BEGIN_METADATA(HoldingSpaceTray, TrayBackgroundView)

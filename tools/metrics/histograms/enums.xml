@@ -1456,6 +1456,16 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Not QUIC, destination different from origin"/>
 </enum>
 
+<enum name="AltTabMode">
+  <int value="0" label="All Desks"/>
+  <int value="1" label="Current Desk"/>
+</enum>
+
+<enum name="AltTabModeSwitchSource">
+  <int value="0" label="Click"/>
+  <int value="1" label="Keyboard"/>
+</enum>
+
 <enum name="AmbientModePhotoSource">
   <int value="0" label="Default">
     This is when user clicked on the top level Screen Saver toggle but did not
@@ -31663,9 +31673,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3713" label="TextDetectorDetect"/>
   <int value="3714" label="LocalStorageFirstUsedBeforeFcp"/>
   <int value="3715" label="LocalStorageFirstUsedAfterFcp"/>
-  <int value="3716" label="CSSPseudoHostCompoundList"/>
-  <int value="3717" label="CSSPseudoHostContextCompoundList"/>
-  <int value="3718" label="CSSPseudoHostDynamicSpecificity"/>
+  <int value="3716" label="OBSOLETE_CSSPseudoHostCompoundList"/>
+  <int value="3717" label="OBSOLETE_CSSPseudoHostContextCompoundList"/>
+  <int value="3718" label="OBSOLETE_CSSPseudoHostDynamicSpecificity"/>
   <int value="3719" label="GetCurrentBrowsingContextMedia"/>
   <int value="3720" label="MouseEventRelativePositionForInlineElement"/>
   <int value="3721" label="V8SharedArrayBufferConstructedWithoutIsolation"/>
@@ -43451,6 +43461,7 @@ from previous Chrome versions.
   <int value="-2131746498"
       label="AutofillUseImprovedLabelDisambiguation:enabled"/>
   <int value="-2129940395" label="WebAssemblySimd:disabled"/>
+  <int value="-2129013032" label="DocumentTransition:enabled"/>
   <int value="-2128705444" label="AssistantAppSupport:enabled"/>
   <int value="-2127319228" label="enable-media-internals:disabled"/>
   <int value="-2126697213" label="EnablePalmSuppression:disabled"/>
@@ -43480,6 +43491,7 @@ from previous Chrome versions.
   <int value="-2111196530" label="EnableAssistantLauncherUI:disabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
+  <int value="-2106763275" label="ArcRtVcpuQuadCore:enabled"/>
   <int value="-2105498697" label="EnableImeSandbox:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
@@ -44137,6 +44149,7 @@ from previous Chrome versions.
   <int value="-1529631789" label="enable-unsafe-fast-js-calls"/>
   <int value="-1529140321" label="ReadLater:enabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1527094429" label="ArcRtVcpuQuadCore:disabled"/>
   <int value="-1525129540"
       label="OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover:disabled"/>
   <int value="-1524323669" label="InstalledAppsInCbd:enabled"/>
@@ -44423,6 +44436,7 @@ from previous Chrome versions.
   <int value="-1295288468" label="MemoriesDebug:enabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
+  <int value="-1293566107" label="DocumentTransition:disabled"/>
   <int value="-1292615467"
       label="OmniboxSuggestionTransparencyOptions:disabled"/>
   <int value="-1291963295" label="ComputePressure:disabled"/>
@@ -44742,6 +44756,7 @@ from previous Chrome versions.
   <int value="-1026192558" label="OopRasterizationDDL:enabled"/>
   <int value="-1025125875" label="AssistantTimersV2:disabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
+  <int value="-1022281869" label="ArcRtVcpuDualCore:enabled"/>
   <int value="-1022165708" label="BreakingNewsPush:disabled"/>
   <int value="-1021097344" label="PolicyAtomicGroup:disabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
@@ -45364,6 +45379,7 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesImprovedMessaging:disabled"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
   <int value="-447148659" label="ContextMenuTranslateWithGoogleLens:enabled"/>
+  <int value="-446879089" label="BluetoothSessionizedMetrics:enabled"/>
   <int value="-446560063" label="finch-seed-min-update-period"/>
   <int value="-446220201" label="EnableIncognitoShortcutOnDesktop:enabled"/>
   <int value="-444867364" label="Metal:enabled"/>
@@ -45862,6 +45878,7 @@ from previous Chrome versions.
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="8891567" label="CaptionSettings:enabled"/>
   <int value="9609535" label="BrowsingDataLifetimeManager:disabled"/>
+  <int value="10405060" label="BluetoothSessionizedMetrics:disabled"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="12016364" label="OmniboxBubbleUrlSuggestions:enabled"/>
@@ -46015,6 +46032,7 @@ from previous Chrome versions.
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
   <int value="157318016" label="AutomaticTabDiscarding:enabled"/>
+  <int value="160506687" label="ArcRtVcpuDualCore:disabled"/>
   <int value="160524775" label="PDFTwoUpView:disabled"/>
   <int value="160838658" label="SmartDimModelV3:enabled"/>
   <int value="161409456" label="AutofillUseMobileLabelDisambiguation:disabled"/>
@@ -46633,6 +46651,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:disabled"/>
   <int value="725870294" label="RequestUnbufferedDispatch:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
+  <int value="726958205" label="ToolbarMicIphAndroid:enabled"/>
   <int value="727270087" label="PromosOnLocalNtp:enabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
   <int value="728064595" label="RevampedContextMenu:disabled"/>
@@ -47498,6 +47517,7 @@ from previous Chrome versions.
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
   <int value="1514158607" label="NearbySharingDeviceContacts:enabled"/>
   <int value="1515196403" label="fast-user-switching"/>
+  <int value="1515334367" label="ToolbarMicIphAndroid:disabled"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1519067750" label="ActionableContentSettings:disabled"/>
   <int value="1520181151" label="PrintServerScaling:disabled"/>
@@ -48176,6 +48196,8 @@ from previous Chrome versions.
       label="ProcessSharingWithStrictSiteInstances:enabled"/>
   <int value="2137294324" label="zero-copy-video-capture"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
+  <int value="2137554806"
+      label="enable-experimental-accessibility-dictation-listening"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2138146331" label="OmniboxVoiceSearchAlwaysVisible:enabled"/>
   <int value="2139048614" label="UseSurfaceLayerForVideo:enabled"/>
@@ -49694,6 +49716,7 @@ Called by update_use_counter_css.py.-->
   <int value="692" label="border-start-end-radius"/>
   <int value="693" label="border-end-start-radius"/>
   <int value="694" label="border-end-end-radius"/>
+  <int value="695" label="accent-color"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -54488,6 +54511,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NetworkCellularActivationState">
+  <obsolete>
+    Removed and renamed to NetworkCellularPSimActivationState 2/2021
+  </obsolete>
   <int value="0" label="Activated"/>
   <int value="1" label="Activating"/>
   <int value="2" label="NotActivated"/>
@@ -54500,10 +54526,25 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Disconnected"/>
 </enum>
 
+<enum name="NetworkCellularESimProfileStatus">
+  <int value="0" label="Active"/>
+  <int value="1" label="ActiveWithPendingProfiles"/>
+  <int value="2" label="PendingProfilesOnly"/>
+  <int value="3" label="NoProfiles"/>
+</enum>
+
 <enum name="NetworkCellularOutOfCreditsReason">
   <int value="0" label="Connect-Disconnect Loop"/>
   <int value="1" label="TX-Queue Congestion"/>
   <int value="2" label="Elongated Time Wait"/>
+</enum>
+
+<enum name="NetworkCellularPSimActivationState">
+  <int value="0" label="Activated"/>
+  <int value="1" label="Activating"/>
+  <int value="2" label="NotActivated"/>
+  <int value="3" label="PartiallyActivated"/>
+  <int value="4" label="Unknown"/>
 </enum>
 
 <enum name="NetworkCellularTechnology">

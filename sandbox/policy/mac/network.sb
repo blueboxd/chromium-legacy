@@ -74,10 +74,8 @@
 )
 
 ; Distributed notifications memory.
-(if (>= os-version 1009)
-  (allow ipc-posix-shm-read-data
-    (ipc-posix-name "apple.shm.notification_center")
-  )
+(allow ipc-posix-shm-read-data
+  (ipc-posix-name "apple.shm.notification_center")
 )
 
 ; Notification data from the security server database.

@@ -30,6 +30,14 @@
 (define filter-syscalls "FILTER_SYSCALLS")
 (define filter-syscalls-debug "FILTER_SYSCALLS_DEBUG")
 
+; Backwards compatibility for 10.7.
+(if (not (defined? 'ipc-posix-shm*))
+    (define ipc-posix-shm* ipc-posix-shm))
+(if (not (defined? 'ipc-posix-shm-read*))
+    (define ipc-posix-shm-read* ipc-posix-shm))
+(if (not (defined? 'ipc-posix-shm-write-data))
+    (define ipc-posix-shm-write-data ipc-posix-shm))
+
 ; Backwards compatibility for 10.10.
 (if (not (defined? 'path))
   (define path literal))

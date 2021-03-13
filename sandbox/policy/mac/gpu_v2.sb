@@ -121,10 +121,8 @@
   )))
 )
 
-(if (>= os-version 1009)
-  (allow ipc-posix-shm-read-data
-    (ipc-posix-name "apple.shm.notification_center"))
-)
+(allow ipc-posix-shm-read-data
+  (ipc-posix-name "apple.shm.notification_center"))
 
 ; Needed for VideoToolbox usage - https://crbug.com/767037
 (if (>= os-version 1013)

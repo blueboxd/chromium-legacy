@@ -1215,6 +1215,7 @@ component("base") {
       "task/thread_pool/thread_group_native_mac.h",
       "task/thread_pool/thread_group_native_mac.mm",
       "threading/platform_thread_mac.mm",
+      "threading/atomic.c",
     ]
   }
 

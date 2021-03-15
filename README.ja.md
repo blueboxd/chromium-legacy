@@ -35,10 +35,6 @@
 - GPU
   - 10.7ではOpenGLが古すぎるためGPUは利用できず、すべてソフトウェアレンダリングやソフトウェアデコードとなります
   - 10.8/10.9では描画に問題が出るため`--disable-gpu-compositing`オプションによってGPU Compotisitingが無効化されています
-- サンドボックス
-  - ~~10.8以下ではポリシが新しすぎてロードできないため`--no-sandbox`オプションで無効化されています~~
-    - ~~完全無効化ではなくポリシ側を書き直してロードできないか調査中です~~
-      - 10.9以下でも有効化されました
 - WebAuthn/FIDO2
   - 10.7では `IOHIDFamily.kext` にパッチを当てる必要があります (TBW)
 
@@ -129,25 +125,3 @@ git fetch for-lion && git checkout for-lion && git checkout for-lion -- .
 cd chromium-project/chromium-legacy/src
 ninja -C ../out/release chrome
 ```
-
----
-
-# ![Logo](chrome/app/theme/chromium/product_logo_64.png) Chromium
-
-Chromium is an open-source browser project that aims to build a safer, faster,
-and more stable way for all users to experience the web.
-
-The project's web site is https://www.chromium.org.
-
-To check out the source code locally, don't use `git clone`! Instead,
-follow [the instructions on how to get the code](docs/get_the_code.md).
-
-Documentation in the source is rooted in [docs/README.md](docs/README.md).
-
-Learn how to [Get Around the Chromium Source Code Directory Structure
-](https://www.chromium.org/developers/how-tos/getting-around-the-chrome-source-code).
-
-For historical reasons, there are some small top level directories. Now the
-guidance is that new top level directories are for product (e.g. Chrome,
-Android WebView, Ash). Even if these products have multiple executables, the
-code should be in subdirectories of the product.

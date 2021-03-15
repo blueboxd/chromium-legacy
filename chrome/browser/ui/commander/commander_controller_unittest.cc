@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/test/bind.h"
 #include "chrome/browser/ui/commander/command_source.h"
 #include "chrome/browser/ui/commander/commander_view_model.h"
@@ -252,7 +251,7 @@ TEST_F(CommanderControllerTest, ViewModelSortsResults) {
 TEST_F(CommanderControllerTest, ViewModelSortsCommandsAboveNouns) {
   std::vector<std::unique_ptr<CommandSource>> sources;
   auto source = std::make_unique<TestCommandSource>(
-      base::BindRepeating([](const base::string16&, Browser* browser) {
+      base::BindRepeating([](const std::u16string&, Browser* browser) {
         CommandSource::CommandResults result;
         auto window = CreateNoOpCommandItem(base::ASCIIToUTF16("window"), 99);
         window->entity_type = CommandItem::Entity::kWindow;

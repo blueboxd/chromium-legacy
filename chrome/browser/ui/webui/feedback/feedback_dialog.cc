@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,8 +60,8 @@ ui::ModalType FeedbackDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-base::string16 FeedbackDialog::GetDialogTitle() const {
-  return base::string16();
+std::u16string FeedbackDialog::GetDialogTitle() const {
+  return std::u16string();
 }
 
 GURL FeedbackDialog::GetDialogContentURL() const {

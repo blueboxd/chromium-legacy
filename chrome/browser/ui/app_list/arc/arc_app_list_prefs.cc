@@ -11,6 +11,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
@@ -615,6 +616,9 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
 
 arc::mojom::ArcResizeLockState ArcAppListPrefs::GetResizeLockState(
     const std::string& app_id) const {
+  if (!ash::features::IsArcResizeLockEnabled())
+    return arc::mojom::ArcResizeLockState::UNDEFINED;
+
   std::unique_ptr<AppInfo> app_info = GetApp(app_id);
   if (!app_info) {
     VLOG(2) << "Failed to get app info: " << app_id << ".";
@@ -1078,12 +1082,12 @@ void ArcAppListPrefs::RegisterDefaultApps() {
     }
 
     const ArcDefaultAppList::AppInfo& app_info = *default_app.second;
-    AddAppAndShortcut(
-        app_info.name, app_info.package_name, app_info.activity,
-        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
-        false /* sticky */, false /* notifications_enabled */,
-        arc::mojom::ArcResizeLockState::UNDEFINED, false /* app_ready */,
-        false /* suspended */, false /* shortcut */, true /* launchable */);
+    AddAppAndShortcut(app_info.name, app_info.package_name, app_info.activity,
+                      std::string() /* intent_uri */,
+                      std::string() /* icon_resource_id */, false /* sticky */,
+                      false /* notifications_enabled */, false /* app_ready */,
+                      false /* suspended */, false /* shortcut */,
+                      true /* launchable */);
   }
 }
 
@@ -1164,12 +1168,12 @@ void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
     // Create runtime app entry that is valid for the current user session. This
     // entry is not shown in App Launcher and only required for shelf
     // integration.
-    AddAppAndShortcut(
-        name.value_or(std::string()), package_name, activity,
-        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
-        false /* sticky */, false /* notifications_enabled */,
-        arc::mojom::ArcResizeLockState::UNDEFINED, true /* app_ready */,
-        false /* suspended */, false /* shortcut */, false /* launchable */);
+    AddAppAndShortcut(name.value_or(std::string()), package_name, activity,
+                      std::string() /* intent_uri */,
+                      std::string() /* icon_resource_id */, false /* sticky */,
+                      false /* notifications_enabled */, true /* app_ready */,
+                      false /* suspended */, false /* shortcut */,
+                      false /* launchable */);
   }
 }
 
@@ -1181,7 +1185,6 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const std::string& icon_resource_id,
     const bool sticky,
     const bool notifications_enabled,
-    const arc::mojom::ArcResizeLockState resize_lock_state,
     const bool app_ready,
     const bool suspended,
     const bool shortcut,
@@ -1221,6 +1224,10 @@ void ArcAppListPrefs::AddAppAndShortcut(
         observer.OnAppNameUpdated(app_id, updated_name);
     }
   }
+
+  // Ensure to query the resize lock state from the prefs as we don't want the
+  // default resize lock value (UNDEFINED) to override the existing value.
+  const auto resize_lock_state = GetResizeLockState(app_id);
 
   arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
   base::DictionaryValue* app_dict = update.Get();
@@ -1461,12 +1468,11 @@ void ArcAppListPrefs::OnAppListRefreshed(
 
   ready_apps_.clear();
   for (const auto& app : apps) {
-    AddAppAndShortcut(app->name, app->package_name, app->activity,
-                      std::string() /* intent_uri */,
-                      std::string() /* icon_resource_id */, app->sticky,
-                      app->notifications_enabled, app->resize_lock_state,
-                      true /* app_ready */, app->suspended,
-                      false /* shortcut */, true /* launchable */);
+    AddAppAndShortcut(
+        app->name, app->package_name, app->activity,
+        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
+        app->sticky, app->notifications_enabled, true /* app_ready */,
+        app->suspended, false /* shortcut */, true /* launchable */);
   }
 
   // Detect removed ARC apps after current refresh.
@@ -1530,12 +1536,11 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app_info) {
     return;
   }
 
-  AddAppAndShortcut(app_info.name, app_info.package_name, app_info.activity,
-                    std::string() /* intent_uri */,
-                    std::string() /* icon_resource_id */, app_info.sticky,
-                    app_info.notifications_enabled, app_info.resize_lock_state,
-                    true /* app_ready */, app_info.suspended,
-                    false /* shortcut */, true /* launchable */);
+  AddAppAndShortcut(
+      app_info.name, app_info.package_name, app_info.activity,
+      std::string() /* intent_uri */, std::string() /* icon_resource_id */,
+      app_info.sticky, app_info.notifications_enabled, true /* app_ready */,
+      app_info.suspended, false /* shortcut */, true /* launchable */);
 }
 
 void ArcAppListPrefs::OnAppAddedDeprecated(arc::mojom::AppInfoPtr app) {
@@ -1623,8 +1628,7 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
   AddAppAndShortcut(
       shortcut->name, shortcut->package_name, std::string() /* activity */,
       shortcut->intent_uri, shortcut->icon_resource_id, false /* sticky */,
-      false /* notifications_enabled */,
-      arc::mojom::ArcResizeLockState::UNDEFINED, true /* app_ready */,
+      false /* notifications_enabled */, true /* app_ready */,
       false /* suspended */, true /* shortcut */, true /* launchable */);
 }
 

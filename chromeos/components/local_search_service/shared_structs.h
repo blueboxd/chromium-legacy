@@ -8,14 +8,17 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 
 namespace chromeos {
 namespace local_search_service {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class IndexId { kCrosSettings = 0, kHelpApp = 1, kMaxValue = kHelpApp };
+// This should be kept in sync with histogram_suffixes_list.xml.
+enum class IndexId {
+  kCrosSettings = 0,
+  kHelpApp = 1,
+  kHelpAppLauncher = 2,
+  kMaxValue = kHelpAppLauncher
+};
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.

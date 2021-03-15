@@ -19,7 +19,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
@@ -87,12 +86,15 @@ std::vector<GUID> GetSideBySideInterfaces() {
 }
 
 std::vector<GUID> GetActiveInterfaces() {
-  return {
-      __uuidof(IAppBundleWeb),     __uuidof(IAppWeb),
-      __uuidof(ICompleteStatus),   __uuidof(ICurrentState),
-      __uuidof(IGoogleUpdate3Web), __uuidof(IUpdateState),
-      __uuidof(IUpdater),          __uuidof(IUpdaterObserver),
-  };
+  return {__uuidof(IAppBundleWeb),
+          __uuidof(IAppWeb),
+          __uuidof(ICompleteStatus),
+          __uuidof(ICurrentState),
+          __uuidof(IGoogleUpdate3Web),
+          __uuidof(IUpdateState),
+          __uuidof(IUpdater),
+          __uuidof(IUpdaterObserver),
+          __uuidof(IUpdaterRegisterAppCallback)};
 }
 
 std::vector<CLSID> GetSideBySideServers() {
@@ -231,6 +233,7 @@ std::wstring GetComTypeLibResourceIndex(REFIID iid) {
       {__uuidof(ICompleteStatus), kUpdaterIndex},
       {__uuidof(IUpdater), kUpdaterIndex},
       {__uuidof(IUpdaterObserver), kUpdaterIndex},
+      {__uuidof(IUpdaterRegisterAppCallback), kUpdaterIndex},
       {__uuidof(IUpdateState), kUpdaterIndex},
 
       // Updater internal typelib.

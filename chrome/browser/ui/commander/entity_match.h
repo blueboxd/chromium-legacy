@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/commander/command_source.h"
 #include "components/sessions/core/session_id.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -59,7 +58,7 @@ struct GroupMatch {
 struct TabMatch {
   TabMatch(int index,
            int session_id,
-           const base::string16& title,
+           const std::u16string& title,
            double score);
   ~TabMatch();
 
@@ -73,7 +72,7 @@ struct TabMatch {
   // As obtained by sessions::SessionTabHelper::IdForTab. Used to ensure that
   // the tab at `index` is the one we expect for destructive actions.
   int session_id;
-  base::string16 title;
+  std::u16string title;
   std::vector<gfx::Range> matched_ranges;
   double score;
 };
@@ -117,7 +116,7 @@ struct TabSearchOptions {
 // Returns tabs in `browser` whose titles fuzzy match `input`. If input is
 // empty, returns all groups in the order they appear in the tab strip.
 std::vector<TabMatch> TabsMatchingInput(const Browser* browser,
-                                        const base::string16& input,
+                                        const std::u16string& input,
                                         const TabSearchOptions& options = {});
 
 }  // namespace commander

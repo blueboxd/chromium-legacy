@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dlfcn.h>
+
 #import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 
 #import "base/mac/mac_util.h"
@@ -276,13 +278,21 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 - (void)updateWebContentsVisibility {
   if (!_host || _inFullScreenTransition)
     return;
+
   Visibility visibility = Visibility::kVisible;
-  if ([self isHiddenOrHasHiddenAncestor] || ![self window])
-    visibility = Visibility::kHidden;
-//  else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
-//    visibility = Visibility::kVisible;
-  else
-    visibility = Visibility::kVisible;
+  if(@available(macOS 10.9, *)) {
+    if ([self isHiddenOrHasHiddenAncestor] || ![self window])
+      visibility = Visibility::kHidden;
+    else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
+      visibility = Visibility::kVisible;
+    else
+      visibility = Visibility::kOccluded;
+	} else {
+    if ([self isHiddenOrHasHiddenAncestor] || ![self window])
+      visibility = Visibility::kHidden;
+    else
+      visibility = Visibility::kVisible;
+  }
   _host->OnWindowVisibilityChanged(visibility);
 }
 
@@ -307,13 +317,17 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
+  static NSString * const* NSWindowDidChangeOcclusionStateNotificationStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSWindowDidChangeOcclusionStateNotification"));
   if (oldWindow) {
-    NSArray* notificationsToRemove = @[
+    NSMutableArray* notificationsToRemove = [(@[
       NSWindowWillEnterFullScreenNotification,
       NSWindowDidEnterFullScreenNotification,
       NSWindowWillExitFullScreenNotification,
       NSWindowDidExitFullScreenNotification
-    ];
+    ]) mutableCopy];
+    if(NSWindowDidChangeOcclusionStateNotificationStr) {
+    	[notificationsToRemove addObject:*NSWindowDidChangeOcclusionStateNotificationStr];
+    }
     for (NSString* notificationName in notificationsToRemove) {
       [notificationCenter removeObserver:self
                                     name:notificationName
@@ -321,6 +335,12 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
     }
   }
   if (newWindow) {
+  	if(NSWindowDidChangeOcclusionStateNotificationStr) {
+      [notificationCenter addObserver:self
+                             selector:@selector(windowChangedOcclusionState:)
+                                 name:*NSWindowDidChangeOcclusionStateNotificationStr
+                               object:newWindow];
+    }
     // The fullscreen transition causes spurious occlusion notifications.
     // See https://crbug.com/1081229
     [notificationCenter addObserver:self

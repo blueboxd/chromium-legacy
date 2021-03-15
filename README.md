@@ -15,36 +15,22 @@ This project is automatically built and uploaded twice a day (00:00 and 12:00 JS
 And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
 It's recommended to find and use a stable build for daily use. (The same is true for the original Chrome Canary/Chromium)
 
-## functionality
+## functions
 
 Basically equivalent to the [same version of original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see below).
 
 ## limitations / glitches
 
-- overall
-  - ~~[crashing on 10.9](../../issues/2)~~
-    - [Skia is patched](../../../skia) for compatibilty (thanks [@Wowfunhappy](https://github.com/Wowfunhappy))
 - UI
-  - windows
-    - ~~[close/minimize/resize buttons are invisible](../../issues/4)~~
-      - ~~but functional when clicking appropriate position~~
-      - FIXED as classical title bar (thanks to [@Wowfunhappy](https://github.com/Wowfunhappy))
-    - ~~can't move by dragging title bar region~~
-      - ~~you can move by dragging the edges of the window (when the cursor is resizing arrow: &#x2194;&#x2195;)~~
-      - FIXED
+  - unified window title & tab bar
+    - not available on 10.7/10.8/10.9, replaced by classical title bar instead (thanks to [@Wowfunhappy](https://github.com/Wowfunhappy))
   - menus/sheets
     - have no shadow
-      - ~~temporally FIXED (popups have some glitches on corners)~~
-        - reverted due to improper rendering of combo box
   - scrollbars
     - won't disappear despite "Show scrollbars when scrolling" option is enabled when GPU compositing is disabled
 - GPU assists
   - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
   - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
-- Sandboxing
-  - ~~on 10.7/10.8, sandboxing is disabled with hardcoded `--no-sandbox` option because Seatbelt is too old to load latest policies~~
-    - ~~*TODO: rewrite policies for old OSes*~~
-      - policies have been rewritten for old OSes, now enabled on every OS.
 - WebAuthn/FIDO2
   - on 10.7, you need patch for `IOHIDFamily.kext` to use USB keys (TBW)
 

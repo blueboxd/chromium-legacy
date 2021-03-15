@@ -72,7 +72,7 @@
 )
 
 ; POSIX IPC
-(allow ipc-posix-shm-read-data
+(allow ipc-posix-shm-read*
   (ipc-posix-name "apple.cfprefs.317580v1")
   (ipc-posix-name "apple.cfprefs.daemonv1")
   (ipc-posix-name "apple.shm.notification_center")  ; https://crbug.com/792217

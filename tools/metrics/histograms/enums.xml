@@ -5922,6 +5922,12 @@ others/histograms.xml -->
   <int value="3" label="Bubble lost focus and was deactivated"/>
 </enum>
 
+<enum name="AutofillOfferNotificationInfoBarResult">
+  <int value="0" label="User closed infobar via OK button"/>
+  <int value="1" label="User closed infobar via corner X"/>
+  <int value="2" label="User did not interact with the infobar"/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -47205,6 +47211,7 @@ from previous Chrome versions.
   <int value="1238190462" label="PerDeskShelf:disabled"/>
   <int value="1239720601" label="OmniboxZeroSuggestionsOnNTPRealbox:enabled"/>
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
+  <int value="1241162639" label="debug-chime-notification"/>
   <int value="1242100010" label="AutofillProfileClientValidation:disabled"/>
   <int value="1242632259" label="ContentSuggestionsCategoryOrder:disabled"/>
   <int value="1243180545" label="HarfBuzzPDFSubsetter:enabled"/>

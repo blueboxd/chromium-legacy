@@ -138,6 +138,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAssistantIntentPageUrl,
     &kAssistantIntentTranslateInfo,
     &kAppLaunchpad,
+    &kBackgroundThreadPool,
     &kBentoOffline,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
@@ -362,6 +363,9 @@ const base::Feature kAppLaunchpad{"AppLaunchpad",
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBackgroundThreadPool{"BackgroundThreadPool",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kBentoOffline{"BentoOffline",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
@@ -703,7 +707,7 @@ const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
 
 // If enabled, keep logging and reporting UMA while chrome is backgrounded.
 const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUpdateNotificationSchedulingIntegration{
     "UpdateNotificationSchedulingIntegration",

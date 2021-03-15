@@ -1985,7 +1985,7 @@ component("base") {
       "system/sys_info_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_exploded_posix.cc",
-      "time/time_mac.cc",
+      "time/time_mac.mm",
     ]
 
     libs += [
@@ -2115,7 +2115,7 @@ component("base") {
       "task/thread_pool/thread_group_native_mac.mm",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
-      "time/time_mac.cc",
+      "time/time_mac.mm",
     ]
 
     if (use_allocator_shim) {
@@ -3262,6 +3262,7 @@ if (build_base_unittests) {
         "process/memory_unittest_mac.h",
         "process/memory_unittest_mac.mm",
         "strings/sys_string_conversions_mac_unittest.mm",
+        "time/time_mac_unittest.mm",
       ]
     }
 

@@ -5608,9 +5608,6 @@ crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-vie
 crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget.html [ Pass Failure ]
 crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget-interop.html [ Pass Failure ]
 
-# Failing on Webkit Linux Leak
-crbug.com/1174806 external/wpt/css/selectors/focus-visible-006.html [ Pass Failure ]
-
 # No support for key combinations like Alt + c in testdriver.Actions for content_shell
 crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.html [ Timeout ]
 
@@ -5734,3 +5731,7 @@ crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.fil
 crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.fillStyle.colorObject.transparency.html [ Failure ]
 crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.strokeStyle.colorObject.html [ Failure ]
 crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.strokeStyle.colorObject.transparency.html [ Failure ]
+
+# Sheriff 2021-03-15
+crbug.com/1188098 [ Linux ] http/tests/devtools/sources/debugger-pause/skip-pauses-until-reload.js [ Pass Failure ]
+crbug.com/1188098 [ Linux ] http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Failure ]

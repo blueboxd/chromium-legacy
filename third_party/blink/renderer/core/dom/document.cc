@@ -2283,6 +2283,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
 
 void Document::UpdateStyleAndLayoutTree() {
   DCHECK(IsMainThread());
+  DCHECK(ThreadState::Current()->IsAllocationAllowed());
   if (!IsActive() || !View() || View()->ShouldThrottleRendering() ||
       Lifecycle().LifecyclePostponed()) {
     return;
@@ -2299,6 +2300,7 @@ void Document::UpdateStyleAndLayoutTree() {
 
 void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   DCHECK(IsMainThread());
+  DCHECK(ThreadState::Current()->IsAllocationAllowed());
   if (!IsActive() || !View() || View()->ShouldThrottleRendering() ||
       Lifecycle().LifecyclePostponed()) {
     return;
@@ -6264,12 +6266,11 @@ ScriptPromise Document::interestCohort(ScriptState* script_state,
               ScriptState* state = resolver->GetScriptState();
               ScriptState::Scope scope(state);
 
-              // TODO(yaoxia): Distinguish between the different causes.
               resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
                   state->GetIsolate(), DOMExceptionCode::kDataError,
                   "Failed to get the interest cohort: either it is "
                   "unavailable, or the preferences or content settings has "
-                  "denined the access."));
+                  "denied access."));
             } else {
               InterestCohort* result = InterestCohort::Create();
               result->setId(interest_cohort->id);

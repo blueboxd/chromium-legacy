@@ -792,39 +792,6 @@
             ]
         }
     ],
-    "AutofillAssistantChromeEntryLaunch": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "//1": "This launch is gated external to Chrome.",
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillAssistantChromeEntry"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillAssistantDirectActionsLaunch": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "//1": "This launch is gated external to Chrome.",
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillAssistantDirectActions"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillConcurrentExperiments": [
         {
             "platforms": [
@@ -4069,21 +4036,6 @@
             ]
         }
     ],
-    "MacAllowBackgroundingProcesses": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MacAllowBackgroundingProcesses"
-                    ]
-                }
-            ]
-        }
-    ],
     "MacSystemMediaPermissionsInfoUI": [
         {
             "platforms": [
@@ -4531,36 +4483,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OfflineIndicatorV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OfflinePagesCctV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OfflinePagesCTV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OfflinePagesDinoPageExperiment": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OfflinePagesShowAlternateDinoPage"
                     ]
                 }
             ]
@@ -5153,25 +5075,6 @@
                     "enable_features": [
                         "PasswordChangeInSettings",
                         "PasswordScriptsFetching"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PasswordEditingInSettings": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EditPasswordsInSettings"
                     ]
                 }
             ]
@@ -6098,27 +6001,6 @@
             ]
         }
     ],
-    "SchemefulSameSiteAllOS": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SchemefulSameSite"
-                    ]
-                }
-            ]
-        }
-    ],
     "ScrollResamplingRollout": [
         {
             "platforms": [
@@ -7010,21 +6892,6 @@
             ]
         }
     ],
-    "UMABackgroundSessions": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UMABackgroundSessions"
-                    ]
-                }
-            ]
-        }
-    ],
     "UnidoPreferSync": [
         {
             "platforms": [
@@ -7055,21 +6922,6 @@
                     "disable_features": [
                         "PreloadMediaEngagementData"
                     ]
-                }
-            ]
-        }
-    ],
-    "UpdateMenuItem": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "StorageRequired500",
-                    "params": {
-                        "min_required_storage_for_update_mb": "500"
-                    }
                 }
             ]
         }

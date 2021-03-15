@@ -59,6 +59,7 @@
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #include "chrome/browser/ash/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
@@ -66,7 +67,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
@@ -1044,9 +1044,8 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
+  ash::OwnerSettingsServiceChromeOS* service =
+      ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_);
 
   if (service && service->HandlesSetting(pref_name) &&
       service->Set(pref_name, *value)) {
@@ -1062,9 +1061,8 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
 bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
                                         const base::Value& value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
+  ash::OwnerSettingsServiceChromeOS* service =
+      ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_);
 
   return service && service->HandlesSetting(pref_name) &&
          service->AppendToList(pref_name, value);
@@ -1077,9 +1075,8 @@ bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
 bool PrefsUtil::RemoveFromListCrosSetting(const std::string& pref_name,
                                           const base::Value& value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
+  ash::OwnerSettingsServiceChromeOS* service =
+      ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_);
 
   return service && service->HandlesSetting(pref_name) &&
          service->RemoveFromList(pref_name, value);

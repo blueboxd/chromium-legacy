@@ -4743,9 +4743,6 @@ crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [
 # Sheriff 2019-09-20
 crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]
 
-# Sheriff 2019-09-27
-crbug.com/1008826 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
-
 # Sheriff 2019-09-30
 crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure Timeout ]
 
@@ -4839,7 +4836,6 @@ crbug.com/834302 external/wpt/permissions-policy/permissions-policy-opaque-origi
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Pass Failure ]
-crbug.com/1186049 http/tests/devtools/cache-storage/cache-data.js [ Pass Failure ]
 
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
@@ -5733,3 +5729,8 @@ crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-aft
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Pass Failure ]
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/animate-fling-to-snap-points-2.html [ Pass Timeout ]
 
+# Expect failure for unimplemented canvas color object input
+crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.fillStyle.colorObject.html [ Failure ]
+crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.fillStyle.colorObject.transparency.html [ Failure ]
+crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.strokeStyle.colorObject.html [ Failure ]
+crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.strokeStyle.colorObject.transparency.html [ Failure ]

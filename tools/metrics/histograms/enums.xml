@@ -10456,7 +10456,7 @@ histogram as enum -->
 <enum name="ChromeOSPlatformVerificationExpiryStatus">
   <summary>
     Possible results of a platform verification expiry check. See
-    chrome/browser/chromeos/attestation/platform_verification.cc.
+    chrome/browser/ash/attestation/platform_verification.cc.
   </summary>
   <int value="0" label="Ok"/>
   <int value="1" label="Expiring Soon"/>
@@ -10468,7 +10468,7 @@ histogram as enum -->
 <enum name="ChromeOSPlatformVerificationResult">
   <summary>
     Possible results of a platform verification attempt. See
-    chrome/browser/chromeos/attestation/platform_verification.h.
+    chrome/browser/ash/attestation/platform_verification.h.
   </summary>
   <int value="0" label="Success"/>
   <int value="1" label="Internal Error"/>
@@ -13004,7 +13004,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Cookies setting"/>
   <int value="1" label="Images setting"/>
   <int value="2" label="JavaScript setting"/>
-  <int value="3" label="Plugins setting"/>
+  <int value="3" label="Plugins setting [removed in M91]"/>
   <int value="4" label="Popups setting"/>
   <int value="5" label="Location setting"/>
   <int value="6" label="Notifications setting"/>
@@ -23006,6 +23006,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="EnterpriseInitialEnrollmentRequirement">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <int value="0" label="Required">Initial Enrollment is required.</int>
   <int value="1" label="NotRequiredSerialNumberMissing">
     Initial Enrollment is skipped because the serial number is missing from VPD.

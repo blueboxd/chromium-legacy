@@ -474,10 +474,6 @@ bool MaybeLaunchUrlHandlerWebApp(
   // TODO(crbug/1072058): Check user preferences before showing intent picker.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   for (const auto& match : url_handler_matches) {
-    if (match.profile_path.empty() || match.app_id.empty() ||
-        !match.url.is_valid()) {
-      continue;
-    }
     // Do not load profile if profile path is not valid.
     if (!profile_manager->GetProfileAttributesStorage()
              .GetProfileAttributesWithPath(match.profile_path)) {
@@ -823,7 +819,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
   }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   if (base::FeatureList::IsEnabled(features::kOnConnectNative) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectHost) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectExtension)) {

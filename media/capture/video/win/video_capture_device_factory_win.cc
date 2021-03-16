@@ -317,8 +317,9 @@ void FindAndSetDefaultVideoCamera(
 // distributions such as Windows 7 N and Windows 7 KN.
 // static
 bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
-  static const bool g_dlls_available = LoadMediaFoundationDlls();
-  return g_dlls_available && InitializeMediaFoundation();
+  static const bool has_media_foundation =
+      LoadMediaFoundationDlls() && InitializeMediaFoundation();
+  return has_media_foundation;
 }
 
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()

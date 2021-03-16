@@ -166,6 +166,19 @@ int SystemUiVisibility(const display::Display& display) {
   return 0;
 }
 
+int SystemUiBehavior(const display::Display& display) {
+  auto* shelf_layout_manager = GetShelfLayoutManagerForDisplay(display);
+  switch (shelf_layout_manager->auto_hide_behavior()) {
+    case ash::ShelfAutoHideBehavior::kNever:
+      return ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE;
+    case ash::ShelfAutoHideBehavior::kAlways:
+    case ash::ShelfAutoHideBehavior::kAlwaysHidden:
+      return ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY;
+  }
+  NOTREACHED() << "Got unexpected shelf visibility behavior.";
+  return 0;
+}
+
 int Component(uint32_t direction) {
   switch (direction) {
     case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE:
@@ -847,7 +860,7 @@ class WaylandRemoteOutput : public WaylandDisplayObserver {
         resource_, stable_insets_in_pixel.left(), stable_insets_in_pixel.top(),
         stable_insets_in_pixel.right(), stable_insets_in_pixel.bottom());
 
-    int systemui_visibility = SystemUiVisibility(display);
+    int systemui_visibility = SystemUiBehavior(display);
     zcr_remote_output_v1_send_systemui_visibility(resource_,
                                                   systemui_visibility);
 
@@ -917,7 +930,8 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
   std::unique_ptr<ClientControlledShellSurface::Delegate>
   CreateShellSurfaceDelegate(wl_resource* resource) {
-    return std::make_unique<WaylandRemoteSurfaceDelegate>(this, resource);
+    return std::make_unique<WaylandRemoteSurfaceDelegate>(
+        weak_ptr_factory_.GetWeakPtr(), resource);
   }
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -1003,11 +1017,12 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
   class WaylandRemoteSurfaceDelegate
       : public ClientControlledShellSurface::Delegate {
    public:
-    WaylandRemoteSurfaceDelegate(WaylandRemoteShell* shell,
+    WaylandRemoteSurfaceDelegate(base::WeakPtr<WaylandRemoteShell> shell,
                                  wl_resource* resource)
-        : shell_(shell), resource_(resource) {}
+        : shell_(std::move(shell)), resource_(resource) {}
     ~WaylandRemoteSurfaceDelegate() override {
-      shell_->OnRemoteSurfaceDestroyed(resource_);
+      if (shell_)
+        shell_->OnRemoteSurfaceDestroyed(resource_);
     }
     WaylandRemoteSurfaceDelegate(const WaylandRemoteSurfaceDelegate&) = delete;
     WaylandRemoteSurfaceDelegate& operator=(
@@ -1016,7 +1031,8 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
    private:
     // ClientControlledShellSurfaceDelegate:
     void OnGeometryChanged(const gfx::Rect& geometry) override {
-      shell_->OnRemoteSurfaceGeometryChanged(resource_, geometry);
+      if (shell_)
+        shell_->OnRemoteSurfaceGeometryChanged(resource_, geometry);
     }
     void OnStateChanged(chromeos::WindowStateType old_state_type,
                         chromeos::WindowStateType new_state_type) override {
@@ -1029,9 +1045,11 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
                          const gfx::Rect& bounds_in_display,
                          bool is_resize,
                          int bounds_change) override {
-      shell_->OnRemoteSurfaceBoundsChanged(
-          resource_, current_state, requested_state, display_id,
-          bounds_in_display, is_resize, bounds_change);
+      if (shell_) {
+        shell_->OnRemoteSurfaceBoundsChanged(
+            resource_, current_state, requested_state, display_id,
+            bounds_in_display, is_resize, bounds_change);
+      }
     }
     void OnDragStarted(int component) override {
       zcr_remote_surface_v1_send_drag_started(resource_,
@@ -1044,11 +1062,11 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       wl_client_flush(wl_resource_get_client(resource_));
     }
     void OnZoomLevelChanged(ZoomChange zoom_change) override {
-      if (wl_resource_get_version(resource_) >= 23)
+      if (wl_resource_get_version(resource_) >= 23 && shell_)
         shell_->OnRemoteSurfaceChangeZoomLevel(resource_, zoom_change);
     }
 
-    WaylandRemoteShell* shell_;
+    base::WeakPtr<WaylandRemoteShell> shell_;
     wl_resource* resource_;
   };
 

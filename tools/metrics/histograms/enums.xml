@@ -2053,6 +2053,16 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="LowMemory"/>
 </enum>
 
+<enum name="AndroidMultiWindowActivityType">
+  <int value="0" label="Enter"/>
+  <int value="1" label="Exit"/>
+</enum>
+
+<enum name="AndroidMultiWindowState">
+  <int value="0" label="SingleWindow"/>
+  <int value="1" label="MultiWindow"/>
+</enum>
+
 <enum name="AndroidProcessedCrashCounts">
   <int value="0" label="Gpu foreground OOM">
     GPU is killed by Android due to OOM while app is foreground.
@@ -3169,6 +3179,8 @@ Unknown properties are collapsed to zero. -->
   <int value="39" label="Omnibox, Navsuggest"/>
   <int value="40" label="Omnibox Rich Entity, Answer"/>
   <int value="41" label="Omnibox Rich Entity, Image Entity"/>
+  <int value="42" label="Local file search"/>
+  <int value="43" label="Drive file search"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
@@ -7645,11 +7657,16 @@ Called by update_bad_message_reasons.py.-->
   <int value="6" label="Not supported"/>
   <int value="7" label="Connection Establishment failed"/>
   <int value="8" label="Authentication failed"/>
-  <int value="9" label="Authentication rejected"/>
-  <int value="10" label="Authentication cancelled"/>
-  <int value="11" label="Authentication timeout"/>
+  <int value="9" label="Pairing rejected"/>
+  <int value="10" label="Pairing cancelled"/>
+  <int value="11" label="Connection timeout"/>
   <int value="12" label="Unknown"/>
   <int value="13" label="BT IO connection failed"/>
+  <int value="14" label="Unknown command"/>
+  <int value="15" label="Peer not connected"/>
+  <int value="16" label="No resources"/>
+  <int value="17" label="Peer disconnected"/>
+  <int value="18" label="Other failures"/>
 </enum>
 
 <enum name="BlueZResultOfPerProfileConnection">
@@ -14907,6 +14924,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="11" label="OldIncompleteMeta"/>
   <int value="12" label="FinishedUploading"/>
   <int value="13" label="AlreadyUploaded"/>
+  <int value="14" label="TooManyRequests"/>
+  <int value="15" label="RetryUploading"/>
 </enum>
 
 <enum name="CrosDiagnosticsRoutineResult">
@@ -17568,6 +17587,13 @@ metrics consent we also won't be able to send UMA metrics. -->
 </enum>
 
 <enum name="DeviceOrientation">
+  <int value="0" label="Landscape"/>
+  <int value="1" label="Portrait"/>
+</enum>
+
+<!-- This is not accessible from where the above enum is defined in code. -->
+
+<enum name="DeviceOrientation2">
   <int value="0" label="Landscape"/>
   <int value="1" label="Portrait"/>
 </enum>
@@ -23884,6 +23910,8 @@ Called by update_document_policy_enum.py.-->
   <int value="834" label="SamlLockScreenOfflineSigninTimeLimitDays"/>
   <int value="835" label="ReportDevicePrintJobs"/>
   <int value="836" label="AudioProcessHighPriorityEnabled"/>
+  <int value="837" label="SerialAllowAllPortsForUrls"/>
+  <int value="838" label="SerialAllowUsbDevicesForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -31328,7 +31356,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3374" label="V8RTCRtpTransceiver_Stopped_AttributeGetter"/>
   <int value="3375" label="V8RTCRtpTransceiver_Stop_Method"/>
   <int value="3376" label="SecurePaymentConfirmation"/>
-  <int value="3377" label="OBSOLETE_CSSInvalidVariableUnset"/>
+  <int value="3377" label="CSSInvalidVariableUnset"/>
   <int value="3378" label="ElementInternalsShadowRoot"/>
   <int value="3379" label="AnyPiiFieldDetected_PredictedTypeMatch"/>
   <int value="3380" label="EmailFieldDetected_PredictedTypeMatch"/>
@@ -39305,6 +39333,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Google Apps"/>
   <int value="2" label="Chrome - Other features"/>
   <int value="3" label="Chrome - Reader mode"/>
+  <int value="4" label="Chrome - Read later"/>
 </enum>
 
 <enum name="Inconsistencies">
@@ -39975,6 +40004,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="63" label="DELETE_OLD_VERSIONS_TOO_MANY_ATTEMPTS"/>
   <int value="64" label="STORE_DMTOKEN_FAILED"/>
   <int value="65" label="STORE_DMTOKEN_SUCCESS"/>
+  <int value="66" label="DOWNGRADE_CLEANUP_FAILED"/>
+  <int value="67" label="DOWNGRADE_CLEANUP_SUCCESS"/>
+  <int value="68" label="UNDO_DOWNGRADE_CLEANUP_FAILED"/>
+  <int value="69" label="UNDO_DOWNGRADE_CLEANUP_SUCCESS"/>
+  <int value="70" label="DOWNGRADE_CLEANUP_UNKNOWN_OPERATION"/>
 </enum>
 
 <enum name="InstanceIDResult">
@@ -50586,6 +50620,10 @@ Called by update_use_counter_css.py.-->
   <int value="12" label="Scrub to"/>
   <int value="13" label="Enter picture-in-picture"/>
   <int value="14" label="Exit picture-in-picture"/>
+  <int value="15" label="Switch audio device"/>
+  <int value="16" label="Toggle microphone"/>
+  <int value="17" label="Toggle camera"/>
+  <int value="18" label="Hang up"/>
 </enum>
 
 <enum name="MediaSinkType">
@@ -78052,6 +78090,11 @@ Full version information for the fingerprint enum values:
   <int value="13" label="kExtensionMessagingSenderPrivileged"/>
   <int value="14" label="kExtensionMessagingReceiverPrivileged"/>
   <int value="15" label="kExtensionMessagingNeitherPrivileged"/>
+</enum>
+
+<enum name="UserAgentRequestType">
+  <int value="0" label="RequestDesktop"/>
+  <int value="1" label="RequestMobile"/>
 </enum>
 
 <enum name="UserCertContentDisposition">

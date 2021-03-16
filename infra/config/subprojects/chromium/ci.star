@@ -989,6 +989,14 @@ ci.android_fyi_builder(
 )
 
 ci.android_fyi_builder(
+    name = "android-web-platform-pie-x86-fyi-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|web-platform",
+        short_name = "P",
+    ),
+)
+
+ci.android_fyi_builder(
     name = "android-weblayer-pie-x86-wpt-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|weblayer",
@@ -2025,6 +2033,22 @@ ci.clang_builder(
     name = "ToTAndroidOfficial",
     console_view_entry = consoles.console_view_entry(
         category = "ToT Android",
+        short_name = "off",
+    ),
+)
+
+ci.clang_builder(
+    name = "ToTFuchsia x64",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Fuchsia",
+        short_name = "x64",
+    ),
+)
+
+ci.clang_builder(
+    name = "ToTFuchsiaOfficial",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Fuchsia",
         short_name = "off",
     ),
 )

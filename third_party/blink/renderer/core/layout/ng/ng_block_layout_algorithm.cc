@@ -218,7 +218,13 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       is_line_clamp_context_(params.space.IsLineClampContext()),
       lines_until_clamp_(params.space.LinesUntilClamp()),
       exclusion_space_(params.space.ExclusionSpace()),
-      early_break_(params.early_break) {}
+      early_break_(params.early_break) {
+  child_percentage_size_ = CalculateChildPercentageSize(
+      ConstraintSpace(), Node(), ChildAvailableSize());
+  replaced_child_percentage_size_ = CalculateReplacedChildPercentageSize(
+      ConstraintSpace(), Node(), ChildAvailableSize(), BorderScrollbarPadding(),
+      BorderPadding());
+}
 
 // Define the destructor here, so that we can forward-declare more in the
 // header.
@@ -289,8 +295,8 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_result =
-          child.ComputeMinMaxSizes(Style().GetWritingMode(), child_input);
+      child_result = To<NGInlineNode>(child).ComputeMinMaxSizes(
+          Style().GetWritingMode(), child_input);
     } else {
       child_result = ComputeMinAndMaxContentContribution(
           Style(), To<NGBlockNode>(child), child_input);
@@ -480,12 +486,6 @@ NGBlockLayoutAlgorithm::RelayoutIgnoringLineClamp() {
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     NGInlineChildLayoutContext* inline_child_layout_context) {
-  child_percentage_size_ = CalculateChildPercentageSize(
-      ConstraintSpace(), Node(), ChildAvailableSize());
-  replaced_child_percentage_size_ = CalculateReplacedChildPercentageSize(
-      ConstraintSpace(), Node(), ChildAvailableSize(), BorderScrollbarPadding(),
-      BorderPadding());
-
   if (ConstraintSpace().IsLegacyTableCell())
     container_builder_.AdjustBorderScrollbarPaddingForTableCell();
 
@@ -2532,11 +2532,11 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     builder.SetStretchInlineSizeIfAuto(true);
     NGConstraintSpace space = builder.ToConstraintSpace();
 
+    const auto block_child = To<NGBlockNode>(child);
     NGBoxStrut child_border_padding =
-        ComputeBorders(space, To<NGBlockNode>(child)) +
-        ComputePadding(space, child_style);
+        ComputeBorders(space, block_child) + ComputePadding(space, child_style);
     LayoutUnit child_inline_size =
-        ComputeInlineSizeForFragment(space, child, child_border_padding);
+        ComputeInlineSizeForFragment(space, block_child, child_border_padding);
 
     ResolveInlineMargins(child_style, Style(),
                          space.AvailableSize().inline_size, child_inline_size,

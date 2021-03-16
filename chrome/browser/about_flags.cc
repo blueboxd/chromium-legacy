@@ -1512,7 +1512,7 @@ const FeatureEntry::FeatureVariation kTabScrollingVariations[] = {
      base::size(kMinimumTabWidthSettingMedium), nullptr},
     {" - tabs shrink to a large width", kMinimumTabWidthSettingLarge,
      base::size(kMinimumTabWidthSettingLarge), nullptr},
-    {" - tabs do not shrink", kMinimumTabWidthSettingFull,
+    {" - tabs don't shrink", kMinimumTabWidthSettingFull,
      base::size(kMinimumTabWidthSettingFull), nullptr}};
 
 const FeatureEntry::FeatureParam kTabHoverCardImagesOptimizationCaptureSpeed[] =
@@ -6368,9 +6368,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"media-app-pdf-in-ink", flag_descriptions::kMediaAppPdfInInkName,
      flag_descriptions::kMediaAppPdfInInkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppPdfInInk)},
-    {"os-settings-polymer3", flag_descriptions::kOsSettingsPolymer3Name,
-     flag_descriptions::kOsSettingsPolymer3Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsPolymer3)},
     {"release-notes-notification",
      flag_descriptions::kReleaseNotesNotificationName,
      flag_descriptions::kReleaseNotesNotificationDescription, kOsCrOS,
@@ -7215,13 +7212,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kWallpaperWebUI)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // TODO(b/177462291): make flag available on LaCrOS.
+#if defined(OS_CHROMEOS)
+    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
+    // kOsCrOS.
     {"enable-vaapi-av1-decode-acceleration",
      flag_descriptions::kVaapiAV1DecoderName,
-     flag_descriptions::kVaapiAV1DecoderDescription, kOsCrOS,
+     flag_descriptions::kVaapiAV1DecoderDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(media::kVaapiAV1Decoder)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
     defined(OS_MAC)

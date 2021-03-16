@@ -502,6 +502,7 @@ _CONFIG = [
             'ui::AXEventIntent',
             'ui::AXMode',
             'ui::AXNodeData',
+            'ui::AXTreeID',
             'ax::mojom::BoolAttribute',
             'ax::mojom::HasPopup',
             'ax::mojom::State',
@@ -895,6 +896,17 @@ _CONFIG = [
         # list.
         'allowed': [
             'media::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/timing/background_tracing_helper.cc',
+            'third_party/blink/renderer/core/timing/background_tracing_helper.h',
+        ],
+        'allowed': [
+            'base::MD5Digest',
+            'base::MD5Sum',
+            'base::StringPiece',
         ]
     },
     {

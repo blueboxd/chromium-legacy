@@ -14,8 +14,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 
 import java.util.List;
@@ -54,24 +54,27 @@ public class PolicyCache {
      *         application context is not available.
      */
     private SharedPreferences getSharedPreferences() {
-        if (BuildConfig.DCHECK_IS_ON) {
-            assert mReadable;
-        }
+        assert mReadable;
         mThreadChecker.assertOnValidThread();
         if (mSharedPreferences == null) {
             Context context = ContextUtils.getApplicationContext();
             // Policy cache is not accessiable without application context.
             if (context == null) return null;
-            mSharedPreferences = context.getSharedPreferences(POLICY_PREF, Context.MODE_PRIVATE);
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                mSharedPreferences =
+                        context.getSharedPreferences(POLICY_PREF, Context.MODE_PRIVATE);
+            }
         }
         return mSharedPreferences;
     }
 
     private SharedPreferences.Editor getSharedPreferencesEditor() {
         mThreadChecker.assertOnValidThread();
-        return ContextUtils.getApplicationContext()
-                .getSharedPreferences(POLICY_PREF, Context.MODE_PRIVATE)
-                .edit();
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return ContextUtils.getApplicationContext()
+                    .getSharedPreferences(POLICY_PREF, Context.MODE_PRIVATE)
+                    .edit();
+        }
     }
 
     public static PolicyCache get() {

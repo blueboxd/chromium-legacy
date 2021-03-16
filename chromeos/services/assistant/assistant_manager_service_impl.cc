@@ -342,26 +342,10 @@ void AssistantManagerServiceImpl::SyncDeviceAppsStatus() {
 
 void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
     MediaSessionAction action) {
-  switch (action) {
-    case MediaSessionAction::kPause:
-      media_host_->PauseInternalMediaPlayer();
-      break;
-    case MediaSessionAction::kPlay:
-      media_host_->ResumeInternalMediaPlayer();
-      break;
-    case MediaSessionAction::kPreviousTrack:
-    case MediaSessionAction::kNextTrack:
-    case MediaSessionAction::kSeekBackward:
-    case MediaSessionAction::kSeekForward:
-    case MediaSessionAction::kSkipAd:
-    case MediaSessionAction::kStop:
-    case MediaSessionAction::kSeekTo:
-    case MediaSessionAction::kScrubTo:
-    case MediaSessionAction::kEnterPictureInPicture:
-    case MediaSessionAction::kExitPictureInPicture:
-    case MediaSessionAction::kSwitchAudioDevice:
-      NOTIMPLEMENTED();
-      break;
+  if (action == MediaSessionAction::kPause) {
+    media_host_->PauseInternalMediaPlayer();
+  } else if (action == MediaSessionAction::kPlay) {
+    media_host_->ResumeInternalMediaPlayer();
   }
 }
 
@@ -513,46 +497,6 @@ void AssistantManagerServiceImpl::OnTextResponse(const std::string& reponse) {
 void AssistantManagerServiceImpl::OnOpenUrlResponse(const GURL& url,
                                                     bool in_background) {
   receive_url_response_ = url.spec();
-}
-
-void AssistantManagerServiceImpl::OnShowNotification(
-    const action::Notification& notification) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnShowNotification,
-                     notification);
-
-  AssistantNotification assistant_notification;
-  assistant_notification.title = notification.title;
-  assistant_notification.message = notification.text;
-  assistant_notification.action_url = GURL(notification.action_url);
-  assistant_notification.client_id = notification.notification_id;
-  assistant_notification.server_id = notification.notification_id;
-  assistant_notification.consistency_token = notification.consistency_token;
-  assistant_notification.opaque_token = notification.opaque_token;
-  assistant_notification.grouping_key = notification.grouping_key;
-  assistant_notification.obfuscated_gaia_id = notification.obfuscated_gaia_id;
-  assistant_notification.from_server = true;
-
-  if (notification.expiry_timestamp_ms) {
-    assistant_notification.expiry_time =
-        base::Time::FromJavaTime(notification.expiry_timestamp_ms);
-  }
-
-  // The server sometimes sends an empty |notification_id|, but our client
-  // requires a non-empty |client_id| for notifications. Known instances in
-  // which the server sends an empty |notification_id| are for Reminders.
-  if (assistant_notification.client_id.empty()) {
-    assistant_notification.client_id =
-        base::UnguessableToken::Create().ToString();
-  }
-
-  for (const auto& button : notification.buttons) {
-    assistant_notification.buttons.push_back(
-        {button.label, GURL(button.action_url),
-         /*remove_notification_on_click=*/true});
-  }
-
-  assistant_notification_controller()->AddOrUpdateNotification(
-      std::move(assistant_notification));
 }
 
 void AssistantManagerServiceImpl::OnVerifyAndroidApp(

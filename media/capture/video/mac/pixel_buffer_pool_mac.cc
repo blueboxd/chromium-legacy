@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dlfcn.h>
+
 #include "media/capture/video/mac/pixel_buffer_pool_mac.h"
 
 #include "base/check.h"
@@ -138,7 +140,12 @@ base::ScopedCFTypeRef<CVPixelBufferRef> PixelBufferPool::CreateBuffer() {
 
 void PixelBufferPool::Flush() {
   DCHECK(buffer_pool_);
-  CVPixelBufferPoolFlush(buffer_pool_, kCVPixelBufferPoolFlushExcessBuffers);
+  typedef void (*CVPixelBufferPoolFlushPtr)(CVPixelBufferPoolRef pool, CVPixelBufferPoolFlushFlags options);
+  static const CVPixelBufferPoolFlushPtr CVPixelBufferPoolFlushFuncPtr =
+      reinterpret_cast<CVPixelBufferPoolFlushPtr>(dlsym(((void *) -2), "CVPixelBufferPoolFlush"));
+  if(CVPixelBufferPoolFlushFuncPtr) {
+    CVPixelBufferPoolFlushFuncPtr(buffer_pool_, kCVPixelBufferPoolFlushExcessBuffers);
+  }
 }
 
 }  // namespace media

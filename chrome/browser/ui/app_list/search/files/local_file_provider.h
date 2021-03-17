@@ -5,11 +5,17 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_LOCAL_FILE_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_LOCAL_FILE_PROVIDER_H_
 
+#include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
 
 class Profile;
 
 namespace app_list {
+
+class FileResult;
 
 class LocalFileProvider : public SearchProvider {
  public:
@@ -20,11 +26,19 @@ class LocalFileProvider : public SearchProvider {
   LocalFileProvider& operator=(const LocalFileProvider&) = delete;
 
   // SearchProvider:
-  void Start(const std::u16string& query) override;
   ash::AppListSearchResultType ResultType() override;
+  void Start(const std::u16string& query) override;
 
  private:
+  void SearchFilesByPattern(const std::string& query);
+  std::unique_ptr<FileResult> MakeResult(const base::FilePath& path);
+
+  base::Optional<chromeos::string_matching::TokenizedString>
+      last_tokenized_query_;
+
   Profile* const profile_;
+
+  base::WeakPtrFactory<LocalFileProvider> weak_factory_{this};
 };
 
 }  // namespace app_list

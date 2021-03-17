@@ -67,7 +67,7 @@ bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
   return found_battery;
 }
 
-PowerObserver::DeviceThermalState
+PowerThermalObserver::DeviceThermalState
 PowerMonitorDeviceSource::GetCurrentThermalState() {
   if (@available(macOS 10.10.3, *)) {
     return thermal_state_observer_->GetCurrentThermalState();

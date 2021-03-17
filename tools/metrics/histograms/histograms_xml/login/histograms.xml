@@ -204,7 +204,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Login.PromptToCompleteLoginTime" units="ms"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>rsorokin@chromium.org</owner>
   <owner>achuith@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -244,6 +244,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2021-08-22">
   <owner>achuith@chromium.org</owner>
   <summary>Chrome OS login success reason.</summary>
+</histogram>
+
+<histogram name="Login.SwitchToFeatureFlagMappingStatus"
+    enum="LoginFeatureFlagMappingStatus" expires_after="2021-11-30">
+  <owner>mnissler@chromium.org</owner>
+  <owner>xiyuan@chromium.org</owner>
+  <summary>
+    Tracks whether switches were mapped to feature flags in session_manager for
+    compatibility. session_manager does this and emits UMA samples when
+    encountering old device settings files that still contain feature
+    configuration in command line switch representation. This data will inform
+    the decision when to remove this compatibility code.
+  </summary>
 </histogram>
 
 <histogram name="Login.TokenCheckResponseTime" units="ms"

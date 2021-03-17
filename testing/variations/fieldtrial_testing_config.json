@@ -3222,34 +3222,6 @@
             ]
         }
     ],
-    "FreezeBackgroundTabOnNetworkIdle": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "enable_1min",
-                    "params": {
-                        "DelayForBackgroundAndNetworkIdleTabFreezingMills": "60000"
-                    },
-                    "enable_features": [
-                        "freeze-background-tab-on-network-idle"
-                    ]
-                },
-                {
-                    "name": "enable_3min",
-                    "params": {
-                        "DelayForBackgroundAndNetworkIdleTabFreezingMills": "180000"
-                    },
-                    "enable_features": [
-                        "freeze-background-tab-on-network-idle"
-                    ]
-                }
-            ]
-        }
-    ],
     "FuzzyAppSearch": [
         {
             "platforms": [
@@ -6703,25 +6675,6 @@
                     },
                     "enable_features": [
                         "EnableAppRanker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TranslateCompactUI": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "DarkerColor",
-                    "params": {
-                        "translate_tab_default_text_color": "1"
-                    },
-                    "enable_features": [
-                        "TranslateCompactUI"
                     ]
                 }
             ]

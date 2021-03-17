@@ -37,7 +37,7 @@ namespace ui {
 void AddNativeCoreColorMixer(ColorProvider* provider,
                              bool dark_window,
                              bool high_contrast) {
-  ScopedCurrentNSAppearance scoped_nsappearance(dark_window);
+  ScopedCurrentNSAppearance scoped_nsappearance(dark_window, high_contrast);
   ColorMixer& mixer = provider->AddMixer();
   mixer.AddSet({kColorSetNative,
                 {
@@ -50,7 +50,7 @@ void AddNativeCoreColorMixer(ColorProvider* provider,
 void AddNativeUiColorMixer(ColorProvider* provider,
                            bool dark_window,
                            bool high_contrast) {
-  ScopedCurrentNSAppearance scoped_nsappearance(dark_window);
+  ScopedCurrentNSAppearance scoped_nsappearance(dark_window, high_contrast);
   ColorMixer& mixer = provider->AddMixer();
   mixer.AddSet(
       {kColorSetNative,
@@ -84,12 +84,23 @@ void AddNativeUiColorMixer(ColorProvider* provider,
                                      ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
                                      : SkColorSetA(SK_ColorBLACK, 0x26);
   mixer[kColorMenuSeparator] = {menu_separator_color};
+
+  if (!high_contrast)
+    return;
+
+  if (dark_window) {
+    mixer[kColorMenuItemForegroundSelected] = {SK_ColorBLACK};
+    mixer[kColorMenuItemBackgroundSelected] = {SK_ColorLTGRAY};
+  } else {
+    mixer[kColorMenuItemForegroundSelected] = {SK_ColorWHITE};
+    mixer[kColorMenuItemBackgroundSelected] = {SK_ColorDKGRAY};
+  }
 }
 
 void AddSystemTintMixer(ColorProvider* provider) {
   ColorMixer& mixer = provider->AddMixer();
 
-  for (ui::ColorId id = ui::kUiColorsStart; id < kUiColorsLast; ++id) {
+  for (ColorId id = kUiColorsStart; id < kUiColorsEnd; ++id) {
     // Apply system tint to non-OS colors.
     if (!kNativeOSColorIds.contains(id))
       mixer[id] += ApplySystemControlTintIfNeeded();

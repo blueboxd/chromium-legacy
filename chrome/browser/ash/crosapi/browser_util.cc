@@ -32,6 +32,7 @@
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -193,10 +194,11 @@ bool IsLacrosWindow(const aura::Window* window) {
 
 base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
   static_assert(
-      crosapi::mojom::Crosapi::Version_ == 17,
+      crosapi::mojom::Crosapi::Version_ == 19,
       "if you add a new crosapi, please add it to the version map here");
   InterfaceVersions versions;
   AddVersion<chromeos::sensors::mojom::SensorHalClient>(&versions);
+  AddVersion<crosapi::mojom::Automation>(&versions);
   AddVersion<crosapi::mojom::AccountManager>(&versions);
   AddVersion<crosapi::mojom::BrowserServiceHost>(&versions);
   AddVersion<crosapi::mojom::CertDatabase>(&versions);
@@ -214,6 +216,7 @@ base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
   AddVersion<crosapi::mojom::Prefs>(&versions);
   AddVersion<crosapi::mojom::ScreenManager>(&versions);
   AddVersion<crosapi::mojom::SnapshotCapturer>(&versions);
+  AddVersion<crosapi::mojom::TaskManager>(&versions);
   AddVersion<crosapi::mojom::TestController>(&versions);
   AddVersion<crosapi::mojom::UrlHandler>(&versions);
   AddVersion<device::mojom::HidConnection>(&versions);

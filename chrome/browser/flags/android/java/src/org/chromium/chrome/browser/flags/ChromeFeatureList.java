@@ -232,6 +232,7 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
     public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";
     public static final String APP_LAUNCHPAD = "AppLaunchpad";
+    public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
     public static final String BENTO_OFFLINE = "BentoOffline";
     public static final String BIOMETRIC_TOUCH_TO_FILL = "BiometricTouchToFill";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
@@ -448,8 +449,6 @@ public abstract class ChromeFeatureList {
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String TAB_SWITCHER_ON_RETURN = "TabSwitcherOnReturn";
     public static final String TAB_TO_GTS_ANIMATION = "TabToGTSAnimation";
-    public static final String TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR =
-            "TabbedAppOverflowMenuThreeButtonActionbar";
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
     public static final String THEME_REFACTOR_ANDROID = "ThemeRefactorAndroid";

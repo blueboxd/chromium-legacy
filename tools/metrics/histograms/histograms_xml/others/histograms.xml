@@ -5719,6 +5719,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="MacOs"/>
     <variant name="PluginVm"/>
     <variant name="Remote"/>
+    <variant name="SystemWeb"/>
     <variant name="Unknown"/>
     <variant name="Web"/>
   </token>
@@ -17175,6 +17176,17 @@ regressions. -->
     Android: Whether Translate extras were successfully attached to an Assistant
     intent. This is recorded just before the intent is sent to Assistant, and is
     only recorded if the Translate extras are enabled.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.AudioPermissionEvent"
+    enum="AudioPermissionState" expires_after="2021-08-22">
+  <owner>basiaz@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Android: The events related to granting or denying audio permission for
+    system level transcription (as opposite to Assistant). Will be logged each
+    time non-Assistant voice recognition is triggered with a mic button click.
   </summary>
 </histogram>
 

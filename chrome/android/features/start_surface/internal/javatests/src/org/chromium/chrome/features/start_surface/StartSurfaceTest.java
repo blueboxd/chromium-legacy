@@ -1106,7 +1106,7 @@ public class StartSurfaceTest {
                                 SingleTabSwitcherMediator.SINGLE_TAB_TITLE_AVAILABLE_TIME_UMA,
                                 isInstantStart)));
 
-        // TODO(crbug.com/1129187): Looks like this doesn't work with FeedV2.
+        // TODO(crbug.com/1187320): Looks like this doesn't work with FeedV2.
         if (!(FeedFeatures.isV2Enabled() && mImmediateReturn)) {
             Assert.assertEquals(expectedRecordCount,
                     RecordHistogram.getHistogramTotalCountForTesting(
@@ -1114,7 +1114,7 @@ public class StartSurfaceTest {
                                     FeedSurfaceMediator.FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
                                     isInstantStart)));
         }
-        // TODO(crbug.com/1129187): Looks like this doesn't work with FeedV2.
+        // TODO(crbug.com/1187320): Looks like this doesn't work with FeedV2.
         if (!(FeedFeatures.isV2Enabled() && mImmediateReturn && mUseInstantStart)) {
             Assert.assertEquals(expectedRecordCount,
                     RecordHistogram.getHistogramTotalCountForTesting(
@@ -1516,10 +1516,11 @@ public class StartSurfaceTest {
                         -> Assert.assertTrue(StartSurfaceUserData.getKeepTab(
                                 cta.getTabModelSelector().getCurrentTab())));
 
+        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
+                mActivityTestRule.getActivity().getLayoutManager(), true, false);
         pressBack();
         // Verifies the new Tab isn't deleted, and Start surface is shown.
-        CriteriaHelper.pollUiThread(() -> cta.getLayoutManager().overviewVisible());
-        waitForView(withId(R.id.primary_tasks_surface_view));
+        overviewModeWatcher.waitForBehavior();
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
 
         // Verifies Chrome is closed.
@@ -1527,11 +1528,15 @@ public class StartSurfaceTest {
             pressBack();
         } catch (Exception e) {
         } finally {
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                Assert.assertEquals(Stage.STOPPED,
-                        ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(
-                                mActivityTestRule.getActivity()));
-            });
+            CriteriaHelper.pollUiThread(
+                    ()
+                            -> {
+                        return ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(
+                                       mActivityTestRule.getActivity())
+                                == Stage.STOPPED;
+                    },
+                    "Tapping back button should close Chrome.", MAX_TIMEOUT_MS,
+                    CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         }
     }
 
@@ -2001,10 +2006,11 @@ public class StartSurfaceTest {
                                 .getResources()
                                 .getDimensionPixelOffset(R.dimen.toolbar_height_no_shadow)));
 
-        onView(withId(R.id.tab_switcher_toolbar)).check(matches(not(isDisplayed())));
+        // Toolbar layout view should show.
+        onViewWaiting(withId(R.id.toolbar));
 
-        // Toolbar container view should show.
-        onView(withId(R.id.toolbar_container)).check(matches(isDisplayed()));
+        // The start surface toolbar should be scrolled up and not be displayed.
+        onView(withId(R.id.tab_switcher_toolbar)).check(matches(not(isDisplayed())));
 
         // Check the toolbar's background color.
         ToolbarPhone toolbar =

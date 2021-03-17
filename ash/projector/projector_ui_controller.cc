@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,6 +33,11 @@ void ShowToast(const std::string& id,
   Shell::Get()->toast_manager()->Show(toast);
 }
 
+void AddExcludedWindowToFastInkController(aura::Window* window) {
+  DCHECK(window);
+  Shell::Get()->laser_pointer_controller()->AddExcludedWindow(window);
+}
+
 }  // namespace
 
 ProjectorUiController::ProjectorUiController(
@@ -44,6 +50,8 @@ void ProjectorUiController::ShowToolbar() {
   if (!projector_bar_widget_) {
     // Create the toolbar.
     projector_bar_widget_ = ProjectorBarView::Create(projector_controller_);
+    AddExcludedWindowToFastInkController(
+        projector_bar_widget_->GetNativeWindow());
   }
 
   projector_bar_widget_->ShowInactive();
@@ -81,6 +89,10 @@ void ProjectorUiController::ResetTools() {
   auto* laser_pointer_controller = Shell::Get()->laser_pointer_controller();
   if (laser_pointer_controller->is_enabled())
     Shell::Get()->laser_pointer_controller()->SetEnabled(false);
+}
+
+bool ProjectorUiController::IsToolbarVisible() const {
+  return model_.bar_enabled();
 }
 
 }  // namespace ash

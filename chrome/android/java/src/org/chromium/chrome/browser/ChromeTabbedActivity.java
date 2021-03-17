@@ -86,7 +86,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feed.FeedV2;
+import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -770,7 +770,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity."
                      + "maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver")) {
-            FeedV2.startup();
+            FeedStreamSurface.startup();
 
             if (UsageStatsService.isEnabled()) {
                 UsageStatsService.getInstance().createPageViewObserver(
@@ -1050,8 +1050,19 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private boolean shouldShowTabSwitcherOnStart() {
         String intentUrl = IntentHandler.getUrlFromIntent(getIntent());
-        if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
-                && ReturnToChromeExperimentsUtil.isCanonicalizedNTPUrl(intentUrl)) {
+        // If Chrome is launched by tapping the New Tab Item from the launch icon and
+        // {@link OMNIBOX_FOCUSED_ON_NEW_TAB} is enabled, a new Tab with omnibox focused will be
+        // shown on Startup.
+        boolean isCanonicalizedNTPUrl =
+                ReturnToChromeExperimentsUtil.isCanonicalizedNTPUrl(intentUrl);
+        if (isCanonicalizedNTPUrl && IntentHandler.isTabOpenAsNewTabFromLauncher(getIntent())
+                && StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB.getValue()
+                && IntentHandler.wasIntentSenderChrome(getIntent())) {
+            return false;
+        }
+
+        if (isCanonicalizedNTPUrl
+                && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
             // Handle NTP intent.
             return true;
         } else if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePageNoTabs()

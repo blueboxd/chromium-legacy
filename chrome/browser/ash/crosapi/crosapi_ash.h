@@ -12,11 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace crosapi {
 
+class AutomationAsh;
 class BrowserServiceHostAsh;
 class CertDatabaseAsh;
 class ClipboardAsh;
@@ -30,6 +32,7 @@ class MetricsReportingAsh;
 class PrefsAsh;
 class ScreenManagerAsh;
 class SelectFileAsh;
+class TaskManagerAsh;
 class TestControllerAsh;
 class UrlHandlerAsh;
 
@@ -47,6 +50,8 @@ class CrosapiAsh : public mojom::Crosapi {
                     base::OnceClosure disconnect_handler);
 
   // crosapi::mojom::Crosapi:
+  void BindAutomation(
+      mojo::PendingReceiver<mojom::Automation> receiver) override;
   void BindAccountManager(
       mojo::PendingReceiver<mojom::AccountManager> receiver) override;
   void BindBrowserServiceHost(
@@ -87,6 +92,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindMediaSessionAudioFocusDebug(
       mojo::PendingReceiver<media_session::mojom::AudioFocusManagerDebug>
           receiver) override;
+  void BindTaskManager(
+      mojo::PendingReceiver<mojom::TaskManager> receiver) override;
   void BindTestController(
       mojo::PendingReceiver<mojom::TestController> receiver) override;
   void BindUrlHandler(
@@ -100,10 +107,15 @@ class CrosapiAsh : public mojom::Crosapi {
     return browser_service_host_ash_.get();
   }
 
+  AutomationAsh* automation_ash() { return automation_ash_.get(); }
+
+  TaskManagerAsh* task_manager_ash() { return task_manager_ash_.get(); }
+
  private:
   // Called when a connection is lost.
   void OnDisconnected();
 
+  std::unique_ptr<AutomationAsh> automation_ash_;
   std::unique_ptr<BrowserServiceHostAsh> browser_service_host_ash_;
   std::unique_ptr<CertDatabaseAsh> cert_database_ash_;
   std::unique_ptr<ClipboardAsh> clipboard_ash_;
@@ -117,6 +129,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<PrefsAsh> prefs_ash_;
   std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;
   std::unique_ptr<SelectFileAsh> select_file_ash_;
+  std::unique_ptr<TaskManagerAsh> task_manager_ash_;
   std::unique_ptr<TestControllerAsh> test_controller_ash_;
   std::unique_ptr<UrlHandlerAsh> url_handler_ash_;
 

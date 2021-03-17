@@ -2528,6 +2528,26 @@
             ]
         }
     ],
+    "DetectedSourceLanguageOption": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DetectedSourceLanguageOption"
+                    ]
+                }
+            ]
+        }
+    ],
     "DevToolsLayoutHats": [
         {
             "platforms": [
@@ -3665,18 +3685,6 @@
             ]
         }
     ],
-    "InstantApps": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "InstantAppsEnabled"
-                }
-            ]
-        }
-    ],
     "IntentBlockExternalFormRedirectsNoGesture": [
         {
             "platforms": [
@@ -4321,21 +4329,6 @@
             ]
         }
     ],
-    "NotificationTimeouts": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NotificationDurationLongForRequireInteraction"
-                    ]
-                }
-            ]
-        }
-    ],
     "NtpRepeatableQueriesDesktop": [
         {
             "platforms": [
@@ -4455,7 +4448,7 @@
                     "name": "EnabledDefault",
                     "params": {
                         "colorful_mic": "false",
-                        "min_agsa_version": "12.7.2.23"
+                        "min_agsa_version": "12.8.4"
                     },
                     "enable_features": [
                         "OmniboxAssistantVoiceSearch"
@@ -4465,7 +4458,7 @@
                     "name": "EnabledColorfulMic",
                     "params": {
                         "colorful_mic": "true",
-                        "min_agsa_version": "12.7.2.23"
+                        "min_agsa_version": "12.8.4"
                     },
                     "enable_features": [
                         "OmniboxAssistantVoiceSearch"
@@ -4921,56 +4914,6 @@
                     "name": "EnableQuic",
                     "enable_features": [
                         "UseParallelRequestsForQUIC"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PartitionAllocGigaCage": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Mobile",
-                    "enable_features": [
-                        "PartitionAllocGigaCage"
-                    ]
-                },
-                {
-                    "name": "Enabled_V3",
-                    "enable_features": [
-                        "PartitionAllocGigaCage"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PartitionAllocGigaCage32bit": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PartitionAllocGigaCage32bit"
                     ]
                 }
             ]
@@ -7618,27 +7561,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebRtcThermalResource"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebSocketReassembleShortMessages": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DisabledBeta",
-                    "disable_features": [
-                        "WebSocketReassembleShortMessages"
                     ]
                 }
             ]

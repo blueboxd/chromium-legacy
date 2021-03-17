@@ -46,6 +46,12 @@ constexpr int kBlinkBreakdownInitialIndex =
 constexpr int kFrameSequenceTrackerTypeCount =
     static_cast<int>(FrameSequenceTrackerType::kMaxType) + 1;
 
+// Maximum number of partial update dependents a reporter can own. When a
+// reporter with too many dependents is terminated, it will terminate all its
+// dependents which will block the pipeline for a long time. Too many dependents
+// also means too much memory usage.
+constexpr size_t kMaxOwnedPartialUpdateDependents = 300u;
+
 // Names for the viz breakdowns that are shown in trace as substages under
 // PipelineReporter -> SubmitCompositorFrameToPresentationCompositorFrame or
 // EventLatency -> SubmitCompositorFrameToPresentationCompositorFrame.
@@ -576,7 +582,7 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() {
 
   // Set up the new reporter so that it depends on |this| for partial update
   // information.
-  new_reporter->SetPartialUpdateDecider(weak_factory_.GetWeakPtr());
+  new_reporter->SetPartialUpdateDecider(this);
 
   return new_reporter;
 }
@@ -1255,10 +1261,6 @@ bool CompositorFrameReporter::IsDroppedFrameAffectingSmoothness() const {
   return false;
 }
 
-base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void CompositorFrameReporter::AdoptReporter(
     std::unique_ptr<CompositorFrameReporter> reporter) {
   // If |this| reporter is dependent on another reporter to decide about partial
@@ -1270,32 +1272,36 @@ void CompositorFrameReporter::AdoptReporter(
 }
 
 void CompositorFrameReporter::SetPartialUpdateDecider(
-    base::WeakPtr<CompositorFrameReporter> decider) {
+    CompositorFrameReporter* decider) {
   DCHECK(decider);
-  has_partial_update_ = true;
-  partial_update_decider_ = decider;
-  decider->partial_update_dependents_.push(GetWeakPtr());
   DCHECK(partial_update_dependents_.empty());
+  has_partial_update_ = true;
+  partial_update_decider_ = decider->GetWeakPtr();
+  decider->partial_update_dependents_.push(GetWeakPtr());
 }
 
 void CompositorFrameReporter::DiscardOldPartialUpdateReporters() {
   DCHECK_LE(owned_partial_update_dependents_.size(),
             partial_update_dependents_.size());
-  while (owned_partial_update_dependents_.size() > 300u) {
+  // Remove old owned partial update dependents if there are too many.
+  while (owned_partial_update_dependents_.size() >
+         kMaxOwnedPartialUpdateDependents) {
     auto& dependent = owned_partial_update_dependents_.front();
     dependent->set_has_partial_update(false);
-    partial_update_dependents_.pop();
     owned_partial_update_dependents_.pop();
     discarded_partial_update_dependents_count_++;
   }
+
+  // Remove dependent reporters from the front of `partial_update_dependents_`
+  // queue if they are already destroyed.
+  while (!partial_update_dependents_.empty() &&
+         !partial_update_dependents_.front()) {
+    partial_update_dependents_.pop();
+  }
 }
 
-bool CompositorFrameReporter::MightHavePartialUpdate() const {
-  return !!partial_update_decider_;
-}
-
-size_t CompositorFrameReporter::GetPartialUpdateDependentsCount() const {
-  return partial_update_dependents_.size();
+base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace cc

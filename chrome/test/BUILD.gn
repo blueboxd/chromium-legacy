@@ -2127,6 +2127,7 @@ if (!is_android) {
         "../browser/extensions/navigation_observer_browsertest.cc",
         "../browser/extensions/options_page_apitest.cc",
         "../browser/extensions/page_action_browsertest.cc",
+        "../browser/extensions/printer_provider_apitest.cc",
         "../browser/extensions/process_management_browsertest.cc",
         "../browser/extensions/process_manager_browsertest.cc",
         "../browser/extensions/renderer_initialization_browsertest.cc",
@@ -2593,6 +2594,7 @@ if (!is_android) {
         "../browser/ash/login/test/user_adding_screen_utils.h",
         "../browser/ash/login/test/webview_content_extractor.cc",
         "../browser/ash/login/test/webview_content_extractor.h",
+        "../browser/ash/login/ui/captive_portal_dialog_delegate_browsertest.cc",
         "../browser/ash/login/ui/captive_portal_window_browsertest.cc",
         "../browser/ash/login/ui/login_feedback_browsertest.cc",
         "../browser/ash/login/ui/login_web_dialog_browsertest.cc",
@@ -5112,10 +5114,10 @@ test("unit_tests") {
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider_unittest.cc",
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_result_unittest.cc",
       "../browser/ui/app_list/search/tests/app_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/tests/file_result_unittest.cc",
       "../browser/ui/app_list/search/tests/mixer_unittest.cc",
       "../browser/ui/app_list/search/tests/omnibox_result_unittest.cc",
       "../browser/ui/app_list/search/tests/zero_state_file_provider_unittest.cc",
-      "../browser/ui/app_list/search/tests/zero_state_file_result_unittest.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
       "../browser/ui/ash/accessibility/accessibility_controller_client_unittest.cc",
@@ -5640,20 +5642,15 @@ test("unit_tests") {
     } else {
       sources += [
         "../browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_unittest.cc",
+        "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc",
+        "../browser/extensions/api/messaging/native_messaging_launch_from_native_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc",
       ]
 
       deps += [ "//components/enterprise:test_support" ]
     }
-    if (!is_chromeos_ash && !is_chromeos_lacros) {
-      sources += [
-        "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
-        "../browser/extensions/api/messaging/native_messaging_launch_from_native_unittest.cc",
-      ]
-    }
   }
-
   if (use_aura) {
     deps += [
       "//ui/aura:test_support",

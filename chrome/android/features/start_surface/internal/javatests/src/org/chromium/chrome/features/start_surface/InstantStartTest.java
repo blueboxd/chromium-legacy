@@ -27,10 +27,13 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.M26_GOOGLE_COM;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -44,6 +47,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -69,14 +73,11 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.SysUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterProvider;
-import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -85,13 +86,13 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.feed.FeedV2;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -117,11 +118,12 @@ import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -133,6 +135,7 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -153,8 +156,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Integration tests of Instant Start which requires 2-stage initialization for Clank startup.
  */
-@RunWith(ParameterizedRunner.class)
-@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
@@ -165,6 +167,7 @@ public class InstantStartTest {
     private static final String IMMEDIATE_RETURN_PARAMS = "force-fieldtrial-params=Study.Group:"
             + ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0";
     private static final int ARTICLE_SECTION_HEADER_POSITION = 0;
+    private static final long MAX_TIMEOUT_MS = 30000L;
     private Bitmap mBitmap;
     private int mThumbnailFetchCount;
 
@@ -189,24 +192,6 @@ public class InstantStartTest {
     }
 
     /**
-     * Parameter set controlling whether Feed v2 is enabled.
-     */
-    public static class FeedParams implements ParameterProvider {
-        @Override
-        public List<ParameterSet> getParameters() {
-            List<ParameterSet> feedParams = new ArrayList<ParameterSet>();
-            if (FeedV2.IS_AVAILABLE) {
-                feedParams.add(new ParameterSet().value(true).name("FeedV2"));
-            }
-            return feedParams;
-        }
-    }
-
-    private void setFeedVersion(boolean isFeedV2) {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.INTEREST_FEED_V2, isFeedV2);
-    }
-
-    /**
      * Only launch Chrome without waiting for a current tab.
      * This test could not use {@link ChromeActivityTestRule#startMainActivityFromLauncher()}
      * because of its {@link org.chromium.chrome.browser.tab.Tab} dependency.
@@ -214,6 +199,14 @@ public class InstantStartTest {
     private void startMainActivityFromLauncher() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        mActivityTestRule.prepareUrlIntent(intent, null);
+        mActivityTestRule.launchActivity(intent);
+    }
+
+    private void startNewTabFromLauncherIcon() {
+        Intent intent = IntentHandler.createTrustedOpenNewTabIntent(
+                ContextUtils.getApplicationContext(), false);
+        intent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, true);
         mActivityTestRule.prepareUrlIntent(intent, null);
         mActivityTestRule.launchActivity(intent);
     }
@@ -757,10 +750,9 @@ public class InstantStartTest {
             "/exclude_mv_tiles/true" +
             "/hide_switch_when_no_incognito_tabs/true" +
             "/show_last_active_tab_only/true"})
-    @ParameterAnnotations.UseMethodParameter(FeedParams.class)
-    public void renderSingleAsHomepage_SingleTabNoMVTiles(boolean isFeedV2) throws IOException {
+    public void renderSingleAsHomepage_SingleTabNoMVTiles()
+        throws IOException {
         // clang-format on
-        setFeedVersion(isFeedV2);
 
         createTabStateFile(new int[] {0});
         createThumbnailBitmapAndWriteToFile(0);
@@ -789,15 +781,13 @@ public class InstantStartTest {
     @SmallTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
-            ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INTEREST_FEED_V2})
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    @ParameterAnnotations.UseMethodParameter(FeedParams.class)
-    public void testFeedPlaceholderFromColdStart(boolean isFeedV2) {
+    public void testFeedPlaceholderFromColdStart() {
         // clang-format on
-        setFeedVersion(isFeedV2);
         startMainActivityFromLauncher();
         Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
@@ -821,14 +811,12 @@ public class InstantStartTest {
     @SmallTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
-            ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INTEREST_FEED_V2})
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    @ParameterAnnotations.UseMethodParameter(FeedParams.class)
-    public void testCachedFeedVisibility(boolean isFeedV2) {
+    public void testCachedFeedVisibility() {
         // clang-format on
-        setFeedVersion(isFeedV2);
         startMainActivityFromLauncher();
         mActivityTestRule.waitForActivityNativeInitializationComplete();
         // FEED_ARTICLES_LIST_VISIBLE should equal to ARTICLES_LIST_VISIBLE.
@@ -862,15 +850,13 @@ public class InstantStartTest {
     @SmallTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
-            ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INTEREST_FEED_V2})
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    @ParameterAnnotations.UseMethodParameter(FeedParams.class)
-    public void testHidePlaceholder(boolean isFeedV2) {
+    public void testHidePlaceholder() {
         // clang-format on
-        setFeedVersion(isFeedV2);
         StartSurfaceConfiguration.setFeedVisibilityForTesting(false);
         startMainActivityFromLauncher();
 
@@ -882,15 +868,13 @@ public class InstantStartTest {
     @SmallTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
-            ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INTEREST_FEED_V2})
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    @ParameterAnnotations.UseMethodParameter(FeedParams.class)
-    public void testShowPlaceholder(boolean isFeedV2) {
+    public void testShowPlaceholder() {
         // clang-format on
-        setFeedVersion(isFeedV2);
         StartSurfaceConfiguration.setFeedVisibilityForTesting(true);
         startMainActivityFromLauncher();
 
@@ -1015,13 +999,11 @@ public class InstantStartTest {
                 mActivityTestRule.getActivity().findViewById(R.id.placeholders_layout), 0, 0, 0,
                 toY, 1);
 
-        // The start surface toolbar should be scrolled up and not be displayed.
-        onView(withId(org.chromium.chrome.start_surface.R.id.tab_switcher_toolbar))
-                .check(matches(not(isDisplayed())));
+        // Toolbar layout view should show.
+        onViewWaiting(withId(R.id.toolbar));
 
-        // Toolbar container view should show.
-        onView(withId(org.chromium.chrome.start_surface.R.id.toolbar_container))
-                .check(matches(isDisplayed()));
+        // The start surface toolbar should be scrolled up and not be displayed.
+        onView(withId(R.id.tab_switcher_toolbar)).check(matches(not(isDisplayed())));
 
         View surface = mActivityTestRule.getActivity().findViewById(R.id.toolbar);
         ChromeRenderTestRule.sanitize(surface);
@@ -1122,11 +1104,8 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    @ParameterAnnotations.UseMethodParameter(FeedParams.class)
-    public void renderSingleAsHomepage_Landscape(boolean isFeedV2) throws IOException {
+    public void renderSingleAsHomepage_Landscape() throws IOException {
         // clang-format on
-        setFeedVersion(isFeedV2);
-
         createTabStateFile(new int[] {0, 1, 2});
 
         startMainActivityFromLauncher();
@@ -1369,6 +1348,50 @@ public class InstantStartTest {
                 () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         ViewUtils.onViewWaiting(withId(R.id.tab_list_view));
         Assert.assertEquals(1, PseudoTab.getAllPseudoTabsFromStateFile().size());
+    }
+
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group", IMMEDIATE_RETURN_PARAMS +
+        "/start_surface_variation/single/omnibox_focused_on_new_tab/true"})
+    public void testNewTabFromLauncher() throws IOException {
+        // clang-format on
+        createTabStateFile(new int[] {0});
+        createThumbnailBitmapAndWriteToFile(0);
+        TabAttributeCache.setTitleForTesting(0, "Google");
+
+        startNewTabFromLauncherIcon();
+        waitForTabModel();
+        TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 2, 0);
+
+        waitForView(withId(org.chromium.chrome.start_surface.R.id.search_box_text));
+        TextView urlBar = mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.start_surface.R.id.url_bar);
+        CriteriaHelper.pollUiThread(()
+                                            -> isKeyboardShown() && urlBar.isFocused(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        waitForView(withId(org.chromium.chrome.start_surface.R.id.voice_search_button));
+        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
+        assertEquals(mActivityTestRule.getActivity()
+                             .findViewById(org.chromium.chrome.start_surface.R.id.toolbar_buttons)
+                             .getVisibility(),
+                View.INVISIBLE);
+        ToolbarDataProvider toolbarDataProvider =
+                mActivityTestRule.getActivity().getToolbarManager().getLocationBarModelForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(TextUtils.equals(toolbarDataProvider.getCurrentUrl(), UrlConstants.NTP_URL));
+        });
+    }
+
+    private boolean isKeyboardShown() {
+        Activity activity = mActivityTestRule.getActivity();
+        if (activity.getCurrentFocus() == null) return false;
+        return mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                activity, activity.getCurrentFocus());
     }
 
     /**

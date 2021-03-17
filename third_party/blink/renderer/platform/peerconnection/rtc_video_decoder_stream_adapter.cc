@@ -32,7 +32,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/renderer/platform/webrtc/legacy_webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_utils.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/video/video_frame.h"
@@ -438,8 +438,15 @@ int32_t RTCVideoDecoderStreamAdapter::Decode(
       // drop any other non-key frame.
       key_frame_required_ = true;
 
+#if defined(OS_ANDROID) && !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+      const bool has_software_fallback =
+          video_codec_type_ != webrtc::kVideoCodecH264;
+#else
+      const bool has_software_fallback = true;
+#endif
       // If we hit the absolute limit, then give up.
-      if (pending_buffer_count_ >= kAbsoluteMaxPendingBuffers) {
+      if (has_software_fallback &&
+          pending_buffer_count_ >= kAbsoluteMaxPendingBuffers) {
         has_error_ = true;
         PostCrossThreadTask(
             *media_task_runner_.get(), FROM_HERE,
@@ -640,7 +647,7 @@ void RTCVideoDecoderStreamAdapter::OnFrameReady(
   webrtc::VideoFrame rtc_frame =
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
-              new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(
+              new rtc::RefCountedObject<blink::LegacyWebRtcVideoFrameAdapter>(
                   std::move(frame)))
           .set_timestamp_rtp(static_cast<uint32_t>(timestamp.InMicroseconds()))
           .set_timestamp_us(0)

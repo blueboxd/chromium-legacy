@@ -124,6 +124,7 @@ class RTCVideoEncoder;
 class SourceStream;
 class VideoFrameResourceProvider;
 class WebRtcVideoFrameAdapter;
+class LegacyWebRtcVideoFrameAdapter;
 class WorkerThread;
 namespace scheduler {
 class WorkerThread;
@@ -538,6 +539,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class blink::RTCVideoDecoderAdapter;
   friend class blink::RTCVideoEncoder;
   friend class blink::WebRtcVideoFrameAdapter;
+  friend class blink::LegacyWebRtcVideoFrameAdapter;
   friend class cc::TileTaskManagerImpl;
   friend class content::CategorizedWorkerPool;
   friend class content::DesktopCaptureDevice;

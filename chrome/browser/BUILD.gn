@@ -1336,8 +1336,6 @@ static_library("browser") {
     "prefs/chrome_pref_service_factory.h",
     "prefs/incognito_mode_prefs.cc",
     "prefs/incognito_mode_prefs.h",
-    "prefs/origin_trial_prefs.cc",
-    "prefs/origin_trial_prefs.h",
     "prefs/pref_metrics_service.cc",
     "prefs/pref_metrics_service.h",
     "prefs/pref_service_incognito_allowlist.cc",
@@ -2035,6 +2033,7 @@ static_library("browser") {
     "//components/download/public/background_service:public",
     "//components/embedder_support",
     "//components/embedder_support:browser_util",
+    "//components/embedder_support/origin_trials",
     "//components/encrypted_messages",
     "//components/enterprise",
     "//components/enterprise/common/proto:connectors_proto",
@@ -4000,8 +3999,6 @@ static_library("browser") {
                                                               # to extensions
                                                               # section ?
       "speech/extension_api/tts_extension_api_constants.h",
-      "speech/on_device_speech_recognizer.cc",
-      "speech/on_device_speech_recognizer.h",
       "speech/speech_recognition_client_browser_interface.cc",
       "speech/speech_recognition_client_browser_interface.h",
       "speech/speech_recognition_client_browser_interface_factory.cc",
@@ -4209,6 +4206,8 @@ static_library("browser") {
         "speech/cros_speech_recognition_service.h",
         "speech/cros_speech_recognition_service_factory.cc",
         "speech/cros_speech_recognition_service_factory.h",
+        "speech/on_device_speech_recognizer.cc",
+        "speech/on_device_speech_recognizer.h",
       ]
 
       deps += [ "//chrome/services/speech:lib" ]
@@ -4631,11 +4630,15 @@ static_library("browser") {
       "lacros/account_manager_facade_factory_lacros.cc",
       "lacros/account_manager_util.cc",
       "lacros/account_manager_util.h",
+      "lacros/automation_manager_lacros.cc",
+      "lacros/automation_manager_lacros.h",
       "lacros/cert_db_initializer.h",
       "lacros/cert_db_initializer_factory.cc",
       "lacros/cert_db_initializer_factory.h",
       "lacros/cert_db_initializer_impl.cc",
       "lacros/cert_db_initializer_impl.h",
+      "lacros/chrome_browser_main_extra_parts_lacros.cc",
+      "lacros/chrome_browser_main_extra_parts_lacros.h",
       "lacros/client_cert_store_lacros.cc",
       "lacros/client_cert_store_lacros.h",
       "lacros/crosapi_pref_observer.cc",
@@ -4656,6 +4659,8 @@ static_library("browser") {
       "lacros/snap_controller_lacros.h",
       "lacros/system_logs/lacros_system_log_fetcher.cc",
       "lacros/system_logs/lacros_system_log_fetcher.h",
+      "lacros/task_manager_lacros.cc",
+      "lacros/task_manager_lacros.h",
       "metrics/enrollment_status.h",
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
@@ -6529,7 +6534,6 @@ grit("resources") {
   ]
 
   if (enable_plugins) {
-    #.json is not in the default sources_assignment_filter.
     if (is_chromeos_ash) {
       inputs = [ "resources/plugin_metadata/plugins_chromeos.json" ]
     }

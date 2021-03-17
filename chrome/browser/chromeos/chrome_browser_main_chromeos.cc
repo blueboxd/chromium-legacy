@@ -161,7 +161,6 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
@@ -579,7 +578,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
-void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
+int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   network_change_manager_client_.reset(new NetworkChangeManagerClient(
       static_cast<net::NetworkChangeNotifierPosix*>(
           content::GetNetworkChangeNotifier())));
@@ -663,7 +662,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   chromeos::cfm::InitializeCfmServices();
 #endif  // BUILDFLAG(PLATFORM_CFM)
 
-  ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
+  return ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
 void ChromeBrowserMainPartsChromeos::PreProfileInit() {
@@ -1115,14 +1114,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   bool pcie_tunneling_allowed = false;
   CrosSettings::Get()->GetBoolean(chromeos::kDevicePeripheralDataAccessEnabled,
                                   &pcie_tunneling_allowed);
-
-  // External PCI devices are only allowed in non-guest, primary users.
-  if (!user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      ProfileHelper::IsPrimaryProfile(profile())) {
-    PciguardClient::Get()->SendExternalPciDevicesPermissionState(
-        pcie_tunneling_allowed);
-  }
-
   if (chromeos::features::IsPciguardUiEnabled()) {
     ash::PciePeripheralManager::Initialize(
         user_manager::UserManager::Get()->IsLoggedInAsGuest(),

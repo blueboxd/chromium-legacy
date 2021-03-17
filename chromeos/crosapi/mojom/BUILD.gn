@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "account_manager.mojom",
+    "automation.mojom",
     "bitmap.mojom",
     "cert_database.mojom",
     "clipboard.mojom",
@@ -22,6 +23,7 @@ mojom("mojom") {
     "prefs.mojom",
     "screen_manager.mojom",
     "select_file.mojom",
+    "task_manager.mojom",
     "test_controller.mojom",
     "url_handler.mojom",
   ]

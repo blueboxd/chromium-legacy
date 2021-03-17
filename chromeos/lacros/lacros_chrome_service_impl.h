@@ -19,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
+#include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/device_attributes.mojom.h"
@@ -30,6 +31,7 @@
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
+#include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -102,6 +104,7 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
 
   // Each of these functions guards usage of access to the corresponding remote.
   // Keep these in alphabetical order.
+  bool IsAutomationAvailable() const;
   bool IsAccountManagerAvailable() const;
   bool IsCertDbAvailable() const;
   bool IsClipboardAvailable() const;
@@ -120,6 +123,7 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   bool IsScreenManagerAvailable() const;
   bool IsSelectFileAvailable() const;
   bool IsSensorHalClientAvailable() const;
+  bool IsTaskManagerAvailable() const;
   bool IsTestControllerAvailable() const;
   bool IsUrlHandlerAvailable() const;
 
@@ -132,6 +136,13 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   // helpers that expose pre-established Remotes that can only be used from the
   // affine sequence (main thread).
   // --------------------------------------------------------------------------
+
+  // This must be called on the affine sequence.
+  mojo::Remote<crosapi::mojom::Automation>& automation_remote() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
+    DCHECK(IsAutomationAvailable());
+    return automation_remote_;
+  }
 
   // This must be called on the affine sequence.
   mojo::Remote<crosapi::mojom::CertDatabase>& cert_database_remote() {
@@ -215,6 +226,14 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
     DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
     DCHECK(IsSelectFileAvailable());
     return select_file_remote_;
+  }
+
+  // Must be called on the affine sequence. It exposes a remote that can be used
+  // to register TaskManagerProvider.
+  mojo::Remote<crosapi::mojom::TaskManager>& task_manager_remote() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
+    DCHECK(IsTaskManagerAvailable());
+    return task_manager_remote_;
   }
 
   // Must be called on the affine sequence.
@@ -349,6 +368,7 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
 
   // These members are affine to the affine sequence. They are initialized in
   // the constructor and are immediately available for use.
+  mojo::Remote<crosapi::mojom::Automation> automation_remote_;
   mojo::Remote<crosapi::mojom::CertDatabase> cert_database_remote_;
   mojo::Remote<crosapi::mojom::Clipboard> clipboard_remote_;
   mojo::Remote<crosapi::mojom::DeviceAttributes> device_attributes_remote_;
@@ -360,6 +380,7 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   mojo::Remote<crosapi::mojom::MessageCenter> message_center_remote_;
   mojo::Remote<crosapi::mojom::Prefs> prefs_remote_;
   mojo::Remote<crosapi::mojom::SelectFile> select_file_remote_;
+  mojo::Remote<crosapi::mojom::TaskManager> task_manager_remote_;
   mojo::Remote<crosapi::mojom::TestController> test_controller_remote_;
   mojo::Remote<crosapi::mojom::UrlHandler> url_handler_remote_;
 

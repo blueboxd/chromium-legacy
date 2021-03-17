@@ -423,22 +423,30 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
 
 scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
     SiteInstance* site_instance) {
-  auto it = render_view_host_map_.find(site_instance->GetId());
+  auto it = render_view_host_map_.find(GetRenderViewHostMapId(site_instance));
   if (it == render_view_host_map_.end())
     return nullptr;
 
   return base::WrapRefCounted(it->second);
 }
 
-void FrameTree::RegisterRenderViewHost(SiteInstance* site_instance,
-                                       RenderViewHostImpl* rvh) {
-  CHECK(!base::Contains(render_view_host_map_, site_instance->GetId()));
-  render_view_host_map_[site_instance->GetId()] = rvh;
+FrameTree::RenderViewHostMapId FrameTree::GetRenderViewHostMapId(
+    SiteInstance* site_instance) const {
+  // TODO(acolwell): Change this to use a SiteInstanceGroup ID once
+  // SiteInstanceGroups are implemented so that all SiteInstances within a
+  // group can use the same RenderViewHost.
+  return RenderViewHostMapId::FromUnsafeValue(site_instance->GetId());
 }
 
-void FrameTree::UnregisterRenderViewHost(SiteInstance* site_instance,
+void FrameTree::RegisterRenderViewHost(RenderViewHostMapId id,
+                                       RenderViewHostImpl* rvh) {
+  CHECK(!base::Contains(render_view_host_map_, id));
+  render_view_host_map_[id] = rvh;
+}
+
+void FrameTree::UnregisterRenderViewHost(RenderViewHostMapId id,
                                          RenderViewHostImpl* rvh) {
-  auto it = render_view_host_map_.find(site_instance->GetId());
+  auto it = render_view_host_map_.find(id);
   CHECK(it != render_view_host_map_.end());
   CHECK_EQ(it->second, rvh);
   render_view_host_map_.erase(it);
@@ -610,6 +618,26 @@ void FrameTree::DidCancelLoading() {
 void FrameTree::StopLoading() {
   for (FrameTreeNode* node : Nodes())
     node->StopLoading();
+}
+
+bool FrameTree::HasNavigation() {
+  // NOTE: this functionality is currently implemented for MPArch prerendering
+  // only and assumes no portals or other inner pages; we will need to update
+  // accordingly if this check is going to be used in those other cases.
+  for (FrameTreeNode* node : Nodes()) {
+    // Navigation waiting for the response:
+    if (node->navigation_request())
+      return true;
+
+    // Same-RenderFrameHost navigation is committing:
+    if (node->current_frame_host()->HasPendingCommitNavigation())
+      return true;
+
+    // Cross-RenderFrameHost navigation is committing:
+    if (node->render_manager()->speculative_frame_host())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content

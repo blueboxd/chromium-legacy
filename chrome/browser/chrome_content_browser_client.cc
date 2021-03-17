@@ -659,6 +659,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/chrome_browser_main_parts_lacros.h"
+#include "chrome/browser/lacros/chrome_browser_main_extra_parts_lacros.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_lacros.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "ui/base/ui_base_switches.h"
@@ -1398,6 +1399,10 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(jamescook): Combine with ChromeBrowserMainPartsChromeos.
   main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsAsh>());
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsLacros>());
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)
@@ -5433,9 +5438,8 @@ void ChromeContentBrowserClient::OnNetworkServiceDataUseUpdate(
                                       recv_bytes, sent_bytes);
   }
 #if !defined(OS_ANDROID)
-  task_manager::TaskManagerInterface::GetTaskManager()
-      ->UpdateAccumulatedStatsNetworkForRoute(process_id, routing_id,
-                                              recv_bytes, sent_bytes);
+  task_manager::TaskManagerInterface::UpdateAccumulatedStatsNetworkForRoute(
+      process_id, routing_id, recv_bytes, sent_bytes);
 #endif
 }
 

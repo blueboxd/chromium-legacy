@@ -55,7 +55,6 @@
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -101,6 +100,7 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/pref_names.h"
+#include "components/embedder_support/origin_trials/origin_trial_prefs.h"
 #include "components/federated_learning/floc_id.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
@@ -246,6 +246,10 @@
 #include "components/ntp_tiles/custom_links_manager_impl.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager.h"
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
@@ -329,7 +333,6 @@
 #include "chrome/browser/chromeos/printing/enterprise_printers_provider.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
-#include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
@@ -680,6 +683,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeMetricsServiceClient::RegisterPrefs(registry);
   ChromeTracingDelegate::RegisterPrefs(registry);
   component_updater::RegisterPrefs(registry);
+  embedder_support::OriginTrialPrefs::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
@@ -691,7 +695,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   language::UlpLanguageCodeLocator::RegisterLocalStatePrefs(registry);
   memory::EnterpriseMemoryLimitPrefObserver::RegisterPrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
-  OriginTrialPrefs::RegisterPrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
@@ -1054,6 +1057,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   CartService::RegisterProfilePrefs(registry);
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+  extensions::platform_keys::RegisterProfilePrefs(registry);
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::AppListSyncableService::RegisterProfilePrefs(registry);
   app_list::ArcAppReinstallSearchProvider::RegisterProfilePrefs(registry);
@@ -1103,7 +1110,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   crostini::prefs::RegisterProfilePrefs(registry);
   chromeos::attestation::TpmChallengeKey::RegisterProfilePrefs(registry);
-  extensions::EPKPChallengeKey::RegisterProfilePrefs(registry);
 #if defined(USE_CUPS)
   extensions::PrintingAPIHandler::RegisterProfilePrefs(registry);
 #endif

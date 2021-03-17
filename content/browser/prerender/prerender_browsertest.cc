@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/barrier_closure.h"
 #include "base/base_switches.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
@@ -185,6 +186,8 @@ class PrerenderBrowserTest
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
     base::AutoLock auto_lock(lock_);
     request_count_by_path_[request.GetURL().PathForRequest()]++;
+    if (monitor_callback_)
+      std::move(monitor_callback_).Run();
   }
 
   PrerenderHostRegistry& GetPrerenderHostRegistry() {
@@ -193,6 +196,20 @@ class PrerenderBrowserTest
         BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
     return *storage_partition->GetPrerenderHostRegistry();
+  }
+
+  // Waits until the request count for `url` reaches `count`.
+  void WaitForRequest(const GURL& url, int count) {
+    for (;;) {
+      base::RunLoop run_loop;
+      {
+        base::AutoLock auto_lock(lock_);
+        if (request_count_by_path_[url.PathForRequest()] >= count)
+          return;
+        monitor_callback_ = run_loop.QuitClosure();
+      }
+      run_loop.Run();
+    }
   }
 
   // Must only be called if the host for `prerendering_url` will be
@@ -372,6 +389,8 @@ class PrerenderBrowserTest
   // "127.0.0.1") before the server handles them.
   // This is accessed from the UI thread and `EmbeddedTestServer::io_thread_`.
   std::map<std::string, int> request_count_by_path_ GUARDED_BY(lock_);
+
+  base::OnceClosure monitor_callback_ GUARDED_BY(lock_);
 
   base::test::ScopedFeatureList feature_list_;
 
@@ -584,7 +603,6 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, Activation_iFrame) {
 
 // Makes sure that cross-origin subframe navigations are deferred during
 // prerendering.
-// TODO(crbug.com/1186209): Add redirect test cases.
 IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
                        DeferCrossOriginSubframeNavigation) {
   // TODO(toyoshim, bokan): Enable this test with MPArch.
@@ -672,9 +690,90 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
   // TODO(toyoshim): Enable the following EXPECT_EQs once the relevant bug is
   // fixed. Currently, deferred frame creates a document after the activation,
   // but with is_prerendering being true due to an existing bug.
-  //EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
+  // EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
   //                        kInitialDocumentPrerenderingScript));
-  //EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
+  // EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
+  //                        kCurrentDocumentPrerenderingScript));
+  EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
+                          kOnprerenderingchangeObservedScript));
+}
+
+// Makes sure that subframe navigations are deferred if cross-origin redirects
+// are observed in a prerendering page.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
+                       DeferCrossOriginRedirectsOnSubframeNavigation) {
+  // TODO(toyoshim, bokan): Enable this test with MPArch.
+  // It seems NavigationThrottles are not constructed for iframe navigation
+  // under MPArch environment. It needs some investigation to enable this with
+  // MPArch.
+  if (IsMPArchActive())
+    return;
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html?initial");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start a prerender.
+  const GURL kPrerenderingUrl =
+      GetUrl("/prerender/add_prerender.html?prerender");
+  AddPrerender(kPrerenderingUrl);
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry();
+  PrerenderHost* prerender_host =
+      registry.FindHostByUrlForTesting(kPrerenderingUrl);
+  ASSERT_TRUE(prerender_host);
+
+  const GURL kCrossOriginSubframeUrl =
+      GetCrossOriginUrl("/prerender/add_prerender.html?cross_origin_iframe");
+  const GURL kServerRedirectSubframeUrl =
+      GetUrl("/server-redirect?" + kCrossOriginSubframeUrl.spec());
+
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+  ASSERT_EQ(GetRequestCount(kServerRedirectSubframeUrl), 0);
+  ASSERT_EQ(GetRequestCount(kCrossOriginSubframeUrl), 0);
+
+  // Add an iframe pointing to a server redirect page to the prerendering page.
+  RenderFrameHost* prerender_frame_host =
+      prerender_host->GetPrerenderedMainFrameHost();
+  // Use ExecuteScriptAsync instead of EvalJs as inserted iframe redirect
+  // navigation would be deferred and script execution does not finish until
+  // the activation.
+  ExecuteScriptAsync(
+      prerender_frame_host,
+      JsReplace("add_iframe_async($1)", kServerRedirectSubframeUrl));
+  WaitForRequest(kServerRedirectSubframeUrl, 1);
+  ASSERT_EQ(GetRequestCount(kServerRedirectSubframeUrl), 1);
+  ASSERT_EQ(GetRequestCount(kCrossOriginSubframeUrl), 0);
+
+  // Activate.
+  NavigatePrimaryPage(kPrerenderingUrl);
+  ASSERT_EQ(shell()->web_contents()->GetURL(), kPrerenderingUrl);
+  ASSERT_EQ("LOADED", EvalJs(prerender_frame_host,
+                             JsReplace("wait_iframe_async($1)",
+                                       kServerRedirectSubframeUrl)));
+  EXPECT_EQ(GetRequestCount(kServerRedirectSubframeUrl), 1);
+  EXPECT_EQ(GetRequestCount(kCrossOriginSubframeUrl), 1);
+
+  const char kInitialDocumentPrerenderingScript[] =
+      "initial_document_prerendering";
+  const char kCurrentDocumentPrerenderingScript[] = "document.prerendering";
+  const char kOnprerenderingchangeObservedScript[] =
+      "onprerenderingchange_observed";
+  EXPECT_EQ(true,
+            EvalJs(prerender_frame_host, kInitialDocumentPrerenderingScript));
+  EXPECT_EQ(false,
+            EvalJs(prerender_frame_host, kCurrentDocumentPrerenderingScript));
+  EXPECT_EQ(true,
+            EvalJs(prerender_frame_host, kOnprerenderingchangeObservedScript));
+
+  RenderFrameHost* cross_origin_render_frame_host =
+      FindRenderFrameHost(*prerender_frame_host, kCrossOriginSubframeUrl);
+  DCHECK(cross_origin_render_frame_host);
+  // TODO(toyoshim): Enable the following EXPECT_EQs once the relevant bug is
+  // fixed. Currently, deferred frame creates a document after the activation,
+  // but with is_prerendering being true due to an existing bug.
+  // EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
+  //                        kInitialDocumentPrerenderingScript));
+  // EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
   //                        kCurrentDocumentPrerenderingScript));
   EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
                           kOnprerenderingchangeObservedScript));
@@ -815,6 +914,9 @@ class MojoCapabilityControlTestContentBrowserClient
     cancel_receiver_.Bind(std::move(receiver));
   }
 
+  // mojom::TestInterfaceForDefer implementation.
+  void Ping(PingCallback callback) override { std::move(callback).Run(); }
+
   size_t GetDeferReceiverSetSize() { return defer_receiver_set_.size(); }
 
   size_t GetGrantReceiverSetSize() { return grant_receiver_set_.size(); }
@@ -848,6 +950,12 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, MojoCapabilityControl) {
   std::vector<RenderFrameHost*> frames =
       prerendered_render_frame_host->GetFramesInSubtree();
 
+  // A barrier closure to wait until a deferred interface is granted on all
+  // frames.
+  base::RunLoop run_loop;
+  auto barrier_closure =
+      base::BarrierClosure(frames.size(), run_loop.QuitClosure());
+
   mojo::RemoteSet<mojom::TestInterfaceForDefer> defer_remote_set;
   mojo::RemoteSet<mojom::TestInterfaceForGrant> grant_remote_set;
   for (auto* frame : frames) {
@@ -859,11 +967,16 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, MojoCapabilityControl) {
         rfhi->browser_interface_broker_receiver_for_testing();
     blink::mojom::BrowserInterfaceBroker* prerender_broker =
         bib.internal_state()->impl();
+
     // Try to bind a kDefer interface.
     mojo::Remote<mojom::TestInterfaceForDefer> prerender_defer_remote;
     prerender_broker->GetInterface(
         prerender_defer_remote.BindNewPipeAndPassReceiver());
+    // The barrier closure will be called after the deferred interface is
+    // granted.
+    prerender_defer_remote->Ping(barrier_closure);
     defer_remote_set.Add(std::move(prerender_defer_remote));
+
     // Try to bind a kGrant interface.
     mojo::Remote<mojom::TestInterfaceForGrant> prerender_grant_remote;
     prerender_broker->GetInterface(
@@ -879,6 +992,9 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, MojoCapabilityControl) {
   // Activate the prerendered page.
   NavigatePrimaryPage(kPrerenderingUrl);
   EXPECT_EQ(shell()->web_contents()->GetURL(), kPrerenderingUrl);
+
+  // Wait until the deferred interface is granted on all frames.
+  run_loop.Run();
   EXPECT_EQ(test_browser_client.GetDeferReceiverSetSize(), frames.size());
 
   SetBrowserClientForTesting(old_browser_client);
@@ -1430,6 +1546,11 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Tests that access to local file system is deferred on prerendering pages.
 IN_PROC_BROWSER_TEST_P(PrerenderFileSystemAccessBrowserTest,
                        MAYBE_DeferFileSystemAccess) {
+  // TODO(https://crbug.com/1189017): Currently the MPArch doesn't fire the
+  // prerenderingchange event that is required for running this test.
+  if (IsMPArchActive())
+    return;
+
   base::FilePath temp_file;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -1461,14 +1582,21 @@ IN_PROC_BROWSER_TEST_P(PrerenderFileSystemAccessBrowserTest,
   // Run a event loop so the page can fail the test.
   EXPECT_TRUE(ExecJs(prerender_render_frame_host, "runLoop();"));
 
-  // Inform the prerendered page that it will be activated and activate it.
-  EXPECT_TRUE(ExecJs(prerender_render_frame_host, "setWillActivate();"));
   NavigatePrimaryPage(kPrerenderingUrl);
 
-  // `temp_file` should be selected after `willActivate` was set to true,
-  // otherwise the prerendered page will throw an error.
+  // Wait for the completion of `startShowOpenFilePicker`.
   EXPECT_EQ(temp_file.BaseName().AsUTF8Unsafe(),
             EvalJs(prerender_render_frame_host, "result;"));
+
+  // Check the event sequence seen in the prerendered page.
+  EvalJsResult results = EvalJs(prerender_render_frame_host, "eventsSeen");
+  std::vector<std::string> eventsSeen;
+  for (auto& result : results.ExtractList())
+    eventsSeen.push_back(result.GetString());
+  EXPECT_THAT(eventsSeen, testing::ElementsAreArray(
+                              {"startShowOpenFilePicker (prerendering: true)",
+                               "prerenderingchange (prerendering: false)",
+                               "showOpenFilePicker (prerendering: false)"}));
 
   ui::SelectFileDialog::SetFactory(nullptr);
 }
@@ -1573,6 +1701,36 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, AsyncClipboardAccessError) {
                        "navigator.clipboard.writeText(location.href);");
   EXPECT_THAT(result.error, ::testing::HasSubstr(
                                 "NotAllowedError: Document is not focused."));
+}
+
+// Tests that the Pointer Lock API is not valid on prerendering pages.
+// This cannot be upstreamed as a WPT test because the spec (probably) will
+// require that no error is thrown until activation.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, PointerLockError) {
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
+  const GURL kPrerenderingUrl =
+      GetUrl("/prerender/restriction_pointer_lock.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start a prerender.
+  AddPrerender(kPrerenderingUrl);
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry();
+  PrerenderHost* prerender_host =
+      registry.FindHostByUrlForTesting(kPrerenderingUrl);
+  ASSERT_TRUE(prerender_host);
+  RenderFrameHostImpl* prerender_render_frame_host =
+      prerender_host->GetPrerenderedMainFrameHost();
+
+  // The Pointer Lock API is not engaged on prerendering pages because the
+  // prerendering documents are not focused.
+  // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
+  auto result =
+      EvalJs(prerender_render_frame_host, "canvas.requestPointerLock();");
+  EXPECT_THAT(result.error, ::testing::HasSubstr(
+                                "WrongDocumentError: The root document of this "
+                                "element is not valid for pointer lock."));
 }
 
 // End: Tests for feature restrictions in prerendered pages ====================

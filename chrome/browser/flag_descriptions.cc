@@ -1369,11 +1369,6 @@ const char kJavascriptHarmonyShippingDescription[] =
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
 
-const char kKaleidoscopeModuleName[] = "Enforce Kaleidoscope NTP module";
-const char kKaleidoscopeModuleDescription[] =
-    "Enable the Kaleidoscope NTP module to display Kaleidoscope content on the "
-    " New Tab Page.";
-
 const char kKerberosSettingsSectionName[] = "Kerberos Settings Section";
 const char kKerberosSettingsSectionDescription[] =
     "Enables the Kerberos Section in ChromeOS settings. When disabled, "
@@ -2122,6 +2117,11 @@ const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
     "Does not affect behavior or performance.";
+
+const char kSearchHistoryLinkName[] = "Search History Link";
+const char kSearchHistoryLinkDescription[] =
+    "Changes the Clear Browsing Data UI to display a link to clear search "
+    "history on My Google Activity.";
 
 const char kSecurePaymentConfirmationDebugName[] =
     "Secure Payment Confirmation Debug Mode";
@@ -3537,15 +3537,6 @@ const char kHappinessTrackingSurveysForDesktopDemoName[] =
     "Happiness Tracking Surveys Demo";
 const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
     "Enable showing Happiness Tracking Surveys Demo to users on Desktop";
-
-const char
-    kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteName[] =
-        "Happiness Tracking Surveys for same-site cookies issues in Chrome "
-        "DevTools on Desktop.";
-const char
-    kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteDescription
-        [] = "Enable showing Happiness Tracking Surveys for same-site cookies "
-             "issues in Chrome DevTools on Desktop.";
 
 const char kHappinessTrackingSurveysForDesktopSettingsName[] =
     "Happiness Tracking Surveys for Settings";

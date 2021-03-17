@@ -2681,6 +2681,26 @@ void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
   delegate_->FrameSizeChanged(this, frame_size);
 }
 
+void RenderFrameHostImpl::DidActivateForPrerendering() {
+  DCHECK(blink::features::IsPrerender2Enabled());
+  if (!is_notifying_activation_for_prerendering_) {
+    mojo::ReportBadMessage("RFHI: DidActivateForPrerendering is unexpected");
+    return;
+  }
+  is_notifying_activation_for_prerendering_ = false;
+
+  // The renderer calls `DidActivateForPrerendering()` to notify that it fired
+  // the prerenderingchange event on a document. The browser now runs any
+  // binders that were deferred during prerendering. This corresponds to the
+  // following steps of the activate algorithm:
+  //
+  // https://jeremyroman.github.io/alternate-loading-modes/#prerendering-browsing-context-activate
+  // Step 8.3.4. "For each steps in doc's post-prerendering activation steps
+  // list:"
+  // Step 8.3.4.1. "Run steps."
+  broker_.ReleaseMojoBinderPolicies();
+}
+
 void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
@@ -3176,16 +3196,6 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   std::unique_ptr<NavigationRequest> owned_request = std::move(request->second);
   navigation_requests_.erase(committing_navigation_request);
 
-  // During a normal (uncached) navigation, is_loading_ is set to true in
-  // CommitNavigation(). When navigating to a document in the BackForwardCache,
-  // CommitNavigation() is never called, so we have to set is_loading_ to true
-  // ourselves.
-  //
-  // If is_start_loading_ is set to false, DidCommitNavigationInternal will
-  // re-fire the DidStartLoading event, which we don't want since it has already
-  // been fired.
-  is_loading_ = true;
-
   DidCommitNavigationInternal(std::move(owned_request), std::move(params),
                               /*same_document_params=*/nullptr);
 
@@ -3286,6 +3296,9 @@ void RenderFrameHostImpl::ResetNavigationRequests() {
 void RenderFrameHostImpl::SetNavigationRequest(
     std::unique_ptr<NavigationRequest> navigation_request) {
   DCHECK(navigation_request);
+
+  is_loading_ = true;
+
   if (NavigationTypeUtils::IsSameDocument(
           navigation_request->common_params().navigation_type)) {
     same_document_navigation_requests_[navigation_request->commit_params()
@@ -6859,8 +6872,6 @@ void RenderFrameHostImpl::CommitNavigation(
               std::move(remote_object), sent_state));
     }
   }
-
-  is_loading_ = true;
 }
 
 void RenderFrameHostImpl::FailedNavigation(
@@ -6915,8 +6926,6 @@ void RenderFrameHostImpl::FailedNavigation(
   // TODO(crbug/1129537): support UKM source creation for failed navigations
   // too.
 
-  // An error page is expected to commit, hence why is_loading_ is set to true.
-  is_loading_ = true;
   dom_content_loaded_ = false;
   has_committed_any_navigation_ = true;
   DCHECK(navigation_request && navigation_request->IsNavigationStarted() &&
@@ -7921,10 +7930,17 @@ void RenderFrameHostImpl::OnPrerenderedPageActivated() {
   // crash. Return to DCHECKs after the bug is fixed.
   CHECK(blink::features::IsPrerender2Enabled());
   CHECK(blink::features::IsPrerenderWebContentsEnabled());
+
   // Update the |lifecycle_state_| to kActive on activation.
   DCHECK_EQ(lifecycle_state_, LifecycleState::kPrerendering);
   SetLifecycleState(LifecycleState::kActive);
-  ReleaseMojoBinderPoliciesForPrerendering();
+
+  // TODO(https://crbug.com/1183320): Loosen the policies of the mojo capability
+  // control during dispatching the prerenderingchange event in the Blink.
+
+  DCHECK(!is_notifying_activation_for_prerendering_);
+  is_notifying_activation_for_prerendering_ = true;
+
   for (auto& child : children_)
     child->current_frame_host()->OnPrerenderedPageActivated();
 }

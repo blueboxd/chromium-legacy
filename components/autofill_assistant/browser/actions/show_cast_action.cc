@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 
 namespace autofill_assistant {
 
@@ -120,11 +121,16 @@ void ShowCastAction::ScrollToElement(
   }
   action_delegate_util::AddOptionalStep(
       wait_for_stable_element,
+      base::BindOnce(&WebController::ScrollIntoView,
+                     delegate_->GetWebController()->GetWeakPtr(), false),
+      actions.get());
+  action_delegate_util::AddOptionalStep(
+      wait_for_stable_element,
       base::BindOnce(
           &ShowCastAction::RunAndIncreaseWaitTimer,
           weak_ptr_factory_.GetWeakPtr(),
-          base::BindOnce(&ActionDelegate::WaitUntilElementIsStable,
-                         delegate_->GetWeakPtr(),
+          base::BindOnce(&WebController::WaitUntilElementIsStable,
+                         delegate_->GetWebController()->GetWeakPtr(),
                          proto_.show_cast().stable_check_max_rounds(),
                          base::TimeDelta::FromMilliseconds(
                              proto_.show_cast().stable_check_interval_ms()))),

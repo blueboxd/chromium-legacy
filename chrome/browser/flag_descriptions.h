@@ -821,9 +821,6 @@ extern const char kJavascriptHarmonyDescription[];
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
 
-extern const char kKaleidoscopeModuleName[];
-extern const char kKaleidoscopeModuleDescription[];
-
 extern const char kKerberosSettingsSectionName[];
 extern const char kKerberosSettingsSectionDescription[];
 
@@ -1244,6 +1241,9 @@ extern const char kScrollableTabStripButtonsDescription[];
 
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
+
+extern const char kSearchHistoryLinkName[];
+extern const char kSearchHistoryLinkDescription[];
 
 extern const char kSecurePaymentConfirmationDebugName[];
 extern const char kSecurePaymentConfirmationDebugDescription[];
@@ -2052,12 +2052,6 @@ extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
 extern const char kHappinessTrackingSurveysForDesktopDemoName[];
 extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
-
-extern const char
-    kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteName[];
-extern const char
-    kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteDescription
-        [];
 
 extern const char kHappinessTrackingSurveysForDesktopSettingsName[];
 extern const char kHappinessTrackingSurveysForDesktopSettingsDescription[];

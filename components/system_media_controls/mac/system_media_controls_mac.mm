@@ -11,8 +11,6 @@ std::unique_ptr<SystemMediaControls> SystemMediaControls::Create(
     const std::string& product_name) {
   // The required APIs for interacting with the Now Playing Info Center only
   // exist on 10.13.1 or later.
-  // TODO(https://crbug.com/942114): Use the |product_name| string in
-  // NowPlayingInfoCenterDelegateCocoa instead of using branding build args.
   if (@available(macOS 10.13.1, *))
     return std::make_unique<internal::SystemMediaControlsMac>();
   return nullptr;
@@ -68,6 +66,10 @@ void SystemMediaControlsMac::SetArtist(const std::u16string& artist) {
 
 void SystemMediaControlsMac::SetAlbum(const std::u16string& album) {
   now_playing_info_center_delegate_.SetAlbum(album);
+}
+
+void SystemMediaControlsMac::SetThumbnail(const SkBitmap& bitmap) {
+  now_playing_info_center_delegate_.SetThumbnail(bitmap);
 }
 
 void SystemMediaControlsMac::SetPosition(

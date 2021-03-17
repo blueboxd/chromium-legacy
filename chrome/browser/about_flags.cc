@@ -5224,16 +5224,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
 
-    {"happiness-tracking-surveys-for-desktop-devtools-issues-cookies-same-site",
-     flag_descriptions::
-         kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteName,
-     flag_descriptions::
-         kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSiteDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::
-             kHappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite)},
-
     {"happiness-tracking-surveys-for-desktop-demo",
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
@@ -5863,6 +5853,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     kMetricsSettingsAndroidVariations,
                                     "MetricsSettingsAndroid")},
 #endif
+
+    {"search-history-link", flag_descriptions::kSearchHistoryLinkName,
+     flag_descriptions::kSearchHistoryLinkDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSearchHistoryLink)},
 
 #if defined(OS_ANDROID)
     {"safe-browsing-client-side-detection-android",
@@ -6963,10 +6957,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSCTAuditingVariations,
                                     "SCTAuditingVariations")},
 #endif  // !defined(OS_ANDROID)
-
-    {"kaleidoscope-ntp-module", flag_descriptions::kKaleidoscopeModuleName,
-     flag_descriptions::kKaleidoscopeModuleDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kKaleidoscopeModule)},
 
     {"insert-key-toggle-mode", flag_descriptions::kInsertKeyToggleModeName,
      flag_descriptions::kInsertKeyToggleModeDescription,

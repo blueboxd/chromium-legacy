@@ -693,9 +693,8 @@ TEST_F(WebViewTest, PlatformColorsChangedOnDeviceEmulation) {
   ASSERT_TRUE(span1);
 
   // Check non-MobileLayoutTheme color.
-  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
   Color original = LayoutTheme::GetTheme().FocusRingColor(
-      ComputedStyle::InitialStyle().UsedColorScheme());
+      span1->ComputedStyleRef().UsedColorScheme());
   EXPECT_EQ(original, OutlineColor(span1));
 
   // Set the focus ring color for the mobile theme to something known.
@@ -6060,6 +6059,22 @@ TEST_F(WebViewTest, LongPressAndThenLongTapLinkInIframeShouldShowContextMenu) {
                 WebCoalescedInputEvent(tap_event, ui::LatencyInfo())));
   EXPECT_EQ("anchor contextmenu",
             web_view->MainFrameImpl()->GetDocument().Title());
+}
+
+TEST_F(WebViewTest, SetHistoryLengthAndOffset) {
+  WebViewImpl* web_view_impl = web_view_helper_.Initialize();
+
+  // No history to merge; one committed page.
+  web_view_impl->SetHistoryListFromNavigation(0, 1);
+  EXPECT_EQ(1, web_view_impl->HistoryBackListCount() +
+                   web_view_impl->HistoryForwardListCount() + 1);
+  EXPECT_EQ(0, web_view_impl->HistoryBackListCount());
+
+  // History of length 1 to merge; one committed page.
+  web_view_impl->SetHistoryListFromNavigation(1, 2);
+  EXPECT_EQ(2, web_view_impl->HistoryBackListCount() +
+                   web_view_impl->HistoryForwardListCount() + 1);
+  EXPECT_EQ(1, web_view_impl->HistoryBackListCount());
 }
 
 }  // namespace blink

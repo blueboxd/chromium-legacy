@@ -7,7 +7,6 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "build/branding_buildflags.h"
 
 @interface NowPlayingInfoCenterDelegateCocoa ()
 
@@ -73,6 +72,18 @@
                       forKey:MPMediaItemPropertyPlaybackDuration];
 }
 
+- (void)setThumbnail:(NSImage*)image {
+  if (@available(macOS 10.13.2, *)) {
+    base::scoped_nsobject<MPMediaItemArtwork> artwork(
+        [[MPMediaItemArtwork alloc]
+            initWithBoundsSize:image.size
+                requestHandler:^NSImage* _Nonnull(CGSize aSize) {
+                  return image;
+                }]);
+    [_nowPlayingInfo setObject:artwork forKey:MPMediaItemPropertyArtwork];
+  }
+}
+
 - (void)clearMetadata {
   [self initializeNowPlayingInfoValues];
   [self updateNowPlayingInfo];
@@ -85,13 +96,12 @@
                       forKey:MPNowPlayingInfoPropertyPlaybackRate];
   [_nowPlayingInfo setObject:[NSNumber numberWithDouble:0]
                       forKey:MPMediaItemPropertyPlaybackDuration];
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  [_nowPlayingInfo setObject:@"Chrome" forKey:MPMediaItemPropertyTitle];
-#else
-  [_nowPlayingInfo setObject:@"Chromium" forKey:MPMediaItemPropertyTitle];
-#endif
+  [_nowPlayingInfo setObject:@"" forKey:MPMediaItemPropertyTitle];
   [_nowPlayingInfo setObject:@"" forKey:MPMediaItemPropertyArtist];
   [_nowPlayingInfo setObject:@"" forKey:MPMediaItemPropertyAlbumTitle];
+  if (@available(macOS 10.13.2, *)) {
+    [_nowPlayingInfo removeObjectForKey:MPMediaItemPropertyArtwork];
+  }
 }
 
 - (void)updateNowPlayingInfo {

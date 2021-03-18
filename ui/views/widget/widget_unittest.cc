@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2184,9 +2183,9 @@ class WidgetWindowTitleTest : public DesktopWidgetTest {
         widget->native_widget_private();
 
     std::u16string empty;
-    std::u16string s1(base::UTF8ToUTF16("Title1"));
-    std::u16string s2(base::UTF8ToUTF16("Title2"));
-    std::u16string s3(base::UTF8ToUTF16("TitleLong"));
+    std::u16string s1(u"Title1");
+    std::u16string s2(u"Title2");
+    std::u16string s3(u"TitleLong");
 
     // The widget starts with no title, setting empty should not change
     // anything.
@@ -3779,7 +3778,7 @@ TEST_F(WidgetTest, MouseWheelEvent) {
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   widget->SetBounds(gfx::Rect(0, 0, 600, 600));
   EventCountView* event_count_view = new EventCountView();
-  widget->GetContentsView()->AddChildView(event_count_view);
+  widget->client_view()->AddChildView(event_count_view);
   event_count_view->SetBounds(0, 0, 600, 600);
   widget->Show();
 
@@ -3789,81 +3788,6 @@ TEST_F(WidgetTest, MouseWheelEvent) {
   event_generator.MoveMouseWheel(1, 1);
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSEWHEEL));
 }
-
-class LayoutCountingView : public View {
- public:
-  LayoutCountingView() = default;
-  ~LayoutCountingView() override = default;
-
-  void set_layout_closure(base::OnceClosure layout_closure) {
-    layout_closure_ = std::move(layout_closure);
-  }
-
-  size_t GetAndClearLayoutCount() {
-    const size_t count = layout_count_;
-    layout_count_ = 0u;
-    return count;
-  }
-
-  // View:
-  void Layout() override {
-    ++layout_count_;
-    View::Layout();
-    if (layout_closure_)
-      std::move(layout_closure_).Run();
-  }
-
- private:
-  size_t layout_count_ = 0u;
-
-  // If valid, this is run when Layout() is called.
-  base::OnceClosure layout_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutCountingView);
-};
-
-using WidgetInvalidateLayoutTest = ViewsTestBaseWithNativeWidgetType;
-
-TEST_P(WidgetInvalidateLayoutTest, InvalidateLayout) {
-  std::unique_ptr<Widget> widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
-  LayoutCountingView* view =
-      widget->widget_delegate()->GetContentsView()->AddChildView(
-          std::make_unique<LayoutCountingView>());
-  view->parent()->SetLayoutManager(std::make_unique<FillLayout>());
-  // Force an initial Layout().
-  // TODO(sky): this shouldn't be necessary, adding a child view should trigger
-  // ScheduleLayout().
-  view->Layout();
-  widget->Show();
-
-  ui::Compositor* compositor = widget->GetCompositor();
-  ASSERT_TRUE(compositor);
-  compositor->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
-
-  base::RunLoop run_loop;
-  view->GetAndClearLayoutCount();
-  // Don't use WaitForCompositingEnded() here as it's entirely possible nothing
-  // will be drawn (which means WaitForCompositingEnded() isn't run). Instead
-  // wait for Layout() to be called.
-  view->set_layout_closure(run_loop.QuitClosure());
-  EXPECT_FALSE(ViewTestApi(view).needs_layout());
-  EXPECT_FALSE(ViewTestApi(widget->GetRootView()).needs_layout());
-  view->InvalidateLayout();
-  EXPECT_TRUE(ViewTestApi(view).needs_layout());
-  EXPECT_TRUE(ViewTestApi(widget->GetRootView()).needs_layout());
-  run_loop.Run();
-  EXPECT_EQ(1u, view->GetAndClearLayoutCount());
-  EXPECT_FALSE(ViewTestApi(view).needs_layout());
-  EXPECT_FALSE(ViewTestApi(widget->GetRootView()).needs_layout());
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    WidgetInvalidateLayoutTest,
-    WidgetInvalidateLayoutTest,
-    ::testing::Values(ViewsTestBase::NativeWidgetType::kDefault,
-                      ViewsTestBase::NativeWidgetType::kDesktop));
 
 class WidgetShadowTest : public WidgetTest {
  public:

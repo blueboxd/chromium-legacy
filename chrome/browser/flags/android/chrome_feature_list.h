@@ -12,6 +12,7 @@ namespace chrome {
 namespace android {
 
 // Alphabetical:
+extern const base::Feature kAddToHomescreenIPH;
 extern const base::Feature kAllowNewIncognitoTabIntents;
 extern const base::Feature kAllowRemoteContextForNotifications;
 extern const base::Feature kAndroidDefaultBrowserPromo;
@@ -108,7 +109,6 @@ extern const base::Feature kSearchEnginePromoNewDevice;
 extern const base::Feature kServiceManagerForBackgroundPrefetch;
 extern const base::Feature kServiceManagerForDownload;
 extern const base::Feature kShareButtonInTopToolbar;
-extern const base::Feature kShareByDefaultInCCT;
 extern const base::Feature kShoppingAssist;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleWrapper;

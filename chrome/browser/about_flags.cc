@@ -49,7 +49,6 @@
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
-#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sms/sms_flags.h"
@@ -1811,7 +1810,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"omnibox_focused_on_new_tab", "true"},
     {"home_button_on_grid_tab_switcher", "true"},
     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
-    {"hide_switch_when_no_incognito_tabs", "true"}};
+    {"hide_switch_when_no_incognito_tabs", "true"},
+    {"show_tabs_in_mru_order", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
@@ -1824,7 +1824,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"show_last_active_tab_only", "true"},
      {"omnibox_focused_on_new_tab", "true"},
      {"home_button_on_grid_tab_switcher", "true"},
-     {"new_home_surface_from_home_button", "hide_tab_switcher_only"}};
+     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
+     {"show_tabs_in_mru_order", "true"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
@@ -1913,6 +1914,19 @@ const FeatureEntry::FeatureVariation kConditionalTabStripAndroidVariations[] = {
      base::size(kConditionalTabStripAndroid_60Minutes), nullptr},
 };
 #endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kAddToHomescreen_UseTextBubble[] = {
+    {"use_text_bubble", "true"}};
+const FeatureEntry::FeatureParam kAddToHomescreen_UseMessage[] = {
+    {"use_message", "true"}};
+
+const FeatureEntry::FeatureVariation kAddToHomescreenIPHVariations[] = {
+    {"Use Text Bubble", kAddToHomescreen_UseTextBubble,
+     base::size(kAddToHomescreen_UseTextBubble), nullptr},
+    {"Use Message", kAddToHomescreen_UseMessage,
+     base::size(kAddToHomescreen_UseMessage), nullptr}};
+#endif
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
@@ -3079,12 +3093,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShowBluetoothDebugLogToggle)},
-    {"enable-bluetooth-verbose-logs-for-googlers",
-     flag_descriptions::kEnableBluetoothVerboseLogsForGooglersName,
-     flag_descriptions::kEnableBluetoothVerboseLogsForGooglersDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kEnableBluetoothVerboseLogsForGooglers)},
     {"show-taps", flag_descriptions::kShowTapsName,
      flag_descriptions::kShowTapsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kShowTaps)},
@@ -3359,9 +3367,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-sharing-hub-v1-5", flag_descriptions::kChromeSharingHubV15Name,
      flag_descriptions::kChromeSharingHubV15Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHubV15)},
-    {"share-by-default-in-cct", flag_descriptions::kShareByDefaultInCCTName,
-     flag_descriptions::kShareByDefaultInCCTDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kShareByDefaultInCCT)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -3560,6 +3565,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsRunOnOsLoginDescription,
      kOsWin | kOsLinux | kOsMac,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
+    {"enable-desktop-pwas-protocol-handling",
+     flag_descriptions::kDesktopPWAsProtocolHandlingName,
+     flag_descriptions::kDesktopPWAsProtocolHandlingDescription,
+     kOsWin | kOsLinux | kOsMac,
+     FEATURE_VALUE_TYPE(blink::features::kWebAppEnableProtocolHandlers)},
     {"enable-desktop-pwas-url-handling",
      flag_descriptions::kDesktopPWAsUrlHandlingName,
      flag_descriptions::kDesktopPWAsUrlHandlingDescription,
@@ -3651,6 +3661,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemKeyboardLockDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemKeyboardLock)},
 #if defined(OS_ANDROID)
+    {"add-to-homescreen-iph", flag_descriptions::kAddToHomescreenIPHName,
+     flag_descriptions::kAddToHomescreenIPHDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAddToHomescreenIPH,
+                                    kAddToHomescreenIPHVariations,
+                                    "AddToHomescreen")},
     {"offline-pages-live-page-sharing",
      flag_descriptions::kOfflinePagesLivePageSharingName,
      flag_descriptions::kOfflinePagesLivePageSharingDescription, kOsAndroid,
@@ -3844,9 +3859,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kXsurfaceMetricsReportingName,
      flag_descriptions::kXsurfaceMetricsReportingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kWebFeed)},
-    {"report-feed-user-actions", flag_descriptions::kReportFeedUserActionsName,
-     flag_descriptions::kReportFeedUserActionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feed::kReportFeedUserActions)},
     {"interest-feed-v1-clicks-and-views-cond-upload",
      flag_descriptions::kInterestFeedV1ClickAndViewActionsConditionalUploadName,
      flag_descriptions::
@@ -4170,9 +4182,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-app-copy-image", flag_descriptions::kFilesAppCopyImageName,
      flag_descriptions::kFilesAppCopyImageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableFilesAppCopyImage)},
-    {"files-camera-folder", flag_descriptions::kFilesCameraFolderName,
-     flag_descriptions::kFilesCameraFolderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFilesCameraFolder)},
     {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
      flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
@@ -5364,12 +5373,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantTimersV2)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-    {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
-     flag_descriptions::kClickToCallUIDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(kClickToCallUI)},
-#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
     {"remote-copy-receiver", flag_descriptions::kRemoteCopyReceiverName,
@@ -5715,22 +5718,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStorageAccessAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kStorageAccessAPI)},
 
-    {"same-site-by-default-cookies",
-     flag_descriptions::kSameSiteByDefaultCookiesName,
-     flag_descriptions::kSameSiteByDefaultCookiesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kSameSiteByDefaultCookies)},
-
     {"enable-removing-all-third-party-cookies",
      flag_descriptions::kEnableRemovingAllThirdPartyCookiesName,
      flag_descriptions::kEnableRemovingAllThirdPartyCookiesDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableRemovingAllThirdPartyCookies)},
-
-    {"cookies-without-same-site-must-be-secure",
-     flag_descriptions::kCookiesWithoutSameSiteMustBeSecureName,
-     flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
 
 #if defined(OS_MAC)
     {"enterprise-reporting-api-keychain-recreation",
@@ -5809,10 +5802,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFormControlsRefreshDescription,
      kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kFormControlsRefresh)},
-
-    {"color-picker-eye-dropper", flag_descriptions::kColorPickerEyeDropperName,
-     flag_descriptions::kColorPickerEyeDropperDescription, kOsWin | kOsMac,
-     FEATURE_VALUE_TYPE(features::kEyeDropper)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"auto-screen-brightness", flag_descriptions::kAutoScreenBrightnessName,
@@ -6378,7 +6367,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPaintPreviewStartupDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup,
                                     kPaintPreviewStartupVariations,
-                                    "PaintPreviewStartup")},
+                                    "PaintPreviewShowOnStartup")},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -6588,11 +6577,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-palm-suppression", flag_descriptions::kEnablePalmSuppressionName,
      flag_descriptions::kEnablePalmSuppressionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnablePalmSuppression)},
-
-    {"movable-partial-screenshot-region",
-     flag_descriptions::kMovablePartialScreenshotName,
-     flag_descriptions::kMovablePartialScreenshotDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kMovablePartialScreenshot)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-experimental-cookie-features",

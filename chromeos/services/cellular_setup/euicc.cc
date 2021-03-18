@@ -111,15 +111,18 @@ void Euicc::InstallProfileFromActivationCode(
   // currently being installed to prevent multiple attempts for the same
   // activation code.
   NET_LOG(USER) << "Attempting installation with code " << activation_code;
-  esim_manager_->cellular_inhibitor()->InhibitCellularScanning(base::BindOnce(
-      &Euicc::PerformInstallProfileFromActivationCode,
-      weak_ptr_factory_.GetWeakPtr(), activation_code, confirmation_code,
-      CreateTimedInstallProfileCallback(std::move(callback))));
+  esim_manager_->cellular_inhibitor()->InhibitCellularScanning(
+      CellularInhibitor::InhibitReason::kInstallingProfile,
+      base::BindOnce(&Euicc::PerformInstallProfileFromActivationCode,
+                     weak_ptr_factory_.GetWeakPtr(), activation_code,
+                     confirmation_code,
+                     CreateTimedInstallProfileCallback(std::move(callback))));
 }
 
 void Euicc::RequestPendingProfiles(RequestPendingProfilesCallback callback) {
   NET_LOG(EVENT) << "Requesting Pending profiles";
   esim_manager_->cellular_inhibitor()->InhibitCellularScanning(
+      CellularInhibitor::InhibitReason::kRefreshingProfileList,
       base::BindOnce(&Euicc::PerformRequestPendingProfiles,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -258,7 +261,7 @@ void Euicc::OnNewProfileEnableSuccess(const dbus::ObjectPath& profile_path,
                      weak_ptr_factory_.GetWeakPtr(), profile_path),
       base::BindOnce(&Euicc::OnNewProfileConnectFailure,
                      weak_ptr_factory_.GetWeakPtr(), profile_path),
-      /*check_error_state=*/false, ConnectCallbackMode::ON_COMPLETED);
+      /*check_error_state=*/false, ConnectCallbackMode::ON_STARTED);
 }
 
 void Euicc::OnNewProfileConnectSuccess(const dbus::ObjectPath& profile_path) {

@@ -11,9 +11,6 @@
 // Feature to open tab switcher after sliding down the toolbar.
 extern const base::Feature kExpandedTabStrip;
 
-// Feature to take snapshots using |-drawViewHierarchy:|.
-extern const base::Feature kSnapshotDrawView;
-
 // Feature to apply UI Refresh theme to the settings.
 extern const base::Feature kSettingsRefresh;
 
@@ -31,9 +28,6 @@ extern const base::Feature kTestFeature;
 // Feature flag to enable showing a different UI when the setting is managed by
 // an enterprise policy.
 extern const base::Feature kEnableIOSManagedSettingsUI;
-
-// Enables the safety check in settings on iOS.
-extern const base::Feature kSafetyCheckIOS;
 
 // Feature flag to enable new illustrations and UI on empty states.
 extern const base::Feature kIllustratedEmptyStates;

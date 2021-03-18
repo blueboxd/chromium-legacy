@@ -49,24 +49,6 @@
             ]
         }
     ],
-    "AndroidAppMenuUiReworkPhase4And5": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "AddToOption",
-                    "params": {
-                        "three_button_action_bar": "add_to_option"
-                    },
-                    "enable_features": [
-                        "TabbedAppOverflowMenuThreeButtonActionbar"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidAutofillQueryServerFieldTypes": [
         {
             "platforms": [
@@ -2649,6 +2631,21 @@
             ]
         }
     ],
+    "DisableCryptAuthV1DeviceSync": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DisableCryptAuthV1DeviceSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "DisableGles2ForOopR": [
         {
             "platforms": [
@@ -3096,8 +3093,7 @@
                         "session_rate": "==0"
                     },
                     "enable_features": [
-                        "IPH_FeedHeaderMenu",
-                        "ReportFeedUserActions"
+                        "IPH_FeedHeaderMenu"
                     ]
                 }
             ]

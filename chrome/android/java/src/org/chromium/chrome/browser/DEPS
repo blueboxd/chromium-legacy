@@ -130,9 +130,6 @@ specific_include_rules = {
   "DownloadInfoBarController\.java": [
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
   ],
-  "DownloadPage\.java": [
-    "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
-  ],
   "ExploreSitesIPH\.java": [
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
   ],
@@ -206,9 +203,6 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
   ],
   "AndroidPaymentApp\.java": [
-    "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
-  ],
-  "CardEditor\.java": [
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
   ],
   "ChromePaymentRequestFactory\.java": [

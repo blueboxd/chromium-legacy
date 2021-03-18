@@ -738,7 +738,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   // We want to allow same-document text fragment navigations if they're coming
   // from the browser. Do this only on a standard navigation so that we don't
   // clobber the token when this is called from e.g. history.replaceState.
-  if (type == WebFrameLoadType::kStandard) {
+  if (type == WebFrameLoadType::kStandard ||
+      same_document_navigation_source == kSameDocumentNavigationDefault) {
     has_text_fragment_token_ =
         TextFragmentAnchor::GenerateNewTokenForSameDocument(
             new_url.FragmentIdentifier(), type, is_content_initiated,
@@ -1823,13 +1824,7 @@ bool ShouldReuseDOMWindow(LocalDOMWindow* window,
 WindowAgent* GetWindowAgentForOrigin(LocalFrame* frame,
                                      SecurityOrigin* origin,
                                      bool is_origin_keyed) {
-  // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
-  // dynamically change.
-  bool has_potential_universal_access_privilege =
-      !frame->GetSettings()->GetWebSecurityEnabled() ||
-      frame->GetSettings()->GetAllowUniversalAccessFromFileURLs();
   return frame->window_agent_factory().GetAgentForOrigin(
-      has_potential_universal_access_privilege,
       V8PerIsolateData::MainThreadIsolate(), origin, is_origin_keyed);
 }
 

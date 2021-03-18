@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
@@ -98,6 +98,12 @@ class PasswordManagerInterface : public FormSubmissionObserver {
       const std::string& frame_id,
       PasswordManagerDriver* driver,
       const autofill::FieldDataManager* field_data_manager) = 0;
+
+  // Propagates all available field data manager info to existing form managers
+  // and provisionally saves them if the relevant data is retrieved.
+  virtual void PropagateFieldDataManagerInfo(
+      const autofill::FieldDataManager* field_data_manager,
+      const PasswordManagerDriver* driver) = 0;
 #endif
 };
 

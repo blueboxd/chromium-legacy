@@ -57,8 +57,8 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -1048,8 +1048,8 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 
-  ash::OwnerSettingsServiceChromeOS* service =
-      ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_);
 
   if (service && service->HandlesSetting(pref_name) &&
       service->Set(pref_name, *value)) {
@@ -1065,8 +1065,8 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
 bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
                                         const base::Value& value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::OwnerSettingsServiceChromeOS* service =
-      ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_);
 
   return service && service->HandlesSetting(pref_name) &&
          service->AppendToList(pref_name, value);
@@ -1079,8 +1079,8 @@ bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
 bool PrefsUtil::RemoveFromListCrosSetting(const std::string& pref_name,
                                           const base::Value& value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::OwnerSettingsServiceChromeOS* service =
-      ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_);
 
   return service && service->HandlesSetting(pref_name) &&
          service->RemoveFromList(pref_name, value);

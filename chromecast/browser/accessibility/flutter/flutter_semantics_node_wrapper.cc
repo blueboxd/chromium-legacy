@@ -10,7 +10,7 @@
 #include "chromecast/browser/cast_web_contents.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
 
 using gallium::castos::ActionProperties;
 using gallium::castos::BooleanProperties;
@@ -418,16 +418,14 @@ void FlutterSemanticsNodeWrapper::Serialize(ui::AXNodeData* out_data) const {
       for (CastWebContents* contents : all_contents) {
         if (contents->id() == web_contents_id) {
           content::WebContents* web_contents = contents->web_contents();
-          out_data->AddStringAttribute(
-              ax::mojom::StringAttribute::kChildTreeId,
-              web_contents->GetMainFrame()->GetAXTreeID().ToString());
+          out_data->AddChildTreeId(web_contents->GetMainFrame()->GetAXTreeID());
           break;
         }
       }
     } else {
       // Use the value as a tree id.
-      out_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                   ax_tree_id);
+      ui::AXTreeID child_ax_tree_id = ui::AXTreeID::FromString(ax_tree_id);
+      out_data->AddChildTreeId(child_ax_tree_id);
     }
   }
 

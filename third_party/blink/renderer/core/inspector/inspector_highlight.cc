@@ -1315,20 +1315,22 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
 
 void CollectQuadsRecursive(Node* node, Vector<FloatQuad>& out_quads) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object)
-    return;
-
   // For inline elements, absoluteQuads will return a line box based on the
   // line-height and font metrics, which is technically incorrect as replaced
   // elements like images should use their intristic height and expand the
   // linebox  as needed. To get an appropriate quads we descend
   // into the children and have them add their boxes.
-  if (layout_object->IsLayoutInline() &&
+  //
+  // Elements with display:contents style (such as slots) do not have layout
+  // objects and we always look at their contents.
+  if (((layout_object && layout_object->IsLayoutInline()) ||
+       (!layout_object && node->IsElementNode() &&
+        To<Element>(node)->HasDisplayContentsStyle())) &&
       LayoutTreeBuilderTraversal::FirstChild(*node)) {
     for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node); child;
          child = LayoutTreeBuilderTraversal::NextSibling(*child))
       CollectQuadsRecursive(child, out_quads);
-  } else {
+  } else if (layout_object) {
     layout_object->AbsoluteQuads(out_quads);
   }
 }
@@ -1577,6 +1579,8 @@ InspectorHighlight::InspectorHighlight(
       show_extension_lines_(highlight_config.show_extension_lines),
       show_accessibility_info_(highlight_config.show_accessibility_info),
       color_format_(highlight_config.color_format) {
+  DCHECK(node->GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kLayoutClean);
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
   auto* text_node = DynamicTo<Text>(node);

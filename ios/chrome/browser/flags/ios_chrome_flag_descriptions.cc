@@ -366,11 +366,6 @@ const char kSafeBrowsingRealTimeLookupDescription[] =
     "When enabled, navigation URLs are checked using real-time queries to Safe "
     "Browsing servers, subject to an opt-in preference.";
 
-const char kSafetyCheckIOSName[] = "Enable safety check on iOS";
-const char kSafetyCheckIOSDescription[] =
-    "When enabled, the iOS version of safety check is available in Chrome "
-    "settings.";
-
 const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
@@ -405,10 +400,6 @@ const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
-
-const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
-const char kSnapshotDrawViewDescription[] =
-    "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
 
 const char kSimplifySignOutIOSName[] = "Simplify sign-out";
 const char kSimplifySignOutIOSDescription[] =

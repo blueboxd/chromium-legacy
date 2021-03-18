@@ -104,6 +104,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Network.Cellular.Connection.Disconnections"
     enum="NetworkCellularConnectionState" expires_after="2021-08-29">
+  <obsolete>
+    Split into Network.Cellular.PSim.Disconnections and
+    Network.Cellular.ESim.Disconnections on 03/2021.
+  </obsolete>
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-system-services-networking@google.com</owner>
   <summary>
@@ -114,6 +118,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Network.Cellular.Connection.TimeToConnected" units="ms"
     expires_after="2021-08-29">
+  <obsolete>
+    Split into Network.Cellular.ESim.TimeToConnected and
+    Network.Cellular.ESim.TimeToConnected on 03/2021.
+  </obsolete>
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -268,6 +276,53 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Tracks the number of times a cellular network is connected as the only
     network, or with other network or not connected at all.
   </summary>
+</histogram>
+
+<histogram name="Network.Cellular.{SimType}.ConnectionSuccess"
+    enum="CellularConnectResult" expires_after="2022-03-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <summary>
+    Tracks the result of connecting to a cellular network. Logged when a
+    {SimType} connection succeeds or fails. In the case of failure, which can
+    occur in the Chrome or Shill layers, the error reason is emitted. Note that
+    Shill errors are mapped to Unknown. Refer to
+    go/cros-cellular-success-metrics for details.
+  </summary>
+  <token key="SimType">
+    <variant name="ESim"/>
+    <variant name="PSim"/>
+  </token>
+</histogram>
+
+<histogram name="Network.Cellular.{SimType}.Disconnections"
+    enum="NetworkCellularConnectionState" expires_after="2022-03-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-system-services-networking@google.com</owner>
+  <summary>
+    Tracks when cellular {SimType} network is connected and when cellular
+    network is disconnected without explicit user action.
+  </summary>
+  <token key="SimType">
+    <variant name="ESim"/>
+    <variant name="PSim"/>
+  </token>
+</histogram>
+
+<histogram name="Network.Cellular.{SimType}.TimeToConnected" units="ms"
+    expires_after="2022-03-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <summary>
+    Tracks the amount fo time taken between when cellular device starts and
+    finishes connecting for {SimType} networks.
+  </summary>
+  <token key="SimType">
+    <variant name="ESim"/>
+    <variant name="PSim"/>
+  </token>
 </histogram>
 
 <histogram name="Network.Cellular.{SimType}.Usage.Duration" units="seconds"

@@ -31,8 +31,8 @@
 #include "chrome/browser/ash/app_mode/kiosk_external_updater.h"
 #include "chrome/browser/ash/app_mode/pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -83,7 +83,7 @@ std::string GenerateKioskAppAccountId(const std::string& app_id) {
 // Check for presence of machine owner public key file.
 void CheckOwnerFilePresence(bool *present) {
   scoped_refptr<ownership::OwnerKeyUtil> util =
-      OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil();
+      OwnerSettingsServiceAshFactory::GetInstance()->GetOwnerKeyUtil();
   *present = util.get() && util->IsPublicKeyPresent();
 }
 
@@ -186,7 +186,7 @@ std::string KioskAppManager::GetAutoLaunchApp() const {
 }
 
 void KioskAppManager::SetAutoLaunchApp(const std::string& app_id,
-                                       OwnerSettingsServiceChromeOS* service) {
+                                       OwnerSettingsServiceAsh* service) {
   SetAutoLoginState(AutoLoginState::kRequested);
   // Clean first, so the proper change callbacks are triggered even
   // if we are only changing AutoLoginState here.
@@ -449,7 +449,7 @@ std::string KioskAppManager::GetAutoLaunchAppRequiredPlatformVersion() const {
 }
 
 void KioskAppManager::AddApp(const std::string& app_id,
-                             OwnerSettingsServiceChromeOS* service) {
+                             OwnerSettingsServiceAsh* service) {
   std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(CrosSettings::Get());
 
@@ -474,7 +474,7 @@ void KioskAppManager::AddApp(const std::string& app_id,
 }
 
 void KioskAppManager::RemoveApp(const std::string& app_id,
-                                OwnerSettingsServiceChromeOS* service) {
+                                OwnerSettingsServiceAsh* service) {
   // Resets auto launch app if it is the removed app.
   if (auto_launch_app_id_ == app_id)
     SetAutoLaunchApp(std::string(), service);

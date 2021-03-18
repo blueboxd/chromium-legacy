@@ -150,8 +150,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 @property(nonatomic, strong) ContentSuggestionsDiscoverItem* discoverItem;
 // Number of unread items in reading list model.
 @property(nonatomic, assign) NSInteger readingListUnreadCount;
-// Whether to show the most recent tab tile.
-@property(nonatomic, assign) BOOL showMostRecentTabStartSurfaceTile;
+// YES if the Return to Recent Tab tile is being shown.
+@property(nonatomic, assign, getter=mostRecentTabStartSurfaceTileIsShowing)
+    BOOL showMostRecentTabStartSurfaceTile;
 // Whether the incognito mode is available.
 @property(nonatomic, assign) BOOL incognitoAvailable;
 
@@ -296,6 +297,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       self.returnToRecentTabItem.icon = favicon.ToUIImage();
     }
   }
+  if (!self.returnToRecentTabItem.icon) {
+    driver->FetchFavicon(webState->GetLastCommittedURL(), false);
+  }
 
   self.returnToRecentTabItem.title =
       l10n_util::GetNSString(IDS_IOS_RETURN_TO_RECENT_TAB_TITLE);
@@ -313,11 +317,18 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   [self.dataSink clearSection:self.returnToRecentTabSectionInfo];
 }
 
-#pragma mark - StartSurfaceRecentTabRemovalObserving
+#pragma mark - StartSurfaceRecentTabObserving
 
 - (void)mostRecentTabWasRemoved:(web::WebState*)web_state {
   DCHECK(IsStartSurfaceEnabled());
   [self hideRecentTabTile];
+}
+
+- (void)mostRecentTabFaviconUpdatedWithImage:(UIImage*)image {
+  if (self.returnToRecentTabItem) {
+    self.returnToRecentTabItem.icon = image;
+    [self.dataSink itemHasChanged:self.returnToRecentTabItem];
+  }
 }
 
 #pragma mark - ContentSuggestionsDataSource

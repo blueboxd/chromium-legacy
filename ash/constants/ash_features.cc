@@ -320,10 +320,6 @@ const base::Feature kExoLockNotification{"ExoLockNotification",
 const base::Feature kFamilyLinkOnSchoolDevice{"FamilyLinkOnSchoolDevice",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the camera folder handling in files app.
-const base::Feature kFilesCameraFolder{"FilesCameraFolder",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the next generation file manager.
 const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -616,10 +612,6 @@ const base::Feature kSessionManagerLongKillTimeout{
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables verbose Bluetooth log collection for Googlers.
-const base::Feature kEnableBluetoothVerboseLogsForGooglers{
-    "EnableBluetoothVerboseLogsForGooglers", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Shows the Play Store icon in Demo Mode.
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",

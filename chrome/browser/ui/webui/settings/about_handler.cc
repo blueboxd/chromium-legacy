@@ -52,8 +52,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
 #include "base/i18n/time_formatting.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -135,9 +135,9 @@ bool CanChangeChannel(Profile* profile) {
   }
 
   // On non-managed machines, only the local owner can change the channel.
-  ash::OwnerSettingsServiceChromeOS* service =
-      ash::OwnerSettingsServiceChromeOSFactory::GetInstance()
-          ->GetForBrowserContext(profile);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetInstance()->GetForBrowserContext(
+          profile);
   return service && service->IsOwner();
 }
 

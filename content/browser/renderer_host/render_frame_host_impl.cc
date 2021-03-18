@@ -248,9 +248,9 @@
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_tree.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -1032,8 +1032,8 @@ RenderFrameHost* RenderFrameHost::FromAXTreeID(ui::AXTreeID ax_tree_id) {
 RenderFrameHostImpl* RenderFrameHostImpl::FromAXTreeID(
     ui::AXTreeID ax_tree_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ui::AXTreeIDRegistry::FrameID frame_id =
-      ui::AXTreeIDRegistry::GetInstance()->GetFrameID(ax_tree_id);
+  ui::AXActionHandlerRegistry::FrameID frame_id =
+      ui::AXActionHandlerRegistry::GetInstance()->GetFrameID(ax_tree_id);
   return RenderFrameHostImpl::FromID(frame_id.first, frame_id.second);
 }
 
@@ -3907,27 +3907,16 @@ void RenderFrameHostImpl::ReportInspectorIssue(
       this, std::move(info));
 }
 
-void RenderFrameHostImpl::AsValueInto(
-    base::trace_event::TracedValue* traced_value) {
-  traced_value->SetPointer("this", this);
-  traced_value->SetInteger("process_id", GetProcess()->GetID());
-  traced_value->SetInteger("render_frame_id", GetRoutingID());
-  traced_value->SetString("lifecycle_state",
-                          LifecycleStateToString(lifecycle_state_));
-  traced_value->SetString(
-      "origin", base::trace_event::ValueToString(GetLastCommittedOrigin()));
-  traced_value->SetString(
-      "url", base::trace_event::ValueToString(GetLastCommittedURL()));
-  traced_value->SetInteger("frame_tree_node_id",
-                           frame_tree_node_->frame_tree_node_id());
-  traced_value->SetInteger("site_instance_id", GetSiteInstance()->GetId());
-  traced_value->SetInteger("browsing_instance_id",
-                           GetSiteInstance()->GetBrowsingInstanceId());
-  traced_value->BeginDictionary("parent");
-  if (GetParent()) {
-    GetParent()->AsValueInto(traced_value);
-  }
-  traced_value->EndDictionary();
+void RenderFrameHostImpl::WriteIntoTracedValue(perfetto::TracedValue context) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("process", GetProcess());
+  dict.Add("routing_id", GetRoutingID());
+  dict.Add("lifecycle_state", LifecycleStateToString(lifecycle_state_));
+  dict.Add("origin", GetLastCommittedOrigin());
+  dict.Add("url", GetLastCommittedURL());
+  dict.Add("frame_tree_node_id", frame_tree_node_->frame_tree_node_id());
+  dict.Add("site_instance", GetSiteInstance());
+  dict.Add("parent", GetParent());
 }
 
 StoragePartition* RenderFrameHostImpl::GetStoragePartition() {
@@ -4457,9 +4446,8 @@ void RenderFrameHostImpl::DispatchLoad() {
 
 void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
                                             bool has_user_gesture) {
-  OPTIONAL_TRACE_EVENT2(
-      "content", "RenderFrameHostImpl::GoToEntryAtOffset", "render_frame_host",
-      base::trace_event::ToTracedValue(this), "offset", offset);
+  OPTIONAL_TRACE_EVENT2("content", "RenderFrameHostImpl::GoToEntryAtOffset",
+                        "render_frame_host", this, "offset", offset);
 
   // Non-user initiated navigations coming from the renderer should be ignored
   // if there is an ongoing browser-initiated navigation.
@@ -5194,8 +5182,7 @@ void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
 
 void RenderFrameHostImpl::UpdateState(const blink::PageState& state) {
   OPTIONAL_TRACE_EVENT1("content", "RenderFrameHostImpl::UpdateState",
-                        "render_frame_host",
-                        base::trace_event::ToTracedValue(this));
+                        "render_frame_host", this);
   // TODO(creis): Verify the state's ISN matches the last committed FNE.
 
   // Without this check, the renderer can trick the browser into using
@@ -5773,9 +5760,8 @@ void RenderFrameHostImpl::BeginNavigation(
 void RenderFrameHostImpl::SubresourceResponseStarted(
     const GURL& url,
     net::CertStatus cert_status) {
-  OPTIONAL_TRACE_EVENT1("content",
-                        "RenderFrameHostImpl::SubresourceResponseStarted",
-                        "url", base::trace_event::ValueToString(url));
+  OPTIONAL_TRACE_EVENT1(
+      "content", "RenderFrameHostImpl::SubresourceResponseStarted", "url", url);
   frame_tree_->controller().ssl_manager()->DidStartResourceResponse(
       url, cert_status);
   delegate_->SubresourceResponseStarted();
@@ -8338,11 +8324,8 @@ void RenderFrameHostImpl::CreateBucketManagerHost(
 
 void RenderFrameHostImpl::CreatePermissionService(
     mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
-  if (!permission_service_context_)
-    permission_service_context_ =
-        std::make_unique<PermissionServiceContext>(this);
-
-  permission_service_context_->CreateService(std::move(receiver));
+  PermissionServiceContext::GetOrCreateForCurrentDocument(this)->CreateService(
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAuthenticator(
@@ -9206,56 +9189,6 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   same_document_navigation_requests_.erase(navigation_token);
 }
 
-std::unique_ptr<base::trace_event::TracedValue>
-RenderFrameHostImpl::CommitAsTracedValue(
-    const mojom::DidCommitProvisionalLoadParams& params) const {
-  auto value = std::make_unique<base::trace_event::TracedValue>();
-
-  // TODO(nasko): Move the process lock into RenderProcessHost.
-  value->SetString(
-      "process lock",
-      ChildProcessSecurityPolicyImpl::GetInstance()
-          ->GetProcessLock(agent_scheduling_group_.GetProcess()->GetID())
-          .ToString());
-
-  value->SetInteger("item_sequence_number", params.item_sequence_number);
-  value->SetInteger("document_sequence_number",
-                    params.document_sequence_number);
-  value->SetString("url", params.url.spec());
-  if (!params.base_url.is_empty()) {
-    value->SetString("base_url", params.base_url.possibly_invalid_spec());
-  }
-  value->SetInteger("transition", params.transition);
-  value->BeginDictionary("referrer");
-  value->SetString("url", params.referrer->url.spec());
-  value->SetInteger("policy", static_cast<int>(params.referrer->policy));
-  value->EndDictionary();
-  value->SetBoolean("should_update_history", params.should_update_history);
-  value->SetString("contents_mime_type", params.contents_mime_type);
-
-  value->SetBoolean("intended_as_new_entry", params.intended_as_new_entry);
-  value->SetBoolean("did_create_new_entry", params.did_create_new_entry);
-  value->SetBoolean("should_replace_current_entry",
-                    params.should_replace_current_entry);
-  value->SetString("method", params.method);
-  value->SetInteger("post_id", params.post_id);
-  value->SetInteger("http_status_code", params.http_status_code);
-  value->SetBoolean("url_is_unreachable", params.url_is_unreachable);
-  value->SetBoolean("is_overriding_user_agent",
-                    params.is_overriding_user_agent);
-  value->SetBoolean("history_list_was_cleared",
-                    params.history_list_was_cleared);
-  value->SetString("origin", params.origin.GetDebugString());
-  value->SetBoolean("has_potentially_trustworthy_unique_origin",
-                    params.has_potentially_trustworthy_unique_origin);
-  value->SetInteger("request_id", params.request_id);
-  value->SetString("navigation_token", params.navigation_token.ToString());
-  if (params.embedding_token)
-    value->SetString("embedding_token", params.embedding_token->ToString());
-
-  return value;
-}
-
 void RenderFrameHostImpl::MaybeGenerateCrashReport(
     base::TerminationStatus status,
     int exit_code) {
@@ -9413,8 +9346,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   RenderProcessHost* process = GetProcess();
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
-               "rfh", base::trace_event::ToTracedValue(this), "params",
-               CommitAsTracedValue(*params));
+               "rfh", this, "params", params);
 
   // If we're waiting for a cross-site beforeunload completion callback from
   // this renderer and we receive a Navigate message from the main frame, then
@@ -10430,8 +10362,8 @@ void RenderFrameHostImpl::SetLifecycleStateToPrerendering() {
 
 void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
   TRACE_EVENT2("content", "RenderFrameHostImpl::SetLifecycleState",
-               "render_frame_host", base::trace_event::ToTracedValue(this),
-               "new_state", LifecycleStateToString(state));
+               "render_frame_host", this, "new_state",
+               LifecycleStateToString(state));
 #if DCHECK_IS_ON()
   static const base::NoDestructor<StateTransitions<LifecycleState>>
       allowed_transitions(
@@ -10636,11 +10568,12 @@ void RenderFrameHostImpl::SetEmbeddingToken(
   embedding_token_ = embedding_token;
 
   // The AXTreeID of a frame is backed by its embedding token, so we need to
-  // update its AXTreeID, as well as the associated mapping in AXTreeIDRegistry.
+  // update its AXTreeID, as well as the associated mapping in
+  // AXActionHandlerRegistry.
   ui::AXTreeID ax_tree_id = ui::AXTreeID::FromToken(embedding_token);
   SetAXTreeID(ax_tree_id);
-  ui::AXTreeIDRegistry::GetInstance()->SetFrameIDForAXTreeID(
-      ui::AXTreeIDRegistry::FrameID(GetProcess()->GetID(), routing_id_),
+  ui::AXActionHandlerRegistry::GetInstance()->SetFrameIDForAXTreeID(
+      ui::AXActionHandlerRegistry::FrameID(GetProcess()->GetID(), routing_id_),
       ax_tree_id);
 
   // Also important to notify the delegate so that the relevant observers can
@@ -10684,10 +10617,9 @@ void RenderFrameHostImpl::SetPolicyContainerForEarlyCommitAfterCrash(
 
 void RenderFrameHostImpl::OnDidRunInsecureContent(const GURL& security_origin,
                                                   const GURL& target_url) {
-  OPTIONAL_TRACE_EVENT2(
-      "content", "RenderFrameHostImpl::DidRunInsecureContent",
-      "security_origin", base::trace_event::ValueToString(security_origin),
-      "target_url", base::trace_event::ValueToString(target_url));
+  OPTIONAL_TRACE_EVENT2("content", "RenderFrameHostImpl::DidRunInsecureContent",
+                        "security_origin", security_origin, "target_url",
+                        target_url);
 
   // TODO(nick, estark): Should we call FilterURL using this frame's process on
   // these parameters? |target_url| seems unused, except for a log message. And

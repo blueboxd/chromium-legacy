@@ -27,6 +27,11 @@ extern const base::Feature kContextMenuPerformanceInfoAndRemoteHintFetching;
 extern const base::Feature kOptimizationTargetPrediction;
 extern const base::Feature kOptimizationGuideModelDownloading;
 extern const base::Feature kPageContentAnnotations;
+extern const base::Feature kPageTextExtraction;
+
+// The grace period duration for how long to give outstanding page text dump
+// requests to respond after DidFinishLoad.
+base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod();
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlocklist| dictionary pref when initialized. The top
@@ -34,9 +39,6 @@ extern const base::Feature kPageContentAnnotations;
 // engaged hosts in a user's history before DataSaver being enabled from being
 // requested until the user navigates to the host again.
 size_t MaxHintsFetcherTopHostBlocklistSize();
-
-// Whether hints for top hosts should be batch updated.
-bool ShouldBatchUpdateHintsForTopHosts();
 
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
@@ -103,8 +105,16 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 // Returns the duration of the time window before hints expiration during which
 // the hosts should be refreshed. Example: If the hints for a host expire at
 // time T, then they are eligible for refresh at T -
-// GetHintsFetchRefreshDuration().
-base::TimeDelta GetHintsFetchRefreshDuration();
+// GetHostHintsFetchRefreshDuration().
+base::TimeDelta GetHostHintsFetchRefreshDuration();
+
+// Returns the duration of the time window between fetches for hints for the
+// URLs opened in active tabs.
+base::TimeDelta GetActiveTabsFetchRefreshDuration();
+
+// Returns the max duration since the time a tab has to be shown to be
+// considered active for a hints refresh.
+base::TimeDelta GetActiveTabsStalenessTolerance();
 
 // Returns the max number of concurrent fetches to the remote Optimization Guide
 // Service that should be allowed.

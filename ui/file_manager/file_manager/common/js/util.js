@@ -13,7 +13,7 @@
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import * as wrappedVolumeManagerCommon from '../../../base/js/volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
+// #import * as wrappedVolumeManagerCommon from './volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
 // #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
 // #import {FilesAppEntry, FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
 // #import {EntryList} from './files_app_entry_types.m.js';
@@ -1204,7 +1204,7 @@ util.getEntryLabel = (locationInfo, entry) => {
     if (entry.fullPath == '/PvmDefault') {
       return str('PLUGIN_VM_DIRECTORY_LABEL');
     }
-    if (util.isFilesCameraFolderEnabled() && entry.fullPath == '/Camera') {
+    if (entry.fullPath == '/Camera') {
       return str('CAMERA_DIRECTORY_LABEL');
     }
   }
@@ -1260,7 +1260,7 @@ util.isNonModifiable = (volumeManager, entry) => {
       return true;
     }
 
-    if (fullPath === '/Camera' && util.isFilesCameraFolderEnabled()) {
+    if (fullPath === '/Camera') {
       return true;
     }
 
@@ -1442,14 +1442,6 @@ util.timeoutPromise = (promise, ms, opt_message) => {
       throw new Error(opt_message || 'Operation timed out.');
     })
   ]);
-};
-
-/**
- * Returns true when FilesCameraFolder is enabled.
- * @return {boolean}
- */
-util.isFilesCameraFolderEnabled = () => {
-  return loadTimeData.getBoolean('FILES_CAMERA_FOLDER_ENABLED');
 };
 
 /**

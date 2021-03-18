@@ -27,21 +27,22 @@ suite('CrComponentsActivationCodePageTest', function() {
     return new Promise(resolve => setTimeout(resolve));
   }
 
-  setup(function() {
-    activationCodePage = document.createElement('activation-code-page');
+  // Captures the function that is called every time the interval timer
+  // timeouts.
+  function setIntervalFunction(fn, milliseconds) {
+    intervalFunction = fn;
+    return 1;
+  }
 
-    // Captures the function that is called every time the interval timer
-    // timeouts.
-    const setIntervalFunction = (fn, milliseconds) => {
-      intervalFunction = fn;
-      return 1;
-    };
-    // In tests, pausing the video can have race conditions with previous
-    // requests to play the video due to the speed of execution. Avoid this by
-    // mocking the play and pause actions.
-    const playVideoFunction = () => {};
-    const stopStreamFunction = (stream) => {};
-    activationCodePage.setFakesForTesting(
+  // In tests, pausing the video can have race conditions with previous
+  // requests to play the video due to the speed of execution. Avoid this by
+  // mocking the play and pause actions.
+  function playVideoFunction() {}
+  function stopStreamFunction(stream) {}
+
+  setup(async function() {
+    activationCodePage = document.createElement('activation-code-page');
+    await activationCodePage.setFakesForTesting(
         FakeBarcodeDetector, FakeImageCapture, setIntervalFunction,
         playVideoFunction, stopStreamFunction);
     document.body.appendChild(activationCodePage);
@@ -55,6 +56,7 @@ suite('CrComponentsActivationCodePageTest', function() {
 
   teardown(function() {
     activationCodePage.remove();
+    FakeBarcodeDetector.setShouldFail(false);
   });
 
   test('UI states', async function() {
@@ -68,7 +70,7 @@ suite('CrComponentsActivationCodePageTest', function() {
     const startScanningButton = activationCodePage.$$('#startScanningButton');
     const scanFinishContainer = activationCodePage.$$('#scanFinishContainer');
     const switchCameraButton = activationCodePage.$$('#switchCameraButton');
-    const tryAgainButton = activationCodePage.$$('#tryAgainButton');
+    const useCameraAgainButton = activationCodePage.$$('#useCameraAgainButton');
     const scanSuccessContainer = activationCodePage.$$('#scanSuccessContainer');
     const scanFailureContainer = activationCodePage.$$('#scanFailureContainer');
     const spinner = activationCodePage.$$('paper-spinner-lite');
@@ -80,7 +82,7 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertTrue(!!startScanningButton);
     assertTrue(!!scanFinishContainer);
     assertTrue(!!switchCameraButton);
-    assertTrue(!!tryAgainButton);
+    assertTrue(!!useCameraAgainButton);
     assertTrue(!!scanSuccessContainer);
     assertTrue(!!scanFailureContainer);
     assertTrue(!!spinner);
@@ -115,19 +117,8 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertFalse(scanSuccessContainer.hidden);
     assertTrue(scanFailureContainer.hidden);
 
-    // Mock an invalid activation code.
-    activationCodePage.showError = true;
-
-    // The scanFinishContainer and scanFailureContainer should now be visible,
-    // video, start scanning UI and scanSuccessContainer hidden.
-    assertFalse(scanFinishContainer.hidden);
-    assertTrue(startScanningContainer.hidden);
-    assertTrue(video.hidden);
-    assertTrue(scanSuccessContainer.hidden);
-    assertFalse(scanFailureContainer.hidden);
-
-    // Click the 'Try Again' button.
-    tryAgainButton.click();
+    // Click the 'Use camera again' button.
+    useCameraAgainButton.click();
     await flushAsync();
 
     // The video should be visible and start scanning UI hidden.
@@ -149,19 +140,8 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertTrue(scanFailureContainer.hidden);
     assertFalse(activationCodePage.showError);
 
-    // Mock another invalid activation code.
-    activationCodePage.showError = true;
-
-    // The scanFinishContainer and scanFailureContainer should now be visible,
-    // video, start scanning UI and scanSuccessContainer hidden.
-    assertFalse(scanFinishContainer.hidden);
-    assertTrue(startScanningContainer.hidden);
-    assertTrue(video.hidden);
-    assertTrue(scanSuccessContainer.hidden);
-    assertFalse(scanFailureContainer.hidden);
-
-    // Click the 'Try Again' button.
-    tryAgainButton.click();
+    // Click the 'Use camera again' button.
+    useCameraAgainButton.click();
     await flushAsync();
 
     // The video should be visible and start scanning UI hidden.
@@ -305,9 +285,9 @@ suite('CrComponentsActivationCodePageTest', function() {
         assertTrue(!!qrCodeDetectorContainer);
 
         FakeBarcodeDetector.setShouldFail(true);
-        activationCodePage.initBarcodeDetector();
-
-        await flushAsync();
+        await activationCodePage.setFakesForTesting(
+            FakeBarcodeDetector, FakeImageCapture, setIntervalFunction,
+            playVideoFunction, stopStreamFunction);
 
         qrCodeDetectorContainer = activationCodePage.$$('#esimQrCodeDetection');
 
@@ -326,4 +306,76 @@ suite('CrComponentsActivationCodePageTest', function() {
     await flushAsync();
     assertTrue(eventFired);
   });
+
+  test(
+      'Install error after manual entry should show error on input',
+      async function() {
+        await flushAsync();
+        const input = activationCodePage.$$('#activationCode');
+        const startScanningContainer =
+            activationCodePage.$$('#startScanningContainer');
+        const scanFinishContainer =
+            activationCodePage.$$('#scanFinishContainer');
+        assertTrue(!!input);
+        assertTrue(!!startScanningContainer);
+        assertTrue(!!scanFinishContainer);
+        assertFalse(input.invalid);
+
+        input.value = 'ACTIVATION_CODE';
+        activationCodePage.showError = true;
+        assertTrue(input.invalid);
+
+        // Should be showing the start scanning UI.
+        assertFalse(startScanningContainer.hidden);
+        assertTrue(scanFinishContainer.hidden);
+      });
+
+  test(
+      'Install error after scanning should show error on camera',
+      async function() {
+        await flushAsync();
+        const input = activationCodePage.$$('#activationCode');
+        const startScanningContainer =
+            activationCodePage.$$('#startScanningContainer');
+        const startScanningButton =
+            activationCodePage.$$('#startScanningButton');
+        const scanFinishContainer =
+            activationCodePage.$$('#scanFinishContainer');
+        const scanInstallFailureHeader =
+            activationCodePage.$$('#scanInstallFailureHeader');
+        const scanSucessHeader = activationCodePage.$$('#scanSucessHeader');
+        assertTrue(!!input);
+        assertTrue(!!startScanningContainer);
+        assertTrue(!!startScanningButton);
+        assertTrue(!!scanFinishContainer);
+        assertTrue(!!scanInstallFailureHeader);
+        assertTrue(!!scanSucessHeader);
+        assertFalse(input.invalid);
+
+        // Click the start scanning button.
+        startScanningButton.click();
+        await flushAsync();
+
+        // Mock camera scanning a code.
+        await intervalFunction();
+        await flushAsync();
+
+        // The code detected UI should be showing.
+        assertTrue(startScanningContainer.hidden);
+        assertFalse(scanFinishContainer.hidden);
+        assertFalse(scanSucessHeader.hidden);
+        assertTrue(scanInstallFailureHeader.hidden);
+
+        // Mock an install error.
+        activationCodePage.showError = true;
+
+        // The scan install failure UI should be showing.
+        assertTrue(startScanningContainer.hidden);
+        assertFalse(scanFinishContainer.hidden);
+        assertTrue(scanSucessHeader.hidden);
+        assertFalse(scanInstallFailureHeader.hidden);
+
+        // There should be no error displayed on the input.
+        assertFalse(input.invalid);
+      });
 });

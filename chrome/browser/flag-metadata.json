@@ -59,6 +59,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "add-to-homescreen-iph",
+    "owners": [ "shaktisahu" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "aggregated-ml-app-ranking",
     "owners": [ "pdyson", "jiameng" ],
     "expiry_milestone": 81
@@ -111,7 +116,7 @@
   },
   {
     "name": "android-detailed-language-settings",
-    "owners": [ "perrier", "chrome-langauge@google.com" ],
+    "owners": [ "perrier", "chrome-language@google.com" ],
     "expiry_milestone": 91
   },
   {
@@ -363,11 +368,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "autofill-off-no-server-data",
-    "owners": [ "seblalancette" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
     "expiry_milestone": 79
@@ -595,11 +595,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "click-to-call-ui",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "client-storage-access-context-auditing",
     "owners": [
       "sauski",
@@ -617,11 +612,6 @@
     "name": "collections-card-presentation-style",
     "owners": [ "sczs", "bling-flags@google.com" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "color-picker-eye-dropper",
-    "owners": [ "iopopesc@microsoft.com", "masonfreed" ],
-    "expiry_milestone": 90
   },
   {
     "name": "color-provider-redirection",
@@ -778,11 +768,6 @@
   {
     "name": "cookie-deprecation-messages",
     "owners": [ "bingler", "chlily", "aarontag" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "cookies-without-same-site-must-be-secure",
-    "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 90
   },
   {
@@ -969,7 +954,7 @@
   },
   {
     "name": "desktop-restructured-language-settings",
-    "owners": [ "joshsantana", "chrome-langauge@google.com"],
+    "owners": [ "joshsantana", "chrome-language@google.com"],
     "expiry_milestone": 93
   },
   {
@@ -1004,8 +989,8 @@
   },
   {
     "name": "diagnostics-app",
-    "owners": [ "baileyberro", "jimmyxgong", "zentaro"],
-    "expiry_milestone": 90
+    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "expiry_milestone": 92
   },
   {
     "name": "dice-web-signin-interception",
@@ -1458,11 +1443,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-bluetooth-verbose-logs-for-googlers",
-    "owners": [ "sonnysasaka" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-browsing-data-lifetime-manager",
     "owners": ["ydago"],
     "expiry_milestone": 91
@@ -1648,6 +1628,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "enable-desktop-pwas-protocol-handling",
+    "owners": [ "samtan@microsoft.com", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "enable-desktop-pwas-remove-status-bar",
     "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 91
@@ -1791,8 +1776,8 @@
   },
   {
     "name": "enable-fullpage-screenshot",
-    "owners": [ "jmentasti", "seblalancette" ],
-    "expiry_milestone": 90
+    "owners": [ "seblalancette" ],
+    "expiry_milestone": 94
   },
   {
     "name": "enable-future-v8-vm-features",
@@ -1804,7 +1789,7 @@
   {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 94
   },
   {
     "name": "enable-google-srp-isolated-prerender-nsp",
@@ -2261,7 +2246,7 @@
   {
     "name": "enable-reader-mode",
     "owners": [ "katie", "dmazzoni" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-reader-mode-in-cct",
@@ -2814,11 +2799,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "files-camera-folder",
-    "owners": [ "wtlee", "chromeos-camera-eng@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "files-filters-in-recents",
     "owners": [ "fukino", "weifangsun" ],
     "expiry_milestone": 90
@@ -3298,7 +3278,7 @@
     // This is useful for isolating additional origins beyond the normal site
     // isolation policy, as well as for diagnosing problems when site isolation
     // only applies to some sites.
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "isolation-by-default",
@@ -3588,11 +3568,6 @@
     "name": "mouse-subframe-no-implicit-capture",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "movable-partial-screenshot-region",
-    "owners": [ "xiyuan", "chromeos-wmp-eng" ],
-    "expiry_milestone": 90
   },
   {
     "name": "nearby-sharing",
@@ -4240,7 +4215,7 @@
       "sauski",
       "msramek",
       "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 90
+    "expiry_milestone": 94
   },
   {
     "name": "privacy-reordered-android",
@@ -4536,16 +4511,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "safety-check-ios",
-    "owners": [
-      "andzaytsev",
-      "harrisonsean",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "safety-check-weak-passwords",
     "owners": [
       "rainhard",
@@ -4558,11 +4523,6 @@
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "same-site-by-default-cookies",
-    "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 90
   },
   {
     "name": "scan-app-media-link",
@@ -4685,11 +4645,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "share-by-default-in-cct",
-    "owners": [ "sophey", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "shared-clipboard-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 90
@@ -4803,7 +4758,7 @@
     "_comment2": "in https://crbug.com/849815.",
     "name": "site-isolation-trial-opt-out",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "smart-dim-model-v3",
@@ -4875,7 +4830,7 @@
     // therefore unlikely to ship anytime soon, but this allows experimenting
     // with a stronger isolation policy for users who may not care about
     // breaking compatibility with document.domain.
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "stylus-battery-status",

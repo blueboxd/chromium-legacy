@@ -124,10 +124,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &feed::kInterestFeedV1ClicksAndViewsConditionalUpload,
     &feed::kInterestFeedV2,
     &feed::kInterestFeedV2Hearts,
-    &feed::kReportFeedUserActions,
     &feed::kWebFeed,
     &feed::kXsurfaceMetricsReporting,
     &history::kHideFromApi3Transitions,
+    &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
     &kAndroidDefaultBrowserPromo,
@@ -217,7 +217,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kServiceManagerForBackgroundPrefetch,
     &kServiceManagerForDownload,
     &kShareButtonInTopToolbar,
-    &kShareByDefaultInCCT,
     &kSharedClipboardUI,
     &kShoppingAssist,
     &kSpannableInlineAutocomplete,
@@ -325,6 +324,10 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 }  // namespace
 
 // Alphabetical:
+
+const base::Feature kAddToHomescreenIPH{"AddToHomescreenIPH",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAndroidDefaultBrowserPromo{
     "AndroidDefaultBrowserPromo", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -603,9 +606,6 @@ const base::Feature kServiceManagerForDownload{
 
 const base::Feature kShareButtonInTopToolbar{"ShareButtonInTopToolbar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kShareByDefaultInCCT{"ShareByDefaultInCCT",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kShoppingAssist{"ShoppingAssist",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

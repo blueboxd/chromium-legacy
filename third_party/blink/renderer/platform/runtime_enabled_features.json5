@@ -633,7 +633,7 @@
     },
     {
       name: "CSSPseudoDir",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "CSSPseudoIs",
@@ -1705,7 +1705,7 @@
     },
     {
       name: "RemoveMobileViewportDoubleTap",
-      status: "experimental"
+      status: "stable"
     },
     {
       // See https://crbug.com/1012063

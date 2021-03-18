@@ -17,6 +17,8 @@ const PageState = {
   SWITCHING_CAM_ENVIRONMENT_TO_USER: 5,
   SCANNING_SUCCESS: 6,
   SCANNING_FAILURE: 7,
+  MANUAL_ENTRY_INSTALL_FAILURE: 8,
+  SCANNING_INSTALL_FAILURE: 9,
 };
 
 /** @enum {number} */
@@ -27,6 +29,8 @@ const UiElement = {
   SCAN_FINISH: 4,
   SCAN_SUCCESS: 5,
   SCAN_FAILURE: 6,
+  CODE_DETECTED: 7,
+  SCAN_INSTALL_FAILURE: 8,
 };
 
 /**
@@ -66,6 +70,22 @@ Polymer({
     },
 
     /**
+     * Enum used as an ID for specific UI elements.
+     * A UiElement is passed between html and JS for
+     * certain UI elements to determine their state.
+     *
+     * @type {!UiElement}
+     */
+    UiElement: {
+      type: Object,
+      value: UiElement,
+    },
+
+    showNoProfilesMessage: {
+      type: Boolean,
+    },
+
+    /**
      * @type {!PageState}
      * @private
      */
@@ -83,21 +103,14 @@ Polymer({
     },
 
     /**
-     * Enum used as an ID for specific UI elements.
-     * A UiElement is passed between html and JS for
-     * certain UI elements to determine their state.
-     *
-     * @type {!UiElement}
+     *  TODO(crbug.com/1093185): add type |BarcodeDetector| when externs
+     *  becomes available
+     *  @private {?Object}
      */
-    UiElement: {
+    qrCodeDetector_: {
       type: Object,
-      value: UiElement,
+      value: null,
     },
-
-    /** @private */
-    showNoProfilesMessage: {
-      type: Boolean,
-    }
   },
 
   /**
@@ -118,12 +131,6 @@ Polymer({
    */
   qrCodeDetectorTimer_: null,
 
-  /**
-   *  TODO(crbug.com/1093185): add type |BarcodeDetector| when externs
-   *  becomes available
-   *  @private
-   */
-  qrCodeDetector_: null,
 
   /**
    * The function used to initiate a repeating timer. Can be overwritten in
@@ -165,7 +172,7 @@ Polymer({
   /** @override */
   ready() {
     this.setMediaDevices(navigator.mediaDevices);
-    this.initBarcodeDetector();
+    this.initBarcodeDetector_();
     this.state_ = PageState.MANUAL_ENTRY;
   },
 
@@ -193,7 +200,7 @@ Polymer({
    * @suppress {undefinedVars|missingProperties}
    * @private
    */
-  async initBarcodeDetector() {
+  async initBarcodeDetector_() {
     const formats = await this.barcodeDetectorClass_.getSupportedFormats();
 
     if (!formats || formats.length === 0) {
@@ -225,11 +232,11 @@ Polymer({
    * @param {function()} playVideoFunction
    * @param {function(MediaStream)} stopStreamFunction
    */
-  setFakesForTesting(
+  async setFakesForTesting(
       barcodeDetectorClass, imageCaptureClass, setIntervalFunction,
       playVideoFunction, stopStreamFunction) {
     this.barcodeDetectorClass_ = barcodeDetectorClass;
-    this.initBarcodeDetector();
+    await this.initBarcodeDetector_();
     this.imageCaptureClass_ = imageCaptureClass;
     this.setIntervalFunction_ = setIntervalFunction;
     this.playVideo_ = playVideoFunction;
@@ -395,13 +402,21 @@ Polymer({
   /** @private */
   onShowErrorChanged_() {
     if (this.showError) {
-      this.state_ = PageState.SCANNING_FAILURE;
+      if (this.state_ === PageState.MANUAL_ENTRY) {
+        this.state_ = PageState.MANUAL_ENTRY_INSTALL_FAILURE;
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          cr.ui.focusWithoutInk(this.$.activationCode);
+        });
+      } else if (this.state_ === PageState.SCANNING_SUCCESS) {
+        this.state_ = PageState.SCANNING_INSTALL_FAILURE;
+      }
     }
   },
 
   /** @private */
   onStateChanged_() {
-    if (this.state_ !== PageState.SCANNING_FAILURE) {
+    if (this.state_ !== PageState.MANUAL_ENTRY_INSTALL_FAILURE &&
+        this.state_ !== PageState.SCANNING_INSTALL_FAILURE) {
       this.showError = false;
     }
     if (this.state_ === PageState.MANUAL_ENTRY) {
@@ -435,7 +450,8 @@ Polymer({
   isUiElementHidden_(uiElement, state, cameraCount) {
     switch (uiElement) {
       case UiElement.START_SCANNING:
-        return state !== PageState.MANUAL_ENTRY;
+        return state !== PageState.MANUAL_ENTRY &&
+            state !== PageState.MANUAL_ENTRY_INSTALL_FAILURE;
       case UiElement.VIDEO:
         return state !== PageState.SCANNING_USER_FACING &&
             state !== PageState.SCANNING_ENVIRONMENT_FACING;
@@ -445,11 +461,17 @@ Polymer({
         return !(isScanning && this.cameraCount_ > 1);
       case UiElement.SCAN_FINISH:
         return state !== PageState.SCANNING_SUCCESS &&
-            state !== PageState.SCANNING_FAILURE;
+            state !== PageState.SCANNING_FAILURE &&
+            state !== PageState.SCANNING_INSTALL_FAILURE;
       case UiElement.SCAN_SUCCESS:
-        return state !== PageState.SCANNING_SUCCESS;
+        return state !== PageState.SCANNING_SUCCESS &&
+            state !== PageState.SCANNING_INSTALL_FAILURE;
       case UiElement.SCAN_FAILURE:
         return state !== PageState.SCANNING_FAILURE;
+      case UiElement.CODE_DETECTED:
+        return state !== PageState.SCANNING_SUCCESS;
+      case UiElement.SCAN_INSTALL_FAILURE:
+        return state !== PageState.SCANNING_INSTALL_FAILURE;
     }
   },
 
@@ -483,4 +505,13 @@ Polymer({
     return this.showNoProfilesMessage ? this.i18n('scanQRCodeNoProfiles') :
                                         this.i18n('scanQRCode');
   },
+
+  /**
+   * @param {PageState} state
+   * @return {boolean}
+   * @private
+   */
+  shouldActivationCodeInputBeInvalid_(state) {
+    return state === PageState.MANUAL_ENTRY_INSTALL_FAILURE;
+  }
 });

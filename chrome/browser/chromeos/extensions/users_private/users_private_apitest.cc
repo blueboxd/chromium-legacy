@@ -13,7 +13,7 @@
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate.h"
@@ -116,12 +116,12 @@ class UsersPrivateApiTest : public ExtensionApiTest {
  public:
   UsersPrivateApiTest() {
     // Mock owner key pairs. Note this needs to happen before
-    // OwnerSettingsServiceChromeOS is created.
+    // OwnerSettingsServiceAsh is created.
     scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util =
         new ownership::MockOwnerKeyUtil();
     owner_key_util->SetPrivateKey(crypto::RSAPrivateKey::Create(512));
 
-    ash::OwnerSettingsServiceChromeOSFactory::GetInstance()
+    ash::OwnerSettingsServiceAshFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util);
 
     scoped_testing_cros_settings_.device_settings()->Set(

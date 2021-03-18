@@ -179,6 +179,12 @@
   },
   'blink_platform_unittests': {
     'modifications': {
+      # TODO(crbug.com/1189336): Remove the filter once the issue is fixed.
+      'android-11-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-HarfBuzzShaperTest.EmojiPercentage',
+        ],
+      },
       # TODO(crbug.com/1108121): Remove this filter
       'android-nougat-arm64-rel': {
         'args': [
@@ -944,6 +950,7 @@
         'swarming': {
           'dimension_sets': [
             {
+              'cpu': 'x86-64',
               'os': 'Ubuntu-16.04',
             },
           ],
@@ -1257,6 +1264,12 @@
         'swarming': {
           'shards': 2,
         },
+      },
+      # TODO(crbug.com/1189344): Remove the filter once the issue is fixed.
+      'android-11-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-FontUniqueNameLookupTest.TestMatchPostScriptNameTtc',
+        ],
       },
     },
   },
@@ -3028,6 +3041,16 @@
         ]
       }
     }
+  },
+  'weblayer_private_instrumentation_test_apk': {
+    'modifications': {
+      # TODO(crbug.com/1189403): Remove the filter once the issue is fixed.
+      'android-11-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-org.chromium.weblayer.test.MediaCaptureTest.*',
+        ],
+      },
+    },
   },
   'weblayer_shell_wpt': {
     'modifications': {

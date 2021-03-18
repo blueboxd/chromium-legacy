@@ -388,7 +388,7 @@ void RenderFrameHostManager::DidNavigateFrame(
                            is_same_document_navigation,
                            clear_proxies_on_commit);
 
-  // Make sure any dynamic changes to this frame's sandbox flags and feature
+  // Make sure any dynamic changes to this frame's sandbox flags and permissions
   // policy that were made prior to navigation take effect.  This should only
   // happen for cross-document navigations.
   if (!is_same_document_navigation)
@@ -813,6 +813,13 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // since we did load the current document, but we don't want to reload it if
   // that is the case. See crbug.com/1125106.
   DCHECK(!request->IsSameDocument());
+  // TODO(crbug.com/1188513): Verify that we're not resetting the document
+  // sequence number in a same-document navigation. This method will reset it
+  // if the site instance changed. But this method should not be called for a
+  // same document history navigation. Change back to a DCHECK() once this is
+  // resolved.
+  if (request->IsSameDocument())
+    base::debug::DumpWithoutCrashing();
 
   // Even though prerendering is considered an inactive state (i.e., not allowed
   // to show any UI changes) it is still allowed to navigate, fetch, load and

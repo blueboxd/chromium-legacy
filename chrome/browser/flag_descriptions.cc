@@ -500,14 +500,6 @@ const char kCookieDeprecationMessagesDescription[] =
     "Show messages in DevTools about upcoming deprecations that would affect "
     "sent/received cookies.";
 
-const char kCookiesWithoutSameSiteMustBeSecureName[] =
-    "Cookies without SameSite must be secure";
-const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
-    "If enabled, cookies without SameSite restrictions must also be Secure. If "
-    "a cookie without SameSite restrictions is set without the Secure "
-    "attribute, it will be rejected. This flag only has an effect if "
-    "\"SameSite by default cookies\" is also enabled.";
-
 const char kCooperativeSchedulingName[] = "Cooperative Scheduling";
 const char kCooperativeSchedulingDescription[] =
     "Enables cooperative scheduling in Blink.";
@@ -743,6 +735,11 @@ const char kDesktopPWAsRunOnOsLoginDescription[] =
     "Enable installed PWAs to be configured to automatically start when the OS "
     "user logs in. Launching a PWA while the browser is not running is known "
     "to cause a failure to restore sessions. See https://crbug.com/938759.";
+
+const char kDesktopPWAsProtocolHandlingName[] = "Desktop PWA Protocol handling";
+const char kDesktopPWAsProtocolHandlingDescription[] =
+    "Enable web app manifests to declare protocol handling behavior."
+    "See: https://crbug.com/1019239.";
 
 const char kDesktopPWAsUrlHandlingName[] = "Desktop PWA URL handling";
 const char kDesktopPWAsUrlHandlingDescription[] =
@@ -1217,11 +1214,6 @@ const char kFormControlsDarkModeDescription[] =
 const char kFormControlsRefreshName[] = "Web Platform Controls updated UI";
 const char kFormControlsRefreshDescription[] =
     "If enabled, HTML forms elements will be rendered using an updated style.";
-
-const char kColorPickerEyeDropperName[] = "Color Picker Eye Dropper Support";
-const char kColorPickerEyeDropperDescription[] =
-    "If enabled, the color picker will contain an eye dropper control that "
-    "can be used to pick colors.";
 
 const char kGlobalMediaControlsName[] = "Global Media Controls";
 const char kGlobalMediaControlsDescription[] =
@@ -2083,12 +2075,6 @@ const char kSafetyTipDescription[] =
     "If enabled, a Safety Tip UI may be displayed when visiting or interacting "
     "with a site Chrome believes may be suspicious.";
 
-const char kSameSiteByDefaultCookiesName[] = "SameSite by default cookies";
-const char kSameSiteByDefaultCookiesDescription[] =
-    "Treat cookies that don't specify a SameSite attribute as if they were "
-    "SameSite=Lax. Sites must specify SameSite=None in order to enable "
-    "third-party usage.";
-
 const char kSchemefulSameSiteName[] = "Schemeful Same-Site";
 const char kSchemefulSameSiteDescription[] =
     "Modify the same-site computation such that origins with the same "
@@ -2137,10 +2123,6 @@ const char kSendTabToSelfWhenSignedInDescription[] =
 
 const char kSidePanelName[] = "Side panel";
 const char kSidePanelDescription[] = "Host some content in a side panel.";
-
-const char kShareByDefaultInCCTName[] = "Enable sharing by default in CCT.";
-const char kShareByDefaultInCCTDescription[] =
-    "Enables a sharing option by default in Chrome Custom Tabs.";
 
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
@@ -2673,6 +2655,11 @@ const char kDrawPredictedPointsName[] = "Draw predicted delegated ink points";
 // Android ---------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
+
+const char kAddToHomescreenIPHName[] = "Add to homescreen IPH";
+const char kAddToHomescreenIPHDescription[] =
+    " Shows in-product-help messages educating users about add to homescreen "
+    "option in chrome.";
 
 const char kAImageReaderName[] = "Android ImageReader";
 const char kAImageReaderDescription[] =
@@ -3245,12 +3232,6 @@ const char kRelatedSearchesUiDescription[] =
     "Forces the Related Searches UI and underlying requests to be enabled "
     "regardless of whether they are safe or useful. This requires the Related "
     "Searches feature flag to also be enabled.";
-
-const char kReportFeedUserActionsName[] =
-    "Enable the report of click actions on cards in Chrome's Feed on Android.";
-const char kReportFeedUserActionsDescription[] =
-    "Enable the report of click actions on cards in Chrome's Feed on Android."
-    " Also enable the feed header menu to manage the feed.";
 
 const char kRequestDesktopSiteForTabletsName[] =
     "Request desktop site for tablets on Android";
@@ -4086,11 +4067,6 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
 
-const char kMovablePartialScreenshotName[] =
-    "Movable/resizable partial screenshot region";
-const char kMovablePartialScreenshotDescription[] =
-    "Allow partial screenshot region to be moved/resized via mouse/touch.";
-
 const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
 const char kEnableAppDataSearchDescription[] =
     "Allow launcher search to access data available through Firebase App "
@@ -4393,12 +4369,6 @@ const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
 const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
 const char kFilesAppCopyImageDescription[] =
     "Enables the Files App to copy images selected to the system clipboard";
-
-const char kFilesCameraFolderName[] =
-    "Enable Camera folder handling in Files App";
-const char kFilesCameraFolderDescription[] =
-    "Enables the Files App to display Camera folder with i18n name and make it "
-    "nonmodifiable";
 
 const char kFilesJsModulesName[] = "Enable JS Modules for Files app";
 const char kFilesJsModulesDescription[] =
@@ -4717,11 +4687,6 @@ const char kShowBluetoothDebugLogToggleName[] =
 const char kShowBluetoothDebugLogToggleDescription[] =
     "Enables a toggle which can enable debug (i.e., verbose) logs for "
     "Bluetooth";
-
-const char kEnableBluetoothVerboseLogsForGooglersName[] =
-    "Enable Bluetooth verbose logs for Googlers";
-const char kEnableBluetoothVerboseLogsForGooglersDescription[] =
-    "Enables Bluetooth verbose logs for Googlers in feedback reports.";
 
 const char kBluetoothSessionizedMetricsName[] =
     "Enable Bluetooth sessionized metrics";
@@ -5058,14 +5023,6 @@ const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-const char kClickToCallUIName[] =
-    "Enable click to call feature signals to be handled on desktop";
-const char kClickToCallUIDescription[] =
-    "Enables click to call feature signals to be handled on desktop by showing "
-    "a list of user's available devices with telephony functionality.";
-#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const char kDiceWebSigninInterceptionName[] = "Dice Web-Signin Interception";

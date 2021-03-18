@@ -2304,9 +2304,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Download UI -->
-      <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
-        Download complete
-      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PENDING" desc="Download notification to be displayed when a download has been scheduled but has not started being fetched from the network.">
         Download pending…
       </message>
@@ -3991,6 +3988,14 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
       <message name="IDS_SHARED_CLIPBOARD_SHARE_ACTIVITY_TITLE" desc="Title of the Shared Clipboard Share activity that will appear in the Android share dialog.">
         Send text to Your Devices
+      </message>
+
+      <!-- Sms Fetcher -->
+      <message name="IDS_SMS_FETCHER_NOTIFICATION_TITLE" translateable="false" desc="Title text shown when the browser has received an SMS on the user's behalf.">
+        Tap to verify your phone number on desktop
+      </message>
+      <message name="IDS_SMS_FETCHER_NOTIFICATION_TEXT" translateable="false" desc="Content text shown when the browser has received an SMS on the user's behalf.">
+        <ph name="ONE_TIME_CODE">%1$s<ex>123</ex></ph> is your code for <ph name="ORIGIN">%2$s<ex>example.com</ex></ph>
       </message>
 
       <!-- Interventions -->

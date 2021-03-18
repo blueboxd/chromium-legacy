@@ -419,6 +419,11 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->CachedLayoutResult(constraint_space, break_token, early_break,
                                &fragment_geometry, &cache_status);
+  if (UNLIKELY(DevtoolsReadonlyLayoutScope::InDevtoolsLayout())) {
+    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+    DCHECK(!box_->NeedsLayoutOverflowRecalc());
+    return layout_result;
+  }
   if (cache_status == NGLayoutCacheStatus::kHit) {
     DCHECK(layout_result);
 
@@ -769,6 +774,7 @@ void NGBlockNode::FinishLayout(
 
 MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     WritingMode container_writing_mode,
+    const MinMaxSizesType type,
     const MinMaxSizesInput& input,
     const NGConstraintSpace* constraint_space) const {
   // TODO(layoutng) Can UpdateMarkerTextIfNeeded call be moved
@@ -790,7 +796,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     // of the layout phase.
     // TODO(ikilpatrick): Remove this check.
     if (!box_->GetFrameView()->IsInPerformLayout()) {
-      sizes = ComputeMinMaxSizesFromLegacy(input, *constraint_space);
+      sizes = ComputeMinMaxSizesFromLegacy(type, *constraint_space);
       return MinMaxSizesResult(sizes,
                                /* depends_on_percentage_block_size */ false);
     }
@@ -812,7 +818,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     constraint_space = &zero_constraint_space;
 
   if (!Style().AspectRatio().IsAuto() && !IsReplaced() &&
-      input.type == MinMaxSizesType::kContent) {
+      type == MinMaxSizesType::kContent) {
     LayoutUnit block_size(kIndefiniteSize);
     if (IsOutOfFlowPositioned()) {
       // For out-of-flow, the input percentage block size is actually our
@@ -847,7 +853,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
        !box_->IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize())) {
     MinMaxSizes sizes = box_->IsTable() && !box_->IsLayoutNGMixin()
                             ? box_->PreferredLogicalWidths()
-                            : box_->IntrinsicLogicalWidths(input.type);
+                            : box_->IntrinsicLogicalWidths(type);
     bool depends_on_percentage_block_size =
         box_->IntrinsicLogicalWidthsDependsOnPercentageBlockSize();
     return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
@@ -877,14 +883,14 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
       !cache_depends_on_percentage_block_size) {
     MinMaxSizes sizes = box_->IsTable() && !box_->IsLayoutNGMixin()
                             ? box_->PreferredLogicalWidths()
-                            : box_->IntrinsicLogicalWidths(input.type);
+                            : box_->IntrinsicLogicalWidths(type);
     return MinMaxSizesResult(sizes, cache_depends_on_percentage_block_size);
   }
 
   box_->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
 
   if (!CanUseNewLayout()) {
-    MinMaxSizes sizes = ComputeMinMaxSizesFromLegacy(input, *constraint_space);
+    MinMaxSizes sizes = ComputeMinMaxSizesFromLegacy(type, *constraint_space);
 
     // Update the cache bits for this legacy root (but not the intrinsic
     // inline-sizes themselves).
@@ -945,7 +951,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
 }
 
 MinMaxSizes NGBlockNode::ComputeMinMaxSizesFromLegacy(
-    const MinMaxSizesInput& input,
+    const MinMaxSizesType type,
     const NGConstraintSpace& space) const {
   BoxLayoutExtraInput extra_input(*box_);
   SetupBoxLayoutExtraInput(space, *box_, &extra_input);
@@ -955,9 +961,8 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizesFromLegacy(
   // meaning for tables.
   //
   // Due to this the min/max content contribution is their min/max content size.
-  MinMaxSizes sizes = box_->IsTable()
-                          ? box_->PreferredLogicalWidths()
-                          : box_->IntrinsicLogicalWidths(input.type);
+  MinMaxSizes sizes = box_->IsTable() ? box_->PreferredLogicalWidths()
+                                      : box_->IntrinsicLogicalWidths(type);
 
   return sizes;
 }
@@ -1628,6 +1633,14 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->GetCachedLayoutResult();
 
+  if (UNLIKELY(DevtoolsReadonlyLayoutScope::InDevtoolsLayout())) {
+    DCHECK(layout_result);
+    DCHECK(!box_->NeedsLayout());
+    DCHECK(!box_->NeedsLayoutOverflowRecalc());
+    DCHECK(MaySkipLegacyLayout(*this, *layout_result, constraint_space));
+    return layout_result;
+  }
+
   // We need to force a layout on the child if the constraint space given will
   // change the layout.
   bool needs_force_relayout =
@@ -1849,6 +1862,21 @@ void NGBlockNode::ReplaceColumnResult(
     const NGPhysicalBoxFragment& old_fragment) const {
   GetFlowThread(To<LayoutBlockFlow>(box_))
       ->ReplaceLayoutResult(std::move(result), old_fragment);
+}
+
+static bool g_devtools_layout = false;
+bool DevtoolsReadonlyLayoutScope::InDevtoolsLayout() {
+  return g_devtools_layout;
+}
+
+DevtoolsReadonlyLayoutScope::DevtoolsReadonlyLayoutScope() {
+  DCHECK(!g_devtools_layout);
+  g_devtools_layout = true;
+}
+
+DevtoolsReadonlyLayoutScope::~DevtoolsReadonlyLayoutScope() {
+  DCHECK(g_devtools_layout);
+  g_devtools_layout = false;
 }
 
 }  // namespace blink

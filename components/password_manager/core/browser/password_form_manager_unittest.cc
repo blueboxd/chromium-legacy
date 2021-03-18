@@ -26,8 +26,8 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
@@ -2084,8 +2084,8 @@ TEST_P(PasswordFormManagerTest, iOSUsingFieldDataManagerData) {
       base::UTF8ToUTF16("autofilled_pw"),
       FieldPropertiesFlags::kAutofilledOnUserTrigger);
 
-  form_manager_->UpdateObservedFormDataWithFieldDataManagerInfo(
-      field_data_manager.get());
+  form_manager_->ProvisionallySaveFieldDataManagerInfo(field_data_manager.get(),
+                                                       &driver_);
 
   EXPECT_EQ(form_manager_->observed_form()->fields[1].user_input,
             base::UTF8ToUTF16("typed_username"));

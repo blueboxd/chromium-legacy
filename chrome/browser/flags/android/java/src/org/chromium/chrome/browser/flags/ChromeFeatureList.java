@@ -189,6 +189,7 @@ public abstract class ChromeFeatureList {
 
     /* Alphabetical: */
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR = "AdaptiveButtonInTopToolbar";
+    public static final String ADD_TO_HOMESCREEN_IPH = "AddToHomescreenIPH";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
     public static final String ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS =
             "AllowRemoteContextForNotifications";
@@ -413,7 +414,6 @@ public abstract class ChromeFeatureList {
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String RELATED_SEARCHES_UI = "RelatedSearchesUi";
     public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
-    public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED =
             "SafeBrowsingEnhancedProtection";
@@ -428,7 +428,6 @@ public abstract class ChromeFeatureList {
             "ServiceManagerForBackgroundPrefetch";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
-    public static final String SHARE_BY_DEFAULT_IN_CCT = "ShareByDefaultInCCT";
     public static final String SHARED_CLIPBOARD_UI = "SharedClipboardUI";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =

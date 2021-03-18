@@ -15,8 +15,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -65,8 +65,8 @@ class CrosSettingsTest : public testing::Test {
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
     owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-    OwnerSettingsServiceChromeOSFactory::GetInstance()
-        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
     DeviceSettingsService::Get()->SetSessionManager(
         &fake_session_manager_client_, owner_key_util_);
     DeviceSettingsService::Get()->Load();
@@ -81,17 +81,16 @@ class CrosSettingsTest : public testing::Test {
   // partway through the test - this sets one up for those tests that need it.
   // Other tests below cannot use an OwnerSettingsService, since they change
   // |device_policy_| to something that would not be allowed by
-  // OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy.
-  OwnerSettingsServiceChromeOS* CreateOwnerSettingsService(
+  // OwnerSettingsServiceAsh::FixupLocalOwnerPolicy.
+  OwnerSettingsServiceAsh* CreateOwnerSettingsService(
       const std::string& owner_email) {
     const AccountId account_id = AccountId::FromUserEmail(owner_email);
     user_manager_.AddUser(account_id);
     profile_ = std::make_unique<TestingProfile>();
     profile_->set_profile_name(account_id.GetUserEmail());
 
-    OwnerSettingsServiceChromeOS* service =
-        OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-            profile_.get());
+    OwnerSettingsServiceAsh* service =
+        OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_.get());
     DCHECK(service);
 
     service->OnTPMTokenReady(true);
@@ -233,7 +232,7 @@ TEST_F(CrosSettingsTest, SetAllowlistWithListOps2) {
 // level, the CrosSettings API.
 // They do not use OwnerSettingsService since having a local
 // OwnerSettingsService constrains the policies in certain ways - see
-// OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy.
+// OwnerSettingsServiceAsh::FixupLocalOwnerPolicy.
 
 TEST_F(CrosSettingsTest, SetEmptyAllowlist) {
   // Set an empty allowlist.

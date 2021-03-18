@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/ash/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
@@ -52,7 +52,7 @@ bool IsChild(Profile* profile) {
 
 bool IsOwnerProfile(Profile* profile) {
   return profile &&
-         ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile)
+         ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile)
              ->IsOwner();
 }
 
@@ -140,9 +140,8 @@ std::unique_ptr<base::ListValue> GetUsersList(Profile* profile,
         std::make_unique<base::Value>(user->GetAccountId().GetUserEmail()));
   }
 
-  if (ash::OwnerSettingsServiceChromeOS* service =
-          ash::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-              profile)) {
+  if (ash::OwnerSettingsServiceAsh* service =
+          ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile)) {
     service->Set(chromeos::kAccountsPrefUsers, *email_list.get());
   }
 

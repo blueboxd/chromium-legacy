@@ -60,7 +60,6 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.EARLY_LIBRARY_LOAD, false);
             put(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS, true);
             put(ChromeFeatureList.IMMERSIVE_UI_MODE, false);
-            put(ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT, true);
             put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true);
             put(ChromeFeatureList.START_SURFACE_ANDROID, false);
             put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false);
@@ -76,7 +75,6 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.TAB_TO_GTS_ANIMATION, false);
             put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);
             put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true);
-            put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
             put(ChromeFeatureList.INTEREST_FEED_V2, true);
             put(ChromeFeatureList.THEME_REFACTOR_ANDROID, false);
             put(ChromeFeatureList.USE_CHIME_ANDROID_SDK, false);

@@ -792,13 +792,11 @@ void FrameTreeNode::PruneChildFrameNavigationEntries(
 }
 
 void FrameTreeNode::SetAdFrameType(blink::mojom::AdFrameType ad_frame_type) {
-  DCHECK_NE(ad_frame_type, blink::mojom::AdFrameType::kNonAd);
-  if (replication_state_->ad_frame_type == blink::mojom::AdFrameType::kNonAd) {
-    replication_state_->ad_frame_type = ad_frame_type;
-    render_manager()->OnDidSetAdFrameType(ad_frame_type);
-  } else {
-    DCHECK_EQ(ad_frame_type, replication_state_->ad_frame_type);
-  }
+  if (ad_frame_type == replication_state_->ad_frame_type)
+    return;
+
+  replication_state_->ad_frame_type = ad_frame_type;
+  render_manager()->OnDidSetAdFrameType(ad_frame_type);
 }
 
 void FrameTreeNode::SetInitialPopupURL(const GURL& initial_popup_url) {
@@ -811,6 +809,12 @@ void FrameTreeNode::SetPopupCreatorOrigin(
     const url::Origin& popup_creator_origin) {
   DCHECK(!has_committed_real_load_);
   popup_creator_origin_ = popup_creator_origin;
+}
+
+void FrameTreeNode::WriteIntoTracedValue(perfetto::TracedValue context) const {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("id", frame_tree_node_id());
+  dict.Add("is_main_frame", IsMainFrame());
 }
 
 }  // namespace content

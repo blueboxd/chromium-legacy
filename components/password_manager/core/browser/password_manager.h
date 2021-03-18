@@ -17,8 +17,8 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
@@ -108,6 +108,9 @@ class PasswordManager : public PasswordManagerInterface {
       const std::string& frame_id,
       PasswordManagerDriver* driver,
       const autofill::FieldDataManager* field_data_manager) override;
+  void PropagateFieldDataManagerInfo(
+      const autofill::FieldDataManager* field_data_manager,
+      const PasswordManagerDriver* driver) override;
 #endif
 
   // Notifies the renderer to start the generation flow or pops up additional UI

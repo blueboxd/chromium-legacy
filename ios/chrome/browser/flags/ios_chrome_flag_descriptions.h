@@ -299,10 +299,6 @@ extern const char kSafeBrowsingAvailableDescription[];
 extern const char kSafeBrowsingRealTimeLookupName[];
 extern const char kSafeBrowsingRealTimeLookupDescription[];
 
-// Title and description for the flag to enable safety check on iOS.
-extern const char kSafetyCheckIOSName[];
-extern const char kSafetyCheckIOSDescription[];
-
 // Title and description for the flag to enable integration with the ScreenTime
 // system.
 extern const char kScreenTimeIntegrationName[];
@@ -344,11 +340,6 @@ extern const char kShowAutofillTypePredictionsDescription[];
 // Title and description for the flag to enable simplify sign-out on iOS.
 extern const char kSimplifySignOutIOSName[];
 extern const char kSimplifySignOutIOSDescription[];
-
-// Title and description for the flag to use |-drawViewHierarchy:| for taking
-// snapshots.
-extern const char kSnapshotDrawViewName[];
-extern const char kSnapshotDrawViewDescription[];
 
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];

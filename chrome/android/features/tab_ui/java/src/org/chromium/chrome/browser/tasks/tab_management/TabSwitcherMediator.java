@@ -730,12 +730,14 @@ class TabSwitcherMediator
 
     @Override
     public boolean onBackPressed(boolean isOnHomepage) {
-        if (!mContainerViewModel.get(IS_VISIBLE)) return false;
-
+        // The TabSelectionEditor dialog can be shown on the Start surface without showing the Grid
+        // Tab switcher, so skip the check of visibility of mContainerViewModel here.
         if (mTabSelectionEditorController != null
                 && mTabSelectionEditorController.handleBackPressed()) {
             return true;
         }
+
+        if (!mContainerViewModel.get(IS_VISIBLE)) return false;
 
         if (mTabGridDialogController != null && mTabGridDialogController.handleBackPressed()) {
             return true;
@@ -810,7 +812,9 @@ class TabSwitcherMediator
      */
     static boolean isShowingTabsInMRUOrder() {
         String feature = StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue();
-        return TextUtils.equals(feature, "twopanes");
+        return TextUtils.equals(feature, "twopanes")
+                || StartSurfaceConfiguration.SHOW_TABS_IN_MRU_ORDER.getValue()
+                && TextUtils.equals(feature, "single");
     }
 
     /**

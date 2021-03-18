@@ -18,8 +18,8 @@
 #include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
@@ -209,9 +209,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   void SetDriver(const base::WeakPtr<PasswordManagerDriver>& driver);
 
-  // Copies all known field data from FieldDataManager to |observed_form()|.
-  void UpdateObservedFormDataWithFieldDataManagerInfo(
-      const autofill::FieldDataManager* field_data_manager);
+  // Copies all known field data from FieldDataManager to |observed_form()|
+  // and provisionally saves the manager if the relevant data is found.
+  void ProvisionallySaveFieldDataManagerInfo(
+      const autofill::FieldDataManager* field_data_manager,
+      const PasswordManagerDriver* driver);
 #endif  // defined(OS_IOS)
 
   // Create a copy of |*this| which can be passed to the code handling

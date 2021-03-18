@@ -472,6 +472,10 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = "android-weblayer-pie-x86-rel-tests",
+)
+
+try_.chromium_android_builder(
     name = "android-weblayer-pie-x86-wpt-fyi-rel",
 )
 
@@ -814,6 +818,7 @@ try_.chromium_dawn_builder(
             ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
             ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
             ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
             ".+/[+]/tools/clang/scripts/update.py",
             ".+/[+]/ui/gl/features.gni",
         ],
@@ -834,6 +839,7 @@ try_.chromium_dawn_builder(
             ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
             ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
             ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
             ".+/[+]/tools/clang/scripts/update.py",
             ".+/[+]/ui/gl/features.gni",
         ],
@@ -854,6 +860,7 @@ try_.chromium_dawn_builder(
             ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
             ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
             ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
             ".+/[+]/tools/clang/scripts/update.py",
             ".+/[+]/ui/gl/features.gni",
         ],
@@ -874,6 +881,7 @@ try_.chromium_dawn_builder(
             ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
             ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
             ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
             ".+/[+]/tools/clang/scripts/update.py",
             ".+/[+]/ui/gl/features.gni",
         ],

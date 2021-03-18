@@ -1546,6 +1546,7 @@ if (enable_vr || enable_arcore) {
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArLightEstimationTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArSessionTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArTestFramework.java",
+        "javatests/src/org/chromium/chrome/browser/vr/WebXrArViewportScaleTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/rules/ArPlaybackFile.java",
         "javatests/src/org/chromium/chrome/browser/vr/rules/ArTestRule.java",
         "javatests/src/org/chromium/chrome/browser/vr/rules/ChromeTabbedActivityArTestRule.java",
@@ -2201,7 +2202,7 @@ android_library("monochrome_java") {
     "//content/public/android:content_java",
   ]
   sources =
-      [ "java/src/org/chromium/chrome/browser/MonochromeApplication.java" ]
+      [ "java/src/org/chromium/chrome/browser/MonochromeApplicationImpl.java" ]
 }
 
 # Monochrome equivalent of :base_module_java.
@@ -3507,6 +3508,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/sharing/SharingServiceProxy.java",
     "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",
     "java/src/org/chromium/chrome/browser/sharing/shared_clipboard/SharedClipboardMessageHandler.java",
+    "java/src/org/chromium/chrome/browser/sharing/sms_fetcher/SmsFetcherMessageHandler.java",
     "java/src/org/chromium/chrome/browser/signin/SigninBridge.java",
     "java/src/org/chromium/chrome/browser/signin/SigninManagerImpl.java",
     "java/src/org/chromium/chrome/browser/site_settings/CookieControlsServiceBridge.java",

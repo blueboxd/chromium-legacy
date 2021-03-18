@@ -25,8 +25,8 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion_provider_query.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -53,6 +53,7 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FieldDataManager;
 using autofill::FieldRendererId;
 using autofill::FormActivityObserverBridge;
 using autofill::FormData;
@@ -190,6 +191,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
     return;
 
+  auto fieldDataManager =
+      UniqueIDDataTabHelper::FromWebState(_webState)->GetFieldDataManager();
+  _passwordManager->PropagateFieldDataManagerInfo(
+      fieldDataManager.get(), _delegate.passwordManagerDriver);
   // On non-iOS platforms navigations initiated by link click are excluded from
   // navigations which might be form submssions. On iOS there is no easy way to
   // check that the navigation is link initiated, so it is skipped. It should
@@ -197,6 +202,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // after filling password form w/o submitting it.
   _passwordManager->DidNavigateMainFrame(
       /*form_may_be_submitted=*/navigation->IsRendererInitiated());
+  fieldDataManager->ClearData();
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {

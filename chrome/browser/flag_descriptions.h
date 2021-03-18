@@ -321,9 +321,6 @@ extern const char kCompositedLayerBordersDescription[];
 extern const char kCookieDeprecationMessagesName[];
 extern const char kCookieDeprecationMessagesDescription[];
 
-extern const char kCookiesWithoutSameSiteMustBeSecureName[];
-extern const char kCookiesWithoutSameSiteMustBeSecureDescription[];
-
 extern const char kCooperativeSchedulingName[];
 extern const char kCooperativeSchedulingDescription[];
 
@@ -461,6 +458,9 @@ extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
 
 extern const char kDesktopPWAsRunOnOsLoginName[];
 extern const char kDesktopPWAsRunOnOsLoginDescription[];
+
+extern const char kDesktopPWAsProtocolHandlingName[];
+extern const char kDesktopPWAsProtocolHandlingDescription[];
 
 extern const char kDesktopPWAsUrlHandlingName[];
 extern const char kDesktopPWAsUrlHandlingDescription[];
@@ -729,9 +729,6 @@ extern const char kFormControlsDarkModeDescription[];
 
 extern const char kFormControlsRefreshName[];
 extern const char kFormControlsRefreshDescription[];
-
-extern const char kColorPickerEyeDropperName[];
-extern const char kColorPickerEyeDropperDescription[];
 
 extern const char kGlobalMediaControlsName[];
 extern const char kGlobalMediaControlsDescription[];
@@ -1223,9 +1220,6 @@ extern const char
 extern const char kSafetyTipName[];
 extern const char kSafetyTipDescription[];
 
-extern const char kSameSiteByDefaultCookiesName[];
-extern const char kSameSiteByDefaultCookiesDescription[];
-
 extern const char kSchemefulSameSiteName[];
 extern const char kSchemefulSameSiteDescription[];
 
@@ -1253,9 +1247,6 @@ extern const char kSendTabToSelfWhenSignedInDescription[];
 
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
-
-extern const char kShareByDefaultInCCTName[];
-extern const char kShareByDefaultInCCTDescription[];
 
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
@@ -1567,6 +1558,9 @@ extern const char kDrawPredictedPointsName[];
 // Android --------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
+
+extern const char kAddToHomescreenIPHName[];
+extern const char kAddToHomescreenIPHDescription[];
 
 extern const char kAImageReaderName[];
 extern const char kAImageReaderDescription[];
@@ -1886,9 +1880,6 @@ extern const char kRelatedSearchesDescription[];
 
 extern const char kRelatedSearchesUiName[];
 extern const char kRelatedSearchesUiDescription[];
-
-extern const char kReportFeedUserActionsName[];
-extern const char kReportFeedUserActionsDescription[];
 
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
@@ -2373,9 +2364,6 @@ extern const char kDoubleTapToZoomInTabletModeDescription[];
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
 
-extern const char kMovablePartialScreenshotName[];
-extern const char kMovablePartialScreenshotDescription[];
-
 extern const char kEnableAdvancedPpdAttributesName[];
 extern const char kEnableAdvancedPpdAttributesDescription[];
 
@@ -2580,9 +2568,6 @@ extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
 extern const char kFilesAppCopyImageName[];
 extern const char kFilesAppCopyImageDescription[];
 
-extern const char kFilesCameraFolderName[];
-extern const char kFilesCameraFolderDescription[];
-
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];
 
@@ -2773,9 +2758,6 @@ extern const char kChromeOSSharingHubDescription[];
 
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];
-
-extern const char kEnableBluetoothVerboseLogsForGooglersName[];
-extern const char kEnableBluetoothVerboseLogsForGooglersDescription[];
 
 extern const char kBluetoothSessionizedMetricsName[];
 extern const char kBluetoothSessionizedMetricsDescription[];
@@ -2979,11 +2961,6 @@ extern const char kEnableEphemeralGuestProfilesOnDesktopDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-extern const char kClickToCallUIName[];
-extern const char kClickToCallUIDescription[];
-#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kDiceWebSigninInterceptionName[];

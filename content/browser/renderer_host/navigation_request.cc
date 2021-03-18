@@ -1190,8 +1190,7 @@ NavigationRequest::NavigationRequest(
   }
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("navigation", "NavigationRequest",
-                                    navigation_id_, "navigation_request",
-                                    base::trace_event::ToTracedValue(this));
+                                    navigation_id_, "navigation_request", this);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing",
                                     navigation_id_);
 
@@ -1754,6 +1753,148 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
 
 void NavigationRequest::ResetForCrossDocumentRestart() {
   DCHECK(IsSameDocument());
+
+  // TODO(crbug.com/1188513): A same document history navigation was performed
+  // but the renderer thinks there's a different document loaded. Where did
+  // this navigation come from?
+  if (common_params_->navigation_type ==
+      mojom::NavigationType::HISTORY_SAME_DOCUMENT) {
+    NavigationControllerImpl* const controller = GetNavigationController();
+
+    // Dump stuff from NavigationRequest.
+    SCOPED_CRASH_KEY_BOOL("history_bad_seq", "is_same_document",
+                          IsSameDocument());
+    SCOPED_CRASH_KEY_BOOL("history_bad_seq", "in_main_frame", IsInMainFrame());
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_item_seq",
+                            frame_entry_item_sequence_number_);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_doc_seq",
+                            frame_entry_document_sequence_number_);
+    SCOPED_CRASH_KEY_BOOL(
+        "history_bad_seq", "in_new_child",
+        common_params_->is_history_navigation_in_new_child_frame);
+
+    // Compare the NavigationEntry id from the NavigationRequest, the commit
+    // sent to the renderer (and returned from it), and the RenderFrameHost.
+    int request_nav_entry_id = nav_entry_id_;
+    int commit_nav_entry_id = commit_params_->nav_entry_id;
+    int rfh_nav_entry_id = render_frame_host_->nav_entry_id();
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_nav_entry_id",
+                            request_nav_entry_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_nav_entry_id",
+                            commit_nav_entry_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_nav_entry_id",
+                            rfh_nav_entry_id);
+
+    // Compare the NavigationEntry existence from the NavigationRequest, the
+    // commit sent to the renderer (and returned from it), and the
+    // RenderFrameHost.
+    auto* request_entry =
+        static_cast<NavigationEntryImpl*>(GetNavigationEntry());
+    NavigationEntryImpl* commit_entry =
+        controller->GetEntryWithUniqueID(commit_nav_entry_id);
+    NavigationEntryImpl* rfh_entry =
+        controller->GetEntryWithUniqueID(rfh_nav_entry_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_entry",
+                            reinterpret_cast<uintptr_t>(request_entry));
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_entry",
+                            reinterpret_cast<uintptr_t>(commit_entry));
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_entry",
+                            reinterpret_cast<uintptr_t>(rfh_entry));
+
+    FrameNavigationEntry* request_frame_entry = nullptr;
+    FrameNavigationEntry* commit_frame_entry = nullptr;
+    FrameNavigationEntry* rfh_frame_entry = nullptr;
+
+    if (request_entry) {
+      request_frame_entry =
+          request_entry->GetFrameEntry(render_frame_host_->frame_tree_node());
+    }
+    if (commit_entry) {
+      commit_frame_entry =
+          commit_entry->GetFrameEntry(render_frame_host_->frame_tree_node());
+    }
+    if (rfh_entry) {
+      request_frame_entry =
+          rfh_entry->GetFrameEntry(render_frame_host_->frame_tree_node());
+    }
+
+    // Compare the FrameNavigationEntry existence.
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_frameentry",
+                            reinterpret_cast<uintptr_t>(request_frame_entry));
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_frameentry",
+                            reinterpret_cast<uintptr_t>(commit_frame_entry));
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_frameentry",
+                            reinterpret_cast<uintptr_t>(rfh_frame_entry));
+
+    // Dump stuff from each FrameNavigationEntry.
+    int request_entry_doc_seq = 0;
+    int request_entry_item_seq = 0;
+    int32_t request_entry_site_instance_id = 0;
+    int32_t request_entry_browsing_instance_id = 0;
+    int commit_entry_doc_seq = 0;
+    int commit_entry_item_seq = 0;
+    int32_t commit_entry_site_instance_id = 0;
+    int32_t commit_entry_browsing_instance_id = 0;
+    int rfh_entry_doc_seq = 0;
+    int rfh_entry_item_seq = 0;
+    int32_t rfh_entry_site_instance_id = 0;
+    int32_t rfh_entry_browsing_instance_id = 0;
+
+    if (request_frame_entry) {
+      request_entry_doc_seq = request_frame_entry->document_sequence_number();
+      request_entry_item_seq = request_frame_entry->item_sequence_number();
+      if (SiteInstanceImpl* inst = request_frame_entry->site_instance()) {
+        request_entry_site_instance_id = inst->GetId();
+        request_entry_browsing_instance_id = inst->GetBrowsingInstanceId();
+      }
+    }
+    if (commit_frame_entry) {
+      commit_entry_doc_seq = commit_frame_entry->document_sequence_number();
+      commit_entry_item_seq = commit_frame_entry->item_sequence_number();
+      if (SiteInstanceImpl* inst = commit_frame_entry->site_instance()) {
+        commit_entry_site_instance_id = inst->GetId();
+        commit_entry_browsing_instance_id = inst->GetBrowsingInstanceId();
+      }
+    }
+    if (rfh_frame_entry) {
+      rfh_entry_doc_seq = rfh_frame_entry->document_sequence_number();
+      rfh_entry_item_seq = rfh_frame_entry->item_sequence_number();
+      if (SiteInstanceImpl* inst = rfh_frame_entry->site_instance()) {
+        rfh_entry_site_instance_id = inst->GetId();
+        rfh_entry_browsing_instance_id = inst->GetBrowsingInstanceId();
+      }
+    }
+
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_entry_doc_seq",
+                            request_entry_doc_seq);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_entry_doc_seq",
+                            commit_entry_doc_seq);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_entry_doc_seq",
+                            rfh_entry_doc_seq);
+
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_entry_item_seq",
+                            request_entry_item_seq);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_entry_item_seq",
+                            commit_entry_item_seq);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_entry_item_seq",
+                            rfh_entry_item_seq);
+
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_site_inst",
+                            request_entry_site_instance_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_site_inst",
+                            commit_entry_site_instance_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_site_inst",
+                            rfh_entry_site_instance_id);
+
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "request_browsing_inst",
+                            request_entry_browsing_instance_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "commit_browsing_inst",
+                            commit_entry_browsing_instance_id);
+    SCOPED_CRASH_KEY_NUMBER("history_bad_seq", "rfh_browsing_inst",
+                            rfh_entry_browsing_instance_id);
+
+    base::debug::DumpWithoutCrashing();
+  }
 
   // Reset the NavigationHandle, which is now incorrectly marked as
   // same-document. Ensure |loader_| does not exist as it can hold raw pointers
@@ -5059,28 +5200,29 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
   return origin;
 }
 
-void NavigationRequest::AsValueInto(
-    base::trace_event::TracedValue* traced_value) {
-  traced_value->SetPointer("this", this);
-  traced_value->SetInteger("navigation_id", navigation_id_);
-  traced_value->SetInteger("frame_tree_node",
-                           frame_tree_node_->frame_tree_node_id());
-  traced_value->SetString("url", common_params_->url.possibly_invalid_spec());
-  traced_value->SetBoolean("browser_initiated", browser_initiated_);
-  traced_value->SetBoolean("from_begin_navigation", from_begin_navigation_);
-  traced_value->SetBoolean("is_for_commit", is_for_commit_);
-  traced_value->SetInteger("reload_type", static_cast<int>(reload_type_));
-  traced_value->SetInteger("navigation_type",
-                           static_cast<int>(common_params_->navigation_type));
-  traced_value->SetInteger("state", static_cast<int>(state_));
+void NavigationRequest::WriteIntoTracedValue(perfetto::TracedValue context) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("navigation_id", navigation_id_);
+  dict.Add("has_committed", HasCommitted());
+  dict.Add("is_error_page", IsErrorPage());
+  dict.Add("net_error", net_error_);
+  dict.Add("url", common_params_->url);
+  dict.Add("frame_tree_node", frame_tree_node_);
+  dict.Add("browser_initiated", browser_initiated_);
+  dict.Add("from_begin_navigation", from_begin_navigation_);
+  dict.Add("is_for_commit", is_for_commit_);
+  dict.Add("reload_type", reload_type_);
+  dict.Add("state", state_);
+  dict.Add("navigation_type", common_params_->navigation_type);
 
   if (IsServedFromBackForwardCache()) {
-    traced_value->SetBoolean("bf cached", true);
-    rfh_restored_from_back_forward_cache_->AsValueInto(traced_value);
+    dict.Add("served_from_bfcache", true);
+    dict.Add("rfh_restored_from_bfcache",
+             rfh_restored_from_back_forward_cache_);
   }
 
   if (state_ >= WILL_PROCESS_RESPONSE)
-    GetRenderFrameHost()->AsValueInto(traced_value);
+    dict.Add("render_frame_host", GetRenderFrameHost());
 }
 
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {

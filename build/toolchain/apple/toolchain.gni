@@ -141,9 +141,9 @@ template("apple_toolchain") {
           rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
                       root_build_dir) + " --files-to-instrument=" +
           rebase_path(toolchain_coverage_instrumentation_input_file,
-                      root_build_dir) + " --target-os=" + target_os
-      cc = "$python_path $_coverage_wrapper ${cc}"
-      cxx = "$python_path $_coverage_wrapper ${cxx}"
+                      root_build_dir)
+      cc = _coverage_wrapper + " ${cc}"
+      cxx = _coverage_wrapper + " ${cxx}"
     }
 
     linker_driver =
@@ -278,6 +278,11 @@ template("apple_toolchain") {
         command = "rm -f {{output}} && $command"
         description = "AR {{output}}"
       }
+
+      # Specify explicit path for libtool.
+      libtool = mac_bin_path + "libtool"
+      command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
+      description = "LIBTOOL-STATIC {{output}}"
       outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
       default_output_dir = "{{target_out_dir}}"
       default_output_extension = ".a"
@@ -440,7 +445,9 @@ template("apple_toolchain") {
       # hardlink but ensure the file have distinct metadata (thus avoid the
       # error with ditto, see https://crbug.com/1042182).
       if (host_os == "mac") {
-        command = "rm -rf {{output}} && cp -Rc {{source}} {{output}}"
+        command =
+            "rm -rf {{output}} && cp -fRc {{source}} {{output}} 2>/dev/null " +
+            "|| (rm -rf {{output}} && cp -fR {{source}} {{output}})"
       } else {
         command = "rm -rf {{output}} && cp -Rl {{source}} {{output}}"
       }

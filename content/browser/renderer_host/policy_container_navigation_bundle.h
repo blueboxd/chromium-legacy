@@ -97,16 +97,16 @@ class CONTENT_EXPORT PolicyContainerNavigationBundle {
   void AddContentSecurityPolicy(
       network::mojom::ContentSecurityPolicyPtr policy);
 
+  // Same as `AddContentSecurityPolicy` above, but takes a vector of policies.
+  void AddContentSecurityPolicies(
+      std::vector<network::mojom::ContentSecurityPolicyPtr> policies);
+
   // Returns the delivered policies, as set so far by:
   //
   //  - |SetIPAddressSpace()| for |ip_address_space|
   //  - |SetIsOriginPotentiallyTrustworthy()| and |ComputePolicies()| for
   //    |is_web_secure_context|
-  //
-  // TODO(titouan): Consider exposing individual accessors instead, since the
-  // semantics of the policy fields do not correspond to those documented on
-  // the struct itself - we just happen to store data with a similar shape.
-  const PolicyContainerPolicies& DeliveredPolicies() const;
+  const PolicyContainerPolicies& DeliveredPoliciesForTesting() const;
 
   // Sets final policies to defaults suitable for error pages, and builds a
   // policy container host.
@@ -159,6 +159,21 @@ class CONTENT_EXPORT PolicyContainerNavigationBundle {
 
   // Sets |host_|.
   void SetFinalPolicies(std::unique_ptr<PolicyContainerPolicies> policies);
+
+  // Helper for `FinalizePolicies()`. Appends the delivered Content Security
+  // Policies to `policies` and returns them.
+  std::unique_ptr<PolicyContainerPolicies> IncorporateDeliveredPolicies(
+      std::unique_ptr<PolicyContainerPolicies> policies);
+
+  // Helper for `FinalizePolicies()`. Returns, depending on `url`, the policies
+  // that this document inherits from parent/initiator.
+  std::unique_ptr<PolicyContainerPolicies> ComputeInheritedPolicies(
+      const GURL& url);
+
+  // Helper for `FinalizePolicies()`. Returns, depending on `url`, the final
+  // policies for the document that is going to be committed.
+  std::unique_ptr<PolicyContainerPolicies> ComputeFinalPolicies(
+      const GURL& url);
 
   // The policies of the parent document, if any.
   const std::unique_ptr<PolicyContainerPolicies> parent_policies_;

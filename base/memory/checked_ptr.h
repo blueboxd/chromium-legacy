@@ -95,7 +95,7 @@ struct BackupRefPtrImpl {
 
   static ALWAYS_INLINE bool IsSupportedAndNotNull(void* ptr) {
     // This covers the nullptr case, as address 0 is never in GigaCage.
-    bool ret = IsManagedByPartitionAllocNormalBuckets(ptr);
+    bool ret = IsManagedByPartitionAllocBRPPool(ptr);
 
     // There are many situations where the compiler can prove that
     // ReleaseWrappedPtr is called on a value that is always NULL, but the way
@@ -120,14 +120,14 @@ struct BackupRefPtrImpl {
     // There may be pointers immediately after the allocation, e.g.
     //   CheckedPtr<T> ptr = AllocateNotFromPartitionAlloc(X * sizeof(T));
     //   for (size_t i = 0; i < X; i++) { ptr++; }
-    // Such pointers are *not* at risk of accidentally falling into normal
-    // buckets, because:
-    // 1) On 64-bit systems, normal buckets are preceded by direct map.
-    // 2) On 32-bit systems, the guard pages and metadata of normal bucket super
-    //    pages are not considered to be part of normal buckets.
+    // Such pointers are *not* at risk of accidentally falling into BRP pool,
+    // because:
+    // 1) On 64-bit systems, BRP pool is preceded by non-BRP pool.
+    // 2) On 32-bit systems, the guard pages and metadata of super pages in BRP
+    //    pool aren't considered to be part of that pool.
     //
     // This allows us to make a stronger assertion that if
-    // IsManagedByPartitionAllocNormalBuckets returns true for a valid pointer,
+    // IsManagedByPartitionAllocBRPPool returns true for a valid pointer,
     // it must be at least partition page away from the beginning of a super
     // page.
     if (ret) {
@@ -136,22 +136,22 @@ struct BackupRefPtrImpl {
     }
 #else
     // There is a problem on 32-bit systems, where the fake "GigaCage" has many
-    // normal bucket pool regions spread throughout the address space. A pointer
-    // immediately past an allocation may fall into the normal bucket pool,
+    // BRP pool regions spread throughout the address space. A pointer
+    // immediately past an allocation may accidentally fall into the BRP pool,
     // hence check if |ptr-1| belongs to that pool. However, checking only
     // |ptr-1| causes a problem with pointers to the beginning of an
     // out-of-the-pool allocation that happen to be where the pool ends, so
     // checking for |ptr| is also necessary.
     //
-    // Note, if |ptr| is in the normal bucket pool, |ptr-1| will not fall out of
-    // it, thanks to the leading guard pages (i.e. |ptr| will never point to the
+    // Note, if |ptr| is in the BRP pool, |ptr-1| will not fall out of it,
+    // thanks to the leading guard pages (i.e. |ptr| will never point to the
     // beginning of GigaCage).
     //
-    // 64-bit systems don't have this problem, because there is only one normal
-    // bucket pool region, positioned after the direct map pool.
-#if !(defined(ARCH_CPU_64_BITS) && !defined(OS_NACL))
+    // 64-bit systems don't have this problem, because there is only one BRP
+    // pool region, positioned *after* the non-BRP pool.
+#if !defined(PA_HAS_64_BITS_POINTERS)
     auto* adjusted_ptr = static_cast<char*>(ptr) - 1;
-    ret &= IsManagedByPartitionAllocNormalBuckets(adjusted_ptr);
+    ret &= IsManagedByPartitionAllocBRPPool(adjusted_ptr);
 #endif
 #endif
 
@@ -164,6 +164,10 @@ struct BackupRefPtrImpl {
       DCHECK(ptr != nullptr);
       AcquireInternal(ptr);
     }
+#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_GIGACAGE_BLOCKLIST)
+    else
+      AddressPoolManagerBitmap::IncrementNonGigacagePtrRefCount(ptr);
+#endif
 
     return ptr;
   }
@@ -174,12 +178,16 @@ struct BackupRefPtrImpl {
       DCHECK(wrapped_ptr != nullptr);
       ReleaseInternal(wrapped_ptr);
     }
+#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_GIGACAGE_BLOCKLIST)
+    else
+      AddressPoolManagerBitmap::DecrementNonGigacagePtrRefCount(wrapped_ptr);
+#endif
   }
 
   // Unwraps the pointer, while asserting that memory hasn't been freed. The
   // function is allowed to crash on nullptr.
   static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(void* wrapped_ptr) {
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     if (IsSupportedAndNotNull(wrapped_ptr)) {
       DCHECK(wrapped_ptr != nullptr);
       DCHECK(IsPointeeAlive(wrapped_ptr));
@@ -213,7 +221,14 @@ struct BackupRefPtrImpl {
 
   // Advance the wrapped pointer by |delta| bytes.
   static ALWAYS_INLINE void* Advance(void* wrapped_ptr, ptrdiff_t delta) {
-    return static_cast<char*>(wrapped_ptr) + delta;
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    if (IsSupportedAndNotNull(wrapped_ptr))
+      CHECK(IsValidDelta(wrapped_ptr, delta));
+#endif
+    void* new_wrapped_ptr =
+        WrapRawPtr(reinterpret_cast<char*>(wrapped_ptr) + delta);
+    ReleaseWrappedPtr(wrapped_ptr);
+    return new_wrapped_ptr;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion on whether
@@ -230,12 +245,13 @@ struct BackupRefPtrImpl {
   // We've evaluated several strategies (inline nothing, various parts, or
   // everything in |Wrap()| and |Release()|) using the Speedometer2 benchmark
   // to measure performance. The best results were obtained when only the
-  // lightweight |IsManagedByPartitionAllocNormalBuckets()| check was inlined.
+  // lightweight |IsManagedByPartitionAllocBRPPool()| check was inlined.
   // Therefore, we've extracted the rest into the functions below and marked
   // them as NOINLINE to prevent unintended LTO effects.
   static BASE_EXPORT NOINLINE void AcquireInternal(void* ptr);
   static BASE_EXPORT NOINLINE void ReleaseInternal(void* ptr);
   static BASE_EXPORT NOINLINE bool IsPointeeAlive(void* ptr);
+  static BASE_EXPORT NOINLINE bool IsValidDelta(void* ptr, ptrdiff_t delta);
 };
 
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)

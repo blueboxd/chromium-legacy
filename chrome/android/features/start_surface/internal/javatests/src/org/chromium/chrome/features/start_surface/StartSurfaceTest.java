@@ -57,7 +57,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -417,17 +416,13 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single/home_button_on_grid_tab_switcher/false"})
-    @DisabledTest(message = "Failing/flaky on several bots, see crbug.com/1177359")
     public void testShow_SingleAsHomepage() {
         if (!mImmediateReturn) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
         }
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> mActivityTestRule.getActivity().getLayoutManager() != null
-                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
-        onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
+        waitForView(withId(R.id.primary_tasks_surface_view));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(isDisplayed()));
@@ -454,6 +449,8 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        waitForView(allOf(withParent(withId(R.id.secondary_tasks_surface_view)),
+                withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
         assertEquals(mActivityTestRule.getActivity()
                              .findViewById(R.id.home_button_on_tab_switcher)
                              .getVisibility(),
@@ -461,14 +458,6 @@ public class StartSurfaceTest {
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
-
-        if (isInstantReturn()
-                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
-            // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
-            // performing a single click on position: 0. See code below.
-            return;
-        }
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
@@ -2062,142 +2051,6 @@ public class StartSurfaceTest {
                 .check(matches(withEffectiveVisibility(GONE)));
     }
 
-    @Test
-    @LargeTest
-    @Feature({"StartSurface"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_tabs_in_mru_order/true"})
-    public void testShow_SingleAsHomepage_ShowTabsInMRUOrder() throws ExecutionException {
-        // clang-format on
-        if (!mImmediateReturn) {
-            pressHomePageButton();
-        }
-
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        CriteriaHelper.pollUiThread(
-                () -> cta.getLayoutManager() != null && cta.getLayoutManager().overviewVisible());
-        waitForTabModel();
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-        onViewWaiting(withId(R.id.logo));
-        Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
-
-        // Launches the first site in MV tiles.
-        LinearLayout tilesLayout =
-                cta.findViewById(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
-        TestThreadUtils.runOnUiThreadBlocking(() -> tilesLayout.getChildAt(0).performClick());
-        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
-        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
-        Tab tab2 = cta.getActivityTab();
-        // Verifies that the titles of the two Tabs are different.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertNotEquals(tab1.getTitle(), tab2.getTitle()); });
-
-        // Returns to the Start surface.
-        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
-                mActivityTestRule.getActivity().getLayoutManager(), true, false);
-        pressHomePageButton();
-        overviewModeWatcher.waitForBehavior();
-        waitForView(allOf(
-                withParent(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container)),
-                withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
-
-        RecyclerView recyclerView = mActivityTestRule.getActivity().findViewById(
-                org.chromium.chrome.tab_ui.R.id.tab_list_view);
-        assertEquals(2, recyclerView.getChildCount());
-        // Verifies that the tabs are shown in MRU order: the first card in the carousel Tab
-        // switcher is the last created Tab by tapping the MV tile; the second card is the Tab
-        // created or restored in setup().
-        RecyclerView.ViewHolder firstViewHolder = recyclerView.findViewHolderForAdapterPosition(0);
-        TextView title1 =
-                firstViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(tab2.getTitle(), title1.getText()));
-
-        RecyclerView.ViewHolder secondViewHolder = recyclerView.findViewHolderForAdapterPosition(1);
-        TextView title2 =
-                secondViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(tab1.getTitle(), title2.getText()));
-    }
-
-    @Test
-    @LargeTest
-    @Feature({"StartSurface"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_tabs_in_mru_order/true"})
-    public void testShow_TabSwitcher_ShowTabsInMRUOrder() throws ExecutionException {
-        // clang-format on
-        tabSwitcher_ShowTabsInMRUOrderImpl();
-    }
-
-    @Test
-    @LargeTest
-    @Feature({"StartSurface"})
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS +
-        "/single/show_tabs_in_mru_order/true/show_last_active_tab_only/true"})
-    public void testShowV2_TabSwitcher_ShowTabsInMRUOrder() throws ExecutionException {
-        // clang-format on
-        tabSwitcher_ShowTabsInMRUOrderImpl();
-    }
-
-    private void tabSwitcher_ShowTabsInMRUOrderImpl() throws ExecutionException {
-        if (!mImmediateReturn) {
-            pressHomePageButton();
-        }
-
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        CriteriaHelper.pollUiThread(
-                () -> cta.getLayoutManager() != null && cta.getLayoutManager().overviewVisible());
-        waitForTabModel();
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-        onViewWaiting(withId(R.id.logo));
-        Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
-
-        // Launches the first site in MV tiles.
-        LinearLayout tilesLayout =
-                cta.findViewById(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
-        TestThreadUtils.runOnUiThreadBlocking(() -> tilesLayout.getChildAt(0).performClick());
-        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
-        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
-        Tab tab2 = cta.getActivityTab();
-
-        // Verifies that the titles of the two Tabs are different.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertNotEquals(tab1.getTitle(), tab2.getTitle()); });
-
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
-        // Enter the Tab switcher.
-        TabUiTestHelper.enterTabSwitcher(cta);
-        waitForView(allOf(withParent(withId(R.id.secondary_tasks_surface_view)),
-                withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
-
-        ViewGroup secondaryTaskSurface =
-                mActivityTestRule.getActivity().findViewById(R.id.secondary_tasks_surface_view);
-        RecyclerView recyclerView =
-                secondaryTaskSurface.findViewById(org.chromium.chrome.tab_ui.R.id.tab_list_view);
-        assertEquals(2, recyclerView.getChildCount());
-        // Verifies that the tabs are shown in MRU order: the first card in the Tab switcher is the
-        // last created Tab by tapping the MV tile; the second card is the Tab created or restored
-        // in setup().
-        RecyclerView.ViewHolder firstViewHolder = recyclerView.findViewHolderForAdapterPosition(0);
-        TextView title1 =
-                firstViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(tab2.getTitle(), title1.getText()));
-
-        RecyclerView.ViewHolder secondViewHolder = recyclerView.findViewHolderForAdapterPosition(1);
-        TextView title2 =
-                secondViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(tab1.getTitle(), title2.getText()));
-    }
-
     private void scrollToolbar() {
         waitForTabModel();
         TabUiTestHelper.verifyTabModelTabCount(mActivityTestRule.getActivity(), 1, 0);
@@ -2257,6 +2110,14 @@ public class StartSurfaceTest {
     private boolean isTabGridDialogHidden(ChromeTabbedActivity cta) {
         View dialogView = cta.findViewById(org.chromium.chrome.tab_ui.R.id.dialog_parent_view);
         return dialogView.getVisibility() == View.GONE;
+    }
+
+    private void waitForOverviewVisible() {
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }
 

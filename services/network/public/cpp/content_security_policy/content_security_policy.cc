@@ -409,7 +409,7 @@ bool ParseSource(CSPDirectiveName directive_name,
             ? "The query component, including the '?', will be ignored."
             : "The fragment identifier, including the '#', will be ignored.";
     parsing_errors.emplace_back(base::StringPrintf(
-        "The source list for Content-Security-Policy directive '%s' "
+        "The source list for Content Security Policy directive '%s' "
         "contains a source with an invalid path: '%s'. %s",
         ToString(directive_name).c_str(), expression.as_string().c_str(),
         ignoring));
@@ -634,8 +634,8 @@ mojom::CSPSourceListPtr ParseSourceList(
     // Parsing error.
     // Ignore this source-expression.
     parsing_errors.emplace_back(base::StringPrintf(
-        "The source list for the Content-Security-Policy directive '%s' "
-        "contains an invalid source: '%s'.",
+        "The source list for the Content Security Policy directive '%s' "
+        "contains an invalid source: '%s'. It will be ignored.",
         ToString(directive_name).c_str(), expression.as_string().c_str()));
   }
 
@@ -1414,24 +1414,31 @@ std::string ToString(CSPDirectiveName name) {
 bool AllowsBlanketEnforcementOfRequiredCSP(
     const url::Origin& request_origin,
     const GURL& response_url,
-    const network::mojom::AllowCSPFromHeaderValue* allow_csp_from) {
+    const network::mojom::AllowCSPFromHeaderValue* allow_csp_from,
+    network::mojom::ContentSecurityPolicyPtr& required_csp) {
   if (response_url.SchemeIs(url::kAboutScheme) ||
       response_url.SchemeIs(url::kDataScheme) || response_url.SchemeIsFile() ||
       response_url.SchemeIsFileSystem() || response_url.SchemeIsBlob()) {
+    required_csp->self_origin = ComputeSelfOrigin(request_origin.GetURL());
     return true;
   }
 
-  if (request_origin.IsSameOriginWith(url::Origin::Create(response_url)))
+  if (request_origin.IsSameOriginWith(url::Origin::Create(response_url))) {
+    required_csp->self_origin = ComputeSelfOrigin(response_url);
     return true;
+  }
 
   if (!allow_csp_from)
     return false;
 
-  if (allow_csp_from->is_allow_star())
+  if (allow_csp_from->is_allow_star()) {
+    required_csp->self_origin = ComputeSelfOrigin(response_url);
     return true;
+  }
 
   if (allow_csp_from->is_origin() &&
       request_origin.IsSameOriginWith(allow_csp_from->get_origin())) {
+    required_csp->self_origin = ComputeSelfOrigin(response_url);
     return true;
   }
 

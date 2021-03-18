@@ -118,8 +118,6 @@ extern const base::Feature kCryptAuthV2DeviceActivityStatusUseConnectivity;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kCrostiniWebUIUpgrader;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceSync;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2Enrollment;
@@ -137,6 +135,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableHostnameSetting;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableLocalSearchService;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kEnableNetworkingInDiagnosticsApp;
 extern const base::Feature kEnableOobeChromeVoxHint;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnablePciguardUi;
@@ -200,6 +200,7 @@ extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kKerberosSettingsSection;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosSupport;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLanguageSettingsUpdate;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -354,6 +355,7 @@ bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsKerberosSettingsSectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLoginDeviceManagementDisclosureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinimumChromeVersionEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNetworkingInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewOobeLayoutEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeChromeVoxHintEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeScreensPriorityEnabled();

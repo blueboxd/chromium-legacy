@@ -708,6 +708,7 @@ const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kArcUseHighMemoryDalvikProfileInternalName[] =
     "arc-use-high-memory-dalvik-profile";
+const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
 
@@ -1810,8 +1811,7 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"omnibox_focused_on_new_tab", "true"},
     {"home_button_on_grid_tab_switcher", "true"},
     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
-    {"hide_switch_when_no_incognito_tabs", "true"},
-    {"show_tabs_in_mru_order", "true"}};
+    {"hide_switch_when_no_incognito_tabs", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
@@ -1824,8 +1824,7 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"show_last_active_tab_only", "true"},
      {"omnibox_focused_on_new_tab", "true"},
      {"home_button_on_grid_tab_switcher", "true"},
-     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
-     {"show_tabs_in_mru_order", "true"}};
+     {"new_home_surface_from_home_button", "hide_tab_switcher_only"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
@@ -3061,6 +3060,9 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosStabilityInternalName, flag_descriptions::kLacrosStabilityName,
      flag_descriptions::kLacrosStabilityDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosStabilityChoices)},
+    {kLacrosPrimaryInternalName, flag_descriptions::kLacrosPrimaryName,
+     flag_descriptions::kLacrosPrimaryDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kLacrosPrimary)},
     {"list-all-display-modes", flag_descriptions::kListAllDisplayModesName,
      flag_descriptions::kListAllDisplayModesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kListAllDisplayModes)},
@@ -5699,6 +5701,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrintServerScalingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrintServerScaling)},
 
+    {"enable-networking-in-diagnostics-app",
+     flag_descriptions::kEnableNetworkingInDiagnosticsAppName,
+     flag_descriptions::kEnableNetworkingInDiagnosticsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableNetworkingInDiagnosticsApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
@@ -5979,12 +5985,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"safety-tips", flag_descriptions::kSafetyTipName,
      flag_descriptions::kSafetyTipDescription, kOsAll,
      FEATURE_VALUE_TYPE(security_state::features::kSafetyTipUI)},
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"crostini-webui-upgrader", flag_descriptions::kCrostiniWebUIUpgraderName,
-     flag_descriptions::kCrostiniWebUIUpgraderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIUpgrader)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"turn-off-streaming-media-caching-on-battery",
      flag_descriptions::kTurnOffStreamingMediaCachingOnBatteryName,
@@ -6549,11 +6549,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_ANDROID)
-    {"android-default-browser-promo",
-     flag_descriptions::kAndroidDefaultBrowserPromoName,
-     flag_descriptions::kAndroidDefaultBrowserPromoDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidDefaultBrowserPromo)},
-
     {"android-managed-by-menu-item",
      flag_descriptions::kAndroidManagedByMenuItemName,
      flag_descriptions::kAndroidManagedByMenuItemDescription, kOsAndroid,
@@ -6877,11 +6872,6 @@ const FeatureEntry kFeatureEntries[] = {
          app_list_features::kEnableOmniboxRichEntities,
          kOmniboxRichEntitiesInLauncherVariations,
          "OmniboxRichEntitiesInLauncher")},
-
-    {"separate-pointing-stick-settings",
-     flag_descriptions::kSeparatePointingStickSettingsName,
-     flag_descriptions::kSeparatePointingStickSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kSeparatePointingStickSettings)},
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -7304,6 +7294,12 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!strcmp(kLacrosSupportInternalName, entry.internal_name) ||
       !strcmp(kLacrosStabilityInternalName, entry.internal_name)) {
     if (!crosapi::browser_util::IsLacrosAllowed(channel)) {
+      return true;
+    }
+  }
+
+  if (!strcmp(kLacrosPrimaryInternalName, entry.internal_name)) {
+    if (!crosapi::browser_util::IsLacrosPrimaryBrowserAllowed(channel)) {
       return true;
     }
   }

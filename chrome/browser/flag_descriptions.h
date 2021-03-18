@@ -1568,9 +1568,6 @@ extern const char kAImageReaderDescription[];
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
 
-extern const char kAndroidDefaultBrowserPromoName[];
-extern const char kAndroidDefaultBrowserPromoDescription[];
-
 extern const char kAndroidDetailedLanguageSettingsName[];
 extern const char kAndroidDetailedLanguageSettingsDescription[];
 
@@ -2301,9 +2298,6 @@ extern const char kCrostiniUseBusterImageDescription[];
 extern const char kCrostiniGpuSupportName[];
 extern const char kCrostiniGpuSupportDescription[];
 
-extern const char kCrostiniWebUIUpgraderName[];
-extern const char kCrostiniWebUIUpgraderDescription[];
-
 extern const char kCrostiniUseDlcName[];
 extern const char kCrostiniUseDlcDescription[];
 
@@ -2514,6 +2508,9 @@ extern const char kVideoPlayerJsModulesDescription[];
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];
 
+extern const char kEnableNetworkingInDiagnosticsAppName[];
+extern const char kEnableNetworkingInDiagnosticsAppDescription[];
+
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
 
@@ -2656,6 +2653,9 @@ extern const char kInteractiveWindowCycleListDescription[];
 extern const char kKeyboardBasedDisplayArrangementInSettingsName[];
 extern const char kKeyboardBasedDisplayArrangementInSettingsDescription[];
 
+extern const char kLacrosPrimaryName[];
+extern const char kLacrosPrimaryDescription[];
+
 extern const char kLacrosStabilityName[];
 extern const char kLacrosStabilityDescription[];
 extern const char kLacrosStabilityLessStableDescription[];
@@ -2743,9 +2743,6 @@ extern const char kSchedulerConfigurationPerformance[];
 
 extern const char kSelectToSpeakNavigationControlName[];
 extern const char kSelectToSpeakNavigationControlDescription[];
-
-extern const char kSeparatePointingStickSettingsName[];
-extern const char kSeparatePointingStickSettingsDescription[];
 
 extern const char kSharesheetContentPreviewsName[];
 extern const char kSharesheetContentPreviewsDescription[];

@@ -110,11 +110,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "android-default-browser-promo",
-    "owners": [ "lazzzis@google.com", "twellington" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "android-detailed-language-settings",
     "owners": [ "perrier", "chrome-language@google.com" ],
     "expiry_milestone": 91
@@ -803,7 +798,7 @@
   {
     "name": "crostini-disk-resizing",
     "owners": [ "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 93
   },
   {
     "name": "crostini-enable-dlc",
@@ -818,22 +813,17 @@
   {
     "name": "crostini-reset-lxd-db",
     "owners": [ "davidmunro@google.com", "nverne", "sidereal" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 99
   },
   {
     "name": "crostini-use-buster-image",
-    "owners": [ "davidmunro@google.com", "benwells" ],
-    "expiry_milestone": 90
+    "owners": [ "davidmunro@google.com", "clumptini@google.com" ],
+    "expiry_milestone": 99
   },
   {
     "name": "crostini-use-dlc",
     "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "crostini-webui-upgrader",
-    "owners": [ "nverne", "davidmunro@google.com", "benwells" ],
-    "expiry_milestone": 88
   },
   {
     "name": "cryptauth-v2-device-activity-status",
@@ -1362,7 +1352,7 @@
   {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",
@@ -1376,8 +1366,8 @@
   },
   {
     "name": "enable-autofill-credit-card-cvc-prompt-google-logo",
-    "owners": [ "annelim@google.com, payments-autofill-team@google.com" ],
-    "expiry_milestone": 90
+    "owners": [ "treib", "jsaul@google.com", "payments-autofill-team@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-credit-card-upload",
@@ -1394,12 +1384,12 @@
   },
   {
     "name": "enable-autofill-infobar-account-indication-footer-for-single-account-users",
-    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "owners": [ "mdjones", "treib"],
     "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-infobar-account-indication-footer-for-sync-users",
-    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "owners": [ "mdjones", "treib"],
     "expiry_milestone": 95
   },
   {
@@ -1409,8 +1399,8 @@
   },
   {
     "name": "enable-autofill-password-account-indicator-footer",
-    "owners": [ "annelim@google.com, mdjones@chromium.org"],
-    "expiry_milestone": 90
+    "owners": [ "mdjones", "treib"],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-password-reauth-ios",
@@ -1424,7 +1414,7 @@
   },
   {
     "name": "enable-autofill-save-card-info-bar-account-indication-footer",
-    "owners": [ "annelim@google.com, mdjones@chromium.org"],
+    "owners": [ "mdjones", "treib"],
     "expiry_milestone": 95
   },
   {
@@ -2060,6 +2050,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-networking-in-diagnostics-app",
+    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "enable-neural-stylus-palm-rejection",
     "owners": [ "robsc", "napper", "adlr" ],
     // We add a neural net to change how fingers are handled. We set a milestone
@@ -2673,8 +2668,8 @@
   },
   {
     "name": "enable-zero-state-app-reinstall-suggestions",
-    "owners": [ "robsc", "napper", "jennyz" ],
-    "expiry_milestone": 90
+    "owners": [ "robsc", "napper", "jennyz", "thanhdng" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enhanced_clipboard",
@@ -2835,18 +2830,18 @@
   },
   {
     "name": "files-zip-mount",
-    "owners": [ "fdegros", "jboulic", "dats" ],
-    "expiry_milestone": 90
+    "owners": [ "fdegros", "jboulic"],
+    "expiry_milestone": 95
   },
   {
     "name": "files-zip-pack",
-    "owners": [ "fdegros", "jboulic", "dats" ],
-    "expiry_milestone": 90
+    "owners": [ "fdegros", "jboulic"],
+    "expiry_milestone": 100
   },
   {
     "name": "files-zip-unpack",
-    "owners": [ "fdegros", "jboulic", "dats" ],
-    "expiry_milestone": 90
+    "owners": [ "fdegros", "jboulic"],
+    "expiry_milestone": 100
   },
   {
     "name": "fill-on-account-select",
@@ -2953,8 +2948,8 @@
   },
   {
     "name": "forced-colors",
-    "owners": [ "weblayout@microsoft.com" ],
-    "expiry_milestone": 90
+    "owners": [ "almaher@microsoft.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "form-controls-dark-mode",
@@ -3296,6 +3291,14 @@
     "expiry_milestone": 94
   },
   {
+    "name": "lacros-primary",
+    "owners": [ "hidehiko", "erikchen", "lacros-team@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
     "name": "lacros-stability",
     "owners": [ "jamescook", "erikchen", "lacros-team@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
@@ -3311,7 +3314,7 @@
     // TODO(https://crbug.com/1148474).
     "expiry_milestone": 130
   },
-    {
+  {
     "name": "lacros-web-apps",
     "owners": [ "mxcai", "raymes", "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 98
@@ -4623,11 +4626,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "separate-pointing-stick-settings",
-    "owners": [ "hcutts", "khorimoto", "zentaro" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "set-market-url-for-testing",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
     // This is required by test teams to verify functionality on devices which
@@ -5176,7 +5174,7 @@
   {
     "name": "wallet-requires-first-sync-setup",
     "owners": [ "treib", "butter-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "wallet-service-use-sandbox",

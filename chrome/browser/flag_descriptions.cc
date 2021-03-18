@@ -2671,10 +2671,6 @@ const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
 
-const char kAndroidDefaultBrowserPromoName[] = "Default Browser Promo";
-const char kAndroidDefaultBrowserPromoDescription[] =
-    "Shows a promo dialog to set Chrome as the default browser";
-
 const char kAndroidDetailedLanguageSettingsName[] =
     "Detailed Language Settings";
 const char kAndroidDetailedLanguageSettingsDescription[] =
@@ -3959,10 +3955,6 @@ const char kCrostiniUseBusterImageDescription[] =
 const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
 const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
 
-const char kCrostiniWebUIUpgraderName[] = "Crostini WebUI Upgrader";
-const char kCrostiniWebUIUpgraderDescription[] =
-    "Enable the new WebUI Crostini Upgrader Dialog.";
-
 const char kCrostiniUseDlcName[] = "Crostini Use DLC";
 const char kCrostiniUseDlcDescription[] =
     "Download the termina VM using the new DLC service instead of the old "
@@ -4275,6 +4267,11 @@ const char kTrimOnMemoryPressureDescription[] =
 const char kEcheSWAName[] = "Enable Eche App SWA.";
 const char kEcheSWADescription[] = "Enable the SWA version of the Eche.";
 
+const char kEnableNetworkingInDiagnosticsAppName[] =
+    "Enable networking cards in the Diagnostics App";
+const char kEnableNetworkingInDiagnosticsAppDescription[] =
+    "Enable networking cards in the Diagnostics App";
+
 const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =
     "Enable Suggested Files feature in Launcher, which will show file "
@@ -4528,6 +4525,11 @@ const char kKeyboardBasedDisplayArrangementInSettingsDescription[] =
     "Enables using arrow keys to rearrange displays on Settings > Device > "
     "Displays page.";
 
+const char kLacrosPrimaryName[] = "Lacros as the primary browser";
+const char kLacrosPrimaryDescription[] =
+    "Use Lacros-chrome as the primary web browser on Chrome OS. "
+    "This flag is ignored if Lacros support is disabled.";
+
 const char kLacrosStabilityName[] = "Lacros stability";
 const char kLacrosStabilityDescription[] = "Frequency of Lacros updates.";
 
@@ -4664,12 +4666,6 @@ const char kSelectToSpeakNavigationControlName[] =
     "Select-to-speak navigation control";
 const char kSelectToSpeakNavigationControlDescription[] =
     "Enables enhanced Select-to-speak navigation features.";
-
-const char kSeparatePointingStickSettingsName[] =
-    "Separate pointing stick settings";
-const char kSeparatePointingStickSettingsDescription[] =
-    "Enables a separate group of settings (speed, button swap, and "
-    "acceleration) for pointing sticks (such as TrackPoints).";
 
 const char kSharesheetContentPreviewsName[] = "Sharesheet Content Previews";
 const char kSharesheetContentPreviewsDescription[] =

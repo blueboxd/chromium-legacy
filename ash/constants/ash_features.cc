@@ -199,10 +199,6 @@ const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the new WebUI Crostini upgrader.
-const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use DLC instead of component updater for managing the Termina image if set
 // (and component updater instead of DLC if not).
 const base::Feature kCrostiniUseDlc{"CrostiniUseDlc",
@@ -284,6 +280,10 @@ const base::Feature kEnableHostnameSetting{"EnableHostnameSetting",
 // Enables LocalSearchService to be initialized.
 const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, the networking cards will be shown in the diagnostics app.
+const base::Feature kEnableNetworkingInDiagnosticsApp{
+    "EnableNetworkingInDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the OOBE ChromeVox hint dialog and announcement feature.
 const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
@@ -434,6 +434,14 @@ const base::Feature kInstantTethering{"InstantTethering",
 // settings will stay under People Section. https://crbug.com/983041
 const base::Feature kKerberosSettingsSection{"KerberosSettingsSection",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables to use lacros-chrome as a primary web browser on Chrome OS.
+// This works only when LacrosSupport below is enabled.
+// NOTE: Use crosapi::browser_util::IsLacrosPrimary() instead of checking
+// the feature directly. Similar to LacrosSupport, this may not be allowed
+// depending on user types and/or policies.
+const base::Feature kLacrosPrimary{"LacrosPrimary",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables "Linux and Chrome OS" support. Allows a Linux version of Chrome
 // ("lacros-chrome") to run as a Wayland client with this instance of Chrome
@@ -796,6 +804,10 @@ bool IsLoginDeviceManagementDisclosureEnabled() {
 
 bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
+}
+
+bool IsNetworkingInDiagnosticsAppEnabled() {
+  return base::FeatureList::IsEnabled(kEnableNetworkingInDiagnosticsApp);
 }
 
 bool IsNewOobeLayoutEnabled() {

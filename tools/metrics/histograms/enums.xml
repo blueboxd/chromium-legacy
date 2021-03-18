@@ -1695,12 +1695,18 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidDefaultBrowserPromoOutcomeType">
+  <obsolete>
+    Removed Mar 2021; experiment is done and the data isn't useful.
+  </obsolete>
   <int value="0" label="No Default"/>
   <int value="1" label="Other Default"/>
   <int value="2" label="Chrome Default"/>
 </enum>
 
 <enum name="AndroidDefaultBrowserPromoType">
+  <obsolete>
+    Removed Mar 2021; experiment is done and the data isn't useful.
+  </obsolete>
   <int value="0" label="No Default"/>
   <int value="1" label="Other Default"/>
 </enum>
@@ -26826,6 +26832,8 @@ Called by update_extension_histograms.py.-->
       label="LANGUAGESETTINGSPRIVATE_GETALWAYSTRANSLATELANGUAGES"/>
   <int value="1545"
       label="LANGUAGESETTINGSPRIVATE_SETLANGUAGEALWAYSTRANSLATESTATE"/>
+  <int value="1546" label="ACCESSIBILITY_PRIVATE_SHOWCONFIRMATIONDIALOG"/>
+  <int value="1547" label="AUTOTESTPRIVATE_INSTALLBOREALIS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -41086,6 +41094,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="14" label="JSON conversion failure"/>
 </enum>
 
+<enum name="JavaJsBridgeMethodInvocationError">
+  <int value="0" label="MethodInvocationAsConstructorDisallowed"/>
+  <int value="1" label="MethodInvocationNonexistentMethod"/>
+  <int value="2" label="MethodInvocationOnNonInjectedObjectDisallowed"/>
+  <int value="3" label="MethodInvocationErrorMessage"/>
+</enum>
+
 <enum name="JavaScriptDialogDismissalCause">
   <int value="0" label="Tab closed">The tab owning the dialog was closed</int>
   <int value="1" label="New dialog">
@@ -43893,7 +43908,6 @@ from previous Chrome versions.
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1858284725" label="TabGroupsFeedback:enabled"/>
   <int value="-1856902397" label="LoadingWithMojo:enabled"/>
-  <int value="-1856718338" label="AndroidDefaultBrowserPromo:disabled"/>
   <int value="-1855347512" label="FormControlsRefresh:disabled"/>
   <int value="-1854432127" label="ChromeHomePullToRefreshIphAtTop:disabled"/>
   <int value="-1854372227" label="VrBrowsingExperimentalFeatures:enabled"/>
@@ -44319,7 +44333,6 @@ from previous Chrome versions.
   <int value="-1467839547" label="ContextMenuShopWithGoogleLens:disabled"/>
   <int value="-1467642274" label="KeyboardShortcutViewer:disabled"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
-  <int value="-1467062925" label="AndroidDefaultBrowserPromo:enabled"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
   <int value="-1466862366" label="TouchToFillAndroid:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
@@ -47430,6 +47443,7 @@ from previous Chrome versions.
   <int value="1353113954" label="EnableMDRoundedCornersOnDialogs:enabled"/>
   <int value="1353629763" label="MediaSessionAccelerators:enabled"/>
   <int value="1353749554" label="QuickAnswersTranslation:enabled"/>
+  <int value="1354978146" label="LacrosPrimary:enabled"/>
   <int value="1355656242"
       label="DesktopPWAsMigrationUserDisplayModeCleanUp:disabled"/>
   <int value="1355923367" label="CrOSContainer:disabled"/>
@@ -47523,6 +47537,7 @@ from previous Chrome versions.
   <int value="1435251818" label="AutofillNoLocalSaveOnUploadSuccess:enabled"/>
   <int value="1436454450" label="InterestFeedV2:disabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
+  <int value="1440618113" label="EnableNetworkingInDiagnosticsApp:disabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1441978318" label="WifiSyncAndroid:disabled"/>
   <int value="1442129147"
@@ -47570,6 +47585,7 @@ from previous Chrome versions.
   <int value="1478075250" label="QuickAnswersTextAnnotator:disabled"/>
   <int value="1478461926" label="GlobalMediaControlsPictureInPicture:enabled"/>
   <int value="1479248574" label="disable-voice-input"/>
+  <int value="1480507924" label="EnableNetworkingInDiagnosticsApp:enabled"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1482245628" label="OmniboxNativeVoiceSuggestProvider:enabled"/>
@@ -47785,6 +47801,7 @@ from previous Chrome versions.
   <int value="1678866761" label="SystemLatinPhysicalTyping:disabled"/>
   <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
   <int value="1680248931" label="use-fake-device-for-media-stream:enabled"/>
+  <int value="1680855806" label="LacrosPrimary:disabled"/>
   <int value="1681219077" label="VoiceButtonInTopToolbar:enabled"/>
   <int value="1683560662" label="ChromeShareHighlightsAndroid:disabled"/>
   <int value="1684043382" label="AssistantKeyRemapping:enabled"/>

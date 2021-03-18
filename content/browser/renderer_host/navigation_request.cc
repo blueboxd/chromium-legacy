@@ -965,7 +965,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*enabled_client_hints=*/
           std::vector<network::mojom::WebClientHintsType>(),
           /*is_cross_browsing_instance=*/false,
-          /*forced_content_security_policies=*/std::vector<std::string>(),
           /*old_page_info=*/nullptr, /*http_response_code=*/-1);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
@@ -1078,7 +1077,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */,
-          std::vector<std::string>() /* forced_content_security_policies */,
           nullptr /* old_page_info */, http_response_code);
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -4352,13 +4350,11 @@ NavigationRequest::CheckCSPEmbeddedEnforcement() {
       response() ? response()->parsed_headers->allow_csp_from.get() : nullptr;
 
   if (network::AllowsBlanketEnforcementOfRequiredCSP(
-          GetParentFrame()->GetLastCommittedOrigin(), GetURL(),
-          allow_csp_from)) {
-    // Enforce the required CSPs on the frame by passing them down to blink
-    // TODO(antoniosartori): When CSP are part of the PolicyContainer,
-    // forced_content_security_policies should be removed.
-    commit_params_->forced_content_security_policies.push_back(
-        required_csp_->header->header_value);
+          GetParentFrame()->GetLastCommittedOrigin(), GetURL(), allow_csp_from,
+          required_csp_)) {
+    // Enforce the required CSPs on the frame by passing them down to blink.
+    policy_container_navigation_bundle_->AddContentSecurityPolicy(
+        required_csp_->Clone());
     return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
   }
 
@@ -5911,6 +5907,11 @@ void NavigationRequest::ComputePoliciesToCommit() {
   policy_container_navigation_bundle_->SetIPAddressSpace(
       CalculateIPAddressSpace(common_params_->url, response_head_.get()));
 
+  if (response_head_) {
+    policy_container_navigation_bundle_->AddContentSecurityPolicies(
+        mojo::Clone(response_head_->parsed_headers->content_security_policy));
+  }
+
   // Use the unchecked / non-sandboxed origin to calculate potential
   // trustworthiness. Indeed, the potential trustworthiness check should apply
   // to the origin of the creation URL, prior to opaquification.
@@ -5919,18 +5920,15 @@ void NavigationRequest::ComputePoliciesToCommit() {
           GetOriginForURLLoaderFactoryUnchecked(this)));
   policy_container_navigation_bundle_->ComputePolicies(common_params_->url);
 
-  ComputeSandboxFlagsToCommit(response_head_.get(), required_csp_.get());
+  ComputeSandboxFlagsToCommit();
 }
 
 void NavigationRequest::ComputePoliciesToCommitForError() {
   policy_container_navigation_bundle_->ComputePoliciesForError();
-  ComputeSandboxFlagsToCommit(/*response_head=*/nullptr,
-                              /*required_csp=*/nullptr);
+  ComputeSandboxFlagsToCommit();
 }
 
-void NavigationRequest::ComputeSandboxFlagsToCommit(
-    const network::mojom::URLResponseHead* response_head,
-    const network::mojom::ContentSecurityPolicy* required_csp) {
+void NavigationRequest::ComputeSandboxFlagsToCommit() {
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());
   DCHECK(!IsErrorPage());
@@ -5944,22 +5942,6 @@ void NavigationRequest::ComputeSandboxFlagsToCommit(
       policy_container_navigation_bundle_->FinalPolicies();
   for (const auto& csp : policies_to_commit.content_security_policies)
     *sandbox_flags_to_commit_ |= csp->sandbox;
-
-  // TODO(antoniosartori): Remove this block. The response_head CSP should
-  // already be part of the policy container.
-  if (response_head) {
-    for (const auto& csp :
-         response_head->parsed_headers->content_security_policy) {
-      *sandbox_flags_to_commit_ |= csp->sandbox;
-    }
-  }
-
-  // If the embedee opts in, the embedder can force its HTMLIframeElement.csp
-  // attribute to be used by the embedee.
-  // TODO(antoniosartori): Remove this block. Include required_csp into
-  // policy container directly.
-  if (required_csp)
-    *sandbox_flags_to_commit_ |= required_csp->sandbox;
 
   // The URL of a document loaded from a MHTML archive is controlled by the
   // Content-Location header. This can be set to an arbitrary URL. This is

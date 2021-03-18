@@ -9,7 +9,7 @@ Chromium-legacy is the latest Chromium (almost equivalent to Chrome Canary witho
 - OS X 10.9 / Mavericks
 - OS X 10.10 / Yosemite
 
-**NB: Not for natively supported environments (10.11+).**
+**NB: Not for officially supported environments (10.11+).**
 
 This project is automatically built and uploaded twice a day (00:00 and 12:00 JST) if no issues occurred.
 And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
@@ -19,13 +19,13 @@ It's recommended to find and use a stable build for daily use. (The same is true
 
 Basically equivalent to the [same version of original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see below).
 
-## limitations / glitches
+## limitations
 
 - UI
   - unified window title & tab bar
     - not available on 10.7/10.8/10.9, replaced by classical title bar instead (thanks to [@Wowfunhappy](https://github.com/Wowfunhappy))
   - menus/sheets
-    - have no shadow
+    - have no shadow, indistinguishable from background
   - scrollbars
     - won't disappear despite "Show scrollbars when scrolling" option is enabled when GPU compositing is disabled
 - GPU assists
@@ -41,11 +41,12 @@ Build steps are almost the same as the [original Chromium's one](docs/mac_build_
 ### prerequisites
 
 - macOS 11.1 SDK
-  - to build for 10.7, you need patch for [NSArray.h](https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/NSArray.h) and [NSDictionary.h](https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/NSDictionary.h)
+  - to build for 10.7, need patch for SDK: [NSArray.h](https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/NSArray.h) and [NSDictionary.h](https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/NSDictionary.h)
 - Xcode 12.2+
+  - to build for 10.7, need patched clang (TBW)
 - powerful CPUs
-  - about 40mins to full build with `Xeon E5-2690 v4` & 2 x `Ryzen 9 3950X`
-  - about 3hrs+ to full build with `Core i9-9980HK`
+  - about 40mins to build from scratch with `Xeon E5-2690 v4` & 2 x `Ryzen 9 3950X`
+  - about 3-4hrs+ to build from scratch with `Core i9-9980HK`
 
 ### TL;DR
 

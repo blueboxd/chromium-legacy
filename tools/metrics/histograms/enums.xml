@@ -10314,6 +10314,7 @@ histogram as enum -->
   <int value="37" label="kAccountPasswords"/>
   <int value="38" label="kAccountPasswordsSynced"/>
   <int value="39" label="kAccountCompromisedCredentials"/>
+  <int value="40" label="kFaviconCacheExpiration"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
@@ -13847,7 +13848,12 @@ Called by update_net_error_codes.py.-->
 
 <enum name="CookieLoadProblem">
   <int value="0" label="Entry decryption failed"/>
-  <int value="1" label="Entry decryption taking over a minute"/>
+  <int value="1" label="Entry decryption taking over a minute">
+    <obsolete>
+      Removed 03/2021. The problem rarely happens and can be reported through
+      other mechanisms.
+    </obsolete>
+  </int>
   <int value="2" label="Cookie canonical form check failed"/>
   <int value="3" label="Could not open or initialize database"/>
   <int value="4" label="Attempt to delete broken (and related) rows failed"/>
@@ -31908,6 +31914,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3855" label="V8Navigator_JoinAdInterestGroup_Method"/>
   <int value="3856" label="V8Navigator_LeaveAdInterestGroup_Method"/>
   <int value="3857" label="V8Navigator_RunAdAuction_Method"/>
+  <int value="3858" label="XHRJSONEncodingDetection"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -57012,6 +57019,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="50" label="DuckDuckGo"/>
   <int value="51" label="Parsijoo"/>
   <int value="52" label="Qwant"/>
+  <int value="53" label="Givero"/>
+  <int value="54" label="GMX"/>
+  <int value="55" label="info.com"/>
+  <int value="56" label="MetaGer"/>
+  <int value="57" label="OceanHero"/>
+  <int value="58" label="PrivacyWall"/>
+  <int value="59" label="Ecosia"/>
 </enum>
 
 <enum name="OmniboxSuggestRequests">

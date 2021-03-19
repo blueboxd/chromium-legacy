@@ -41,7 +41,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kTopLevelAwait;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGTable;
-BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGTextControl;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsEmpty;
@@ -228,11 +227,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
 BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInstallingServiceWorkerOutstandingThrottledLimit;
-
-// Enables storing and loading security policies (for now, referrer policy) in
-// the policy container. The policy container for the current document is
-// attached to the RenderFrameHost and mirrored to the LocalFrame in Blink.
-BLINK_COMMON_EXPORT extern const base::Feature kPolicyContainer;
 
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics

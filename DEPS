@@ -175,7 +175,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:ea8dc31395c76b2990112b29b02386628d795d2d',
+  'luci_go': 'git_revision:4eef77dde582d6065203e3249dd80477391a7dd6',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -204,11 +204,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '10a5ff2cac687d87ecfed8ca59ae5d10fa303ea6',
+  'skia_revision': '31798c2796649c32eda421629ccd621114a49ec3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '43315277e45e866e927722377d36b04ca3c1014b',
+  'v8_revision': '851b17ef708982b5847da829024d71968fa3c333',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b717952ee77647ff7fc2fa31a1b9dfc344228dca',
+  'angle_revision': '15a1e7357d3816c724f6001b31d7e0778e9195e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -283,7 +283,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c030bfaa8fac24866633f69816860e96b5ad85e3',
+  'devtools_frontend_revision': '0531eac84526bb6e1f29134c10868a3fa9e6d993',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -696,7 +696,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'HrObtBeHuh5R3OZF1qqHNjQl38HI9tJTa3qDEcySZVoC',
+          'version': 'u6VFYAAs0pWpPZgJrU91m7cxc7WBYPWvnLiQjRHgLf8C',
       },
     ],
     'condition': 'checkout_android',
@@ -929,7 +929,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e4bab45474062a0108955b1020c81f1273fa1d16',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4af39022f20a2bdef4c1a16d9481239fc7a49c12',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('skia_git') + '/external/github.com/google/wuffs.git' + '@' +  Var('wuffs_revision'),
 
   'src/third_party/weston/src': {
-      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/weston.git' + '@' + '04d3ae265d8d8f84352c8dac21ec40b2fe07e7d2',
+      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/weston.git' + '@' + '420cfd00f2de91de74bd9d4d8348e43c582d29f0',
       'condition': 'checkout_linux',
   },
 
@@ -1575,7 +1575,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'tEy0lJoalTuggzrX-B7ZyklLHH34kagQt1s3f03s8aUC',
+          'version': 'GNchtrcB6qbKJwI4p-GTx1VGkCUsAWxKyn2kIXkyMZcC',
         },
       ],
       'dep_type': 'cipd',
@@ -1609,7 +1609,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0c6583a194dd76533d38a1c52da176aee6a4ec0b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8beea3be1e55596187638cbbd125da4bc36be055',
     'condition': 'checkout_src_internal',
   },
 
@@ -3672,8 +3672,7 @@ hooks = [
     'condition': 'llvm_force_head_revision',
     'action': ['python', 'src/tools/clang/scripts/build.py',
                '--llvm-force-head-revision',
-               '--with-android={checkout_android}',
-               '--with-fuchsia={checkout_fuchsia}'],
+               '--with-android={checkout_android}'],
   },
   {
     # This is supposed to support the same set of platforms as 'clang' above.

@@ -101,9 +101,6 @@ const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLayoutNGTable{"LayoutNGTable",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kLayoutNGTextControl{"LayoutNGTextControl",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -673,12 +670,6 @@ const base::Feature kThrottleInstallingServiceWorker{
     "ThrottleInstallingServiceWorker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<int> kInstallingServiceWorkerOutstandingThrottledLimit{
     &kThrottleInstallingServiceWorker, "limit", 3};
-
-// Enables storing and loading security policies (for now, referrer policy) in
-// the policy container. The policy container for the current document is
-// attached to the RenderFrameHost and mirrored to the LocalFrame in Blink.
-const base::Feature kPolicyContainer{"PolicyContainer",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kInputPredictorTypeChoice{
     "InputPredictorTypeChoice", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -205,12 +205,12 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
   if(CFRunLoopTimerSetToleranceFuncPtr) {
     if (ludicrous_slack_setting_ == LudicrousSlackSetting::kLudicrousSlackOn) {
       // Specify ludicrous slack when the experiment is enabled.
-      CFRunLoopTimerSetTolerance(delayed_work_timer_,
+      CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_,
                                  GetLudicrousTimerSlack().InSecondsF());
     } else if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
-      CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
+      CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_, delta.InSecondsF() * 0.5);
     } else {
-      CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
+      CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_, 0);
     }
   }
   CFRunLoopTimerSetNextFireDate(

@@ -142,6 +142,10 @@ class BASE_EXPORT MessagePumpKqueue : public MessagePump,
   // true if work was done, or false if no work was done.
   bool ProcessEvents(Delegate* delegate, int count);
 
+  // Sets the wakeup timer to |wakeup_time|, or clears it if |wakeup_time| is
+  // base::TimeTicks::Max(). Updates |scheduled_wakeup_time_| to follow.
+  void UpdateWakeupTimer(const base::TimeTicks& wakeup_time);
+
   // Receive right to which an empty Mach message is sent to wake up the pump
   // in response to ScheduleWork().
   mac::ScopedMachReceiveRight wakeup_;

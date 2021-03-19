@@ -204,7 +204,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8151337c41fbcb0038f6edd7a47e4472be73a97c',
+  'skia_revision': '10a5ff2cac687d87ecfed8ca59ae5d10fa303ea6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -929,7 +929,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9757ad58837498ee2d8e4a33deb2c91af19d6cf1',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e4bab45474062a0108955b1020c81f1273fa1d16',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1301,7 +1301,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f22dda154476440b55903604748f82246303c56c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7480b9a1ced8d62f81b14cdf9b3110a93482afef',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1585,7 +1585,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'BwdYY4bB6iGQVYbyf5BBWO0NwxwHlJqsTXuEym32_mAC',
+          'version': '_LtAsLqSVwpOUShHDIbQWgtPXUO4xbpf1MDMcloIAdQC',
         },
       ],
       'dep_type': 'cipd',
@@ -1595,7 +1595,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'a48l18Bp58dE_FXaQ3iaqjuTsyk59YWGHV-9L33EvXAC',
+          'version': '0r4l0jSQ08UrxS6-MUtgrn6DegnbVTPg-1I_HWxO3JsC',
         },
       ],
       'dep_type': 'cipd',
